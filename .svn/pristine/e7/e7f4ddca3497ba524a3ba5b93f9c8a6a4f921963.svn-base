@@ -1,3 +1,0 @@
-Src/_audio.o: ../Src/_audio.c ../Inc/_audio.h
-
-../Inc/_audio.h:

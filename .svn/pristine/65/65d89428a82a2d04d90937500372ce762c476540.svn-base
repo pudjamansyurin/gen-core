@@ -1,2 +1,0 @@
-_flash.c:12:6:Flash_Save_Odometer	16	static
-_flash.c:17:10:Flash_Get_Odometer	16	static

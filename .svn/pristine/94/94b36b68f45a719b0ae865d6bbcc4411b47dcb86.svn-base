@@ -1,9 +1,0 @@
-_finger.c:17:6:Finger_On	8	static
-_finger.c:22:6:Finger_Off	8	static
-_finger.c:28:6:Finger_Init	16	static
-_finger.c:43:9:Finger_Enroll	32	static
-_finger.c:227:9:Finger_Delete_ID	24	static
-_finger.c:250:9:Finger_Empty_Database	16	static
-_finger.c:260:9:Finger_Set_Password	24	static
-_finger.c:273:8:Finger_Auth	16	static
-_finger.c:352:8:Finger_Auth_Fast	16	static

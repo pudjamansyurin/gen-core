@@ -1,3 +1,0 @@
-_mems.c:9:6:MEMS_Init	32	static
-_mems.c:29:8:MEMS_Average	64	static
-_mems.c:71:17:MEMS_Decision	88	static
