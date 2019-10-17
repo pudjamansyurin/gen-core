@@ -1,5 +1,0 @@
-freertos.c:68:13:vApplicationIdleHook	4	static
-freertos.c:83:13:vApplicationStackOverflowHook	16	static
-freertos.c:92:13:vApplicationMallocFailedHook	4	static
-freertos.c:111:6:vApplicationGetIdleTaskMemory	24	static
-freertos.c:124:6:vApplicationGetTimerTaskMemory	24	static
