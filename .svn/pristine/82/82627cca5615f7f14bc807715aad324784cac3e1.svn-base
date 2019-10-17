@@ -1,0 +1,4 @@
+_DMA_Finger.c:18:6:FINGER_USART_IrqHandler	24	static
+_DMA_Finger.c:28:6:FINGER_DMA_IrqHandler	16	static
+_DMA_Finger.c:73:6:FINGER_DMA_Init	8	static
+_DMA_Finger.c:80:6:FINGER_Reset_Buffer	8	static

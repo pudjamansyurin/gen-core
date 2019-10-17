@@ -1,0 +1,371 @@
+/*
+ * _finger.c
+ *
+ *  Created on: Aug 28, 2019
+ *      Author: Puja
+ */
+
+#include "_finger.h"
+
+/* External variable ---------------------------------------------------------*/
+extern uint16_t fingerID;
+extern uint16_t fingerConfidence;
+extern osMutexId FingerRecMutexHandle;
+/* Private variable ---------------------------------------------------------*/
+char str[50];
+
+void Finger_On(void) {
+	osRecursiveMutexWait(FingerRecMutexHandle, osWaitForever);
+	FZ3387_SET_POWER(0);
+}
+
+void Finger_Off(void) {
+	FZ3387_SET_POWER(1);
+	osDelay(50);
+	osRecursiveMutexRelease(FingerRecMutexHandle);
+}
+
+void Finger_Init(void) {
+	Finger_On();
+	//	 verify password and check hardware
+	if (!FZ3387_verifyPassword()) {
+		swvPrintLn("FZ3387_verifyPassword error.");
+	}
+	Finger_Off();
+}
+
+uint8_t Finger_Enroll(uint8_t id) {
+	uint32_t tick, timeout_tick;
+	int p = -1, error = 0;
+
+	Finger_On();
+	// convert time to tick
+	timeout_tick = osKernelSysTickMicroSec(FINGER_SCAN_TIMEOUT*1000*1000);
+	//	Take Image
+	sprintf(str, "Waiting for valid finger to enroll as # %d", id);
+	swvPrintLn(str);
+
+	// set timeout guard
+	tick = osKernelSysTick();
+	while (p != FINGERPRINT_OK && !error) {
+		// handle timeout
+		if ((osKernelSysTick() - tick) > timeout_tick) {
+			error = 1;
+		}
+		// send command
+		BSP_Led_Toggle();
+		p = FZ3387_getImage();
+		// check response
+		switch (p) {
+			case FINGERPRINT_OK:
+				swvPrintLn("Image taken");
+				break;
+			case FINGERPRINT_NOFINGER:
+				swvPrintLn(".");
+				break;
+			case FINGERPRINT_PACKETRECIEVEERR:
+				swvPrintLn("Communication error");
+				break;
+			case FINGERPRINT_IMAGEFAIL:
+				swvPrintLn("Imaging error");
+				break;
+			default:
+				swvPrintLn("Unknown error");
+				break;
+		}
+	}
+
+	if (!error) {
+		// set default to error, then set to fix
+		error = 1;
+		//	put image to buffer 1
+		p = FZ3387_image2Tz(1);
+		switch (p) {
+			case FINGERPRINT_OK:
+				swvPrintLn("Image converted");
+				error = 0;
+				break;
+			case FINGERPRINT_IMAGEMESS:
+				swvPrintLn("Image too messy");
+				break;
+			case FINGERPRINT_PACKETRECIEVEERR:
+				swvPrintLn("Communication error");
+				break;
+			case FINGERPRINT_FEATUREFAIL:
+				swvPrintLn("Could not find finger print features");
+				break;
+			case FINGERPRINT_INVALIDIMAGE:
+				swvPrintLn("Could not find finger print features");
+				break;
+			default:
+				swvPrintLn("Unknown error");
+				break;
+		}
+	}
+
+	if (!error) {
+		//	 Wait for put your finger up
+		BSP_Led_Write(0);
+		swvPrintLn("Remove finger");
+		osDelay(2000);
+
+		//	Take Image again
+		swvPrintLn("Place same finger again");
+		p = -1;
+		// set timeout guard
+		tick = osKernelSysTick();
+		while (p != FINGERPRINT_OK && !error) {
+			// handle timeout
+			if ((osKernelSysTick() - tick) > timeout_tick) {
+				error = 1;
+			}
+			// send command
+			BSP_Led_Toggle();
+			p = FZ3387_getImage();
+			// handle response
+			switch (p) {
+				case FINGERPRINT_OK:
+					swvPrintLn("Image taken");
+					break;
+				case FINGERPRINT_NOFINGER:
+					swvPrint(".");
+					break;
+				case FINGERPRINT_PACKETRECIEVEERR:
+					swvPrintLn("Communication error");
+					break;
+				case FINGERPRINT_IMAGEFAIL:
+					swvPrintLn("Imaging error");
+					break;
+				default:
+					swvPrintLn("Unknown error");
+					break;
+			}
+		}
+	}
+
+	if (!error) {
+		error = 1;
+		//	put image to buffer 2
+		p = FZ3387_image2Tz(2);
+		switch (p) {
+			case FINGERPRINT_OK:
+				swvPrintLn("Image converted");
+				error = 0;
+				break;
+			case FINGERPRINT_IMAGEMESS:
+				swvPrintLn("Image too messy");
+				break;
+			case FINGERPRINT_PACKETRECIEVEERR:
+				swvPrintLn("Communication error");
+				break;
+			case FINGERPRINT_FEATUREFAIL:
+				swvPrintLn("Could not find fingerprint features");
+				break;
+			case FINGERPRINT_INVALIDIMAGE:
+				swvPrintLn("Could not find fingerprint features");
+				break;
+			default:
+				swvPrintLn("Unknown error");
+				break;
+		}
+	}
+
+	if (!error) {
+		//	 Wait for put your finger up
+		BSP_Led_Write(0);
+		swvPrintLn("Remove finger");
+		osDelay(2000);
+		//	Create Register model
+		error = 1;
+		sprintf(str, "Creating model for #%d", id);
+		swvPrintLn(str);
+
+		p = FZ3387_createModel();
+		if (p == FINGERPRINT_OK) {
+			swvPrintLn("Prints matched!");
+			error = 0;
+		} else if (p == FINGERPRINT_PACKETRECIEVEERR) {
+			swvPrintLn("Communication error");
+		} else if (p == FINGERPRINT_ENROLLMISMATCH) {
+			swvPrintLn("Fingerprints did not match");
+		} else {
+			swvPrintLn("Unknown error");
+		}
+	}
+
+	if (!error) {
+		error = 1;
+		//	Store in memory
+		sprintf(str, "ID %d", id);
+		swvPrintLn(str);
+
+		p = FZ3387_storeModel(id);
+		if (p == FINGERPRINT_OK) {
+			swvPrintLn("Stored!");
+			error = 0;
+		} else if (p == FINGERPRINT_PACKETRECIEVEERR) {
+			swvPrintLn("Communication error");
+		} else if (p == FINGERPRINT_BADLOCATION) {
+			swvPrintLn("Could not store in that location");
+		} else if (p == FINGERPRINT_FLASHERR) {
+			swvPrintLn("Error writing to flash");
+		} else {
+			swvPrintLn("Unknown error");
+		}
+	}
+
+	Finger_Off();
+	return p;
+}
+
+uint8_t Finger_Delete_ID(uint8_t id) {
+	uint8_t p = -1;
+
+	Finger_On();
+	p = FZ3387_deleteModel(id);
+	Finger_Off();
+
+	if (p == FINGERPRINT_OK) {
+		swvPrintLn("Deleted!");
+	} else if (p == FINGERPRINT_PACKETRECIEVEERR) {
+		swvPrintLn("Communication error");
+	} else if (p == FINGERPRINT_BADLOCATION) {
+		swvPrintLn("Could not delete in that location");
+	} else if (p == FINGERPRINT_FLASHERR) {
+		swvPrintLn("Error writing to flash");
+	} else {
+		sprintf(str, "Unknown error: 0x%02x", p);
+		swvPrintLn(str);
+	}
+
+	return p;
+}
+
+uint8_t Finger_Empty_Database(void) {
+	uint8_t p = -1;
+
+	Finger_On();
+	p = FZ3387_emptyDatabase();
+	Finger_Off();
+
+	return p;
+}
+
+uint8_t Finger_Set_Password(uint32_t password) {
+	uint8_t p = -1;
+
+	Finger_On();
+	p = FZ3387_setPassword(password);
+	Finger_Off();
+
+	if (p == FINGERPRINT_OK) {
+		return 1;
+	}
+	return 0;
+}
+
+int8_t Finger_Auth(void) {
+	uint8_t p = -1, error = 1;
+
+	p = FZ3387_getImage();
+	switch (p) {
+		case FINGERPRINT_OK:
+			swvPrintLn("Image taken");
+			error = 0;
+			break;
+		case FINGERPRINT_NOFINGER:
+			swvPrintLn("No finger detected");
+			break;
+		case FINGERPRINT_PACKETRECIEVEERR:
+			swvPrintLn("Communication error");
+			break;
+		case FINGERPRINT_IMAGEFAIL:
+			swvPrintLn("Imaging error");
+			break;
+		default:
+			swvPrintLn("Unknown error");
+			break;
+	}
+
+	if (!error) {
+		error = 1;
+		// OK success!
+		p = FZ3387_image2Tz(1);
+		switch (p) {
+			case FINGERPRINT_OK:
+				swvPrintLn("Image converted");
+				error = 0;
+				break;
+			case FINGERPRINT_IMAGEMESS:
+				swvPrintLn("Image too messy");
+				break;
+			case FINGERPRINT_PACKETRECIEVEERR:
+				swvPrintLn("Communication error");
+				break;
+			case FINGERPRINT_FEATUREFAIL:
+				swvPrintLn("Could not find finger print features");
+				break;
+			case FINGERPRINT_INVALIDIMAGE:
+				swvPrintLn("Could not find finger print features");
+				break;
+			default:
+				swvPrintLn("Unknown error");
+				break;
+		}
+	}
+
+	if (!error) {
+		error = 1;
+		// OK converted!
+		p = FZ3387_fingerFastSearch();
+		if (p == FINGERPRINT_OK) {
+			swvPrintLn("Found a print match!");
+			error = 0;
+		} else if (p == FINGERPRINT_PACKETRECIEVEERR) {
+			swvPrintLn("Communication error");
+		} else if (p == FINGERPRINT_NOTFOUND) {
+			swvPrintLn("Did not find a match");
+		} else {
+			swvPrintLn("Unknown error");
+		}
+	}
+
+	if (!error) {
+		// found a match!
+		sprintf(str, "Found ID #%d  with confidence of %d", fingerID, fingerConfidence);
+		swvPrintLn(str);
+
+		if (fingerConfidence > FINGER_CONFIDENCE_MIN) {
+			return fingerID;
+		}
+	}
+
+	return -1;
+}
+
+int8_t Finger_Auth_Fast(void) {
+	uint8_t p = -1;
+
+	p = FZ3387_getImage();
+
+	if (p == FINGERPRINT_OK) {
+		p = FZ3387_image2Tz(1);
+	}
+
+	if (p == FINGERPRINT_OK) {
+		p = FZ3387_fingerFastSearch();
+	}
+
+	if (p == FINGERPRINT_OK) {
+		// found a match!
+		sprintf(str, "Found ID #%d  with confidence of %d", fingerID, fingerConfidence);
+		swvPrintLn(str);
+
+		if (fingerConfidence > FINGER_CONFIDENCE_MIN) {
+			return fingerID;
+		}
+	}
+
+	return -1;
+}
+

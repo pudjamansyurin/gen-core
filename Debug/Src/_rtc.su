@@ -1,0 +1,4 @@
+_rtc.c:12:6:RTC_Read_RAW	16	static
+_rtc.c:18:6:RTC_Read	64	static
+_rtc.c:29:6:RTC_Write	64	static
+_rtc.c:59:9:RTC_Offset	16	static

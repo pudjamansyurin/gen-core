@@ -1,0 +1,7 @@
+_reporter.c:56:6:Reporter_Reset	8	static
+_reporter.c:85:6:Reporter_Set_Message	16	static
+_reporter.c:89:6:Reporter_Set_Report_ID	16	static
+_reporter.c:93:6:Reporter_Convert_GPS	56	static
+_reporter.c:106:6:Reporter_Set_Sending_Time	8	static
+_reporter.c:113:6:Reporter_Set_Payload	88	static
+_reporter.c:133:6:Reporter_Set_Odometer	16	static

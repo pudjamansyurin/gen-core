@@ -1,0 +1,6 @@
+_can.c:15:6:CAN_Init	8	static
+_can.c:35:6:CAN_Set_Tx_Header	24	static
+_can.c:44:19:CAN_Filter	48	static
+_can.c:68:9:CAN_Write	24	static
+_can.c:85:9:CAN_Read	24	static
+_can.c:94:6:HAL_CAN_RxFifo0MsgPendingCallback	24	static

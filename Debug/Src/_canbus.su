@@ -1,0 +1,4 @@
+_canbus.c:12:9:CANBUS_ECU_Switch	40	static
+_canbus.c:52:9:CANBUS_ECU_RTC	40	static
+_canbus.c:72:9:CANBUS_ECU_Select_Set	40	static
+_canbus.c:104:9:CANBUS_ECU_Trip_Mode	40	static

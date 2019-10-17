@@ -1,0 +1,4 @@
+_config.c:10:6:BSP_Led_Write_All	16	static
+_config.c:17:6:BSP_Led_Toggle_All	8	static
+_config.c:24:6:BSP_Led_Disco	24	static
+_config.c:36:6:ftoa	136	static

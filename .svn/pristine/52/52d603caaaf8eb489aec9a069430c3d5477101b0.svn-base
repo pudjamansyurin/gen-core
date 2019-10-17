@@ -1,0 +1,17 @@
+_simcom.c:71:6:Ublox_Init	16	static
+_simcom.c:77:13:Simcom_On	8	static
+_simcom.c:84:13:Simcom_Reset	8	static
+_simcom.c:91:16:Simcom_Boot	32	static
+_simcom.c:109:16:Simcom_Response	16	static
+_simcom.c:116:16:Simcom_Send	32	static
+_simcom.c:159:16:Simcom_Send_Repeat	32	static
+_simcom.c:190:13:Simcom_Set_Default_Data	8	static
+_simcom.c:221:6:Simcom_Init	24	static
+_simcom.c:306:6:Simcom_Set_Message	16	static
+_simcom.c:310:6:Simcom_Convert_GPS	56	static
+_simcom.c:323:6:Simcom_Set_Payload	96	static
+_simcom.c:341:9:Simcom_Send_Payload	8	static
+_simcom.c:345:9:Simcom_To_Server	40	dynamic
+_simcom.c:364:9:Simcom_Check_Command	8	static
+_simcom.c:373:9:Simcom_Get_Command	32	static
+_simcom.c:415:6:Simcom_Set_Odometer	16	static

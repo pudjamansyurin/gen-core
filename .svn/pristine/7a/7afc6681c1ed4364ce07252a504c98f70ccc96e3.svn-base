@@ -1,0 +1,6 @@
+_config.c:13:6:ftoa	136	static
+_config.c:44:9:convertHourTo	16	static
+_config.c:48:6:BSP_Led_Write	16	static
+_config.c:55:6:BSP_Led_Toggle	8	static
+_config.c:62:6:Get_RTC	64	static
+_config.c:75:6:Set_RTC	64	static

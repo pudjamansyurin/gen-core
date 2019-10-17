@@ -1,0 +1,1 @@
+Src/_nrf24_hal.o: ../Src/_nrf24_hal.c

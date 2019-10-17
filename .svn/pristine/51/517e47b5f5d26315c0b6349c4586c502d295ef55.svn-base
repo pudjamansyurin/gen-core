@@ -1,0 +1,10 @@
+_config.c:13:6:ITM_Out	24	static
+_config.c:23:6:swvPrint	16	static
+_config.c:33:6:swvPrintLn	16	static
+_config.c:44:6:swvPrintDebug	16	static
+_config.c:53:6:ftoa	136	static
+_config.c:84:9:convertHourTo	16	static
+_config.c:88:6:BSP_Led_Write	16	static
+_config.c:95:6:BSP_Led_Toggle	8	static
+_config.c:102:6:Get_RTC	64	static
+_config.c:115:6:Set_RTC	64	static

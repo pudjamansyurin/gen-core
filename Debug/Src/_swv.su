@@ -1,0 +1,12 @@
+_swv.c:12:6:SWV_SendChar	16	static
+_swv.c:22:6:SWV_SendInt	32	static
+_swv.c:40:6:SWV_SendInt0	32	static
+_swv.c:60:6:SWV_SendHex8	16	static
+_swv.c:69:6:SWV_SendHex16	24	static
+_swv.c:80:6:SWV_SendHex32	24	static
+_swv.c:91:6:SWV_SendStr	16	static
+_swv.c:100:6:SWV_SendStrLn	16	static
+_swv.c:110:6:SWV_SendBuf	24	static
+_swv.c:120:6:SWV_SendBufPrintable	24	static
+_swv.c:133:6:SWV_SendBufHex	24	static
+_swv.c:147:6:SWV_SendBufHexFancy	40	dynamic

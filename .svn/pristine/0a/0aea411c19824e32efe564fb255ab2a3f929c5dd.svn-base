@@ -1,0 +1,9 @@
+stm32f4_discovery.c:115:13:I2Cx_Init	8	static
+stm32f4_discovery.c:137:13:I2Cx_WriteData	40	static
+stm32f4_discovery.c:155:16:I2Cx_ReadData	40	static
+stm32f4_discovery.c:173:13:I2Cx_Error	16	static
+stm32f4_discovery.c:184:13:I2Cx_MspInit	40	static
+stm32f4_discovery.c:227:6:AUDIO_IO_Init	32	static
+stm32f4_discovery.c:259:6:AUDIO_IO_DeInit	4	static
+stm32f4_discovery.c:269:6:AUDIO_IO_Write	16	static
+stm32f4_discovery.c:279:9:AUDIO_IO_Read	16	static

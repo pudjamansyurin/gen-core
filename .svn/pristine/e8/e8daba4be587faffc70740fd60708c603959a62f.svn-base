@@ -1,0 +1,45 @@
+/*
+ * _config.h
+ *
+ *  Created on: Aug 26, 2019
+ *      Author: Puja
+ */
+
+#ifndef CONFIG_H_
+#define CONFIG_H_
+
+#include "cmsis_os.h"
+#include "main.h"
+#include <string.h>				// for: strlen()
+#include <stdlib.h>				// for: itoa()
+#include <stdio.h>				// for: sprintf()
+#include "_flash.h"
+
+#define DEBUG_HUB							1
+
+#define SERVER_IP 						"36.81.105.236"
+#define SERVER_PORT						5044
+#define LOCAL_PORT						5044
+#define	REPORT_INTERVAL				5				// in second
+#define GMT_TIME							7				// Asia/Jakarta
+
+// This event is based on bit, so always multiply it by 2
+#define EVENT_IOT_CRASH						0x01
+#define EVENT_IOT_FALL						0x02
+#define EVENT_IOT_FALL_N					0x04
+
+#define EVENT_AUDIO_BEEP					0x01
+
+// Function prototype
+void ITM_Out(uint32_t ch);
+void swvPrint(char* ptr);
+void swvPrintLn(char* ptr);
+void swvPrintDebug(char* var, char* value);
+void ftoa(float f, char *str, char size);
+uint8_t convertHourTo(uint8_t hour, int offset);
+void BSP_Led_Write(uint8_t state);
+void BSP_Led_Toggle(void);
+void Get_RTC(char *dateTime);
+void Set_RTC(char *dateTime);
+
+#endif /* CONFIG_H_ */
