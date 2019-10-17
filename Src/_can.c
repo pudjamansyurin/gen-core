@@ -2,7 +2,7 @@
  * _can.c
  *
  *  Created on: Oct 7, 2019
- *      Author: Puja
+ *      Author: Puja Kusuma
  */
 
 #include "_can.h"
@@ -10,7 +10,7 @@
 extern CAN_HandleTypeDef hcan1;
 extern osMailQId canRxMailHandle;
 extern osMutexId CanTxMutexHandle;
-CAN_HandleTypeDef * CanHandle = &hcan1;
+CAN_HandleTypeDef *CanHandle = &hcan1;
 
 void CAN_Init(void) {
 	/* Configure the CAN Filter */
@@ -32,7 +32,7 @@ void CAN_Init(void) {
 	}
 }
 
-void CAN_Set_Tx_Header(CAN_TxHeaderTypeDef* TxHeader, uint32_t StdId, uint32_t DLC) {
+void CAN_Set_Tx_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC) {
 	/* Configure Global Transmission process */
 	TxHeader->RTR = CAN_RTR_DATA;
 	TxHeader->IDE = CAN_ID_STD;
@@ -65,14 +65,14 @@ HAL_StatusTypeDef CAN_Filter(void) {
 /*----------------------------------------------------------------------------
  wite a message to CAN peripheral and transmit it
  *----------------------------------------------------------------------------*/
-uint8_t CAN_Write(CAN_Tx* TxCan) {
+uint8_t CAN_Write(CAN_Tx *TxCan) {
 	osMutexWait(CanTxMutexHandle, osWaitForever);
 
 	uint32_t TxMailbox;
 	HAL_StatusTypeDef status;
 	/* Start the Transmission process */
 	do {
-		status = HAL_CAN_AddTxMessage(CanHandle, &(TxCan->TxHeader), (uint8_t *) &(TxCan->TxData), &TxMailbox);
+		status = HAL_CAN_AddTxMessage(CanHandle, &(TxCan->TxHeader), (uint8_t*) &(TxCan->TxData), &TxMailbox);
 	} while (status != HAL_OK);
 
 	osMutexRelease(CanTxMutexHandle);
@@ -82,7 +82,7 @@ uint8_t CAN_Write(CAN_Tx* TxCan) {
 /*----------------------------------------------------------------------------
  read a message from CAN peripheral and release it
  *----------------------------------------------------------------------------*/
-uint8_t CAN_Read(CAN_Rx* RxCan) {
+uint8_t CAN_Read(CAN_Rx *RxCan) {
 	HAL_StatusTypeDef status;
 
 	/* Get RX message */
@@ -91,8 +91,8 @@ uint8_t CAN_Read(CAN_Rx* RxCan) {
 	return (status == HAL_OK);
 }
 
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef * hcan) {
-	CAN_Rx * RxCan;
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+	CAN_Rx *RxCan;
 
 	// Allocate memory
 	RxCan = osMailAlloc(canRxMailHandle, 0);
