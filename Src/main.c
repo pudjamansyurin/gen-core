@@ -107,17 +107,17 @@ static void MX_I2C1_Init(void);
 static void MX_I2S3_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_RTC_Init(void);
-void StartIotTask(void const * argument);
-void StartGyroTask(void const * argument);
-void StartCommandTask(void const * argument);
-void StartGpsTask(void const * argument);
-void StartFingerTask(void const * argument);
-void StartAudioTask(void const * argument);
-void StartKeylessTask(void const * argument);
-void StartReporterTask(void const * argument);
-void StartCanRxTask(void const * argument);
-void StartSwitchTask(void const * argument);
-void CallbackTimer500(void const * argument);
+void StartIotTask(void const *argument);
+void StartGyroTask(void const *argument);
+void StartCommandTask(void const *argument);
+void StartGpsTask(void const *argument);
+void StartFingerTask(void const *argument);
+void StartAudioTask(void const *argument);
+void StartKeylessTask(void const *argument);
+void StartReporterTask(void const *argument);
+void StartCanRxTask(void const *argument);
+void StartSwitchTask(void const *argument);
+void CallbackTimer500(void const *argument);
 
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -294,8 +294,7 @@ void SystemClock_Config(void) {
 
 	/** Configure the main internal regulator output voltage
 	 */
-	__HAL_RCC_PWR_CLK_ENABLE()
-	;
+	__HAL_RCC_PWR_CLK_ENABLE();
 	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 	/** Initializes the CPU, AHB and APB busses clocks
 	 */
@@ -659,8 +658,7 @@ static void MX_USART3_UART_Init(void) {
 static void MX_DMA_Init(void) {
 
 	/* DMA controller clock enable */
-	__HAL_RCC_DMA1_CLK_ENABLE()
-	;
+	__HAL_RCC_DMA1_CLK_ENABLE();
 
 	/* DMA interrupt init */
 	/* DMA1_Stream1_IRQn interrupt configuration */
@@ -687,24 +685,21 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
 	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOE_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOC_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOH_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOA_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOB_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOD_CLK_ENABLE()
-	;
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, UBLOX_PWR_Pin | MEMS_PWR_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, NRF24_PWR_Pin | UBLOX_PWR_Pin | SPEEDO_PWR_Pin | MIRROR_PWR_Pin | MEMS_PWR_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(FINGER_PWR_GPIO_Port, FINGER_PWR_Pin, GPIO_PIN_SET);
+
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOB, MIRROR_LIGHT_Pin | COOLING_PWR_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(NRF24_CE_GPIO_Port, NRF24_CE_Pin, GPIO_PIN_RESET);
@@ -728,12 +723,26 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : UBLOX_PWR_Pin FINGER_PWR_Pin MEMS_PWR_Pin */
-	GPIO_InitStruct.Pin = UBLOX_PWR_Pin | FINGER_PWR_Pin | MEMS_PWR_Pin;
+	/*Configure GPIO pin : BMS_IRQ_Pin */
+	GPIO_InitStruct.Pin = BMS_IRQ_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	HAL_GPIO_Init(BMS_IRQ_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : NRF24_PWR_Pin UBLOX_PWR_Pin FINGER_PWR_Pin SPEEDO_PWR_Pin
+	 MIRROR_PWR_Pin MEMS_PWR_Pin */
+	GPIO_InitStruct.Pin = NRF24_PWR_Pin | UBLOX_PWR_Pin | FINGER_PWR_Pin | SPEEDO_PWR_Pin | MIRROR_PWR_Pin | MEMS_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : MIRROR_LIGHT_Pin COOLING_PWR_Pin SIMCOM_RST_Pin */
+	GPIO_InitStruct.Pin = MIRROR_LIGHT_Pin | COOLING_PWR_Pin | SIMCOM_RST_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : BOOT1_Pin */
 	GPIO_InitStruct.Pin = BOOT1_Pin;
@@ -759,13 +768,6 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(NRF24_IRQ_GPIO_Port, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : SIMCOM_RST_Pin */
-	GPIO_InitStruct.Pin = SIMCOM_RST_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(SIMCOM_RST_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : SIMCOM_PWR_Pin LD4_Pin LD3_Pin LD5_Pin
 	 LD6_Pin Audio_RST_Pin */
@@ -815,16 +817,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	extern nrf24l01 nrf;
 
-	switch (GPIO_Pin) {
-		case NRF24_IRQ_Pin:
-			nrf_irq_handler(&nrf);
-			break;
-		case FINGER_IRQ_Pin:
-			xTaskNotifyFromISR(FingerTaskHandle, EVENT_FINGER_PLACED, eSetBits, &xHigherPriorityTaskWoken);
-			break;
-		default:
-			xTaskNotifyFromISR(SwitchTaskHandle, (uint32_t ) GPIO_Pin, eSetBits, &xHigherPriorityTaskWoken);
-			break;
+	if (osKernelRunning()) {
+		switch (GPIO_Pin) {
+			case NRF24_IRQ_Pin:
+				nrf_irq_handler(&nrf);
+				break;
+			case FINGER_IRQ_Pin:
+				xTaskNotifyFromISR(FingerTaskHandle, EVENT_FINGER_PLACED, eSetBits, &xHigherPriorityTaskWoken);
+				break;
+			case BMS_IRQ_Pin:
+				//NOTED do something with me
+				break;
+			default:
+				xTaskNotifyFromISR(SwitchTaskHandle, (uint32_t ) GPIO_Pin, eSetBits, &xHigherPriorityTaskWoken);
+				break;
+		}
 	}
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -838,8 +845,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * @retval None
  */
 /* USER CODE END Header_StartIotTask */
-void StartIotTask(void const * argument) {
-
+void StartIotTask(void const *argument) {
 	/* USER CODE BEGIN 5 */
 	uint32_t ulNotifiedValue;
 	// Start simcom module
@@ -876,7 +882,7 @@ void StartIotTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartGyroTask */
-void StartGyroTask(void const * argument) {
+void StartGyroTask(void const *argument) {
 	/* USER CODE BEGIN StartGyroTask */
 	mems_t mems_calibration;
 	mems_decision_t mems_decision;
@@ -915,7 +921,7 @@ void StartGyroTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartCommandTask */
-void StartCommandTask(void const * argument) {
+void StartCommandTask(void const *argument) {
 	/* USER CODE BEGIN StartCommandTask */
 	uint32_t ulNotifiedValue;
 	BaseType_t xResult;
@@ -1035,12 +1041,12 @@ void StartCommandTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartGpsTask */
-void StartGpsTask(void const * argument) {
+void StartGpsTask(void const *argument) {
 	/* USER CODE BEGIN StartGpsTask */
 	extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
 	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL*1000);
 	TickType_t xLastWakeTime;
-	gps_t * hgps;
+	gps_t *hgps;
 
 	// Start GPS module
 	UBLOX_DMA_Init();
@@ -1068,7 +1074,7 @@ void StartGpsTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartFingerTask */
-void StartFingerTask(void const * argument) {
+void StartFingerTask(void const *argument) {
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t ulNotifiedValue;
 	// Initialization
@@ -1098,7 +1104,7 @@ void StartFingerTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartAudioTask */
-void StartAudioTask(void const * argument) {
+void StartAudioTask(void const *argument) {
 	/* USER CODE BEGIN StartAudioTask */
 	uint32_t ulNotifiedValue;
 	BaseType_t xResult;
@@ -1148,7 +1154,7 @@ void StartAudioTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartKeylessTask */
-void StartKeylessTask(void const * argument) {
+void StartKeylessTask(void const *argument) {
 	/* USER CODE BEGIN StartKeylessTask */
 	extern nrf24l01 nrf;
 	nrf24l01_config config;
@@ -1196,7 +1202,7 @@ void StartKeylessTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartReporterTask */
-void StartReporterTask(void const * argument) {
+void StartReporterTask(void const *argument) {
 	/* USER CODE BEGIN StartReporterTask */
 	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL*1000);
 	TickType_t xLastWakeTime;
@@ -1261,9 +1267,9 @@ void StartReporterTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartCanRxTask */
-void StartCanRxTask(void const * argument) {
+void StartCanRxTask(void const *argument) {
 	/* USER CODE BEGIN StartCanRxTask */
-	CAN_Rx * RxCan;
+	CAN_Rx *RxCan;
 	osEvent evt;
 	uint8_t i;
 
@@ -1308,7 +1314,7 @@ void StartCanRxTask(void const * argument) {
  * @retval None
  */
 /* USER CODE END Header_StartSwitchTask */
-void StartSwitchTask(void const * argument) {
+void StartSwitchTask(void const *argument) {
 	/* USER CODE BEGIN StartSwitchTask */
 	// NOTED add 'cost' to all constant
 	const uint64_t tickSecond = osKernelSysTickMicroSec(1000000);
@@ -1406,7 +1412,7 @@ void StartSwitchTask(void const * argument) {
 }
 
 /* CallbackTimer500 function */
-void CallbackTimer500(void const * argument) {
+void CallbackTimer500(void const *argument) {
 	/* USER CODE BEGIN CallbackTimer500 */
 	CANBUS_ECU_Switch();
 	CANBUS_ECU_RTC();

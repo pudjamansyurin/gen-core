@@ -38,6 +38,7 @@ static void Simcom_On(void) {
 	osDelay(100);
 }
 
+// NOTED change Simcom_Reset to Simcom_Off
 static void Simcom_Reset(void) {
 	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, GPIO_PIN_RESET);
 	osDelay(100);

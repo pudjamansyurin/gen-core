@@ -15,6 +15,7 @@
 #define CAN_NODE_ECU													SetBit(0)
 #define CAN_NODE_MCU													SetBit(1)
 #define CAN_NODE_BMS													SetBit(2)
+#define CAN_NODE_HMI													SetBit(3)
 
 // CAN Node Selector
 #define CAN_NODE															(CAN_NODE_ECU)

@@ -13,8 +13,25 @@ extern osMutexId CanTxMutexHandle;
 CAN_HandleTypeDef *CanHandle = &hcan1;
 
 void CAN_Init(void) {
+	CAN_FilterTypeDef sFilterConfig;
+
 	/* Configure the CAN Filter */
-	if (CAN_Filter() != HAL_OK) {
+	sFilterConfig.FilterBank = 0;
+	// set filter to mask mode (not id_list mode)
+	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+	// set 32-bit scale configuration
+	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+	sFilterConfig.FilterIdHigh = 0x0000;
+	sFilterConfig.FilterIdLow = 0x0000;
+	sFilterConfig.FilterMaskIdHigh = 0x0000;
+	sFilterConfig.FilterMaskIdLow = 0x0000;
+	// assign filter to FIFO 0
+	sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+	// activate filter
+	sFilterConfig.FilterActivation = ENABLE;
+
+	/* Configure the CAN Filter */
+	if (HAL_CAN_ConfigFilter(CanHandle, &sFilterConfig) != HAL_OK) {
 		/* Start Error */
 		Error_Handler();
 	}
@@ -70,10 +87,11 @@ uint8_t CAN_Write(CAN_Tx *TxCan) {
 
 	uint32_t TxMailbox;
 	HAL_StatusTypeDef status;
+	// check tx mailbox is ready
+	while (HAL_CAN_GetTxMailboxesFreeLevel(CanHandle) == 0)
+		;
 	/* Start the Transmission process */
-	do {
-		status = HAL_CAN_AddTxMessage(CanHandle, &(TxCan->TxHeader), (uint8_t*) &(TxCan->TxData), &TxMailbox);
-	} while (status != HAL_OK);
+	status = HAL_CAN_AddTxMessage(CanHandle, &(TxCan->TxHeader), (uint8_t*) &(TxCan->TxData), &TxMailbox);
 
 	osMutexRelease(CanTxMutexHandle);
 	return (status == HAL_OK);

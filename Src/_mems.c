@@ -20,7 +20,6 @@ void MEMS_Init(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu) {
 		osDelay(500);
 		// module initialization
 		result = SD_MPU6050_Init(i2c, mpu, SD_MPU6050_Device_0, SD_MPU6050_Accelerometer_16G, SD_MPU6050_Gyroscope_250s);
-		osDelay(1000);
 	} while (result != SD_MPU6050_Result_Ok);
 }
 

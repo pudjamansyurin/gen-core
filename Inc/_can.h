@@ -26,9 +26,8 @@ typedef struct {
 
 // function list
 void CAN_Init(void);
-void CAN_Set_Tx_Header(CAN_TxHeaderTypeDef* TxHeader, uint32_t StdId, uint32_t DLC);
-HAL_StatusTypeDef CAN_Filter(void);
-uint8_t CAN_Write(CAN_Tx* TxCan);
-uint8_t CAN_Read(CAN_Rx* RxCan);
+void CAN_Set_Tx_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC);
+uint8_t CAN_Write(CAN_Tx *TxCan);
+uint8_t CAN_Read(CAN_Rx *RxCan);
 
 #endif /* CAN_H_ */
