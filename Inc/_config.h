@@ -43,6 +43,8 @@
 #define EVENT_KEYLESS_BROADCAST			0x12345678
 #define EVENT_KEYLESS_FINDER				0x00000002
 
+#define EVENT_CAN_RX_IT							SetBit(0)
+
 // Function prototype
 void BSP_Led_Write_All(uint8_t state);
 void BSP_Led_Toggle_All(void);

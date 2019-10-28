@@ -91,7 +91,6 @@ osMutexId SimcomRecMutexHandle;
 osMutexId FingerRecMutexHandle;
 /* USER CODE BEGIN PV */
 osMailQId GpsMailHandle;
-osMailQId canRxMailHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -217,8 +216,6 @@ int main(void) {
 	osMailQDef(GpsMail, 1, gps_t);
 	GpsMailHandle = osMailCreate(osMailQ(GpsMail), NULL);
 
-	osMailQDef(canRxMail, 10, CAN_Rx);
-	canRxMailHandle = osMailCreate(osMailQ(canRxMail), NULL);
 	/* USER CODE END RTOS_QUEUES */
 
 	/* Create the thread(s) */
@@ -1269,40 +1266,37 @@ void StartReporterTask(void const *argument) {
 /* USER CODE END Header_StartCanRxTask */
 void StartCanRxTask(void const *argument) {
 	/* USER CODE BEGIN StartCanRxTask */
-	CAN_Rx *RxCan;
-	osEvent evt;
+	//	extern uint8_t DB_MCU_Speed;
+	extern CAN_Rx RxCan;
 	uint8_t i;
-
-	extern uint8_t DB_MCU_Speed;
+	uint32_t ulNotifiedValue;
 	/* Infinite loop */
 	for (;;) {
-		evt = osMailGet(canRxMailHandle, osWaitForever);
-		if (evt.status == osEventMail) {
-			RxCan = evt.value.p;
-
-			// handle message
-			switch (RxCan->RxHeader.StdId) {
-				case CAN_ADDR_MCU_DUMMY:
-					// convert RPM to Speed
-					DB_MCU_Speed = ((RxCan->RxData[1] << 8) | (RxCan->RxData[0])) * MCU_SPEED_MAX / MCU_RPM_MAX;
-					// set volume
-					osMessagePut(AudioVolQueueHandle, DB_MCU_Speed, osWaitForever);
-					break;
-				default:
-					break;
-			}
-
+		// check if has new can message
+		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+		// proceed event
+		if ((ulNotifiedValue & EVENT_CAN_RX_IT)) {
+			//			// handle message
+			//			switch (RxCan->RxHeader.StdId) {
+			//				case CAN_ADDR_MCU_DUMMY:
+			//					// convert RPM to Speed
+			//					DB_MCU_Speed = ((RxCan->RxData[1] << 8) | (RxCan->RxData[0])) * MCU_SPEED_MAX / MCU_RPM_MAX;
+			//					// set volume
+			//					osMessagePut(AudioVolQueueHandle, DB_MCU_Speed, osWaitForever);
+			//					break;
+			//				default:
+			//					break;
+			//			}
 			// show this message
 			SWV_SendStr("ID: ");
-			SWV_SendHex32(RxCan->RxHeader.StdId);
+			SWV_SendHex32(RxCan.RxHeader.StdId);
 			SWV_SendStr(", Data: ");
-			for (i = 0; i < RxCan->RxHeader.DLC; i++) {
-				SWV_SendHex8(RxCan->RxData[i]);
+			for (i = 0; i < RxCan.RxHeader.DLC; i++) {
+				SWV_SendHex8(RxCan.RxData[i]);
 			}
 			SWV_SendStrLn("");
-
-			osMailFree(canRxMailHandle, RxCan);
 		}
+
 	}
 	/* USER CODE END StartCanRxTask */
 }
