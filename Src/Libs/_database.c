@@ -41,6 +41,6 @@ switcher_t DB_HMI_Switcher = {
 switch_timer_t DB_ECU_Switch_Timer[] = { { 0, 0, 0 }, { 0, 0, 0 } };
 uint8_t DB_ECU_Switch_Size = sizeof(DB_ECU_Switch) / sizeof(DB_ECU_Switch[0]);
 
-uint8_t DB_MCU_Speed = 0;
+uint8_t DB_ECU_Speed = 0;
 uint32_t DB_ECU_Odometer = 0;
 timestamp_t DB_ECU_TimeStamp;

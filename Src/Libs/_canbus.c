@@ -14,7 +14,7 @@ extern CAN_Rx RxCan;
 uint8_t CANBUS_ECU_Switch(void) {
 	CAN_Tx TxCan;
 	extern switch_t DB_ECU_Switch[];
-	extern uint8_t DB_MCU_Speed;
+	extern uint8_t DB_ECU_Speed;
 	extern timestamp_t DB_ECU_TimeStamp;
 	extern uint32_t DB_ECU_Odometer;
 
@@ -34,7 +34,7 @@ uint8_t CANBUS_ECU_Switch(void) {
 	TxCan.TxData[1] |= DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state << 1;
 
 	// speed
-	TxCan.TxData[2] = DB_MCU_Speed;
+	TxCan.TxData[2] = DB_ECU_Speed;
 
 	// odometer
 	TxCan.TxData[4] = (DB_ECU_Odometer & 0x000000FF);
@@ -132,10 +132,10 @@ uint8_t CANBUS_ECU_Trip_Mode(void) {
 
 /* ------------------------------------ READER ------------------------------------- */
 void CANBUS_MCU_Dummy_Read(void) {
-	extern uint8_t DB_MCU_Speed;
+	extern uint8_t DB_ECU_Speed;
 
 	// convert RPM to Speed
-	DB_MCU_Speed = ((RxCan.RxData[1] << 8) | (RxCan.RxData[0])) * MCU_SPEED_MAX / MCU_RPM_MAX;
+	DB_ECU_Speed = ((RxCan.RxData[1] << 8) | (RxCan.RxData[0])) * MCU_SPEED_MAX / MCU_RPM_MAX;
 }
 #endif
 

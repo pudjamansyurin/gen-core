@@ -1267,7 +1267,7 @@ void StartReporterTask(void const *argument) {
 /* USER CODE END Header_StartCanRxTask */
 void StartCanRxTask(void const *argument) {
 	/* USER CODE BEGIN StartCanRxTask */
-	extern uint8_t DB_MCU_Speed;
+	extern uint8_t DB_ECU_Speed;
 	extern CAN_Rx RxCan;
 	//	uint8_t i;
 	uint32_t ulNotifiedValue;
@@ -1282,7 +1282,7 @@ void StartCanRxTask(void const *argument) {
 				case CAN_ADDR_MCU_DUMMY:
 					CANBUS_MCU_Dummy_Read();
 					// set volume
-					osMessagePut(AudioVolQueueHandle, DB_MCU_Speed, osWaitForever);
+					osMessagePut(AudioVolQueueHandle, DB_ECU_Speed, osWaitForever);
 					break;
 				default:
 					break;
