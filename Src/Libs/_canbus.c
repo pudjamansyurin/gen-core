@@ -7,6 +7,8 @@
 
 #include "_canbus.h"
 
+extern CAN_Rx RxCan;
+
 // ==================================== ECU =========================================
 #if (CAN_NODE & CAN_NODE_ECU)
 uint8_t CANBUS_ECU_Switch(void) {
@@ -128,6 +130,13 @@ uint8_t CANBUS_ECU_Trip_Mode(void) {
 	return CAN_Write(&TxCan);
 }
 
+/* ------------------------------------ READER ------------------------------------- */
+void CANBUS_MCU_Dummy_Read(void) {
+	extern uint8_t DB_MCU_Speed;
+
+	// convert RPM to Speed
+	DB_MCU_Speed = ((RxCan.RxData[1] << 8) | (RxCan.RxData[0])) * MCU_SPEED_MAX / MCU_RPM_MAX;
+}
 #endif
 
 // ==================================== MCU =========================================

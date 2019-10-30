@@ -43,6 +43,8 @@ uint8_t CANBUS_ECU_Switch(void);
 uint8_t CANBUS_ECU_RTC(void);
 uint8_t CANBUS_ECU_Select_Set(void);
 uint8_t CANBUS_ECU_Trip_Mode(void);
+
+void CANBUS_MCU_Dummy_Read(void);
 #endif
 // ==================================== MCU =========================================
 #if (CAN_NODE & CAN_NODE_MCU)

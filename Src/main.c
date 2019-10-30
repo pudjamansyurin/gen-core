@@ -1267,9 +1267,9 @@ void StartReporterTask(void const *argument) {
 /* USER CODE END Header_StartCanRxTask */
 void StartCanRxTask(void const *argument) {
 	/* USER CODE BEGIN StartCanRxTask */
-	//	extern uint8_t DB_MCU_Speed;
+	extern uint8_t DB_MCU_Speed;
 	extern CAN_Rx RxCan;
-	uint8_t i;
+	//	uint8_t i;
 	uint32_t ulNotifiedValue;
 	/* Infinite loop */
 	for (;;) {
@@ -1277,25 +1277,25 @@ void StartCanRxTask(void const *argument) {
 		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
 		// proceed event
 		if ((ulNotifiedValue & EVENT_CAN_RX_IT)) {
-			//			// handle message
-			//			switch (RxCan->RxHeader.StdId) {
-			//				case CAN_ADDR_MCU_DUMMY:
-			//					// convert RPM to Speed
-			//					DB_MCU_Speed = ((RxCan->RxData[1] << 8) | (RxCan->RxData[0])) * MCU_SPEED_MAX / MCU_RPM_MAX;
-			//					// set volume
-			//					osMessagePut(AudioVolQueueHandle, DB_MCU_Speed, osWaitForever);
-			//					break;
-			//				default:
-			//					break;
-			//			}
-			// show this message
-			SWV_SendStr("ID: ");
-			SWV_SendHex32(RxCan.RxHeader.StdId);
-			SWV_SendStr(", Data: ");
-			for (i = 0; i < RxCan.RxHeader.DLC; i++) {
-				SWV_SendHex8(RxCan.RxData[i]);
+			// handle message
+			switch (RxCan.RxHeader.StdId) {
+				case CAN_ADDR_MCU_DUMMY:
+					CANBUS_MCU_Dummy_Read();
+					// set volume
+					osMessagePut(AudioVolQueueHandle, DB_MCU_Speed, osWaitForever);
+					break;
+				default:
+					break;
 			}
-			SWV_SendStrLn("");
+
+			//			// show this message
+			//			SWV_SendStr("ID: ");
+			//			SWV_SendHex32(RxCan.RxHeader.StdId);
+			//			SWV_SendStr(", Data: ");
+			//			for (i = 0; i < RxCan.RxHeader.DLC; i++) {
+			//				SWV_SendHex8(RxCan.RxData[i]);
+			//			}
+			//			SWV_SendStrLn("");
 		}
 
 	}
