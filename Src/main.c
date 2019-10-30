@@ -1246,6 +1246,7 @@ void StartReporterTask(void const *argument) {
 		}
 
 		// Set payload (all data)
+		// FIXME i need to be stored in array logs.
 		Reporter_Set_Payload();
 
 		// Report is ready, do what you want
