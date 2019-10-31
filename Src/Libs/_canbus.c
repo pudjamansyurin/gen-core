@@ -22,10 +22,10 @@ uint8_t CANBUS_ECU_Switch(void) {
 	TxCan.TxData[0] = DB_ECU_Switch[IDX_KEY_ABS].state;
 	TxCan.TxData[0] |= DB_ECU_Switch[IDX_KEY_MIRRORING].state << 1;
 	TxCan.TxData[0] |= DB_ECU_Switch[IDX_KEY_LAMP].state << 2;
-	TxCan.TxData[0] |= 0 << 3;
-	TxCan.TxData[0] |= 0 << 4;
-	TxCan.TxData[0] |= 0 << 5;
-	TxCan.TxData[0] |= 0 << 6;
+	TxCan.TxData[0] |= 1 << 3;
+	TxCan.TxData[0] |= 1 << 4;
+	TxCan.TxData[0] |= 1 << 5;
+	TxCan.TxData[0] |= 1 << 6;
 	// check daylight (for auto brightness of HMI)
 	TxCan.TxData[0] |= (DB_ECU_TimeStamp.time.Hours >= 5 && DB_ECU_TimeStamp.time.Hours <= 16) << 7;
 
