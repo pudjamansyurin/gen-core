@@ -133,9 +133,12 @@ uint8_t CANBUS_ECU_Trip_Mode(void) {
 /* ------------------------------------ READER ------------------------------------- */
 void CANBUS_MCU_Dummy_Read(void) {
 	extern uint8_t DB_ECU_Speed;
+	uint32_t DB_MCU_RPM;
 
+	// read message
+	DB_MCU_RPM = (RxCan.RxData[3] << 24 | RxCan.RxData[2] << 16 | RxCan.RxData[1] << 8 | RxCan.RxData[0]);
 	// convert RPM to Speed
-	DB_ECU_Speed = ((RxCan.RxData[1] << 8) | (RxCan.RxData[0])) * MCU_SPEED_MAX / MCU_RPM_MAX;
+	DB_ECU_Speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
 }
 #endif
 
