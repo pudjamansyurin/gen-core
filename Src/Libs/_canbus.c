@@ -14,7 +14,6 @@ extern CAN_Rx RxCan;
 uint8_t CANBUS_ECU_Switch(void) {
 	CAN_Tx TxCan;
 	extern switch_t DB_ECU_Switch[];
-	extern uint8_t DB_ECU_Speed;
 	extern timestamp_t DB_ECU_TimeStamp;
 	extern uint32_t DB_ECU_Odometer;
 
@@ -32,9 +31,6 @@ uint8_t CANBUS_ECU_Switch(void) {
 	// sein
 	TxCan.TxData[1] = DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state << 0;
 	TxCan.TxData[1] |= DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state << 1;
-
-	// speed
-	TxCan.TxData[2] = DB_ECU_Speed;
 
 	// odometer
 	TxCan.TxData[4] = (DB_ECU_Odometer & 0x000000FF);
