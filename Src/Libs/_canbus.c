@@ -13,6 +13,9 @@ extern CAN_Rx RxCan;
 #if (CAN_NODE & CAN_NODE_ECU)
 uint8_t CANBUS_ECU_Switch(void) {
 	CAN_Tx TxCan;
+	static uint8_t Sein_Left = 0, Sein_Right = 0;
+	static uint32_t tick;
+	const uint64_t tick500ms = osKernelSysTickMicroSec(500*1000);
 	extern switch_t DB_ECU_Switch[];
 	extern timestamp_t DB_ECU_TimeStamp;
 	extern uint32_t DB_ECU_Odometer;
@@ -28,9 +31,36 @@ uint8_t CANBUS_ECU_Switch(void) {
 	// check daylight (for auto brightness of HMI)
 	TxCan.TxData[0] |= (DB_ECU_TimeStamp.time.Hours >= 5 && DB_ECU_TimeStamp.time.Hours <= 16) << 7;
 
-	// sein
-	TxCan.TxData[1] = DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state << 0;
-	TxCan.TxData[1] |= DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state << 1;
+	// sein checker
+	if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state && DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
+		// hazard
+		if ((osKernelSysTick() - tick) >= tick500ms) {
+			tick = osKernelSysTick();
+			Sein_Left = !Sein_Left;
+			Sein_Right = Sein_Left;
+		}
+	} else if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state) {
+		// left sein
+		if ((osKernelSysTick() - tick) >= tick500ms) {
+			tick = osKernelSysTick();
+			Sein_Left = !Sein_Left;
+			Sein_Right = 0;
+		}
+	} else if (DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
+		// right sein
+		if ((osKernelSysTick() - tick) >= tick500ms) {
+			tick = osKernelSysTick();
+			Sein_Left = 0;
+			Sein_Right = !Sein_Right;
+		}
+	} else {
+		Sein_Left = 0;
+		Sein_Right = Sein_Left;
+	}
+
+	// sein value
+	TxCan.TxData[1] = Sein_Left << 0;
+	TxCan.TxData[1] |= Sein_Right << 1;
 
 	// odometer
 	TxCan.TxData[4] = (DB_ECU_Odometer & 0x000000FF);
