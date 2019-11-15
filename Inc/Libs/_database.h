@@ -23,11 +23,17 @@
 
 // enum list
 typedef enum {
-	SWITCH_MODE_DRIVE = 0, SWITCH_MODE_TRIP = 1, SWITCH_MODE_REPORT = 2, SWITCH_MODE_MAX = 2
+	SWITCH_MODE_DRIVE = 0,
+	SWITCH_MODE_TRIP = 1,
+	SWITCH_MODE_REPORT = 2,
+	SWITCH_MODE_MAX = 2
 } switch_mode_t;
 
 typedef enum {
-	SWITCH_MODE_DRIVE_E = 0, SWITCH_MODE_DRIVE_S = 1, SWITCH_MODE_DRIVE_C = 2, SWITCH_MODE_DRIVE_P = 3, SWITCH_MODE_DRIVE_MAX = 3
+	SWITCH_MODE_DRIVE_E = 0,
+	SWITCH_MODE_DRIVE_S = 1,
+	SWITCH_MODE_DRIVE_P = 2,
+	SWITCH_MODE_DRIVE_MAX = 2
 } switch_mode_drive_t;
 
 typedef enum {
@@ -35,7 +41,9 @@ typedef enum {
 } switch_mode_trip_t;
 
 typedef enum {
-	SWITCH_MODE_REPORT_RANGE = 0, SWITCH_MODE_REPORT_EFFICIENCY = 1, SWITCH_MODE_REPORT_MAX = 1
+	SWITCH_MODE_REPORT_RANGE = 0,
+	SWITCH_MODE_REPORT_EFFICIENCY = 1,
+	SWITCH_MODE_REPORT_MAX = 1
 } switch_mode_report_t;
 
 // object list
@@ -48,9 +56,9 @@ typedef struct {
 } switcher_t;
 
 typedef struct {
-	char * event;
+	char *event;
 	uint16_t pin;
-	GPIO_TypeDef * port;
+	GPIO_TypeDef *port;
 	uint8_t state;
 } switch_t;
 
