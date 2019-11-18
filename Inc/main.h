@@ -68,9 +68,9 @@ void Error_Handler(void);
 #define KEY_MIRROR_Pin GPIO_PIN_4
 #define KEY_MIRROR_GPIO_Port GPIOE
 #define KEY_MIRROR_EXTI_IRQn EXTI4_IRQn
-#define KEY_LAMP_Pin GPIO_PIN_5
-#define KEY_LAMP_GPIO_Port GPIOE
-#define KEY_LAMP_EXTI_IRQn EXTI9_5_IRQn
+#define KEY_REVERSE_Pin GPIO_PIN_5
+#define KEY_REVERSE_GPIO_Port GPIOE
+#define KEY_REVERSE_EXTI_IRQn EXTI9_5_IRQn
 #define KEY_ABS_Pin GPIO_PIN_6
 #define KEY_ABS_GPIO_Port GPIOE
 #define KEY_ABS_EXTI_IRQn EXTI9_5_IRQn

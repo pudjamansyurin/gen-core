@@ -17,7 +17,7 @@
 #define IDX_KEY_SET 								1
 #define IDX_KEY_SEIN_LEFT 					2
 #define IDX_KEY_SEIN_RIGHT 					3
-#define IDX_KEY_LAMP			 					4
+#define IDX_KEY_REVERSE		 					4
 #define IDX_KEY_ABS				 					5
 #define IDX_KEY_MIRRORING 					6
 
