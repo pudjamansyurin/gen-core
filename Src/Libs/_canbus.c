@@ -112,10 +112,9 @@ uint8_t CANBUS_ECU_Select_Set(void) {
 
 	// set message
 	TxCan.TxData[0] = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
-	TxCan.TxData[0] |= DB_ECU_Switch[IDX_KEY_REVERSE].state << 2;
-	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_TRIP] << 3;
-	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_REPORT] << 4;
-	TxCan.TxData[0] |= DB_HMI_Switcher.mode << 5;
+	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_TRIP] << 2;
+	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_REPORT] << 3;
+	TxCan.TxData[0] |= DB_HMI_Switcher.mode << 4;
 
 	TxCan.TxData[1] = DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_RANGE];
 	TxCan.TxData[2] =

@@ -1364,12 +1364,12 @@ void StartSwitchTask(void const *argument)
 	extern uint8_t DB_ECU_Switch_Size;
 	extern switcher_t DB_HMI_Switcher;
 	// FIXME use me as binary event
+	uint8_t Last_Mode_Drive;
 	uint32_t ulNotifiedValue;
 	uint8_t i;
 	// Read all initial state
 	for (i = 0; i < DB_ECU_Switch_Size; i++) {
-		DB_ECU_Switch[i].state = HAL_GPIO_ReadPin(DB_ECU_Switch[i].port,
-				DB_ECU_Switch[i].pin);
+		DB_ECU_Switch[i].state = HAL_GPIO_ReadPin(DB_ECU_Switch[i].port, DB_ECU_Switch[i].pin);
 	}
 	/* Infinite loop */
 	for (;;) {
@@ -1411,7 +1411,18 @@ void StartSwitchTask(void const *argument)
 		}
 
 		// Only handle Select & Set when in non-reverse mode
-		if (!DB_ECU_Switch[IDX_KEY_REVERSE].state) {
+		if (DB_ECU_Switch[IDX_KEY_REVERSE].state) {
+			// save previous Drive Mode state
+			if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
+				Last_Mode_Drive = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
+				DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
+			}
+		} else {
+			// restore previous Drive Mode
+			if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] == SWITCH_MODE_DRIVE_R) {
+				DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = Last_Mode_Drive;
+			}
+
 			// handle Select & Set
 			if (DB_ECU_Switch[IDX_KEY_SELECT].state || DB_ECU_Switch[IDX_KEY_SET].state) {
 				// handle select key
@@ -1514,18 +1525,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
