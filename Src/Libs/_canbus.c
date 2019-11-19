@@ -30,12 +30,10 @@ uint8_t CANBUS_ECU_Switch(void) {
 	TxCan.TxData[0] |= 1 << 5;
 	TxCan.TxData[0] |= 1 << 6;
 	// check daylight (for auto brightness of HMI)
-	TxCan.TxData[0] |= (DB_ECU_TimeStamp.time.Hours >= 5
-			&& DB_ECU_TimeStamp.time.Hours <= 16) << 7;
+	TxCan.TxData[0] |= (DB_ECU_TimeStamp.time.Hours >= 5 && DB_ECU_TimeStamp.time.Hours <= 16) << 7;
 
 	// sein checker
-	if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state
-			&& DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
+	if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state && DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
 		// hazard
 		if ((osKernelSysTick() - tick) >= tick500ms) {
 			tick = osKernelSysTick();
@@ -76,8 +74,7 @@ uint8_t CANBUS_ECU_Switch(void) {
 
 	// dummy algorithm
 	DB_ECU_Signal = DB_ECU_Odometer * 100 / ECU_ODOMETER_MAX;
-	DB_ECU_Odometer = (
-			DB_ECU_Odometer >= ECU_ODOMETER_MAX ? 0 : (DB_ECU_Odometer + 1));
+	DB_ECU_Odometer = (DB_ECU_Odometer >= ECU_ODOMETER_MAX ? 0 : (DB_ECU_Odometer + 1));
 
 	// set default header
 	CAN_Set_Tx_Header(&(TxCan.TxHeader), CAN_ADDR_ECU_SWITCH, 8);
@@ -117,8 +114,7 @@ uint8_t CANBUS_ECU_Select_Set(void) {
 	TxCan.TxData[0] |= DB_HMI_Switcher.mode << 4;
 
 	TxCan.TxData[1] = DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_RANGE];
-	TxCan.TxData[2] =
-			DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_EFFICIENCY];
+	TxCan.TxData[2] = DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_AVERAGE];
 
 	// dummy algorithm
 	if (!DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_RANGE]) {
@@ -127,10 +123,10 @@ uint8_t CANBUS_ECU_Select_Set(void) {
 		DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_RANGE]--;
 	}
 
-	if (DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_EFFICIENCY] >= 255) {
-		DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_EFFICIENCY] = 0;
+	if (DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_AVERAGE] >= 255) {
+		DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_AVERAGE] = 0;
 	} else {
-		DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_EFFICIENCY]++;
+		DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_AVERAGE]++;
 	}
 
 	// set default header
@@ -144,28 +140,18 @@ uint8_t CANBUS_ECU_Trip_Mode(void) {
 	extern switcher_t DB_HMI_Switcher;
 
 	// set message
-	TxCan.TxData[0] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A]
-			& 0x000000FF);
-	TxCan.TxData[1] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A]
-			& 0x0000FF00) >> 8;
-	TxCan.TxData[2] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A]
-			& 0x00FF0000) >> 16;
-	TxCan.TxData[3] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A]
-			& 0xFF000000) >> 24;
-	TxCan.TxData[4] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B]
-			& 0x000000FF);
-	TxCan.TxData[5] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B]
-			& 0x0000FF00) >> 8;
-	TxCan.TxData[6] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B]
-			& 0x00FF0000) >> 16;
-	TxCan.TxData[7] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B]
-			& 0xFF000000) >> 24;
+	TxCan.TxData[0] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] & 0x000000FF);
+	TxCan.TxData[1] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] & 0x0000FF00) >> 8;
+	TxCan.TxData[2] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] & 0x00FF0000) >> 16;
+	TxCan.TxData[3] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] & 0xFF000000) >> 24;
+	TxCan.TxData[4] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] & 0x000000FF);
+	TxCan.TxData[5] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] & 0x0000FF00) >> 8;
+	TxCan.TxData[6] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] & 0x00FF0000) >> 16;
+	TxCan.TxData[7] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] & 0xFF000000) >> 24;
 
 	// dummy algorithm
-	if (DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]]
-			>= ECU_ODOMETER_MAX) {
-		DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] =
-				0;
+	if (DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] >= ECU_ODOMETER_MAX) {
+		DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] = 0;
 	} else {
 		DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]]++;
 	}
@@ -182,8 +168,7 @@ void CANBUS_MCU_Dummy_Read(void) {
 	uint32_t DB_MCU_RPM;
 
 	// read message
-	DB_MCU_RPM = (RxCan.RxData[3] << 24 | RxCan.RxData[2] << 16
-			| RxCan.RxData[1] << 8 | RxCan.RxData[0]);
+	DB_MCU_RPM = (RxCan.RxData[3] << 24 | RxCan.RxData[2] << 16 | RxCan.RxData[1] << 8 | RxCan.RxData[0]);
 	// convert RPM to Speed
 	DB_ECU_Speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
 }
