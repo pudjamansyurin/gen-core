@@ -47,8 +47,7 @@ static void Simcom_Reset(void) {
 }
 
 static uint8_t Simcom_Boot(void) {
-	uint32_t tick;
-	uint64_t timeout_tick;
+	uint32_t tick, timeout_tick;
 
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
@@ -57,7 +56,7 @@ static uint8_t Simcom_Boot(void) {
 	// turn off sequence
 	Simcom_On();
 	// set timeout guard (for first boot)
-	timeout_tick = osKernelSysTickMicroSec(simcom.boot_timeout*1000*1000);
+	timeout_tick = pdMS_TO_TICKS(simcom.boot_timeout * 1000);
 	tick = osKernelSysTick();
 	// wait until booting is done
 	while (!(Simcom_Response(SIMCOM_STATUS_READY) || (osKernelSysTick() - tick) > timeout_tick)) {
@@ -90,15 +89,17 @@ static uint8_t Simcom_Send(char *cmd, uint32_t ms) {
 	// transmit to serial
 	SIMCOM_Transmit(cmd, strlen(cmd));
 	// convert time to tick
-	timeout_tick = osKernelSysTickMicroSec(ms*1000);
+	timeout_tick = pdMS_TO_TICKS(ms);
 	// set timeout guard
 	tick = osKernelSysTick();
 	// wait response from SIMCOM
 	while (!(Simcom_Response(SIMCOM_STATUS_SEND) || Simcom_Response(SIMCOM_STATUS_CIPSEND) || Simcom_Response(SIMCOM_STATUS_OK)
-			|| Simcom_Response(SIMCOM_STATUS_RESTARTED) || Simcom_Response(SIMCOM_STATUS_ERROR) || (osKernelSysTick() - tick) >= timeout_tick))
+			|| Simcom_Response(SIMCOM_STATUS_RESTARTED) || Simcom_Response(SIMCOM_STATUS_ERROR)
+			|| (osKernelSysTick() - tick) >= timeout_tick))
 		;
 	// handle timeout & error
-	ret = !(Simcom_Response(SIMCOM_STATUS_ERROR) || Simcom_Response(SIMCOM_STATUS_RESTARTED) || (osKernelSysTick() - tick) > timeout_tick);
+	ret = !(Simcom_Response(SIMCOM_STATUS_ERROR) || Simcom_Response(SIMCOM_STATUS_RESTARTED)
+			|| (osKernelSysTick() - tick) > timeout_tick);
 	// print response for debugger
 	SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
 	SWV_SendStrLn("");

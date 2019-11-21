@@ -41,12 +41,11 @@ void Finger_Init(void) {
 }
 
 uint8_t Finger_Enroll(uint8_t id) {
-	uint32_t tick, timeout_tick;
+	TickType_t tick;
+	const TickType_t timeout_tick = pdMS_TO_TICKS(FINGER_SCAN_TIMEOUT*1000);
 	int p = -1, error = 0;
 
 	Finger_On();
-	// convert time to tick
-	timeout_tick = osKernelSysTickMicroSec(FINGER_SCAN_TIMEOUT*1000*1000);
 	//	Take Image
 	sprintf(str, "Waiting for valid finger to enroll as # %d", id);
 	SWV_SendStrLn(str);
@@ -63,21 +62,21 @@ uint8_t Finger_Enroll(uint8_t id) {
 		p = FZ3387_getImage();
 		// check response
 		switch (p) {
-			case FINGERPRINT_OK:
-				SWV_SendStrLn("Image taken");
-				break;
-			case FINGERPRINT_NOFINGER:
-				SWV_SendStrLn(".");
-				break;
-			case FINGERPRINT_PACKETRECIEVEERR:
-				SWV_SendStrLn("Communication error");
-				break;
-			case FINGERPRINT_IMAGEFAIL:
-				SWV_SendStrLn("Imaging error");
-				break;
-			default:
-				SWV_SendStrLn("Unknown error");
-				break;
+		case FINGERPRINT_OK:
+			SWV_SendStrLn("Image taken");
+			break;
+		case FINGERPRINT_NOFINGER:
+			SWV_SendStrLn(".");
+			break;
+		case FINGERPRINT_PACKETRECIEVEERR:
+			SWV_SendStrLn("Communication error");
+			break;
+		case FINGERPRINT_IMAGEFAIL:
+			SWV_SendStrLn("Imaging error");
+			break;
+		default:
+			SWV_SendStrLn("Unknown error");
+			break;
 		}
 	}
 
@@ -87,25 +86,25 @@ uint8_t Finger_Enroll(uint8_t id) {
 		//	put image to buffer 1
 		p = FZ3387_image2Tz(1);
 		switch (p) {
-			case FINGERPRINT_OK:
-				SWV_SendStrLn("Image converted");
-				error = 0;
-				break;
-			case FINGERPRINT_IMAGEMESS:
-				SWV_SendStrLn("Image too messy");
-				break;
-			case FINGERPRINT_PACKETRECIEVEERR:
-				SWV_SendStrLn("Communication error");
-				break;
-			case FINGERPRINT_FEATUREFAIL:
-				SWV_SendStrLn("Could not find finger print features");
-				break;
-			case FINGERPRINT_INVALIDIMAGE:
-				SWV_SendStrLn("Could not find finger print features");
-				break;
-			default:
-				SWV_SendStrLn("Unknown error");
-				break;
+		case FINGERPRINT_OK:
+			SWV_SendStrLn("Image converted");
+			error = 0;
+			break;
+		case FINGERPRINT_IMAGEMESS:
+			SWV_SendStrLn("Image too messy");
+			break;
+		case FINGERPRINT_PACKETRECIEVEERR:
+			SWV_SendStrLn("Communication error");
+			break;
+		case FINGERPRINT_FEATUREFAIL:
+			SWV_SendStrLn("Could not find finger print features");
+			break;
+		case FINGERPRINT_INVALIDIMAGE:
+			SWV_SendStrLn("Could not find finger print features");
+			break;
+		default:
+			SWV_SendStrLn("Unknown error");
+			break;
 		}
 	}
 
@@ -130,21 +129,21 @@ uint8_t Finger_Enroll(uint8_t id) {
 			p = FZ3387_getImage();
 			// handle response
 			switch (p) {
-				case FINGERPRINT_OK:
-					SWV_SendStrLn("Image taken");
-					break;
-				case FINGERPRINT_NOFINGER:
-					SWV_SendStr(".");
-					break;
-				case FINGERPRINT_PACKETRECIEVEERR:
-					SWV_SendStrLn("Communication error");
-					break;
-				case FINGERPRINT_IMAGEFAIL:
-					SWV_SendStrLn("Imaging error");
-					break;
-				default:
-					SWV_SendStrLn("Unknown error");
-					break;
+			case FINGERPRINT_OK:
+				SWV_SendStrLn("Image taken");
+				break;
+			case FINGERPRINT_NOFINGER:
+				SWV_SendStr(".");
+				break;
+			case FINGERPRINT_PACKETRECIEVEERR:
+				SWV_SendStrLn("Communication error");
+				break;
+			case FINGERPRINT_IMAGEFAIL:
+				SWV_SendStrLn("Imaging error");
+				break;
+			default:
+				SWV_SendStrLn("Unknown error");
+				break;
 			}
 		}
 	}
@@ -154,25 +153,25 @@ uint8_t Finger_Enroll(uint8_t id) {
 		//	put image to buffer 2
 		p = FZ3387_image2Tz(2);
 		switch (p) {
-			case FINGERPRINT_OK:
-				SWV_SendStrLn("Image converted");
-				error = 0;
-				break;
-			case FINGERPRINT_IMAGEMESS:
-				SWV_SendStrLn("Image too messy");
-				break;
-			case FINGERPRINT_PACKETRECIEVEERR:
-				SWV_SendStrLn("Communication error");
-				break;
-			case FINGERPRINT_FEATUREFAIL:
-				SWV_SendStrLn("Could not find fingerprint features");
-				break;
-			case FINGERPRINT_INVALIDIMAGE:
-				SWV_SendStrLn("Could not find fingerprint features");
-				break;
-			default:
-				SWV_SendStrLn("Unknown error");
-				break;
+		case FINGERPRINT_OK:
+			SWV_SendStrLn("Image converted");
+			error = 0;
+			break;
+		case FINGERPRINT_IMAGEMESS:
+			SWV_SendStrLn("Image too messy");
+			break;
+		case FINGERPRINT_PACKETRECIEVEERR:
+			SWV_SendStrLn("Communication error");
+			break;
+		case FINGERPRINT_FEATUREFAIL:
+			SWV_SendStrLn("Could not find fingerprint features");
+			break;
+		case FINGERPRINT_INVALIDIMAGE:
+			SWV_SendStrLn("Could not find fingerprint features");
+			break;
+		default:
+			SWV_SendStrLn("Unknown error");
+			break;
 		}
 	}
 
@@ -277,22 +276,22 @@ int8_t Finger_Auth(void) {
 
 	p = FZ3387_getImage();
 	switch (p) {
-		case FINGERPRINT_OK:
-			SWV_SendStrLn("Image taken");
-			error = 0;
-			break;
-		case FINGERPRINT_NOFINGER:
-			SWV_SendStrLn("No finger detected");
-			break;
-		case FINGERPRINT_PACKETRECIEVEERR:
-			SWV_SendStrLn("Communication error");
-			break;
-		case FINGERPRINT_IMAGEFAIL:
-			SWV_SendStrLn("Imaging error");
-			break;
-		default:
-			SWV_SendStrLn("Unknown error");
-			break;
+	case FINGERPRINT_OK:
+		SWV_SendStrLn("Image taken");
+		error = 0;
+		break;
+	case FINGERPRINT_NOFINGER:
+		SWV_SendStrLn("No finger detected");
+		break;
+	case FINGERPRINT_PACKETRECIEVEERR:
+		SWV_SendStrLn("Communication error");
+		break;
+	case FINGERPRINT_IMAGEFAIL:
+		SWV_SendStrLn("Imaging error");
+		break;
+	default:
+		SWV_SendStrLn("Unknown error");
+		break;
 	}
 
 	if (!error) {
@@ -300,25 +299,25 @@ int8_t Finger_Auth(void) {
 		// OK success!
 		p = FZ3387_image2Tz(1);
 		switch (p) {
-			case FINGERPRINT_OK:
-				SWV_SendStrLn("Image converted");
-				error = 0;
-				break;
-			case FINGERPRINT_IMAGEMESS:
-				SWV_SendStrLn("Image too messy");
-				break;
-			case FINGERPRINT_PACKETRECIEVEERR:
-				SWV_SendStrLn("Communication error");
-				break;
-			case FINGERPRINT_FEATUREFAIL:
-				SWV_SendStrLn("Could not find finger print features");
-				break;
-			case FINGERPRINT_INVALIDIMAGE:
-				SWV_SendStrLn("Could not find finger print features");
-				break;
-			default:
-				SWV_SendStrLn("Unknown error");
-				break;
+		case FINGERPRINT_OK:
+			SWV_SendStrLn("Image converted");
+			error = 0;
+			break;
+		case FINGERPRINT_IMAGEMESS:
+			SWV_SendStrLn("Image too messy");
+			break;
+		case FINGERPRINT_PACKETRECIEVEERR:
+			SWV_SendStrLn("Communication error");
+			break;
+		case FINGERPRINT_FEATUREFAIL:
+			SWV_SendStrLn("Could not find finger print features");
+			break;
+		case FINGERPRINT_INVALIDIMAGE:
+			SWV_SendStrLn("Could not find finger print features");
+			break;
+		default:
+			SWV_SendStrLn("Unknown error");
+			break;
 		}
 	}
 

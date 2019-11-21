@@ -1358,7 +1358,7 @@ void StartSwitchTask(void const *argument)
 {
 	/* USER CODE BEGIN StartSwitchTask */
 	// NOTED add 'cost' to all constant
-	const uint64_t tickSecond = osKernelSysTickMicroSec(1000000);
+	//	const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
 	extern switch_timer_t DB_ECU_Switch_Timer[];
 	extern switch_t DB_ECU_Switch[];
 	extern uint8_t DB_ECU_Switch_Size;
@@ -1377,46 +1377,50 @@ void StartSwitchTask(void const *argument)
 		// save previous Drive Mode state
 		if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
 			Last_Mode_Drive = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
-
-			DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
-			DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
-			DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
 		}
+		// force state
+		DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
+		// hazard on
+		DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
+		DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
 	}
 
 	/* Infinite loop */
 	for (;;) {
 		xTaskNotifyStateClear(NULL);
 		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
-		// handle debounce effect
+		// handle de-bounce effect
 		osDelay(50);
 
 		// Read all (to handle multiple switch change at the same time)
 		for (i = 0; i < DB_ECU_Switch_Size; i++) {
 			DB_ECU_Switch[i].state = HAL_GPIO_ReadPin(DB_ECU_Switch[i].port, DB_ECU_Switch[i].pin);
+
 			// handle select & set: timer
 			if (i == IDX_KEY_SELECT || i == IDX_KEY_SET) {
-				// reset time
-				DB_ECU_Switch_Timer[i].time = 0;
+				//				// reset time
+				//				DB_ECU_Switch_Timer[i].time = 0;
 				// next job
 				if (DB_ECU_Switch[i].state) {
+					// reverse it
+					DB_ECU_Switch[i].state = 0;
+					// start timer if not running
 					if (!DB_ECU_Switch_Timer[i].running) {
 						// set flag
 						DB_ECU_Switch_Timer[i].running = 1;
-						// start timer for select
-						DB_ECU_Switch_Timer[i].start = osKernelSysTick();
+						//						// start timer for select
+						//						DB_ECU_Switch_Timer[i].start = osKernelSysTick();
 					}
-					// reverse it
-					DB_ECU_Switch[i].state = !DB_ECU_Switch[i].state;
 				} else {
+					// stop timer if running
 					if (DB_ECU_Switch_Timer[i].running) {
 						// set flag
 						DB_ECU_Switch_Timer[i].running = 0;
-						// stop timer
-						DB_ECU_Switch_Timer[i].time = (uint8_t) ((osKernelSysTick()
-								- DB_ECU_Switch_Timer[i].start) / tickSecond);
+						//						// stop timer
+						//						DB_ECU_Switch_Timer[i].time = (uint8_t) ((osKernelSysTick()
+						//								- DB_ECU_Switch_Timer[i].start) / tick1000ms);
 						// reverse it
-						DB_ECU_Switch[i].state = !DB_ECU_Switch[i].state;
+						DB_ECU_Switch[i].state = 1;
 					}
 				}
 			}
@@ -1427,11 +1431,12 @@ void StartSwitchTask(void const *argument)
 			// save previous Drive Mode state
 			if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
 				Last_Mode_Drive = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
-
-				DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
-				DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
-				DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
 			}
+			// force state
+			DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
+			// hazard on
+			DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
+			DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
 		} else {
 			// restore previous Drive Mode
 			if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] == SWITCH_MODE_DRIVE_R) {
@@ -1442,22 +1447,27 @@ void StartSwitchTask(void const *argument)
 			if (DB_ECU_Switch[IDX_KEY_SELECT].state || DB_ECU_Switch[IDX_KEY_SET].state) {
 				// handle select key
 				if (DB_ECU_Switch[IDX_KEY_SELECT].state) {
-					// change mode position
-					if (DB_HMI_Switcher.mode == SWITCH_MODE_MAX) {
-						DB_HMI_Switcher.mode = 0;
-					} else {
-						DB_HMI_Switcher.mode++;
+					if (DB_HMI_Switcher.listening) {
+						// change mode position
+						if (DB_HMI_Switcher.mode == SWITCH_MODE_MAX) {
+							DB_HMI_Switcher.mode = 0;
+						} else {
+							DB_HMI_Switcher.mode++;
+						}
 					}
+					// Listening on option
+					DB_HMI_Switcher.listening = 1;
 				}
 
-				// handle set key
-				if (DB_ECU_Switch[IDX_KEY_SET].state) {
-					// handle reset only if push more than 5sec, and in trip mode
-					if (DB_ECU_Switch_Timer[IDX_KEY_SET].time > 5
-							&& DB_HMI_Switcher.mode == SWITCH_MODE_TRIP) {
-						// reset value
-						DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] = 0;
-					} else {
+				if (DB_HMI_Switcher.listening) {
+					// handle set key
+					if (DB_ECU_Switch[IDX_KEY_SET].state) {
+						//						// handle reset only if push more than  n sec, and in trip mode
+						//						if (DB_ECU_Switch_Timer[IDX_KEY_SET].time > 3
+						//								&& DB_HMI_Switcher.mode == SWITCH_MODE_TRIP) {
+						//							// reset value
+						//							DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] = 0;
+						//						} else {
 						// if less than 5sec
 						if (DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]
 								== DB_HMI_Switcher.mode_sub_max[DB_HMI_Switcher.mode]) {
@@ -1465,25 +1475,26 @@ void StartSwitchTask(void const *argument)
 						} else {
 							DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]++;
 						}
+						//						}
 					}
 				}
 			}
 		}
 
-//		// show state
-//		SWV_SendStrLn("\n============================");
-//		for (i = 0; i < DB_ECU_Switch_Size; i++) {
-//			SWV_SendBuf(DB_ECU_Switch[i].event, strlen(DB_ECU_Switch[i].event));
-//			SWV_SendStr(" = ");
-//			SWV_SendInt(DB_ECU_Switch[i].state);
-//			// show periode
-//			if (i == IDX_KEY_SELECT || i == IDX_KEY_SET) {
-//				SWV_SendStr(" (");
-//				SWV_SendInt(DB_ECU_Switch_Timer[i].time);
-//				SWV_SendStr(")");
-//			}
-//			SWV_SendStrLn("");
-//		}
+		//		// show state
+		//		SWV_SendStrLn("\n============================");
+		//		for (i = 0; i < DB_ECU_Switch_Size; i++) {
+		//			SWV_SendBuf(DB_ECU_Switch[i].event, strlen(DB_ECU_Switch[i].event));
+		//			SWV_SendStr(" = ");
+		//			SWV_SendInt(DB_ECU_Switch[i].state);
+		//			// show periode
+		//			if (i == IDX_KEY_SELECT || i == IDX_KEY_SET) {
+		//				SWV_SendStr(" (");
+		//				SWV_SendInt(DB_ECU_Switch_Timer[i].time);
+		//				SWV_SendStr(")");
+		//			}
+		//			SWV_SendStrLn("");
+		//		}
 	}
 	/* USER CODE END StartSwitchTask */
 }

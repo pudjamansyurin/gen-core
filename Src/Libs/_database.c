@@ -19,6 +19,7 @@ switch_t DB_ECU_Switch[] = {
 
 switcher_t DB_HMI_Switcher = {
 		SWITCH_MODE_DRIVE,
+		0,
 		{
 				SWITCH_MODE_DRIVE_E,
 				SWITCH_MODE_TRIP_A,

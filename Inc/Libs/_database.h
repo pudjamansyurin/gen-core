@@ -41,6 +41,7 @@ typedef enum {
 // object list
 typedef struct {
 	switch_mode_t mode;
+	uint8_t listening;
 	uint8_t mode_sub[SWITCH_MODE_MAX + 1];
 	uint8_t mode_sub_max[SWITCH_MODE_MAX + 1];
 	uint8_t mode_sub_report[SWITCH_MODE_REPORT_MAX + 1];

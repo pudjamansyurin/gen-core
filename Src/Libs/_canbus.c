@@ -13,9 +13,9 @@ extern CAN_Rx RxCan;
 #if (CAN_NODE & CAN_NODE_ECU)
 uint8_t CANBUS_ECU_Switch(void) {
 	CAN_Tx TxCan;
+	const TickType_t tick500ms = pdMS_TO_TICKS(500);
+	static TickType_t tick;
 	static uint8_t Sein_Left = 0, Sein_Right = 0;
-	static uint32_t tick;
-	const uint64_t tick500ms = osKernelSysTickMicroSec(500*1000);
 	extern switch_t DB_ECU_Switch[];
 	extern timestamp_t DB_ECU_TimeStamp;
 	extern uint32_t DB_ECU_Odometer;
@@ -32,7 +32,7 @@ uint8_t CANBUS_ECU_Switch(void) {
 	// check daylight (for auto brightness of HMI)
 	TxCan.TxData[0] |= (DB_ECU_TimeStamp.time.Hours >= 5 && DB_ECU_TimeStamp.time.Hours <= 16) << 7;
 
-	// sein checker
+	// sein manipulator
 	if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state && DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
 		// hazard
 		if ((osKernelSysTick() - tick) >= tick500ms) {
@@ -73,7 +73,7 @@ uint8_t CANBUS_ECU_Switch(void) {
 	TxCan.TxData[7] = (DB_ECU_Odometer & 0xFF000000) >> 24;
 
 	// dummy algorithm
-	DB_ECU_Signal += 1;
+	DB_ECU_Signal = (DB_ECU_Signal > 100 ? 0 : DB_ECU_Signal + 1);
 	DB_ECU_Odometer = (DB_ECU_Odometer >= ECU_ODOMETER_MAX ? 0 : (DB_ECU_Odometer + 1));
 
 	// set default header
@@ -104,6 +104,12 @@ uint8_t CANBUS_ECU_RTC(void) {
 
 uint8_t CANBUS_ECU_Select_Set(void) {
 	CAN_Tx TxCan;
+	const TickType_t tick100ms = pdMS_TO_TICKS(100);
+	const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
+	static TickType_t tick, tickPeriod;
+	static uint8_t Mode_Hide = 0;
+	static int8_t Mode_Name_Old = -1;
+	static int8_t Mode_Value_Old = -1;
 	extern switch_t DB_ECU_Switch[];
 	extern switcher_t DB_HMI_Switcher;
 
@@ -112,6 +118,39 @@ uint8_t CANBUS_ECU_Select_Set(void) {
 	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_TRIP] << 2;
 	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_REPORT] << 3;
 	TxCan.TxData[0] |= DB_HMI_Switcher.mode << 4;
+
+	// Mode Show/Hide Manipulator
+	if (DB_HMI_Switcher.listening) {
+		// if mode same
+		if (Mode_Name_Old != DB_HMI_Switcher.mode) {
+			Mode_Name_Old = DB_HMI_Switcher.mode;
+			// reset period tick
+			tickPeriod = osKernelSysTick();
+		} else if (Mode_Value_Old != DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]) {
+			Mode_Value_Old = DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode];
+			// reset period tick
+			tickPeriod = osKernelSysTick();
+		}
+
+		if ((osKernelSysTick() - tickPeriod) >= tick5000ms ||
+				(DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] == SWITCH_MODE_DRIVE_R)) {
+			// stop listening
+			DB_HMI_Switcher.listening = 0;
+			Mode_Hide = 0;
+			Mode_Name_Old = -1;
+			Mode_Value_Old = -1;
+		} else {
+			// blink
+			if ((osKernelSysTick() - tick) >= tick100ms) {
+				tick = osKernelSysTick();
+				Mode_Hide = !Mode_Hide;
+			}
+		}
+	} else {
+		Mode_Hide = 0;
+	}
+	// Send Show/Hide flag
+	TxCan.TxData[0] |= Mode_Hide << 6;
 
 	TxCan.TxData[1] = DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_RANGE];
 	TxCan.TxData[2] = DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_AVERAGE];
