@@ -73,7 +73,7 @@ uint8_t CANBUS_ECU_Switch(void) {
 	TxCan.TxData[7] = (DB_ECU_Odometer & 0xFF000000) >> 24;
 
 	// dummy algorithm
-	DB_ECU_Signal = DB_ECU_Odometer * 100 / ECU_ODOMETER_MAX;
+	DB_ECU_Signal += 1;
 	DB_ECU_Odometer = (DB_ECU_Odometer >= ECU_ODOMETER_MAX ? 0 : (DB_ECU_Odometer + 1));
 
 	// set default header
