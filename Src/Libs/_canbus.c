@@ -104,7 +104,7 @@ uint8_t CANBUS_ECU_RTC(void) {
 
 uint8_t CANBUS_ECU_Select_Set(void) {
 	CAN_Tx TxCan;
-	const TickType_t tick100ms = pdMS_TO_TICKS(100);
+	const TickType_t tick250ms = pdMS_TO_TICKS(250);
 	const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
 	static TickType_t tick, tickPeriod;
 	static uint8_t Mode_Hide = 0;
@@ -141,7 +141,7 @@ uint8_t CANBUS_ECU_Select_Set(void) {
 			Mode_Value_Old = -1;
 		} else {
 			// blink
-			if ((osKernelSysTick() - tick) >= tick100ms) {
+			if ((osKernelSysTick() - tick) >= tick250ms) {
 				tick = osKernelSysTick();
 				Mode_Hide = !Mode_Hide;
 			}
