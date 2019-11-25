@@ -1358,7 +1358,7 @@ void StartSwitchTask(void const *argument)
 {
 	/* USER CODE BEGIN StartSwitchTask */
 	// NOTED add 'cost' to all constant
-	//	const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
+	const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
 	extern switch_timer_t DB_ECU_Switch_Timer[];
 	extern switch_t DB_ECU_Switch[];
 	extern uint8_t DB_ECU_Switch_Size;
@@ -1398,27 +1398,30 @@ void StartSwitchTask(void const *argument)
 
 			// handle select & set: timer
 			if (i == IDX_KEY_SELECT || i == IDX_KEY_SET) {
-				//				// reset time
-				//				DB_ECU_Switch_Timer[i].time = 0;
+				// reset SET timer
+				DB_ECU_Switch_Timer[i].time = 0;
+
 				// next job
 				if (DB_ECU_Switch[i].state) {
+					if (i == IDX_KEY_SELECT || (i == IDX_KEY_SET && DB_HMI_Switcher.listening)) {
+						// start timer if not running
+						if (!DB_ECU_Switch_Timer[i].running) {
+							// set flag
+							DB_ECU_Switch_Timer[i].running = 1;
+							// start timer for SET
+							DB_ECU_Switch_Timer[i].start = osKernelSysTick();
+						}
+					}
 					// reverse it
 					DB_ECU_Switch[i].state = 0;
-					// start timer if not running
-					if (!DB_ECU_Switch_Timer[i].running) {
-						// set flag
-						DB_ECU_Switch_Timer[i].running = 1;
-						//						// start timer for select
-						//						DB_ECU_Switch_Timer[i].start = osKernelSysTick();
-					}
 				} else {
 					// stop timer if running
 					if (DB_ECU_Switch_Timer[i].running) {
 						// set flag
 						DB_ECU_Switch_Timer[i].running = 0;
-						//						// stop timer
-						//						DB_ECU_Switch_Timer[i].time = (uint8_t) ((osKernelSysTick()
-						//								- DB_ECU_Switch_Timer[i].start) / tick1000ms);
+						// stop SET
+						DB_ECU_Switch_Timer[i].time = (uint8_t) ((osKernelSysTick()
+								- DB_ECU_Switch_Timer[i].start) / tick1000ms);
 						// reverse it
 						DB_ECU_Switch[i].state = 1;
 					}
@@ -1457,25 +1460,23 @@ void StartSwitchTask(void const *argument)
 					}
 					// Listening on option
 					DB_HMI_Switcher.listening = 1;
-				}
 
-				if (DB_HMI_Switcher.listening) {
+				} else if (DB_ECU_Switch[IDX_KEY_SET].state) {
 					// handle set key
-					if (DB_ECU_Switch[IDX_KEY_SET].state) {
-						//						// handle reset only if push more than  n sec, and in trip mode
-						//						if (DB_ECU_Switch_Timer[IDX_KEY_SET].time > 3
-						//								&& DB_HMI_Switcher.mode == SWITCH_MODE_TRIP) {
-						//							// reset value
-						//							DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] = 0;
-						//						} else {
-						// if less than 5sec
-						if (DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]
-								== DB_HMI_Switcher.mode_sub_max[DB_HMI_Switcher.mode]) {
-							DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode] = 0;
+					if (DB_HMI_Switcher.listening
+							|| (DB_ECU_Switch_Timer[IDX_KEY_SET].time >= 3 && DB_HMI_Switcher.mode == SWITCH_MODE_TRIP)) {
+						// handle reset only if push more than  n sec, and in trip mode
+						if (!DB_HMI_Switcher.listening) {
+							// reset value
+							DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] = 0;
 						} else {
-							DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]++;
+							// if less than n sec
+							if (DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode] == DB_HMI_Switcher.mode_sub_max[DB_HMI_Switcher.mode]) {
+								DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode] = 0;
+							} else {
+								DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]++;
+							}
 						}
-						//						}
 					}
 				}
 			}
@@ -1551,18 +1552,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

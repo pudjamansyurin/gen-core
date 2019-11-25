@@ -61,4 +61,17 @@ typedef struct {
 	uint8_t time;
 } switch_timer_t;
 
+typedef struct {
+	//	uint8_t abs;
+	//	uint8_t mirror;
+	uint8_t lamp;
+	uint8_t warning;
+	uint8_t temperature;
+	uint8_t finger;
+	uint8_t keyless;
+//	uint8_t daylight;
+//	uint8_t sein_left;
+//	uint8_t sein_right;
+} status_t;
+
 #endif /* DATABASE_H_ */

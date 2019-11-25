@@ -15,53 +15,70 @@ uint8_t CANBUS_ECU_Switch(void) {
 	CAN_Tx TxCan;
 	const TickType_t tick500ms = pdMS_TO_TICKS(500);
 	static TickType_t tick;
-	static uint8_t Sein_Left = 0, Sein_Right = 0;
+	static uint8_t Sein_Left_Internal = 0, Sein_Right_Internal = 0;
+	static status_t DB_HMI_Status_Internal;
 	extern switch_t DB_ECU_Switch[];
+	extern status_t DB_HMI_Status;
 	extern timestamp_t DB_ECU_TimeStamp;
 	extern uint32_t DB_ECU_Odometer;
 	extern uint8_t DB_ECU_Signal;
+
+	// indicator manipulator
+	if ((osKernelSysTick() - tick) >= tick500ms) {
+		// finger
+		if (DB_HMI_Status.finger) {
+			tick = osKernelSysTick();
+			DB_HMI_Status_Internal.finger = !DB_HMI_Status_Internal.finger;
+		}
+		// keyless
+		if (DB_HMI_Status.keyless) {
+			tick = osKernelSysTick();
+			DB_HMI_Status_Internal.keyless = !DB_HMI_Status_Internal.keyless;
+		}
+		// temperature
+		if (DB_HMI_Status.temperature) {
+			tick = osKernelSysTick();
+			DB_HMI_Status_Internal.temperature = !DB_HMI_Status_Internal.temperature;
+		}
+	}
+
+	// sein manipulator
+	if ((osKernelSysTick() - tick) >= tick500ms) {
+		if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state && DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
+			// hazard
+			tick = osKernelSysTick();
+			Sein_Left_Internal = !Sein_Left_Internal;
+			Sein_Right_Internal = Sein_Left_Internal;
+		} else if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state) {
+			// left sein
+			tick = osKernelSysTick();
+			Sein_Left_Internal = !Sein_Left_Internal;
+			Sein_Right_Internal = 0;
+		} else if (DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
+			// right sein
+			tick = osKernelSysTick();
+			Sein_Left_Internal = 0;
+			Sein_Right_Internal = !Sein_Right_Internal;
+		} else {
+			Sein_Left_Internal = 0;
+			Sein_Right_Internal = Sein_Left_Internal;
+		}
+	}
 
 	// set message
 	TxCan.TxData[0] = DB_ECU_Switch[IDX_KEY_ABS].state;
 	TxCan.TxData[0] |= DB_ECU_Switch[IDX_KEY_MIRRORING].state << 1;
 	TxCan.TxData[0] |= 1 << 2;
 	TxCan.TxData[0] |= 1 << 3;
-	TxCan.TxData[0] |= 1 << 4;
-	TxCan.TxData[0] |= 1 << 5;
-	TxCan.TxData[0] |= 1 << 6;
+	TxCan.TxData[0] |= DB_HMI_Status_Internal.temperature << 4;
+	TxCan.TxData[0] |= DB_HMI_Status_Internal.finger << 5;
+	TxCan.TxData[0] |= DB_HMI_Status_Internal.keyless << 6;
 	// check daylight (for auto brightness of HMI)
 	TxCan.TxData[0] |= (DB_ECU_TimeStamp.time.Hours >= 5 && DB_ECU_TimeStamp.time.Hours <= 16) << 7;
 
-	// sein manipulator
-	if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state && DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
-		// hazard
-		if ((osKernelSysTick() - tick) >= tick500ms) {
-			tick = osKernelSysTick();
-			Sein_Left = !Sein_Left;
-			Sein_Right = Sein_Left;
-		}
-	} else if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state) {
-		// left sein
-		if ((osKernelSysTick() - tick) >= tick500ms) {
-			tick = osKernelSysTick();
-			Sein_Left = !Sein_Left;
-			Sein_Right = 0;
-		}
-	} else if (DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
-		// right sein
-		if ((osKernelSysTick() - tick) >= tick500ms) {
-			tick = osKernelSysTick();
-			Sein_Left = 0;
-			Sein_Right = !Sein_Right;
-		}
-	} else {
-		Sein_Left = 0;
-		Sein_Right = Sein_Left;
-	}
-
 	// sein value
-	TxCan.TxData[1] = Sein_Left << 0;
-	TxCan.TxData[1] |= Sein_Right << 1;
+	TxCan.TxData[1] = Sein_Left_Internal << 0;
+	TxCan.TxData[1] |= Sein_Right_Internal << 1;
 
 	// signal strength
 	TxCan.TxData[2] = DB_ECU_Signal;
@@ -107,27 +124,21 @@ uint8_t CANBUS_ECU_Select_Set(void) {
 	const TickType_t tick250ms = pdMS_TO_TICKS(250);
 	const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
 	static TickType_t tick, tickPeriod;
-	static uint8_t Mode_Hide = 0;
-	static int8_t Mode_Name_Old = -1;
-	static int8_t Mode_Value_Old = -1;
+	static uint8_t Mode_Hide_Internal = 0;
+	static int8_t Mode_Name_Internal = -1;
+	static int8_t Mode_Value_Internal = -1;
 	extern switch_t DB_ECU_Switch[];
 	extern switcher_t DB_HMI_Switcher;
-
-	// set message
-	TxCan.TxData[0] = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
-	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_TRIP] << 2;
-	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_REPORT] << 3;
-	TxCan.TxData[0] |= DB_HMI_Switcher.mode << 4;
 
 	// Mode Show/Hide Manipulator
 	if (DB_HMI_Switcher.listening) {
 		// if mode same
-		if (Mode_Name_Old != DB_HMI_Switcher.mode) {
-			Mode_Name_Old = DB_HMI_Switcher.mode;
+		if (Mode_Name_Internal != DB_HMI_Switcher.mode) {
+			Mode_Name_Internal = DB_HMI_Switcher.mode;
 			// reset period tick
 			tickPeriod = osKernelSysTick();
-		} else if (Mode_Value_Old != DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]) {
-			Mode_Value_Old = DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode];
+		} else if (Mode_Value_Internal != DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]) {
+			Mode_Value_Internal = DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode];
 			// reset period tick
 			tickPeriod = osKernelSysTick();
 		}
@@ -136,21 +147,28 @@ uint8_t CANBUS_ECU_Select_Set(void) {
 				(DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] == SWITCH_MODE_DRIVE_R)) {
 			// stop listening
 			DB_HMI_Switcher.listening = 0;
-			Mode_Hide = 0;
-			Mode_Name_Old = -1;
-			Mode_Value_Old = -1;
+			Mode_Hide_Internal = 0;
+			Mode_Name_Internal = -1;
+			Mode_Value_Internal = -1;
 		} else {
 			// blink
 			if ((osKernelSysTick() - tick) >= tick250ms) {
 				tick = osKernelSysTick();
-				Mode_Hide = !Mode_Hide;
+				Mode_Hide_Internal = !Mode_Hide_Internal;
 			}
 		}
 	} else {
-		Mode_Hide = 0;
+		Mode_Hide_Internal = 0;
 	}
+
+	// set message
+	TxCan.TxData[0] = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
+	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_TRIP] << 2;
+	TxCan.TxData[0] |= DB_HMI_Switcher.mode_sub[SWITCH_MODE_REPORT] << 3;
+	TxCan.TxData[0] |= DB_HMI_Switcher.mode << 4;
+
 	// Send Show/Hide flag
-	TxCan.TxData[0] |= Mode_Hide << 6;
+	TxCan.TxData[0] |= Mode_Hide_Internal << 6;
 
 	TxCan.TxData[1] = DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_RANGE];
 	TxCan.TxData[2] = DB_HMI_Switcher.mode_sub_report[SWITCH_MODE_REPORT_AVERAGE];

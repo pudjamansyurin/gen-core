@@ -37,6 +37,8 @@ switcher_t DB_HMI_Switcher = {
 				0, 0
 		}
 };
+status_t DB_HMI_Status = { 1, 1, 1, 1, 1 };
+
 switch_timer_t DB_ECU_Switch_Timer[] = { { 0, 0, 0 }, { 0, 0, 0 } };
 uint8_t DB_ECU_Switch_Size = sizeof(DB_ECU_Switch) / sizeof(DB_ECU_Switch[0]);
 
