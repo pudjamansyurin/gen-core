@@ -560,7 +560,7 @@ static void MX_SPI1_Init(void)
 	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
 	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
 	hspi1.Init.NSS = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
 	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -1200,8 +1200,10 @@ void StartKeylessTask(void const *argument)
 
 	uint8_t payloadSize32 = 32 / 4;
 	uint32_t payloadReceived[payloadSize32];
-	//	uint8_t i, packetGood;
 
+	// turn on module
+	HAL_GPIO_WritePin(NRF24_PWR_GPIO_Port, NRF24_PWR_Pin, 1);
+	osDelay(1);
 	// set configuration
 	nrf_set_config(&config, payloadReceived, payloadSize32);
 	// initialization
@@ -1212,15 +1214,6 @@ void StartKeylessTask(void const *argument)
 		// receive packet (blocking)
 		nrf_receive_packet(&nrf);
 
-		// check received packet
-		//		packetGood = 1;
-		//		for (i = 0; (i < payloadSize32) && packetGood; i++) {
-		//			if (payloadReceived[i] != payloadFinder[i]) {
-		//				packetGood = 0;
-		//			}
-		//		}
-
-		//		if (packetGood) {
 		if (payloadReceived[payloadSize32 - 1] == EVENT_KEYLESS_FINDER) {
 			WaveBeepPlay(BEEP_FREQ_2000_HZ, 500);
 		} else if (payloadReceived[payloadSize32 - 1] == EVENT_KEYLESS_BROADCAST) {
@@ -1465,7 +1458,7 @@ void StartSwitchTask(void const *argument)
 					// handle set key
 					if (DB_HMI_Switcher.listening
 							|| (DB_ECU_Switch_Timer[IDX_KEY_SET].time >= 3 && DB_HMI_Switcher.mode == SWITCH_MODE_TRIP)) {
-						// handle reset only if push more than  n sec, and in trip mode
+						// handle reset only if push more than n sec, and in trip mode
 						if (!DB_HMI_Switcher.listening) {
 							// reset value
 							DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] = 0;

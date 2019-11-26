@@ -95,22 +95,22 @@ typedef struct {
 	uint8_t retransmit_count;
 	uint8_t retransmit_delay;
 	uint8_t rf_channel;
-	const uint8_t* rx_address;
-	const uint8_t* tx_address;
+	const uint8_t *rx_address;
+	const uint8_t *tx_address;
 
 	/* Must be sufficient size according to payload_length */
-	uint8_t* rx_buffer;
+	uint8_t *rx_buffer;
 
-	SPI_HandleTypeDef* spi;
+	SPI_HandleTypeDef *spi;
 	uint32_t spi_timeout;
 
-	GPIO_TypeDef* csn_port;
+	GPIO_TypeDef *csn_port;
 	uint16_t csn_pin;
 
-	GPIO_TypeDef* ce_port;
+	GPIO_TypeDef *ce_port;
 	uint16_t ce_pin;
 
-	GPIO_TypeDef* irq_port;
+	GPIO_TypeDef *irq_port;
 	uint16_t irq_pin;
 
 } nrf24l01_config;
@@ -126,28 +126,30 @@ typedef struct {
 } nrf24l01;
 
 /* Initialization routine */
-NRF_RESULT nrf_set_config(nrf24l01_config* config, uint32_t* rx_data, uint8_t payloadSize32);
-NRF_RESULT nrf_init(nrf24l01* dev, nrf24l01_config* config);
-NRF_RESULT nrf_check(nrf24l01* dev);
+NRF_RESULT nrf_set_config(nrf24l01_config *config, uint32_t *rx_data, uint8_t payloadSize32);
+NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config);
+NRF_RESULT nrf_check(nrf24l01 *dev);
 /* EXTI Interrupt Handler
  *
  * You must call this function on Falling edge trigger detection interrupt
  * handler, typically, from HAL_GPIO_EXTI_Callback  */
-void nrf_irq_handler(nrf24l01* dev);
+void ce_set(nrf24l01 *dev);
+void ce_reset(nrf24l01 *dev);
+void nrf_irq_handler(nrf24l01 *dev);
 
 /* Asynchronous Data Receiving (__weak)
  *
  * Override this function to handle received data asynchronously,
  * default implementation is used in favor of nrf_receive_packet for blocking
  * data receiving */
-void nrf_packet_received_callback(nrf24l01* dev, uint8_t* data);
+void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);
 
 /* Blocking Data Receiving
  *
  * Blocks until the data has arrived, then returns a pointer to received data.
  * Please note, once nrf_packet_received_callback routine is overridden, this
  * one will stop working. */
-const uint8_t* nrf_receive_packet(nrf24l01* dev);
+const uint8_t* nrf_receive_packet(nrf24l01 *dev);
 
 /* Blocking Data Sending
  *
@@ -156,78 +158,78 @@ const uint8_t* nrf_receive_packet(nrf24l01* dev);
  *   NRF_ERROR - the data has not been received (maximum retransmissions has
  * occurred) If the AA is disabled, returns NRF_OK once the data has been
  * transmitted (with no guarantee the data was actually received). */
-NRF_RESULT nrf_send_packet(nrf24l01* dev, const uint8_t* data);
+NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data);
 
 /* Blocking Data Sending, with NO_ACK flag
  *
  * Disables the AA for this packet, thus this method always returns NRF_OK */
-NRF_RESULT nrf_send_packet_noack(nrf24l01* dev, const uint8_t* data);
+NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data);
 
 /* Non-Blocking Data Sending */
-NRF_RESULT nrf_push_packet(nrf24l01* dev, const uint8_t* data);
+NRF_RESULT nrf_push_packet(nrf24l01 *dev, const uint8_t *data);
 
 /* LOW LEVEL STUFF (you don't have to look in here...)*/
-NRF_RESULT nrf_send_command(nrf24l01* dev, NRF_COMMAND cmd, const uint8_t* tx, uint8_t* rx, uint8_t len);
-uint8_t nrf_send_command_single(nrf24l01* dev, uint8_t data);
+NRF_RESULT nrf_send_command(nrf24l01 *dev, NRF_COMMAND cmd, const uint8_t *tx, uint8_t *rx, uint8_t len);
+uint8_t nrf_send_command_single(nrf24l01 *dev, uint8_t data);
 /* CMD */
-NRF_RESULT nrf_read_register(nrf24l01* dev, uint8_t reg, uint8_t* data);
-NRF_RESULT nrf_read_register_mb(nrf24l01* dev, uint8_t reg, uint8_t* data, uint8_t count);
-NRF_RESULT nrf_write_register(nrf24l01* dev, uint8_t reg, uint8_t* data);
-NRF_RESULT nrf_write_register_mb(nrf24l01* dev, uint8_t reg, uint8_t* data, uint8_t count);
-NRF_RESULT nrf_read_rx_payload(nrf24l01* dev, uint8_t* data);
-NRF_RESULT nrf_write_tx_payload(nrf24l01* dev, const uint8_t* data);
-NRF_RESULT nrf_write_tx_payload_noack(nrf24l01* dev, const uint8_t* data);
-NRF_RESULT nrf_flush_rx(nrf24l01* dev);
-NRF_RESULT nrf_flush_tx(nrf24l01* dev);
+NRF_RESULT nrf_read_register(nrf24l01 *dev, uint8_t reg, uint8_t *data);
+NRF_RESULT nrf_read_register_mb(nrf24l01 *dev, uint8_t reg, uint8_t *data, uint8_t count);
+NRF_RESULT nrf_write_register(nrf24l01 *dev, uint8_t reg, uint8_t *data);
+NRF_RESULT nrf_write_register_mb(nrf24l01 *dev, uint8_t reg, uint8_t *data, uint8_t count);
+NRF_RESULT nrf_read_rx_payload(nrf24l01 *dev, uint8_t *data);
+NRF_RESULT nrf_write_tx_payload(nrf24l01 *dev, const uint8_t *data);
+NRF_RESULT nrf_write_tx_payload_noack(nrf24l01 *dev, const uint8_t *data);
+NRF_RESULT nrf_flush_rx(nrf24l01 *dev);
+NRF_RESULT nrf_flush_tx(nrf24l01 *dev);
 
 /* RF_SETUP */
-NRF_RESULT nrf_set_data_rate(nrf24l01* dev, NRF_DATA_RATE rate);
-NRF_RESULT nrf_set_tx_power(nrf24l01* dev, NRF_TX_PWR pwr);
-NRF_RESULT nrf_set_ccw(nrf24l01* dev, bool activate);
-NRF_RESULT nrf_read_carrier_detect(nrf24l01* dev, uint8_t* reg);
+NRF_RESULT nrf_set_data_rate(nrf24l01 *dev, NRF_DATA_RATE rate);
+NRF_RESULT nrf_set_tx_power(nrf24l01 *dev, NRF_TX_PWR pwr);
+NRF_RESULT nrf_set_ccw(nrf24l01 *dev, bool activate);
+NRF_RESULT nrf_read_carrier_detect(nrf24l01 *dev, uint8_t *reg);
 
 /* STATUS */
-NRF_RESULT nrf_clear_interrupts(nrf24l01* dev);
+NRF_RESULT nrf_clear_interrupts(nrf24l01 *dev);
 
 /* RF_CH */
-NRF_RESULT nrf_set_rf_channel(nrf24l01* dev, uint8_t ch);
+NRF_RESULT nrf_set_rf_channel(nrf24l01 *dev, uint8_t ch);
 
 /* SETUP_RETR */
-NRF_RESULT nrf_set_retransmittion_count(nrf24l01* dev, uint8_t count);
-NRF_RESULT nrf_set_retransmittion_delay(nrf24l01* dev, uint8_t delay);
+NRF_RESULT nrf_set_retransmittion_count(nrf24l01 *dev, uint8_t count);
+NRF_RESULT nrf_set_retransmittion_delay(nrf24l01 *dev, uint8_t delay);
 
 /* SETUP_AW */
-NRF_RESULT nrf_set_address_width(nrf24l01* dev, NRF_ADDR_WIDTH width);
+NRF_RESULT nrf_set_address_width(nrf24l01 *dev, NRF_ADDR_WIDTH width);
 
 /* EN_RXADDR */
-NRF_RESULT nrf_set_rx_pipes(nrf24l01* dev, uint8_t pipes);
+NRF_RESULT nrf_set_rx_pipes(nrf24l01 *dev, uint8_t pipes);
 
 /* EN_AA */
-NRF_RESULT nrf_enable_auto_ack(nrf24l01* dev, uint8_t pipe);
+NRF_RESULT nrf_enable_auto_ack(nrf24l01 *dev, uint8_t pipe);
 // TODO disable AA?
 
 /* CONFIG */
-NRF_RESULT nrf_enable_crc(nrf24l01* dev, bool activate);
-NRF_RESULT nrf_set_crc_width(nrf24l01* dev, NRF_CRC_WIDTH width);
-NRF_RESULT nrf_power_up(nrf24l01* dev, bool power_up);
-NRF_RESULT nrf_rx_tx_control(nrf24l01* dev, NRF_TXRX_STATE rx);
-NRF_RESULT nrf_enable_rx_data_ready_irq(nrf24l01* dev, bool activate);
-NRF_RESULT nrf_enable_tx_data_sent_irq(nrf24l01* dev, bool activate);
-NRF_RESULT nrf_enable_max_retransmit_irq(nrf24l01* dev, bool activate);
+NRF_RESULT nrf_enable_crc(nrf24l01 *dev, bool activate);
+NRF_RESULT nrf_set_crc_width(nrf24l01 *dev, NRF_CRC_WIDTH width);
+NRF_RESULT nrf_power_up(nrf24l01 *dev, bool power_up);
+NRF_RESULT nrf_rx_tx_control(nrf24l01 *dev, NRF_TXRX_STATE rx);
+NRF_RESULT nrf_enable_rx_data_ready_irq(nrf24l01 *dev, bool activate);
+NRF_RESULT nrf_enable_tx_data_sent_irq(nrf24l01 *dev, bool activate);
+NRF_RESULT nrf_enable_max_retransmit_irq(nrf24l01 *dev, bool activate);
 
 /* RX_ADDR_P0 */
-NRF_RESULT nrf_set_rx_address_p0(nrf24l01* dev, const uint8_t* address); // 5bytes of address
+NRF_RESULT nrf_set_rx_address_p0(nrf24l01 *dev, const uint8_t *address); // 5bytes of address
 
 /* RX_ADDR_P1 */
-NRF_RESULT nrf_set_rx_address_p1(nrf24l01* dev, const uint8_t* address); // 5bytes of address
+NRF_RESULT nrf_set_rx_address_p1(nrf24l01 *dev, const uint8_t *address); // 5bytes of address
 
 /* TX_ADDR */
-NRF_RESULT nrf_set_tx_address(nrf24l01* dev, const uint8_t* address); // 5bytes of address
+NRF_RESULT nrf_set_tx_address(nrf24l01 *dev, const uint8_t *address); // 5bytes of address
 
 /* RX_PW_P0 */
-NRF_RESULT nrf_set_rx_payload_width_p0(nrf24l01* dev, uint8_t width);
+NRF_RESULT nrf_set_rx_payload_width_p0(nrf24l01 *dev, uint8_t width);
 
 /* RX_PW_P1 */
-NRF_RESULT nrf_set_rx_payload_width_p1(nrf24l01* dev, uint8_t width);
+NRF_RESULT nrf_set_rx_payload_width_p1(nrf24l01 *dev, uint8_t width);
 
 #endif /* NRF24L01_H_ */

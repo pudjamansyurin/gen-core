@@ -7,7 +7,7 @@
 #include <_simcom.h>
 
 /* Private functions ---------------------------------------------------------*/
-static void Simcom_On(void);
+//static void Simcom_On(void);
 static void Simcom_Reset(void);
 static uint8_t Simcom_Response(char *str);
 static uint8_t Simcom_Send(char *cmd, uint32_t ms);
@@ -31,19 +31,19 @@ void Ublox_Init(gps_t *hgps) {
 	gps_init(hgps);
 }
 
-static void Simcom_On(void) {
-	HAL_GPIO_WritePin(SIMCOM_PWR_GPIO_Port, SIMCOM_PWR_Pin, GPIO_PIN_RESET);
-	osDelay(100);
-	HAL_GPIO_WritePin(SIMCOM_PWR_GPIO_Port, SIMCOM_PWR_Pin, GPIO_PIN_SET);
-	osDelay(100);
-}
+//static void Simcom_On(void) {
+//	HAL_GPIO_WritePin(SIMCOM_PWR_GPIO_Port, SIMCOM_PWR_Pin, GPIO_PIN_RESET);
+//	osDelay(100);
+//	HAL_GPIO_WritePin(SIMCOM_PWR_GPIO_Port, SIMCOM_PWR_Pin, GPIO_PIN_SET);
+//	osDelay(100);
+//}
 
-// NOTED change Simcom_Reset to Simcom_Off
+// FIXME change Simcom_Reset to Simcom_Off
 static void Simcom_Reset(void) {
-	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, GPIO_PIN_RESET);
-	osDelay(100);
 	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, GPIO_PIN_SET);
-	osDelay(100);
+	osDelay(1);
+	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, GPIO_PIN_RESET);
+//	osDelay(100);
 }
 
 static uint8_t Simcom_Boot(void) {
@@ -54,7 +54,7 @@ static uint8_t Simcom_Boot(void) {
 	// reset the state of simcom module
 	Simcom_Reset();
 	// turn off sequence
-	Simcom_On();
+	//	Simcom_On();
 	// set timeout guard (for first boot)
 	timeout_tick = pdMS_TO_TICKS(simcom.boot_timeout * 1000);
 	tick = osKernelSysTick();
