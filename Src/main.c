@@ -1197,32 +1197,33 @@ void StartKeylessTask(void const *argument)
 	/* USER CODE BEGIN StartKeylessTask */
 	extern nrf24l01 nrf;
 	nrf24l01_config config;
-
-	uint8_t payloadSize32 = 32 / 4;
-	uint32_t payloadReceived[payloadSize32];
+	uint8_t event;
+	uint8_t payload_length = 8;
+	uint8_t payload_rx[payload_length];
 
 	// turn on module
 	HAL_GPIO_WritePin(NRF24_PWR_GPIO_Port, NRF24_PWR_Pin, 1);
-	osDelay(1);
 	// set configuration
-	nrf_set_config(&config, payloadReceived, payloadSize32);
+	nrf_set_config(&config, payload_rx, payload_length);
 	// initialization
 	nrf_init(&nrf, &config);
+	SWV_SendStrLn("NRF24 Init.");
+
 	/* Infinite loop */
 	for (;;) {
 		SWV_SendStrLn("NRF waiting packet.");
 		// receive packet (blocking)
 		nrf_receive_packet(&nrf);
 
-		if (payloadReceived[payloadSize32 - 1] == EVENT_KEYLESS_FINDER) {
-			WaveBeepPlay(BEEP_FREQ_2000_HZ, 500);
-		} else if (payloadReceived[payloadSize32 - 1] == EVENT_KEYLESS_BROADCAST) {
-			WaveBeepPlay(BEEP_FREQ_2000_HZ, 100);
-		}
+		// process event
+		event = payload_rx[payload_length - 1];
 
 		// indicator
-		BSP_Led_Toggle_All();
-		osDelay(10);
+		WaveBeepPlay(BEEP_FREQ_2000_HZ, (event + 1) * 100);
+		for (int i = 0; i < ((event + 1) * 2); i++) {
+			BSP_Led_Toggle_All();
+			osDelay(50);
+		}
 	}
 	/* USER CODE END StartKeylessTask */
 }
@@ -1501,8 +1502,6 @@ void CallbackTimerCAN(void const *argument)
 	CANBUS_ECU_RTC();
 	CANBUS_ECU_Select_Set();
 	CANBUS_ECU_Trip_Mode();
-
-	BSP_Led_Toggle_All();
 	/* USER CODE END CallbackTimerCAN */
 }
 

@@ -40,8 +40,9 @@
 
 #define EVENT_FINGER_PLACED					SetBit(0)
 
-#define EVENT_KEYLESS_BROADCAST			0x12345678
-#define EVENT_KEYLESS_FINDER				0x00000002
+#define EVENT_KEYLESS_BROADCAST			SetBit(0)
+#define EVENT_KEYLESS_FINDER				SetBit(1)
+#define EVENT_KEYLESS_SEAT 					SetBit(2)
 
 #define EVENT_CAN_RX_IT							SetBit(0)
 

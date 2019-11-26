@@ -34,7 +34,6 @@
 //
 //		Disables the AA for this packet, thus this method always returns NRF_OK.
 #include "_nrf24l01.h"
-#include "_swv.h"
 #include "main.h"
 
 extern SPI_HandleTypeDef hspi1;
@@ -59,7 +58,7 @@ static void csn_reset(nrf24l01 *dev) {
 	HAL_GPIO_WritePin(dev->config.csn_port, dev->config.csn_pin, GPIO_PIN_RESET);
 }
 
-NRF_RESULT nrf_set_config(nrf24l01_config *config, uint32_t *rx_data, uint8_t payloadSize32) {
+NRF_RESULT nrf_set_config(nrf24l01_config *config, uint8_t *rx_data, uint8_t payload_length) {
 	config->data_rate = NRF_DATA_RATE_250KBPS;
 	config->tx_power = NRF_TX_PWR_0dBm;
 	config->crc_width = NRF_CRC_WIDTH_1B;
@@ -69,7 +68,7 @@ NRF_RESULT nrf_set_config(nrf24l01_config *config, uint32_t *rx_data, uint8_t pa
 	config->rf_channel = 110;
 	config->rx_address = rx_address;
 	config->tx_address = tx_address;
-	config->payload_length = payloadSize32 * 4;    // maximum is 32 bytes
+	config->payload_length = payload_length; // maximum is 32 bytes
 	config->rx_buffer = (uint8_t*) rx_data;
 
 	config->spi = &hspi1;
@@ -86,24 +85,24 @@ NRF_RESULT nrf_set_config(nrf24l01_config *config, uint32_t *rx_data, uint8_t pa
 
 NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
 	dev->config = *config;
+	uint8_t config_reg = 0;
 
 	// check hardware
-	NRF_RESULT result;
+	NRF_RESULT result = NRF_OK;
 	do {
-		SWV_SendStrLn("NRF24 Init");
+		if (result == NRF_ERROR) {
+			osDelay(1000);
+		}
 		result = nrf_check(&nrf);
-
-		osDelay(1000);
 	} while (result == NRF_ERROR);
 
+	// enter standby I mode
 	ce_reset(dev);
-	csn_reset(dev);
 
 	nrf_power_up(dev, true);
 
-	uint8_t config_reg = 0;
-
-	while ((config_reg & 2) == 0) { // wait for powerup
+	// wait for powerup
+	while ((config_reg & 2) == 0) {
 		nrf_read_register(dev, NRF_CONFIG, &config_reg);
 	}
 
@@ -132,17 +131,17 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
 	// retransmission
 	nrf_set_retransmittion_count(dev, dev->config.retransmit_count);
 	nrf_set_retransmittion_delay(dev, dev->config.retransmit_delay);
-	// pipes (only pipe 0)
-	nrf_set_rx_pipes(dev, 0x01);
+	// enable data pipe
+	nrf_set_rx_pipes(dev, 0x01); // only pipe1
 	// auto ack (Enhanced ShockBurst)
-	nrf_enable_auto_ack(dev, 0x00);
+	nrf_enable_auto_ack(dev, 0x00); // disable on all pipe
 	// clear interrupt
 	nrf_clear_interrupts(dev);
 	// set as PRX
 	nrf_rx_tx_control(dev, NRF_STATE_RX);
 	// clear RX FIFO
 	nrf_flush_rx(dev);
-
+	// exit standby mode, now become RX MODE
 	ce_set(dev);
 
 	return NRF_OK;
@@ -191,10 +190,7 @@ NRF_RESULT nrf_send_command(nrf24l01 *dev, NRF_COMMAND cmd, const uint8_t *tx, u
 	csn_reset(dev);
 
 	/* Wait for SPIx Busy flag */
-	while (__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_BSY) != RESET)
-		;
-	//	Tx buffer empty flag
-	while (__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE) == RESET)
+	while (__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_BSY))
 		;
 
 	if (HAL_SPI_TransmitReceive(dev->config.spi, myTX, myRX, 1 + len, dev->config.spi_timeout) != HAL_OK) {
@@ -244,16 +240,20 @@ void nrf_irq_handler(nrf24l01 *dev) {
 			nrf_packet_received_callback(dev, rx_buffer);
 		}
 		ce_set(dev);
+
 	}
 	if ((status & (1 << 5))) { // TX Data Sent Interrupt
 		status |= 1 << 5;      // clear the interrupt flag
+
 		ce_reset(dev);
 		nrf_rx_tx_control(dev, NRF_STATE_RX);
 		dev->state = NRF_STATE_RX;
 		ce_set(dev);
+
 		nrf_write_register(dev, NRF_STATUS, &status);
 		dev->tx_result = NRF_OK;
 		dev->tx_busy = 0;
+
 	}
 	if ((status & (1 << 4))) { // MaxRetransmits reached
 		status |= 1 << 4;
@@ -372,7 +372,6 @@ NRF_RESULT nrf_set_data_rate(nrf24l01 *dev, NRF_DATA_RATE rate) {
 	} else { // high bit clear
 		reg &= ~(1 << 3);
 	}
-
 	if (nrf_write_register(dev, NRF_RF_SETUP, &reg) != NRF_OK) {
 		return NRF_ERROR;
 	}
@@ -691,7 +690,6 @@ NRF_RESULT nrf_set_rx_payload_width_p1(nrf24l01 *dev, uint8_t width) {
 }
 
 NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
-
 	dev->tx_busy = 1;
 
 	ce_reset(dev);
@@ -748,4 +746,3 @@ NRF_RESULT nrf_push_packet(nrf24l01 *dev, const uint8_t *data) {
 
 	return NRF_OK;
 }
-

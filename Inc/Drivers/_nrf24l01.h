@@ -125,16 +125,17 @@ typedef struct {
 
 } nrf24l01;
 
+void ce_set(nrf24l01 *dev);
+void ce_reset(nrf24l01 *dev);
+
 /* Initialization routine */
-NRF_RESULT nrf_set_config(nrf24l01_config *config, uint32_t *rx_data, uint8_t payloadSize32);
+NRF_RESULT nrf_set_config(nrf24l01_config *config, uint8_t *rx_data, uint8_t payload_length);
 NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config);
 NRF_RESULT nrf_check(nrf24l01 *dev);
 /* EXTI Interrupt Handler
  *
  * You must call this function on Falling edge trigger detection interrupt
  * handler, typically, from HAL_GPIO_EXTI_Callback  */
-void ce_set(nrf24l01 *dev);
-void ce_reset(nrf24l01 *dev);
 void nrf_irq_handler(nrf24l01 *dev);
 
 /* Asynchronous Data Receiving (__weak)
