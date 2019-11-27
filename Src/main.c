@@ -245,7 +245,7 @@ int main(void)
 	AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
 	/* definition and creation of KeylessTask */
-	osThreadDef(KeylessTask, StartKeylessTask, osPriorityNormal, 0, 256);
+	osThreadDef(KeylessTask, StartKeylessTask, osPriorityHigh, 0, 256);
 	KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
 	/* definition and creation of ReporterTask */
@@ -253,7 +253,7 @@ int main(void)
 	ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
 
 	/* definition and creation of CanRxTask */
-	osThreadDef(CanRxTask, StartCanRxTask, osPriorityAboveNormal, 0, 128);
+	osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
 	CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
 	/* definition and creation of SwitchTask */
@@ -848,23 +848,36 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	extern nrf24l01 nrf;
 
 	if (osKernelRunning()) {
-		switch (GPIO_Pin) {
-		case NRF24_IRQ_Pin:
+		// handle NRF24 IRQ
+		if (GPIO_Pin == NRF24_IRQ_Pin) {
 			nrf_irq_handler(&nrf);
-			break;
-		case FINGER_IRQ_Pin:
-			xTaskNotifyFromISR(FingerTaskHandle, EVENT_FINGER_PLACED, eSetBits,
-					&xHigherPriorityTaskWoken);
-			break;
-		case BMS_IRQ_Pin:
-			//NOTED do something with me
-			break;
-		default:
-			xTaskNotifyFromISR(SwitchTaskHandle, (uint32_t ) GPIO_Pin, eSetBits,
-					&xHigherPriorityTaskWoken);
-			break;
+		}
+		// handle Fingerprint IRQ
+		if (GPIO_Pin == FINGER_IRQ_Pin) {
+			xTaskNotifyFromISR(FingerTaskHandle, EVENT_FINGER_PLACED, eSetBits, &xHigherPriorityTaskWoken);
+		}
+		// handle BMS IRQ
+		if (GPIO_Pin == BMS_IRQ_Pin) {
+			//FIXME do something with me
+		}
+		// handle keys/buttons
+		if (GPIO_Pin == KEY_SELECT_Pin
+				|| GPIO_Pin == KEY_SET_Pin
+				|| GPIO_Pin == KEY_MIRROR_Pin
+				|| GPIO_Pin == KEY_REVERSE_Pin
+				|| GPIO_Pin == KEY_ABS_Pin
+				|| GPIO_Pin == KEY_SEIN_L_Pin
+				|| GPIO_Pin == KEY_SEIN_R_Pin) {
+			xTaskNotifyFromISR(SwitchTaskHandle, (uint32_t ) GPIO_Pin, eSetBits, &xHigherPriorityTaskWoken);
 		}
 	}
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	xTaskNotifyFromISR(KeylessTaskHandle, EVENT_KEYLESS_RX_IT, eSetBits, &xHigherPriorityTaskWoken);
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
@@ -1200,6 +1213,7 @@ void StartKeylessTask(void const *argument)
 	uint8_t event;
 	uint8_t payload_length = 8;
 	uint8_t payload_rx[payload_length];
+	uint32_t ulNotifiedValue;
 
 	// turn on module
 	HAL_GPIO_WritePin(NRF24_PWR_GPIO_Port, NRF24_PWR_Pin, 1);
@@ -1207,22 +1221,24 @@ void StartKeylessTask(void const *argument)
 	nrf_set_config(&config, payload_rx, payload_length);
 	// initialization
 	nrf_init(&nrf, &config);
-	SWV_SendStrLn("NRF24 Init.");
+	SWV_SendStrLn("NRF24_Init.");
 
 	/* Infinite loop */
 	for (;;) {
 		SWV_SendStrLn("NRF waiting packet.");
-		// receive packet (blocking)
-		nrf_receive_packet(&nrf);
+		// check if has new can message
+		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
 
-		// process event
-		event = payload_rx[payload_length - 1];
+		// proceed event
+		if ((ulNotifiedValue & EVENT_KEYLESS_RX_IT)) {
+			event = payload_rx[payload_length - 1];
 
-		// indicator
-		WaveBeepPlay(BEEP_FREQ_2000_HZ, (event + 1) * 100);
-		for (int i = 0; i < ((event + 1) * 2); i++) {
-			BSP_Led_Toggle_All();
-			osDelay(50);
+			// indicator
+			WaveBeepPlay(BEEP_FREQ_2000_HZ, (event + 1) * 100);
+			for (int i = 0; i < ((event + 1) * 2); i++) {
+				BSP_Led_Toggle_All();
+				osDelay(50);
+			}
 		}
 	}
 	/* USER CODE END StartKeylessTask */
@@ -1314,6 +1330,7 @@ void StartCanRxTask(void const *argument)
 	for (;;) {
 		// check if has new can message
 		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+
 		// proceed event
 		if ((ulNotifiedValue & EVENT_CAN_RX_IT)) {
 			// handle message
@@ -1544,18 +1561,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

@@ -46,6 +46,8 @@
 
 #define EVENT_CAN_RX_IT							SetBit(0)
 
+#define EVENT_KEYLESS_RX_IT					SetBit(0)
+
 // Function prototype
 void BSP_Led_Write_All(uint8_t state);
 void BSP_Led_Toggle_All(void);

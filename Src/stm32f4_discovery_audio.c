@@ -216,7 +216,7 @@ static uint16_t AudioPlaySize;
 void WaveInit(void) {
 	uint8_t ret;
 	do {
-		SWV_SendStrLn("WaveInit");
+		SWV_SendStrLn("Wave_Init");
 
 		/* Initialize Wave player (Codec, DMA, I2C) */
 		ret = BSP_AUDIO_OUT_Init(OUTPUT_DEVICE_AUTO, Volume, AUDIO_SAMPLE_FREQ);
@@ -317,7 +317,7 @@ uint8_t BSP_AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Audio
  * @param  Size: Number of audio data BYTES.
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
-uint8_t BSP_AUDIO_OUT_Play(uint16_t* pBuffer, uint32_t Size) {
+uint8_t BSP_AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
 	/* Call the audio Codec Play function */
 	if (pAudioDrv->Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) {
 		return AUDIO_ERROR;
@@ -547,14 +547,14 @@ __weak void BSP_AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params) {
 
 	/* Enable I2S3 clock */
 	I2S3_CLK_ENABLE()
-	;
+				;
 
 	/*** Configure the GPIOs ***/
 	/* Enable I2S GPIO clocks */
 	I2S3_SCK_SD_CLK_ENABLE()
-	;
+				;
 	I2S3_WS_CLK_ENABLE()
-	;
+				;
 
 	/* I2S3 pins configuration: WS, SCK and SD pins ----------------------------*/
 	GPIO_InitStruct.Pin = I2S3_SCK_PIN | I2S3_SD_PIN;
@@ -569,13 +569,13 @@ __weak void BSP_AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params) {
 
 	/* I2S3 pins configuration: MCK pin */
 	I2S3_MCK_CLK_ENABLE()
-	;
+				;
 	GPIO_InitStruct.Pin = I2S3_MCK_PIN;
 	HAL_GPIO_Init(I2S3_MCK_GPIO_PORT, &GPIO_InitStruct);
 
 	/* Enable the I2S DMA clock */
 	I2S3_DMAx_CLK_ENABLE()
-	;
+				;
 
 	if (hi2s->Instance == I2S3) {
 		/* Configure the hdma_i2sTx handle parameters */

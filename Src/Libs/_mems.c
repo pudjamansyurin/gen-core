@@ -14,10 +14,10 @@ void MEMS_Init(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu) {
 
 		// turn off module
 		HAL_GPIO_WritePin(MEMS_PWR_GPIO_Port, MEMS_PWR_Pin, GPIO_PIN_RESET);
-		osDelay(150);
+		osDelay(1000);
 		// turn on module
 		HAL_GPIO_WritePin(MEMS_PWR_GPIO_Port, MEMS_PWR_Pin, GPIO_PIN_SET);
-		osDelay(500);
+		osDelay(1000);
 		// module initialization
 		result = SD_MPU6050_Init(i2c, mpu, SD_MPU6050_Device_0, SD_MPU6050_Accelerometer_16G, SD_MPU6050_Gyroscope_250s);
 	} while (result != SD_MPU6050_Result_Ok);
