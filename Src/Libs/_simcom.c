@@ -21,7 +21,8 @@ extern osMutexId SimcomRecMutexHandle;
 extern osThreadId CommandTaskHandle;
 /* Private variable ---------------------------------------------------------*/
 extern char PAYLOAD[];
-char CIPSEND[50], CIPOPEN[50], CGSOCKCONT[50], CSOCKAUTH[65];
+// FIXME combine me with simcom_t
+char CIPSEND[50], CIPSTART[50], CLPORT[50], CSTT[75];
 simcom_t simcom;
 
 /* USER CODE END PV */
@@ -31,38 +32,21 @@ void Ublox_Init(gps_t *hgps) {
 	gps_init(hgps);
 }
 
-//static void Simcom_On(void) {
-//	HAL_GPIO_WritePin(SIMCOM_PWR_GPIO_Port, SIMCOM_PWR_Pin, GPIO_PIN_RESET);
-//	osDelay(100);
-//	HAL_GPIO_WritePin(SIMCOM_PWR_GPIO_Port, SIMCOM_PWR_Pin, GPIO_PIN_SET);
-//	osDelay(100);
-//}
-
 // FIXME change Simcom_Reset to Simcom_Off
 static void Simcom_Reset(void) {
-	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, GPIO_PIN_SET);
-	osDelay(1);
-	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, GPIO_PIN_RESET);
-//	osDelay(100);
+	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, !GPIO_PIN_RESET);
+	osDelay(100);
+	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, !GPIO_PIN_SET);
+	osDelay(100);
 }
 
 static uint8_t Simcom_Boot(void) {
-	uint32_t tick, timeout_tick;
-
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
 	// reset the state of simcom module
 	Simcom_Reset();
-	// turn off sequence
-	//	Simcom_On();
-	// set timeout guard (for first boot)
-	timeout_tick = pdMS_TO_TICKS(simcom.boot_timeout * 1000);
-	tick = osKernelSysTick();
 	// wait until booting is done
-	while (!(Simcom_Response(SIMCOM_STATUS_READY) || (osKernelSysTick() - tick) > timeout_tick)) {
-	};
-	// handle timeout
-	return (uint8_t) ((osKernelSysTick() - tick) < timeout_tick);
+	return Simcom_Send_Response_Repeat("AT\r", SIMCOM_STATUS_OK, ((simcom.boot_timeout * 1000) / 500), 500);
 }
 
 static uint8_t Simcom_Response(char *str) {
@@ -89,7 +73,7 @@ static uint8_t Simcom_Send(char *cmd, uint32_t ms) {
 	// transmit to serial
 	SIMCOM_Transmit(cmd, strlen(cmd));
 	// convert time to tick
-	timeout_tick = pdMS_TO_TICKS(ms);
+	timeout_tick = pdMS_TO_TICKS(ms + SIMCOM_EXTRA_TIME_MS);
 	// set timeout guard
 	tick = osKernelSysTick();
 	// wait response from SIMCOM
@@ -159,14 +143,15 @@ static void Simcom_Prepare(void) {
 	simcom.boot_timeout = 60;
 	simcom.repeat_delay = 5;
 	// prepare command sequence
-	sprintf(CIPSEND, "AT+CIPSEND=0,,\"%s\",%d\r", simcom.server_ip, simcom.server_port);
-	sprintf(CIPOPEN, "AT+CIPOPEN=0,\"UDP\",,,%d\r", simcom.local_port);
-	sprintf(CGSOCKCONT, "AT+CGSOCKCONT=1,\"IP\",\"%s\"\r", simcom.network_apn);
-	sprintf(CSOCKAUTH, "AT+CSOCKAUTH=1,1,\"%s\",\"%s\"\r", simcom.network_username, simcom.network_password);
+	sprintf(CIPSEND, "AT+CIPSEND\r");
+	sprintf(CSTT, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", simcom.network_apn, simcom.network_username, simcom.network_password);
+	sprintf(CLPORT, "AT+CLPORT=\"UDP\",%d\r", simcom.local_port);
+	sprintf(CIPSTART, "AT+CIPSTART=\"UDP\",\"%s\",%d\r", simcom.server_ip, simcom.server_port);
 }
 
 void Simcom_Init(uint8_t skipFirstBoot) {
 	uint8_t p, boot = 1;
+
 	// this do-while is complicated, but it doesn't use recursive function, so it's stack safe
 	do {
 		// show previous response
@@ -192,15 +177,11 @@ void Simcom_Init(uint8_t skipFirstBoot) {
 				SWV_SendStrLn("        AFTER BOOT       ");
 				SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
 				SWV_SendStrLn("\n=========================");
-				//disable command echo
-				p = Simcom_Send("ATE1\r", 500);
 				//set permanent baudrate
+				p = Simcom_Send("AT+IPR=9600\r", 500);
+				//disable command echo
 				if (p) {
-					p = Simcom_Send("AT+IPREX=9600\r", 500);
-				}
-				//save user setting to ME
-				if (p) {
-					p = Simcom_Send("AT&W\r", 500);
+					p = Simcom_Send("ATE1\r", 500);
 				}
 			}
 			// if boot sequence ok, then disable it
@@ -208,6 +189,7 @@ void Simcom_Init(uint8_t skipFirstBoot) {
 		} else {
 			p = 1;
 		}
+		// =========== OTHERS CONFIGURATION
 		//Hide “+IPD” header
 		if (p) {
 			p = Simcom_Send("AT+CIPHEAD=0\r", 500);
@@ -216,58 +198,68 @@ void Simcom_Init(uint8_t skipFirstBoot) {
 		if (p) {
 			p = Simcom_Send("AT+CIPSRIP=0\r", 500);
 		}
-		//Set module to cache received data.
+		// Get data from network manually
 		if (p) {
 			p = Simcom_Send("AT+CIPRXGET=1\r", 500);
 		}
-		// Set signal
+		// =========== NETWORK CONFIGURATION
+		// Check SIM Card
+		if (p) {
+			p = Simcom_Send("AT+CPIN?\r", 500);
+		}
+		// Disable presentation of <AcT>&<rac> at CREG and CGREG
+		if (p) {
+			p = Simcom_Send("AT+CSACT=0,0\r", 500);
+		}
+
+		// Set signal Generation 2G/3G/AUTO
 		if (p) {
 			p = Simcom_Set_Signal(simcom.signal);
 		}
 
-		//Check network registration
+		// Network Registration Status
 		if (p) {
-			p = Simcom_Send_Response_Repeat("AT+CREG?\r", "+CREG: 0,1", 10, 500);
+			p = Simcom_Send("AT+CREG=2\r", 500);
 		}
-		//Check signal
+		// Network GPRS Registration Status
 		if (p) {
-			// wait until signal catch up
-			p = Simcom_Signal_Locked(10);
-			// restart module to fix it
-			boot = !p;
+			p = Simcom_Send("AT+CGREG=2\r", 500);
 		}
-		//Check GPSRS network registration
-		if (simcom.signal == SIGNAL_2G) {
-			if (p) {
-				p = Simcom_Send_Response_Repeat("AT+CGREG?\r", "+CGREG: 0,1", 10, 500);
-			}
+		//Attach to GPRS service
+		if (p) {
+			p = Simcom_Send_Response_Repeat("AT+CGATT?\r", "+CGATT: 1", 5, 500);
 		}
 
-		//Define socket PDP context (APN Settings)
+		// =========== TCP/IP CONFIGURATION
+		//Set to Single IP Connection (Backend)
 		if (p) {
-			p = Simcom_Send(CGSOCKCONT, 500);
-		}
-		//Set active PDP context profile number
-		if (p) {
-			p = Simcom_Send("AT+CSOCKSETPN=1\r", 500);
-		}
-		//Set type of authentication for PDP-IP connections of socket
-		if (p) {
-			p = Simcom_Send(CSOCKAUTH, 500);
+			p = Simcom_Send("AT+CIPMUX=0\r", 500);
 		}
 		//Select TCPIP application mode (0: Non Transparent (command mode), 1: Transparent (data mode))
 		if (p) {
 			p = Simcom_Send("AT+CIPMODE=0\r", 500);
 		}
-		//Open network
+		//Set type of authentication for PDP-IP connections of socket
 		if (p) {
-			p = Simcom_Send("AT+NETOPEN\r", 1000);
+			p = Simcom_Send_Response_Repeat(CSTT, SIMCOM_STATUS_OK, 5, 500);
 		}
-		//Open local UDP Connection
+		// Bring Up Wireless Connection with GPRS
 		if (p) {
-			p = Simcom_Send_Response_Repeat(CIPOPEN, SIMCOM_STATUS_OK, 10, 1000);
+			p = Simcom_Send_Response_Repeat("AT+CIICR\r", SIMCOM_STATUS_OK, 5, 500);
+		}
+		// Set local UDP port
+		if (p) {
+			p = Simcom_Send(CLPORT, 500);
+		}
+
+		// Establish connection with server
+		if (p) {
+			p = Simcom_Send_Response_Repeat(CIPSTART, SIMCOM_STATUS_OK, 5, 500);
 			// restart module to fix it
 			boot = !p;
+		} else {
+			// disable all connection
+			Simcom_Send("AT+CIPSHUT\r", 500);
 		}
 	} while (p == 0);
 }
@@ -289,7 +281,7 @@ uint8_t Simcom_Set_Signal(signal_t signal) {
 
 	//Lock to WCDMA
 	sprintf(CNMP, "AT+CNMP=%d\r", signal);
-	p = Simcom_Send(CNMP, 500);
+	p = Simcom_Send_Response_Repeat(CNMP, SIMCOM_STATUS_OK, 2, 5000);
 
 	return p;
 }

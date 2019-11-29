@@ -245,7 +245,7 @@ int main(void)
 	AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
 	/* definition and creation of KeylessTask */
-	osThreadDef(KeylessTask, StartKeylessTask, osPriorityHigh, 0, 256);
+	osThreadDef(KeylessTask, StartKeylessTask, osPriorityNormal, 0, 256);
 	KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
 	/* definition and creation of ReporterTask */
@@ -907,13 +907,13 @@ void StartIotTask(void const *argument)
 			// Send payload
 			if (!Simcom_Send_Payload()) {
 				// If signal lost, force restart directly
-				if (!Simcom_Signal_Locked(1)) {
-					// FIXME remove my warning
-					//					WaveBeepPlay(BEEP_FREQ_2000_HZ, 5000);
-					BSP_Led_Disco(5000);
-					// restart module
-					Simcom_Init(0);
-				}
+				//				if (!Simcom_Signal_Locked(1)) {
+				// FIXME remove my warning
+				//					WaveBeepPlay(BEEP_FREQ_2000_HZ, 5000);
+				BSP_Led_Disco(5000);
+				// restart module
+				Simcom_Init(0);
+				//				}
 			}
 		}
 
@@ -1225,12 +1225,12 @@ void StartKeylessTask(void const *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		SWV_SendStrLn("NRF waiting packet.");
 		// check if has new can message
 		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
 
 		// proceed event
 		if ((ulNotifiedValue & EVENT_KEYLESS_RX_IT)) {
+			SWV_SendStrLn("NRF received packet.");
 			event = payload_rx[payload_length - 1];
 
 			// indicator
@@ -1561,18 +1561,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

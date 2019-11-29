@@ -242,13 +242,13 @@ void WavePlay(void) {
 void WaveBeepPlay(uint8_t Frequency, uint16_t TimeMS) {
 	osRecursiveMutexWait(AudioBeepMutexHandle, osWaitForever);
 	pAudioDrv->SetBeep(AUDIO_I2C_ADDRESS, Frequency, 0, 0);
-	pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_OFF);
+	pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_ON);
 
 	if (TimeMS > 0) {
 		// delay with RTOS
 		osDelay(TimeMS);
 		// than stop
-		pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_OFF);
+		pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
 	}
 	osRecursiveMutexRelease(AudioBeepMutexHandle);
 }
@@ -256,7 +256,7 @@ void WaveBeepPlay(uint8_t Frequency, uint16_t TimeMS) {
 void WaveBeepStop(void) {
 	osRecursiveMutexWait(AudioBeepMutexHandle, osWaitForever);
 
-	pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_OFF);
+	pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
 
 	osRecursiveMutexRelease(AudioBeepMutexHandle);
 }
@@ -324,7 +324,6 @@ uint8_t BSP_AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
 	} else {
 		/* Update the Media layer and enable it for play */
 		HAL_I2S_Transmit_DMA(&hi2s3, pBuffer, DMA_MAX(Size/AUDIODATA_SIZE));
-
 		/* Return AUDIO_OK when all operations are correctly done */
 		return AUDIO_OK;
 	}

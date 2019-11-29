@@ -20,7 +20,7 @@
 #define SIMCOM_STATUS_CIPSEND				"\r\n+CIPSEND:"
 #define SIMCOM_STATUS_OK 						"OK\r\n"
 #define SIMCOM_STATUS_ERROR 				"ERROR\r\n"
-#define SIMCOM_STATUS_READY 				"PB DONE\r\n"
+#define SIMCOM_STATUS_READY 				"RDY\r\n"
 #define SIMCOM_STATUS_RESTARTED			"START\r\n"
 
 #define SIMCOM_MESSAGE_END					"\x1A"
