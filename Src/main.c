@@ -61,8 +61,6 @@ I2C_HandleTypeDef hi2c3;
 I2S_HandleTypeDef hi2s3;
 DMA_HandleTypeDef hdma_spi3_tx;
 
-IWDG_HandleTypeDef hiwdg;
-
 RTC_HandleTypeDef hrtc;
 
 SPI_HandleTypeDef hspi1;
@@ -108,7 +106,6 @@ static void MX_I2C1_Init(void);
 static void MX_I2S3_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_RTC_Init(void);
-static void MX_IWDG_Init(void);
 void StartIotTask(void const *argument);
 void StartGyroTask(void const *argument);
 void StartCommandTask(void const *argument);
@@ -165,7 +162,6 @@ int main(void)
 	MX_UART4_Init();
 	MX_SPI1_Init();
 	MX_RTC_Init();
-	MX_IWDG_Init();
 	/* USER CODE BEGIN 2 */
 	EE_Init();
 	CAN_Init();
@@ -301,11 +297,9 @@ void SystemClock_Config(void)
 	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 	/** Initializes the CPU, AHB and APB busses clocks
 	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
-			| RCC_OSCILLATORTYPE_LSE;
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
 	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
 	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-	RCC_OscInitStruct.LSIState = RCC_LSI_ON;
 	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
 	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
 	RCC_OscInitStruct.PLL.PLLM = 8;
@@ -475,34 +469,6 @@ static void MX_I2S3_Init(void)
 	/* USER CODE BEGIN I2S3_Init 2 */
 
 	/* USER CODE END I2S3_Init 2 */
-
-}
-
-/**
- * @brief IWDG Initialization Function
- * @param None
- * @retval None
- */
-static void MX_IWDG_Init(void)
-{
-
-	/* USER CODE BEGIN IWDG_Init 0 */
-
-	/* USER CODE END IWDG_Init 0 */
-
-	/* USER CODE BEGIN IWDG_Init 1 */
-
-	/* USER CODE END IWDG_Init 1 */
-	hiwdg.Instance = IWDG;
-	hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
-	hiwdg.Init.Reload = 4095;
-	if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-			{
-		Error_Handler();
-	}
-	/* USER CODE BEGIN IWDG_Init 2 */
-
-	/* USER CODE END IWDG_Init 2 */
 
 }
 
@@ -875,7 +841,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void vApplicationIdleHook(void) {
 	// Feed the dog
-	HAL_IWDG_Refresh(&hiwdg);
+	//	HAL_IWDG_Refresh(&hiwdg);
 
 }
 
@@ -1611,18 +1577,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

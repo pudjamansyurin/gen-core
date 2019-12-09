@@ -40,6 +40,23 @@ static void Simcom_Reset(void) {
 	osDelay(100);
 }
 
+static void Simcom_Prepare(void) {
+	strcpy(simcom.server_ip, "36.81.170.31");
+	simcom.server_port = 5044;
+	simcom.local_port = 5045;
+	strcpy(simcom.network_apn, "3gprs"); 					// "telkomsel"
+	strcpy(simcom.network_username, "3gprs");			// "wap"
+	strcpy(simcom.network_password, "3gprs");			// "wap123"
+	simcom.signal = SIGNAL_3G;
+	simcom.boot_timeout = 60;
+	simcom.repeat_delay = 5;
+	// prepare command sequence
+	sprintf(CIPSEND, "AT+CIPSEND\r");
+	sprintf(CSTT, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", simcom.network_apn, simcom.network_username, simcom.network_password);
+	sprintf(CLPORT, "AT+CLPORT=\"UDP\",%d\r", simcom.local_port);
+	sprintf(CIPSTART, "AT+CIPSTART=\"UDP\",\"%s\",\"%d\"\r", simcom.server_ip, simcom.server_port);
+}
+
 static uint8_t Simcom_Boot(void) {
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
@@ -130,23 +147,6 @@ static uint8_t Simcom_Send_Response_Repeat(char *command, char *response, uint8_
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);
 	return ret;
-}
-
-static void Simcom_Prepare(void) {
-	strcpy(simcom.server_ip, "180.247.126.111");
-	simcom.server_port = 5044;
-	simcom.local_port = 5044;
-	strcpy(simcom.network_apn, "3gprs"); 					// "telkomsel"
-	strcpy(simcom.network_username, "3gprs");			// "wap"
-	strcpy(simcom.network_password, "3gprs");			// "wap123"
-	simcom.signal = SIGNAL_3G;
-	simcom.boot_timeout = 60;
-	simcom.repeat_delay = 5;
-	// prepare command sequence
-	sprintf(CIPSEND, "AT+CIPSEND\r");
-	sprintf(CSTT, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", simcom.network_apn, simcom.network_username, simcom.network_password);
-	sprintf(CLPORT, "AT+CLPORT=\"UDP\",%d\r", simcom.local_port);
-	sprintf(CIPSTART, "AT+CIPSTART=\"UDP\",\"%s\",%d\r", simcom.server_ip, simcom.server_port);
 }
 
 void Simcom_Init(uint8_t skipFirstBoot) {
@@ -247,6 +247,10 @@ void Simcom_Init(uint8_t skipFirstBoot) {
 		if (p) {
 			p = Simcom_Send_Response_Repeat("AT+CIICR\r", SIMCOM_STATUS_OK, 5, 500);
 		}
+		// Check IP Address
+		if (p) {
+			Simcom_Send("AT+CIFSR\r", 500);
+		}
 		// Set local UDP port
 		if (p) {
 			p = Simcom_Send(CLPORT, 500);
@@ -255,11 +259,13 @@ void Simcom_Init(uint8_t skipFirstBoot) {
 		// Establish connection with server
 		if (p) {
 			p = Simcom_Send_Response_Repeat(CIPSTART, SIMCOM_STATUS_OK, 5, 500);
-			// restart module to fix it
-			boot = !p;
-		} else {
+		}
+
+		// restart module to fix it
+		if (!p) {
 			// disable all connection
 			Simcom_Send("AT+CIPSHUT\r", 500);
+			boot = 1;
 		}
 	} while (p == 0);
 }
@@ -314,7 +320,7 @@ uint8_t Simcom_To_Server(char *message, uint16_t length) {
 
 uint8_t Simcom_Check_Command(void) {
 	// check if it has new command
-	return (strstr(SIMCOM_UART_RX_Buffer, "+CIPRXGET: 1") != NULL);
+	return (strstr(SIMCOM_UART_RX_Buffer, "+CIPRXGET:1") != NULL);
 }
 
 uint8_t Simcom_Get_Command(command_t *command) {
