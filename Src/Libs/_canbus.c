@@ -14,7 +14,7 @@ extern CAN_Rx RxCan;
 uint8_t CANBUS_ECU_Switch(void) {
 	CAN_Tx TxCan;
 	const TickType_t tick500ms = pdMS_TO_TICKS(500);
-	static TickType_t tick;
+	static TickType_t tick, tickSein;
 	static uint8_t Sein_Left_Internal = 0, Sein_Right_Internal = 0;
 	static status_t DB_HMI_Status_Internal;
 	extern switch_t DB_ECU_Switch[];
@@ -43,20 +43,20 @@ uint8_t CANBUS_ECU_Switch(void) {
 	}
 
 	// sein manipulator
-	if ((osKernelSysTick() - tick) >= tick500ms) {
+	if ((osKernelSysTick() - tickSein) >= tick500ms) {
 		if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state && DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
 			// hazard
-			tick = osKernelSysTick();
+			tickSein = osKernelSysTick();
 			Sein_Left_Internal = !Sein_Left_Internal;
 			Sein_Right_Internal = Sein_Left_Internal;
 		} else if (DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state) {
 			// left sein
-			tick = osKernelSysTick();
+			tickSein = osKernelSysTick();
 			Sein_Left_Internal = !Sein_Left_Internal;
 			Sein_Right_Internal = 0;
 		} else if (DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state) {
 			// right sein
-			tick = osKernelSysTick();
+			tickSein = osKernelSysTick();
 			Sein_Left_Internal = 0;
 			Sein_Right_Internal = !Sein_Right_Internal;
 		} else {
