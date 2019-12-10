@@ -50,6 +50,7 @@ typedef struct {
 char POSITION_HEADER[REPORT_POS_HEADER_LENGTH];
 char POSITION_DATA[REPORT_POS_DATA_LENGTH];
 char PAYLOAD[REPORT_POS_HEADER_LENGTH + REPORT_POS_DATA_LENGTH];
+extern timestamp_t DB_ECU_TimeStamp;
 report_t report;
 
 // function list
@@ -82,7 +83,7 @@ void Reporter_Reset(void) {
 	strcpy(report.data.gps.datetime, "");
 }
 
-void Reporter_Set_Message(char* msg) {
+void Reporter_Set_Message(char *msg) {
 	sprintf(report.data.message, "%s\x1E", msg);
 }
 
@@ -98,7 +99,8 @@ void Reporter_Convert_GPS(gps_t *hgps) {
 		ftoa(hgps->longitude, report.data.gps.longitude, 6);
 		ftoa(hgps->dop_h, report.data.gps.hdop, 3);
 		ftoa(gps_to_speed(hgps->speed, gps_speed_kph), report.data.speed, 1);
-		sprintf(report.data.gps.datetime, "20%02d%02d%02d%02d%02d%02d", hgps->year, hgps->month, hgps->date, RTC_Offset(hgps->hours, GMT_TIME),
+		sprintf(report.data.gps.datetime, "20%02d%02d%02d%02d%02d%02d", hgps->year, hgps->month, hgps->date,
+				RTC_Offset(hgps->hours, GMT_TIME),
 				hgps->minutes, hgps->seconds);
 	}
 }

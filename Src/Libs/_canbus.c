@@ -6,6 +6,7 @@
  */
 
 #include "_canbus.h"
+#include "_rtc.h"
 
 extern CAN_Rx RxCan;
 
@@ -74,6 +75,7 @@ uint8_t CANBUS_ECU_Switch(void) {
 	TxCan.TxData[0] |= DB_HMI_Status_Internal.finger << 5;
 	TxCan.TxData[0] |= DB_HMI_Status_Internal.keyless << 6;
 	// check daylight (for auto brightness of HMI)
+	RTC_Read_RAW(&DB_ECU_TimeStamp);
 	TxCan.TxData[0] |= (DB_ECU_TimeStamp.time.Hours >= 5 && DB_ECU_TimeStamp.time.Hours <= 16) << 7;
 
 	// sein value
