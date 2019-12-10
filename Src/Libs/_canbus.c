@@ -86,10 +86,10 @@ uint8_t CANBUS_ECU_Switch(void) {
 	TxCan.TxData[2] = DB_ECU_Signal;
 
 	// odometer
-	TxCan.TxData[4] = (DB_ECU_Odometer & 0x000000FF);
-	TxCan.TxData[5] = (DB_ECU_Odometer & 0x0000FF00) >> 8;
-	TxCan.TxData[6] = (DB_ECU_Odometer & 0x00FF0000) >> 16;
-	TxCan.TxData[7] = (DB_ECU_Odometer & 0xFF000000) >> 24;
+	TxCan.TxData[4] = (DB_ECU_Odometer >> 0) & 0xFF;
+	TxCan.TxData[5] = (DB_ECU_Odometer >> 8) & 0xFF;
+	TxCan.TxData[6] = (DB_ECU_Odometer >> 16) & 0xFF;
+	TxCan.TxData[7] = (DB_ECU_Odometer >> 24) & 0xFF;
 
 	// dummy algorithm
 	DB_ECU_Signal = (DB_ECU_Signal > 100 ? 0 : DB_ECU_Signal + 1);
@@ -199,22 +199,29 @@ uint8_t CANBUS_ECU_Trip_Mode(void) {
 	extern switcher_t DB_HMI_Switcher;
 
 	// set message
-	TxCan.TxData[0] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] & 0x000000FF);
-	TxCan.TxData[1] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] & 0x0000FF00) >> 8;
-	TxCan.TxData[2] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] & 0x00FF0000) >> 16;
-	TxCan.TxData[3] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] & 0xFF000000) >> 24;
-	TxCan.TxData[4] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] & 0x000000FF);
-	TxCan.TxData[5] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] & 0x0000FF00) >> 8;
-	TxCan.TxData[6] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] & 0x00FF0000) >> 16;
-	TxCan.TxData[7] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] & 0xFF000000) >> 24;
+	TxCan.TxData[0] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] >> 0) & 0xFF;
+	TxCan.TxData[1] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] >> 8) & 0xFF;
+	TxCan.TxData[2] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] >> 16) & 0xFF;
+	TxCan.TxData[3] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] >> 24) & 0xFF;
+	TxCan.TxData[4] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] >> 0) & 0xFF;
+	TxCan.TxData[5] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] >> 8) & 0xFF;
+	TxCan.TxData[6] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] >> 16) & 0xFF;
+	TxCan.TxData[7] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] >> 24) & 0xFF;
 
 	// dummy algorithm
-	if (DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] >= ECU_ODOMETER_MAX) {
-		DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] = 0;
+	if (DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode] == SWITCH_MODE_TRIP_A) {
+		if (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] >= ECU_ODOMETER_MAX) {
+			DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] = 0;
+		} else {
+			DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A]++;
+		}
 	} else {
-		DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]]++;
+		if (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] >= ECU_ODOMETER_MAX) {
+			DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B] = 0;
+		} else {
+			DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_B]++;
+		}
 	}
-
 	// set default header
 	CAN_Set_Tx_Header(&(TxCan.TxHeader), CAN_ADDR_ECU_TRIP_MODE, 8);
 	// send message
