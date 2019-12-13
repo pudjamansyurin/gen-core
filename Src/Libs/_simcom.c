@@ -41,20 +41,20 @@ static void Simcom_Reset(void) {
 }
 
 static void Simcom_Prepare(void) {
-	strcpy(simcom.server_ip, "36.81.170.31");
+	strcpy(simcom.server_ip, "125.167.65.178");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
-	strcpy(simcom.network_apn, "telkomsel"); 					// "3gprs,telkomsel"
-	strcpy(simcom.network_username, "wap");			// "3gprs,wap"
-	strcpy(simcom.network_password, "wap123");			// "3gprs,wap123"
+	strcpy(simcom.network_apn, "3gprs"); 					// "3gprs,telkomsel"
+	strcpy(simcom.network_username, "3gprs");			// "3gprs,wap"
+	strcpy(simcom.network_password, "3gprs");			// "3gprs,wap123"
 	simcom.signal = SIGNAL_3G;
 	simcom.boot_timeout = 60;
 	simcom.repeat_delay = 5;
 	// prepare command sequence
 	sprintf(CIPSEND, "AT+CIPSEND\r");
 	sprintf(CSTT, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", simcom.network_apn, simcom.network_username, simcom.network_password);
-	sprintf(CLPORT, "AT+CLPORT=\"UDP\",%d\r", simcom.local_port);
-	sprintf(CIPSTART, "AT+CIPSTART=\"UDP\",\"%s\",%d\r", simcom.server_ip, simcom.server_port);
+	sprintf(CLPORT, "AT+CLPORT=\"TCP\",%d\r", simcom.local_port);
+	sprintf(CIPSTART, "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r", simcom.server_ip, simcom.server_port);
 }
 
 static uint8_t Simcom_Boot(void) {
@@ -68,7 +68,6 @@ static uint8_t Simcom_Boot(void) {
 
 static uint8_t Simcom_Response(char *str) {
 	if (strstr(SIMCOM_UART_RX_Buffer, str) != NULL) {
-
 		return 1;
 	}
 	return 0;
@@ -94,9 +93,14 @@ static uint8_t Simcom_Send(char *cmd, uint32_t ms) {
 	// set timeout guard
 	tick = osKernelSysTick();
 	// wait response from SIMCOM
-	while (!(Simcom_Response(SIMCOM_STATUS_SEND) || Simcom_Response(SIMCOM_STATUS_CIPSEND) || Simcom_Response(SIMCOM_STATUS_OK)
-			|| Simcom_Response(SIMCOM_STATUS_RESTARTED) || Simcom_Response(SIMCOM_STATUS_ERROR)
-			|| (osKernelSysTick() - tick) >= timeout_tick))
+	while (!(Simcom_Response(SIMCOM_STATUS_SEND)
+			|| Simcom_Response(SIMCOM_STATUS_CIPSEND)
+			|| ((strstr(cmd, "AT+CIPSTART") == NULL) && Simcom_Response(SIMCOM_STATUS_OK))
+			|| ((strstr(cmd, "AT+CIPSTART") != NULL) && Simcom_Response(SIMCOM_STATUS_CONNECT))
+			|| Simcom_Response(SIMCOM_STATUS_RESTARTED)
+			|| Simcom_Response(SIMCOM_STATUS_ERROR)
+			|| (osKernelSysTick() - tick) >= timeout_tick)
+	)
 		;
 	// handle timeout & error
 	ret = !(Simcom_Response(SIMCOM_STATUS_ERROR) || Simcom_Response(SIMCOM_STATUS_RESTARTED)
@@ -178,7 +182,7 @@ void Simcom_Init(uint8_t skipFirstBoot) {
 				SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
 				SWV_SendStrLn("\n=========================");
 				//set permanent baudrate
-				p = Simcom_Send("AT+IPR=9600\r", 500);
+				p = Simcom_Send("AT+IPR=115200\r", 500);
 				//disable command echo
 				if (p) {
 					p = Simcom_Send("ATE1\r", 500);
@@ -251,14 +255,14 @@ void Simcom_Init(uint8_t skipFirstBoot) {
 		if (p) {
 			Simcom_Send("AT+CIFSR\r", 500);
 		}
-		// Set local UDP port
-		if (p) {
-			p = Simcom_Send(CLPORT, 500);
-		}
+		//		// Set local TCP port
+		//		if (p) {
+		//			p = Simcom_Send(CLPORT, 500);
+		//		}
 
 		// Establish connection with server
 		if (p) {
-			p = Simcom_Send_Response_Repeat(CIPSTART, SIMCOM_STATUS_OK, 5, 500);
+			p = Simcom_Send_Response_Repeat(CIPSTART, "CONNECT OK", 1, 500);
 		}
 
 		// restart module to fix it
@@ -330,35 +334,38 @@ uint8_t Simcom_Get_Command(command_t *command) {
 	char *start, *delim, *end;
 
 	if (Simcom_Send("AT+CIPRXGET=2,1024\r", 500)) {
-		// get pointer reference
-		start = strstr(SIMCOM_UART_RX_Buffer, "AT$");
-		end = strstr(start, "\r\nOK");
-		delim = strchr(start, '=');
+		// check command is empty or not
+		if (strstr(SIMCOM_UART_RX_Buffer, "CIPRXGET: 2,0") == NULL) {
+			// get pointer reference
+			start = strstr(SIMCOM_UART_RX_Buffer, "AT$");
+			end = strstr(start, "\r\nOK");
+			delim = strchr(start, '=');
 
-		// check if command has value
-		if (delim != NULL) {
-			// get command
-			strncpy(command->var, start + 3, delim - (start + 3));
-			*(command->var + (delim - (start + 3))) = '\0';
-			// get value
-			strncpy(command->val, delim + 1, end - delim);
-			*(command->val + (end - delim)) = '\0';
-		} else {
-			// get command
-			strncpy(command->var, start + 3, end - (start + 3));
-			*(command->var + (end - (start + 3))) = '\0';
-			// set value
-			*(command->val) = '\0';
+			// check if command has value
+			if (delim != NULL) {
+				// get command
+				strncpy(command->var, start + 3, delim - (start + 3));
+				*(command->var + (delim - (start + 3))) = '\0';
+				// get value
+				strncpy(command->val, delim + 1, end - delim);
+				*(command->val + (end - delim)) = '\0';
+			} else {
+				// get command
+				strncpy(command->var, start + 3, end - (start + 3));
+				*(command->var + (end - (start + 3))) = '\0';
+				// set value
+				*(command->val) = '\0';
+			}
+
+			// get full command
+			strncpy(command->cmd, start + 3, end - (start + 3));
+			*(command->cmd + (end - (start + 3))) = '\0';
+
+			// reset rx buffer
+			SIMCOM_Reset_Buffer();
+
+			ret = 1;
 		}
-
-		// get full command
-		strncpy(command->cmd, start + 3, end - (start + 3));
-		*(command->cmd + (end - (start + 3))) = '\0';
-
-		// reset rx buffer
-		SIMCOM_Reset_Buffer();
-
-		ret = 1;
 	}
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);

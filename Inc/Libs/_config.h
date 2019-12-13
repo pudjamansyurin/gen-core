@@ -16,7 +16,6 @@
 #include "_swv.h"
 
 // definition
-#define SIMCOM_EXTRA_TIME_MS				2000
 #define GMT_TIME										7								// Asia/Jakarta
 #define	REPORT_INTERVAL							5								// in second
 

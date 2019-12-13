@@ -16,12 +16,14 @@
 #include "_reporter.h"
 #include "_DMA_Simcom.h"
 
+#define SIMCOM_EXTRA_TIME_MS				5000
 #define SIMCOM_STATUS_SEND 					"\r\n>"
 #define SIMCOM_STATUS_CIPSEND				"\r\n+CIPSEND:"
 #define SIMCOM_STATUS_OK 						"OK\r\n"
 #define SIMCOM_STATUS_ERROR 				"ERROR\r\n"
 #define SIMCOM_STATUS_READY 				"RDY\r\n"
 #define SIMCOM_STATUS_RESTARTED			"START\r\n"
+#define SIMCOM_STATUS_CONNECT				"CONNECT"
 
 #define SIMCOM_MESSAGE_END					"\x1A"
 
