@@ -73,12 +73,12 @@ NRF_RESULT nrf_set_config(nrf24l01_config *config, uint8_t *rx_data, uint8_t pay
 
 	config->spi = &hspi1;
 	config->spi_timeout = 100; // milliseconds
-	config->csn_port = NRF24_CSN_GPIO_Port;
-	config->csn_pin = NRF24_CSN_Pin;
-	config->ce_port = NRF24_CE_GPIO_Port;
-	config->ce_pin = NRF24_CE_Pin;
-	config->irq_port = NRF24_IRQ_GPIO_Port;
-	config->irq_pin = NRF24_IRQ_Pin;
+	config->csn_port = INT_KEYLESS_CSN_GPIO_Port;
+	config->csn_pin = INT_KEYLESS_CSN_Pin;
+	config->ce_port = INT_KEYLESS_CE_GPIO_Port;
+	config->ce_pin = INT_KEYLESS_CE_Pin;
+	config->irq_port = INT_KEYLESS_IRQ_GPIO_Port;
+	config->irq_pin = INT_KEYLESS_IRQ_Pin;
 
 	return NRF_OK;
 }

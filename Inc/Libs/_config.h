@@ -49,9 +49,9 @@
 #define EVENT_KEYLESS_RX_IT					SetBit(0)
 
 // Function prototype
-void BSP_Led_Write_All(uint8_t state);
-void BSP_Led_Toggle_All(void);
-void ftoa(float f, char *str, char size);
+void BSP_Led_Write(uint8_t state);
+void BSP_Led_Toggle(void);
 void BSP_Led_Disco(uint16_t ms);
+void ftoa(float f, char *str, char size);
 
 #endif /* CONFIG_H_ */

@@ -7,18 +7,12 @@
 
 #include "_config.h"
 
-void BSP_Led_Write_All(uint8_t state) {
-	HAL_GPIO_WritePin(LD6_GPIO_Port, LD6_Pin, state);
-	HAL_GPIO_WritePin(LD5_GPIO_Port, LD5_Pin, state);
-	HAL_GPIO_WritePin(LD4_GPIO_Port, LD4_Pin, state);
-	HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, state);
+void BSP_Led_Write(uint8_t state) {
+	HAL_GPIO_WritePin(SYS_LED_GPIO_Port, SYS_LED_Pin, state);
 }
 
-void BSP_Led_Toggle_All(void) {
-	HAL_GPIO_TogglePin(LD6_GPIO_Port, LD6_Pin);
-	HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
-	HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
-	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+void BSP_Led_Toggle(void) {
+	HAL_GPIO_TogglePin(SYS_LED_GPIO_Port, SYS_LED_Pin);
 }
 
 void BSP_Led_Disco(uint16_t ms) {
@@ -26,7 +20,7 @@ void BSP_Led_Disco(uint16_t ms) {
 	uint16_t delay = ms / i;
 
 	while (i--) {
-		BSP_Led_Toggle_All();
+		BSP_Led_Toggle();
 		osDelay(delay);
 	}
 

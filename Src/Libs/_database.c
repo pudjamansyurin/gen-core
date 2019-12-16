@@ -8,13 +8,13 @@
 #include "_database.h"
 
 switch_t DB_ECU_Switch[] = {
-		{ "SELECT", KEY_SELECT_Pin, KEY_SELECT_GPIO_Port, 0 },
-		{ "SET", KEY_SET_Pin, KEY_SET_GPIO_Port, 0 },
-		{ "SEIN LEFT", KEY_SEIN_L_Pin, KEY_SEIN_L_GPIO_Port, 0 },
-		{ "SEIN RIGHT", KEY_SEIN_R_Pin, KEY_SEIN_R_GPIO_Port, 0 },
-		{ "REVERSE", KEY_REVERSE_Pin, KEY_REVERSE_GPIO_Port, 0 },
-		{ "ABS", KEY_ABS_Pin, KEY_ABS_GPIO_Port, 0 },
-		{ "MIRRORING", KEY_MIRROR_Pin, KEY_MIRROR_GPIO_Port, 0 },
+		{ "SELECT", EXT_HBAR_SELECT_Pin, EXT_HBAR_SELECT_GPIO_Port, 0 },
+		{ "SET", EXT_HBAR_SET_Pin, EXT_HBAR_SET_GPIO_Port, 0 },
+		{ "SEIN LEFT", EXT_HBAR_SEIN_L_Pin, EXT_HBAR_SEIN_L_GPIO_Port, 0 },
+		{ "SEIN RIGHT", EXT_HBAR_SEIN_R_Pin, EXT_HBAR_SEIN_R_GPIO_Port, 0 },
+		{ "REVERSE", EXT_HBAR_REVERSE_Pin, EXT_HBAR_REVERSE_GPIO_Port, 0 },
+		{ "ABS", EXT_ABS_STATUS_Pin, EXT_ABS_STATUS_GPIO_Port, 0 },
+		{ "MIRRORING", EXT_HMI2_PHONE_Pin, EXT_HMI2_PHONE_GPIO_Port, 0 },
 };
 
 switcher_t DB_HMI_Switcher = {

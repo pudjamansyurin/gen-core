@@ -7,8 +7,8 @@
 
 #include "_DMA_Simcom.h"
 
-extern DMA_HandleTypeDef hdma_usart3_rx;
-extern UART_HandleTypeDef huart3;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern UART_HandleTypeDef huart1;
 
 char SIMCOM_DMA_RX_Buffer[SIMCOM_DMA_RX_BUFFER_SIZE];
 char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
@@ -36,7 +36,7 @@ void SIMCOM_DMA_IrqHandler(DMA_HandleTypeDef *hdma, UART_HandleTypeDef *huart) {
 			/* Get number of bytes we can copy to the end of buffer */
 			simcom_tocopy = SIMCOM_UART_RX_BUFFER_SIZE - simcom_write;
 			/* simcom_write received data for UART main buffer for manipulation later */
-			simcom_ptr = (uint8_t *) SIMCOM_DMA_RX_Buffer;
+			simcom_ptr = (uint8_t*) SIMCOM_DMA_RX_Buffer;
 			/* Check how many bytes to copy */
 			if (simcom_tocopy > simcom_len) {
 				simcom_tocopy = simcom_len;
@@ -63,10 +63,10 @@ void SIMCOM_DMA_IrqHandler(DMA_HandleTypeDef *hdma, UART_HandleTypeDef *huart) {
 }
 
 void SIMCOM_DMA_Init(void) {
-	__HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);      // enable idle line interrupt
-	__HAL_DMA_ENABLE_IT(&hdma_usart3_rx, DMA_IT_TC);  // enable DMA Tx cplt interrupt
-	__HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT); // disable half complete interrupt
-	HAL_UART_Receive_DMA(&huart3, (uint8_t *) SIMCOM_DMA_RX_Buffer, SIMCOM_DMA_RX_BUFFER_SIZE);
+	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);      // enable idle line interrupt
+	__HAL_DMA_ENABLE_IT(&hdma_usart1_rx, DMA_IT_TC);  // enable DMA Tx cplt interrupt
+	__HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT); // disable half complete interrupt
+	HAL_UART_Receive_DMA(&huart1, (uint8_t*) SIMCOM_DMA_RX_Buffer, SIMCOM_DMA_RX_BUFFER_SIZE);
 }
 
 void SIMCOM_Reset_Buffer(void) {
@@ -81,5 +81,5 @@ void SIMCOM_Reset_Buffer(void) {
 }
 
 void SIMCOM_Transmit(char *pData, uint16_t Size) {
-	HAL_UART_Transmit(&huart3, (uint8_t *) pData, Size, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart1, (uint8_t*) pData, Size, HAL_MAX_DELAY);
 }

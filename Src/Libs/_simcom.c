@@ -27,16 +27,16 @@ simcom_t simcom;
 
 /* USER CODE END PV */
 void Ublox_Init(gps_t *hgps) {
-	HAL_GPIO_WritePin(UBLOX_PWR_GPIO_Port, UBLOX_PWR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_SET);
 	osDelay(100);
 	gps_init(hgps);
 }
 
 // FIXME change Simcom_Reset to Simcom_Off
 static void Simcom_Reset(void) {
-	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, !GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, !GPIO_PIN_RESET);
 	osDelay(100);
-	HAL_GPIO_WritePin(SIMCOM_RST_GPIO_Port, SIMCOM_RST_Pin, !GPIO_PIN_SET);
+	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, !GPIO_PIN_SET);
 	osDelay(100);
 }
 
