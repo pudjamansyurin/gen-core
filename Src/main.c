@@ -755,15 +755,15 @@ static void MX_GPIO_Init(void)
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | INT_FINGER_PWR_Pin
-			| EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_GPS_PWR_Pin | INT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin
+			| EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(INT_FINGER_TOUCH_PWR_GPIO_Port, INT_FINGER_TOUCH_PWR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOC, INT_NET_PWR_Pin | INT_FINGER_TOUCH_PWR_Pin, GPIO_PIN_SET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, EXT_HMI2_BRIGHTNESS_Pin | EXT_HMI2_SHUTDOWN_Pin | EXT_SOLENOID_PWR_Pin | EXT_KEYLESS_ALARM_Pin,
-			GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, EXT_HMI2_BRIGHTNESS_Pin | EXT_HMI2_SHUTDOWN_Pin | EXT_SOLENOID_PWR_Pin | INT_GYRO_PWR_Pin
+			| INT_KEYLESS_PWR_Pin | EXT_KEYLESS_ALARM_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
@@ -793,9 +793,9 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : EXT_HMI2_BRIGHTNESS_Pin EXT_HMI2_SHUTDOWN_Pin EXT_SOLENOID_PWR_Pin INT_NET_RST_Pin
-	 EXT_KEYLESS_ALARM_Pin */
+	 INT_GYRO_PWR_Pin INT_KEYLESS_PWR_Pin EXT_KEYLESS_ALARM_Pin */
 	GPIO_InitStruct.Pin = EXT_HMI2_BRIGHTNESS_Pin | EXT_HMI2_SHUTDOWN_Pin | EXT_SOLENOID_PWR_Pin | INT_NET_RST_Pin
-			| EXT_KEYLESS_ALARM_Pin;
+			| INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin | EXT_KEYLESS_ALARM_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1233,7 +1233,7 @@ void StartKeylessTask(void const *argument)
 	/* USER CODE BEGIN StartKeylessTask */
 	extern nrf24l01 nrf;
 	nrf24l01_config config;
-	uint8_t event;
+	uint8_t msg;
 	uint8_t payload_length = 8;
 	uint8_t payload_rx[payload_length];
 	uint32_t ulNotifiedValue;
@@ -1251,12 +1251,15 @@ void StartKeylessTask(void const *argument)
 
 		// proceed event
 		if ((ulNotifiedValue & EVENT_KEYLESS_RX_IT)) {
-			SWV_SendStrLn("NRF received packet.");
-			event = payload_rx[payload_length - 1];
+			msg = payload_rx[payload_length - 1];
+
+			SWV_SendStr("NRF received packet, msg = ");
+			SWV_SendHex8(msg);
+			SWV_SendStrLn("");
 
 			// indicator
-			WaveBeepPlay(BEEP_FREQ_2000_HZ, (event + 1) * 100);
-			for (int i = 0; i < ((event + 1) * 2); i++) {
+			WaveBeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
+			for (int i = 0; i < ((msg + 1) * 2); i++) {
 				BSP_Led_Toggle();
 				osDelay(50);
 			}

@@ -41,14 +41,14 @@ static void Simcom_Reset(void) {
 }
 
 static void Simcom_Prepare(void) {
-	strcpy(simcom.server_ip, "125.167.65.178");
+	strcpy(simcom.server_ip, "125.167.77.89");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
 	strcpy(simcom.network_apn, "3gprs"); 					// "3gprs,telkomsel"
 	strcpy(simcom.network_username, "3gprs");			// "3gprs,wap"
 	strcpy(simcom.network_password, "3gprs");			// "3gprs,wap123"
 	simcom.signal = SIGNAL_3G;
-	simcom.boot_timeout = 60;
+	simcom.boot_timeout = 10;
 	simcom.repeat_delay = 5;
 	// prepare command sequence
 	sprintf(CIPSEND, "AT+CIPSEND\r");
@@ -63,7 +63,7 @@ static uint8_t Simcom_Boot(void) {
 	// reset the state of simcom module
 	Simcom_Reset();
 	// wait until booting is done
-	return Simcom_Send_Response_Repeat("AT\r", SIMCOM_STATUS_OK, ((simcom.boot_timeout * 1000) / 500), 500);
+	return Simcom_Send_Response_Repeat("AT\r", SIMCOM_STATUS_OK, simcom.boot_timeout, 1000);
 }
 
 static uint8_t Simcom_Response(char *str) {

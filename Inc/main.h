@@ -172,6 +172,10 @@ void Error_Handler(void);
 #define EXT_REG_12V_GPIO_Port GPIOD
 #define SYS_SWO_Pin GPIO_PIN_3
 #define SYS_SWO_GPIO_Port GPIOB
+#define INT_GYRO_PWR_Pin GPIO_PIN_4
+#define INT_GYRO_PWR_GPIO_Port GPIOB
+#define INT_KEYLESS_PWR_Pin GPIO_PIN_5
+#define INT_KEYLESS_PWR_GPIO_Port GPIOB
 #define INT_AUDIO_SCL_Pin GPIO_PIN_6
 #define INT_AUDIO_SCL_GPIO_Port GPIOB
 #define EXT_KEYLESS_ALARM_Pin GPIO_PIN_8

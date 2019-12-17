@@ -7,29 +7,31 @@
 
 #include "_DMA_Simcom.h"
 
-extern DMA_HandleTypeDef hdma_usart1_rx;
 extern UART_HandleTypeDef huart1;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+UART_HandleTypeDef *huart_simcom = &huart1;
+DMA_HandleTypeDef *hdma_simcom = &hdma_usart1_rx;
 
 char SIMCOM_DMA_RX_Buffer[SIMCOM_DMA_RX_BUFFER_SIZE];
 char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
 size_t simcom_write, simcom_len, simcom_tocopy;
 uint8_t *simcom_ptr;
 
-void SIMCOM_USART_IrqHandler(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
-	if (huart->Instance->SR & UART_FLAG_IDLE) /* if Idle flag is set */
+void SIMCOM_USART_IrqHandler(void) {
+	if (huart_simcom->Instance->SR & UART_FLAG_IDLE) /* if Idle flag is set */
 	{
-		__HAL_UART_CLEAR_IDLEFLAG(huart); /* Clear idle flag */
-		__HAL_DMA_DISABLE(hdma); /* Disabling DMA will force transfer complete interrupt if enabled */
-		SIMCOM_DMA_IrqHandler(hdma, huart);
+		__HAL_UART_CLEAR_IDLEFLAG(huart_simcom); /* Clear idle flag */
+		__HAL_DMA_DISABLE(hdma_simcom); /* Disabling DMA will force transfer complete interrupt if enabled */
+		SIMCOM_DMA_IrqHandler();
 	}
 }
 
-void SIMCOM_DMA_IrqHandler(DMA_HandleTypeDef *hdma, UART_HandleTypeDef *huart) {
-	if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_TC) != RESET) { // if the source is TC
+void SIMCOM_DMA_IrqHandler(void) {
+	if (__HAL_DMA_GET_IT_SOURCE(hdma_simcom, DMA_IT_TC) != RESET) { // if the source is TC
 		/* Clear the transfer complete flag */
-		__HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TC_FLAG_INDEX(hdma));
+		__HAL_DMA_CLEAR_FLAG(hdma_simcom, __HAL_DMA_GET_TC_FLAG_INDEX(hdma_simcom));
 		/* Get the simcom_length of the data */
-		simcom_len = SIMCOM_DMA_RX_BUFFER_SIZE - hdma->Instance->NDTR;
+		simcom_len = SIMCOM_DMA_RX_BUFFER_SIZE - hdma_simcom->Instance->NDTR;
 
 		/* Only process if DMA is not empty */
 		if (simcom_len > 0) {
@@ -58,15 +60,15 @@ void SIMCOM_DMA_IrqHandler(DMA_HandleTypeDef *hdma, UART_HandleTypeDef *huart) {
 		}
 
 		/* Start DMA transfer again */
-		hdma->Instance->CR |= DMA_SxCR_EN;
+		hdma_simcom->Instance->CR |= DMA_SxCR_EN;
 	}
 }
 
 void SIMCOM_DMA_Init(void) {
-	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);      // enable idle line interrupt
-	__HAL_DMA_ENABLE_IT(&hdma_usart1_rx, DMA_IT_TC);  // enable DMA Tx cplt interrupt
-	__HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT); // disable half complete interrupt
-	HAL_UART_Receive_DMA(&huart1, (uint8_t*) SIMCOM_DMA_RX_Buffer, SIMCOM_DMA_RX_BUFFER_SIZE);
+	__HAL_UART_ENABLE_IT(huart_simcom, UART_IT_IDLE);      // enable idle line interrupt
+	__HAL_DMA_ENABLE_IT(hdma_simcom, DMA_IT_TC);  // enable DMA Tx cplt interrupt
+	__HAL_DMA_DISABLE_IT(hdma_simcom, DMA_IT_HT); // disable half complete interrupt
+	HAL_UART_Receive_DMA(huart_simcom, (uint8_t*) SIMCOM_DMA_RX_Buffer, SIMCOM_DMA_RX_BUFFER_SIZE);
 }
 
 void SIMCOM_Reset_Buffer(void) {
@@ -81,5 +83,5 @@ void SIMCOM_Reset_Buffer(void) {
 }
 
 void SIMCOM_Transmit(char *pData, uint16_t Size) {
-	HAL_UART_Transmit(&huart1, (uint8_t*) pData, Size, HAL_MAX_DELAY);
+	HAL_UART_Transmit(huart_simcom, (uint8_t*) pData, Size, HAL_MAX_DELAY);
 }

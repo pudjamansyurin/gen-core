@@ -7,31 +7,33 @@
 
 #include "_DMA_Ublox.h"
 
-extern DMA_HandleTypeDef hdma_usart2_rx;
 extern UART_HandleTypeDef huart2;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+UART_HandleTypeDef *huart_ublox = &huart2;
+DMA_HandleTypeDef *hdma_ublox = &hdma_usart2_rx;
 
 char UBLOX_DMA_RX_Buffer[UBLOX_DMA_RX_BUFFER_SIZE];
 char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
 size_t ublox_write, ublox_len, ublox_tocopy;
 uint8_t *ublox_ptr;
 
-void UBLOX_USART_IrqHandler(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
-	if (huart->Instance->SR & UART_FLAG_IDLE) /* if Idle flag is set */
+void UBLOX_USART_IrqHandler(void) {
+	if (huart_ublox->Instance->SR & UART_FLAG_IDLE) /* if Idle flag is set */
 	{
-		__HAL_UART_CLEAR_IDLEFLAG(huart); /* Clear idle flag */
-		__HAL_DMA_DISABLE(hdma); /* Disabling DMA will force transfer complete interrupt if enabled */
-		UBLOX_DMA_IrqHandler(hdma, huart);
+		__HAL_UART_CLEAR_IDLEFLAG(huart_ublox); /* Clear idle flag */
+		__HAL_DMA_DISABLE(hdma_ublox); /* Disabling DMA will force transfer complete interrupt if enabled */
+		UBLOX_DMA_IrqHandler();
 	}
 }
 
-void UBLOX_DMA_IrqHandler(DMA_HandleTypeDef *hdma, UART_HandleTypeDef *huart) {
-	if (__HAL_DMA_GET_IT_SOURCE(hdma, DMA_IT_TC) != RESET) { // if the source is TC
+void UBLOX_DMA_IrqHandler(void) {
+	if (__HAL_DMA_GET_IT_SOURCE(hdma_ublox, DMA_IT_TC) != RESET) { // if the source is TC
 
 		/* Clear the transfer complete flag */
-		__HAL_DMA_CLEAR_FLAG(hdma, __HAL_DMA_GET_TC_FLAG_INDEX(hdma));
+		__HAL_DMA_CLEAR_FLAG(hdma_ublox, __HAL_DMA_GET_TC_FLAG_INDEX(hdma_ublox));
 
 		/* Get the ublox_length of the data */
-		ublox_len = UBLOX_DMA_RX_BUFFER_SIZE - hdma->Instance->NDTR;
+		ublox_len = UBLOX_DMA_RX_BUFFER_SIZE - hdma_ublox->Instance->NDTR;
 		/* Only process if DMA is not empty */
 		if (ublox_len > 0) {
 			/* Reset the buffer */
@@ -39,7 +41,7 @@ void UBLOX_DMA_IrqHandler(DMA_HandleTypeDef *hdma, UART_HandleTypeDef *huart) {
 			/* Get number of bytes we can copy to the end of buffer */
 			ublox_tocopy = UBLOX_UART_RX_BUFFER_SIZE - ublox_write;
 			/* ublox_write received data for UART main buffer for manipulation later */
-			ublox_ptr = (uint8_t *) UBLOX_DMA_RX_Buffer;
+			ublox_ptr = (uint8_t*) UBLOX_DMA_RX_Buffer;
 			/* Check how many bytes to copy */
 			if (ublox_tocopy > ublox_len) {
 				ublox_tocopy = ublox_len;
@@ -62,15 +64,15 @@ void UBLOX_DMA_IrqHandler(DMA_HandleTypeDef *hdma, UART_HandleTypeDef *huart) {
 		}
 
 		/* Start DMA transfer again */
-		hdma->Instance->CR |= DMA_SxCR_EN;
+		hdma_ublox->Instance->CR |= DMA_SxCR_EN;
 	}
 }
 
 void UBLOX_DMA_Init(void) {
-	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);      // enable idle line interrupt
-	__HAL_DMA_ENABLE_IT(&hdma_usart2_rx, DMA_IT_TC);  // enable DMA Tx cplt interrupt
-	__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT); // disable half complete interrupt
-	HAL_UART_Receive_DMA(&huart2, (uint8_t *) UBLOX_DMA_RX_Buffer, UBLOX_DMA_RX_BUFFER_SIZE);
+	__HAL_UART_ENABLE_IT(huart_ublox, UART_IT_IDLE);      // enable idle line interrupt
+	__HAL_DMA_ENABLE_IT(hdma_ublox, DMA_IT_TC);  // enable DMA Tx cplt interrupt
+	__HAL_DMA_DISABLE_IT(hdma_ublox, DMA_IT_HT); // disable half complete interrupt
+	HAL_UART_Receive_DMA(huart_ublox, (uint8_t*) UBLOX_DMA_RX_Buffer, UBLOX_DMA_RX_BUFFER_SIZE);
 }
 
 void UBLOX_Reset_Buffer(void) {
