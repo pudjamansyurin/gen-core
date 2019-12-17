@@ -520,19 +520,17 @@ __weak void BSP_AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFre
 		/* I2S clock config
 		 PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) � (PLLI2SN/PLLM)
 		 I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
-		rccclkinit.PeriphClockSelection = RCC_PERIPHCLK_I2S;
 		rccclkinit.PLLI2S.PLLI2SN = I2SPLLN[freqindex];
 		rccclkinit.PLLI2S.PLLI2SR = I2SPLLR[freqindex];
-		HAL_RCCEx_PeriphCLKConfig(&rccclkinit);
 	} else {
 		/* I2S clock config
 		 PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) � (PLLI2SN/PLLM)
 		 I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
-		rccclkinit.PeriphClockSelection = RCC_PERIPHCLK_I2S;
 		rccclkinit.PLLI2S.PLLI2SN = 258;
 		rccclkinit.PLLI2S.PLLI2SR = 3;
-		HAL_RCCEx_PeriphCLKConfig(&rccclkinit);
 	}
+	rccclkinit.PeriphClockSelection = RCC_PERIPHCLK_I2S;
+	HAL_RCCEx_PeriphCLKConfig(&rccclkinit);
 }
 
 /**
