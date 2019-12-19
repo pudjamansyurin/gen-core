@@ -656,7 +656,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     PA0-WKUP     ------> UART4_TX
     PA1     ------> UART4_RX 
     */
-    GPIO_InitStruct.Pin = INT_FINGER_TX_Pin|INT_FINGER_RX_Pin;
+    GPIO_InitStruct.Pin = EXT_FINGER_TX_Pin|EXT_FINGER_RX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -804,7 +804,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     PA0-WKUP     ------> UART4_TX
     PA1     ------> UART4_RX 
     */
-    HAL_GPIO_DeInit(GPIOA, INT_FINGER_TX_Pin|INT_FINGER_RX_Pin);
+    HAL_GPIO_DeInit(GPIOA, EXT_FINGER_TX_Pin|EXT_FINGER_RX_Pin);
 
     /* UART4 DMA DeInit */
     HAL_DMA_DeInit(huart->hdmarx);

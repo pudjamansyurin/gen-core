@@ -37,7 +37,7 @@ uint16_t fingerTemplateCount;
  FUNCTIONS
  ***************************************************************************/
 void FZ3387_SET_POWER(uint8_t state) {
-	HAL_GPIO_WritePin(INT_FINGER_TOUCH_PWR_GPIO_Port, INT_FINGER_TOUCH_PWR_Pin, state);
+	HAL_GPIO_WritePin(EXT_FINGER_TOUCH_PWR_GPIO_Port, EXT_FINGER_TOUCH_PWR_Pin, state);
 	osDelay(500);
 }
 

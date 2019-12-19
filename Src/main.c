@@ -862,14 +862,15 @@ static void MX_GPIO_Init(void)
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_GPS_PWR_Pin | INT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin
+	HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_GPS_PWR_Pin | EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin
 			| EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, INT_NET_PWR_Pin | INT_FINGER_TOUCH_PWR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOC, INT_NET_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin, GPIO_PIN_SET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin | EXT_KEYLESS_ALARM_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin
+			| EXT_KEYLESS_ALARM_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
@@ -890,10 +891,10 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin INT_FINGER_TOUCH_PWR_Pin
-	 INT_FINGER_PWR_Pin EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
-	GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | INT_FINGER_TOUCH_PWR_Pin
-			| INT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
+	/*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin
+	 EXT_FINGER_PWR_Pin EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
+	GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
+			| EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -908,8 +909,8 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : INT_FINGER_IRQ_Pin EXT_KNOB_IRQ_Pin */
-	GPIO_InitStruct.Pin = INT_FINGER_IRQ_Pin | EXT_KNOB_IRQ_Pin;
+	/*Configure GPIO pins : EXT_FINGER_IRQ_Pin EXT_KNOB_IRQ_Pin */
+	GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin | EXT_KNOB_IRQ_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -925,6 +926,13 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(INT_KEYLESS_IRQ_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : INT_NET_DTR_Pin */
+	GPIO_InitStruct.Pin = INT_NET_DTR_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(INT_NET_DTR_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : EXT_GPIO_OUT1_Pin EXT_GPIO_OUT2_Pin EXT_GPIO_OUT3_Pin EXT_GPIO_OUT4_Pin
 	 SYS_LED_Pin EXT_HMI2_SHUTDOWN_Pin EXT_HMI2_BRIGHTNESS_Pin INT_AUDIO_RST_Pin
@@ -985,7 +993,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			nrf_irq_handler(&nrf);
 		}
 		// handle Fingerprint IRQ
-		if (GPIO_Pin == INT_FINGER_IRQ_Pin) {
+		if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
 			xTaskNotifyFromISR(FingerTaskHandle, EVENT_FINGER_PLACED, eSetBits, &xHigherPriorityTaskWoken);
 		}
 		// handle Handlebars
