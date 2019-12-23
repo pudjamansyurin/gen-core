@@ -909,8 +909,8 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : EXT_FINGER_IRQ_Pin EXT_KNOB_IRQ_Pin */
-	GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin | EXT_KNOB_IRQ_Pin;
+	/*Configure GPIO pins : EXT_FINGER_IRQ_Pin EXT_KNOB_IRQ_Pin EXT_HBAR_LAMP_Pin EXT_BMS_IRQ_Pin */
+	GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin | EXT_KNOB_IRQ_Pin | EXT_HBAR_LAMP_Pin | EXT_BMS_IRQ_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -1032,7 +1032,7 @@ void StartIotTask(void const *argument)
 	uint32_t ulNotifiedValue;
 	// Start simcom module
 	SIMCOM_DMA_Init();
-	Simcom_Init(0);
+	Simcom_Init();
 	/* Infinite loop */
 	for (;;) {
 		// get event data
@@ -1042,14 +1042,9 @@ void StartIotTask(void const *argument)
 		if (ulNotifiedValue & EVENT_IOT_SEND_REPORT) {
 			// Send payload
 			if (!Simcom_Send_Payload()) {
-				// If signal lost, force restart directly
-				//				if (!Simcom_Signal_Locked(1)) {
-				// FIXME remove my warning
-				//					WaveBeepPlay(BEEP_FREQ_2000_HZ, 5000);
 				BSP_Led_Disco(5000);
 				// restart module
-				Simcom_Init(0);
-				//				}
+				Simcom_Init();
 			}
 		}
 

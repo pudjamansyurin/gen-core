@@ -17,13 +17,11 @@
 #include "_DMA_Simcom.h"
 
 #define SIMCOM_EXTRA_TIME_MS				5000
-#define SIMCOM_STATUS_SEND 					"\r\n>"
-#define SIMCOM_STATUS_CIPSEND				"\r\n+CIPSEND:"
+#define SIMCOM_STATUS_SEND 					">"
 #define SIMCOM_STATUS_OK 						"OK\r\n"
 #define SIMCOM_STATUS_ERROR 				"ERROR\r\n"
 #define SIMCOM_STATUS_READY 				"RDY\r\n"
 #define SIMCOM_STATUS_RESTARTED			"START\r\n"
-#define SIMCOM_STATUS_CONNECT				"CONNECT"
 
 #define SIMCOM_MESSAGE_END					"\x1A"
 
@@ -54,12 +52,10 @@ typedef struct {
 
 /* Public functions ---------------------------------------------------------*/
 void Ublox_Init(gps_t *hgps);
-void Simcom_Init(uint8_t skipFirstBoot);
+void Simcom_Init(void);
 uint8_t Simcom_Send_Payload(void);
 uint8_t Simcom_Check_Command(void);
 uint8_t Simcom_Get_Command(command_t *command);
 uint8_t Simcom_To_Server(char *message, uint16_t length);
-uint8_t Simcom_Signal_Locked(uint8_t n);
-uint8_t Simcom_Set_Signal(signal_t signal);
 
 #endif /* SIMCOM_H_ */
