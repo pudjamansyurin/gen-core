@@ -24,7 +24,7 @@
  * |----------------------------------------------------------------------
  */
 
-#include <_mpu6050.h>
+#include "_mpu6050.h"
 #include "_config.h"
 
 /* Default I2C address */
@@ -186,27 +186,28 @@ SD_MPU6050_Result SD_MPU6050_SetAccelerometer(I2C_HandleTypeDef *I2Cx, SD_MPU605
 
 	/* Set sensitivities for multiplying gyro and accelerometer data */
 	switch (AccelerometerSensitivity) {
-		case SD_MPU6050_Accelerometer_2G:
-			DataStruct->Acce_Mult = (float) 1 / MPU6050_ACCE_SENS_2;
-			break;
-		case SD_MPU6050_Accelerometer_4G:
-			DataStruct->Acce_Mult = (float) 1 / MPU6050_ACCE_SENS_4;
-			break;
-		case SD_MPU6050_Accelerometer_8G:
-			DataStruct->Acce_Mult = (float) 1 / MPU6050_ACCE_SENS_8;
-			break;
-		case SD_MPU6050_Accelerometer_16G:
-			DataStruct->Acce_Mult = (float) 1 / MPU6050_ACCE_SENS_16;
-			break;
-		default:
-			break;
+	case SD_MPU6050_Accelerometer_2G:
+		DataStruct->Acce_Mult = (float) 1 / MPU6050_ACCE_SENS_2;
+		break;
+	case SD_MPU6050_Accelerometer_4G:
+		DataStruct->Acce_Mult = (float) 1 / MPU6050_ACCE_SENS_4;
+		break;
+	case SD_MPU6050_Accelerometer_8G:
+		DataStruct->Acce_Mult = (float) 1 / MPU6050_ACCE_SENS_8;
+		break;
+	case SD_MPU6050_Accelerometer_16G:
+		DataStruct->Acce_Mult = (float) 1 / MPU6050_ACCE_SENS_16;
+		break;
+	default:
+		break;
 	}
 
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
 
-SD_MPU6050_Result SD_MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx, SD_MPU6050 *DataStruct, SD_MPU6050_Gyroscope GyroscopeSensitivity) {
+SD_MPU6050_Result SD_MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx, SD_MPU6050 *DataStruct,
+		SD_MPU6050_Gyroscope GyroscopeSensitivity) {
 	uint8_t temp;
 	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t address = DataStruct->Address;
@@ -231,20 +232,20 @@ SD_MPU6050_Result SD_MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx, SD_MPU6050 *D
 	 }*/
 
 	switch (GyroscopeSensitivity) {
-		case SD_MPU6050_Gyroscope_250s:
-			DataStruct->Gyro_Mult = (float) 1 / MPU6050_GYRO_SENS_250;
-			break;
-		case SD_MPU6050_Gyroscope_500s:
-			DataStruct->Gyro_Mult = (float) 1 / MPU6050_GYRO_SENS_500;
-			break;
-		case SD_MPU6050_Gyroscope_1000s:
-			DataStruct->Gyro_Mult = (float) 1 / MPU6050_GYRO_SENS_1000;
-			break;
-		case SD_MPU6050_Gyroscope_2000s:
-			DataStruct->Gyro_Mult = (float) 1 / MPU6050_GYRO_SENS_2000;
-			break;
-		default:
-			break;
+	case SD_MPU6050_Gyroscope_250s:
+		DataStruct->Gyro_Mult = (float) 1 / MPU6050_GYRO_SENS_250;
+		break;
+	case SD_MPU6050_Gyroscope_500s:
+		DataStruct->Gyro_Mult = (float) 1 / MPU6050_GYRO_SENS_500;
+		break;
+	case SD_MPU6050_Gyroscope_1000s:
+		DataStruct->Gyro_Mult = (float) 1 / MPU6050_GYRO_SENS_1000;
+		break;
+	case SD_MPU6050_Gyroscope_2000s:
+		DataStruct->Gyro_Mult = (float) 1 / MPU6050_GYRO_SENS_2000;
+		break;
+	default:
+		break;
 	}
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
@@ -381,7 +382,8 @@ SD_MPU6050_Result SD_MPU6050_DisableInterrupts(I2C_HandleTypeDef *I2Cx, SD_MPU60
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
-SD_MPU6050_Result SD_MPU6050_ReadInterrupts(I2C_HandleTypeDef *I2Cx, SD_MPU6050 *DataStruct, SD_MPU6050_Interrupt *InterruptsStruct) {
+SD_MPU6050_Result SD_MPU6050_ReadInterrupts(I2C_HandleTypeDef *I2Cx, SD_MPU6050 *DataStruct,
+		SD_MPU6050_Interrupt *InterruptsStruct) {
 	uint8_t read;
 
 	/* Reset structure */

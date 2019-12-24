@@ -36,6 +36,7 @@
 #include "_canbus.h"
 #include "_database.h"
 #include "_rtc.h"
+#include "_audio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -166,6 +167,8 @@ int main(void)
 	MX_I2C3_Init();
 	MX_USART2_UART_Init();
 	MX_UART4_Init();
+	MX_I2C1_Init();
+	MX_I2S3_Init();
 	MX_SPI1_Init();
 	MX_RTC_Init();
 	MX_I2C2_Init();
@@ -334,8 +337,8 @@ void SystemClock_Config(void)
 		Error_Handler();
 	}
 	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S | RCC_PERIPHCLK_RTC;
-	PeriphClkInitStruct.PLLI2S.PLLI2SN = 192;
-	PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
+	PeriphClkInitStruct.PLLI2S.PLLI2SN = 256;
+	PeriphClkInitStruct.PLLI2S.PLLI2SR = 5;
 	PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
 	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
 			{
@@ -498,7 +501,7 @@ static void MX_I2C1_Init(void)
 	hi2c1.Instance = I2C1;
 	hi2c1.Init.ClockSpeed = 100000;
 	hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-	hi2c1.Init.OwnAddress1 = 0;
+	hi2c1.Init.OwnAddress1 = 102;
 	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
 	hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
 	hi2c1.Init.OwnAddress2 = 0;
@@ -927,6 +930,12 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(INT_KEYLESS_IRQ_GPIO_Port, &GPIO_InitStruct);
 
+	/*Configure GPIO pins : PB12 PB13 PB7 */
+	GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_7;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 	/*Configure GPIO pin : INT_NET_DTR_Pin */
 	GPIO_InitStruct.Pin = INT_NET_DTR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -935,15 +944,33 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(INT_NET_DTR_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : EXT_GPIO_OUT1_Pin EXT_GPIO_OUT2_Pin EXT_GPIO_OUT3_Pin EXT_GPIO_OUT4_Pin
-	 SYS_LED_Pin EXT_HMI2_SHUTDOWN_Pin EXT_HMI2_BRIGHTNESS_Pin INT_AUDIO_RST_Pin
-	 EXT_BMS_WAKEUP_Pin EXT_BMS_FAN_Pin EXT_REG_12V_Pin */
+	 SYS_LED_Pin EXT_HMI2_SHUTDOWN_Pin EXT_HMI2_BRIGHTNESS_Pin EXT_BMS_WAKEUP_Pin
+	 EXT_BMS_FAN_Pin EXT_REG_12V_Pin */
 	GPIO_InitStruct.Pin = EXT_GPIO_OUT1_Pin | EXT_GPIO_OUT2_Pin | EXT_GPIO_OUT3_Pin | EXT_GPIO_OUT4_Pin
-			| SYS_LED_Pin | EXT_HMI2_SHUTDOWN_Pin | EXT_HMI2_BRIGHTNESS_Pin | INT_AUDIO_RST_Pin
-			| EXT_BMS_WAKEUP_Pin | EXT_BMS_FAN_Pin | EXT_REG_12V_Pin;
+			| SYS_LED_Pin | EXT_HMI2_SHUTDOWN_Pin | EXT_HMI2_BRIGHTNESS_Pin | EXT_BMS_WAKEUP_Pin
+			| EXT_BMS_FAN_Pin | EXT_REG_12V_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : PD12 PD14 PD15 */
+	GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_14 | GPIO_PIN_15;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : PC6 PC8 */
+	GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_8;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : PA11 PA12 */
+	GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : INT_KEYLESS_CSN_Pin */
 	GPIO_InitStruct.Pin = INT_KEYLESS_CSN_Pin;
@@ -951,6 +978,13 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(INT_KEYLESS_CSN_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : INT_AUDIO_RST_Pin */
+	GPIO_InitStruct.Pin = INT_AUDIO_RST_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(INT_AUDIO_RST_GPIO_Port, &GPIO_InitStruct);
 
 	/* EXTI interrupt init*/
 	HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
@@ -1072,7 +1106,7 @@ void StartGyroTask(void const *argument)
 	// Set calibrator
 	mems_calibration = MEMS_Average(&hi2c3, &mpu, NULL, 500);
 	// Give success indicator
-	WaveBeepPlay(BEEP_FREQ_2000_HZ, 50);
+	WaveBeepPlay(BEEP_FREQ_2000_HZ, 100);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
@@ -1311,7 +1345,7 @@ void StartAudioTask(void const *argument)
 		evt = osMessageGet(AudioVolQueueHandle, 0);
 		// do this if message arrived
 		if (evt.status == osEventMessage) {
-			BSP_AUDIO_OUT_SetVolume((uint8_t) evt.value.v);
+			AUDIO_OUT_SetVolume((uint8_t) evt.value.v);
 		}
 
 		// check if event happen
@@ -1327,10 +1361,10 @@ void StartAudioTask(void const *argument)
 			}
 			// Mute command
 			if ((ulNotifiedValue & EVENT_AUDIO_MUTE_ON)) {
-				BSP_AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
+				AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
 			}
 			if ((ulNotifiedValue & EVENT_AUDIO_MUTE_OFF)) {
-				BSP_AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
+				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 			}
 		}
 

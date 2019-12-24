@@ -4,7 +4,7 @@
  *  Created on: Aug 23, 2019
  *      Author: Puja
  */
-#include <_mems.h>
+#include "_mems.h"
 
 void MEMS_Init(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu) {
 	SD_MPU6050_Result result;

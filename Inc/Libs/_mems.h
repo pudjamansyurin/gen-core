@@ -8,12 +8,13 @@
 #ifndef MEMS_H_
 #define MEMS_H_
 
-#include "_mpu6050.h"
 #include "main.h"
 #include "cmsis_os.h"
 #include <stdio.h>				// for: sprintf()
 #include <stdlib.h>				// for: abs()
 #include <math.h>					// for: pow(), sqrt()
+#include "_mpu6050.h"
+#include "_swv.h"
 
 /* Public typedef -----------------------------------------------------------*/
 typedef struct {
@@ -33,8 +34,8 @@ typedef struct {
 } mems_decision_t;
 
 /* Public functions ---------------------------------------------------------*/
-void MEMS_Init(I2C_HandleTypeDef* i2c, SD_MPU6050* mpu);
-mems_t MEMS_Average(I2C_HandleTypeDef* i2c, SD_MPU6050* mpu, mems_t* calibrator, uint16_t sample);
-mems_decision_t MEMS_Decision(I2C_HandleTypeDef* i2c, SD_MPU6050* mpu, mems_t* calibrator, uint16_t sample);
+void MEMS_Init(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu);
+mems_t MEMS_Average(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu, mems_t *calibrator, uint16_t sample);
+mems_decision_t MEMS_Decision(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu, mems_t *calibrator, uint16_t sample);
 
 #endif /* MEMS_H_ */

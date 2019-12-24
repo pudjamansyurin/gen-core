@@ -39,10 +39,26 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
+#include "_config.h"
 
 /** @addtogroup BSP
  * @{
  */
+
+/* Audio Reset Pin definition */
+#define AUDIO_RESET_PIN                       INT_AUDIO_RST_Pin
+#define AUDIO_RESET_GPIO                      INT_AUDIO_RST_GPIO_Port
+
+///* I2C peripheral configuration defines (control interface of the audio codec) */
+#define DISCOVERY_I2Cx                        I2C1
+
+///* Maximum Timeout values for flags waiting loops. These timeouts are not based
+// on accurate values, they just guarantee that the application will not remain
+// stuck if the SPI communication is corrupted.
+// You may modify these timeout values depending on CPU frequency and application
+// conditions (interrupts routines ...). */
+#define I2Cx_TIMEOUT_MAX    0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
+//
 
 /** @addtogroup Component
  * @{
@@ -93,8 +109,8 @@
 #define AUDIO_MUTE_OFF                0
 
 /* AUDIO FREQUENCY */
-//#define AUDIO_FREQUENCY_192K          ((uint32_t)192000)
-//#define AUDIO_FREQUENCY_96K           ((uint32_t)96000)
+#define AUDIO_FREQUENCY_192K          ((uint32_t)192000)
+#define AUDIO_FREQUENCY_96K           ((uint32_t)96000)
 #define AUDIO_FREQUENCY_48K           ((uint32_t)48000)
 #define AUDIO_FREQUENCY_44K           ((uint32_t)44100)
 #define AUDIO_FREQUENCY_32K           ((uint32_t)32000)

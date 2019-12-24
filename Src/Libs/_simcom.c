@@ -4,7 +4,7 @@
  *  Created on: Aug 14, 2019
  *      Author: Puja
  */
-#include <_simcom.h>
+#include "_simcom.h"
 
 /* Private functions ---------------------------------------------------------*/
 //static void Simcom_On(void);
@@ -22,7 +22,7 @@ extern osThreadId CommandTaskHandle;
 /* Private variable ---------------------------------------------------------*/
 extern char PAYLOAD[];
 // FIXME combine me with simcom_t
-char CIPSEND[50], CIPSTART[50], CLPORT[50], CSTT[75], CNMP[11];
+char CIPSEND[50], CIPSTART[50], CSTT[75], CNMP[11];
 simcom_t simcom;
 
 /* USER CODE END PV */
@@ -54,7 +54,6 @@ static void Simcom_Prepare(void) {
 	sprintf(CIPSEND, "AT+CIPSEND\r");
 	sprintf(CNMP, "AT+CNMP=%d\r", simcom.signal);
 	sprintf(CSTT, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", simcom.network_apn, simcom.network_username, simcom.network_password);
-	sprintf(CLPORT, "AT+CLPORT=\"TCP\",%d\r", simcom.local_port);
 	sprintf(CIPSTART, "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r", simcom.server_ip, simcom.server_port);
 }
 
@@ -114,7 +113,7 @@ static uint8_t Simcom_Send_Single(char *cmd, uint32_t ms, char *res) {
 	return ret;
 }
 
-static uint8_t Simcom_Send(char *command, uint32_t ms, char *res, uint8_t n) {
+static uint8_t Simcom_Send(char *cmd, uint32_t ms, char *res, uint8_t n) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0, seq = 1, p;
@@ -123,7 +122,7 @@ static uint8_t Simcom_Send(char *command, uint32_t ms, char *res, uint8_t n) {
 		if (res == NULL) {
 			res = SIMCOM_STATUS_OK;
 		}
-		p = Simcom_Send_Single(command, ms, res);
+		p = Simcom_Send_Single(cmd, ms, res);
 
 		// handle response match
 		if (p) {
@@ -207,7 +206,7 @@ void Simcom_Init(void) {
 
 		// Set signal Generation 2G/3G/AUTO
 		if (p) {
-			p = Simcom_Send(CNMP, 500, NULL, 1);
+			p = Simcom_Send(CNMP, 500, NULL, 5);
 		}
 
 		// Network Registration Status

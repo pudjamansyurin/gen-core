@@ -34,11 +34,14 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "cs43l22.h"
+#include "_cs43l22.h"
+#include "cmsis_os.h"
 
 /** @addtogroup BSP
  * @{
  */
+extern I2C_HandleTypeDef hi2c1;
+static I2C_HandleTypeDef *I2cHandle = &hi2c1;
 
 /** @addtogroup Components
  * @{
@@ -86,12 +89,24 @@
 
 /* Audio codec driver structure initialization */
 AUDIO_DrvTypeDef cs43l22_drv =
-		{ cs43l22_Init, cs43l22_DeInit, cs43l22_ReadID, cs43l22_Play, cs43l22_Pause, cs43l22_Resume, cs43l22_Stop,
-				cs43l22_SetFrequency, cs43l22_SetVolume, cs43l22_SetMute, cs43l22_SetOutputMode, cs43l22_Reset, cs43l22_SetBeep,
-				cs43l22_Beep };
+		{
+				cs43l22_Init,
+				cs43l22_DeInit,
+				cs43l22_ReadID,
+				cs43l22_Play,
+				cs43l22_Pause,
+				cs43l22_Resume,
+				cs43l22_Stop,
+				cs43l22_SetFrequency,
+				cs43l22_SetVolume,
+				cs43l22_SetMute,
+				cs43l22_SetOutputMode,
+				cs43l22_Reset,
+				cs43l22_SetBeep,
+				cs43l22_Beep
+		};
 
 static uint8_t Is_cs43l22_Stop = 1;
-
 volatile uint8_t OutputDev = 0;
 
 /**
@@ -102,6 +117,7 @@ volatile uint8_t OutputDev = 0;
  * @{
  */
 static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
+static void I2Cx_Error(uint8_t Addr);
 /**
  * @}
  */
@@ -153,7 +169,7 @@ uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume
 	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, OutputDev);
 
 	/* Clock configuration: Auto detection */
-	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_CLOCKING_CTL, 0x81);
+	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_CLOCKING_CTL, 0x80);
 
 	/* Set the Slave Mode and the audio Standard */
 	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_INTERFACE_CTL1, CODEC_STANDARD);
@@ -479,4 +495,76 @@ static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
  * @}
  */
 
+/********************************* LINK AUDIO *********************************/
+
+/**
+ * @brief  Initializes Audio low level.
+ */
+void AUDIO_IO_Init(void) {
+	/* Power Down the codec */
+	HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
+	/* Wait for a delay to insure registers erasing */
+	HAL_Delay(50);
+	/* Power on the codec */
+	HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_SET);
+	/* Wait for a delay to insure registers erasing */
+	HAL_Delay(50);
+}
+
+/**
+ * @brief  DeInitializes Audio low level.
+ */
+void AUDIO_IO_DeInit(void) {
+
+}
+
+/**
+ * @brief  Writes a single data.
+ * @param  Addr: I2C address
+ * @param  Reg: Reg address
+ * @param  Value: Data to be written
+ */
+void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
+	HAL_StatusTypeDef status = HAL_OK;
+
+	status = HAL_I2C_Mem_Write(I2cHandle, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &Value, 1, I2Cx_TIMEOUT_MAX);
+
+	/* Check the communication status */
+	if (status != HAL_OK) {
+		/* Execute user timeout callback */
+		I2Cx_Error(Addr);
+	}
+}
+
+/**
+ * @brief  Reads a single data.
+ * @param  Addr: I2C address
+ * @param  Reg: Reg address
+ * @retval Data to be read
+ */
+uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
+	HAL_StatusTypeDef status = HAL_OK;
+	uint8_t value = 0;
+
+	status = HAL_I2C_Mem_Read(I2cHandle, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &value, 1, I2Cx_TIMEOUT_MAX);
+
+	/* Check the communication status */
+	if (status != HAL_OK) {
+		/* Execute user timeout callback */
+		I2Cx_Error(Addr);
+	}
+	return value;
+}
+
+/**
+ * @brief  Manages error callback by re-initializing I2C.
+ * @param  Addr: I2C Address
+ */
+static void I2Cx_Error(uint8_t Addr) {
+	/* De-initialize the I2C communication bus */
+	HAL_I2C_MspDeInit(I2cHandle);
+
+	/* Re-Initialize the I2C communication bus */
+	HAL_I2C_MspInit(I2cHandle);
+}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
