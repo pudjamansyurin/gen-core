@@ -10,8 +10,8 @@
 //static void Simcom_On(void);
 static void Simcom_Reset(void);
 static uint8_t Simcom_Response(char *str);
-static uint8_t Simcom_Send_Single(char *cmd, uint32_t ms, char *response);
-static uint8_t Simcom_Send(char *command, uint32_t ms, char *response, uint8_t n);
+static uint8_t Simcom_Send_Single(char *cmd, uint32_t ms, char *res);
+static uint8_t Simcom_Send(char *cmd, uint32_t ms, char *res, uint8_t n);
 static void Simcom_Prepare(void);
 static uint8_t Simcom_Boot(void);
 
@@ -41,7 +41,7 @@ static void Simcom_Reset(void) {
 }
 
 static void Simcom_Prepare(void) {
-	strcpy(simcom.server_ip, "36.84.219.254");
+	strcpy(simcom.server_ip, "36.80.66.36");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
 	strcpy(simcom.network_apn, "3gprs"); 					// "3gprs,telkomsel"
@@ -74,7 +74,7 @@ static uint8_t Simcom_Response(char *str) {
 	return 0;
 }
 
-static uint8_t Simcom_Send_Single(char *cmd, uint32_t ms, char *response) {
+static uint8_t Simcom_Send_Single(char *cmd, uint32_t ms, char *res) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret;
@@ -82,7 +82,7 @@ static uint8_t Simcom_Send_Single(char *cmd, uint32_t ms, char *response) {
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
 	// print command for debugger
-	if (!Simcom_Response(SIMCOM_MESSAGE_END)) {
+	if (strstr(cmd, SIMCOM_MESSAGE_END) == NULL) {
 		SWV_SendStr("\n=> ");
 	}
 	SWV_SendBuf(cmd, strlen(cmd));
@@ -95,9 +95,9 @@ static uint8_t Simcom_Send_Single(char *cmd, uint32_t ms, char *response) {
 	tick = osKernelSysTick();
 	// wait response from SIMCOM
 	while (1) {
-		if (Simcom_Response(response) || Simcom_Response(SIMCOM_STATUS_ERROR) || (osKernelSysTick() - tick) >= timeout_tick) {
+		if (Simcom_Response(res) || Simcom_Response(SIMCOM_STATUS_ERROR) || (osKernelSysTick() - tick) >= timeout_tick) {
 			// set flag for timeout & error
-			ret = Simcom_Response(response);
+			ret = Simcom_Response(res);
 			// exit loop
 			break;
 		}
@@ -114,17 +114,16 @@ static uint8_t Simcom_Send_Single(char *cmd, uint32_t ms, char *response) {
 	return ret;
 }
 
-static uint8_t Simcom_Send(char *command, uint32_t ms, char *response, uint8_t n) {
+static uint8_t Simcom_Send(char *command, uint32_t ms, char *res, uint8_t n) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0, seq = 1, p;
 	// repeat command until desired response
 	while (seq <= n) {
-		if (response == NULL) {
-			p = Simcom_Send_Single(command, ms, SIMCOM_STATUS_OK);
-		} else {
-			p = Simcom_Send_Single(command, ms, response);
+		if (res == NULL) {
+			res = SIMCOM_STATUS_OK;
 		}
+		p = Simcom_Send_Single(command, ms, res);
 
 		// handle response match
 		if (p) {
@@ -286,7 +285,7 @@ uint8_t Simcom_Check_Command(void) {
 	return Simcom_Response("+CIPRXGET: 1");
 }
 
-uint8_t Simcom_Get_Command(command_t *command) {
+uint8_t Simcom_Get_Command(command_t *cmd) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0;
@@ -303,22 +302,22 @@ uint8_t Simcom_Get_Command(command_t *command) {
 			// check if command has value
 			if (delim != NULL) {
 				// get command
-				strncpy(command->var, start + 3, delim - (start + 3));
-				*(command->var + (delim - (start + 3))) = '\0';
+				strncpy(cmd->var, start + 3, delim - (start + 3));
+				*(cmd->var + (delim - (start + 3))) = '\0';
 				// get value
-				strncpy(command->val, delim + 1, end - delim);
-				*(command->val + (end - delim)) = '\0';
+				strncpy(cmd->val, delim + 1, end - delim);
+				*(cmd->val + (end - delim)) = '\0';
 			} else {
 				// get command
-				strncpy(command->var, start + 3, end - (start + 3));
-				*(command->var + (end - (start + 3))) = '\0';
+				strncpy(cmd->var, start + 3, end - (start + 3));
+				*(cmd->var + (end - (start + 3))) = '\0';
 				// set value
-				*(command->val) = '\0';
+				*(cmd->val) = '\0';
 			}
 
 			// get full command
-			strncpy(command->cmd, start + 3, end - (start + 3));
-			*(command->cmd + (end - (start + 3))) = '\0';
+			strncpy(cmd->cmd, start + 3, end - (start + 3));
+			*(cmd->cmd + (end - (start + 3))) = '\0';
 
 			// reset rx buffer
 			SIMCOM_Reset_Buffer();
