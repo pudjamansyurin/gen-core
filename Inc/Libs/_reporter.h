@@ -11,7 +11,7 @@
 #include <stdio.h>							// for: sprintf()
 #include "_config.h"
 #include "_flash.h"
-#include "_eeprom.h"
+#include "_ee_emulation.h"
 #include "_nmea.h"
 #include "_rtc.h"
 
@@ -27,12 +27,11 @@ typedef enum {
 	REPORT_BIKE_CRASHED = 2
 }	report_id_t;
 // @formatter:on
-
 // public function
 void Reporter_Reset(void);
-void Reporter_Set_Message(char* msg);
+void Reporter_Set_Message(char *msg);
 void Reporter_Set_Report_ID(report_id_t reportID);
-void Reporter_Convert_GPS(gps_t *hgps);
+void Reporter_Read_GPS(gps_t *hgps);
 void Reporter_Set_Sending_Time(void);
 void Reporter_Set_Payload(void);
 void Reporter_Set_Odometer(uint32_t odom);

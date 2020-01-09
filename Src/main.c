@@ -31,7 +31,7 @@
 #include "_mems.h"
 #include "_simcom.h"
 #include "_finger.h"
-#include "_eeprom.h"
+#include "_ee_emulation.h"
 #include "_nrf24l01.h"
 #include "_canbus.h"
 #include "_database.h"
@@ -1075,13 +1075,12 @@ void StartIotTask(void const *argument)
 		// check every event
 		if (ulNotifiedValue & EVENT_IOT_SEND_REPORT) {
 			// Send payload
-			if (!Simcom_Send_Payload()) {
+			if (!Simcom_Send_Report()) {
 				BSP_Led_Disco(5000);
 				// restart module
 				Simcom_Init();
 			}
 		}
-
 	}
 	/* USER CODE END 5 */
 }
@@ -1162,7 +1161,13 @@ void StartCommandTask(void const *argument)
 			}
 		}
 
-		if (Simcom_Check_Command() || newCommand) {
+		// if there is no pending command, fetch the newest command
+		if (!newCommand) {
+			newCommand = Simcom_Check_Command();
+		}
+
+		// then execute the command
+		if (newCommand) {
 			newCommand = 0;
 			// read the command & execute
 			if (Simcom_Get_Command(&command)) {
@@ -1244,7 +1249,7 @@ void StartCommandTask(void const *argument)
 				}
 
 				// send confirmation
-				Simcom_To_Server(response, strlen(response));
+				Simcom_Upload(response, strlen(response));
 			}
 		}
 
@@ -1338,6 +1343,7 @@ void StartAudioTask(void const *argument)
 	WaveInit();
 	// Play wave loop forever, handover to DMA, so CPU is free
 	WavePlay();
+
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
@@ -1473,7 +1479,7 @@ void StartReporterTask(void const *argument)
 		evt = osMailGet(GpsMailHandle, 0);
 		// Convert Ublox data to Simcom payload compatible
 		if (evt.status == osEventMail) {
-			Reporter_Convert_GPS(evt.value.p);
+			Reporter_Read_GPS(evt.value.p);
 		}
 
 		// Set payload (all data)
@@ -1520,15 +1526,6 @@ void StartCanRxTask(void const *argument)
 			default:
 				break;
 			}
-
-			//			// show this message
-			//			SWV_SendStr("ID: ");
-			//			SWV_SendHex32(RxCan.RxHeader.StdId);
-			//			SWV_SendStr(", Data: ");
-			//			for (i = 0; i < RxCan.RxHeader.DLC; i++) {
-			//				SWV_SendHex8(RxCan.RxData[i]);
-			//			}
-			//			SWV_SendStrLn("");
 		}
 
 	}
@@ -1677,6 +1674,10 @@ void StartSwitchTask(void const *argument)
 void CallbackTimerCAN(void const *argument)
 {
 	/* USER CODE BEGIN CallbackTimerCAN */
+	extern uint8_t DB_ECU_Signal;
+	// Retrieve network signal quality
+	DB_ECU_Signal = Simcom_Check_Signal();
+	// Send CAN data
 	CANBUS_ECU_Switch();
 	CANBUS_ECU_RTC();
 	CANBUS_ECU_Select_Set();

@@ -37,11 +37,15 @@ typedef struct {
 	char server_ip[16];
 	uint16_t server_port;
 	uint16_t local_port;
-	char network_apn[20];
-	char network_username[20];
-	char network_password[20];
+	char net_apn[20];
+	char net_username[20];
+	char net_password[20];
 	uint8_t boot_timeout;
 	uint8_t repeat_delay;
+	char CMD_CIPSEND[50];
+	char CMD_CIPSTART[50];
+	char CMD_CSTT[75];
+	char CMD_CNMP[11];
 } simcom_t;
 
 typedef struct {
@@ -53,9 +57,10 @@ typedef struct {
 /* Public functions ---------------------------------------------------------*/
 void Ublox_Init(gps_t *hgps);
 void Simcom_Init(void);
-uint8_t Simcom_Send_Payload(void);
+uint8_t Simcom_Send_Report(void);
 uint8_t Simcom_Check_Command(void);
 uint8_t Simcom_Get_Command(command_t *command);
-uint8_t Simcom_To_Server(char *message, uint16_t length);
+uint8_t Simcom_Upload(char *message, uint16_t length);
+uint8_t Simcom_Check_Signal(void);
 
 #endif /* SIMCOM_H_ */

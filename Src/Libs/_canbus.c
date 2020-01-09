@@ -9,11 +9,11 @@
 #include "_rtc.h"
 
 extern CAN_Rx RxCan;
+CAN_Tx TxCan;
 
 // ==================================== ECU =========================================
 #if (CAN_NODE & CAN_NODE_ECU)
 uint8_t CANBUS_ECU_Switch(void) {
-	CAN_Tx TxCan;
 	const TickType_t tick500ms = pdMS_TO_TICKS(500);
 	static TickType_t tick, tickSein;
 	static uint8_t Sein_Left_Internal = 0, Sein_Right_Internal = 0;
@@ -92,7 +92,7 @@ uint8_t CANBUS_ECU_Switch(void) {
 	TxCan.TxData[7] = (DB_ECU_Odometer >> 24) & 0xFF;
 
 	// dummy algorithm
-	DB_ECU_Signal = (DB_ECU_Signal > 100 ? 0 : DB_ECU_Signal + 1);
+	//	DB_ECU_Signal = (DB_ECU_Signal > 100 ? 0 : DB_ECU_Signal + 1);
 	DB_ECU_Odometer = (DB_ECU_Odometer >= ECU_ODOMETER_MAX ? 0 : (DB_ECU_Odometer + 1));
 
 	// set default header
@@ -102,7 +102,6 @@ uint8_t CANBUS_ECU_Switch(void) {
 }
 
 uint8_t CANBUS_ECU_RTC(void) {
-	CAN_Tx TxCan;
 	extern timestamp_t DB_ECU_TimeStamp;
 
 	// set message
@@ -122,7 +121,6 @@ uint8_t CANBUS_ECU_RTC(void) {
 }
 
 uint8_t CANBUS_ECU_Select_Set(void) {
-	CAN_Tx TxCan;
 	const TickType_t tick250ms = pdMS_TO_TICKS(250);
 	const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
 	static TickType_t tick, tickPeriod;
@@ -195,7 +193,6 @@ uint8_t CANBUS_ECU_Select_Set(void) {
 }
 
 uint8_t CANBUS_ECU_Trip_Mode(void) {
-	CAN_Tx TxCan;
 	extern switcher_t DB_HMI_Switcher;
 
 	// set message
@@ -240,51 +237,3 @@ void CANBUS_MCU_Dummy_Read(void) {
 }
 #endif
 
-// ==================================== MCU =========================================
-#if (CAN_NODE & CAN_NODE_MCU)
-uint8_t CANBUS_MCU_Dummy(void) {
-	CAN_Tx TxCan;
-	extern uint16_t MCU_RPM;
-	static uint8_t MCU_Temperature = 0;
-
-	// set message
-	// RPM data
-	TxCan.TxData[0] = (MCU_RPM & 0x00FF);
-	TxCan.TxData[1] = (MCU_RPM & 0xFF00) >> 8;
-	// Temperature data
-	TxCan.TxData[2] = MCU_Temperature;
-
-	// dummy algorithm
-	MCU_Temperature++;
-
-	// set default header
-	CAN_Set_Tx_Header(&(TxCan.TxHeader), CAN_ADDR_MCU_DUMMY, 3);
-
-	// send message
-	return CAN_Write(&TxCan);
-}
-#endif
-
-// ==================================== BMS =========================================
-#if (CAN_NODE & CAN_NODE_BMS)
-uint8_t CANBUS_BMS_Dummy(void) {
-	CAN_Tx TxCan;
-	static uint8_t BMS_SoC = 100;
-	static uint8_t BMS_Temperature = 0;
-
-	// set message
-	// SoC data
-	TxCan.TxData[0] = BMS_SoC;
-	// Temperature data
-	TxCan.TxData[1] = BMS_Temperature++;
-
-	// dummy algorithm
-	BMS_SoC = (!BMS_SoC ? 100 : (BMS_SoC - 1));
-
-	// set default header
-	CAN_Set_Tx_Header(&(TxCan.TxHeader), CAN_ADDR_BMS_DUMMY, 2);
-
-	// send message
-	return CAN_Write(&TxCan);
-}
-#endif

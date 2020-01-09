@@ -8,7 +8,7 @@
 #ifndef FLASH_H_
 #define FLASH_H_
 
-#include "_eeprom.h"
+#include "_ee_emulation.h"
 
 /* Virtual address */
 /* Virtual address defined by the user: 0xFFFF value is prohibited */

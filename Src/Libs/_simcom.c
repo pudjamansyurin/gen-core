@@ -22,7 +22,6 @@ extern osThreadId CommandTaskHandle;
 /* Private variable ---------------------------------------------------------*/
 extern char PAYLOAD[];
 // FIXME combine me with simcom_t
-char CIPSEND[50], CIPSTART[50], CSTT[75], CNMP[11];
 simcom_t simcom;
 
 /* USER CODE END PV */
@@ -44,17 +43,18 @@ static void Simcom_Prepare(void) {
 	strcpy(simcom.server_ip, "36.80.66.36");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
-	strcpy(simcom.network_apn, "3gprs"); 					// "3gprs,telkomsel"
-	strcpy(simcom.network_username, "3gprs");			// "3gprs,wap"
-	strcpy(simcom.network_password, "3gprs");			// "3gprs,wap123"
+	strcpy(simcom.net_apn, "3gprs"); 					// "3gprs,telkomsel"
+	strcpy(simcom.net_username, "3gprs");			// "3gprs,wap"
+	strcpy(simcom.net_password, "3gprs");			// "3gprs,wap123"
 	simcom.signal = SIGNAL_3G;
 	simcom.boot_timeout = 10;
 	simcom.repeat_delay = 5;
 	// prepare command sequence
-	sprintf(CIPSEND, "AT+CIPSEND\r");
-	sprintf(CNMP, "AT+CNMP=%d\r", simcom.signal);
-	sprintf(CSTT, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", simcom.network_apn, simcom.network_username, simcom.network_password);
-	sprintf(CIPSTART, "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r", simcom.server_ip, simcom.server_port);
+	sprintf(simcom.CMD_CIPSEND, "AT+CIPSEND\r");
+	sprintf(simcom.CMD_CNMP, "AT+CNMP=%d\r", simcom.signal);
+	sprintf(simcom.CMD_CSTT, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", simcom.net_apn, simcom.net_username,
+			simcom.net_password);
+	sprintf(simcom.CMD_CIPSTART, "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r", simcom.server_ip, simcom.server_port);
 }
 
 static uint8_t Simcom_Boot(void) {
@@ -206,7 +206,7 @@ void Simcom_Init(void) {
 
 		// Set signal Generation 2G/3G/AUTO
 		if (p) {
-			p = Simcom_Send(CNMP, 500, NULL, 5);
+			p = Simcom_Send(simcom.CMD_CNMP, 500, NULL, 5);
 		}
 
 		// Network Registration Status
@@ -225,7 +225,7 @@ void Simcom_Init(void) {
 		// =========== TCP/IP CONFIGURATION
 		//Set type of authentication for PDP-IP connections of socket
 		if (p) {
-			p = Simcom_Send(CSTT, 500, NULL, 5);
+			p = Simcom_Send(simcom.CMD_CSTT, 500, NULL, 5);
 		}
 		// Bring Up Wireless Connection with GPRS
 		if (p) {
@@ -238,7 +238,7 @@ void Simcom_Init(void) {
 
 		// Establish connection with server
 		if (p) {
-			p = Simcom_Send(CIPSTART, 500, "CONNECT", 1);
+			p = Simcom_Send(simcom.CMD_CIPSTART, 500, "CONNECT", 1);
 			// check either connection ok / error
 			if (p) {
 				p = Simcom_Response("CONNECT OK");
@@ -253,14 +253,14 @@ void Simcom_Init(void) {
 	} while (p == 0);
 }
 
-uint8_t Simcom_Send_Payload(void) {
+uint8_t Simcom_Send_Report(void) {
 	// set sending time
 	Reporter_Set_Sending_Time();
 	// send payload
-	return Simcom_To_Server(PAYLOAD, strlen(PAYLOAD));
+	return Simcom_Upload(PAYLOAD, strlen(PAYLOAD));
 }
 
-uint8_t Simcom_To_Server(char *message, uint16_t length) {
+uint8_t Simcom_Upload(char *message, uint16_t length) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0;
@@ -268,7 +268,7 @@ uint8_t Simcom_To_Server(char *message, uint16_t length) {
 	// add message end character
 	sprintf(str, "%s%s", message, SIMCOM_MESSAGE_END);
 	// confirm to server that command is executed
-	if (Simcom_Send(CIPSEND, 500, SIMCOM_STATUS_SEND, 1)) {
+	if (Simcom_Send(simcom.CMD_CIPSEND, 500, SIMCOM_STATUS_SEND, 1)) {
 		// send response
 		if (Simcom_Send(str, 5000, NULL, 1)) {
 			ret = 1;
@@ -327,5 +327,10 @@ uint8_t Simcom_Get_Command(command_t *cmd) {
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);
 	return ret;
+}
+
+uint8_t Simcom_Check_Signal(void) {
+	// check signal quality
+	return 0;
 }
 

@@ -46,13 +46,4 @@ uint8_t CANBUS_ECU_Trip_Mode(void);
 
 void CANBUS_MCU_Dummy_Read(void);
 #endif
-// ==================================== MCU =========================================
-#if (CAN_NODE & CAN_NODE_MCU)
-uint8_t CANBUS_MCU_Dummy(void);
-#endif
-// ==================================== BMS =========================================
-#if (CAN_NODE & CAN_NODE_BMS)
-uint8_t CANBUS_BMS_Dummy(void);
-#endif
-
 #endif /* CANBUS_H_ */

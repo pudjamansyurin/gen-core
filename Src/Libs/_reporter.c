@@ -91,7 +91,7 @@ void Reporter_Set_Report_ID(report_id_t reportID) {
 	report.data.reportd_id = reportID;
 }
 
-void Reporter_Convert_GPS(gps_t *hgps) {
+void Reporter_Read_GPS(gps_t *hgps) {
 	// parse gps data
 	if (hgps->fix > 0) {
 		Reporter_Set_Odometer(report.data.odometer + (gps_to_speed(hgps->speed, gps_speed_mps) * REPORT_INTERVAL));
