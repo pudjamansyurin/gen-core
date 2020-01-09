@@ -32,7 +32,6 @@ void Reporter_Reset(void);
 void Reporter_Set_Message(char *msg);
 void Reporter_Set_Report_ID(report_id_t reportID);
 void Reporter_Read_GPS(gps_t *hgps);
-void Reporter_Set_Sending_Time(void);
 void Reporter_Set_Payload(void);
 void Reporter_Set_Odometer(uint32_t odom);
 

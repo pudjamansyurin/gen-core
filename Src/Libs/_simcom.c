@@ -19,9 +19,9 @@ static uint8_t Simcom_Boot(void);
 extern char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
 extern osMutexId SimcomRecMutexHandle;
 extern osThreadId CommandTaskHandle;
-/* Private variable ---------------------------------------------------------*/
 extern char PAYLOAD[];
-// FIXME combine me with simcom_t
+extern uint8_t DB_ECU_Signal;
+/* Private variable ---------------------------------------------------------*/
 simcom_t simcom;
 
 /* USER CODE END PV */
@@ -31,7 +31,6 @@ void Ublox_Init(gps_t *hgps) {
 	gps_init(hgps);
 }
 
-// FIXME change Simcom_Reset to Simcom_Off
 static void Simcom_Reset(void) {
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
 	osDelay(100);
@@ -40,7 +39,7 @@ static void Simcom_Reset(void) {
 }
 
 static void Simcom_Prepare(void) {
-	strcpy(simcom.server_ip, "36.80.66.36");
+	strcpy(simcom.server_ip, "36.81.102.185");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
 	strcpy(simcom.net_apn, "3gprs"); 					// "3gprs,telkomsel"
@@ -254,8 +253,6 @@ void Simcom_Init(void) {
 }
 
 uint8_t Simcom_Send_Report(void) {
-	// set sending time
-	Reporter_Set_Sending_Time();
 	// send payload
 	return Simcom_Upload(PAYLOAD, strlen(PAYLOAD));
 }
@@ -288,35 +285,36 @@ uint8_t Simcom_Get_Command(command_t *cmd) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0;
+	char *prefix = "AT$";
 	char *start, *delim, *end;
 
 	if (Simcom_Send("AT+CIPRXGET=2,1024\r", 500, NULL, 1)) {
 		// check is command not empty
 		if (!Simcom_Response("CIPRXGET: 2,0")) {
 			// get pointer reference
-			start = strstr(SIMCOM_UART_RX_Buffer, "AT$");
-			end = strstr(start, "\r\nOK");
+			start = strstr(SIMCOM_UART_RX_Buffer, prefix);
 			delim = strchr(start, '=');
+			end = strstr(start, "\r\nOK");
 
 			// check if command has value
 			if (delim != NULL) {
 				// get command
-				strncpy(cmd->var, start + 3, delim - (start + 3));
-				*(cmd->var + (delim - (start + 3))) = '\0';
+				strncpy(cmd->var, start + strlen(prefix), delim - (start + strlen(prefix)));
+				*(cmd->var + (delim - (start + strlen(prefix)))) = '\0';
 				// get value
 				strncpy(cmd->val, delim + 1, end - delim);
 				*(cmd->val + (end - delim)) = '\0';
 			} else {
 				// get command
-				strncpy(cmd->var, start + 3, end - (start + 3));
-				*(cmd->var + (end - (start + 3))) = '\0';
+				strncpy(cmd->var, start + strlen(prefix), end - (start + strlen(prefix)));
+				*(cmd->var + (end - (start + strlen(prefix)))) = '\0';
 				// set value
 				*(cmd->val) = '\0';
 			}
 
 			// get full command
-			strncpy(cmd->cmd, start + 3, end - (start + 3));
-			*(cmd->cmd + (end - (start + 3))) = '\0';
+			strncpy(cmd->cmd, start + strlen(prefix), end - (start + strlen(prefix)));
+			*(cmd->cmd + (end - (start + strlen(prefix)))) = '\0';
 
 			// reset rx buffer
 			SIMCOM_Reset_Buffer();
@@ -329,8 +327,37 @@ uint8_t Simcom_Get_Command(command_t *cmd) {
 	return ret;
 }
 
-uint8_t Simcom_Check_Signal(void) {
+void Simcom_Check_Signal(void) {
+	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+	uint8_t rssi = 0;
+	char *prefix = "+CSQ: ";
+	char *start, *end;
+	char rssi_str[3];
 	// check signal quality
-	return 0;
+	if (Simcom_Send("AT+CSQ\r", 500, NULL, 1)) {
+		// get pointer reference
+		start = strstr(SIMCOM_UART_RX_Buffer, prefix);
+		end = strchr(start, ',');
+
+		// get rssi string
+		strncpy(rssi_str, start + strlen(prefix), end - (start + strlen(prefix)));
+		*(rssi_str + (end - (start + strlen(prefix)))) = '\0';
+
+		// convert rssi to integer
+		rssi = atoi(rssi_str);
+
+		// handle not detectable rssi value
+		rssi = (rssi == 99 ? 0 : rssi);
+
+		// convert rssi value to percentage
+		DB_ECU_Signal = (rssi * 100) / 31;
+
+		SWV_SendStr("SIGNAL_QUALITY = ");
+		SWV_SendInt(DB_ECU_Signal);
+		SWV_SendStrLn(" %");
+	}
+
+	osRecursiveMutexRelease(SimcomRecMutexHandle);
 }
 

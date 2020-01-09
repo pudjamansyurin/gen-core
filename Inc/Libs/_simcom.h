@@ -61,6 +61,6 @@ uint8_t Simcom_Send_Report(void);
 uint8_t Simcom_Check_Command(void);
 uint8_t Simcom_Get_Command(command_t *command);
 uint8_t Simcom_Upload(char *message, uint16_t length);
-uint8_t Simcom_Check_Signal(void);
+void Simcom_Check_Signal(void);
 
 #endif /* SIMCOM_H_ */

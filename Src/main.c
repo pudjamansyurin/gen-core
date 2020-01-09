@@ -87,6 +87,7 @@ osThreadId KeylessTaskHandle;
 osThreadId ReporterTaskHandle;
 osThreadId CanRxTaskHandle;
 osThreadId SwitchTaskHandle;
+osThreadId GeneralTaskHandle;
 osMessageQId AudioVolQueueHandle;
 osTimerId TimerCANHandle;
 osMutexId AudioBeepMutexHandle;
@@ -124,6 +125,7 @@ void StartKeylessTask(void const *argument);
 void StartReporterTask(void const *argument);
 void StartCanRxTask(void const *argument);
 void StartSwitchTask(void const *argument);
+void StartGeneralTask(void const *argument);
 void CallbackTimerCAN(void const *argument);
 
 /* USER CODE BEGIN PFP */
@@ -234,11 +236,11 @@ int main(void)
 
 	/* Create the thread(s) */
 	/* definition and creation of IotTask */
-	osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 512);
+	osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
 	IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
 	/* definition and creation of GyroTask */
-	osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 512);
+	osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
 	GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
 	/* definition and creation of CommandTask */
@@ -272,6 +274,10 @@ int main(void)
 	/* definition and creation of SwitchTask */
 	osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
 	SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+
+	/* definition and creation of GeneralTask */
+	osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
+	GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -1483,7 +1489,6 @@ void StartReporterTask(void const *argument)
 		}
 
 		// Set payload (all data)
-		// FIXME i need to be stored in array logs.
 		Reporter_Set_Payload();
 
 		// Report is ready, do what you want
@@ -1670,13 +1675,35 @@ void StartSwitchTask(void const *argument)
 	/* USER CODE END StartSwitchTask */
 }
 
+/* USER CODE BEGIN Header_StartGeneralTask */
+/**
+ * @brief Function implementing the GeneralTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartGeneralTask */
+void StartGeneralTask(void const *argument)
+{
+	/* USER CODE BEGIN StartGeneralTask */
+	const TickType_t tick500ms = pdMS_TO_TICKS(500);
+	TickType_t xLastWakeTime;
+
+	/* Infinite loop */
+	xLastWakeTime = xTaskGetTickCount();
+	for (;;) {
+		// Retrieve network signal quality
+		Simcom_Check_Signal();
+
+		// Periodic interval
+		vTaskDelayUntil(&xLastWakeTime, tick500ms);
+	}
+	/* USER CODE END StartGeneralTask */
+}
+
 /* CallbackTimerCAN function */
 void CallbackTimerCAN(void const *argument)
 {
 	/* USER CODE BEGIN CallbackTimerCAN */
-	extern uint8_t DB_ECU_Signal;
-	// Retrieve network signal quality
-	DB_ECU_Signal = Simcom_Check_Signal();
 	// Send CAN data
 	CANBUS_ECU_Switch();
 	CANBUS_ECU_RTC();

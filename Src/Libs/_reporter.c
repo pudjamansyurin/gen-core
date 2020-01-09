@@ -99,34 +99,45 @@ void Reporter_Read_GPS(gps_t *hgps) {
 		ftoa(hgps->longitude, report.data.gps.longitude, 6);
 		ftoa(hgps->dop_h, report.data.gps.hdop, 3);
 		ftoa(gps_to_speed(hgps->speed, gps_speed_kph), report.data.speed, 1);
-		sprintf(report.data.gps.datetime, "20%02d%02d%02d%02d%02d%02d", hgps->year, hgps->month, hgps->date,
+		sprintf(report.data.gps.datetime, "20%02d%02d%02d%02d%02d%02d",
+				hgps->year,
+				hgps->month,
+				hgps->date,
 				RTC_Offset(hgps->hours, GMT_TIME),
-				hgps->minutes, hgps->seconds);
+				hgps->minutes,
+				hgps->seconds);
 	}
-}
-
-void Reporter_Set_Sending_Time(void) {
-	RTC_Read(report.data.datetime_sending);
-
-	// FIXME datetime sending should updated
-	//	str_replace(PAYLOAD, "_SENDING_TIME_", report.data.datetime_sending);
 }
 
 void Reporter_Set_Payload(void) {
 	// parse rtc datetime
 	RTC_Read(report.data.datetime_rtc);
 	//Reconstruct the data
-	sprintf(POSITION_DATA, "%s,%s,_SENDING_TIME_,%s,%s,"
-			"%s,%d,%lu,%s,%d,"
-			"%s,%d,%d,%s,%d,"
-			"%d,%s\r\n", report.data.gps.datetime, report.data.datetime_rtc, report.data.gps.longitude, report.data.gps.latitude,
-			report.data.gps.heading, report.data.reportd_id, report.data.odometer, report.data.gps.hdop, report.data.status_input,
-			report.data.speed, report.data.status_output, report.data.analog_input, report.data.driver_id, report.data.temp_sensor1,
-			report.data.temp_sensor2, report.data.message);
+	sprintf(POSITION_DATA, "%s,%s,_SENDING_TIME_,%s,%s,%s,%d,%lu,%s,%d,%s,%d,%d,%s,%d,%d,%s\r\n",
+			report.data.gps.datetime,
+			report.data.datetime_rtc,
+			report.data.gps.longitude,
+			report.data.gps.latitude,
+			report.data.gps.heading,
+			report.data.reportd_id,
+			report.data.odometer,
+			report.data.gps.hdop,
+			report.data.status_input,
+			report.data.speed,
+			report.data.status_output,
+			report.data.analog_input,
+			report.data.driver_id,
+			report.data.temp_sensor1,
+			report.data.temp_sensor2,
+			report.data.message);
 	//Reconstruct the header
 	report.header.length = strlen(POSITION_DATA);
 	report.header.seq_id++;
-	sprintf(POSITION_HEADER, "%s,%d,%d,%d,%s", report.header.prefix, report.header.crc, report.header.length, report.header.seq_id,
+	sprintf(POSITION_HEADER, "%s,%d,%d,%d,%s",
+			report.header.prefix,
+			report.header.crc,
+			report.header.length,
+			report.header.seq_id,
 			report.header.unit_id);
 	//Reconstruct the position
 	sprintf(PAYLOAD, "%s,%s", POSITION_HEADER, POSITION_DATA);
