@@ -9,29 +9,43 @@
 
 extern RTC_HandleTypeDef hrtc;
 
-void RTC_Read_RAW(timestamp_t * timestamp) {
+void RTC_Read_RAW(timestamp_t *timestamp) {
 	// get the RTC
 	HAL_RTC_GetTime(&hrtc, &(timestamp->time), RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &(timestamp->date), RTC_FORMAT_BIN);
 }
 
-void RTC_Read(char *dateTime) {
+uint64_t RTC_Read(void) {
 	timestamp_t timestamp;
 
 	// get the RTC
 	RTC_Read_RAW(&timestamp);
 
 	// combine RTC datetime
-	sprintf(dateTime, "20%02d%02d%02d%02d%02d%02d", timestamp.date.Year, timestamp.date.Month, timestamp.date.Date, timestamp.time.Hours,
-			timestamp.time.Minutes, timestamp.time.Seconds);
+	return (100000000000 * timestamp.date.Year +
+			1000000000 * timestamp.date.Month +
+			10000000 * timestamp.date.Date +
+			100000 * timestamp.time.Hours +
+			1000 * timestamp.time.Minutes +
+			10 * timestamp.time.Seconds +
+			1 * timestamp.date.WeekDay
+	);
 }
 
-void RTC_Write(char *dateTime) {
-	// format dateTime: YYYYMMDDHHMMSS
-	char Y[2], M[2], D[2], H[2], I[2], S[2];
+void RTC_Write(uint64_t dateTime) {
+	// format dateTime: YYMMDDHHMMSS
+	uint8_t dt[7];
 	timestamp_t timestamp;
 
 	// parsing
+	dt[0] = (dateTime / 100000000000);
+	dt[1] = (dateTime / 1000000000);
+	dt[2] = (dateTime / 10000000);
+	dt[3] = (dateTime / 100000);
+	dt[4] = (dateTime / 1000);
+	dt[5] = (dateTime / 10) - ((dateTime / 1000) * 1000);
+	dt[6] = (dateTime / 1) - ((dateTime / 10) * 10);
+
 	strncpy(Y, dateTime + 2, 2);
 	strncpy(M, dateTime + 4, 2);
 	strncpy(D, dateTime + 6, 2);
@@ -41,13 +55,14 @@ void RTC_Write(char *dateTime) {
 
 	// assing to object
 	// FIXME day is ignored
-	timestamp.date.WeekDay = RTC_WEEKDAY_SUNDAY;
-	timestamp.date.Year = atoi(Y);
-	timestamp.date.Month = atoi(M);
+	timestamp.date.Year = dateTime / 100000000000;
+	timestamp.date.Month = dateTime / 1000000000;
 	timestamp.date.Date = atoi(D);
 	timestamp.time.Hours = atoi(H);
 	timestamp.time.Minutes = atoi(I);
 	timestamp.time.Seconds = atoi(S);
+	timestamp.date.WeekDay = RTC_WEEKDAY_SUNDAY;
+
 	timestamp.time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 	timestamp.time.StoreOperation = RTC_STOREOPERATION_RESET;
 

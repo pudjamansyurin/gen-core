@@ -111,10 +111,8 @@ void Error_Handler(void);
 #define EXT_HMI1_PWR_GPIO_Port GPIOC
 #define EXT_HMI2_PWR_Pin GPIO_PIN_5
 #define EXT_HMI2_PWR_GPIO_Port GPIOC
-#define EXT_ADC1_Pin GPIO_PIN_0
-#define EXT_ADC1_GPIO_Port GPIOB
-#define EXT_ADC2_Pin GPIO_PIN_1
-#define EXT_ADC2_GPIO_Port GPIOB
+#define INT_ADC_VBAT_Pin GPIO_PIN_1
+#define INT_ADC_VBAT_GPIO_Port GPIOB
 #define EXT_SOLENOID_PWR_Pin GPIO_PIN_2
 #define EXT_SOLENOID_PWR_GPIO_Port GPIOB
 #define EXT_FINGER_IRQ_Pin GPIO_PIN_7
@@ -156,6 +154,8 @@ void Error_Handler(void);
 #define EXT_GPIO_OUT3_GPIO_Port GPIOD
 #define EXT_GPIO_OUT4_Pin GPIO_PIN_11
 #define EXT_GPIO_OUT4_GPIO_Port GPIOD
+#define EXT_GPIO_IN0_Pin GPIO_PIN_12
+#define EXT_GPIO_IN0_GPIO_Port GPIOD
 #define SYS_LED_Pin GPIO_PIN_13
 #define SYS_LED_GPIO_Port GPIOD
 #define INT_AUDIO_MCLK_Pin GPIO_PIN_7
