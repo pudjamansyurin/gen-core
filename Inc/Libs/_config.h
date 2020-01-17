@@ -45,14 +45,15 @@
 #define EVENT_KEYLESS_RX_IT					SetBit(0)
 
 // msg list
-#define MSG_KEYLESS_BROADCAST				SetBit(0)
-#define MSG_KEYLESS_FINDER					SetBit(1)
-#define MSG_KEYLESS_SEAT 						SetBit(2)
+#define KEYLESS_MSG_BROADCAST				SetBit(0)
+#define KEYLESS_MSG_FINDER					SetBit(1)
+#define KEYLESS_MSG_SEAT 						SetBit(2)
 
 // Function prototype
 void BSP_Led_Write(uint8_t state);
 void BSP_Led_Toggle(void);
 void BSP_Led_Disco(uint16_t ms);
-void ftoa(float f, char *str, char size);
+int8_t BSP_Bit_Pos(uint64_t event_id);
+//void ftoa(float f, char *str, char size);
 
 #endif /* CONFIG_H_ */

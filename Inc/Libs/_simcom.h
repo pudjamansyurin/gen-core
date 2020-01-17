@@ -23,11 +23,9 @@
 #define SIMCOM_STATUS_READY 				"RDY\r\n"
 #define SIMCOM_STATUS_RESTARTED			"START\r\n"
 
-#define SIMCOM_MESSAGE_END					"\x1A"
-
 /* Public typedef -----------------------------------------------------------*/
 typedef enum {
-	//	SIGNAL_AUTO = 2,
+	SIGNAL_AUTO = 2,
 	SIGNAL_2G = 13,
 	SIGNAL_3G = 14,
 } signal_t;
@@ -57,10 +55,9 @@ typedef struct {
 /* Public functions ---------------------------------------------------------*/
 void Ublox_Init(gps_t *hgps);
 void Simcom_Init(void);
-uint8_t Simcom_Send_Report(void);
-uint8_t Simcom_Check_Command(void);
-uint8_t Simcom_Get_Command(command_t *command);
 uint8_t Simcom_Upload(char *message, uint16_t length);
-void Simcom_Check_Signal(void);
+uint8_t Simcom_Check_Command(void);
+uint8_t Simcom_Read_Command(command_t *command);
+uint8_t Simcom_Read_Signal(uint8_t *signal);
 
 #endif /* SIMCOM_H_ */
