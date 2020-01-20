@@ -8,10 +8,6 @@
 #include "_reporter.h"
 
 // variable list
-// FIXME reduce the using of global variables, or if you can't, handle how tasks interact with them.
-//char POSITION_HEADER[REPORT_POS_HEADER_LENGTH];
-//char POSITION_DATA[REPORT_POS_DATA_LENGTH];
-//char PAYLOAD[REPORT_POS_HEADER_LENGTH + REPORT_POS_DATA_LENGTH];
 extern timestamp_t DB_ECU_TimeStamp;
 report_t report;
 
@@ -26,19 +22,20 @@ void Reporter_Reset(void) {
 	report.header.unit_id = 354453;
 
 	report.data.rtc_datetime = 0;
-	report.data.driver_id = 0;
+	report.data.driver_id = 1;
 	report.data.events_group = 0;
-	report.data.gps.longitude = 0;
+	report.data.gps.longitude = 1;
 	report.data.gps.latitude = 0;
-	report.data.gps.hdop = 0;
+	report.data.gps.hdop = 1;
 	report.data.gps.heading = 0;
-	report.data.speed = 0;
+	report.data.speed = 1;
 	report.data.odometer = Flash_Get_Odometer();
 	// FIXME get my real value using ADC
-	report.data.backup_bat_voltage = 200;
-
-	//	strcpy(report.data.message, "");
-	report.terminator = 0x1A;
+	report.data.bat_voltage = 200;
+	report.data.report_range = 0;
+	report.data.report_battery = 99;
+	report.data.trip_a = 0;
+	report.data.trip_b = 1;
 }
 
 void Reporter_Set_Odometer(uint32_t odom) {
@@ -87,7 +84,7 @@ void Reporter_Set_Frame(void) {
 			sizeof(report.header.frame_id) +
 			sizeof(report.header.unit_id) +
 			sizeof(report.data);
-	// FIXME use CRC hardware acceleration
+	// FIXME use CRC hardware calculation
 	report.header.crc = 0;
 }
 

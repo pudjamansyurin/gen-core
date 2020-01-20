@@ -8,18 +8,17 @@
 #ifndef REPORTER_H_
 #define REPORTER_H_
 
-#include <stdio.h>							// for: sprintf()
+#include <stdio.h>											// for: sprintf()
 #include "_config.h"
 #include "_flash.h"
 #include "_ee_emulation.h"
 #include "_nmea.h"
 #include "_rtc.h"
 
-//#define REPORT_MESSAGE_LENGTH				500
-
 // Events group id (max 64 events, uint64_t)
 #define REPORT_BIKE_FALLING 						SetBit(0)
 #define REPORT_BIKE_CRASHED 						SetBit(1)
+#define REPORT_KEYLESS_MISSING					SetBit(2)
 
 /*  typedef -----------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
@@ -28,17 +27,6 @@ typedef struct __attribute__((packed)) {
 	uint8_t hdop;
 	uint8_t heading;
 } report_data_gps_t;
-
-typedef struct __attribute__((packed)) {
-	uint64_t rtc_datetime;
-	uint8_t driver_id;
-	uint64_t events_group;
-	report_data_gps_t gps;
-	uint8_t speed;
-	uint32_t odometer;
-	uint8_t backup_bat_voltage;
-//	char message[REPORT_MESSAGE_LENGTH + 1];
-} report_data_t;
 
 typedef struct __attribute__((packed)) {
 	uint16_t prefix;
@@ -50,9 +38,22 @@ typedef struct __attribute__((packed)) {
 } report_header_t;
 
 typedef struct __attribute__((packed)) {
+	uint64_t rtc_datetime;
+	uint8_t driver_id;
+	uint64_t events_group;
+	report_data_gps_t gps;
+	uint8_t speed;
+	uint32_t odometer;
+	uint8_t bat_voltage;
+	uint8_t report_range;
+	uint8_t report_battery;
+	uint32_t trip_a;
+	uint32_t trip_b;
+} report_data_t;
+
+typedef struct __attribute__((packed)) {
 	report_header_t header;
 	report_data_t data;
-	uint8_t terminator;
 } report_t;
 
 // public function

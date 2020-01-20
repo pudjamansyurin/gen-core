@@ -1375,7 +1375,7 @@ void StartKeylessTask(void const *argument)
 
 			SWV_SendStr("NRF received packet, msg = ");
 			SWV_SendHex8(msg);
-			SWV_SendStrLn("");
+			SWV_SendChar('\n');
 
 			// indicator
 			WaveBeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);

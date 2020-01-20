@@ -7,7 +7,6 @@
 #include "_simcom.h"
 
 /* Private functions ---------------------------------------------------------*/
-//static void Simcom_On(void);
 static void Simcom_Reset(void);
 static uint8_t Simcom_Response(char *str);
 static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res);
@@ -79,20 +78,17 @@ static uint8_t Simcom_Response(char *str) {
 static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
+	char ctrl_z = 0x1A;
 	uint8_t ret;
 	uint32_t tick, timeout_tick = 0;
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
-	// print command for debugger
-	if (!is_payload) {
-		SWV_SendStr("\n=> ");
-		SWV_SendBuf(data, data_length);
-	} else {
-		SWV_SendBufHex(data, data_length);
-	}
-	SWV_SendStrLn("");
 	// transmit to serial (low-level)
 	SIMCOM_Transmit(data, data_length);
+	if (is_payload) {
+		// terminate payload mode with CTRL+Z
+		SIMCOM_Transmit(&ctrl_z, 1);
+	}
 	// convert time to tick
 	timeout_tick = pdMS_TO_TICKS(ms + SIMCOM_EXTRA_TIME_MS);
 	// set timeout guard
@@ -106,9 +102,6 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 			break;
 		}
 	}
-	// print response for debugger
-	SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
-	SWV_SendStrLn("");
 	// check if it has new command
 	if (Simcom_Check_Command()) {
 		xTaskNotify(CommandTaskHandle, EVENT_COMMAND_ARRIVED, eSetBits);
@@ -128,11 +121,26 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
 	}
 	// repeat command until desired response
 	while (seq <= n) {
+		// print command for debugger
+		if (!is_payload) {
+			SWV_SendStr("\n=> ");
+			SWV_SendBuf(data, data_length);
+		} else {
+			SWV_SendBufHex(data, data_length);
+		}
+		SWV_SendChar('\n');
+
+		// send command
 		p = Simcom_Send_Direct(data, data_length, is_payload, ms, res);
+
+		// print response for debugger
+		SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+		SWV_SendChar('\n');
 
 		// handle response match
 		if (p) {
 			ret = 1;
+
 			// exit loop
 			break;
 		}
