@@ -97,6 +97,7 @@ osMutexId FingerRecMutexHandle;
 /* USER CODE BEGIN PV */
 osMailQId GpsMailHandle;
 extern report_t report;
+extern response_t response;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1023,23 +1024,34 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 void StartIotTask(void const *argument)
 {
 	/* USER CODE BEGIN 5 */
-	uint32_t ulNotifiedValue;
+	uint32_t notifValue;
+	uint8_t res;
+
 	// Start simcom module
 	SIMCOM_DMA_Init();
 	Simcom_Init();
 	/* Infinite loop */
 	for (;;) {
 		// get event data
-		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, portMAX_DELAY);
 
-		// check every event
-		if (ulNotifiedValue & EVENT_IOT_SEND_REPORT) {
-			// Send payload
-			if (!Simcom_Upload((char*) &report, sizeof(report))) {
-				BSP_Led_Disco(5000);
-				// restart module
-				Simcom_Init();
-			}
+		// check every event & send
+		// handle response frame
+		if (notifValue & EVENT_IOT_REPORT_RESPONSE) {
+			res = Simcom_Upload((char*) &response, sizeof(response));
+		}
+		// handle report frame
+		if (notifValue & EVENT_IOT_REPORT_SIMPLE) {
+			res = Simcom_Upload((char*) &report, sizeof(report.header) + sizeof(report.data.req));
+		} else if (notifValue & EVENT_IOT_REPORT_FULL) {
+			res = Simcom_Upload((char*) &report, sizeof(report));
+		}
+
+		// handle sending error
+		if (!res) {
+			BSP_Led_Disco(1000);
+			// restart module
+			Simcom_Init();
 		}
 	}
 	/* USER CODE END 5 */
@@ -1106,10 +1118,12 @@ void StartCommandTask(void const *argument)
 	BaseType_t xResult;
 	command_t command;
 
-	char response[100];
 	int p;
 	uint8_t newCommand = 0;
 	uint32_t val;
+
+	// reset response frame to default
+	Reporter_Reset(FRAME_RESPONSE);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
@@ -1132,7 +1146,7 @@ void StartCommandTask(void const *argument)
 			// read the command & execute
 			if (Simcom_Read_Command(&command)) {
 				// generic command response
-				sprintf(response, "%s executed.", command.cmd);
+				sprintf(response.data.message, "%s:OK", command.cmd);
 
 				// BSP Led configuration
 				if (strstr(command.var, "LED") != NULL) {
@@ -1143,6 +1157,8 @@ void StartCommandTask(void const *argument)
 				// RTC configuration
 				else if (strcmp(command.var, "RTC") == 0) {
 					val = atoi(command.val);
+
+					// FIXME atoi is limited for 32-bit
 					RTC_Write(val);
 				}
 
@@ -1154,7 +1170,7 @@ void StartCommandTask(void const *argument)
 
 				// Information detail
 				else if (strcmp(command.var, "INFO") == 0) {
-					sprintf(response, "HUB v.1.0\nGEN Indonesia @ 2019\n");
+					strcpy(response.data.message, "VCU v.1.0\nGEN Indonesia @ 2019\n");
 				}
 
 				// Audio configuration
@@ -1167,11 +1183,7 @@ void StartCommandTask(void const *argument)
 						val = atoi(command.val);
 
 						if (strcmp(command.var, "AUDIO_MUTE") == 0) {
-							if (val) {
-								xTaskNotify(AudioTaskHandle, EVENT_AUDIO_MUTE_ON, eSetBits);
-							} else {
-								xTaskNotify(AudioTaskHandle, EVENT_AUDIO_MUTE_OFF, eSetBits);
-							}
+							xTaskNotify(AudioTaskHandle, val ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF, eSetBits);
 						}
 
 						else if (strcmp(command.var, "AUDIO_VOL") == 0) {
@@ -1183,34 +1195,34 @@ void StartCommandTask(void const *argument)
 
 				// Finger print configuration
 				else if (strstr(command.var, "FINGER_") != NULL) {
-					val = atoi(command.val);
-
-					if (strcmp(command.var, "FINGER_ADD") == 0) {
-						p = Finger_Enroll(val);
-					}
-
-					else if (strcmp(command.var, "FINGER_DELETE") == 0) {
-						p = Finger_Delete_ID(val);
-					}
-
-					else if (strcmp(command.var, "FINGER_RESET") == 0) {
+					if (strcmp(command.var, "FINGER_RESET") == 0) {
 						p = Finger_Empty_Database();
+					} else {
+						val = atoi(command.val);
+
+						if (strcmp(command.var, "FINGER_ADD") == 0) {
+							p = Finger_Enroll(val);
+						}
+
+						else if (strcmp(command.var, "FINGER_DELETE") == 0) {
+							p = Finger_Delete_ID(val);
+						}
 					}
 
-					sprintf(response, "%s", command.cmd);
-					if (p == FINGERPRINT_OK) {
-						sprintf(response, "%s OK", response);
-					} else {
-						sprintf(response, "%s ERROR", response);
+					if (p != FINGERPRINT_OK) {
+						sprintf(response.data.message, "%s:ERROR", command.cmd);
 					}
 				}
 
 				else {
-					sprintf(response, "%s not found.", command.cmd);
+					sprintf(response.data.message, "%s:INVALID", command.cmd);
 				}
 
-				// send confirmation
-				Simcom_Upload(response, strlen(response));
+				// Set header
+				Reporter_Set_Header(FRAME_RESPONSE);
+
+				// Report is ready, do what you want (send to server)
+				xTaskNotify(IotTaskHandle, EVENT_IOT_REPORT_RESPONSE, eSetBits);
 			}
 		}
 
@@ -1231,7 +1243,8 @@ void StartGpsTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGpsTask */
 	extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
-	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL*1000);
+	// FIXME i should use REPORT_INTERVAL_FULL
+	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE * 1000);
 	TickType_t xLastWakeTime;
 	gps_t *hgps;
 
@@ -1398,21 +1411,19 @@ void StartKeylessTask(void const *argument)
 void StartReporterTask(void const *argument)
 {
 	/* USER CODE BEGIN StartReporterTask */
-	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL*1000);
-	TickType_t xLastWakeTime;
+	const TickType_t xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
+	const TickType_t xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000);
+	TickType_t xLastWakeTime, xLastFullWakeTime = 0;
 	BaseType_t xResult;
-	uint32_t ulNotifiedValue;
+	uint32_t ulNotifiedValue, frameEvent;
 	osEvent evt;
+	frame_t frame;
 
-	//	char msg[REPORT_MESSAGE_LENGTH];
-	// reset data to default
-	Reporter_Reset();
+	// reset report frame to default
+	Reporter_Reset(FRAME_FULL);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
-		// reset message & report
-		//		sprintf(msg, "%s", "");
-
 		// get event data
 		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
 
@@ -1428,24 +1439,35 @@ void StartReporterTask(void const *argument)
 			}
 		}
 
-		// set message
-		//		strcpy(report.data.message, msg);
-
-		// get processed gps data
+		// get processed GPS data
 		evt = osMailGet(GpsMailHandle, 0);
 		// break-down RAW NMEA data from GPS module
 		if (evt.status == osEventMail) {
+			// set GPS data
 			Reporter_Set_GPS(evt.value.p);
+			// set speed value (based on GPS)
+			Reporter_Set_Speed(evt.value.p);
 		}
 
-		// Set payload (all data) + header
-		Reporter_Set_Frame();
+		if ((xLastWakeTime - xLastFullWakeTime) >= xDelayFull_ms) {
+			// capture full frame wake time
+			xLastFullWakeTime = xLastWakeTime;
+			// full frame
+			frame = FRAME_FULL;
+			frameEvent = EVENT_IOT_REPORT_FULL;
+		} else {
+			// simple frame
+			frame = FRAME_SIMPLE;
+			frameEvent = EVENT_IOT_REPORT_SIMPLE;
+		}
 
+		// Set header
+		Reporter_Set_Header(frame);
 		// Report is ready, do what you want (send to server)
-		xTaskNotify(IotTaskHandle, EVENT_IOT_SEND_REPORT, eSetBits);
+		xTaskNotify(IotTaskHandle, frameEvent, eSetBits);
 
-		// Report interval in second
-		vTaskDelayUntil(&xLastWakeTime, xDelay_ms);
+		// Report interval in second (based on lowest interval, the simple frame)
+		vTaskDelayUntil(&xLastWakeTime, xDelaySimple_ms);
 	}
 	/* USER CODE END StartReporterTask */
 }

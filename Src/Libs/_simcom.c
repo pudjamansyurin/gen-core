@@ -49,7 +49,6 @@ static void Simcom_Prepare(void) {
 	simcom.boot_timeout = 10;
 	simcom.repeat_delay = 5;
 	// prepare command sequence
-	sprintf(simcom.CMD_CIPSEND, "AT+CIPSEND\r");
 	sprintf(simcom.CMD_CNMP, "AT+CNMP=%d\r", simcom.signal);
 	sprintf(simcom.CMD_CSTT,
 			"AT+CSTT=\"%s\",\"%s\",\"%s\"\r",
@@ -264,7 +263,7 @@ void Simcom_Init(void) {
 
 		// Establish connection with server
 		if (p) {
-			p = Simcom_Command_Match(simcom.CMD_CIPSTART, 500, "CONNECT", 1);
+			p = Simcom_Command_Match(simcom.CMD_CIPSTART, 10000, "CONNECT", 1);
 			// check either connection ok / error
 			if (p) {
 				p = Simcom_Response("CONNECT OK");
@@ -284,7 +283,7 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
 
 	uint8_t ret = 0;
 	// confirm to server that command is executed
-	if (Simcom_Command_Match(simcom.CMD_CIPSEND, 500, SIMCOM_STATUS_SEND, 1)) {
+	if (Simcom_Command_Match("AT+CIPSEND\r", 500, SIMCOM_STATUS_SEND, 1)) {
 		// send response
 		if (Simcom_Payload(payload, payload_length)) {
 			ret = 1;

@@ -17,7 +17,8 @@
 
 // definition
 #define GMT_TIME										7								// Asia/Jakarta
-#define	REPORT_INTERVAL							5								// in second
+#define	REPORT_INTERVAL_SIMPLE			5								// in second
+#define	REPORT_INTERVAL_FULL				20							// in second
 
 // macro to manipulate bit
 #define SetBit(x) 									(1 << x)
@@ -26,7 +27,9 @@
 #define ToggleBitOf(var, x) 				(var ^= 1 << x)
 
 // list event
-#define EVENT_IOT_SEND_REPORT 			SetBit(0)
+#define EVENT_IOT_REPORT_RESPONSE 	SetBit(0)
+#define EVENT_IOT_REPORT_SIMPLE 		SetBit(1)
+#define EVENT_IOT_REPORT_FULL 			SetBit(2)
 
 #define EVENT_REPORTER_CRASH				SetBit(0)
 #define EVENT_REPORTER_FALL					SetBit(1)

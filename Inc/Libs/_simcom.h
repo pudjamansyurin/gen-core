@@ -40,7 +40,6 @@ typedef struct {
 	char net_password[20];
 	uint8_t boot_timeout;
 	uint8_t repeat_delay;
-	char CMD_CIPSEND[50];
 	char CMD_CIPSTART[50];
 	char CMD_CSTT[75];
 	char CMD_CNMP[11];
