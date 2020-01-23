@@ -10,23 +10,23 @@
 
 extern RTC_HandleTypeDef hrtc;
 
-static timestamp_t Datetime_Decode(uint64_t dateTime) {
-	// format dateTime: YYMMDDhhmmssi
+static timestamp_t Datetime_Decode(char *dateTime) {
+	// format dateTime: YYMMDDHHmmssE
+	char dts[7][2];
 	uint8_t dt[7];
-	uint64_t tot = 0, div;
 	timestamp_t timestamp;
 
 	// parsing to timestamp
 	for (int i = 0; i <= 6; i++) {
 		if (i < 6) {
-			// handle : YYMMDDhhmmss
-			div = pow(10, (11 - (2 * i)));
-			tot += dt[i] * div;
+			// handle: YYMMDDHHmmss
+			strncpy(dts[i], dateTime + (i * 2), 2);
 		} else {
-			// handle : i
-			div = 1;
+			// handle: E
+			strncpy(dts[i], dateTime + (i * 2), 1);
 		}
-		dt[i] = ((dateTime - tot) / div);
+		// conver string to integer
+		dt[i] = atoi(dts[i]);
 	}
 
 	// fill to timestamp
@@ -83,7 +83,7 @@ uint64_t RTC_Read(void) {
 	return Datetime_Encode(timestamp);
 }
 
-void RTC_Write(uint64_t dateTime) {
+void RTC_Write(char *dateTime) {
 	timestamp_t timestamp;
 
 	// decode datetime to timestamp

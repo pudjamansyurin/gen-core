@@ -107,8 +107,8 @@ void Reporter_Set_Header(frame_t frame) {
 		response.header.crc = 0;
 		response.header.size = sizeof(response.header.frame_id) +
 				sizeof(response.header.unit_id) +
-				sizeof(response.data.message);
-		response.header.frame_id = frame;
+				strlen(response.data.message);
+		response.header.frame_id = FRAME_RESPONSE;
 
 	} else {
 		// parse newest rtc datetime

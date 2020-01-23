@@ -243,7 +243,7 @@ int main(void)
 	GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
 	/* definition and creation of CommandTask */
-	osThreadDef(CommandTask, StartCommandTask, osPriorityNormal, 0, 256);
+	osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
 	CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
 	/* definition and creation of GpsTask */
@@ -1024,6 +1024,7 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 void StartIotTask(void const *argument)
 {
 	/* USER CODE BEGIN 5 */
+	extern uint8_t DB_ECU_Signal;
 	uint32_t notifValue;
 	uint8_t res;
 
@@ -1038,7 +1039,7 @@ void StartIotTask(void const *argument)
 		// check every event & send
 		// handle response frame
 		if (notifValue & EVENT_IOT_REPORT_RESPONSE) {
-			res = Simcom_Upload((char*) &response, sizeof(response));
+			res = Simcom_Upload((char*) &response, sizeof(response.header) + strlen(response.data.message));
 		}
 		// handle report frame
 		if (notifValue & EVENT_IOT_REPORT_SIMPLE) {
@@ -1052,6 +1053,10 @@ void StartIotTask(void const *argument)
 			BSP_Led_Disco(1000);
 			// restart module
 			Simcom_Init();
+		} else {
+			// not error
+			// Retrieve network signal quality
+			Simcom_Read_Signal(&DB_ECU_Signal);
 		}
 	}
 	/* USER CODE END 5 */
@@ -1150,21 +1155,18 @@ void StartCommandTask(void const *argument)
 
 				// BSP Led configuration
 				if (strstr(command.var, "LED") != NULL) {
-					val = atoi(command.val);
+					val = atol(command.val);
 					BSP_Led_Write(val);
 				}
 
 				// RTC configuration
 				else if (strcmp(command.var, "RTC") == 0) {
-					val = atoi(command.val);
-
-					// FIXME atoi is limited for 32-bit
-					RTC_Write(val);
+					RTC_Write(command.val);
 				}
 
 				// Odometer configuration
 				else if (strcmp(command.var, "ODOM") == 0) {
-					val = atoi(command.val);
+					val = atol(command.val);
 					Reporter_Set_Odometer(val);
 				}
 
@@ -1180,7 +1182,7 @@ void StartCommandTask(void const *argument)
 					}
 
 					else {
-						val = atoi(command.val);
+						val = atol(command.val);
 
 						if (strcmp(command.var, "AUDIO_MUTE") == 0) {
 							xTaskNotify(AudioTaskHandle, val ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF, eSetBits);
@@ -1198,7 +1200,7 @@ void StartCommandTask(void const *argument)
 					if (strcmp(command.var, "FINGER_RESET") == 0) {
 						p = Finger_Empty_Database();
 					} else {
-						val = atoi(command.val);
+						val = atol(command.val);
 
 						if (strcmp(command.var, "FINGER_ADD") == 0) {
 							p = Finger_Enroll(val);
@@ -1424,6 +1426,9 @@ void StartReporterTask(void const *argument)
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
+		// reset events group
+		report.data.req.events_group = 0;
+
 		// get event data
 		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
 
@@ -1463,6 +1468,7 @@ void StartReporterTask(void const *argument)
 
 		// Set header
 		Reporter_Set_Header(frame);
+
 		// Report is ready, do what you want (send to server)
 		xTaskNotify(IotTaskHandle, frameEvent, eSetBits);
 
@@ -1659,13 +1665,10 @@ void StartGeneralTask(void const *argument)
 	/* USER CODE BEGIN StartGeneralTask */
 	const TickType_t tick500ms = pdMS_TO_TICKS(5000);
 	TickType_t xLastWakeTime;
-	extern uint8_t DB_ECU_Signal;
 
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
-		// Retrieve network signal quality
-		Simcom_Read_Signal(&DB_ECU_Signal);
 
 		// Periodic interval
 		vTaskDelayUntil(&xLastWakeTime, tick500ms);
@@ -1724,18 +1727,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

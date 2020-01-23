@@ -18,7 +18,7 @@ typedef struct {
 
 void RTC_Read_RAW(timestamp_t *timestamp);
 uint64_t RTC_Read(void);
-void RTC_Write(uint64_t dateTime);
+void RTC_Write(char *dateTime);
 //uint8_t RTC_Offset(uint8_t hour, int offset);
 
 #endif /* RTC_H_ */

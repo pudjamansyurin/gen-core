@@ -64,7 +64,7 @@ static uint8_t Simcom_Boot(void) {
 	// reset the state of simcom module
 	Simcom_Reset();
 	// wait until booting is done
-	return Simcom_Command_Match("AT\r", 1000, NULL, simcom.boot_timeout);
+	return Simcom_Command_Match("AT\r", 500, SIMCOM_STATUS_READY, simcom.boot_timeout);
 }
 
 static uint8_t Simcom_Response(char *str) {
@@ -168,7 +168,7 @@ static uint8_t Simcom_Command(char *cmd, uint32_t ms) {
 }
 
 static uint8_t Simcom_Payload(char *payload, uint16_t payload_length) {
-	return Simcom_Send_Indirect(payload, payload_length, 1, 10000, NULL, 1);
+	return Simcom_Send_Indirect(payload, payload_length, 1, 15000, NULL, 1);
 }
 
 void Simcom_Init(void) {
@@ -190,11 +190,6 @@ void Simcom_Init(void) {
 		p = Simcom_Boot();
 		// Execute only on first setup
 		if (p) {
-			// show boot response
-			SWV_SendStrLn("=========================");
-			SWV_SendStrLn("        AFTER BOOT       ");
-			SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
-			SWV_SendStrLn("\n=========================");
 			// disable command echo
 			p = Simcom_Command("ATE0\r", 500);
 		}
