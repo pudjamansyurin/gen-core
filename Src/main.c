@@ -1170,6 +1170,12 @@ void StartCommandTask(void const *argument)
 					Reporter_Set_Odometer(val);
 				}
 
+				// Frame data
+				else if (strcmp(command.var, "UNIT_ID") == 0) {
+					val = atol(command.val);
+					Reporter_Set_UnitID(val);
+				}
+
 				// Information detail
 				else if (strcmp(command.var, "INFO") == 0) {
 					strcpy(response.data.message, "VCU v.1.0\nGEN Indonesia @ 2019\n");
@@ -1197,7 +1203,7 @@ void StartCommandTask(void const *argument)
 
 				// Finger print configuration
 				else if (strstr(command.var, "FINGER_") != NULL) {
-					if (strcmp(command.var, "FINGER_RESET") == 0) {
+					if (strcmp(command.var, "FINGER_RST") == 0) {
 						p = Finger_Empty_Database();
 					} else {
 						val = atol(command.val);
@@ -1206,7 +1212,7 @@ void StartCommandTask(void const *argument)
 							p = Finger_Enroll(val);
 						}
 
-						else if (strcmp(command.var, "FINGER_DELETE") == 0) {
+						else if (strcmp(command.var, "FINGER_DEL") == 0) {
 							p = Finger_Delete_ID(val);
 						}
 					}

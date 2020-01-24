@@ -85,6 +85,8 @@ typedef struct __attribute__((packed)) {
 
 // public function
 void Reporter_Reset(frame_t frame);
+void Reporter_Set_Prefix(uint16_t prefix);
+void Reporter_Set_UnitID(uint64_t unitId);
 void Reporter_Set_Odometer(uint32_t odom);
 void Reporter_Set_GPS(gps_t *hgps);
 void Reporter_Set_Speed(gps_t *hgps);

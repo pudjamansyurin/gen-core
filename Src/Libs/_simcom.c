@@ -39,7 +39,7 @@ static void Simcom_Reset(void) {
 }
 
 static void Simcom_Prepare(void) {
-	strcpy(simcom.server_ip, "36.80.72.248");
+	strcpy(simcom.server_ip, "36.80.70.105");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
 	strcpy(simcom.net_apn, "3gprs"); 					// "3gprs,telkomsel"
@@ -59,12 +59,13 @@ static void Simcom_Prepare(void) {
 }
 
 static uint8_t Simcom_Boot(void) {
+	uint16_t ms = 500;
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
 	// reset the state of simcom module
 	Simcom_Reset();
 	// wait until booting is done
-	return Simcom_Command_Match("AT\r", 500, SIMCOM_STATUS_READY, simcom.boot_timeout);
+	return Simcom_Command_Match("AT\r", ms, SIMCOM_STATUS_READY, (simcom.boot_timeout * 1000) / ms);
 }
 
 static uint8_t Simcom_Response(char *str) {
@@ -80,6 +81,11 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 	char ctrl_z = 0x1A;
 	uint8_t ret;
 	uint32_t tick, timeout_tick = 0;
+
+	// check if it has new command
+	if (Simcom_Check_Command()) {
+		xTaskNotify(CommandTaskHandle, EVENT_COMMAND_ARRIVED, eSetBits);
+	}
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
 	// transmit to serial (low-level)
@@ -100,10 +106,6 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 			// exit loop
 			break;
 		}
-	}
-	// check if it has new command
-	if (Simcom_Check_Command()) {
-		xTaskNotify(CommandTaskHandle, EVENT_COMMAND_ARRIVED, eSetBits);
 	}
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);

@@ -15,23 +15,22 @@ report_t report;
 // function list
 void Reporter_Reset(frame_t frame) {
 	// set default data
+	Reporter_Set_Prefix(0x4047);
+	Reporter_Set_UnitID(354313);
+
 	if (frame == FRAME_RESPONSE) {
 		// header response
-		response.header.prefix = 0x4047; 										// @G
 		response.header.crc = 0;
 		response.header.size = 0;
 		response.header.frame_id = FRAME_RESPONSE;
-		response.header.unit_id = 354453;
 
 		// body response
 		strcpy(response.data.message, "");
 	} else {
 		// header report
-		report.header.prefix = 0x4047; 											// @G
 		report.header.crc = 0;
 		report.header.size = 0;
 		report.header.frame_id = frame;
-		report.header.unit_id = 354453;
 
 		// body req
 		if (frame >= FRAME_SIMPLE) {
@@ -57,6 +56,17 @@ void Reporter_Reset(frame_t frame) {
 			report.data.opt.trip_b = 1;
 		}
 	}
+}
+
+void Reporter_Set_Prefix(uint16_t prefix) {
+	// @G = 0x4047
+	response.header.prefix = prefix;
+	report.header.prefix = prefix;
+}
+
+void Reporter_Set_UnitID(uint64_t unitId) {
+	response.header.unit_id = unitId;
+	report.header.unit_id = unitId;
 }
 
 void Reporter_Set_Odometer(uint32_t odom) {
