@@ -39,7 +39,8 @@ static void Simcom_Reset(void) {
 }
 
 static void Simcom_Prepare(void) {
-	strcpy(simcom.server_ip, "36.80.70.105");
+	// TODO: put every config in single file
+	strcpy(simcom.server_ip, "36.74.13.247");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
 	strcpy(simcom.net_apn, "3gprs"); 					// "3gprs,telkomsel"
@@ -78,12 +79,13 @@ static uint8_t Simcom_Response(char *str) {
 static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
-	char ctrl_z = 0x1A;
+	char CTRL_Z = 0x1A;
 	uint8_t ret;
 	uint32_t tick, timeout_tick = 0;
 
 	// check if it has new command
 	if (Simcom_Check_Command()) {
+		SWV_SendStrLn("\nNew Command from Simcom_Send_Direct.");
 		xTaskNotify(CommandTaskHandle, EVENT_COMMAND_ARRIVED, eSetBits);
 	}
 	// reset rx buffer
@@ -92,7 +94,7 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 	SIMCOM_Transmit(data, data_length);
 	if (is_payload) {
 		// terminate payload mode with CTRL+Z
-		SIMCOM_Transmit(&ctrl_z, 1);
+		SIMCOM_Transmit(&CTRL_Z, 1);
 	}
 	// convert time to tick
 	timeout_tick = pdMS_TO_TICKS(ms + SIMCOM_EXTRA_TIME_MS);
@@ -100,7 +102,10 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 	tick = osKernelSysTick();
 	// wait response from SIMCOM
 	while (1) {
-		if (Simcom_Response(res) || Simcom_Response(SIMCOM_STATUS_ERROR) || (osKernelSysTick() - tick) >= timeout_tick) {
+		if (Simcom_Response(res) ||
+				Simcom_Response(SIMCOM_STATUS_ERROR) ||
+				Simcom_Response(SIMCOM_STATUS_READY) ||
+				(osKernelSysTick() - tick) >= timeout_tick) {
 			// set flag for timeout & error
 			ret = Simcom_Response(res);
 			// exit loop
@@ -170,7 +175,7 @@ static uint8_t Simcom_Command(char *cmd, uint32_t ms) {
 }
 
 static uint8_t Simcom_Payload(char *payload, uint16_t payload_length) {
-	return Simcom_Send_Indirect(payload, payload_length, 1, 15000, NULL, 1);
+	return Simcom_Send_Indirect(payload, payload_length, 1, 20000, NULL, 1);
 }
 
 void Simcom_Init(void) {
@@ -251,7 +256,7 @@ void Simcom_Init(void) {
 		}
 		// Bring Up Wireless Connection with GPRS
 		if (p) {
-			p = Simcom_Command_Match("AT+CIICR\r", 500, NULL, 5);
+			p = Simcom_Command_Match("AT+CIICR\r", 5000, NULL, 5);
 		}
 		// Check IP Address
 		if (p) {
@@ -260,7 +265,7 @@ void Simcom_Init(void) {
 
 		// Establish connection with server
 		if (p) {
-			p = Simcom_Command_Match(simcom.CMD_CIPSTART, 10000, "CONNECT", 1);
+			p = Simcom_Command_Match(simcom.CMD_CIPSTART, 20000, "CONNECT", 1);
 			// check either connection ok / error
 			if (p) {
 				p = Simcom_Response("CONNECT OK");
@@ -280,7 +285,7 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
 
 	uint8_t ret = 0;
 	// confirm to server that command is executed
-	if (Simcom_Command_Match("AT+CIPSEND\r", 500, SIMCOM_STATUS_SEND, 1)) {
+	if (Simcom_Command_Match("AT+CIPSEND\r", 5000, SIMCOM_STATUS_SEND, 1)) {
 		// send response
 		if (Simcom_Payload(payload, payload_length)) {
 			ret = 1;

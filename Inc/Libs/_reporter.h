@@ -70,10 +70,10 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	report_header_t header;
 	report_data_t data;
+//	uint8_t terminator;
 } report_t;
 
 // response frame
-
 typedef struct __attribute__((packed)) {
 	char message[50];
 } response_data_t;
@@ -81,6 +81,7 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	report_header_t header;
 	response_data_t data;
+//	uint8_t terminator;
 } response_t;
 
 // public function

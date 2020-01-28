@@ -62,6 +62,10 @@ void Reporter_Set_Prefix(uint16_t prefix) {
 	// @G = 0x4047
 	response.header.prefix = prefix;
 	report.header.prefix = prefix;
+	// also set the terminator
+	//	response.terminator = 0x1A;
+	//	report.terminator = 0x1A;
+
 }
 
 void Reporter_Set_UnitID(uint64_t unitId) {

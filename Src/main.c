@@ -1045,7 +1045,7 @@ void StartIotTask(void const *argument)
 		if (notifValue & EVENT_IOT_REPORT_SIMPLE) {
 			res = Simcom_Upload((char*) &report, sizeof(report.header) + sizeof(report.data.req));
 		} else if (notifValue & EVENT_IOT_REPORT_FULL) {
-			res = Simcom_Upload((char*) &report, sizeof(report));
+			res = Simcom_Upload((char*) &report, sizeof(report.header) + sizeof(report.data.req) + sizeof(report.data.opt));
 		}
 
 		// handle sending error
@@ -1147,6 +1147,7 @@ void StartCommandTask(void const *argument)
 
 		// then execute the command
 		if (newCommand) {
+			SWV_SendStr("\nNew Command : ");
 			newCommand = 0;
 			// read the command & execute
 			if (Simcom_Read_Command(&command)) {
@@ -1225,6 +1226,9 @@ void StartCommandTask(void const *argument)
 				else {
 					sprintf(response.data.message, "%s:INVALID", command.cmd);
 				}
+
+				// Debugging
+				SWV_SendStrLn(response.data.message);
 
 				// Set header
 				Reporter_Set_Header(FRAME_RESPONSE);
