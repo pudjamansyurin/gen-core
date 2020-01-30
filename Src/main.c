@@ -1036,6 +1036,9 @@ void StartIotTask(void const *argument)
 		// get event data
 		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, portMAX_DELAY);
 
+		// Retrieve network signal quality
+		Simcom_Read_Signal(&DB_ECU_Signal);
+
 		// check every event & send
 		// handle response frame
 		if (notifValue & EVENT_IOT_REPORT_RESPONSE) {
@@ -1050,11 +1053,12 @@ void StartIotTask(void const *argument)
 
 		// handle sending error
 		if (!res) {
+			Reporter_Set_Event(REPORT_SIMCOM_RESTART, 1);
 			BSP_Led_Disco(1000);
 			// restart module
 			Simcom_Init();
 		} else {
-			// not error
+			Reporter_Set_Event(REPORT_SIMCOM_RESTART, 0);
 			// Retrieve network signal quality
 			Simcom_Read_Signal(&DB_ECU_Signal);
 		}
@@ -1387,7 +1391,7 @@ void StartKeylessTask(void const *argument)
 	nrf_set_config(&config, payload_rx, payload_length);
 	// initialization
 	nrf_init(&nrf, &config);
-	SWV_SendStrLn("NRF24_Init.");
+	SWV_SendStrLn("NRF24_Init");
 
 	/* Infinite loop */
 	for (;;) {
@@ -1437,7 +1441,9 @@ void StartReporterTask(void const *argument)
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
 		// reset events group
-		report.data.req.events_group = 0;
+		Reporter_Set_Event(REPORT_BIKE_CRASHED, 0);
+		Reporter_Set_Event(REPORT_BIKE_FALLING, 0);
+		//		report.data.req.events_group = 0;
 
 		// get event data
 		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
@@ -1737,18 +1743,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

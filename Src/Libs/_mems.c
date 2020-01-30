@@ -10,7 +10,7 @@ void MEMS_Init(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu) {
 	SD_MPU6050_Result result;
 
 	do {
-		SWV_SendStrLn("MEMS_Init");
+		SWV_SendStrLn("Gyroscope_Init");
 		// turn off module
 		HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_RESET);
 		osDelay(1000);

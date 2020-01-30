@@ -19,6 +19,7 @@
 #define REPORT_BIKE_FALLING 						SetBit(0)
 #define REPORT_BIKE_CRASHED 						SetBit(1)
 #define REPORT_KEYLESS_MISSING					SetBit(2)
+#define REPORT_SIMCOM_RESTART						SetBit(3)
 
 /*  typedef enum -----------------------------------------------------------*/
 typedef enum {
@@ -34,7 +35,7 @@ typedef struct __attribute__((packed)) {
 	uint16_t crc;
 	uint16_t size;
 	uint8_t frame_id;
-	uint64_t unit_id;
+	uint32_t unit_id;
 } report_header_t;
 
 typedef struct __attribute__((packed)) {
