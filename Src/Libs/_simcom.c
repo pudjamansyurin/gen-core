@@ -40,7 +40,7 @@ static void Simcom_Reset(void) {
 
 static void Simcom_Prepare(void) {
 	// TODO: put every config in single file
-	strcpy(simcom.server_ip, "36.74.13.247");
+	strcpy(simcom.server_ip, "36.84.87.1");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
 	strcpy(simcom.net_apn, "3gprs"); 					// "3gprs,telkomsel"
@@ -184,10 +184,12 @@ void Simcom_Init(void) {
 	// this do-while is complicated, but it doesn't use recursive function, so it's stack safe
 	do {
 		// show previous response
-		SWV_SendStrLn("=========================");
-		SWV_SendStrLn("       BEFORE BOOT       ");
+		SWV_SendStr("\n========================================\n");
+		SWV_SendStr("Before: Simcom_Init()");
+		SWV_SendStr("\n----------------------------------------\n");
 		SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
-		SWV_SendStrLn("\n=========================");
+		SWV_SendStr("\n========================================\n");
+
 		SWV_SendStrLn("Simcom_Init");
 
 		p = 0;
