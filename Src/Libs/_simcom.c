@@ -40,7 +40,7 @@ static void Simcom_Reset(void) {
 
 static void Simcom_Prepare(void) {
 	// TODO: put every config in single file
-	strcpy(simcom.server_ip, "36.84.87.1");
+	strcpy(simcom.server_ip, "180.248.54.31");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
 	strcpy(simcom.net_apn, "3gprs"); 					// "3gprs,telkomsel"
