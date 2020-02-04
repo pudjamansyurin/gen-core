@@ -40,7 +40,7 @@ static void Simcom_Reset(void) {
 
 static void Simcom_Prepare(void) {
 	// TODO: put every config in single file
-	strcpy(simcom.server_ip, "180.248.54.31");
+	strcpy(simcom.server_ip, "125.164.219.143");
 	simcom.server_port = 5044;
 	simcom.local_port = 5045;
 	strcpy(simcom.net_apn, "3gprs"); 					// "3gprs,telkomsel"
@@ -267,7 +267,7 @@ void Simcom_Init(void) {
 
 		// Establish connection with server
 		if (p) {
-			p = Simcom_Command_Match(simcom.CMD_CIPSTART, 20000, "CONNECT", 1);
+			p = Simcom_Command_Match(simcom.CMD_CIPSTART, 10000, "CONNECT", 1);
 			// check either connection ok / error
 			if (p) {
 				p = Simcom_Response("CONNECT OK");

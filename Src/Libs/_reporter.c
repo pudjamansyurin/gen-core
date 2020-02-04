@@ -6,8 +6,10 @@
  */
 
 #include "_reporter.h"
+#include "_crc.h"
 
 // variable list
+extern CRC_HandleTypeDef hcrc;
 extern timestamp_t DB_ECU_TimeStamp;
 response_t response;
 report_t report;
@@ -53,7 +55,7 @@ void Reporter_Reset(frame_t frame) {
 			report.data.opt.report_range = 0;
 			report.data.opt.report_battery = 99;
 			report.data.opt.trip_a = 0;
-			report.data.opt.trip_b = 1;
+			report.data.opt.trip_b = 0xFFFFFFFF;
 		}
 	}
 }
@@ -77,28 +79,25 @@ void Reporter_Set_Odometer(uint32_t odom) {
 
 void Reporter_Set_GPS(gps_t *hgps) {
 	// parse gps data
-	if (hgps->fix > 0) {
-		// FIXME handle float to S32 conversion
-		report.data.opt.gps.latitude = hgps->latitude;
-		report.data.opt.gps.longitude = hgps->longitude;
-		report.data.opt.gps.hdop = hgps->dop_h;
-		// FIXME i should be updated based on GPS data
-		report.data.opt.gps.heading = 65;
-	}
+	// FIXME handle float to S32 conversion
+	report.data.opt.gps.latitude = hgps->latitude;
+	report.data.opt.gps.longitude = hgps->longitude;
+	report.data.opt.gps.hdop = hgps->dop_h;
+	// FIXME i should be updated based on GPS data
+	report.data.opt.gps.heading = 65;
 }
 
 void Reporter_Set_Speed(gps_t *hgps) {
 	float d_distance;
 	// parse gps data
-	if (hgps->fix > 0) {
-		// FIXME use real speed calculation
-		// calculate speed from GPS data
-		report.data.req.speed = gps_to_speed(hgps->speed, gps_speed_kph);
-		// change odometer from GPS speed variation
-		d_distance = (gps_to_speed(hgps->speed, gps_speed_mps) * REPORT_INTERVAL_SIMPLE);
-		// save odometer to flash (non-volatile)
-		Reporter_Set_Odometer(Flash_Get_Odometer() + d_distance);
-	}
+	// FIXME use real speed calculation
+	// calculate speed from GPS data
+	report.data.req.speed = gps_to_speed(hgps->speed, gps_speed_kph);
+	// change odometer from GPS speed variation
+	d_distance = (gps_to_speed(hgps->speed, gps_speed_mps) * REPORT_INTERVAL_SIMPLE);
+	// save odometer to flash (non-volatile)
+	Reporter_Set_Odometer(Flash_Get_Odometer() + d_distance);
+
 }
 
 void Reporter_Set_Event(uint64_t event_id, uint8_t bool) {
@@ -112,36 +111,35 @@ void Reporter_Set_Event(uint64_t event_id, uint8_t bool) {
 }
 
 void Reporter_Set_Header(frame_t frame) {
+	uint8_t crcHeader = sizeof(report.header.prefix) + sizeof(report.header.crc);
+
 	if (frame == FRAME_RESPONSE) {
 		//Reconstruct the header
-		// FIXME use CRC hardware calculation
-		response.header.crc = 0;
 		response.header.size = sizeof(response.header.frame_id) +
 				sizeof(response.header.unit_id) +
 				strlen(response.data.message);
 		response.header.frame_id = FRAME_RESPONSE;
+		// FIXME use CRC hardware calculation
+		response.header.crc = CRC_Calculate8(&hcrc, ((uint8_t*) &response) + crcHeader,
+				response.header.size + sizeof(response.header.size), 1);
 
 	} else {
 		// parse newest rtc datetime
 		report.data.req.rtc_datetime = RTC_Read();
 		report.data.req.seq_id++;
-
-		//Reconstruct the header
-		if (frame == FRAME_SIMPLE) {
-			// FIXME use CRC hardware calculation
-			report.header.crc = 0;
-			report.header.size = sizeof(report.header.frame_id) +
-					sizeof(report.header.unit_id) +
-					sizeof(report.data.req);
-		} else {
-			// FIXME use CRC hardware calculation
-			report.header.crc = 0;
-			report.header.size = sizeof(report.header.frame_id) +
-					sizeof(report.header.unit_id) +
-					sizeof(report.data.req) +
-					sizeof(report.data.opt);
-		}
 		report.header.frame_id = frame;
+
+		report.header.size = sizeof(report.header.frame_id) +
+				sizeof(report.header.unit_id) +
+				sizeof(report.data.req);
+		//Reconstruct the header
+		if (frame == FRAME_FULL) {
+			report.header.size += sizeof(report.data.opt);
+		}
+
+		// FIXME use CRC hardware calculation
+		report.header.crc = CRC_Calculate8(&hcrc, ((uint8_t*) &report) + crcHeader,
+				report.header.size + sizeof(report.header.size), 1);
 	}
 }
 

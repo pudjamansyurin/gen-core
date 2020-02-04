@@ -58,6 +58,8 @@ ADC_HandleTypeDef hadc1;
 
 CAN_HandleTypeDef hcan1;
 
+CRC_HandleTypeDef hcrc;
+
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
@@ -115,6 +117,7 @@ static void MX_RTC_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_CRC_Init(void);
 void StartIotTask(void const *argument);
 void StartGyroTask(void const *argument);
 void StartCommandTask(void const *argument);
@@ -176,6 +179,7 @@ int main(void)
 	MX_I2C2_Init();
 	MX_USART1_UART_Init();
 	MX_ADC1_Init();
+	MX_CRC_Init();
 	/* USER CODE BEGIN 2 */
 	EE_Init();
 	CAN_Init();
@@ -435,6 +439,32 @@ static void MX_CAN1_Init(void)
 	/* USER CODE BEGIN CAN1_Init 2 */
 
 	/* USER CODE END CAN1_Init 2 */
+
+}
+
+/**
+ * @brief CRC Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_CRC_Init(void)
+{
+
+	/* USER CODE BEGIN CRC_Init 0 */
+
+	/* USER CODE END CRC_Init 0 */
+
+	/* USER CODE BEGIN CRC_Init 1 */
+
+	/* USER CODE END CRC_Init 1 */
+	hcrc.Instance = CRC;
+	if (HAL_CRC_Init(&hcrc) != HAL_OK)
+			{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN CRC_Init 2 */
+
+	/* USER CODE END CRC_Init 2 */
 
 }
 
@@ -1083,9 +1113,9 @@ void StartGyroTask(void const *argument)
 	SD_MPU6050 mpu;
 	/* MPU6050 Initialization*/
 	MEMS_Init(&hi2c3, &mpu);
-	// Set calibrator
+// Set calibrator
 	mems_calibration = MEMS_Average(&hi2c3, &mpu, NULL, 500);
-	// Give success indicator
+// Give success indicator
 	WaveBeepPlay(BEEP_FREQ_2000_HZ, 100);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
@@ -1131,7 +1161,7 @@ void StartCommandTask(void const *argument)
 	uint8_t newCommand = 0;
 	uint32_t val;
 
-	// reset response frame to default
+// reset response frame to default
 	Reporter_Reset(FRAME_RESPONSE);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
@@ -1259,14 +1289,14 @@ void StartGpsTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGpsTask */
 	extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
-	// FIXME i should use REPORT_INTERVAL_FULL
+// FIXME i should use REPORT_INTERVAL_FULL
 	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE * 1000);
 	TickType_t xLastWakeTime;
 	gps_t *hgps;
 
-	// Start GPS module
+// Start GPS module
 	UBLOX_DMA_Init();
-	// Allocate memory once, and never free it
+// Allocate memory once, and never free it
 	hgps = osMailAlloc(GpsMailHandle, osWaitForever);
 	Ublox_Init(hgps);
 	/* Infinite loop */
@@ -1274,8 +1304,10 @@ void StartGpsTask(void const *argument)
 	for (;;) {
 		// get GPS info
 		gps_process(hgps, UBLOX_UART_RX_Buffer, strlen(UBLOX_UART_RX_Buffer));
-		// hand-over data to IOT_Task
-		osMailPut(GpsMailHandle, hgps);
+		// hand-over data to IOT_Task (if fixed)
+		if (hgps->fix > 0) {
+			osMailPut(GpsMailHandle, hgps);
+		}
 
 		// Report interval
 		vTaskDelayUntil(&xLastWakeTime, xDelay_ms);
@@ -1294,7 +1326,7 @@ void StartFingerTask(void const *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t ulNotifiedValue;
-	// Initialization
+// Initialization
 	FINGER_DMA_Init();
 	Finger_Init();
 	/* Infinite loop */
@@ -1331,7 +1363,7 @@ void StartAudioTask(void const *argument)
 	osEvent evt;
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	WaveInit();
-	// Play wave loop forever, handover to DMA, so CPU is free
+// Play wave loop forever, handover to DMA, so CPU is free
 	WavePlay();
 
 	/* Infinite loop */
@@ -1387,9 +1419,9 @@ void StartKeylessTask(void const *argument)
 	uint8_t payload_rx[payload_length];
 	uint32_t ulNotifiedValue;
 
-	// set configuration
+// set configuration
 	nrf_set_config(&config, payload_rx, payload_length);
-	// initialization
+// initialization
 	nrf_init(&nrf, &config);
 	SWV_SendStrLn("NRF24_Init");
 
@@ -1435,7 +1467,7 @@ void StartReporterTask(void const *argument)
 	osEvent evt;
 	frame_t frame;
 
-	// reset report frame to default
+// reset report frame to default
 	Reporter_Reset(FRAME_FULL);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
@@ -1506,7 +1538,7 @@ void StartCanRxTask(void const *argument)
 	/* USER CODE BEGIN StartCanRxTask */
 	extern uint8_t DB_ECU_Speed;
 	extern CAN_Rx RxCan;
-	//	uint8_t i;
+//	uint8_t i;
 	uint32_t ulNotifiedValue;
 	/* Infinite loop */
 	for (;;) {
@@ -1541,22 +1573,22 @@ void StartCanRxTask(void const *argument)
 void StartSwitchTask(void const *argument)
 {
 	/* USER CODE BEGIN StartSwitchTask */
-	// NOTED add 'cost' to all constant
+// NOTED add 'cost' to all constant
 	const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
 	extern switch_timer_t DB_ECU_Switch_Timer[];
 	extern switch_t DB_ECU_Switch[];
 	extern uint8_t DB_ECU_Switch_Size;
 	extern switcher_t DB_HMI_Switcher;
-	// FIXME use me as binary event
+// FIXME use me as binary event
 	uint8_t Last_Mode_Drive;
 	uint32_t ulNotifiedValue;
 	uint8_t i;
 
-	// Read all initial state
+// Read all initial state
 	for (i = 0; i < DB_ECU_Switch_Size; i++) {
 		DB_ECU_Switch[i].state = HAL_GPIO_ReadPin(DB_ECU_Switch[i].port, DB_ECU_Switch[i].pin);
 	}
-	// Handle Reverse mode on init
+// Handle Reverse mode on init
 	if (DB_ECU_Switch[IDX_KEY_REVERSE].state) {
 		// save previous Drive Mode state
 		if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
@@ -1696,7 +1728,7 @@ void StartGeneralTask(void const *argument)
 void CallbackTimerCAN(void const *argument)
 {
 	/* USER CODE BEGIN CallbackTimerCAN */
-	// Send CAN data
+// Send CAN data
 	CANBUS_ECU_Switch();
 	CANBUS_ECU_RTC();
 	CANBUS_ECU_Select_Set();
@@ -1743,18 +1775,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

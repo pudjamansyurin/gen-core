@@ -32,7 +32,7 @@ typedef enum {
 // report frame
 typedef struct __attribute__((packed)) {
 	uint16_t prefix;
-	uint16_t crc;
+	uint32_t crc;
 	uint16_t size;
 	uint8_t frame_id;
 	uint32_t unit_id;
@@ -71,7 +71,6 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	report_header_t header;
 	report_data_t data;
-//	uint8_t terminator;
 } report_t;
 
 // response frame
@@ -82,7 +81,6 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	report_header_t header;
 	response_data_t data;
-//	uint8_t terminator;
 } response_t;
 
 // public function
