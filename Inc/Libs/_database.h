@@ -12,7 +12,7 @@
 #include "_config.h"
 #include "_rtc.h"
 
-// exti list
+// EXTI list
 #define IDX_KEY_SELECT 							0
 #define IDX_KEY_SET 								1
 #define IDX_KEY_SEIN_LEFT 					2

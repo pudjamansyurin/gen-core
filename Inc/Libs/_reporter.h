@@ -15,12 +15,6 @@
 #include "_nmea.h"
 #include "_rtc.h"
 
-// Events group id (max 64 events, uint64_t)
-#define REPORT_BIKE_FALLING 						SetBit(0)
-#define REPORT_BIKE_CRASHED 						SetBit(1)
-#define REPORT_KEYLESS_MISSING					SetBit(2)
-#define REPORT_SIMCOM_RESTART						SetBit(3)
-
 /*  typedef enum -----------------------------------------------------------*/
 typedef enum {
 	FRAME_RESPONSE = 0,

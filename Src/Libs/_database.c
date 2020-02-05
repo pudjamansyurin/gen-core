@@ -7,7 +7,7 @@
 
 #include "_database.h"
 
-switch_t DB_ECU_Switch[] = {
+switch_t DB_VCU_Switch[] = {
 		{ "SELECT", EXT_HBAR_SELECT_Pin, EXT_HBAR_SELECT_GPIO_Port, 0 },
 		{ "SET", EXT_HBAR_SET_Pin, EXT_HBAR_SET_GPIO_Port, 0 },
 		{ "SEIN LEFT", EXT_HBAR_SEIN_L_Pin, EXT_HBAR_SEIN_L_GPIO_Port, 0 },
@@ -39,10 +39,10 @@ switcher_t DB_HMI_Switcher = {
 };
 status_t DB_HMI_Status = { 1, 1, 1, 1, 1 };
 
-switch_timer_t DB_ECU_Switch_Timer[] = { { 0, 0, 0 }, { 0, 0, 0 } };
-uint8_t DB_ECU_Switch_Size = sizeof(DB_ECU_Switch) / sizeof(DB_ECU_Switch[0]);
+switch_timer_t DB_VCU_Switch_Timer[] = { { 0, 0, 0 }, { 0, 0, 0 } };
+uint8_t DB_VCU_Switch_Size = sizeof(DB_VCU_Switch) / sizeof(DB_VCU_Switch[0]);
 
-uint8_t DB_ECU_Signal = 0;
-uint8_t DB_ECU_Speed = 0;
-uint32_t DB_ECU_Odometer = 0;
-timestamp_t DB_ECU_TimeStamp;
+uint8_t DB_VCU_Signal = 0;
+uint8_t DB_VCU_Speed = 0;
+uint32_t DB_VCU_Odometer = 0;
+timestamp_t DB_VCU_TimeStamp;

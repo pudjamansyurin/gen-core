@@ -83,36 +83,9 @@ extern "C" {
  AUDIO OUT CONFIGURATION
  ------------------------------------------------------------------------------*/
 
-///* I2S peripheral configuration defines */
-#define I2S                            SPI3
-//#define I2S3_CLK_ENABLE()               __HAL_RCC_SPI3_CLK_ENABLE()
-//#define I2S3_CLK_DISABLE()              __HAL_RCC_SPI3_CLK_DISABLE()
-//#define I2S3_SCK_SD_WS_AF               GPIO_AF6_SPI3
-//#define I2S3_SCK_SD_CLK_ENABLE()        __HAL_RCC_GPIOC_CLK_ENABLE()
-//#define I2S3_MCK_CLK_ENABLE()           __HAL_RCC_GPIOC_CLK_ENABLE()
-//#define I2S3_WS_CLK_ENABLE()            __HAL_RCC_GPIOA_CLK_ENABLE()
-//#define I2S3_WS_PIN                     GPIO_PIN_4
-//#define I2S3_SCK_PIN                    GPIO_PIN_10
-//#define I2S3_SD_PIN                     GPIO_PIN_12
-//#define I2S3_MCK_PIN                    GPIO_PIN_7
-//#define I2S3_SCK_SD_GPIO_PORT           GPIOC
-//#define I2S3_WS_GPIO_PORT               GPIOA
-//#define I2S3_MCK_GPIO_PORT              GPIOC
-//
-///* I2S DMA Stream definitions */
-//#define I2S3_DMAx_CLK_ENABLE()          __HAL_RCC_DMA1_CLK_ENABLE()
-//#define I2S3_DMAx_CLK_DISABLE()         __HAL_RCC_DMA1_CLK_DISABLE()
-//#define I2S3_DMAx_STREAM                DMA1_Stream7
-//#define I2S3_DMAx_CHANNEL               DMA_CHANNEL_0
-//#define I2S3_DMAx_IRQ                   DMA1_Stream7_IRQn
-//#define I2S3_DMAx_PERIPH_DATA_SIZE      DMA_PDATAALIGN_HALFWORD
-//#define I2S3_DMAx_MEM_DATA_SIZE         DMA_MDATAALIGN_HALFWORD
+/* I2S peripheral configuration defines */
+#define I2S                            	SPI3
 #define DMA_MAX_SZE                     0xFFFF
-//
-//#define I2S3_IRQHandler                 DMA1_Stream7_IRQHandler
-//
-///* Select the interrupt preemption priority and subpriority for the DMA interrupt */
-//#define AUDIO_OUT_IRQ_PREPRIO           0x0E   /* Select the preemption priority level(0 is the highest) */
 /*------------------------------------------------------------------------------
  CONFIGURATION: Audio Driver Configuration parameters
  ------------------------------------------------------------------------------*/

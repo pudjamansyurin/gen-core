@@ -16,29 +16,13 @@
 #include "_reporter.h"
 #include "_DMA_Simcom.h"
 
-#define SIMCOM_EXTRA_TIME_MS				5000
 #define SIMCOM_STATUS_SEND 					">"
 #define SIMCOM_STATUS_OK 						"OK\r\n"
 #define SIMCOM_STATUS_ERROR 				"ERROR\r\n"
 #define SIMCOM_STATUS_READY 				"RDY\r\n"
 
 /* Public typedef -----------------------------------------------------------*/
-typedef enum {
-	SIGNAL_AUTO = 2,
-	SIGNAL_2G = 13,
-	SIGNAL_3G = 14,
-} signal_t;
-
 typedef struct {
-	signal_t signal;
-	char server_ip[16];
-	uint16_t server_port;
-	uint16_t local_port;
-	char net_apn[20];
-	char net_username[20];
-	char net_password[20];
-	uint8_t boot_timeout;
-	uint8_t repeat_delay;
 	char CMD_CIPSTART[50];
 	char CMD_CSTT[75];
 	char CMD_CNMP[11];

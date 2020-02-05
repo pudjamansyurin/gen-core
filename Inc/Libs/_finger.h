@@ -10,9 +10,6 @@
 
 #include "_fz3387.h"
 
-#define FINGER_CONFIDENCE_MIN 	10
-#define FINGER_SCAN_TIMEOUT			20				// in second
-
 void Finger_On(void);
 void Finger_Off(void);
 void Finger_Init(void);

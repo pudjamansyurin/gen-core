@@ -6,7 +6,6 @@
  */
 
 #include "_crc.h"
-#include "_swv.h"
 
 uint32_t CRC_Calculate8(CRC_HandleTypeDef *hcrc, uint8_t *arr, uint32_t count, uint8_t reset) {
 	uint32_t cnt, remaining = 0;
@@ -20,11 +19,8 @@ uint32_t CRC_Calculate8(CRC_HandleTypeDef *hcrc, uint8_t *arr, uint32_t count, u
 	/* Calculate number of 32-bit blocks */
 	cnt = count >> 2;
 
-//	SWV_SendStrLn("");
 	/* Calculate */
 	while (cnt--) {
-//		SWV_SendHex32(*(uint32_t*) arr);
-//		SWV_SendStr(" ");
 		/* Set new value */
 		hcrc->Instance->DR = *(uint32_t*) arr;
 
@@ -35,24 +31,19 @@ uint32_t CRC_Calculate8(CRC_HandleTypeDef *hcrc, uint8_t *arr, uint32_t count, u
 	/* Calculate remaining data as 8-bit */
 	cnt = count % 4;
 
-	/* Calculate */
-	while (cnt--) {
-		remaining |= ((*arr) << (cnt * 8));
+	if (cnt) {
+		/* Calculate */
+		while (cnt--) {
+			/* Combine 8bit to 32bit using litle endian */
+			remaining |= ((*arr) << (24 - (cnt * 8)));
 
-		// increment pointer
-		arr++;
-	}
-
-	/* Store remaining as 32bit */
-	if (remaining) {
-//		SWV_SendHex32(remaining);
-//		SWV_SendStr(" ");
+			// increment pointer
+			arr++;
+		}
 
 		/* Set new value */
 		hcrc->Instance->DR = remaining;
 	}
-
-//	SWV_SendStrLn("");
 
 	/* Return data */
 	return hcrc->Instance->DR;

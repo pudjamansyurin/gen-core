@@ -10,7 +10,6 @@
 
 // variable list
 extern CRC_HandleTypeDef hcrc;
-extern timestamp_t DB_ECU_TimeStamp;
 response_t response;
 report_t report;
 
@@ -54,8 +53,8 @@ void Reporter_Reset(frame_t frame) {
 			report.data.opt.bat_voltage = 2600 / 13;
 			report.data.opt.report_range = 0;
 			report.data.opt.report_battery = 99;
-			report.data.opt.trip_a = 0;
-			report.data.opt.trip_b = 0xFFFFFFFF;
+			report.data.opt.trip_a = 0x01234567;
+			report.data.opt.trip_b = 0x89A;
 		}
 	}
 }
@@ -80,11 +79,12 @@ void Reporter_Set_Odometer(uint32_t odom) {
 void Reporter_Set_GPS(gps_t *hgps) {
 	// parse gps data
 	// FIXME handle float to S32 conversion
+	// FIXME check GPS data on the road and the calibration
 	report.data.opt.gps.latitude = hgps->latitude;
 	report.data.opt.gps.longitude = hgps->longitude;
 	report.data.opt.gps.hdop = hgps->dop_h;
 	// FIXME i should be updated based on GPS data
-	report.data.opt.gps.heading = 65;
+	report.data.opt.gps.heading = hgps->variation;
 }
 
 void Reporter_Set_Speed(gps_t *hgps) {
@@ -103,10 +103,10 @@ void Reporter_Set_Speed(gps_t *hgps) {
 void Reporter_Set_Event(uint64_t event_id, uint8_t bool) {
 	if (bool & 1) {
 		// set
-		SetBitOf(report.data.req.events_group, BSP_Bit_Pos(event_id));
+		SetBitOf(report.data.req.events_group, BSP_Bit_Position(event_id));
 	} else {
 		// clear
-		ClearBitOf(report.data.req.events_group, BSP_Bit_Pos(event_id));
+		ClearBitOf(report.data.req.events_group, BSP_Bit_Position(event_id));
 	}
 }
 
@@ -119,7 +119,6 @@ void Reporter_Set_Header(frame_t frame) {
 				sizeof(response.header.unit_id) +
 				strlen(response.data.message);
 		response.header.frame_id = FRAME_RESPONSE;
-		// FIXME use CRC hardware calculation
 		response.header.crc = CRC_Calculate8(&hcrc, ((uint8_t*) &response) + crcHeader,
 				response.header.size + sizeof(response.header.size), 1);
 
@@ -137,7 +136,6 @@ void Reporter_Set_Header(frame_t frame) {
 			report.header.size += sizeof(report.data.opt);
 		}
 
-		// FIXME use CRC hardware calculation
 		report.header.crc = CRC_Calculate8(&hcrc, ((uint8_t*) &report) + crcHeader,
 				report.header.size + sizeof(report.header.size), 1);
 	}

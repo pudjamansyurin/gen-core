@@ -1054,7 +1054,7 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 void StartIotTask(void const *argument)
 {
 	/* USER CODE BEGIN 5 */
-	extern uint8_t DB_ECU_Signal;
+	extern uint8_t DB_VCU_Signal;
 	uint32_t notifValue;
 	uint8_t res;
 
@@ -1067,7 +1067,7 @@ void StartIotTask(void const *argument)
 		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, portMAX_DELAY);
 
 		// Retrieve network signal quality
-		Simcom_Read_Signal(&DB_ECU_Signal);
+		Simcom_Read_Signal(&DB_VCU_Signal);
 
 		// check every event & send
 		// handle response frame
@@ -1090,7 +1090,7 @@ void StartIotTask(void const *argument)
 		} else {
 			Reporter_Set_Event(REPORT_SIMCOM_RESTART, 0);
 			// Retrieve network signal quality
-			Simcom_Read_Signal(&DB_ECU_Signal);
+			Simcom_Read_Signal(&DB_VCU_Signal);
 		}
 	}
 	/* USER CODE END 5 */
@@ -1113,9 +1113,9 @@ void StartGyroTask(void const *argument)
 	SD_MPU6050 mpu;
 	/* MPU6050 Initialization*/
 	MEMS_Init(&hi2c3, &mpu);
-// Set calibrator
+	// Set calibrator
 	mems_calibration = MEMS_Average(&hi2c3, &mpu, NULL, 500);
-// Give success indicator
+	// Give success indicator
 	WaveBeepPlay(BEEP_FREQ_2000_HZ, 100);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
@@ -1161,7 +1161,7 @@ void StartCommandTask(void const *argument)
 	uint8_t newCommand = 0;
 	uint32_t val;
 
-// reset response frame to default
+	// reset response frame to default
 	Reporter_Reset(FRAME_RESPONSE);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
@@ -1289,14 +1289,13 @@ void StartGpsTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGpsTask */
 	extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
-// FIXME i should use REPORT_INTERVAL_FULL
-	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE * 1000);
+	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL * 1000);
 	TickType_t xLastWakeTime;
 	gps_t *hgps;
 
-// Start GPS module
+	// Start GPS module
 	UBLOX_DMA_Init();
-// Allocate memory once, and never free it
+	// Allocate memory once, and never free it
 	hgps = osMailAlloc(GpsMailHandle, osWaitForever);
 	Ublox_Init(hgps);
 	/* Infinite loop */
@@ -1326,7 +1325,7 @@ void StartFingerTask(void const *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t ulNotifiedValue;
-// Initialization
+	// Initialization
 	FINGER_DMA_Init();
 	Finger_Init();
 	/* Infinite loop */
@@ -1363,7 +1362,7 @@ void StartAudioTask(void const *argument)
 	osEvent evt;
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	WaveInit();
-// Play wave loop forever, handover to DMA, so CPU is free
+	// Play wave loop forever, handover to DMA, so CPU is free
 	WavePlay();
 
 	/* Infinite loop */
@@ -1419,9 +1418,9 @@ void StartKeylessTask(void const *argument)
 	uint8_t payload_rx[payload_length];
 	uint32_t ulNotifiedValue;
 
-// set configuration
+	// set configuration
 	nrf_set_config(&config, payload_rx, payload_length);
-// initialization
+	// initialization
 	nrf_init(&nrf, &config);
 	SWV_SendStrLn("NRF24_Init");
 
@@ -1467,7 +1466,7 @@ void StartReporterTask(void const *argument)
 	osEvent evt;
 	frame_t frame;
 
-// reset report frame to default
+	// reset report frame to default
 	Reporter_Reset(FRAME_FULL);
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
@@ -1536,9 +1535,9 @@ void StartReporterTask(void const *argument)
 void StartCanRxTask(void const *argument)
 {
 	/* USER CODE BEGIN StartCanRxTask */
-	extern uint8_t DB_ECU_Speed;
+	extern uint8_t DB_VCU_Speed;
 	extern CAN_Rx RxCan;
-//	uint8_t i;
+	//	uint8_t i;
 	uint32_t ulNotifiedValue;
 	/* Infinite loop */
 	for (;;) {
@@ -1552,7 +1551,7 @@ void StartCanRxTask(void const *argument)
 			case CAN_ADDR_MCU_DUMMY:
 				CANBUS_MCU_Dummy_Read();
 				// set volume
-				osMessagePut(AudioVolQueueHandle, DB_ECU_Speed, osWaitForever);
+				osMessagePut(AudioVolQueueHandle, DB_VCU_Speed, osWaitForever);
 				break;
 			default:
 				break;
@@ -1573,23 +1572,23 @@ void StartCanRxTask(void const *argument)
 void StartSwitchTask(void const *argument)
 {
 	/* USER CODE BEGIN StartSwitchTask */
-// NOTED add 'cost' to all constant
+	// NOTED add 'cost' to all constant
 	const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
-	extern switch_timer_t DB_ECU_Switch_Timer[];
-	extern switch_t DB_ECU_Switch[];
-	extern uint8_t DB_ECU_Switch_Size;
+	extern switch_timer_t DB_VCU_Switch_Timer[];
+	extern switch_t DB_VCU_Switch[];
+	extern uint8_t DB_VCU_Switch_Size;
 	extern switcher_t DB_HMI_Switcher;
-// FIXME use me as binary event
+	// FIXME use me as binary event
 	uint8_t Last_Mode_Drive;
 	uint32_t ulNotifiedValue;
 	uint8_t i;
 
-// Read all initial state
-	for (i = 0; i < DB_ECU_Switch_Size; i++) {
-		DB_ECU_Switch[i].state = HAL_GPIO_ReadPin(DB_ECU_Switch[i].port, DB_ECU_Switch[i].pin);
+	// Read all initial state
+	for (i = 0; i < DB_VCU_Switch_Size; i++) {
+		DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
 	}
-// Handle Reverse mode on init
-	if (DB_ECU_Switch[IDX_KEY_REVERSE].state) {
+	// Handle Reverse mode on init
+	if (DB_VCU_Switch[IDX_KEY_REVERSE].state) {
 		// save previous Drive Mode state
 		if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
 			Last_Mode_Drive = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
@@ -1597,56 +1596,56 @@ void StartSwitchTask(void const *argument)
 		// force state
 		DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
 		// hazard on
-		DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
-		DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
+		DB_VCU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
+		DB_VCU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
 	}
 
 	/* Infinite loop */
 	for (;;) {
 		xTaskNotifyStateClear(NULL);
 		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
-		// handle de-bounce effect
+		// handle bounce effect
 		osDelay(50);
 
 		// Read all (to handle multiple switch change at the same time)
-		for (i = 0; i < DB_ECU_Switch_Size; i++) {
-			DB_ECU_Switch[i].state = HAL_GPIO_ReadPin(DB_ECU_Switch[i].port, DB_ECU_Switch[i].pin);
+		for (i = 0; i < DB_VCU_Switch_Size; i++) {
+			DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
 
 			// handle select & set: timer
 			if (i == IDX_KEY_SELECT || i == IDX_KEY_SET) {
 				// reset SET timer
-				DB_ECU_Switch_Timer[i].time = 0;
+				DB_VCU_Switch_Timer[i].time = 0;
 
 				// next job
-				if (DB_ECU_Switch[i].state) {
+				if (DB_VCU_Switch[i].state) {
 					if (i == IDX_KEY_SELECT || (i == IDX_KEY_SET && DB_HMI_Switcher.listening)) {
 						// start timer if not running
-						if (!DB_ECU_Switch_Timer[i].running) {
+						if (!DB_VCU_Switch_Timer[i].running) {
 							// set flag
-							DB_ECU_Switch_Timer[i].running = 1;
+							DB_VCU_Switch_Timer[i].running = 1;
 							// start timer for SET
-							DB_ECU_Switch_Timer[i].start = osKernelSysTick();
+							DB_VCU_Switch_Timer[i].start = osKernelSysTick();
 						}
 					}
 					// reverse it
-					DB_ECU_Switch[i].state = 0;
+					DB_VCU_Switch[i].state = 0;
 				} else {
 					// stop timer if running
-					if (DB_ECU_Switch_Timer[i].running) {
+					if (DB_VCU_Switch_Timer[i].running) {
 						// set flag
-						DB_ECU_Switch_Timer[i].running = 0;
+						DB_VCU_Switch_Timer[i].running = 0;
 						// stop SET
-						DB_ECU_Switch_Timer[i].time = (uint8_t) ((osKernelSysTick()
-								- DB_ECU_Switch_Timer[i].start) / tick1000ms);
+						DB_VCU_Switch_Timer[i].time = (uint8_t) ((osKernelSysTick()
+								- DB_VCU_Switch_Timer[i].start) / tick1000ms);
 						// reverse it
-						DB_ECU_Switch[i].state = 1;
+						DB_VCU_Switch[i].state = 1;
 					}
 				}
 			}
 		}
 
 		// Only handle Select & Set when in non-reverse mode
-		if (DB_ECU_Switch[IDX_KEY_REVERSE].state) {
+		if (DB_VCU_Switch[IDX_KEY_REVERSE].state) {
 			// save previous Drive Mode state
 			if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
 				Last_Mode_Drive = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
@@ -1654,8 +1653,8 @@ void StartSwitchTask(void const *argument)
 			// force state
 			DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
 			// hazard on
-			DB_ECU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
-			DB_ECU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
+			DB_VCU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
+			DB_VCU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
 		} else {
 			// restore previous Drive Mode
 			if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] == SWITCH_MODE_DRIVE_R) {
@@ -1663,9 +1662,9 @@ void StartSwitchTask(void const *argument)
 			}
 
 			// handle Select & Set
-			if (DB_ECU_Switch[IDX_KEY_SELECT].state || DB_ECU_Switch[IDX_KEY_SET].state) {
+			if (DB_VCU_Switch[IDX_KEY_SELECT].state || DB_VCU_Switch[IDX_KEY_SET].state) {
 				// handle select key
-				if (DB_ECU_Switch[IDX_KEY_SELECT].state) {
+				if (DB_VCU_Switch[IDX_KEY_SELECT].state) {
 					if (DB_HMI_Switcher.listening) {
 						// change mode position
 						if (DB_HMI_Switcher.mode == SWITCH_MODE_MAX) {
@@ -1677,10 +1676,10 @@ void StartSwitchTask(void const *argument)
 					// Listening on option
 					DB_HMI_Switcher.listening = 1;
 
-				} else if (DB_ECU_Switch[IDX_KEY_SET].state) {
+				} else if (DB_VCU_Switch[IDX_KEY_SET].state) {
 					// handle set key
 					if (DB_HMI_Switcher.listening
-							|| (DB_ECU_Switch_Timer[IDX_KEY_SET].time >= 3 && DB_HMI_Switcher.mode == SWITCH_MODE_TRIP)) {
+							|| (DB_VCU_Switch_Timer[IDX_KEY_SET].time >= 3 && DB_HMI_Switcher.mode == SWITCH_MODE_TRIP)) {
 						// handle reset only if push more than n sec, and in trip mode
 						if (!DB_HMI_Switcher.listening) {
 							// reset value
@@ -1728,11 +1727,11 @@ void StartGeneralTask(void const *argument)
 void CallbackTimerCAN(void const *argument)
 {
 	/* USER CODE BEGIN CallbackTimerCAN */
-// Send CAN data
-	CANBUS_ECU_Switch();
-	CANBUS_ECU_RTC();
-	CANBUS_ECU_Select_Set();
-	CANBUS_ECU_Trip_Mode();
+	// Send CAN data
+	CANBUS_VCU_Switch();
+	CANBUS_VCU_RTC();
+	CANBUS_VCU_Select_Set();
+	CANBUS_VCU_Trip_Mode();
 	/* USER CODE END CallbackTimerCAN */
 }
 
@@ -1775,18 +1774,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

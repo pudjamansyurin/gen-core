@@ -39,24 +39,14 @@ static void Simcom_Reset(void) {
 }
 
 static void Simcom_Prepare(void) {
-	// TODO: put every config in single file
-	strcpy(simcom.server_ip, "125.164.219.143");
-	simcom.server_port = 5044;
-	simcom.local_port = 5045;
-	strcpy(simcom.net_apn, "3gprs"); 					// "3gprs,telkomsel"
-	strcpy(simcom.net_username, "3gprs");			// "3gprs,wap"
-	strcpy(simcom.net_password, "3gprs");			// "3gprs,wap123"
-	simcom.signal = SIGNAL_3G;
-	simcom.boot_timeout = 10;
-	simcom.repeat_delay = 5;
 	// prepare command sequence
-	sprintf(simcom.CMD_CNMP, "AT+CNMP=%d\r", simcom.signal);
+	sprintf(simcom.CMD_CNMP, "AT+CNMP=%d\r", NET_SIGNAL);
 	sprintf(simcom.CMD_CSTT,
 			"AT+CSTT=\"%s\",\"%s\",\"%s\"\r",
-			simcom.net_apn, simcom.net_username, simcom.net_password);
+			NET_APN, NET_APN_USERNAME, NET_APN_PASSWORD);
 	sprintf(simcom.CMD_CIPSTART,
 			"AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r",
-			simcom.server_ip, simcom.server_port);
+			NET_SERVER_IP, NET_SERVER_PORT);
 }
 
 static uint8_t Simcom_Boot(void) {
@@ -66,7 +56,7 @@ static uint8_t Simcom_Boot(void) {
 	// reset the state of simcom module
 	Simcom_Reset();
 	// wait until booting is done
-	return Simcom_Command_Match("AT\r", ms, SIMCOM_STATUS_READY, (simcom.boot_timeout * 1000) / ms);
+	return Simcom_Command_Match("AT\r", ms, SIMCOM_STATUS_READY, (NET_BOOT_TIMEOUT * 1000) / ms);
 }
 
 static uint8_t Simcom_Response(char *str) {
@@ -97,7 +87,7 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 		SIMCOM_Transmit(&CTRL_Z, 1);
 	}
 	// convert time to tick
-	timeout_tick = pdMS_TO_TICKS(ms + SIMCOM_EXTRA_TIME_MS);
+	timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME_MS);
 	// set timeout guard
 	tick = osKernelSysTick();
 	// wait response from SIMCOM
@@ -157,7 +147,7 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
 		}
 
 		// execute command every timeout guard elapsed
-		osDelay(simcom.repeat_delay * 1000);
+		osDelay(NET_REPEAT_DELAY * 1000);
 		// increment sequence
 		seq++;
 	}
@@ -181,6 +171,7 @@ static uint8_t Simcom_Payload(char *payload, uint16_t payload_length) {
 void Simcom_Init(void) {
 	uint8_t p;
 
+	// FIXME: should use hierarchy algorithm in error handling
 	// this do-while is complicated, but it doesn't use recursive function, so it's stack safe
 	do {
 		// show previous response

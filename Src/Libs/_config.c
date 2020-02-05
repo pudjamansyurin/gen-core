@@ -25,7 +25,7 @@ void BSP_Led_Disco(uint16_t ms) {
 	}
 }
 
-int8_t BSP_Bit_Pos(uint64_t event_id) {
+int8_t BSP_Bit_Position(uint64_t event_id) {
 	uint8_t pos = -1;
 
 	for (int8_t i = 0; i < 64; i++) {

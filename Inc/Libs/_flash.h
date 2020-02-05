@@ -12,6 +12,7 @@
 
 /* Virtual address */
 /* Virtual address defined by the user: 0xFFFF value is prohibited */
+// FIXME: do i needed? eeprom emulation?
 #define VADDR_ODOMETER_L			0x0000
 #define VADDR_ODOMETER_H			(VADDR_ODOMETER_L + 1)
 

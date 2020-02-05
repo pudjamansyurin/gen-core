@@ -8,11 +8,11 @@
 #ifndef MEMS_H_
 #define MEMS_H_
 
-#include "main.h"
-#include "cmsis_os.h"
 #include <stdio.h>				// for: sprintf()
 #include <stdlib.h>				// for: abs()
 #include <math.h>					// for: pow(), sqrt()
+#include "main.h"
+#include "cmsis_os.h"
 #include "_mpu6050.h"
 #include "_swv.h"
 
