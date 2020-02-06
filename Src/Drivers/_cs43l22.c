@@ -504,11 +504,11 @@ void AUDIO_IO_Init(void) {
 	/* Power Down the codec */
 	HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
 	/* Wait for a delay to insure registers erasing */
-	HAL_Delay(50);
+	osDelay(50);
 	/* Power on the codec */
 	HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_SET);
 	/* Wait for a delay to insure registers erasing */
-	HAL_Delay(50);
+	osDelay(50);
 }
 
 /**

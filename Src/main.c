@@ -98,8 +98,7 @@ osMutexId SimcomRecMutexHandle;
 osMutexId FingerRecMutexHandle;
 /* USER CODE BEGIN PV */
 osMailQId GpsMailHandle;
-extern report_t report;
-extern response_t response;
+osMailQId ReportMailHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -234,6 +233,9 @@ int main(void)
 	/* add queues, ... */
 	osMailQDef(GpsMail, 1, gps_t);
 	GpsMailHandle = osMailCreate(osMailQ(GpsMail), NULL);
+
+	osMailQDef(ReportMail, 100, report_t);
+	ReportMailHandle = osMailCreate(osMailQ(ReportMail), NULL);
 
 	/* USER CODE END RTOS_QUEUES */
 
@@ -1054,9 +1056,14 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 void StartIotTask(void const *argument)
 {
 	/* USER CODE BEGIN 5 */
+	extern response_t response;
+	extern report_t report;
 	extern uint8_t DB_VCU_Signal;
 	uint32_t notifValue;
-	uint8_t res;
+	uint8_t success, reportSize;
+	osEvent evt;
+	report_t *theReport;
+	char *payload;
 
 	// Start simcom module
 	SIMCOM_DMA_Init();
@@ -1066,31 +1073,61 @@ void StartIotTask(void const *argument)
 		// get event data
 		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, portMAX_DELAY);
 
-		// Retrieve network signal quality
+		// Retrieve network signal quality (every-time this task wake-up)
 		Simcom_Read_Signal(&DB_VCU_Signal);
 
+		// Set default
+		success = 1;
+
 		// check every event & send
-		// handle response frame
-		if (notifValue & EVENT_IOT_REPORT_RESPONSE) {
-			res = Simcom_Upload((char*) &response, sizeof(response.header) + strlen(response.data.message));
-		}
-		// handle report frame
-		if (notifValue & EVENT_IOT_REPORT_SIMPLE) {
-			res = Simcom_Upload((char*) &report, sizeof(report.header) + sizeof(report.data.req));
-		} else if (notifValue & EVENT_IOT_REPORT_FULL) {
-			res = Simcom_Upload((char*) &report, sizeof(report.header) + sizeof(report.data.req) + sizeof(report.data.opt));
+		if (notifValue & EVENT_IOT_RESPONSE) {
+			// calculate the size based on message size
+			reportSize = sizeof(report.header) + strlen(response.data.message);
+			// response frame
+			payload = (char*) &response;
+			// Send to server
+			success = Simcom_Upload(payload, reportSize);
+
+		} else {
+			// report frame
+			// check report log
+			evt = osMailGet(ReportMailHandle, 0);
+
+			// loop trough the log
+			while (evt.status == osEventMail) {
+				// copy the pointer
+				theReport = evt.value.p;
+				// calculate the size based on frame_id
+				reportSize = sizeof(report.header) + sizeof(report.data.req);
+				if (theReport->header.frame_id == FRAME_FULL) {
+					reportSize += sizeof(report.data.opt);
+				}
+				// report frame
+				payload = (char*) evt.value.p;
+
+				// Send to server
+				success = Simcom_Upload(payload, reportSize);
+				// handle SIMCOM response
+				if (success) {
+					// Free the pointer after successfully sent
+					osMailFree(ReportMailHandle, theReport);
+				} else {
+					// SIMCOM failed
+					break;
+				}
+
+				// check report log again
+				evt = osMailGet(ReportMailHandle, 0);
+			};
 		}
 
+		// save the simcom event
+		Reporter_Set_Event(REPORT_SIMCOM_RESTART, !success);
 		// handle sending error
-		if (!res) {
-			Reporter_Set_Event(REPORT_SIMCOM_RESTART, 1);
-			BSP_Led_Disco(1000);
+		if (!success) {
 			// restart module
+			BSP_Led_Disco(1000);
 			Simcom_Init();
-		} else {
-			Reporter_Set_Event(REPORT_SIMCOM_RESTART, 0);
-			// Retrieve network signal quality
-			Simcom_Read_Signal(&DB_VCU_Signal);
 		}
 	}
 	/* USER CODE END 5 */
@@ -1106,7 +1143,7 @@ void StartIotTask(void const *argument)
 void StartGyroTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGyroTask */
-	const TickType_t xDelay_ms = pdMS_TO_TICKS(5);
+	const TickType_t tick5ms = pdMS_TO_TICKS(5);
 	TickType_t xLastWakeTime;
 	mems_t mems_calibration;
 	mems_decision_t mems_decision;
@@ -1136,7 +1173,7 @@ void StartGyroTask(void const *argument)
 		}
 
 		// Report interval
-		vTaskDelayUntil(&xLastWakeTime, xDelay_ms);
+		vTaskDelayUntil(&xLastWakeTime, tick5ms);
 	}
 	/* USER CODE END StartGyroTask */
 }
@@ -1151,11 +1188,12 @@ void StartGyroTask(void const *argument)
 void StartCommandTask(void const *argument)
 {
 	/* USER CODE BEGIN StartCommandTask */
-	const TickType_t xDelay_ms = pdMS_TO_TICKS(100);
+	const TickType_t tick100ms = pdMS_TO_TICKS(100);
 	TickType_t xLastWakeTime;
 	uint32_t ulNotifiedValue;
 	BaseType_t xResult;
 	command_t command;
+	extern response_t response;
 
 	int p;
 	uint8_t newCommand = 0;
@@ -1181,7 +1219,7 @@ void StartCommandTask(void const *argument)
 
 		// then execute the command
 		if (newCommand) {
-			SWV_SendStr("\nNew Command : ");
+			SWV_SendStr("\nNew Command: from CommandTask");
 			newCommand = 0;
 			// read the command & execute
 			if (Simcom_Read_Command(&command)) {
@@ -1268,12 +1306,12 @@ void StartCommandTask(void const *argument)
 				Reporter_Set_Header(FRAME_RESPONSE);
 
 				// Report is ready, do what you want (send to server)
-				xTaskNotify(IotTaskHandle, EVENT_IOT_REPORT_RESPONSE, eSetBits);
+				xTaskNotify(IotTaskHandle, EVENT_IOT_RESPONSE, eSetBits);
 			}
 		}
 
 		// Report interval
-		vTaskDelayUntil(&xLastWakeTime, xDelay_ms);
+		vTaskDelayUntil(&xLastWakeTime, tick100ms);
 	}
 	/* USER CODE END StartCommandTask */
 }
@@ -1355,7 +1393,7 @@ void StartFingerTask(void const *argument)
 void StartAudioTask(void const *argument)
 {
 	/* USER CODE BEGIN StartAudioTask */
-	const TickType_t xDelay_ms = pdMS_TO_TICKS(500);
+	const TickType_t tick500ms = pdMS_TO_TICKS(500);
 	TickType_t xLastWakeTime;
 	uint32_t ulNotifiedValue;
 	BaseType_t xResult;
@@ -1396,7 +1434,7 @@ void StartAudioTask(void const *argument)
 		}
 
 		// Report interval
-		vTaskDelayUntil(&xLastWakeTime, xDelay_ms);
+		vTaskDelayUntil(&xLastWakeTime, tick500ms);
 	}
 	/* USER CODE END StartAudioTask */
 }
@@ -1462,23 +1500,28 @@ void StartReporterTask(void const *argument)
 	const TickType_t xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000);
 	TickType_t xLastWakeTime, xLastFullWakeTime = 0;
 	BaseType_t xResult;
-	uint32_t ulNotifiedValue, frameEvent;
+	uint8_t simcomRestartState;
+	uint32_t ulNotifiedValue;
 	osEvent evt;
 	frame_t frame;
+	report_t *logReport;
+	extern report_t report;
 
 	// reset report frame to default
 	Reporter_Reset(FRAME_FULL);
+
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
-		// reset events group
-		Reporter_Set_Event(REPORT_BIKE_CRASHED, 0);
-		Reporter_Set_Event(REPORT_BIKE_FALLING, 0);
-		//		report.data.req.events_group = 0;
+		// preserve simcom reboot from events group
+		simcomRestartState = Reporter_Read_Event(REPORT_SIMCOM_RESTART);
+		// reset all events group
+		report.data.req.events_group = 0;
+		// re-write the simcom reboot events
+		Reporter_Set_Event(REPORT_SIMCOM_RESTART, simcomRestartState);
 
 		// get event data
 		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
-
 		// do this if events occurred
 		if (xResult == pdTRUE) {
 			// check & set every event
@@ -1506,18 +1549,39 @@ void StartReporterTask(void const *argument)
 			xLastFullWakeTime = xLastWakeTime;
 			// full frame
 			frame = FRAME_FULL;
-			frameEvent = EVENT_IOT_REPORT_FULL;
 		} else {
 			// simple frame
 			frame = FRAME_SIMPLE;
-			frameEvent = EVENT_IOT_REPORT_SIMPLE;
 		}
 
 		// Set header
 		Reporter_Set_Header(frame);
 
+		// Allocate memory, free on IoTTask after successfully sent
+		logReport = osMailAlloc(ReportMailHandle, osWaitForever);
+
+		// check log capacity
+		while (logReport == NULL) {
+			// get first queue
+			evt = osMailGet(ReportMailHandle, 0);
+
+			// remove the first queue
+			if (evt.status == osEventMail) {
+				osMailFree(ReportMailHandle, evt.value.p);
+			}
+
+			// allocate again
+			logReport = osMailAlloc(ReportMailHandle, osWaitForever);
+		}
+
+		// Copy snapshot of current report
+		*logReport = report;
+
+		// Put report to log
+		osMailPut(ReportMailHandle, logReport);
+
 		// Report is ready, do what you want (send to server)
-		xTaskNotify(IotTaskHandle, frameEvent, eSetBits);
+		xTaskNotify(IotTaskHandle, EVENT_IOT_REPORT, eSetBits);
 
 		// Report interval in second (based on lowest interval, the simple frame)
 		vTaskDelayUntil(&xLastWakeTime, xDelaySimple_ms);
@@ -1572,18 +1636,16 @@ void StartCanRxTask(void const *argument)
 void StartSwitchTask(void const *argument)
 {
 	/* USER CODE BEGIN StartSwitchTask */
-	// NOTED add 'cost' to all constant
 	const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
 	extern switch_timer_t DB_VCU_Switch_Timer[];
 	extern switch_t DB_VCU_Switch[];
 	extern uint8_t DB_VCU_Switch_Size;
 	extern switcher_t DB_HMI_Switcher;
-	// FIXME use me as binary event
 	uint8_t Last_Mode_Drive;
 	uint32_t ulNotifiedValue;
 	uint8_t i;
 
-	// Read all initial state
+	// Read all EXTI state
 	for (i = 0; i < DB_VCU_Switch_Size; i++) {
 		DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
 	}
@@ -1710,7 +1772,7 @@ void StartSwitchTask(void const *argument)
 void StartGeneralTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGeneralTask */
-	const TickType_t tick500ms = pdMS_TO_TICKS(5000);
+	const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
 	TickType_t xLastWakeTime;
 
 	/* Infinite loop */
@@ -1718,7 +1780,7 @@ void StartGeneralTask(void const *argument)
 	for (;;) {
 
 		// Periodic interval
-		vTaskDelayUntil(&xLastWakeTime, tick500ms);
+		vTaskDelayUntil(&xLastWakeTime, tick5000ms);
 	}
 	/* USER CODE END StartGeneralTask */
 }

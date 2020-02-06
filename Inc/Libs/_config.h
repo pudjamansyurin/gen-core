@@ -30,7 +30,7 @@ int8_t BSP_Bit_Position(uint64_t event_id);
 //void ftoa(float f, char *str, char size);
 
 // GLOBAL CONFIG
-#define NET_SERVER_IP								"125.164.113.164"
+#define NET_SERVER_IP								"125.164.149.160"
 #define NET_SERVER_PORT							5044
 #define NET_APN											"3gprs"					// "telkomsel"
 #define	NET_APN_USERNAME						"3gprs"					// "wap"
@@ -40,8 +40,11 @@ int8_t BSP_Bit_Position(uint64_t event_id);
 #define NET_REPEAT_DELAY						5								// in second
 #define NET_EXTRA_TIME_MS						500 						// in ms
 
-#define FINGER_CONFIDENCE_MIN 						10
-#define FINGER_SCAN_TIMEOUT								20				// in second
+#define NET_COMMAND_PREFIX					"@S"
+#define NET_COMMAND_SUFFIX					"#S"
+
+#define FINGER_CONFIDENCE_MIN 			10
+#define FINGER_SCAN_TIMEOUT					20							// in second
 
 #define	REPORT_INTERVAL_SIMPLE			5								// in second
 #define	REPORT_INTERVAL_FULL				20							// in second
@@ -49,9 +52,8 @@ int8_t BSP_Bit_Position(uint64_t event_id);
 #define GMT_TIME										7								// Asia/Jakarta
 
 // Event List (RTOS Tasks)
-#define EVENT_IOT_REPORT_RESPONSE 	SetBit(0)
-#define EVENT_IOT_REPORT_SIMPLE 		SetBit(1)
-#define EVENT_IOT_REPORT_FULL 			SetBit(2)
+#define EVENT_IOT_RESPONSE 					SetBit(0)
+#define EVENT_IOT_REPORT						SetBit(1)
 
 #define EVENT_REPORTER_CRASH				SetBit(0)
 #define EVENT_REPORTER_FALL					SetBit(1)

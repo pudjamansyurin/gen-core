@@ -6,6 +6,7 @@
  */
 
 #include "_config.h"
+#include "_database.h"
 
 void BSP_Led_Write(uint8_t state) {
 	HAL_GPIO_WritePin(SYS_LED_GPIO_Port, SYS_LED_Pin, state);
@@ -38,6 +39,13 @@ int8_t BSP_Bit_Position(uint64_t event_id) {
 	return pos;
 }
 
+//void BSP_Read_Handlebar(switch_t *DB_VCU_Switch, uint8_t DB_VCU_Switch_Size) {
+//	uint8_t i;
+//
+//	for (i = 0; i < DB_VCU_Switch_Size; i++) {
+//		DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
+//	}
+//}
 //// FIXME am I needed ?
 //// Converts a floating point number to string.
 //void ftoa(float f, char *str, char size) {

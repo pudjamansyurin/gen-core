@@ -398,7 +398,7 @@ uint8_t AUDIO_OUT_Stop(uint32_t Option) {
 	} else {
 		if (Option == CODEC_PDWN_HW) {
 			/* Wait at least 1ms */
-			HAL_Delay(1);
+			osDelay(1);
 
 			/* Reset the pin */
 			HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);

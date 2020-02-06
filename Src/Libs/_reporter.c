@@ -49,7 +49,6 @@ void Reporter_Reset(frame_t frame) {
 			report.data.opt.gps.hdop = 255;
 			report.data.opt.gps.heading = 0;
 			report.data.opt.odometer = Flash_Get_Odometer();
-			// FIXME get my real value using ADC
 			report.data.opt.bat_voltage = 2600 / 13;
 			report.data.opt.report_range = 0;
 			report.data.opt.report_battery = 99;
@@ -108,6 +107,10 @@ void Reporter_Set_Event(uint64_t event_id, uint8_t bool) {
 		// clear
 		ClearBitOf(report.data.req.events_group, BSP_Bit_Position(event_id));
 	}
+}
+
+uint8_t Reporter_Read_Event(uint64_t event_id) {
+	return (report.data.req.events_group & event_id) >> BSP_Bit_Position(event_id);
 }
 
 void Reporter_Set_Header(frame_t frame) {

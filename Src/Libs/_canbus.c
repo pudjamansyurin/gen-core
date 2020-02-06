@@ -121,8 +121,8 @@ uint8_t CANBUS_VCU_RTC(void) {
 }
 
 uint8_t CANBUS_VCU_Select_Set(void) {
-	const TickType_t tick250ms = pdMS_TO_TICKS(250);
 	const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
+	const TickType_t tick250ms = pdMS_TO_TICKS(250);
 	static TickType_t tick, tickPeriod;
 	static uint8_t Mode_Hide_Internal = 0;
 	static int8_t Mode_Name_Internal = -1;

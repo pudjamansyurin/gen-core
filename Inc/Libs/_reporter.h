@@ -23,15 +23,16 @@ typedef enum {
 } frame_t;
 
 /*  typedef struct -----------------------------------------------------------*/
-// report frame
+// header frame (for report & response)
 typedef struct __attribute__((packed)) {
 	uint16_t prefix;
 	uint32_t crc;
-	uint16_t size;
+	uint8_t size;
 	uint8_t frame_id;
 	uint32_t unit_id;
 } report_header_t;
 
+// report frame
 typedef struct __attribute__((packed)) {
 	int32_t longitude;
 	int32_t latitude;
@@ -77,6 +78,25 @@ typedef struct __attribute__((packed)) {
 	response_data_t data;
 } response_t;
 
+// command frame (from server)
+typedef struct __attribute__((packed)) {
+	uint16_t prefix;
+	uint32_t crc;
+	uint8_t size;
+} command_header_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t code;
+	uint8_t sub_code;
+	uint64_t value;
+} command_data_t;
+
+typedef struct __attribute__((packed)) {
+	command_header_t header;
+	command_data_t command;
+// FIXME: replace command_t with other name, then use for me
+} commandx_t;
+
 // public function
 void Reporter_Reset(frame_t frame);
 void Reporter_Set_Prefix(uint16_t prefix);
@@ -85,6 +105,7 @@ void Reporter_Set_Odometer(uint32_t odom);
 void Reporter_Set_GPS(gps_t *hgps);
 void Reporter_Set_Speed(gps_t *hgps);
 void Reporter_Set_Event(uint64_t event_id, uint8_t bool);
+uint8_t Reporter_Read_Event(uint64_t event_id);
 void Reporter_Set_Header(frame_t frame);
 
 #endif /* REPORTER_H_ */

@@ -20,12 +20,13 @@
 #define SIMCOM_STATUS_OK 						"OK\r\n"
 #define SIMCOM_STATUS_ERROR 				"ERROR\r\n"
 #define SIMCOM_STATUS_READY 				"RDY\r\n"
+#define SIMCOM_READ_COMMAND					"AT+CIPRXGET=2,1024\r"
 
 /* Public typedef -----------------------------------------------------------*/
 typedef struct {
 	char CMD_CIPSTART[50];
 	char CMD_CSTT[75];
-	char CMD_CNMP[11];
+	char CMD_CNMP[12];
 } simcom_t;
 
 typedef struct {

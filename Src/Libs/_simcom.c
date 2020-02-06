@@ -73,10 +73,13 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 	uint8_t ret;
 	uint32_t tick, timeout_tick = 0;
 
-	// check if it has new command
-	if (Simcom_Check_Command()) {
-		SWV_SendStrLn("\nNew Command from Simcom_Send_Direct.");
-		xTaskNotify(CommandTaskHandle, EVENT_COMMAND_ARRIVED, eSetBits);
+	// when not read command payload
+	if (strstr(data, SIMCOM_READ_COMMAND) == NULL) {
+		// check if it has new command
+		if (Simcom_Check_Command()) {
+			SWV_SendStrLn("\nNew Command: from Simcom_Send_Direct()");
+			xTaskNotify(CommandTaskHandle, EVENT_COMMAND_ARRIVED, eSetBits);
+		}
 	}
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
@@ -115,6 +118,7 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
 	if (res == NULL) {
 		res = SIMCOM_STATUS_OK;
 	}
+
 	// repeat command until desired response
 	while (seq <= n) {
 		// print command for debugger
@@ -226,7 +230,7 @@ void Simcom_Init(void) {
 
 		// Set signal Generation 2G/3G/AUTO
 		if (p) {
-			p = Simcom_Command_Match(simcom.CMD_CNMP, 500, NULL, 5);
+			p = Simcom_Command_Match(simcom.CMD_CNMP, 10000, NULL, 2);
 		}
 
 		// Network Registration Status
@@ -298,42 +302,51 @@ uint8_t Simcom_Read_Command(command_t *cmd) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0;
-	char *prefix = "AT$";
-	char *start, *delim, *end;
+	//	char *prefix = "AT$";
+	char *start, *end;
+	//	commandx_t command;
 
-	if (Simcom_Command("AT+CIPRXGET=2,1024\r", 500)) {
+	SWV_SendStr("\n+++++++++++++ READ COMMAND ++++++++++++++\n");
+	if (Simcom_Command_Match(SIMCOM_READ_COMMAND, 5000, NET_COMMAND_SUFFIX, 1)) {
 		// check is command not empty
+		SWV_SendStr("\n+++++++++++++ GOT COMMAND ++++++++++++++\n");
 		if (!Simcom_Response("CIPRXGET: 2,0")) {
 			// get pointer reference
-			start = strstr(SIMCOM_UART_RX_Buffer, prefix);
-			delim = strchr(start, '=');
-			end = strstr(start, "\r\nOK");
+			start = strstr(SIMCOM_UART_RX_Buffer, NET_COMMAND_PREFIX);
+			end = strstr(start, NET_COMMAND_SUFFIX);
 
-			// check if command has value
-			if (delim != NULL) {
-				// get command
-				strncpy(cmd->var, start + strlen(prefix), delim - (start + strlen(prefix)));
-				*(cmd->var + (delim - (start + strlen(prefix)))) = '\0';
-				// get value
-				strncpy(cmd->val, delim + 1, end - delim);
-				*(cmd->val + (end - delim)) = '\0';
-			} else {
-				// get command
-				strncpy(cmd->var, start + strlen(prefix), end - (start + strlen(prefix)));
-				*(cmd->var + (end - (start + strlen(prefix)))) = '\0';
-				// set value
-				*(cmd->val) = '\0';
-			}
+			// debugging
+			SWV_SendStr("\n+++++++++++++ THE COMMAND ++++++++++++++\n");
+			SWV_SendBuf(start, end - start);
+			SWV_SendStrLn("");
 
-			// get full command
-			strncpy(cmd->cmd, start + strlen(prefix), end - (start + strlen(prefix)));
-			*(cmd->cmd + (end - (start + strlen(prefix)))) = '\0';
-
+			//			// check if command has value
+			//			if (delim != NULL) {
+			//				// get command
+			//				strncpy(cmd->var, start + strlen(prefix), delim - (start + strlen(prefix)));
+			//				*(cmd->var + (delim - (start + strlen(prefix)))) = '\0';
+			//				// get value
+			//				strncpy(cmd->val, delim + 1, end - delim);
+			//				*(cmd->val + (end - delim)) = '\0';
+			//			} else {
+			//				// get command
+			//				strncpy(cmd->var, start + strlen(prefix), end - (start + strlen(prefix)));
+			//				*(cmd->var + (end - (start + strlen(prefix)))) = '\0';
+			//				// set value
+			//				*(cmd->val) = '\0';
+			//			}
+			//
+			//			// get full command
+			//			strncpy(cmd->cmd, start + strlen(prefix), end - (start + strlen(prefix)));
+			//			*(cmd->cmd + (end - (start + strlen(prefix)))) = '\0';
+			//
 			// reset rx buffer
 			SIMCOM_Reset_Buffer();
-
-			ret = 1;
+			//
+			//			ret = 1;
 		}
+	} else {
+		SWV_SendStr("\n+++++++++++++ FAILED READ COMMAND ++++++++++++++\n");
 	}
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);
