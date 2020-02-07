@@ -1021,7 +1021,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		}
 		// handle Fingerprint IRQ
 		if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
-			xTaskNotifyFromISR(FingerTaskHandle, EVENT_FINGER_PLACED, eSetBits, &xHigherPriorityTaskWoken);
+			xTaskNotifyFromISR(
+					FingerTaskHandle,
+					EVENT_FINGER_PLACED,
+					eSetBits,
+					&xHigherPriorityTaskWoken);
 		}
 		// handle Handlebars
 		if (GPIO_Pin == EXT_HBAR_SELECT_Pin
@@ -1031,7 +1035,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				|| GPIO_Pin == EXT_ABS_STATUS_Pin
 				|| GPIO_Pin == EXT_HBAR_SEIN_L_Pin
 				|| GPIO_Pin == EXT_HBAR_SEIN_R_Pin) {
-			xTaskNotifyFromISR(SwitchTaskHandle, (uint32_t ) GPIO_Pin, eSetBits, &xHigherPriorityTaskWoken);
+			xTaskNotifyFromISR(
+					SwitchTaskHandle,
+					(uint32_t ) GPIO_Pin,
+					eSetBits,
+					&xHigherPriorityTaskWoken);
 		}
 	}
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -1040,7 +1048,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-	xTaskNotifyFromISR(KeylessTaskHandle, EVENT_KEYLESS_RX_IT, eSetBits, &xHigherPriorityTaskWoken);
+	xTaskNotifyFromISR(
+			KeylessTaskHandle,
+			EVENT_KEYLESS_RX_IT,
+			eSetBits,
+			&xHigherPriorityTaskWoken);
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
@@ -1082,7 +1094,7 @@ void StartIotTask(void const *argument)
 		// check every event & send
 		if (notifValue & EVENT_IOT_RESPONSE) {
 			// calculate the size based on message size
-			reportSize = sizeof(report.header) + strlen(response.data.message);
+			reportSize = sizeof(response.header) + sizeof(response.data.code) + strlen(response.data.message);
 			// response frame
 			payload = (char*) &response;
 			// Send to server
@@ -1148,21 +1160,25 @@ void StartGyroTask(void const *argument)
 	mems_t mems_calibration;
 	mems_decision_t mems_decision;
 	SD_MPU6050 mpu;
+
 	/* MPU6050 Initialization*/
 	MEMS_Init(&hi2c3, &mpu);
 	// Set calibrator
 	mems_calibration = MEMS_Average(&hi2c3, &mpu, NULL, 500);
 	// Give success indicator
 	WaveBeepPlay(BEEP_FREQ_2000_HZ, 100);
+
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
 		// Read all accelerometer, gyroscope (average)
 		mems_decision = MEMS_Decision(&hi2c3, &mpu, &mems_calibration, 25);
+
 		// Check accelerometer, happens when impact detected
 		if (mems_decision.crash) {
 			xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_CRASH, eSetBits);
 		}
+
 		// Check gyroscope, happens when fall detected
 		if (mems_decision.fall) {
 			xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
@@ -1188,22 +1204,25 @@ void StartGyroTask(void const *argument)
 void StartCommandTask(void const *argument)
 {
 	/* USER CODE BEGIN StartCommandTask */
-	const TickType_t tick100ms = pdMS_TO_TICKS(100);
-	TickType_t xLastWakeTime;
-	uint32_t ulNotifiedValue;
-	BaseType_t xResult;
-	command_t command;
 	extern response_t response;
 
+	const TickType_t tick100ms = pdMS_TO_TICKS(100);
+	TickType_t xLastWakeTime;
+	BaseType_t xResult;
+	command_t command;
+	uint32_t ulNotifiedValue;
+	uint8_t newCommand;
 	int p;
-	uint8_t newCommand = 0;
-	uint32_t val;
 
 	// reset response frame to default
 	Reporter_Reset(FRAME_RESPONSE);
+
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
+		// reset command indicator state
+		newCommand = 0;
+
 		// check if command arrived from IOT Task
 		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
 		if (xResult == pdTRUE) {
@@ -1220,87 +1239,110 @@ void StartCommandTask(void const *argument)
 		// then execute the command
 		if (newCommand) {
 			SWV_SendStr("\nNew Command: from CommandTask");
-			newCommand = 0;
 			// read the command & execute
 			if (Simcom_Read_Command(&command)) {
-				// generic command response
-				sprintf(response.data.message, "%s:OK", command.cmd);
+				// default command response
+				response.data.code = RESPONSE_STATUS_OK;
+				strcpy(response.data.message, "");
 
-				// BSP Led configuration
-				if (strstr(command.var, "LED") != NULL) {
-					val = atol(command.val);
-					BSP_Led_Write(val);
-				}
+				// handle the command
+				switch (command.data.code) {
+					case CMD_CODE_GEN:
+						switch (command.data.sub_code) {
+							case CMD_GEN_INFO:
+								strcpy(
+										response.data.message,
+										"VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ "VCU_BUILD_YEAR);
+								break;
 
-				// RTC configuration
-				else if (strcmp(command.var, "RTC") == 0) {
-					RTC_Write(command.val);
-				}
+							case CMD_GEN_LED:
+								BSP_Led_Write((uint8_t) command.data.value);
+								break;
 
-				// Odometer configuration
-				else if (strcmp(command.var, "ODOM") == 0) {
-					val = atol(command.val);
-					Reporter_Set_Odometer(val);
-				}
-
-				// Frame data
-				else if (strcmp(command.var, "UNIT_ID") == 0) {
-					val = atol(command.val);
-					Reporter_Set_UnitID(val);
-				}
-
-				// Information detail
-				else if (strcmp(command.var, "INFO") == 0) {
-					strcpy(response.data.message, "VCU v.1.0\nGEN Indonesia @ 2019\n");
-				}
-
-				// Audio configuration
-				else if (strstr(command.var, "AUDIO_") != NULL) {
-					if (strcmp(command.var, "AUDIO_BEEP") == 0) {
-						xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP, eSetBits);
-					}
-
-					else {
-						val = atol(command.val);
-
-						if (strcmp(command.var, "AUDIO_MUTE") == 0) {
-							xTaskNotify(AudioTaskHandle, val ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF, eSetBits);
+							default:
+								response.data.code = RESPONSE_STATUS_INVALID;
+								break;
 						}
+						break;
 
-						else if (strcmp(command.var, "AUDIO_VOL") == 0) {
-							osMessagePut(AudioVolQueueHandle, (uint8_t) val, osWaitForever);
+					case CMD_CODE_REPORT:
+						switch (command.data.sub_code) {
+							case CMD_REPORT_RTC:
+								// FIXME:
+								SWV_SendStr("\nRTC = ");
+								SWV_SendBufHex((char*) &(command.data.value), sizeof(command.data.value));
+								SWV_SendStr("\n");
+								//RTC_Write(command.data.value);
+								break;
+
+							case CMD_REPORT_ODOM:
+								Reporter_Set_Odometer((uint32_t) command.data.value);
+								break;
+
+							case CMD_REPORT_UNITID:
+								Reporter_Set_UnitID((uint32_t) command.data.value);
+								break;
+
+							default:
+								response.data.code = RESPONSE_STATUS_INVALID;
+								break;
 						}
-					}
+						break;
 
-				}
+					case CMD_CODE_AUDIO:
+						switch (command.data.sub_code) {
+							case CMD_AUDIO_BEEP:
+								xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP, eSetBits);
+								break;
 
-				// Finger print configuration
-				else if (strstr(command.var, "FINGER_") != NULL) {
-					if (strcmp(command.var, "FINGER_RST") == 0) {
-						p = Finger_Empty_Database();
-					} else {
-						val = atol(command.val);
+							case CMD_AUDIO_MUTE:
+								xTaskNotify(
+										AudioTaskHandle,
+										(uint8_t) command.data.value ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF,
+										eSetBits);
+								break;
 
-						if (strcmp(command.var, "FINGER_ADD") == 0) {
-							p = Finger_Enroll(val);
+							case CMD_AUDIO_VOL:
+								osMessagePut(
+										AudioVolQueueHandle,
+										(uint8_t) command.data.value,
+										osWaitForever);
+								break;
+
+							default:
+								response.data.code = RESPONSE_STATUS_INVALID;
+								break;
 						}
+						break;
 
-						else if (strcmp(command.var, "FINGER_DEL") == 0) {
-							p = Finger_Delete_ID(val);
+					case CMD_CODE_FINGER:
+						switch (command.data.sub_code) {
+							case CMD_FINGER_ADD:
+								p = Finger_Enroll((uint8_t) command.data.value);
+								break;
+
+							case CMD_FINGER_DEL:
+								p = Finger_Delete_ID((uint8_t) command.data.value);
+								break;
+
+							case CMD_FINGER_RST:
+								p = Finger_Empty_Database();
+								break;
+
+							default:
+								response.data.code = RESPONSE_STATUS_INVALID;
+								break;
 						}
-					}
+						// handle response from finger-print module
+						if (p != FINGERPRINT_OK) {
+							response.data.code = RESPONSE_STATUS_ERROR;
+						}
+						break;
 
-					if (p != FINGERPRINT_OK) {
-						sprintf(response.data.message, "%s:ERROR", command.cmd);
-					}
+					default:
+						response.data.code = RESPONSE_STATUS_INVALID;
+						break;
 				}
-
-				else {
-					sprintf(response.data.message, "%s:INVALID", command.cmd);
-				}
-
-				// Debugging
-				SWV_SendStrLn(response.data.message);
 
 				// Set header
 				Reporter_Set_Header(FRAME_RESPONSE);
@@ -1336,11 +1378,13 @@ void StartGpsTask(void const *argument)
 	// Allocate memory once, and never free it
 	hgps = osMailAlloc(GpsMailHandle, osWaitForever);
 	Ublox_Init(hgps);
+
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
 		// get GPS info
 		gps_process(hgps, UBLOX_UART_RX_Buffer, strlen(UBLOX_UART_RX_Buffer));
+
 		// hand-over data to IOT_Task (if fixed)
 		if (hgps->fix > 0) {
 			osMailPut(GpsMailHandle, hgps);
@@ -1363,13 +1407,16 @@ void StartFingerTask(void const *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t ulNotifiedValue;
+
 	// Initialization
 	FINGER_DMA_Init();
 	Finger_Init();
+
 	/* Infinite loop */
 	for (;;) {
 		// check if user put finger
 		xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+
 		// proceed event
 		if ((ulNotifiedValue & EVENT_FINGER_PLACED)) {
 			if (Finger_Auth_Fast() > 0) {
@@ -1406,13 +1453,6 @@ void StartAudioTask(void const *argument)
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
-		// check if get volume message
-		evt = osMessageGet(AudioVolQueueHandle, 0);
-		// do this if message arrived
-		if (evt.status == osEventMessage) {
-			AUDIO_OUT_SetVolume((uint8_t) evt.value.v);
-		}
-
 		// check if event happen
 		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
 		// do this if events occurred
@@ -1431,6 +1471,13 @@ void StartAudioTask(void const *argument)
 			if ((ulNotifiedValue & EVENT_AUDIO_MUTE_OFF)) {
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 			}
+		}
+
+		// check if get volume message
+		evt = osMessageGet(AudioVolQueueHandle, 0);
+		// do this if message arrived
+		if (evt.status == osEventMessage) {
+			AUDIO_OUT_SetVolume((uint8_t) evt.value.v);
 		}
 
 		// Report interval
@@ -1601,8 +1648,8 @@ void StartCanRxTask(void const *argument)
 	/* USER CODE BEGIN StartCanRxTask */
 	extern uint8_t DB_VCU_Speed;
 	extern CAN_Rx RxCan;
-	//	uint8_t i;
 	uint32_t ulNotifiedValue;
+
 	/* Infinite loop */
 	for (;;) {
 		// check if has new can message
@@ -1612,13 +1659,13 @@ void StartCanRxTask(void const *argument)
 		if ((ulNotifiedValue & EVENT_CAN_RX_IT)) {
 			// handle message
 			switch (RxCan.RxHeader.StdId) {
-			case CAN_ADDR_MCU_DUMMY:
-				CANBUS_MCU_Dummy_Read();
-				// set volume
-				osMessagePut(AudioVolQueueHandle, DB_VCU_Speed, osWaitForever);
-				break;
-			default:
-				break;
+				case CAN_ADDR_MCU_DUMMY:
+					CANBUS_MCU_Dummy_Read();
+					// set volume
+					osMessagePut(AudioVolQueueHandle, DB_VCU_Speed, osWaitForever);
+					break;
+				default:
+					break;
 			}
 		}
 

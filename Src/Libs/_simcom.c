@@ -5,6 +5,7 @@
  *      Author: Puja
  */
 #include "_simcom.h"
+#include "_crc.h"
 
 /* Private functions ---------------------------------------------------------*/
 static void Simcom_Reset(void);
@@ -243,7 +244,7 @@ void Simcom_Init(void) {
 		}
 		//Attach to GPRS service
 		if (p) {
-			p = Simcom_Command_Match("AT+CGATT?\r", 500, "+CGATT: 1", 5);
+			p = Simcom_Command_Match("AT+CGATT?\r", 10000, "+CGATT: 1", 3);
 		}
 
 		// =========== TCP/IP CONFIGURATION
@@ -298,55 +299,37 @@ uint8_t Simcom_Check_Command(void) {
 	return Simcom_Response("+CIPRXGET: 1");
 }
 
-uint8_t Simcom_Read_Command(command_t *cmd) {
+uint8_t Simcom_Read_Command(command_t *command) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
+	uint32_t crcValue;
 	uint8_t ret = 0;
-	//	char *prefix = "AT$";
-	char *start, *end;
-	//	commandx_t command;
+	char *start;
 
-	SWV_SendStr("\n+++++++++++++ READ COMMAND ++++++++++++++\n");
-	if (Simcom_Command_Match(SIMCOM_READ_COMMAND, 5000, NET_COMMAND_SUFFIX, 1)) {
+	if (Simcom_Command_Match(SIMCOM_READ_COMMAND, 500, NET_COMMAND_PREFIX, 1)) {
 		// check is command not empty
-		SWV_SendStr("\n+++++++++++++ GOT COMMAND ++++++++++++++\n");
 		if (!Simcom_Response("CIPRXGET: 2,0")) {
 			// get pointer reference
 			start = strstr(SIMCOM_UART_RX_Buffer, NET_COMMAND_PREFIX);
-			end = strstr(start, NET_COMMAND_SUFFIX);
+			// copy the whole value (any time the buffer can change)
+			*command = *(command_t*) start;
 
-			// debugging
-			SWV_SendStr("\n+++++++++++++ THE COMMAND ++++++++++++++\n");
-			SWV_SendBuf(start, end - start);
-			SWV_SendStrLn("");
+			// check the Size
+			if (command->header.size == sizeof(command->data)) {
+				// calculate the CRC
+				crcValue = CRC_Calculate8((uint8_t*) &(command->header.size),
+						sizeof(command->header.size) + sizeof(command->data), 1);
 
-			//			// check if command has value
-			//			if (delim != NULL) {
-			//				// get command
-			//				strncpy(cmd->var, start + strlen(prefix), delim - (start + strlen(prefix)));
-			//				*(cmd->var + (delim - (start + strlen(prefix)))) = '\0';
-			//				// get value
-			//				strncpy(cmd->val, delim + 1, end - delim);
-			//				*(cmd->val + (end - delim)) = '\0';
-			//			} else {
-			//				// get command
-			//				strncpy(cmd->var, start + strlen(prefix), end - (start + strlen(prefix)));
-			//				*(cmd->var + (end - (start + strlen(prefix)))) = '\0';
-			//				// set value
-			//				*(cmd->val) = '\0';
-			//			}
-			//
-			//			// get full command
-			//			strncpy(cmd->cmd, start + strlen(prefix), end - (start + strlen(prefix)));
-			//			*(cmd->cmd + (end - (start + strlen(prefix)))) = '\0';
-			//
+				// check the CRC
+				if (command->header.crc == crcValue) {
+					// response OK
+					ret = 1;
+				}
+			}
+
 			// reset rx buffer
 			SIMCOM_Reset_Buffer();
-			//
-			//			ret = 1;
 		}
-	} else {
-		SWV_SendStr("\n+++++++++++++ FAILED READ COMMAND ++++++++++++++\n");
 	}
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);

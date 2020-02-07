@@ -7,13 +7,15 @@
 
 #include "_crc.h"
 
-uint32_t CRC_Calculate8(CRC_HandleTypeDef *hcrc, uint8_t *arr, uint32_t count, uint8_t reset) {
+extern CRC_HandleTypeDef hcrc;
+
+uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
 	uint32_t cnt, remaining = 0;
 
 	/* Reset CRC data register if necessary */
 	if (reset) {
 		/* Reset generator */
-		__HAL_CRC_DR_RESET(hcrc);
+		__HAL_CRC_DR_RESET(&hcrc);
 	}
 
 	/* Calculate number of 32-bit blocks */
@@ -22,7 +24,7 @@ uint32_t CRC_Calculate8(CRC_HandleTypeDef *hcrc, uint8_t *arr, uint32_t count, u
 	/* Calculate */
 	while (cnt--) {
 		/* Set new value */
-		hcrc->Instance->DR = *(uint32_t*) arr;
+		hcrc.Instance->DR = *(uint32_t*) arr;
 
 		/* Increase by 4 */
 		arr += 4;
@@ -42,26 +44,26 @@ uint32_t CRC_Calculate8(CRC_HandleTypeDef *hcrc, uint8_t *arr, uint32_t count, u
 		}
 
 		/* Set new value */
-		hcrc->Instance->DR = remaining;
+		hcrc.Instance->DR = remaining;
 	}
 
 	/* Return data */
-	return hcrc->Instance->DR;
+	return hcrc.Instance->DR;
 }
 
-uint32_t CRC_Calculate32(CRC_HandleTypeDef *hcrc, uint32_t *arr, uint32_t count, uint8_t reset) {
+uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count, uint8_t reset) {
 	/* Reset CRC data register if necessary */
 	if (reset) {
 		/* Reset generator */
-		__HAL_CRC_DR_RESET(hcrc);
+		__HAL_CRC_DR_RESET(&hcrc);
 	}
 
 	/* Calculate CRC */
 	while (count--) {
 		/* Set new value */
-		hcrc->Instance->DR = *arr++;
+		hcrc.Instance->DR = *arr++;
 	}
 
 	/* Return data */
-	return hcrc->Instance->DR;
+	return hcrc.Instance->DR;
 }

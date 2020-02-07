@@ -9,7 +9,6 @@
 #include "_crc.h"
 
 // variable list
-extern CRC_HandleTypeDef hcrc;
 response_t response;
 report_t report;
 
@@ -65,7 +64,7 @@ void Reporter_Set_Prefix(uint16_t prefix) {
 
 }
 
-void Reporter_Set_UnitID(uint64_t unitId) {
+void Reporter_Set_UnitID(uint32_t unitId) {
 	response.header.unit_id = unitId;
 	report.header.unit_id = unitId;
 }
@@ -114,15 +113,15 @@ uint8_t Reporter_Read_Event(uint64_t event_id) {
 }
 
 void Reporter_Set_Header(frame_t frame) {
-	uint8_t crcHeader = sizeof(report.header.prefix) + sizeof(report.header.crc);
-
 	if (frame == FRAME_RESPONSE) {
 		//Reconstruct the header
 		response.header.size = sizeof(response.header.frame_id) +
 				sizeof(response.header.unit_id) +
+				sizeof(response.data.code) +
 				strlen(response.data.message);
 		response.header.frame_id = FRAME_RESPONSE;
-		response.header.crc = CRC_Calculate8(&hcrc, ((uint8_t*) &response) + crcHeader,
+		response.header.crc = CRC_Calculate8(
+				(uint8_t*) &(response.header.size),
 				response.header.size + sizeof(response.header.size), 1);
 
 	} else {
@@ -139,7 +138,8 @@ void Reporter_Set_Header(frame_t frame) {
 			report.header.size += sizeof(report.data.opt);
 		}
 
-		report.header.crc = CRC_Calculate8(&hcrc, ((uint8_t*) &report) + crcHeader,
+		report.header.crc = CRC_Calculate8(
+				(uint8_t*) &(report.header.size),
 				report.header.size + sizeof(report.header.size), 1);
 	}
 }

@@ -29,12 +29,6 @@ typedef struct {
 	char CMD_CNMP[12];
 } simcom_t;
 
-typedef struct {
-	char var[20];
-	char val[20];
-	char cmd[40];
-} command_t;
-
 /* Public functions ---------------------------------------------------------*/
 void Ublox_Init(gps_t *hgps);
 void Simcom_Init(void);

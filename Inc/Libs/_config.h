@@ -26,11 +26,17 @@ void BSP_Led_Write(uint8_t state);
 void BSP_Led_Toggle(void);
 void BSP_Led_Disco(uint16_t ms);
 int8_t BSP_Bit_Position(uint64_t event_id);
+uint32_t BSP_Change_Endian32(uint32_t val);
+uint64_t BSP_Change_Endian64(uint64_t val);
 // FIXME: remove me if unused
 //void ftoa(float f, char *str, char size);
 
 // GLOBAL CONFIG
-#define NET_SERVER_IP								"125.164.149.160"
+#define VCU_FIRMWARE_VERSION				"0.7"
+#define VCU_VENDOR									"GEN Indonesia"
+#define VCU_BUILD_YEAR							"2020"
+
+#define NET_SERVER_IP								"36.73.243.173"
 #define NET_SERVER_PORT							5044
 #define NET_APN											"3gprs"					// "telkomsel"
 #define	NET_APN_USERNAME						"3gprs"					// "wap"
@@ -40,8 +46,7 @@ int8_t BSP_Bit_Position(uint64_t event_id);
 #define NET_REPEAT_DELAY						5								// in second
 #define NET_EXTRA_TIME_MS						500 						// in ms
 
-#define NET_COMMAND_PREFIX					"@S"
-#define NET_COMMAND_SUFFIX					"#S"
+#define NET_COMMAND_PREFIX					"@T"
 
 #define FINGER_CONFIDENCE_MIN 			10
 #define FINGER_SCAN_TIMEOUT					20							// in second
@@ -81,5 +86,32 @@ int8_t BSP_Bit_Position(uint64_t event_id);
 #define REPORT_BIKE_CRASHED 				SetBit(1)
 #define REPORT_KEYLESS_MISSING			SetBit(2)
 #define REPORT_SIMCOM_RESTART				SetBit(3)
+
+// Command Code List
+#define CMD_CODE_GEN								0
+#define CMD_CODE_REPORT							1
+#define CMD_CODE_AUDIO							2
+#define CMD_CODE_FINGER							3
+
+// Command Sub-Code List
+#define CMD_GEN_INFO								0
+#define CMD_GEN_LED									1
+
+#define CMD_REPORT_RTC							0
+#define CMD_REPORT_ODOM							1
+#define CMD_REPORT_UNITID						2
+
+#define CMD_AUDIO_BEEP							0
+#define CMD_AUDIO_MUTE							1
+#define CMD_AUDIO_VOL								2
+
+#define CMD_FINGER_ADD							0
+#define CMD_FINGER_DEL							1
+#define CMD_FINGER_RST							2
+
+// Response Status List
+#define RESPONSE_STATUS_ERROR				0
+#define RESPONSE_STATUS_OK					1
+#define RESPONSE_STATUS_INVALID			2
 
 #endif /* CONFIG_H_ */

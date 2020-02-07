@@ -15,12 +15,20 @@
 #include "_nmea.h"
 #include "_rtc.h"
 
-/*  typedef enum -----------------------------------------------------------*/
+/*  typedef -----------------------------------------------------------*/
 typedef enum {
 	FRAME_RESPONSE = 0,
 	FRAME_SIMPLE = 1,
 	FRAME_FULL = 2,
 } frame_t;
+
+//typedef union {
+//	uint64_t U64;
+//	uint32_t U32[2];
+//	uint16_t U16[4];
+//	uint8_t U8[8];
+//	char STR[8];
+//} union_64_t;
 
 /*  typedef struct -----------------------------------------------------------*/
 // header frame (for report & response)
@@ -70,6 +78,7 @@ typedef struct __attribute__((packed)) {
 
 // response frame
 typedef struct __attribute__((packed)) {
+	uint8_t code;
 	char message[50];
 } response_data_t;
 
@@ -93,14 +102,13 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	command_header_t header;
-	command_data_t command;
-// FIXME: replace command_t with other name, then use for me
-} commandx_t;
+	command_data_t data;
+} command_t;
 
 // public function
 void Reporter_Reset(frame_t frame);
 void Reporter_Set_Prefix(uint16_t prefix);
-void Reporter_Set_UnitID(uint64_t unitId);
+void Reporter_Set_UnitID(uint32_t unitId);
 void Reporter_Set_Odometer(uint32_t odom);
 void Reporter_Set_GPS(gps_t *hgps);
 void Reporter_Set_Speed(gps_t *hgps);

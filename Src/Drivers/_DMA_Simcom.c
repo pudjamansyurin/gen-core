@@ -73,6 +73,7 @@ void SIMCOM_DMA_Init(void) {
 }
 
 void SIMCOM_Reset_Buffer(void) {
+	// FIXME: just add check command here, before clearing the buffer
 	// show before clear
 	SWV_SendStr("\n========================================\n");
 	SWV_SendStr("Before: SIMCOM_Reset_Buffer()");
