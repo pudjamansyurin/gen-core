@@ -77,7 +77,7 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 	// when not read command payload
 	if (strstr(data, SIMCOM_READ_COMMAND) == NULL) {
 		// check if it has new command
-		if (Simcom_Check_Command()) {
+		if (Simcom_Has_Command()) {
 			SWV_SendStrLn("\nNew Command: from Simcom_Send_Direct()");
 			xTaskNotify(CommandTaskHandle, EVENT_COMMAND_ARRIVED, eSetBits);
 		}
@@ -219,6 +219,11 @@ void Simcom_Init(void) {
 		if (p) {
 			p = Simcom_Command("AT+CIPRXGET=1\r", 500);
 		}
+		// enable time reporting
+		if (p) {
+			p = Simcom_Command("AT+CTZR=1\r", 500);
+		}
+
 		// =========== NETWORK CONFIGURATION
 		// Check SIM Card
 		if (p) {
@@ -294,7 +299,7 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
 	return ret;
 }
 
-uint8_t Simcom_Check_Command(void) {
+uint8_t Simcom_Has_Command(void) {
 	// check if it has new command
 	return Simcom_Response("+CIPRXGET: 1");
 }
@@ -372,4 +377,12 @@ uint8_t Simcom_Read_Signal(uint8_t *signal) {
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);
 	return ret;
+}
+
+void Simcom_Read_Time(void) {
+	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+	Simcom_Command("AT+CCLK?\r", 500);
+
+	osRecursiveMutexRelease(SimcomRecMutexHandle);
 }

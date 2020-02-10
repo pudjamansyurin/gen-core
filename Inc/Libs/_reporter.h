@@ -21,15 +21,6 @@ typedef enum {
 	FRAME_SIMPLE = 1,
 	FRAME_FULL = 2,
 } frame_t;
-
-//typedef union {
-//	uint64_t U64;
-//	uint32_t U32[2];
-//	uint16_t U16[4];
-//	uint8_t U8[8];
-//	char STR[8];
-//} union_64_t;
-
 /*  typedef struct -----------------------------------------------------------*/
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {
@@ -50,7 +41,8 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	uint16_t seq_id;
-	uint64_t rtc_datetime;
+	uint64_t rtc_log_datetime;
+	uint64_t rtc_send_datetime;
 	uint8_t driver_id;
 	uint64_t events_group;
 	uint8_t speed;

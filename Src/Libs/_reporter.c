@@ -35,7 +35,8 @@ void Reporter_Reset(frame_t frame) {
 		// body req
 		if (frame >= FRAME_SIMPLE) {
 			report.data.req.seq_id = 0;
-			report.data.req.rtc_datetime = 0;
+			report.data.req.rtc_log_datetime = 0;
+			report.data.req.rtc_send_datetime = 0;
 			report.data.req.driver_id = 1;
 			report.data.req.events_group = 0;
 			report.data.req.speed = 1;
@@ -126,21 +127,21 @@ void Reporter_Set_Header(frame_t frame) {
 
 	} else {
 		// parse newest rtc datetime
-		report.data.req.rtc_datetime = RTC_Read();
+		report.data.req.rtc_log_datetime = RTC_Read();
 		report.data.req.seq_id++;
 		report.header.frame_id = frame;
 
 		report.header.size = sizeof(report.header.frame_id) +
 				sizeof(report.header.unit_id) +
 				sizeof(report.data.req);
+
 		//Reconstruct the header
 		if (frame == FRAME_FULL) {
 			report.header.size += sizeof(report.data.opt);
 		}
 
-		report.header.crc = CRC_Calculate8(
-				(uint8_t*) &(report.header.size),
-				report.header.size + sizeof(report.header.size), 1);
+		// CRC: it will be recalculated when added rtc_send_datetime
+		report.header.crc = 0;
 	}
 }
 

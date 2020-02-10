@@ -57,7 +57,7 @@ void SWV_SendInt0(int32_t num) {
 	osMutexRelease(SwvMutexHandle);
 }
 
-void SWV_SendHex8(uint16_t num) {
+void SWV_SendHex8(uint8_t num) {
 	osMutexWait(SwvMutexHandle, osWaitForever);
 
 	SWV_SendChar(HEX_CHARS[(num >> 4) % 0x10]);

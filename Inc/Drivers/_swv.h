@@ -19,7 +19,7 @@ void SWV_SendChar(char ch);
 
 void SWV_SendInt(int32_t num);
 void SWV_SendInt0(int32_t num);
-void SWV_SendHex8(uint16_t num);
+void SWV_SendHex8(uint8_t num);
 void SWV_SendHex16(uint16_t num);
 void SWV_SendHex32(uint32_t num);
 

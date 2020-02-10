@@ -37,6 +37,7 @@
 #include "_database.h"
 #include "_rtc.h"
 #include "_audio.h"
+#include "_crc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -1087,6 +1088,7 @@ void StartIotTask(void const *argument)
 
 		// Retrieve network signal quality (every-time this task wake-up)
 		Simcom_Read_Signal(&DB_VCU_Signal);
+		Simcom_Read_Time();
 
 		// Set default
 		success = 1;
@@ -1114,6 +1116,13 @@ void StartIotTask(void const *argument)
 				if (theReport->header.frame_id == FRAME_FULL) {
 					reportSize += sizeof(report.data.opt);
 				}
+				// get current sending datetime
+				theReport->data.req.rtc_send_datetime = RTC_Read();
+				// recalculate the CRC
+				theReport->header.crc = CRC_Calculate8(
+						(uint8_t*) &(theReport->header.size),
+						theReport->header.size + sizeof(theReport->header.size), 1);
+
 				// report frame
 				payload = (char*) evt.value.p;
 
@@ -1134,7 +1143,7 @@ void StartIotTask(void const *argument)
 		}
 
 		// save the simcom event
-		Reporter_Set_Event(REPORT_SIMCOM_RESTART, !success);
+		Reporter_Set_Event(REPORT_NETWORK_RESTART, !success);
 		// handle sending error
 		if (!success) {
 			// restart module
@@ -1233,7 +1242,7 @@ void StartCommandTask(void const *argument)
 
 		// if there is no pending command, fetch the newest command
 		if (!newCommand) {
-			newCommand = Simcom_Check_Command();
+			newCommand = Simcom_Has_Command();
 		}
 
 		// then execute the command
@@ -1268,11 +1277,7 @@ void StartCommandTask(void const *argument)
 					case CMD_CODE_REPORT:
 						switch (command.data.sub_code) {
 							case CMD_REPORT_RTC:
-								// FIXME:
-								SWV_SendStr("\nRTC = ");
-								SWV_SendBufHex((char*) &(command.data.value), sizeof(command.data.value));
-								SWV_SendStr("\n");
-								//RTC_Write(command.data.value);
+								RTC_Write(command.data.value);
 								break;
 
 							case CMD_REPORT_ODOM:
@@ -1561,11 +1566,11 @@ void StartReporterTask(void const *argument)
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
 		// preserve simcom reboot from events group
-		simcomRestartState = Reporter_Read_Event(REPORT_SIMCOM_RESTART);
+		simcomRestartState = Reporter_Read_Event(REPORT_NETWORK_RESTART);
 		// reset all events group
 		report.data.req.events_group = 0;
 		// re-write the simcom reboot events
-		Reporter_Set_Event(REPORT_SIMCOM_RESTART, simcomRestartState);
+		Reporter_Set_Event(REPORT_NETWORK_RESTART, simcomRestartState);
 
 		// get event data
 		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);

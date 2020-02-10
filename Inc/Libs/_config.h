@@ -36,7 +36,7 @@ uint64_t BSP_Change_Endian64(uint64_t val);
 #define VCU_VENDOR									"GEN Indonesia"
 #define VCU_BUILD_YEAR							"2020"
 
-#define NET_SERVER_IP								"36.73.243.173"
+#define NET_SERVER_IP								"36.78.126.76"
 #define NET_SERVER_PORT							5044
 #define NET_APN											"3gprs"					// "telkomsel"
 #define	NET_APN_USERNAME						"3gprs"					// "wap"
@@ -82,10 +82,10 @@ uint64_t BSP_Change_Endian64(uint64_t val);
 #define KEYLESS_MSG_SEAT 						SetBit(2)
 
 // Events group (Frame Report)
-#define REPORT_BIKE_FALLING 				SetBit(0)
-#define REPORT_BIKE_CRASHED 				SetBit(1)
-#define REPORT_KEYLESS_MISSING			SetBit(2)
-#define REPORT_SIMCOM_RESTART				SetBit(3)
+#define REPORT_NETWORK_RESTART			SetBit(0)
+#define REPORT_BIKE_FALLING 				SetBit(1)
+#define REPORT_BIKE_CRASHED 				SetBit(2)
+#define REPORT_KEYLESS_MISSING			SetBit(3)
 
 // Command Code List
 #define CMD_CODE_GEN								0

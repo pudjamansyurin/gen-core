@@ -10,23 +10,22 @@
 
 extern RTC_HandleTypeDef hrtc;
 
-static timestamp_t Datetime_Decode(char *dateTime) {
+static timestamp_t RTC_Decode(uint64_t dateTime) {
 	// format dateTime: YYMMDDHHmmssE
-	char dts[7][2];
 	uint8_t dt[7];
 	timestamp_t timestamp;
+	uint64_t tot = 0, mul;
 
 	// parsing to timestamp
 	for (int i = 0; i <= 6; i++) {
 		if (i < 6) {
-			// handle: YYMMDDHHmmss
-			strncpy(dts[i], dateTime + (i * 2), 2);
+			mul = pow(10, (11 - (2 * i)));
 		} else {
-			// handle: E
-			strncpy(dts[i], dateTime + (i * 2), 1);
+			mul = 1;
 		}
-		// conver string to integer
-		dt[i] = atoi(dts[i]);
+
+		dt[i] = (dateTime - tot) / mul;
+		tot += (dt[i] * mul);
 	}
 
 	// fill to timestamp
@@ -41,7 +40,7 @@ static timestamp_t Datetime_Decode(char *dateTime) {
 	return timestamp;
 }
 
-static uint64_t Datetime_Encode(timestamp_t timestamp) {
+static uint64_t RTC_Encode(timestamp_t timestamp) {
 	uint8_t dt[7];
 	uint64_t tot = 0, mul;
 
@@ -80,14 +79,14 @@ uint64_t RTC_Read(void) {
 	RTC_Read_RAW(&timestamp);
 
 	// encode timestamp to datetime
-	return Datetime_Encode(timestamp);
+	return RTC_Encode(timestamp);
 }
 
-void RTC_Write(char *dateTime) {
+void RTC_Write(uint64_t dateTime) {
 	timestamp_t timestamp;
 
 	// decode datetime to timestamp
-	timestamp = Datetime_Decode(dateTime);
+	timestamp = RTC_Decode(dateTime);
 
 	// add extra property
 	timestamp.time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
