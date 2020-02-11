@@ -35,8 +35,8 @@ void Reporter_Reset(frame_t frame) {
 		// body req
 		if (frame >= FRAME_SIMPLE) {
 			report.data.req.seq_id = 0;
-			report.data.req.rtc_log_datetime = 0;
 			report.data.req.rtc_send_datetime = 0;
+			report.data.req.rtc_log_datetime = 0;
 			report.data.req.driver_id = 1;
 			report.data.req.events_group = 0;
 			report.data.req.speed = 1;
@@ -102,15 +102,15 @@ void Reporter_Set_Speed(gps_t *hgps) {
 void Reporter_Set_Event(uint64_t event_id, uint8_t bool) {
 	if (bool & 1) {
 		// set
-		SetBitOf(report.data.req.events_group, BSP_Bit_Position(event_id));
+		SetBitOf(report.data.req.events_group, BSP_BitPosition(event_id));
 	} else {
 		// clear
-		ClearBitOf(report.data.req.events_group, BSP_Bit_Position(event_id));
+		ClearBitOf(report.data.req.events_group, BSP_BitPosition(event_id));
 	}
 }
 
 uint8_t Reporter_Read_Event(uint64_t event_id) {
-	return (report.data.req.events_group & event_id) >> BSP_Bit_Position(event_id);
+	return (report.data.req.events_group & event_id) >> BSP_BitPosition(event_id);
 }
 
 void Reporter_Set_Header(frame_t frame) {
@@ -140,8 +140,9 @@ void Reporter_Set_Header(frame_t frame) {
 			report.header.size += sizeof(report.data.opt);
 		}
 
-		// CRC: it will be recalculated when added rtc_send_datetime
+		// it will be recalculated when sending the payload
 		report.header.crc = 0;
+		report.data.req.rtc_send_datetime = 0;
 	}
 }
 

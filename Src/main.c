@@ -136,7 +136,25 @@ void CallbackTimerCAN(void const *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
+extern nrf24l01 nrf;
+extern response_t response;
+extern report_t report;
+extern CAN_Rx RxCan;
+extern switcher_t DB_HMI_Switcher;
+extern uint8_t DB_VCU_Signal;
+extern uint8_t DB_VCU_Speed;
+extern uint8_t DB_VCU_Switch_Size;
+extern switch_t DB_VCU_Switch[];
+extern switch_timer_t DB_VCU_Switch_Timer[];
 
+const TickType_t tick5ms = pdMS_TO_TICKS(5);
+const TickType_t tick100ms = pdMS_TO_TICKS(100);
+const TickType_t tick500ms = pdMS_TO_TICKS(500);
+const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
+const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
+const TickType_t xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
+const TickType_t xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000);
 /* USER CODE END 0 */
 
 /**
@@ -1013,7 +1031,6 @@ void vApplicationIdleHook(void) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	extern nrf24l01 nrf;
 
 	if (osKernelRunning()) {
 		// handle NRF24 IRQ
@@ -1069,9 +1086,6 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 void StartIotTask(void const *argument)
 {
 	/* USER CODE BEGIN 5 */
-	extern response_t response;
-	extern report_t report;
-	extern uint8_t DB_VCU_Signal;
 	uint32_t notifValue;
 	uint8_t success, reportSize;
 	osEvent evt;
@@ -1088,7 +1102,6 @@ void StartIotTask(void const *argument)
 
 		// Retrieve network signal quality (every-time this task wake-up)
 		Simcom_Read_Signal(&DB_VCU_Signal);
-		Simcom_Read_Time();
 
 		// Set default
 		success = 1;
@@ -1147,7 +1160,7 @@ void StartIotTask(void const *argument)
 		// handle sending error
 		if (!success) {
 			// restart module
-			BSP_Led_Disco(1000);
+			BSP_LedDisco(1000);
 			Simcom_Init();
 		}
 	}
@@ -1164,7 +1177,6 @@ void StartIotTask(void const *argument)
 void StartGyroTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGyroTask */
-	const TickType_t tick5ms = pdMS_TO_TICKS(5);
 	TickType_t xLastWakeTime;
 	mems_t mems_calibration;
 	mems_decision_t mems_decision;
@@ -1213,9 +1225,6 @@ void StartGyroTask(void const *argument)
 void StartCommandTask(void const *argument)
 {
 	/* USER CODE BEGIN StartCommandTask */
-	extern response_t response;
-
-	const TickType_t tick100ms = pdMS_TO_TICKS(100);
 	TickType_t xLastWakeTime;
 	BaseType_t xResult;
 	command_t command;
@@ -1265,7 +1274,7 @@ void StartCommandTask(void const *argument)
 								break;
 
 							case CMD_GEN_LED:
-								BSP_Led_Write((uint8_t) command.data.value);
+								BSP_LedWrite((uint8_t) command.data.value);
 								break;
 
 							default:
@@ -1373,8 +1382,6 @@ void StartCommandTask(void const *argument)
 void StartGpsTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGpsTask */
-	extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
-	const TickType_t xDelay_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL * 1000);
 	TickType_t xLastWakeTime;
 	gps_t *hgps;
 
@@ -1396,7 +1403,7 @@ void StartGpsTask(void const *argument)
 		}
 
 		// Report interval
-		vTaskDelayUntil(&xLastWakeTime, xDelay_ms);
+		vTaskDelayUntil(&xLastWakeTime, xDelayFull_ms);
 	}
 	/* USER CODE END StartGpsTask */
 }
@@ -1426,11 +1433,11 @@ void StartFingerTask(void const *argument)
 		if ((ulNotifiedValue & EVENT_FINGER_PLACED)) {
 			if (Finger_Auth_Fast() > 0) {
 				// indicator when finger is registered
-				BSP_Led_Write(1);
+				BSP_LedWrite(1);
 				osDelay(1000);
 			}
 		}
-		BSP_Led_Write(0);
+		BSP_LedWrite(0);
 	}
 	/* USER CODE END StartFingerTask */
 }
@@ -1445,11 +1452,11 @@ void StartFingerTask(void const *argument)
 void StartAudioTask(void const *argument)
 {
 	/* USER CODE BEGIN StartAudioTask */
-	const TickType_t tick500ms = pdMS_TO_TICKS(500);
 	TickType_t xLastWakeTime;
 	uint32_t ulNotifiedValue;
 	BaseType_t xResult;
 	osEvent evt;
+
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	WaveInit();
 	// Play wave loop forever, handover to DMA, so CPU is free
@@ -1501,7 +1508,6 @@ void StartAudioTask(void const *argument)
 void StartKeylessTask(void const *argument)
 {
 	/* USER CODE BEGIN StartKeylessTask */
-	extern nrf24l01 nrf;
 	nrf24l01_config config;
 	uint8_t msg;
 	uint8_t payload_length = 8;
@@ -1530,7 +1536,7 @@ void StartKeylessTask(void const *argument)
 			// indicator
 			WaveBeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
 			for (int i = 0; i < ((msg + 1) * 2); i++) {
-				BSP_Led_Toggle();
+				BSP_LedToggle();
 				osDelay(50);
 			}
 		}
@@ -1548,8 +1554,6 @@ void StartKeylessTask(void const *argument)
 void StartReporterTask(void const *argument)
 {
 	/* USER CODE BEGIN StartReporterTask */
-	const TickType_t xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
-	const TickType_t xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000);
 	TickType_t xLastWakeTime, xLastFullWakeTime = 0;
 	BaseType_t xResult;
 	uint8_t simcomRestartState;
@@ -1557,7 +1561,6 @@ void StartReporterTask(void const *argument)
 	osEvent evt;
 	frame_t frame;
 	report_t *logReport;
-	extern report_t report;
 
 	// reset report frame to default
 	Reporter_Reset(FRAME_FULL);
@@ -1651,8 +1654,6 @@ void StartReporterTask(void const *argument)
 void StartCanRxTask(void const *argument)
 {
 	/* USER CODE BEGIN StartCanRxTask */
-	extern uint8_t DB_VCU_Speed;
-	extern CAN_Rx RxCan;
 	uint32_t ulNotifiedValue;
 
 	/* Infinite loop */
@@ -1688,11 +1689,6 @@ void StartCanRxTask(void const *argument)
 void StartSwitchTask(void const *argument)
 {
 	/* USER CODE BEGIN StartSwitchTask */
-	const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
-	extern switch_timer_t DB_VCU_Switch_Timer[];
-	extern switch_t DB_VCU_Switch[];
-	extern uint8_t DB_VCU_Switch_Size;
-	extern switcher_t DB_HMI_Switcher;
 	uint8_t Last_Mode_Drive;
 	uint32_t ulNotifiedValue;
 	uint8_t i;
@@ -1824,7 +1820,6 @@ void StartSwitchTask(void const *argument)
 void StartGeneralTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGeneralTask */
-	const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
 	TickType_t xLastWakeTime;
 
 	/* Infinite loop */
@@ -1888,18 +1883,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

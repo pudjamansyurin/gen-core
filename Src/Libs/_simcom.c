@@ -57,7 +57,7 @@ static uint8_t Simcom_Boot(void) {
 	// reset the state of simcom module
 	Simcom_Reset();
 	// wait until booting is done
-	return Simcom_Command_Match("AT\r", ms, SIMCOM_STATUS_READY, (NET_BOOT_TIMEOUT * 1000) / ms);
+	return Simcom_Command_Match("AT\r", ms, SIMCOM_STATUS_OK, (NET_BOOT_TIMEOUT * 1000) / ms);
 }
 
 static uint8_t Simcom_Response(char *str) {
@@ -221,7 +221,7 @@ void Simcom_Init(void) {
 		}
 		// enable time reporting
 		if (p) {
-			p = Simcom_Command("AT+CTZR=1\r", 500);
+			p = Simcom_Command("AT+CLTS=1\r", 500);
 		}
 
 		// =========== NETWORK CONFIGURATION
@@ -344,45 +344,70 @@ uint8_t Simcom_Read_Command(command_t *command) {
 uint8_t Simcom_Read_Signal(uint8_t *signal) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
-	uint8_t ret = 0, rssi = 0;
+	uint8_t ret = 0, rssi = 0, ber = 0, cnt;
 	char *prefix = "+CSQ: ";
-	char *start, *end;
-	char str[3];
+	char *str;
+
 	// check signal quality
 	if (Simcom_Command("AT+CSQ\r", 500)) {
 		// get pointer reference
-		start = strstr(SIMCOM_UART_RX_Buffer, prefix);
-		end = strchr(start, ',');
+		str = strstr(SIMCOM_UART_RX_Buffer, prefix) + strlen(prefix);
 
-		// get rssi string
-		strncpy(str, start + strlen(prefix), end - (start + strlen(prefix)));
-		*(str + (end - (start + strlen(prefix)))) = '\0';
+		if (str != NULL) {
+			rssi = BSP_ParseNumber(&str[0], &cnt);
+			ber = BSP_ParseNumber(&str[cnt + 1], NULL);
 
-		// convert rssi to integer
-		rssi = atoi(str);
+			// handle not detectable rssi value
+			rssi = (rssi == 99 ? 0 : rssi);
 
-		// handle not detectable rssi value
-		rssi = (rssi == 99 ? 0 : rssi);
+			// convert rssi value to percentage
+			*signal = (rssi * 100) / 31;
 
-		// convert rssi value to percentage
-		*signal = (rssi * 100) / 31;
+			// debugging
+			SWV_SendStr("\nSIGNAL [RSSI,BER] = ");
+			SWV_SendInt(*signal);
+			SWV_SendStr("%,");
+			SWV_SendInt(ber);
+			SWV_SendStrLn("%");
 
-		// debugging
-		SWV_SendStr("SIGNAL_QUALITY = ");
-		SWV_SendInt(*signal);
-		SWV_SendStrLn(" %");
-
-		ret = 1;
+			ret = 1;
+		}
 	}
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);
 	return ret;
 }
 
-void Simcom_Read_Time(void) {
+uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
-	Simcom_Command("AT+CCLK?\r", 500);
+	uint8_t ret = 0, len = 0, cnt;
+	char *str, *prefix = "+CCLK: \"";
+
+	// get local timestamp (from base station)
+	if (Simcom_Command("AT+CCLK?\r", 500)) {
+		// get pointer reference
+		str = strstr(SIMCOM_UART_RX_Buffer, prefix) + strlen(prefix);
+
+		if (str != NULL) {
+			// get date part
+			timestamp->date.Year = BSP_ParseNumber(&str[0], &cnt);
+			len += cnt + 1;
+			timestamp->date.Month = BSP_ParseNumber(&str[len], &cnt);
+			len += cnt + 1;
+			timestamp->date.Date = BSP_ParseNumber(&str[len], &cnt);
+			// get time part
+			len += cnt + 1;
+			timestamp->time.Hours = BSP_ParseNumber(&str[len], &cnt);
+			len += cnt + 1;
+			timestamp->time.Minutes = BSP_ParseNumber(&str[len], &cnt);
+			len += cnt + 1;
+			timestamp->time.Seconds = BSP_ParseNumber(&str[len], NULL);
+
+			ret = 1;
+		}
+	}
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);
+	return ret;
 }

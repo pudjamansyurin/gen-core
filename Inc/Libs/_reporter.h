@@ -41,8 +41,8 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	uint16_t seq_id;
-	uint64_t rtc_log_datetime;
 	uint64_t rtc_send_datetime;
+	uint64_t rtc_log_datetime;
 	uint8_t driver_id;
 	uint64_t events_group;
 	uint8_t speed;

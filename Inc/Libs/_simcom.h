@@ -36,6 +36,6 @@ uint8_t Simcom_Upload(char *message, uint16_t length);
 uint8_t Simcom_Has_Command(void);
 uint8_t Simcom_Read_Command(command_t *command);
 uint8_t Simcom_Read_Signal(uint8_t *signal);
-void Simcom_Read_Time(void);
+uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp);
 
 #endif /* SIMCOM_H_ */

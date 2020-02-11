@@ -7,8 +7,10 @@
 
 #include <math.h>
 #include "_rtc.h"
+#include "_simcom.h"
 
 extern RTC_HandleTypeDef hrtc;
+RTC_DateTypeDef LastCalibrationDate;
 
 static timestamp_t RTC_Decode(uint64_t dateTime) {
 	// format dateTime: YYMMDDHHmmssE
@@ -66,12 +68,6 @@ static uint64_t RTC_Encode(timestamp_t timestamp) {
 	return tot;
 }
 
-void RTC_Read_RAW(timestamp_t *timestamp) {
-	// get the RTC
-	HAL_RTC_GetTime(&hrtc, &(timestamp->time), RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &(timestamp->date), RTC_FORMAT_BIN);
-}
-
 uint64_t RTC_Read(void) {
 	timestamp_t timestamp;
 
@@ -88,15 +84,37 @@ void RTC_Write(uint64_t dateTime) {
 	// decode datetime to timestamp
 	timestamp = RTC_Decode(dateTime);
 
-	// add extra property
-	timestamp.time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-	timestamp.time.StoreOperation = RTC_STOREOPERATION_RESET;
-
 	// set the RTC
-	HAL_RTC_SetTime(&hrtc, &(timestamp.time), RTC_FORMAT_BIN);
-	HAL_RTC_SetDate(&hrtc, &(timestamp.date), RTC_FORMAT_BIN);
+	RTC_Write_RAW(&timestamp);
 }
 
-//uint8_t RTC_Offset(uint8_t hour, int offset) {
-//	return (hour + offset) > 23 ? ((hour + offset) - 24) : (hour + offset);
-//}
+void RTC_Read_RAW(timestamp_t *timestamp) {
+	// get the RTC
+	HAL_RTC_GetTime(&hrtc, &(timestamp->time), RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &(timestamp->date), RTC_FORMAT_BIN);
+
+	// check calibration date (at least check every 1 day)
+	if (LastCalibrationDate.Year != timestamp->date.Year ||
+			LastCalibrationDate.Month != timestamp->date.Month ||
+			LastCalibrationDate.Date != timestamp->date.Date) {
+
+		if (Simcom_Read_Carrier_Time(timestamp)) {
+			// calibrate the RTC
+			RTC_Write_RAW(timestamp);
+		}
+	}
+}
+
+void RTC_Write_RAW(timestamp_t *timestamp) {
+	// add extra property
+	timestamp->time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	timestamp->time.StoreOperation = RTC_STOREOPERATION_RESET;
+
+	// save calibration date
+	// source from server is always considered as valid
+	LastCalibrationDate = timestamp->date;
+
+	// set the RTC
+	HAL_RTC_SetTime(&hrtc, &(timestamp->time), RTC_FORMAT_BIN);
+	HAL_RTC_SetDate(&hrtc, &(timestamp->date), RTC_FORMAT_BIN);
+}

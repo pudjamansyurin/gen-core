@@ -20,14 +20,17 @@
 #define SetBitOf(var, x) 						(var |= 1 << x)
 #define ClearBitOf(var, x) 					(var &= ~(1 << x))
 #define ToggleBitOf(var, x) 				(var ^= 1 << x)
-
+#define CHARISNUM(x)                ((x) >= '0' && (x) <= '9')
+#define CHARTONUM(x)                ((x) - '0')
 // Function prototype
-void BSP_Led_Write(uint8_t state);
-void BSP_Led_Toggle(void);
-void BSP_Led_Disco(uint16_t ms);
-int8_t BSP_Bit_Position(uint64_t event_id);
-uint32_t BSP_Change_Endian32(uint32_t val);
-uint64_t BSP_Change_Endian64(uint64_t val);
+void BSP_LedWrite(uint8_t state);
+void BSP_LedToggle(void);
+void BSP_LedDisco(uint16_t ms);
+int8_t BSP_BitPosition(uint64_t event_id);
+uint32_t BSP_ChangeEndian32(uint32_t val);
+uint64_t BSP_ChangeEndian64(uint64_t val);
+int32_t BSP_ParseNumber(const char *ptr, uint8_t *cnt);
+float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 // FIXME: remove me if unused
 //void ftoa(float f, char *str, char size);
 
@@ -42,7 +45,7 @@ uint64_t BSP_Change_Endian64(uint64_t val);
 #define	NET_APN_USERNAME						"3gprs"					// "wap"
 #define NET_APN_PASSWORD						"3gprs"					// "wap123"
 #define NET_SIGNAL									2								// 2=AUTO, 13=2G, 14=3G
-#define NET_BOOT_TIMEOUT						10							// in second
+#define NET_BOOT_TIMEOUT						3								// in second
 #define NET_REPEAT_DELAY						5								// in second
 #define NET_EXTRA_TIME_MS						500 						// in ms
 
