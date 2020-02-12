@@ -56,7 +56,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define TIMER_CAN_MS 250
 #define EXT_HBAR_SELECT_Pin GPIO_PIN_2
 #define EXT_HBAR_SELECT_GPIO_Port GPIOE
 #define EXT_HBAR_SELECT_EXTI_IRQn EXTI2_IRQn

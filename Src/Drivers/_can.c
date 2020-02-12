@@ -94,6 +94,15 @@ uint8_t CAN_Write(CAN_Tx *TxCan) {
 	/* Start the Transmission process */
 	status = HAL_CAN_AddTxMessage(CanHandle, &(TxCan->TxHeader), (uint8_t*) &(TxCan->TxData), &TxMailbox);
 
+	if (status == HAL_OK) {
+		// debugging
+		SWV_SendStrLn("[TX] ");
+		SWV_SendHex32(TxCan->TxHeader.StdId);
+		SWV_SendStr(" => ");
+		SWV_SendBufHex((char*) &(TxCan->TxData), sizeof(TxCan->TxData));
+		SWV_SendStrLn("");
+	}
+
 	osMutexRelease(CanTxMutexHandle);
 	return (status == HAL_OK);
 }
@@ -106,6 +115,15 @@ uint8_t CAN_Read(CAN_Rx *RxCan) {
 
 	/* Get RX message */
 	status = HAL_CAN_GetRxMessage(CanHandle, CAN_RX_FIFO0, &(RxCan->RxHeader), RxCan->RxData);
+
+	if (status == HAL_OK) {
+		// debugging
+		SWV_SendStrLn("[RX] ");
+		SWV_SendHex32(RxCan->RxHeader.StdId);
+		SWV_SendStr(" <= ");
+		SWV_SendBufHex((char*) &(RxCan->RxData), sizeof(RxCan->RxData));
+		SWV_SendStrLn("");
+	}
 
 	return (status == HAL_OK);
 }

@@ -180,11 +180,11 @@ void Simcom_Init(void) {
 	// this do-while is complicated, but it doesn't use recursive function, so it's stack safe
 	do {
 		// show previous response
-		SWV_SendStr("\n========================================\n");
-		SWV_SendStr("Before: Simcom_Init()");
-		SWV_SendStr("\n----------------------------------------\n");
-		SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
-		SWV_SendStr("\n========================================\n");
+//		SWV_SendStr("\n========================================\n");
+//		SWV_SendStr("Before: Simcom_Init()");
+//		SWV_SendStr("\n----------------------------------------\n");
+//		SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+//		SWV_SendStr("\n========================================\n");
 
 		SWV_SendStrLn("Simcom_Init");
 

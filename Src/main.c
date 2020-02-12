@@ -90,8 +90,8 @@ osThreadId ReporterTaskHandle;
 osThreadId CanRxTaskHandle;
 osThreadId SwitchTaskHandle;
 osThreadId GeneralTaskHandle;
+osThreadId CanTxTaskHandle;
 osMessageQId AudioVolQueueHandle;
-osTimerId TimerCANHandle;
 osMutexId AudioBeepMutexHandle;
 osMutexId SwvMutexHandle;
 osMutexId CanTxMutexHandle;
@@ -129,7 +129,7 @@ void StartReporterTask(void const *argument);
 void StartCanRxTask(void const *argument);
 void StartSwitchTask(void const *argument);
 void StartGeneralTask(void const *argument);
-void CallbackTimerCAN(void const *argument);
+void StartCanTxTask(void const *argument);
 
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -147,9 +147,11 @@ extern uint8_t DB_VCU_Speed;
 extern uint8_t DB_VCU_Switch_Size;
 extern switch_t DB_VCU_Switch[];
 extern switch_timer_t DB_VCU_Switch_Timer[];
+extern RTC_DateTypeDef LastCalibrationDate;
 
 const TickType_t tick5ms = pdMS_TO_TICKS(5);
 const TickType_t tick100ms = pdMS_TO_TICKS(100);
+const TickType_t tick250ms = pdMS_TO_TICKS(250);
 const TickType_t tick500ms = pdMS_TO_TICKS(500);
 const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
 const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
@@ -233,14 +235,8 @@ int main(void)
 	/* add semaphores, ... */
 	/* USER CODE END RTOS_SEMAPHORES */
 
-	/* Create the timer(s) */
-	/* definition and creation of TimerCAN */
-	osTimerDef(TimerCAN, CallbackTimerCAN);
-	TimerCANHandle = osTimerCreate(osTimer(TimerCAN), osTimerPeriodic, NULL);
-
 	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-	osTimerStart(TimerCANHandle, TIMER_CAN_MS);
 	/* USER CODE END RTOS_TIMERS */
 
 	/* Create the queue(s) */
@@ -303,8 +299,14 @@ int main(void)
 	osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
 	GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
+	/* definition and creation of CanTxTask */
+	osThreadDef(CanTxTask, StartCanTxTask, osPriorityRealtime, 0, 128);
+	CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
+	osThreadTerminate(IotTaskHandle);
+	osThreadTerminate(GeneralTaskHandle);
 	/* USER CODE END RTOS_THREADS */
 
 	/* Start scheduler */
@@ -1095,6 +1097,7 @@ void StartIotTask(void const *argument)
 	// Start simcom module
 	SIMCOM_DMA_Init();
 	Simcom_Init();
+
 	/* Infinite loop */
 	for (;;) {
 		// get event data
@@ -1821,10 +1824,24 @@ void StartGeneralTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGeneralTask */
 	TickType_t xLastWakeTime;
+	timestamp_t timestamp;
 
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
+		// read timestamp
+		RTC_Read_RAW(&timestamp);
+
+		// check calibration date (at least check every 1 day)
+		if (LastCalibrationDate.Year != timestamp.date.Year ||
+				LastCalibrationDate.Month != timestamp.date.Month ||
+				LastCalibrationDate.Date != timestamp.date.Date) {
+
+			if (Simcom_Read_Carrier_Time(&timestamp)) {
+				// calibrate the RTC
+				RTC_Write_RAW(&timestamp);
+			}
+		}
 
 		// Periodic interval
 		vTaskDelayUntil(&xLastWakeTime, tick5000ms);
@@ -1832,16 +1849,32 @@ void StartGeneralTask(void const *argument)
 	/* USER CODE END StartGeneralTask */
 }
 
-/* CallbackTimerCAN function */
-void CallbackTimerCAN(void const *argument)
+/* USER CODE BEGIN Header_StartCanTxTask */
+/**
+ * @brief Function implementing the CanTxTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartCanTxTask */
+void StartCanTxTask(void const *argument)
 {
-	/* USER CODE BEGIN CallbackTimerCAN */
-	// Send CAN data
-	CANBUS_VCU_Switch();
-	CANBUS_VCU_RTC();
-	CANBUS_VCU_Select_Set();
-	CANBUS_VCU_Trip_Mode();
-	/* USER CODE END CallbackTimerCAN */
+	/* USER CODE BEGIN StartCanTxTask */
+	TickType_t xLastWakeTime;
+
+	/* Infinite loop */
+	xLastWakeTime = xTaskGetTickCount();
+	for (;;)
+			{
+		// Send CAN data
+		CANBUS_VCU_Switch();
+		CANBUS_VCU_RTC();
+		CANBUS_VCU_Select_Set();
+		CANBUS_VCU_Trip_Mode();
+
+		// Periodic interval
+		vTaskDelayUntil(&xLastWakeTime, tick250ms);
+	}
+	/* USER CODE END StartCanTxTask */
 }
 
 /**

@@ -7,7 +7,6 @@
 
 #include <math.h>
 #include "_rtc.h"
-#include "_simcom.h"
 
 extern RTC_HandleTypeDef hrtc;
 RTC_DateTypeDef LastCalibrationDate;
@@ -92,17 +91,6 @@ void RTC_Read_RAW(timestamp_t *timestamp) {
 	// get the RTC
 	HAL_RTC_GetTime(&hrtc, &(timestamp->time), RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &(timestamp->date), RTC_FORMAT_BIN);
-
-	// check calibration date (at least check every 1 day)
-	if (LastCalibrationDate.Year != timestamp->date.Year ||
-			LastCalibrationDate.Month != timestamp->date.Month ||
-			LastCalibrationDate.Date != timestamp->date.Date) {
-
-		if (Simcom_Read_Carrier_Time(timestamp)) {
-			// calibrate the RTC
-			RTC_Write_RAW(timestamp);
-		}
-	}
 }
 
 void RTC_Write_RAW(timestamp_t *timestamp) {

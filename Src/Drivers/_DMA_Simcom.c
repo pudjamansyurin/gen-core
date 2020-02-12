@@ -75,11 +75,11 @@ void SIMCOM_DMA_Init(void) {
 void SIMCOM_Reset_Buffer(void) {
 	// FIXME: just add check command here, before clearing the buffer
 	// show before clear
-	SWV_SendStr("\n========================================\n");
-	SWV_SendStr("Before: SIMCOM_Reset_Buffer()");
-	SWV_SendStr("\n----------------------------------------\n");
-	SWV_SendBufPrintable(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer), '*');
-	SWV_SendStr("\n========================================\n");
+	//	SWV_SendStr("\n========================================\n");
+	//	SWV_SendStr("Before: SIMCOM_Reset_Buffer()");
+	//	SWV_SendStr("\n----------------------------------------\n");
+	//	SWV_SendBufPrintable(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer), '*');
+	//	SWV_SendStr("\n========================================\n");
 	// clear rx buffer
 	memset(SIMCOM_UART_RX_Buffer, 0, strlen(SIMCOM_UART_RX_Buffer));
 	// wail until clear is done
