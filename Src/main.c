@@ -68,6 +68,8 @@ I2C_HandleTypeDef hi2c3;
 I2S_HandleTypeDef hi2s3;
 DMA_HandleTypeDef hdma_spi3_tx;
 
+IWDG_HandleTypeDef hiwdg;
+
 RTC_HandleTypeDef hrtc;
 
 SPI_HandleTypeDef hspi1;
@@ -118,6 +120,7 @@ static void MX_I2C2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
+static void MX_IWDG_Init(void);
 void StartIotTask(void const *argument);
 void StartGyroTask(void const *argument);
 void StartCommandTask(void const *argument);
@@ -144,7 +147,7 @@ extern CAN_Rx RxCan;
 extern switcher_t DB_HMI_Switcher;
 extern uint8_t DB_VCU_Signal;
 extern uint8_t DB_VCU_Speed;
-extern uint8_t DB_VCU_Switch_Size;
+extern uint8_t DB_VCU_Switch_Count;
 extern switch_t DB_VCU_Switch[];
 extern switch_timer_t DB_VCU_Switch_Timer[];
 extern RTC_DateTypeDef LastCalibrationDate;
@@ -200,6 +203,7 @@ int main(void)
 	MX_USART1_UART_Init();
 	MX_ADC1_Init();
 	MX_CRC_Init();
+	MX_IWDG_Init();
 	/* USER CODE BEGIN 2 */
 	EE_Init();
 	CAN_Init();
@@ -305,8 +309,6 @@ int main(void)
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-	osThreadTerminate(IotTaskHandle);
-	osThreadTerminate(GeneralTaskHandle);
 	/* USER CODE END RTOS_THREADS */
 
 	/* Start scheduler */
@@ -316,7 +318,6 @@ int main(void)
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	// FIXME use IWDG or WWDG for auto reset on malfunction
 	// FIXME use tickless idle feature for low power mode
 	while (1) {
 		/* USER CODE END WHILE */
@@ -342,9 +343,11 @@ void SystemClock_Config(void)
 	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 	/** Initializes the CPU, AHB and APB busses clocks
 	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
+			| RCC_OSCILLATORTYPE_LSE;
 	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
 	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+	RCC_OscInitStruct.LSIState = RCC_LSI_ON;
 	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
 	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
 	RCC_OscInitStruct.PLL.PLLM = 8;
@@ -624,6 +627,34 @@ static void MX_I2S3_Init(void)
 	/* USER CODE BEGIN I2S3_Init 2 */
 
 	/* USER CODE END I2S3_Init 2 */
+
+}
+
+/**
+ * @brief IWDG Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_IWDG_Init(void)
+{
+
+	/* USER CODE BEGIN IWDG_Init 0 */
+
+	/* USER CODE END IWDG_Init 0 */
+
+	/* USER CODE BEGIN IWDG_Init 1 */
+
+	/* USER CODE END IWDG_Init 1 */
+	hiwdg.Instance = IWDG;
+	hiwdg.Init.Prescaler = IWDG_PRESCALER_8;
+	hiwdg.Init.Reload = 4095;
+	if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+			{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN IWDG_Init 2 */
+
+	/* USER CODE END IWDG_Init 2 */
 
 }
 
@@ -1026,8 +1057,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void vApplicationIdleHook(void) {
-	// Feed the dog
-	//	HAL_IWDG_Refresh(&hiwdg);
 
 }
 
@@ -1234,9 +1263,6 @@ void StartCommandTask(void const *argument)
 	uint32_t ulNotifiedValue;
 	uint8_t newCommand;
 	int p;
-
-	// reset response frame to default
-	Reporter_Reset(FRAME_RESPONSE);
 
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
@@ -1566,7 +1592,7 @@ void StartReporterTask(void const *argument)
 	report_t *logReport;
 
 	// reset report frame to default
-	Reporter_Reset(FRAME_FULL);
+	Reporter_Reset(FRAME_SIMPLE);
 
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
@@ -1697,9 +1723,10 @@ void StartSwitchTask(void const *argument)
 	uint8_t i;
 
 	// Read all EXTI state
-	for (i = 0; i < DB_VCU_Switch_Size; i++) {
+	for (i = 0; i < DB_VCU_Switch_Count; i++) {
 		DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
 	}
+
 	// Handle Reverse mode on init
 	if (DB_VCU_Switch[IDX_KEY_REVERSE].state) {
 		// save previous Drive Mode state
@@ -1721,7 +1748,7 @@ void StartSwitchTask(void const *argument)
 		osDelay(50);
 
 		// Read all (to handle multiple switch change at the same time)
-		for (i = 0; i < DB_VCU_Switch_Size; i++) {
+		for (i = 0; i < DB_VCU_Switch_Count; i++) {
 			DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
 
 			// handle select & set: timer
@@ -1829,6 +1856,7 @@ void StartGeneralTask(void const *argument)
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
+		Simcom_Read_Carrier_Time(&timestamp);
 		// read timestamp
 		RTC_Read_RAW(&timestamp);
 
@@ -1863,13 +1891,15 @@ void StartCanTxTask(void const *argument)
 
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
-	for (;;)
-			{
+	for (;;) {
 		// Send CAN data
 		CANBUS_VCU_Switch();
 		CANBUS_VCU_RTC();
 		CANBUS_VCU_Select_Set();
 		CANBUS_VCU_Trip_Mode();
+
+		// Feed the dog (duration 1.02375 second)
+		HAL_IWDG_Refresh(&hiwdg);
 
 		// Periodic interval
 		vTaskDelayUntil(&xLastWakeTime, tick250ms);

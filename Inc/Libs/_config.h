@@ -39,7 +39,7 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 #define VCU_VENDOR									"GEN Indonesia"
 #define VCU_BUILD_YEAR							"2020"
 
-#define NET_SERVER_IP								"36.78.126.76"
+#define NET_SERVER_IP								"110.139.90.249"
 #define NET_SERVER_PORT							5044
 #define NET_APN											"3gprs"					// "telkomsel"
 #define	NET_APN_USERNAME						"3gprs"					// "wap"
@@ -56,6 +56,8 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 
 #define	REPORT_INTERVAL_SIMPLE			5								// in second
 #define	REPORT_INTERVAL_FULL				20							// in second
+#define REPORT_UNITID								354313U
+#define FRAME_PREFIX								0x4047 					// "@G"
 
 #define GMT_TIME										7								// Asia/Jakarta
 

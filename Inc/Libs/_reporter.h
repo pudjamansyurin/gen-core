@@ -21,6 +21,7 @@ typedef enum {
 	FRAME_SIMPLE = 1,
 	FRAME_FULL = 2,
 } frame_t;
+
 /*  typedef struct -----------------------------------------------------------*/
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {

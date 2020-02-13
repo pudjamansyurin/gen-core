@@ -102,6 +102,15 @@ void RTC_Write_RAW(timestamp_t *timestamp) {
 	// source from server is always considered as valid
 	LastCalibrationDate = timestamp->date;
 
+	// debugging
+	//	SWV_SendStr("\nLastCalibrationDate = ");
+	//	SWV_SendInt(LastCalibrationDate.Year);
+	//	SWV_SendStr("-");
+	//	SWV_SendInt(LastCalibrationDate.Month);
+	//	SWV_SendStr("-");
+	//	SWV_SendInt(LastCalibrationDate.Date);
+	//	SWV_SendStrLn("");
+
 	// set the RTC
 	HAL_RTC_SetTime(&hrtc, &(timestamp->time), RTC_FORMAT_BIN);
 	HAL_RTC_SetDate(&hrtc, &(timestamp->date), RTC_FORMAT_BIN);

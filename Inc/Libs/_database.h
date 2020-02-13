@@ -49,7 +49,7 @@ typedef struct {
 } switcher_t;
 
 typedef struct {
-	char *event;
+	char event[20];
 	uint16_t pin;
 	GPIO_TypeDef *port;
 	uint8_t state;
@@ -61,6 +61,7 @@ typedef struct {
 	uint8_t time;
 } switch_timer_t;
 
+//FIXME active disabled gpio input
 typedef struct {
 	//	uint8_t abs;
 	//	uint8_t mirror;

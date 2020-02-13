@@ -199,6 +199,10 @@ void Simcom_Init(void) {
 			p = Simcom_Command("ATE0\r", 500);
 		}
 		// =========== OTHERS CONFIGURATION
+		// enable time reporting
+		if (p) {
+			p = Simcom_Command("AT+CLTS=1\r", 500);
+		}
 		//Hide “+IPD” header
 		if (p) {
 			p = Simcom_Command("AT+CIPHEAD=0\r", 500);
@@ -218,10 +222,6 @@ void Simcom_Init(void) {
 		// Get data from network manually
 		if (p) {
 			p = Simcom_Command("AT+CIPRXGET=1\r", 500);
-		}
-		// enable time reporting
-		if (p) {
-			p = Simcom_Command("AT+CLTS=1\r", 500);
 		}
 
 		// =========== NETWORK CONFIGURATION

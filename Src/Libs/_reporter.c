@@ -9,14 +9,14 @@
 #include "_crc.h"
 
 // variable list
-response_t response;
 report_t report;
+response_t response;
 
 // function list
 void Reporter_Reset(frame_t frame) {
 	// set default data
-	Reporter_Set_Prefix(0x4047);
-	Reporter_Set_UnitID(354313);
+	Reporter_Set_Prefix(FRAME_PREFIX);
+	Reporter_Set_UnitID(REPORT_UNITID);
 
 	if (frame == FRAME_RESPONSE) {
 		// header response
@@ -25,15 +25,17 @@ void Reporter_Reset(frame_t frame) {
 		response.header.frame_id = FRAME_RESPONSE;
 
 		// body response
+		response.data.code = 1;
 		strcpy(response.data.message, "");
+
 	} else {
 		// header report
 		report.header.crc = 0;
 		report.header.size = 0;
 		report.header.frame_id = frame;
 
-		// body req
-		if (frame >= FRAME_SIMPLE) {
+		// body required
+		if (frame == FRAME_SIMPLE || frame == FRAME_FULL) {
 			report.data.req.seq_id = 0;
 			report.data.req.rtc_send_datetime = 0;
 			report.data.req.rtc_log_datetime = 0;
@@ -42,7 +44,7 @@ void Reporter_Reset(frame_t frame) {
 			report.data.req.speed = 1;
 		}
 
-		// body opt
+		// body optional
 		if (frame == FRAME_FULL) {
 			report.data.opt.gps.longitude = 112.6935779 * 10000000;
 			report.data.opt.gps.latitude = -7.4337599 * 10000000;
@@ -59,10 +61,8 @@ void Reporter_Reset(frame_t frame) {
 }
 
 void Reporter_Set_Prefix(uint16_t prefix) {
-	// @G = 0x4047
 	response.header.prefix = prefix;
 	report.header.prefix = prefix;
-
 }
 
 void Reporter_Set_UnitID(uint32_t unitId) {
