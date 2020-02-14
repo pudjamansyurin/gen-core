@@ -384,6 +384,7 @@ uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
 	uint8_t ret = 0, len = 0, cnt;
 	char *str, *prefix = "+CCLK: \"";
 
+	Simcom_Command("AT+CLTS?\r", 500);
 	// get local timestamp (from base station)
 	if (Simcom_Command("AT+CCLK?\r", 500)) {
 		// get pointer reference

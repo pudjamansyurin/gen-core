@@ -1264,6 +1264,9 @@ void StartCommandTask(void const *argument)
 	uint8_t newCommand;
 	int p;
 
+	// reset response frame to default
+	Reporter_Reset(FRAME_RESPONSE);
+
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
@@ -1592,7 +1595,7 @@ void StartReporterTask(void const *argument)
 	report_t *logReport;
 
 	// reset report frame to default
-	Reporter_Reset(FRAME_SIMPLE);
+	Reporter_Reset(FRAME_FULL);
 
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
