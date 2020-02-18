@@ -11,7 +11,7 @@
 extern RTC_HandleTypeDef hrtc;
 RTC_DateTypeDef LastCalibrationDate;
 
-static timestamp_t RTC_Decode(uint64_t dateTime) {
+timestamp_t RTC_Decode(uint64_t dateTime) {
 	// format dateTime: YYMMDDHHmmssE
 	uint8_t dt[7];
 	timestamp_t timestamp;
@@ -41,7 +41,7 @@ static timestamp_t RTC_Decode(uint64_t dateTime) {
 	return timestamp;
 }
 
-static uint64_t RTC_Encode(timestamp_t timestamp) {
+uint64_t RTC_Encode(timestamp_t timestamp) {
 	uint8_t dt[7];
 	uint64_t tot = 0, mul;
 
@@ -89,8 +89,8 @@ void RTC_Write(uint64_t dateTime) {
 
 void RTC_Read_RAW(timestamp_t *timestamp) {
 	// get the RTC
-	HAL_RTC_GetTime(&hrtc, &(timestamp->time), RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &(timestamp->date), RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
 }
 
 void RTC_Write_RAW(timestamp_t *timestamp) {
@@ -102,16 +102,7 @@ void RTC_Write_RAW(timestamp_t *timestamp) {
 	// source from server is always considered as valid
 	LastCalibrationDate = timestamp->date;
 
-	// debugging
-	//	SWV_SendStr("\nLastCalibrationDate = ");
-	//	SWV_SendInt(LastCalibrationDate.Year);
-	//	SWV_SendStr("-");
-	//	SWV_SendInt(LastCalibrationDate.Month);
-	//	SWV_SendStr("-");
-	//	SWV_SendInt(LastCalibrationDate.Date);
-	//	SWV_SendStrLn("");
-
 	// set the RTC
-	HAL_RTC_SetTime(&hrtc, &(timestamp->time), RTC_FORMAT_BIN);
-	HAL_RTC_SetDate(&hrtc, &(timestamp->date), RTC_FORMAT_BIN);
+	HAL_RTC_SetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
+	HAL_RTC_SetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
 }

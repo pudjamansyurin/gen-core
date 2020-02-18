@@ -12,10 +12,12 @@
 #include "_config.h"
 
 typedef struct {
-	RTC_DateTypeDef date;
 	RTC_TimeTypeDef time;
+	RTC_DateTypeDef date;
 } timestamp_t;
 
+timestamp_t RTC_Decode(uint64_t dateTime);
+uint64_t RTC_Encode(timestamp_t timestamp);
 uint64_t RTC_Read(void);
 void RTC_Write(uint64_t dateTime);
 void RTC_Read_RAW(timestamp_t *timestamp);

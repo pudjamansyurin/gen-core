@@ -99,7 +99,11 @@ uint8_t CAN_Write(CAN_Tx *TxCan) {
 //		SWV_SendStr("\n[TX] ");
 //		SWV_SendHex32(TxCan->TxHeader.StdId);
 //		SWV_SendStr(" => ");
-//		SWV_SendBufHex((char*) &(TxCan->TxData), sizeof(TxCan->TxData));
+//		if (TxCan->TxData.RTR == CAN_RTR_DATA) {
+//			SWV_SendBufHex((char*) &(TxCan->TxData), sizeof(TxCan->TxData));
+//		} else {
+//			SWV_SendStr("RTR");
+//		}
 //		SWV_SendStrLn("");
 //	}
 
@@ -121,7 +125,11 @@ uint8_t CAN_Read(CAN_Rx *RxCan) {
 		SWV_SendStr("\n[RX] ");
 		SWV_SendHex32(RxCan->RxHeader.StdId);
 		SWV_SendStr(" <= ");
-		SWV_SendBufHex((char*) &(RxCan->RxData), sizeof(RxCan->RxData));
+		if (RxCan->RxHeader.RTR == CAN_RTR_DATA) {
+			SWV_SendBufHex((char*) &(RxCan->RxData), sizeof(RxCan->RxData));
+		} else {
+			SWV_SendStr("RTR");
+		}
 		SWV_SendStrLn("");
 	}
 

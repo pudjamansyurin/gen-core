@@ -57,7 +57,7 @@ static uint8_t Simcom_Boot(void) {
 	// reset the state of simcom module
 	Simcom_Reset();
 	// wait until booting is done
-	return Simcom_Command_Match("AT\r", ms, SIMCOM_STATUS_OK, (NET_BOOT_TIMEOUT * 1000) / ms);
+	return Simcom_Command_Match(SIMCOM_BOOT_COMMAND, ms, SIMCOM_STATUS_OK, (NET_BOOT_TIMEOUT * 1000) / ms);
 }
 
 static uint8_t Simcom_Response(char *str) {
@@ -100,8 +100,17 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 				Simcom_Response(SIMCOM_STATUS_ERROR) ||
 				Simcom_Response(SIMCOM_STATUS_READY) ||
 				(osKernelSysTick() - tick) >= timeout_tick) {
+
 			// set flag for timeout & error
 			ret = Simcom_Response(res);
+
+			// exception for auto reboot module
+			if (strstr(data, SIMCOM_BOOT_COMMAND) != NULL) {
+				ret = ret || Simcom_Response(SIMCOM_STATUS_READY);
+			} else {
+				ret = !Simcom_Response(SIMCOM_STATUS_READY);
+			}
+
 			// exit loop
 			break;
 		}
@@ -180,11 +189,11 @@ void Simcom_Init(void) {
 	// this do-while is complicated, but it doesn't use recursive function, so it's stack safe
 	do {
 		// show previous response
-//		SWV_SendStr("\n========================================\n");
-//		SWV_SendStr("Before: Simcom_Init()");
-//		SWV_SendStr("\n----------------------------------------\n");
-//		SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
-//		SWV_SendStr("\n========================================\n");
+		//		SWV_SendStr("\n========================================\n");
+		//		SWV_SendStr("Before: Simcom_Init()");
+		//		SWV_SendStr("\n----------------------------------------\n");
+		//		SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+		//		SWV_SendStr("\n========================================\n");
 
 		SWV_SendStrLn("Simcom_Init");
 
@@ -405,7 +414,10 @@ uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
 			len += cnt + 1;
 			timestamp->time.Seconds = BSP_ParseNumber(&str[len], NULL);
 
-			ret = 1;
+			// make sure it is valid datetime
+			if (RTC_Encode(*timestamp)) {
+				ret = 1;
+			}
 		}
 	}
 

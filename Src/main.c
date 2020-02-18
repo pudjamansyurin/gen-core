@@ -667,7 +667,7 @@ static void MX_RTC_Init(void)
 {
 
 	/* USER CODE BEGIN RTC_Init 0 */
-
+	uint32_t RTC_Reset_Trigger = 888;
 	/* USER CODE END RTC_Init 0 */
 
 	RTC_TimeTypeDef sTime = { 0 };
@@ -692,13 +692,13 @@ static void MX_RTC_Init(void)
 
 	/* USER CODE BEGIN Check_RTC_BKUP */
 	//	HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, 0);  // uncomment this to reset RTC
-	if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != 0x32F2) {
+	if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_Reset_Trigger) {
 		/* USER CODE END Check_RTC_BKUP */
 
 		/** Initialize RTC and set the Time and Date
 		 */
-		sTime.Hours = 0x10;
-		sTime.Minutes = 0x20;
+		sTime.Hours = 0x0;
+		sTime.Minutes = 0x0;
 		sTime.Seconds = 0x0;
 		sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 		sTime.StoreOperation = RTC_STOREOPERATION_RESET;
@@ -707,9 +707,9 @@ static void MX_RTC_Init(void)
 			Error_Handler();
 		}
 		sDate.WeekDay = RTC_WEEKDAY_WEDNESDAY;
-		sDate.Month = RTC_MONTH_OCTOBER;
-		sDate.Date = 0x2;
-		sDate.Year = 0x19;
+		sDate.Month = RTC_MONTH_JANUARY;
+		sDate.Date = 0x1;
+		sDate.Year = 0x20;
 
 		if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
 				{
@@ -717,8 +717,15 @@ static void MX_RTC_Init(void)
 		}
 		/* USER CODE BEGIN RTC_Init 2 */
 		// write backup register for the 1st time
-		HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, 0x32F2);
+		HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_Reset_Trigger);
 	}
+
+	// read to set calibration
+//	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+//	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+//	// set calibration date on start
+//	LastCalibrationDate = sDate;
+
 	/* USER CODE END RTC_Init 2 */
 
 }
@@ -1859,7 +1866,6 @@ void StartGeneralTask(void const *argument)
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
-		Simcom_Read_Carrier_Time(&timestamp);
 		// read timestamp
 		RTC_Read_RAW(&timestamp);
 
@@ -1868,7 +1874,32 @@ void StartGeneralTask(void const *argument)
 				LastCalibrationDate.Month != timestamp.date.Month ||
 				LastCalibrationDate.Date != timestamp.date.Date) {
 
+			// reset timestamp
+			memset(&timestamp, 0, sizeof(timestamp));
+
+			// get carrier timestamp
 			if (Simcom_Read_Carrier_Time(&timestamp)) {
+				// debugging
+				SWV_SendStr("\nLastCalibrationDate : ");
+				SWV_SendInt(LastCalibrationDate.Year);
+				SWV_SendStr("-");
+				SWV_SendInt(LastCalibrationDate.Month);
+				SWV_SendStr("-");
+				SWV_SendInt(LastCalibrationDate.Date);
+				SWV_SendStr("\nCarrierDatetime : ");
+				SWV_SendInt(timestamp.date.Year);
+				SWV_SendStr("-");
+				SWV_SendInt(timestamp.date.Month);
+				SWV_SendStr("-");
+				SWV_SendInt(timestamp.date.Date);
+				SWV_SendStr(" ");
+				SWV_SendInt(timestamp.time.Hours);
+				SWV_SendStr(":");
+				SWV_SendInt(timestamp.time.Minutes);
+				SWV_SendStr(":");
+				SWV_SendInt(timestamp.time.Seconds);
+				SWV_SendStrLn("");
+
 				// calibrate the RTC
 				RTC_Write_RAW(&timestamp);
 			}
