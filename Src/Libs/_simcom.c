@@ -107,8 +107,6 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 			// exception for auto reboot module
 			if (strstr(data, SIMCOM_BOOT_COMMAND) != NULL) {
 				ret = ret || Simcom_Response(SIMCOM_STATUS_READY);
-			} else {
-				ret = !Simcom_Response(SIMCOM_STATUS_READY);
 			}
 
 			// exit loop

@@ -646,7 +646,7 @@ static void MX_IWDG_Init(void)
 
 	/* USER CODE END IWDG_Init 1 */
 	hiwdg.Instance = IWDG;
-	hiwdg.Init.Prescaler = IWDG_PRESCALER_8;
+	hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
 	hiwdg.Init.Reload = 4095;
 	if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
 			{
@@ -719,12 +719,6 @@ static void MX_RTC_Init(void)
 		// write backup register for the 1st time
 		HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_Reset_Trigger);
 	}
-
-	// read to set calibration
-//	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-//	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-//	// set calibration date on start
-//	LastCalibrationDate = sDate;
 
 	/* USER CODE END RTC_Init 2 */
 
@@ -1706,7 +1700,7 @@ void StartCanRxTask(void const *argument)
 			switch (RxCan.RxHeader.StdId) {
 				case CAN_ADDR_MCU_DUMMY:
 					CANBUS_MCU_Dummy_Read();
-					// set volume
+					// set volume by speed
 					osMessagePut(AudioVolQueueHandle, DB_VCU_Speed, osWaitForever);
 					break;
 				default:
