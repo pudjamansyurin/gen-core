@@ -34,9 +34,9 @@ void Ublox_Init(gps_t *hgps) {
 
 static void Simcom_Reset(void) {
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
-	osDelay(100);
+	osDelay(500);
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_RESET);
-	osDelay(100);
+	osDelay(5000);
 }
 
 static void Simcom_Prepare(void) {
@@ -51,13 +51,12 @@ static void Simcom_Prepare(void) {
 }
 
 static uint8_t Simcom_Boot(void) {
-	uint16_t ms = 500;
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
 	// reset the state of simcom module
 	Simcom_Reset();
 	// wait until booting is done
-	return Simcom_Command_Match(SIMCOM_BOOT_COMMAND, ms, SIMCOM_STATUS_OK, (NET_BOOT_TIMEOUT * 1000) / ms);
+	return Simcom_Command_Match(SIMCOM_BOOT_COMMAND, NET_BOOT_TIMEOUT, SIMCOM_STATUS_OK, 1);
 }
 
 static uint8_t Simcom_Response(char *str) {

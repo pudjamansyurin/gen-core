@@ -19,7 +19,7 @@
 #define SIMCOM_STATUS_SEND 					">"
 #define SIMCOM_STATUS_OK 						"OK\r\n"
 #define SIMCOM_STATUS_ERROR 				"ERROR\r\n"
-#define SIMCOM_STATUS_READY 				"RDY\r\n"
+#define SIMCOM_STATUS_READY 				"RDY\r"
 #define SIMCOM_BOOT_COMMAND					"AT\r"
 #define SIMCOM_READ_COMMAND					"AT+CIPRXGET=2,1024\r"
 

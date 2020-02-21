@@ -6,6 +6,7 @@
  */
 
 #include "_DMA_Simcom.h"
+#include "_swv.h"
 
 extern UART_HandleTypeDef huart1;
 extern DMA_HandleTypeDef hdma_usart1_rx;
@@ -83,8 +84,6 @@ void SIMCOM_Reset_Buffer(void) {
 	osDelay(50);
 	// set index back to first
 	simcom_write = 0;
-	// set null at the end
-	//	SIMCOM_UART_RX_Buffer[simcom_write] = '\0';
 }
 
 void SIMCOM_Transmit(char *pData, uint16_t Size) {

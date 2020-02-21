@@ -34,8 +34,10 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_cs43l22.h"
+#include <math.h>
 #include "cmsis_os.h"
+#include "_cs43l22.h"
+#include "_swv.h"
 
 /** @addtogroup BSP
  * @{
@@ -64,8 +66,6 @@ static I2C_HandleTypeDef *I2cHandle = &hi2c1;
 /** @defgroup CS43L22_Private_Defines
  * @{
  */
-#define VOLUME_CONVERT(Volume)    (((Volume) > 100)? 255:((uint8_t)(((Volume) * 255) / 100)))
-#define VOLUME_CONVERT2(Volume)   (((Volume) > 100)? 24:((uint8_t)(((Volume) * 24) / 100)))
 /* Uncomment this line to enable verifying data sent to codec after each write
  operation (for debug purpose) */
 #if !defined (VERIFY_WRITTENDATA)
@@ -107,6 +107,8 @@ AUDIO_DrvTypeDef cs43l22_drv =
 		};
 
 static uint8_t Is_cs43l22_Stop = 1;
+static uint8_t theVolume;
+static uint16_t theOutputDevice;
 volatile uint8_t OutputDev = 0;
 
 /**
@@ -117,6 +119,7 @@ volatile uint8_t OutputDev = 0;
  * @{
  */
 static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
+static uint8_t VOLUME_CONVERT(uint8_t Volume);
 static void I2Cx_Error(uint8_t Addr);
 /**
  * @}
@@ -125,7 +128,6 @@ static void I2Cx_Error(uint8_t Addr);
 /** @defgroup CS43L22_Private_Functions
  * @{
  */
-
 /**
  * @brief Initializes the audio codec and the control interface.
  * @param DeviceAddr: Device address on communication Bus.
@@ -136,6 +138,7 @@ static void I2Cx_Error(uint8_t Addr);
  */
 uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
 	uint32_t counter = 0;
+	theOutputDevice = OutputDevice;
 
 	/* Initialize the Control interface of the Audio Codec */
 	AUDIO_IO_Init();
@@ -145,25 +148,25 @@ uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume
 
 	/*Save Output device for mute ON/OFF procedure*/
 	switch (OutputDevice) {
-	case OUTPUT_DEVICE_SPEAKER:
-		OutputDev = 0xFA;
-		break;
+		case OUTPUT_DEVICE_SPEAKER:
+			OutputDev = 0xFA;
+			break;
 
-	case OUTPUT_DEVICE_HEADPHONE:
-		OutputDev = 0xAF;
-		break;
+		case OUTPUT_DEVICE_HEADPHONE:
+			OutputDev = 0xAF;
+			break;
 
-	case OUTPUT_DEVICE_BOTH:
-		OutputDev = 0xAA;
-		break;
+		case OUTPUT_DEVICE_BOTH:
+			OutputDev = 0xAA;
+			break;
 
-	case OUTPUT_DEVICE_AUTO:
-		OutputDev = 0x05;
-		break;
+		case OUTPUT_DEVICE_AUTO:
+			OutputDev = 0x05;
+			break;
 
-	default:
-		OutputDev = 0x05;
-		break;
+		default:
+			OutputDev = 0x05;
+			break;
 	}
 
 	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, OutputDev);
@@ -174,18 +177,18 @@ uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume
 	/* Set the Slave Mode and the audio Standard */
 	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_INTERFACE_CTL1, CODEC_STANDARD);
 
-	/* Set the Master volume */
-	counter += cs43l22_SetVolume(DeviceAddr, Volume);
+	/* Set the Master volume to maximum */
+	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MASTER_A_VOL, 0);
+	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MASTER_B_VOL, 0);
 
 	/* If the Speaker is enabled, set the Mono mode and volume attenuation level */
 	if (OutputDevice != OUTPUT_DEVICE_HEADPHONE) {
 		/* Set the Speaker Mono mode */
 		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_PLAYBACK_CTL2, 0x06);
-
-		/* Set the Speaker attenuation level */
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_SPEAKER_A_VOL, 0x00);
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_SPEAKER_B_VOL, 0x00);
 	}
+
+	/* Set the Speaker/Headphone attenuation level */
+	counter += cs43l22_SetVolume(DeviceAddr, Volume);
 
 	/* Additional configuration for the CODEC. These configurations are done to reduce
 	 the time needed for the Codec to power off. If these configurations are removed,
@@ -203,8 +206,8 @@ uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume
 	/* Adjust Bass and Treble levels */
 	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_TONE_CTL, 0x0F);
 	/* Adjust PCM volume level */
-	//	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_PCMA_VOL, 0x0A);
-	//	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_PCMB_VOL, 0x0A);
+	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_PCMA_VOL, 0x0A);
+	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_PCMB_VOL, 0x0A);
 	/* Return communication control value */
 	return counter;
 }
@@ -337,20 +340,19 @@ uint32_t cs43l22_Stop(uint16_t DeviceAddr, uint32_t CodecPdwnMode) {
  */
 uint32_t cs43l22_SetVolume(uint16_t DeviceAddr, uint8_t Volume) {
 	uint32_t counter = 0;
-	//	uint8_t convertedvol = VOLUME_CONVERT(Volume);
+	uint16_t regA, regB;
+	theVolume = Volume;
 
-	//	if (convertedvol > 0xE6) {
-	//		/* Set the Master volume */
-	//		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MASTER_A_VOL, convertedvol - 0xE7);
-	//		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MASTER_B_VOL, convertedvol - 0xE7);
-	//	} else {
-	//		/* Set the Master volume */
-	//		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MASTER_A_VOL, convertedvol + 0x19);
-	//		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MASTER_B_VOL, convertedvol + 0x19);
-	//	}
+	if (theOutputDevice != OUTPUT_DEVICE_HEADPHONE) {
+		regA = CS43L22_REG_SPEAKER_A_VOL;
+		regB = CS43L22_REG_SPEAKER_B_VOL;
+	} else {
+		regA = CS43L22_REG_HEADPHONE_A_VOL;
+		regB = CS43L22_REG_HEADPHONE_B_VOL;
+	}
 
-	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MASTER_A_VOL, VOLUME_CONVERT2(Volume));
-	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MASTER_B_VOL, VOLUME_CONVERT2(Volume));
+	counter += CODEC_IO_Write(DeviceAddr, regA, VOLUME_CONVERT(Volume));
+	counter += CODEC_IO_Write(DeviceAddr, regB, VOLUME_CONVERT(Volume));
 
 	return counter;
 }
@@ -374,16 +376,27 @@ uint32_t cs43l22_SetFrequency(uint16_t DeviceAddr, uint32_t AudioFreq) {
  */
 uint32_t cs43l22_SetMute(uint16_t DeviceAddr, uint32_t Cmd) {
 	uint32_t counter = 0;
+	uint16_t regA, regB;
+
+	if (theOutputDevice != OUTPUT_DEVICE_HEADPHONE) {
+		regA = CS43L22_REG_SPEAKER_A_VOL;
+		regB = CS43L22_REG_SPEAKER_B_VOL;
+	} else {
+		regA = CS43L22_REG_HEADPHONE_A_VOL;
+		regB = CS43L22_REG_HEADPHONE_B_VOL;
+	}
 
 	/* Set the Mute mode */
 	if (Cmd == AUDIO_MUTE_ON) {
 		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0xFF);
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_HEADPHONE_A_VOL, 0x01);
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_HEADPHONE_B_VOL, 0x01);
+		// mute
+		counter += CODEC_IO_Write(DeviceAddr, regA, 0x01);
+		counter += CODEC_IO_Write(DeviceAddr, regB, 0x01);
 	} else /* AUDIO_MUTE_OFF Disable the Mute */
 	{
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_HEADPHONE_A_VOL, 0x00);
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_HEADPHONE_B_VOL, 0x00);
+		// set to max
+		counter += CODEC_IO_Write(DeviceAddr, regA, VOLUME_CONVERT(theVolume));
+		counter += CODEC_IO_Write(DeviceAddr, regB, VOLUME_CONVERT(theVolume));
 		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, OutputDev);
 	}
 	return counter;
@@ -402,30 +415,30 @@ uint32_t cs43l22_SetOutputMode(uint16_t DeviceAddr, uint8_t Output) {
 	uint32_t counter = 0;
 
 	switch (Output) {
-	case OUTPUT_DEVICE_SPEAKER:
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0xFA); /* SPK always ON & HP always OFF */
-		OutputDev = 0xFA;
-		break;
+		case OUTPUT_DEVICE_SPEAKER:
+			counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0xFA); /* SPK always ON & HP always OFF */
+			OutputDev = 0xFA;
+			break;
 
-	case OUTPUT_DEVICE_HEADPHONE:
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0xAF); /* SPK always OFF & HP always ON */
-		OutputDev = 0xAF;
-		break;
+		case OUTPUT_DEVICE_HEADPHONE:
+			counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0xAF); /* SPK always OFF & HP always ON */
+			OutputDev = 0xAF;
+			break;
 
-	case OUTPUT_DEVICE_BOTH:
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0xAA); /* SPK always ON & HP always ON */
-		OutputDev = 0xAA;
-		break;
+		case OUTPUT_DEVICE_BOTH:
+			counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0xAA); /* SPK always ON & HP always ON */
+			OutputDev = 0xAA;
+			break;
 
-	case OUTPUT_DEVICE_AUTO:
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0x05); /* Detect the HP or the SPK automatically */
-		OutputDev = 0x05;
-		break;
+		case OUTPUT_DEVICE_AUTO:
+			counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0x05); /* Detect the HP or the SPK automatically */
+			OutputDev = 0x05;
+			break;
 
-	default:
-		counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0x05); /* Detect the HP or the SPK automatically */
-		OutputDev = 0x05;
-		break;
+		default:
+			counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, 0x05); /* Detect the HP or the SPK automatically */
+			OutputDev = 0x05;
+			break;
 	}
 	return counter;
 }
@@ -479,6 +492,24 @@ static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
 	return result;
 }
 
+static uint8_t VOLUME_CONVERT(uint8_t Volume) {
+	uint64_t Vol, Multiplier = pow(10, 10);
+	uint8_t Log, Result;
+
+	// expand resolution
+	Vol = Volume > 100 ? Multiplier : (uint64_t) ((Volume * Multiplier) / 100);
+
+	// convert linear to logarithmic (scale 100)
+	Log = (uint8_t) (10 * log10(1 + Vol));
+
+	// scale 100 to 255
+	Result = Log > 100 ? 255 : (uint8_t) ((Log * 255) / 100);
+
+	// change zero to 1
+	Result = Result ? Result : 1;
+
+	return Result;
+}
 /**
  * @}
  */

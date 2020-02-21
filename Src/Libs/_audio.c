@@ -208,7 +208,7 @@ uint8_t Audio_Buffer[AUDIO_BUFFER_SIZE];
 /* Position in the audio play buffer */
 volatile uint8_t AudioPlayDone = 0;
 /* Initial Volume level (from 0 (Mute) to 100 (Max)) */
-static uint8_t Volume = 0;
+static uint8_t Volume = 50;
 /* Audio wave remaining data length to be played */
 static uint32_t AudioRemSize;
 /* Audio wave to be played data at the moment */
@@ -220,7 +220,7 @@ void WaveInit(void) {
 		SWV_SendStrLn("Wave_Init");
 
 		/* Initialize Wave player (Codec, DMA, I2C) */
-		ret = AUDIO_OUT_Init(OUTPUT_DEVICE_AUTO, Volume, AUDIO_SAMPLE_FREQ);
+		ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, Volume, AUDIO_SAMPLE_FREQ);
 
 		osDelay(500);
 	} while (ret != AUDIO_OK);
