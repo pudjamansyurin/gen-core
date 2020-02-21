@@ -8,21 +8,29 @@
 #include "_canbus.h"
 #include "_rtc.h"
 
+extern const TickType_t tick5000ms;
+extern const TickType_t tick500ms;
+extern const TickType_t tick250ms;
+extern switcher_t DB_HMI_Switcher;
+extern uint8_t DB_VCU_Speed;
+extern switch_t DB_VCU_Switch[];
+extern switcher_t DB_HMI_Switcher;
+extern timestamp_t DB_VCU_TimeStamp;
+extern switch_t DB_VCU_Switch[];
+extern status_t DB_HMI_Status;
+extern timestamp_t DB_VCU_TimeStamp;
+extern uint32_t DB_VCU_Odometer;
+extern uint8_t DB_VCU_Signal;
+extern uint8_t DB_HMI2_Shutdown;
 extern CAN_Rx RxCan;
 CAN_Tx TxCan;
 
 // ==================================== VCU =========================================
 #if (CAN_NODE & CAN_NODE_VCU)
 uint8_t CANBUS_VCU_Switch(void) {
-	const TickType_t tick500ms = pdMS_TO_TICKS(500);
 	static TickType_t tick, tickSein;
 	static uint8_t Sein_Left_Internal = 0, Sein_Right_Internal = 0;
 	static status_t DB_HMI_Status_Internal;
-	extern switch_t DB_VCU_Switch[];
-	extern status_t DB_HMI_Status;
-	extern timestamp_t DB_VCU_TimeStamp;
-	extern uint32_t DB_VCU_Odometer;
-	extern uint8_t DB_VCU_Signal;
 
 	// indicator manipulator
 	if ((osKernelSysTick() - tick) >= tick500ms) {
@@ -82,6 +90,9 @@ uint8_t CANBUS_VCU_Switch(void) {
 	TxCan.TxData[1] = Sein_Left_Internal << 0;
 	TxCan.TxData[1] |= Sein_Right_Internal << 1;
 
+	// HMI-2 Shutdown Request
+	TxCan.TxData[1] |= DB_HMI2_Shutdown << 2;
+
 	// signal strength
 	TxCan.TxData[2] = DB_VCU_Signal;
 
@@ -102,8 +113,6 @@ uint8_t CANBUS_VCU_Switch(void) {
 }
 
 uint8_t CANBUS_VCU_RTC(void) {
-	extern timestamp_t DB_VCU_TimeStamp;
-
 	// set message
 	RTC_Read_RAW(&DB_VCU_TimeStamp);
 	TxCan.TxData[0] = DB_VCU_TimeStamp.time.Seconds;
@@ -112,23 +121,19 @@ uint8_t CANBUS_VCU_RTC(void) {
 	TxCan.TxData[3] = DB_VCU_TimeStamp.date.Date;
 	TxCan.TxData[4] = DB_VCU_TimeStamp.date.Month;
 	TxCan.TxData[5] = DB_VCU_TimeStamp.date.Year;
-	TxCan.TxData[7] = DB_VCU_TimeStamp.date.WeekDay;
+	TxCan.TxData[6] = DB_VCU_TimeStamp.date.WeekDay;
 
 	// set default header
-	CAN_Set_Tx_Header(&(TxCan.TxHeader), CAN_ADDR_VCU_RTC, 8);
+	CAN_Set_Tx_Header(&(TxCan.TxHeader), CAN_ADDR_VCU_RTC, 7);
 	// send message
 	return CAN_Write(&TxCan);
 }
 
 uint8_t CANBUS_VCU_Select_Set(void) {
-	const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
-	const TickType_t tick250ms = pdMS_TO_TICKS(250);
 	static TickType_t tick, tickPeriod;
 	static uint8_t Mode_Hide_Internal = 0;
 	static int8_t Mode_Name_Internal = -1;
 	static int8_t Mode_Value_Internal = -1;
-	extern switch_t DB_VCU_Switch[];
-	extern switcher_t DB_HMI_Switcher;
 
 	// Mode Show/Hide Manipulator
 	if (DB_HMI_Switcher.listening) {
@@ -193,8 +198,6 @@ uint8_t CANBUS_VCU_Select_Set(void) {
 }
 
 uint8_t CANBUS_VCU_Trip_Mode(void) {
-	extern switcher_t DB_HMI_Switcher;
-
 	// set message
 	TxCan.TxData[0] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] >> 0) & 0xFF;
 	TxCan.TxData[1] = (DB_HMI_Switcher.mode_sub_trip[SWITCH_MODE_TRIP_A] >> 8) & 0xFF;
@@ -227,7 +230,6 @@ uint8_t CANBUS_VCU_Trip_Mode(void) {
 
 /* ------------------------------------ READER ------------------------------------- */
 void CANBUS_MCU_Dummy_Read(void) {
-	extern uint8_t DB_VCU_Speed;
 	uint32_t DB_MCU_RPM;
 
 	// read message

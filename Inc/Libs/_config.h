@@ -97,6 +97,7 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 #define CMD_CODE_REPORT							1
 #define CMD_CODE_AUDIO							2
 #define CMD_CODE_FINGER							3
+#define CMD_CODE_HMI2								4
 
 // Command Sub-Code List
 #define CMD_GEN_INFO								0
@@ -113,6 +114,8 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 #define CMD_FINGER_ADD							0
 #define CMD_FINGER_DEL							1
 #define CMD_FINGER_RST							2
+
+#define CMD_HMI2_SHUTDOWN				0
 
 // Response Status List
 #define RESPONSE_STATUS_ERROR				0

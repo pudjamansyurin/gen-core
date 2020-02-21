@@ -99,4 +99,5 @@ uint8_t DB_VCU_Switch_Count = sizeof(DB_VCU_Switch) / sizeof(DB_VCU_Switch[0]);
 uint8_t DB_VCU_Signal = 0;
 uint8_t DB_VCU_Speed = 0;
 uint32_t DB_VCU_Odometer = 0;
+uint8_t DB_HMI2_Shutdown = 0;
 timestamp_t DB_VCU_TimeStamp;

@@ -144,6 +144,7 @@ extern nrf24l01 nrf;
 extern response_t response;
 extern report_t report;
 extern CAN_Rx RxCan;
+extern uint8_t DB_HMI2_Shutdown;
 extern switcher_t DB_HMI_Switcher;
 extern uint8_t DB_VCU_Signal;
 extern uint8_t DB_VCU_Speed;
@@ -1308,6 +1309,18 @@ void StartCommandTask(void const *argument)
 
 							case CMD_GEN_LED:
 								BSP_LedWrite((uint8_t) command.data.value);
+								break;
+
+							default:
+								response.data.code = RESPONSE_STATUS_INVALID;
+								break;
+						}
+						break;
+
+					case CMD_CODE_HMI2:
+						switch (command.data.sub_code) {
+							case CMD_HMI2_SHUTDOWN:
+								DB_HMI2_Shutdown = (uint8_t) command.data.value;
 								break;
 
 							default:
