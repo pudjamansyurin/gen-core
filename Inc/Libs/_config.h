@@ -37,9 +37,9 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 // GLOBAL CONFIG
 #define VCU_FIRMWARE_VERSION				"0.7"
 #define VCU_VENDOR									"GEN Indonesia"
-#define VCU_BUILD_YEAR							"2020"
+#define VCU_BUILD_YEAR							20U
 
-#define NET_SERVER_IP								"36.81.192.4"
+#define NET_SERVER_IP								"36.80.66.101"
 #define NET_SERVER_PORT							5044
 #define NET_APN											"3gprs"					// "telkomsel"
 #define	NET_APN_USERNAME						"3gprs"					// "wap"
@@ -49,7 +49,8 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 #define NET_REPEAT_DELAY						5								// in second
 #define NET_EXTRA_TIME_MS						500 						// in ms
 
-#define NET_COMMAND_PREFIX					"@T"
+#define NET_COMMAND_PREFIX					"$T"
+#define NET_ACK_PREFIX							"@C"
 
 #define FINGER_CONFIDENCE_MIN 			10
 #define FINGER_SCAN_TIMEOUT					20							// in second
@@ -72,8 +73,6 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 #define EVENT_AUDIO_BEEP						SetBit(0)
 #define EVENT_AUDIO_MUTE_ON					SetBit(1)
 #define EVENT_AUDIO_MUTE_OFF				SetBit(2)
-
-#define EVENT_COMMAND_ARRIVED				SetBit(0)
 
 #define EVENT_FINGER_PLACED					SetBit(0)
 

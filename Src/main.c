@@ -101,6 +101,7 @@ osMutexId SimcomRecMutexHandle;
 osMutexId FingerRecMutexHandle;
 /* USER CODE BEGIN PV */
 osMailQId GpsMailHandle;
+osMailQId CommandMailHandle;
 osMailQId ReportMailHandle;
 /* USER CODE END PV */
 
@@ -161,6 +162,9 @@ const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
 const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
 const TickType_t xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
 const TickType_t xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000);
+
+gps_t *hGps;
+command_t *hCommand;
 /* USER CODE END 0 */
 
 /**
@@ -253,6 +257,13 @@ int main(void)
 	/* add queues, ... */
 	osMailQDef(GpsMail, 1, gps_t);
 	GpsMailHandle = osMailCreate(osMailQ(GpsMail), NULL);
+	// Allocate memory once, and never free it
+	hGps = osMailAlloc(GpsMailHandle, osWaitForever);
+
+	osMailQDef(CommandMail, 1, command_t);
+	CommandMailHandle = osMailCreate(osMailQ(CommandMail), NULL);
+	// Allocate memory once, and never free it
+	hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
 
 	osMailQDef(ReportMail, 100, report_t);
 	ReportMailHandle = osMailCreate(osMailQ(ReportMail), NULL);
@@ -1120,77 +1131,100 @@ void StartIotTask(void const *argument)
 {
 	/* USER CODE BEGIN 5 */
 	uint32_t notifValue;
-	uint8_t success, reportSize;
-	osEvent evt;
+	uint8_t success, reportSize, seq, n = 3;
+	TickType_t xLastWakeTime;
 	report_t *theReport;
-	char *payload;
+	ack_t theACK;
+	osEvent evt;
+	char *pReport = NULL, *pResponse = NULL;
 
 	// Start simcom module
 	SIMCOM_DMA_Init();
 	Simcom_Init();
 
 	/* Infinite loop */
+	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
 		// get event data
-		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, portMAX_DELAY);
-
-		// Retrieve network signal quality (every-time this task wake-up)
-		Simcom_Read_Signal(&DB_VCU_Signal);
+		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, 0);
 
 		// Set default
 		success = 1;
 
+		osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 		// check every event & send
-		if (notifValue & EVENT_IOT_RESPONSE) {
+		if (pResponse || notifValue & EVENT_IOT_RESPONSE) {
 			// calculate the size based on message size
 			reportSize = sizeof(response.header) + sizeof(response.data.code) + strlen(response.data.message);
 			// response frame
-			payload = (char*) &response;
+			pResponse = (char*) &response;
 			// Send to server
-			success = Simcom_Upload(payload, reportSize);
-
-		} else {
-			// report frame
-			// check report log
-			evt = osMailGet(ReportMailHandle, 0);
-
-			// loop trough the log
-			while (evt.status == osEventMail) {
-				// copy the pointer
-				theReport = evt.value.p;
-				// calculate the size based on frame_id
-				reportSize = sizeof(report.header) + sizeof(report.data.req);
-				if (theReport->header.frame_id == FRAME_FULL) {
-					reportSize += sizeof(report.data.opt);
-				}
-				// get current sending datetime
-				theReport->data.req.rtc_send_datetime = RTC_Read();
-				// recalculate the CRC
-				theReport->header.crc = CRC_Calculate8(
-						(uint8_t*) &(theReport->header.size),
-						theReport->header.size + sizeof(theReport->header.size), 1);
-
-				// report frame
-				payload = (char*) evt.value.p;
-
-				// Send to server
-				success = Simcom_Upload(payload, reportSize);
-				// handle SIMCOM response
-				if (success) {
-					// Free the pointer after successfully sent
-					osMailFree(ReportMailHandle, theReport);
-				} else {
-					// SIMCOM failed
-					break;
-				}
-
-				// check report log again
-				evt = osMailGet(ReportMailHandle, 0);
-			};
+			success = Simcom_Upload(pResponse, reportSize);
+			// validate ACK
+			if (Simcom_Read_ACK(&theACK, &(response.header))) {
+				// FIXME: handle invalid response ACK
+				pResponse = NULL;
+			}
 		}
+
+		// report frame
+		if (pReport || notifValue & EVENT_IOT_REPORT) {
+			// check report log
+			if (pReport == NULL) {
+				evt = osMailGet(ReportMailHandle, 0);
+			}
+
+			if (evt.status == osEventMail) {
+				seq = 0;
+
+				do {
+					// copy the pointer
+					theReport = evt.value.p;
+					// calculate the size based on frame_id
+					reportSize = sizeof(report.header) + sizeof(report.data.req);
+					if (theReport->header.frame_id == FRAME_FULL) {
+						reportSize += sizeof(report.data.opt);
+					}
+					// get current sending datetime
+					theReport->data.req.rtc_send_datetime = RTC_Read();
+					// recalculate the CRC
+					theReport->header.crc = CRC_Calculate8(
+							(uint8_t*) &(theReport->header.size),
+							theReport->header.size + sizeof(theReport->header.size), 1);
+
+					// report frame
+					pReport = (char*) theReport;
+
+					// Send to server
+					success = Simcom_Upload(pReport, reportSize);
+
+					// handle SIMCOM response
+					if (success) {
+						// validate ACK
+						if (Simcom_Read_ACK(&theACK, &(theReport->header))) {
+							// Free the pointer after successfully sent
+							osMailFree(ReportMailHandle, theReport);
+
+							// Get next log (if any)
+							evt = osMailGet(ReportMailHandle, 0);
+							if (evt.status == osEventMail) {
+								pReport = (char*) evt.value.p;
+							} else {
+								pReport = NULL;
+							}
+
+							// exit
+							break;
+						}
+					}
+				} while (++seq < n);
+			}
+		}
+		osRecursiveMutexRelease(SimcomRecMutexHandle);
 
 		// save the simcom event
 		Reporter_Set_Event(REPORT_NETWORK_RESTART, !success);
+
 		// handle sending error
 		if (!success) {
 			// restart module
@@ -1198,6 +1232,9 @@ void StartIotTask(void const *argument)
 			Simcom_Init();
 		}
 	}
+
+	// Periodic interval
+	vTaskDelayUntil(&xLastWakeTime, tick1000ms);
 	/* USER CODE END 5 */
 }
 
@@ -1218,9 +1255,9 @@ void StartGyroTask(void const *argument)
 
 	/* MPU6050 Initialization*/
 	MEMS_Init(&hi2c3, &mpu);
-	// Set calibrator
+// Set calibrator
 	mems_calibration = MEMS_Average(&hi2c3, &mpu, NULL, 500);
-	// Give success indicator
+// Give success indicator
 	WaveBeepPlay(BEEP_FREQ_2000_HZ, 100);
 
 	/* Infinite loop */
@@ -1259,161 +1296,140 @@ void StartGyroTask(void const *argument)
 void StartCommandTask(void const *argument)
 {
 	/* USER CODE BEGIN StartCommandTask */
-	TickType_t xLastWakeTime;
-	BaseType_t xResult;
-	command_t command;
-	uint32_t ulNotifiedValue;
-	uint8_t newCommand;
+	command_t *command;
+	osEvent evt;
 	int p;
 
-	// reset response frame to default
+// reset response frame to default
 	Reporter_Reset(FRAME_RESPONSE);
 
 	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
-		// reset command indicator state
-		newCommand = 0;
+		// get command in queue
+		evt = osMailGet(CommandMailHandle, tick500ms);
 
-		// check if command arrived from IOT Task
-		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
-		if (xResult == pdTRUE) {
-			if ((ulNotifiedValue & EVENT_COMMAND_ARRIVED)) {
-				newCommand = 1;
+		if (evt.status == osEventMail) {
+			command = evt.value.p;
+			// default command response
+			response.data.code = RESPONSE_STATUS_OK;
+			strcpy(response.data.message, "");
+
+			// handle the command
+			switch (command->data.code) {
+				case CMD_CODE_GEN:
+					switch (command->data.sub_code) {
+						case CMD_GEN_INFO:
+							sprintf(response.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
+							break;
+
+						case CMD_GEN_LED:
+							BSP_LedWrite((uint8_t) command->data.value);
+							break;
+
+						default:
+							response.data.code = RESPONSE_STATUS_INVALID;
+							break;
+					}
+					break;
+
+				case CMD_CODE_HMI2:
+					switch (command->data.sub_code) {
+						case CMD_HMI2_SHUTDOWN:
+							DB_HMI2_Shutdown = (uint8_t) command->data.value;
+							break;
+
+						default:
+							response.data.code = RESPONSE_STATUS_INVALID;
+							break;
+					}
+					break;
+
+				case CMD_CODE_REPORT:
+					switch (command->data.sub_code) {
+						case CMD_REPORT_RTC:
+							RTC_Write(command->data.value);
+							break;
+
+						case CMD_REPORT_ODOM:
+							Reporter_Set_Odometer((uint32_t) command->data.value);
+							break;
+
+						case CMD_REPORT_UNITID:
+							Reporter_Set_UnitID((uint32_t) command->data.value);
+							break;
+
+						default:
+							response.data.code = RESPONSE_STATUS_INVALID;
+							break;
+					}
+					break;
+
+				case CMD_CODE_AUDIO:
+					switch (command->data.sub_code) {
+						case CMD_AUDIO_BEEP:
+							xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP, eSetBits);
+							break;
+
+						case CMD_AUDIO_MUTE:
+							xTaskNotify(
+									AudioTaskHandle,
+									(uint8_t) command->data.value ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF,
+									eSetBits);
+							break;
+
+						case CMD_AUDIO_VOL:
+							osMessagePut(
+									AudioVolQueueHandle,
+									(uint8_t) command->data.value,
+									osWaitForever);
+							break;
+
+						default:
+							response.data.code = RESPONSE_STATUS_INVALID;
+							break;
+					}
+					break;
+
+				case CMD_CODE_FINGER:
+					switch (command->data.sub_code) {
+						case CMD_FINGER_ADD:
+							p = Finger_Enroll((uint8_t) command->data.value);
+							break;
+
+						case CMD_FINGER_DEL:
+							p = Finger_Delete_ID((uint8_t) command->data.value);
+							break;
+
+						case CMD_FINGER_RST:
+							p = Finger_Empty_Database();
+							break;
+
+						default:
+							response.data.code = RESPONSE_STATUS_INVALID;
+							break;
+					}
+					// handle response from finger-print module
+					if (p != FINGERPRINT_OK) {
+						response.data.code = RESPONSE_STATUS_ERROR;
+					}
+					break;
+
+				default:
+					response.data.code = RESPONSE_STATUS_INVALID;
+					break;
+			}
+
+			// Set header
+			Reporter_Capture(FRAME_RESPONSE);
+
+			// Report is ready, do what you want (send to server)
+			xTaskNotify(IotTaskHandle, EVENT_IOT_RESPONSE, eSetBits);
+		} else {
+			// handle command (if any)
+			if (Simcom_Read_Command(hCommand)) {
+				osMailPut(CommandMailHandle, hCommand);
 			}
 		}
-
-		// if there is no pending command, fetch the newest command
-		if (!newCommand) {
-			newCommand = Simcom_Has_Command();
-		}
-
-		// then execute the command
-		if (newCommand) {
-			SWV_SendStr("\nNew Command: from CommandTask");
-			// read the command & execute
-			if (Simcom_Read_Command(&command)) {
-				// default command response
-				response.data.code = RESPONSE_STATUS_OK;
-				strcpy(response.data.message, "");
-
-				// handle the command
-				switch (command.data.code) {
-					case CMD_CODE_GEN:
-						switch (command.data.sub_code) {
-							case CMD_GEN_INFO:
-								strcpy(
-										response.data.message,
-										"VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ "VCU_BUILD_YEAR);
-								break;
-
-							case CMD_GEN_LED:
-								BSP_LedWrite((uint8_t) command.data.value);
-								break;
-
-							default:
-								response.data.code = RESPONSE_STATUS_INVALID;
-								break;
-						}
-						break;
-
-					case CMD_CODE_HMI2:
-						switch (command.data.sub_code) {
-							case CMD_HMI2_SHUTDOWN:
-								DB_HMI2_Shutdown = (uint8_t) command.data.value;
-								break;
-
-							default:
-								response.data.code = RESPONSE_STATUS_INVALID;
-								break;
-						}
-						break;
-
-					case CMD_CODE_REPORT:
-						switch (command.data.sub_code) {
-							case CMD_REPORT_RTC:
-								RTC_Write(command.data.value);
-								break;
-
-							case CMD_REPORT_ODOM:
-								Reporter_Set_Odometer((uint32_t) command.data.value);
-								break;
-
-							case CMD_REPORT_UNITID:
-								Reporter_Set_UnitID((uint32_t) command.data.value);
-								break;
-
-							default:
-								response.data.code = RESPONSE_STATUS_INVALID;
-								break;
-						}
-						break;
-
-					case CMD_CODE_AUDIO:
-						switch (command.data.sub_code) {
-							case CMD_AUDIO_BEEP:
-								xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP, eSetBits);
-								break;
-
-							case CMD_AUDIO_MUTE:
-								xTaskNotify(
-										AudioTaskHandle,
-										(uint8_t) command.data.value ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF,
-										eSetBits);
-								break;
-
-							case CMD_AUDIO_VOL:
-								osMessagePut(
-										AudioVolQueueHandle,
-										(uint8_t) command.data.value,
-										osWaitForever);
-								break;
-
-							default:
-								response.data.code = RESPONSE_STATUS_INVALID;
-								break;
-						}
-						break;
-
-					case CMD_CODE_FINGER:
-						switch (command.data.sub_code) {
-							case CMD_FINGER_ADD:
-								p = Finger_Enroll((uint8_t) command.data.value);
-								break;
-
-							case CMD_FINGER_DEL:
-								p = Finger_Delete_ID((uint8_t) command.data.value);
-								break;
-
-							case CMD_FINGER_RST:
-								p = Finger_Empty_Database();
-								break;
-
-							default:
-								response.data.code = RESPONSE_STATUS_INVALID;
-								break;
-						}
-						// handle response from finger-print module
-						if (p != FINGERPRINT_OK) {
-							response.data.code = RESPONSE_STATUS_ERROR;
-						}
-						break;
-
-					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
-						break;
-				}
-
-				// Set header
-				Reporter_Set_Header(FRAME_RESPONSE);
-
-				// Report is ready, do what you want (send to server)
-				xTaskNotify(IotTaskHandle, EVENT_IOT_RESPONSE, eSetBits);
-			}
-		}
-
-		// Report interval
-		vTaskDelayUntil(&xLastWakeTime, tick100ms);
 	}
 	/* USER CODE END StartCommandTask */
 }
@@ -1429,23 +1445,20 @@ void StartGpsTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGpsTask */
 	TickType_t xLastWakeTime;
-	gps_t *hgps;
 
-	// Start GPS module
+// Start GPS module
 	UBLOX_DMA_Init();
-	// Allocate memory once, and never free it
-	hgps = osMailAlloc(GpsMailHandle, osWaitForever);
-	Ublox_Init(hgps);
+	Ublox_Init(hGps);
 
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
 		// get GPS info
-		gps_process(hgps, UBLOX_UART_RX_Buffer, strlen(UBLOX_UART_RX_Buffer));
+		gps_process(hGps, UBLOX_UART_RX_Buffer, strlen(UBLOX_UART_RX_Buffer));
 
 		// hand-over data to IOT_Task (if fixed)
-		if (hgps->fix > 0) {
-			osMailPut(GpsMailHandle, hgps);
+		if (hGps->fix > 0) {
+			osMailPut(GpsMailHandle, hGps);
 		}
 
 		// Report interval
@@ -1466,7 +1479,7 @@ void StartFingerTask(void const *argument)
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t ulNotifiedValue;
 
-	// Initialization
+// Initialization
 	FINGER_DMA_Init();
 	Finger_Init();
 
@@ -1505,7 +1518,7 @@ void StartAudioTask(void const *argument)
 
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	WaveInit();
-	// Play wave loop forever, handover to DMA, so CPU is free
+// Play wave loop forever, handover to DMA, so CPU is free
 	WavePlay();
 
 	/* Infinite loop */
@@ -1560,9 +1573,9 @@ void StartKeylessTask(void const *argument)
 	uint8_t payload_rx[payload_length];
 	uint32_t ulNotifiedValue;
 
-	// set configuration
+// set configuration
 	nrf_set_config(&config, payload_rx, payload_length);
-	// initialization
+// initialization
 	nrf_init(&nrf, &config);
 	SWV_SendStrLn("NRF24_Init");
 
@@ -1608,7 +1621,7 @@ void StartReporterTask(void const *argument)
 	frame_t frame;
 	report_t *logReport;
 
-	// reset report frame to default
+// reset report frame to default
 	Reporter_Reset(FRAME_FULL);
 
 	/* Infinite loop */
@@ -1656,7 +1669,7 @@ void StartReporterTask(void const *argument)
 		}
 
 		// Set header
-		Reporter_Set_Header(frame);
+		Reporter_Capture(frame);
 
 		// Allocate memory, free on IoTTask after successfully sent
 		logReport = osMailAlloc(ReportMailHandle, osWaitForever);
@@ -1739,12 +1752,12 @@ void StartSwitchTask(void const *argument)
 	uint32_t ulNotifiedValue;
 	uint8_t i;
 
-	// Read all EXTI state
+// Read all EXTI state
 	for (i = 0; i < DB_VCU_Switch_Count; i++) {
 		DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
 	}
 
-	// Handle Reverse mode on init
+// Handle Reverse mode on init
 	if (DB_VCU_Switch[IDX_KEY_REVERSE].state) {
 		// save previous Drive Mode state
 		if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
@@ -1868,47 +1881,52 @@ void StartGeneralTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGeneralTask */
 	TickType_t xLastWakeTime;
-	timestamp_t timestamp;
+	timestamp_t timestampRTC, timestampCarrier;
 
 	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
+		// Retrieve network signal quality (every-time this task wake-up)
+		Simcom_Read_Signal(&DB_VCU_Signal);
+
 		// read timestamp
-		RTC_Read_RAW(&timestamp);
-
+		RTC_Read_RAW(&timestampRTC);
 		// check calibration date (at least check every 1 day)
-		if (LastCalibrationDate.Year != timestamp.date.Year ||
-				LastCalibrationDate.Month != timestamp.date.Month ||
-				LastCalibrationDate.Date != timestamp.date.Date) {
+		if (LastCalibrationDate.Year != timestampRTC.date.Year ||
+				LastCalibrationDate.Month != timestampRTC.date.Month ||
+				LastCalibrationDate.Date != timestampRTC.date.Date) {
 
-			// reset timestamp
-			memset(&timestamp, 0, sizeof(timestamp));
+			// debugging
+			SWV_SendStr("\nLastCalibrationDate : ");
+			SWV_SendInt(LastCalibrationDate.Year);
+			SWV_SendStr("-");
+			SWV_SendInt(LastCalibrationDate.Month);
+			SWV_SendStr("-");
+			SWV_SendInt(LastCalibrationDate.Date);
+			SWV_SendStr("\nRTCDate : ");
+			SWV_SendInt(timestampRTC.date.Year);
+			SWV_SendStr("-");
+			SWV_SendInt(timestampRTC.date.Month);
+			SWV_SendStr("-");
+			SWV_SendInt(timestampRTC.date.Date);
+			SWV_SendStr("");
 
 			// get carrier timestamp
-			if (Simcom_Read_Carrier_Time(&timestamp)) {
-				// debugging
-				SWV_SendStr("\nLastCalibrationDate : ");
-				SWV_SendInt(LastCalibrationDate.Year);
-				SWV_SendStr("-");
-				SWV_SendInt(LastCalibrationDate.Month);
-				SWV_SendStr("-");
-				SWV_SendInt(LastCalibrationDate.Date);
-				SWV_SendStr("\nCarrierDatetime : ");
-				SWV_SendInt(timestamp.date.Year);
-				SWV_SendStr("-");
-				SWV_SendInt(timestamp.date.Month);
-				SWV_SendStr("-");
-				SWV_SendInt(timestamp.date.Date);
-				SWV_SendStr(" ");
-				SWV_SendInt(timestamp.time.Hours);
-				SWV_SendStr(":");
-				SWV_SendInt(timestamp.time.Minutes);
-				SWV_SendStr(":");
-				SWV_SendInt(timestamp.time.Seconds);
-				SWV_SendStrLn("");
+			if (Simcom_Read_Carrier_Time(&timestampCarrier)) {
+				// check is carrier timestamp valid
+				if (timestampCarrier.date.Year >= VCU_BUILD_YEAR) {
+					// calibrate the RTC
+					RTC_Write_RAW(&timestampCarrier);
 
-				// calibrate the RTC
-				RTC_Write_RAW(&timestamp);
+					// debugging
+					SWV_SendStr("\nCarrierDate : ");
+					SWV_SendInt(timestampCarrier.date.Year);
+					SWV_SendStr("-");
+					SWV_SendInt(timestampCarrier.date.Month);
+					SWV_SendStr("-");
+					SWV_SendInt(timestampCarrier.date.Date);
+					SWV_SendStrLn("");
+				}
 			}
 		}
 
@@ -1987,18 +2005,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

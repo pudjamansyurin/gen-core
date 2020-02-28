@@ -10,18 +10,21 @@
 /* Private functions ---------------------------------------------------------*/
 static void Simcom_Reset(void);
 static uint8_t Simcom_Response(char *str);
-static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res);
+static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint32_t ms, char *res);
 static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
 static uint8_t Simcom_Command_Match(char *cmd, uint32_t ms, char *res, uint8_t n);
-static uint8_t Simcom_Command(char *cmd, uint32_t ms);
 static uint8_t Simcom_Payload(char *payload, uint16_t payload_length);
 static void Simcom_Prepare(void);
 static uint8_t Simcom_Boot(void);
+static void Simcom_Clear_Buffer(void);
 
 /* External variable ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
+extern const TickType_t tick500ms;
 extern osMutexId SimcomRecMutexHandle;
 extern osThreadId CommandTaskHandle;
+extern osMailQId CommandMailHandle;
+extern command_t *hCommand;
 /* Private variable ---------------------------------------------------------*/
 simcom_t simcom;
 
@@ -59,6 +62,19 @@ static uint8_t Simcom_Boot(void) {
 	return Simcom_Command_Match(SIMCOM_BOOT_COMMAND, NET_BOOT_TIMEOUT, SIMCOM_STATUS_OK, 1);
 }
 
+static void Simcom_Clear_Buffer(void) {
+	// handle command (if any)
+	if (Simcom_Read_Command(hCommand)) {
+		osMailPut(CommandMailHandle, hCommand);
+	}
+	// debugging
+	//	SWV_SendStrLn("\n=================== START ===================");
+	//	SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+	//	SWV_SendStrLn("\n==================== END ====================");
+	// reset rx buffer
+	SIMCOM_Reset_Buffer();
+}
+
 static uint8_t Simcom_Response(char *str) {
 	if (strstr(SIMCOM_UART_RX_Buffer, str) != NULL) {
 		return 1;
@@ -66,29 +82,15 @@ static uint8_t Simcom_Response(char *str) {
 	return 0;
 }
 
-static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res) {
+static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint32_t ms, char *res) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
-	char CTRL_Z = 0x1A;
 	uint8_t ret;
 	uint32_t tick, timeout_tick = 0;
 
-	// when not read command payload
-	if (strstr(data, SIMCOM_READ_COMMAND) == NULL) {
-		// check if it has new command
-		if (Simcom_Has_Command()) {
-			SWV_SendStrLn("\nNew Command: from Simcom_Send_Direct()");
-			xTaskNotify(CommandTaskHandle, EVENT_COMMAND_ARRIVED, eSetBits);
-		}
-	}
-	// reset rx buffer
-	SIMCOM_Reset_Buffer();
+	Simcom_Clear_Buffer();
 	// transmit to serial (low-level)
 	SIMCOM_Transmit(data, data_length);
-	if (is_payload) {
-		// terminate payload mode with CTRL+Z
-		SIMCOM_Transmit(&CTRL_Z, 1);
-	}
 	// convert time to tick
 	timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME_MS);
 	// set timeout guard
@@ -111,6 +113,8 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 			// exit loop
 			break;
 		}
+
+		osDelay(10);
 	}
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);
@@ -120,14 +124,19 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint8_t is_p
 static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
-	uint8_t ret = 0, seq = 1, p;
+	uint8_t ret = 0, seq = 0;
 	// default response
 	if (res == NULL) {
 		res = SIMCOM_STATUS_OK;
 	}
 
 	// repeat command until desired response
-	while (seq <= n) {
+	while (seq++ < n && !ret) {
+		// execute command every timeout guard elapsed
+		if (seq > 1) {
+			osDelay(NET_REPEAT_DELAY * 1000);
+		}
+
 		// print command for debugger
 		if (!is_payload) {
 			SWV_SendStr("\n=> ");
@@ -138,48 +147,32 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
 		SWV_SendChar('\n');
 
 		// send command
-		p = Simcom_Send_Direct(data, data_length, is_payload, ms, res);
+		ret = Simcom_Send_Direct(data, data_length, ms, res);
 
 		// print response for debugger
 		SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
 		SWV_SendChar('\n');
-
-		// handle response match
-		if (p) {
-			ret = 1;
-
-			// exit loop
-			break;
-		}
-
-		// handle sequence overflow
-		if (seq == n) {
-			break;
-		}
-
-		// execute command every timeout guard elapsed
-		osDelay(NET_REPEAT_DELAY * 1000);
-		// increment sequence
-		seq++;
 	}
 
 	osRecursiveMutexRelease(SimcomRecMutexHandle);
 	return ret;
 }
 
+static uint8_t Simcom_Payload(char *payload, uint16_t payload_length) {
+	return Simcom_Send_Indirect(payload, payload_length, 1, 5000, SIMCOM_STATUS_SENT, 1);
+}
+
 static uint8_t Simcom_Command_Match(char *cmd, uint32_t ms, char *res, uint8_t n) {
 	return Simcom_Send_Indirect(cmd, strlen(cmd), 0, ms, res, n);
 }
 
-static uint8_t Simcom_Command(char *cmd, uint32_t ms) {
+uint8_t Simcom_Command(char *cmd, uint32_t ms) {
 	return Simcom_Command_Match(cmd, ms, NULL, 1);
 }
 
-static uint8_t Simcom_Payload(char *payload, uint16_t payload_length) {
-	return Simcom_Send_Indirect(payload, payload_length, 1, 20000, NULL, 1);
-}
-
 void Simcom_Init(void) {
+	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
 	uint8_t p;
 
 	// FIXME: should use hierarchy algorithm in error handling
@@ -211,7 +204,7 @@ void Simcom_Init(void) {
 		}
 		//Hide “+IPD” header
 		if (p) {
-			p = Simcom_Command("AT+CIPHEAD=0\r", 500);
+			p = Simcom_Command("AT+CIPHEAD=1\r", 500);
 		}
 		//Hide “RECV FROM” header
 		if (p) {
@@ -225,9 +218,9 @@ void Simcom_Init(void) {
 		if (p) {
 			p = Simcom_Command("AT+CIPMODE=0\r", 500);
 		}
-		// Get data from network manually
+		// Get data from network automatically
 		if (p) {
-			p = Simcom_Command("AT+CIPRXGET=1\r", 500);
+			p = Simcom_Command("AT+CIPRXGET=0\r", 500);
 		}
 
 		// =========== NETWORK CONFIGURATION
@@ -287,16 +280,36 @@ void Simcom_Init(void) {
 			Simcom_Command("AT+CIPSHUT\r", 500);
 		}
 	} while (p == 0);
+
+	osRecursiveMutexRelease(SimcomRecMutexHandle);
 }
 
 uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0;
+	uint32_t tick;
+	char str[20];
+
+	// combine the size
+	sprintf(str, "AT+CIPSEND=%d\r", payload_length);
+
 	// confirm to server that command is executed
-	if (Simcom_Command_Match("AT+CIPSEND\r", 5000, SIMCOM_STATUS_SEND, 1)) {
+	if (Simcom_Command_Match(str, 5000, SIMCOM_STATUS_SEND, 1)) {
 		// send response
 		if (Simcom_Payload(payload, payload_length)) {
+			// set timeout guard
+			tick = osKernelSysTick();
+			// wait ACK for payload
+			while (1) {
+				if (Simcom_Response(NET_ACK_PREFIX) ||
+						(osKernelSysTick() - tick) >= tick500ms) {
+					break;
+				}
+
+				osDelay(10);
+			}
+
 			ret = 1;
 		}
 	}
@@ -305,9 +318,59 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
 	return ret;
 }
 
-uint8_t Simcom_Has_Command(void) {
-	// check if it has new command
-	return Simcom_Response("+CIPRXGET: 1");
+uint8_t Simcom_Read_IPD(void) {
+	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+	uint8_t ret = 0, cnt;
+	uint16_t size;
+	char *str, *payload, *prefix = "+IPD,";
+
+	// get pointer reference
+	str = strstr(SIMCOM_UART_RX_Buffer, prefix);
+
+	if (str != NULL) {
+		str += strlen(prefix);
+		// has IPD
+		size = BSP_ParseNumber(&str[0], &cnt);
+		payload = &str[cnt + 1];
+
+		// debugging
+		SWV_SendStr("\nIPD PAYLOAD = ");
+		SWV_SendBufHex(payload, size);
+		SWV_SendStrLn("");
+
+		ret = 1;
+	}
+
+	osRecursiveMutexRelease(SimcomRecMutexHandle);
+	return ret;
+}
+
+uint8_t Simcom_Read_ACK(ack_t *ack, report_header_t *report_header) {
+	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+	uint8_t ret = 0;
+	char *pAck = NULL;
+
+	if (strstr(SIMCOM_UART_RX_Buffer, SIMCOM_RESPONSE_IPD)) {
+		// parse ACK
+		pAck = strstr(SIMCOM_UART_RX_Buffer, NET_ACK_PREFIX);
+		if (pAck != NULL) {
+			*ack = *(ack_t*) pAck;
+
+			// validate the value
+			if (report_header->frame_id == ack->frame_id &&
+					report_header->seq_id == ack->seq_id) {
+				// clear rx buffer
+				Simcom_Clear_Buffer();
+
+				ret = 1;
+			}
+		}
+	}
+
+	osRecursiveMutexRelease(SimcomRecMutexHandle);
+	return ret;
 }
 
 uint8_t Simcom_Read_Command(command_t *command) {
@@ -315,15 +378,23 @@ uint8_t Simcom_Read_Command(command_t *command) {
 
 	uint32_t crcValue;
 	uint8_t ret = 0;
-	char *start;
+	char *pCommand = NULL, *start;
 
-	if (Simcom_Command_Match(SIMCOM_READ_COMMAND, 500, NET_COMMAND_PREFIX, 1)) {
-		// check is command not empty
-		if (!Simcom_Response("CIPRXGET: 2,0")) {
-			// get pointer reference
-			start = strstr(SIMCOM_UART_RX_Buffer, NET_COMMAND_PREFIX);
+	if (strstr(SIMCOM_UART_RX_Buffer, SIMCOM_RESPONSE_IPD)) {
+		// decide the start
+		start = strstr(SIMCOM_UART_RX_Buffer, NET_ACK_PREFIX);
+		if (start != NULL) {
+			start += sizeof(ack_t);
+		} else {
+			start = SIMCOM_UART_RX_Buffer;
+		}
+
+		// get pointer reference
+		pCommand = strstr(start, NET_COMMAND_PREFIX);
+
+		if (pCommand != NULL) {
 			// copy the whole value (any time the buffer can change)
-			*command = *(command_t*) start;
+			*command = *(command_t*) pCommand;
 
 			// check the Size
 			if (command->header.size == sizeof(command->data)) {
@@ -333,13 +404,12 @@ uint8_t Simcom_Read_Command(command_t *command) {
 
 				// check the CRC
 				if (command->header.crc == crcValue) {
-					// response OK
+					// reset rx buffer
+					SIMCOM_Reset_Buffer();
+
 					ret = 1;
 				}
 			}
-
-			// reset rx buffer
-			SIMCOM_Reset_Buffer();
 		}
 	}
 
@@ -351,15 +421,15 @@ uint8_t Simcom_Read_Signal(uint8_t *signal) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0, rssi = 0, ber = 0, cnt;
-	char *prefix = "+CSQ: ";
-	char *str;
+	char *str, *prefix = "+CSQ: ";
 
 	// check signal quality
 	if (Simcom_Command("AT+CSQ\r", 500)) {
 		// get pointer reference
-		str = strstr(SIMCOM_UART_RX_Buffer, prefix) + strlen(prefix);
+		str = strstr(SIMCOM_UART_RX_Buffer, prefix);
 
 		if (str != NULL) {
+			str += strlen(prefix);
 			rssi = BSP_ParseNumber(&str[0], &cnt);
 			ber = BSP_ParseNumber(&str[cnt + 1], NULL);
 
@@ -390,13 +460,13 @@ uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
 	uint8_t ret = 0, len = 0, cnt;
 	char *str, *prefix = "+CCLK: \"";
 
-	Simcom_Command("AT+CLTS?\r", 500);
 	// get local timestamp (from base station)
 	if (Simcom_Command("AT+CCLK?\r", 500)) {
 		// get pointer reference
-		str = strstr(SIMCOM_UART_RX_Buffer, prefix) + strlen(prefix);
+		str = strstr(SIMCOM_UART_RX_Buffer, prefix);
 
 		if (str != NULL) {
+			str += strlen(prefix);
 			// get date part
 			timestamp->date.Year = BSP_ParseNumber(&str[0], &cnt);
 			len += cnt + 1;
@@ -413,6 +483,9 @@ uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
 
 			// make sure it is valid datetime
 			if (RTC_Encode(*timestamp)) {
+				// set weekday to default
+				timestamp->date.WeekDay = RTC_WEEKDAY_MONDAY;
+
 				ret = 1;
 			}
 		}

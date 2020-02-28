@@ -3,6 +3,7 @@
  *
  *  Created on: Feb 4, 2020
  *      Author: pudja
+ *      See: crccalc.com (CRC-32/MPEG-2)
  */
 
 #include "_crc.h"

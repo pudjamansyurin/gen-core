@@ -30,6 +30,7 @@ typedef struct __attribute__((packed)) {
 	uint8_t size;
 	uint8_t frame_id;
 	uint32_t unit_id;
+	uint16_t seq_id;
 } report_header_t;
 
 // report frame
@@ -41,7 +42,6 @@ typedef struct __attribute__((packed)) {
 } report_data_gps_t;
 
 typedef struct __attribute__((packed)) {
-	uint16_t seq_id;
 	uint64_t rtc_send_datetime;
 	uint64_t rtc_log_datetime;
 	uint8_t driver_id;
@@ -98,15 +98,21 @@ typedef struct __attribute__((packed)) {
 	command_data_t data;
 } command_t;
 
+// ACK frame (from server)
+typedef struct __attribute__((packed)) {
+	uint16_t prefix;
+	uint8_t frame_id;
+	uint16_t seq_id;
+} ack_t;
+
 // public function
 void Reporter_Reset(frame_t frame);
-void Reporter_Set_Prefix(uint16_t prefix);
 void Reporter_Set_UnitID(uint32_t unitId);
 void Reporter_Set_Odometer(uint32_t odom);
 void Reporter_Set_GPS(gps_t *hgps);
 void Reporter_Set_Speed(gps_t *hgps);
 void Reporter_Set_Event(uint64_t event_id, uint8_t bool);
 uint8_t Reporter_Read_Event(uint64_t event_id);
-void Reporter_Set_Header(frame_t frame);
+void Reporter_Capture(frame_t frame);
 
 #endif /* REPORTER_H_ */

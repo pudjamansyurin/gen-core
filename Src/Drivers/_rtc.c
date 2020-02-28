@@ -98,11 +98,11 @@ void RTC_Write_RAW(timestamp_t *timestamp) {
 	timestamp->time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 	timestamp->time.StoreOperation = RTC_STOREOPERATION_RESET;
 
-	// save calibration date
-	// source from server is always considered as valid
-	LastCalibrationDate = timestamp->date;
-
 	// set the RTC
 	HAL_RTC_SetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
 	HAL_RTC_SetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
+
+	// save calibration date
+	// source from server is always considered as valid
+	LastCalibrationDate = timestamp->date;
 }

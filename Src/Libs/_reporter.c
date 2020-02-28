@@ -15,14 +15,18 @@ response_t response;
 // function list
 void Reporter_Reset(frame_t frame) {
 	// set default data
-	Reporter_Set_Prefix(FRAME_PREFIX);
+	// header report
+	report.header.prefix = FRAME_PREFIX;
+	report.header.crc = 0;
+	report.header.size = 0;
+	report.header.frame_id = frame;
 	Reporter_Set_UnitID(REPORT_UNITID);
+	report.header.seq_id = 0;
 
 	if (frame == FRAME_RESPONSE) {
 		// header response
-		response.header.crc = 0;
-		response.header.size = 0;
-		response.header.frame_id = FRAME_RESPONSE;
+		// (copy from report)
+		response.header = report.header;
 
 		// body response
 		response.data.code = 1;
@@ -30,13 +34,10 @@ void Reporter_Reset(frame_t frame) {
 
 	} else {
 		// header report
-		report.header.crc = 0;
-		report.header.size = 0;
-		report.header.frame_id = frame;
+		// (already set)
 
 		// body required
 		if (frame == FRAME_SIMPLE || frame == FRAME_FULL) {
-			report.data.req.seq_id = 0;
 			report.data.req.rtc_send_datetime = 0;
 			report.data.req.rtc_log_datetime = 0;
 			report.data.req.driver_id = 1;
@@ -58,11 +59,6 @@ void Reporter_Reset(frame_t frame) {
 			report.data.opt.trip_b = 0x89A;
 		}
 	}
-}
-
-void Reporter_Set_Prefix(uint16_t prefix) {
-	response.header.prefix = prefix;
-	report.header.prefix = prefix;
 }
 
 void Reporter_Set_UnitID(uint32_t unitId) {
@@ -113,36 +109,39 @@ uint8_t Reporter_Read_Event(uint64_t event_id) {
 	return (report.data.req.events_group & event_id) >> BSP_BitPosition(event_id);
 }
 
-void Reporter_Set_Header(frame_t frame) {
+void Reporter_Capture(frame_t frame) {
 	if (frame == FRAME_RESPONSE) {
 		//Reconstruct the header
+		response.header.seq_id++;
+		response.header.frame_id = FRAME_RESPONSE;
 		response.header.size = sizeof(response.header.frame_id) +
 				sizeof(response.header.unit_id) +
+				sizeof(response.header.seq_id) +
 				sizeof(response.data.code) +
 				strlen(response.data.message);
-		response.header.frame_id = FRAME_RESPONSE;
 		response.header.crc = CRC_Calculate8(
 				(uint8_t*) &(response.header.size),
 				response.header.size + sizeof(response.header.size), 1);
 
 	} else {
-		// parse newest rtc datetime
+		// Reconstruct the body
 		report.data.req.rtc_log_datetime = RTC_Read();
-		report.data.req.seq_id++;
-		report.header.frame_id = frame;
+		report.data.req.rtc_send_datetime = 0;
 
+		// Reconstruct the header
+		report.header.seq_id++;
+		report.header.frame_id = frame;
 		report.header.size = sizeof(report.header.frame_id) +
 				sizeof(report.header.unit_id) +
+				sizeof(report.header.seq_id) +
 				sizeof(report.data.req);
-
-		//Reconstruct the header
+		// Add opt on FRAME_FULL
 		if (frame == FRAME_FULL) {
 			report.header.size += sizeof(report.data.opt);
 		}
-
-		// it will be recalculated when sending the payload
+		// CRC will be recalculated when sending the payload
+		// (because RTC_Send_Datetime will be changed later)
 		report.header.crc = 0;
-		report.data.req.rtc_send_datetime = 0;
 	}
 }
 
