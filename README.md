@@ -2,7 +2,7 @@
 - [x] Add IWDG to VCU 
 - [ ] Handle migration from STM32F407VG to STM32F423VH 
 - [ ] Use AES features in new STM32F423VH 
-- Decrease System Clock to 100MHz 
+- [ ] ~~Decrease System Clock to 100MHz~~ 
 - [ ] Edit file database.c data type to structure 
 - [x] Move all constant (config variable) to config.h file 
 - [ ] Increase the baud-rate of all communication protocols 
@@ -14,8 +14,8 @@
 - [ ] SIM5300e SSL communication 
 - [x] Add SIMCOM signal strength CAN and the display 
 - [x] Handle command from Server to IOT 
-- MQTT Protocol with backend server 
-- Try to lock SIMCOM on 3G network, then fallback to 2G if failed continuously. 
+- [ ] ~~MQTT Protocol with backend server~~ 
+- [ ] ~~Try to lock SIMCOM on 3G network, then fallback to 2G if failed continuously.~~ 
 - [x] Handle interrupted restart of SIMCOM module 
 - [x] Day names in RTC is not editable yet 
 - [x] Handle SIMCOM logs array when offline 
@@ -26,7 +26,7 @@
 - [x] Standardize frame data which sent to server, ignore ATrack frame. 
 - [x] Change HAL_Delay() to osDelay() 
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
-- Remove DMA_handler files 
+- [ ] ~~Remove DMA_handler files~~ 
 - [x] Remove any un-necessary array, use pointer if possible for simplicity 
 - [ ] Slow down report time when no BMS 
 - [x] Calibrate audio volume 
@@ -34,7 +34,7 @@
 - [x] Encode Command Frame from Server to IOT 
 - [x] Calibrate simcom signal level from db to linear 
 - [ ] Handle "Phone Plugged Status" from HMI-2 
-- Set audio volume to max at first, then set to default. Because the external speaker has AGC. 
+- [ ] ~~Set audio volume to max at first, then set to default. Because the external speaker has AGC.~~
 - [x] Check ACK on every REPORT / RESPONSE frame. If not receive ACK response, resend (2 times), then restart the SIMCOM if still failed. 
 - [x] Check COMMAND before clearing the Buffer 
 - [ ] Lock all global variable to minimize RTOS problem. 
