@@ -40,3 +40,46 @@
 - [ ] Lock all global variable to minimize RTOS problem. 
 
 # Hardware Progress:
+- [x] Add SMD Fuse 
+- [ ] ~~Research Low Power STM32 for IoT~~ 
+- [x] Change STM32 from LQFP100 (to many unused pins), and has AES feature 
+- [x] Control HMI Primary power (by MOSFET) 
+- [x] Remove un-necessary LED 
+- [x] Watch capacitor position 
+- [x] Change component position in schematic as it used to be 
+- [x] Check decouple capacitor type (tantalum) for SIMCOM and other vcc modules 
+- [x] See the RF PCB design guide rules 
+- [x] Add holes for screw 
+- [x] Add Solder Jumper for every module 
+- [x] Remove RTC battery, can you? 
+- [x] Make serial jumper for ublox (using U-CENTER), for programming the IC 
+- [x] Add optional solder jumper for JACK connector 
+- [x] B- of Li-ION on schematic ? 
+- [x] Change all led to side (like ATrack) 
+- [x] Add Idd jumper to check the current for each sub module 
+- [x] Add 2 GPIO for HMI Secondary: WAKE (OUT), SHUTDOWN (OUT) 
+- [x] Add  2 GPIO for HMI Secondary: Phone Connected (IN), RTC Daylight (OUT) 
+- [x] Handle interrupt of fingerprint using PNP Transistor as switch. 
+- [x] Add DTR pin for SIM5300e 
+- [x] Check TX/RX cross over for UART 
+- [x] Change VCU GPIOS pin in excell 
+- [x] Change INT_FINGER to EXT_FINGER 
+- [x] Add solder jumper to switch between MCU 
+- [x] Check all transistor for power control (PNP or NPN) 
+- [x] MOSFET for Power Control not same 
+- [x] Change all Power Control transistor to EN pin of each Regulator 
+- [x] Find best SIMCOM Regulator 
+- [ ] ~~Check resistor in every bias transistor~~ 
+- [x] Check without CR2032 battery, but use Li-iON instead 
+- [x] Add voltage divider after fuse to check BMS power 
+- [x] Add uFL connector directly for each RF Antenna 
+- [x] Add alternative built-in NRF24L01 module 
+- [x] All GPIO Output to HMI2 should be 3.3v max 
+- [x] Handle "Spare Pins" converter mosfet/optocoppler 
+- [x] Handle 1 GPIO_IN left optocopler 
+- [x] Add big decouple capacitor for SIMCOM pwr, NRF pwr (it fixes auto restart) 
+- [x] Thinner the PCB height 
+- [x] Add "label name" for all solder jumper 
+- [x] Add marker for Pick & Place tool 
+- [x] Add many via (through hole) for best RF performance 
+- [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
