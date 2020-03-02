@@ -90,3 +90,17 @@
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
 - http://www.pcbtechguide.com/2010/07/wifi-module-layout-guidelines.html 
 - http://www.summitdata.com/blog/parasitic-effects-rf-design/ 
+
+## Sub-Modules Progress:
+| No | Sub Module                  | Chip           | Progress (%) | Check |
+|:--:|-----------------------------|----------------|:------------:|:-----:|
+|  1 | IoT                         | SIM5300e       |      95      |       |
+|  2 | GPS                         | Ublox NEO-6M   |      100     |       |
+|  3 | Gyroscope & Accelerometer   | MPU6050        |      100     |       |
+|  4 | Keyless                     | nRF24L01       |      50      |       |
+|  5 | Fingerprint                 | FZ3387         |      100     |       |
+|  6 | RTC                         | Internal ST    |      100     |       |
+|  7 | Li-ION Charger & Protection | TP4056 & DW01A |      100     |       |
+|  8 | Artificial Audio            | CS43L22        |      100     |       |
+|  9 | CAN Transceiver             | SN65HVD230     |      100     |       |
+| 10 | EEPROM                      | 24AA32A        |       0      |       |
