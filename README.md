@@ -1,4 +1,6 @@
-# Software Progress:
+# VCU / HUB
+
+## Software Progress:
 - [x] Add IWDG to VCU 
 - [ ] Handle migration from STM32F407VG to STM32F423VH 
 - [ ] Use AES features in new STM32F423VH 
@@ -39,7 +41,7 @@
 - [x] Check COMMAND before clearing the Buffer 
 - [ ] Lock all global variable to minimize RTOS problem. 
 
-# Hardware Progress:
+## Hardware Progress:
 - [x] Add SMD Fuse 
 - [ ] ~~Research Low Power STM32 for IoT~~ 
 - [x] Change STM32 from LQFP100 (to many unused pins), and has AES feature 
