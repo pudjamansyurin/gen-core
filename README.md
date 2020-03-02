@@ -85,3 +85,8 @@
 - [x] Add marker for Pick & Place tool 
 - [x] Add many via (through hole) for best RF performance 
 - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
+
+## RF PCB Guidelines : 
+- http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
+- http://www.pcbtechguide.com/2010/07/wifi-module-layout-guidelines.html 
+- http://www.summitdata.com/blog/parasitic-effects-rf-design/ 
