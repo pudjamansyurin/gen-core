@@ -31,6 +31,13 @@ typedef struct {
 	char CMD_CNMP[12];
 } simcom_t;
 
+typedef struct {
+	char name[10];
+	int8_t minValue;
+	uint8_t linMinValue;
+	uint8_t percentage;
+} rssi_t;
+
 /* Public functions ---------------------------------------------------------*/
 void Ublox_Init(gps_t *hgps);
 void Simcom_Init(void);
@@ -38,7 +45,7 @@ uint8_t Simcom_Command(char *cmd, uint32_t ms);
 uint8_t Simcom_Upload(char *message, uint16_t length);
 uint8_t Simcom_Read_ACK(ack_t *ack, report_header_t *report_header);
 uint8_t Simcom_Read_Command(command_t *command);
-uint8_t Simcom_Read_Signal(uint8_t *signal);
+uint8_t Simcom_Read_Signal(uint8_t *signal_percentage);
 uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp);
 
 #endif /* SIMCOM_H_ */

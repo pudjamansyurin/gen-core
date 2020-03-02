@@ -496,6 +496,9 @@ static uint8_t VOLUME_CONVERT(uint8_t Volume) {
 	uint64_t Vol, Multiplier = pow(10, 10);
 	uint8_t Log, Result;
 
+	// change zero to 1
+	Volume = Volume ? Volume : 1;
+
 	// expand resolution
 	Vol = Volume > 100 ? Multiplier : (uint64_t) ((Volume * Multiplier) / 100);
 
@@ -504,9 +507,6 @@ static uint8_t VOLUME_CONVERT(uint8_t Volume) {
 
 	// scale 100 to 255
 	Result = Log > 100 ? 255 : (uint8_t) ((Log * 255) / 100);
-
-	// change zero to 1
-	Result = Result ? Result : 1;
 
 	return Result;
 }

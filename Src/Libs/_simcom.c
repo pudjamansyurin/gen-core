@@ -381,12 +381,20 @@ uint8_t Simcom_Read_Command(command_t *command) {
 	return ret;
 }
 
-uint8_t Simcom_Read_Signal(uint8_t *signal) {
+uint8_t Simcom_Read_Signal(uint8_t *signal_percentage) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
-	uint8_t ret = 0, rssi = 0, ber = 0, cnt;
+	uint8_t i, ret = 0, rssi = 0, cnt;
+	rssi_t rssiQuality;
 	char *str, *prefix = "+CSQ: ";
-
+	// see: http://wiki.teltonika-networks.com/view/Mobile_Signal_Strength_Recommendations
+	const rssi_t rssiQualities[5] = {
+			{ .name = "Excellent", .minValue = -70, .linMinValue = 22, .percentage = 100 },
+			{ .name = "Good", .minValue = -85, .linMinValue = 14, .percentage = 75 },
+			{ .name = "Fair", .minValue = -100, .linMinValue = 7, .percentage = 50 },
+			{ .name = "Poor", .minValue = -110, .linMinValue = 2, .percentage = 25 },
+			{ .name = "No Signal", .minValue = -115, .linMinValue = 0, .percentage = 0 }
+	};
 	// check signal quality
 	if (Simcom_Command("AT+CSQ\r", 500)) {
 		// get pointer reference
@@ -395,20 +403,27 @@ uint8_t Simcom_Read_Signal(uint8_t *signal) {
 		if (str != NULL) {
 			str += strlen(prefix);
 			rssi = BSP_ParseNumber(&str[0], &cnt);
-			ber = BSP_ParseNumber(&str[cnt + 1], NULL);
+			//			ber = BSP_ParseNumber(&str[cnt + 1], NULL);
 
 			// handle not detectable rssi value
-			rssi = (rssi == 99 ? 0 : rssi);
+			rssi = rssi == 99 ? 0 : rssi;
 
-			// convert rssi value to percentage
-			// FIXME: should be logarithmic not linear
-			*signal = (rssi * 100) / 31;
+			// find the rssi quality
+			for (i = 0; i < (sizeof(rssiQualities) / sizeof(rssiQualities[0])); i++) {
+				if (rssi >= rssiQualities[i].linMinValue) {
+					rssiQuality = rssiQualities[i];
+					// set result
+					*signal_percentage = rssiQuality.percentage;
+
+					break;
+				}
+			}
 
 			// debugging
-			SWV_SendStr("\nSIGNAL [RSSI,BER] = ");
-			SWV_SendInt(*signal);
-			SWV_SendStr("%,");
-			SWV_SendInt(ber);
+			SWV_SendStr("\nSIGNAL RSSI = ");
+			SWV_SendBuf(rssiQuality.name, strlen(rssiQuality.name));
+			SWV_SendStr(", ");
+			SWV_SendInt(*signal_percentage);
 			SWV_SendStrLn("%");
 
 			ret = 1;
