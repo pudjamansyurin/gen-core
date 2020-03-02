@@ -36,9 +36,8 @@ void Ublox_Init(gps_t *hgps);
 void Simcom_Init(void);
 uint8_t Simcom_Command(char *cmd, uint32_t ms);
 uint8_t Simcom_Upload(char *message, uint16_t length);
-uint8_t Simcom_Read_Command(command_t *command);
-uint8_t Simcom_Read_IPD(void);
 uint8_t Simcom_Read_ACK(ack_t *ack, report_header_t *report_header);
+uint8_t Simcom_Read_Command(command_t *command);
 uint8_t Simcom_Read_Signal(uint8_t *signal);
 uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp);
 

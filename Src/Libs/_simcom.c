@@ -318,49 +318,22 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
 	return ret;
 }
 
-uint8_t Simcom_Read_IPD(void) {
-	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
-
-	uint8_t ret = 0, cnt;
-	uint16_t size;
-	char *str, *payload, *prefix = "+IPD,";
-
-	// get pointer reference
-	str = strstr(SIMCOM_UART_RX_Buffer, prefix);
-
-	if (str != NULL) {
-		str += strlen(prefix);
-		// has IPD
-		size = BSP_ParseNumber(&str[0], &cnt);
-		payload = &str[cnt + 1];
-
-		// debugging
-		SWV_SendStr("\nIPD PAYLOAD = ");
-		SWV_SendBufHex(payload, size);
-		SWV_SendStrLn("");
-
-		ret = 1;
-	}
-
-	osRecursiveMutexRelease(SimcomRecMutexHandle);
-	return ret;
-}
-
 uint8_t Simcom_Read_ACK(ack_t *ack, report_header_t *report_header) {
 	osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
 	uint8_t ret = 0;
-	char *pAck = NULL;
+	char *str = NULL;
 
 	if (strstr(SIMCOM_UART_RX_Buffer, SIMCOM_RESPONSE_IPD)) {
 		// parse ACK
-		pAck = strstr(SIMCOM_UART_RX_Buffer, NET_ACK_PREFIX);
-		if (pAck != NULL) {
-			*ack = *(ack_t*) pAck;
+		str = strstr(SIMCOM_UART_RX_Buffer, NET_ACK_PREFIX);
+		if (str != NULL) {
+			*ack = *(ack_t*) str;
 
 			// validate the value
 			if (report_header->frame_id == ack->frame_id &&
 					report_header->seq_id == ack->seq_id) {
+
 				// clear rx buffer
 				Simcom_Clear_Buffer();
 
@@ -378,23 +351,14 @@ uint8_t Simcom_Read_Command(command_t *command) {
 
 	uint32_t crcValue;
 	uint8_t ret = 0;
-	char *pCommand = NULL, *start;
+	char *str = NULL;
 
 	if (strstr(SIMCOM_UART_RX_Buffer, SIMCOM_RESPONSE_IPD)) {
-		// decide the start
-		start = strstr(SIMCOM_UART_RX_Buffer, NET_ACK_PREFIX);
-		if (start != NULL) {
-			start += sizeof(ack_t);
-		} else {
-			start = SIMCOM_UART_RX_Buffer;
-		}
-
 		// get pointer reference
-		pCommand = strstr(start, NET_COMMAND_PREFIX);
-
-		if (pCommand != NULL) {
+		str = strstr(SIMCOM_UART_RX_Buffer, NET_COMMAND_PREFIX);
+		if (str != NULL) {
 			// copy the whole value (any time the buffer can change)
-			*command = *(command_t*) pCommand;
+			*command = *(command_t*) str;
 
 			// check the Size
 			if (command->header.size == sizeof(command->data)) {
@@ -437,6 +401,7 @@ uint8_t Simcom_Read_Signal(uint8_t *signal) {
 			rssi = (rssi == 99 ? 0 : rssi);
 
 			// convert rssi value to percentage
+			// FIXME: should be logarithmic not linear
 			*signal = (rssi * 100) / 31;
 
 			// debugging
