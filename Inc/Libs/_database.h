@@ -23,37 +23,56 @@
 
 // enum list
 typedef enum {
-	SWITCH_MODE_DRIVE = 0, SWITCH_MODE_TRIP = 1, SWITCH_MODE_REPORT = 2, SWITCH_MODE_MAX = 2
-} switch_mode_t;
+	SWITCH_MODE_DRIVE = 0,
+	SWITCH_MODE_TRIP = 1,
+	SWITCH_MODE_REPORT = 2,
+	SWITCH_MODE_MAX = 2
+} sw_mode_t;
 
 typedef enum {
-	SWITCH_MODE_DRIVE_E = 0, SWITCH_MODE_DRIVE_S = 1, SWITCH_MODE_DRIVE_P = 2, SWITCH_MODE_DRIVE_R = 3, SWITCH_MODE_DRIVE_MAX = 2
-} switch_mode_drive_t;
+	SWITCH_MODE_DRIVE_E = 0,
+	SWITCH_MODE_DRIVE_S = 1,
+	SWITCH_MODE_DRIVE_P = 2,
+	SWITCH_MODE_DRIVE_R = 3,
+	SWITCH_MODE_DRIVE_MAX = 2
+} sw_mode_drive_t;
 
 typedef enum {
-	SWITCH_MODE_TRIP_A = 0, SWITCH_MODE_TRIP_B = 1, SWITCH_MODE_TRIP_MAX = 1
-} switch_mode_trip_t;
+	SWITCH_MODE_TRIP_A = 0,
+	SWITCH_MODE_TRIP_B = 1,
+	SWITCH_MODE_TRIP_MAX = 1
+} sw_mode_trip_t;
 
 typedef enum {
-	SWITCH_MODE_REPORT_RANGE = 0, SWITCH_MODE_REPORT_AVERAGE = 1, SWITCH_MODE_REPORT_MAX = 1
-} switch_mode_report_t;
+	SWITCH_MODE_REPORT_RANGE = 0,
+	SWITCH_MODE_REPORT_AVERAGE = 1,
+	SWITCH_MODE_REPORT_MAX = 1
+} sw_mode_report_t;
 
 // object list
 typedef struct {
+	uint8_t val[SWITCH_MODE_MAX + 1];
+	uint8_t max[SWITCH_MODE_MAX + 1];
+	uint8_t report[SWITCH_MODE_REPORT_MAX + 1];
+	uint32_t trip[SWITCH_MODE_TRIP_MAX + 1];
+} sw_mode_sub_t;
+
+typedef struct {
+	sw_mode_t val;
+	sw_mode_sub_t sub;
+} switch_mode_t;
+
+typedef struct {
 	switch_mode_t mode;
 	uint8_t listening;
-	uint8_t mode_sub[SWITCH_MODE_MAX + 1];
-	uint8_t mode_sub_max[SWITCH_MODE_MAX + 1];
-	uint8_t mode_sub_report[SWITCH_MODE_REPORT_MAX + 1];
-	uint32_t mode_sub_trip[SWITCH_MODE_TRIP_MAX + 1];
-} switcher_t;
+} switch_runner_t;
 
 typedef struct {
 	char event[20];
 	uint16_t pin;
 	GPIO_TypeDef *port;
 	uint8_t state;
-} switch_t;
+} switch_list_t;
 
 typedef struct {
 	uint32_t start;
@@ -61,7 +80,13 @@ typedef struct {
 	uint8_t time;
 } switch_timer_t;
 
-//FIXME active disabled gpio input
+typedef struct {
+	switch_list_t list[7];
+	switch_timer_t timer[2];
+	switch_runner_t runner;
+} switch_t;
+
+//FIXME active disabled GPIO input
 typedef struct {
 	//	uint8_t abs;
 	//	uint8_t mirror;
@@ -74,5 +99,22 @@ typedef struct {
 //	uint8_t sein_left;
 //	uint8_t sein_right;
 } status_t;
+
+// Node struct
+typedef struct {
+	uint8_t signal;
+	uint8_t speed;
+	uint32_t odometer;
+	timestamp_t timestamp;
+	switch_t sw;
+} vcu_t;
+
+typedef struct {
+	status_t status;
+} hmi1_t;
+
+typedef struct {
+	uint8_t shutdown;
+} hmi2_t;
 
 #endif /* DATABASE_H_ */

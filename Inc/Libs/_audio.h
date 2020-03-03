@@ -47,41 +47,10 @@ extern "C" {
 #include "_cs43l22.h"
 #include "_config.h"
 
-/** @addtogroup BSP
- * @{
- */
-
-/** @addtogroup STM32F4_DISCOVERY
- * @{
- */
-
-/** @addtogroup STM32F4_DISCOVERY_AUDIO
- * @{
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_Exported_Types STM32F4 DISCOVERY AUDIO Exported Types
- * @{
- */
-/**
- * @}
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_OUT_Exported_Constants STM32F4 DISCOVERY AUDIO OUT Exported Constants
- * @{
- */
-
 /*############################### AUDIO ######################################*/
-/**
- * @brief  AUDIO I2C Interface pins
- */
-#define AUDIO_I2C_ADDRESS                     0x94
-/* Audio Reset Pin definition */
-#define AUDIO_RESET_PIN                       INT_AUDIO_RST_Pin
-#define AUDIO_RESET_GPIO                      INT_AUDIO_RST_GPIO_Port
-
-/*------------------------------------------------------------------------------
- AUDIO OUT CONFIGURATION
- ------------------------------------------------------------------------------*/
+#define AUDIO_I2C_ADDRESS               0x94
+#define AUDIO_RESET_PIN                 INT_AUDIO_RST_Pin
+#define AUDIO_RESET_GPIO                INT_AUDIO_RST_GPIO_Port
 
 /* I2S peripheral configuration defines */
 #define I2S                            	SPI3
@@ -89,7 +58,6 @@ extern "C" {
 /*------------------------------------------------------------------------------
  CONFIGURATION: Audio Driver Configuration parameters
  ------------------------------------------------------------------------------*/
-
 #define AUDIODATA_SIZE                  2   /* 16-bits audio data size */
 
 /* Audio status definition */
@@ -102,30 +70,8 @@ extern "C" {
  ------------------------------------------------------------------------------*/
 
 /* Defines for the Audio playing process */
-#define REPEAT_ON        ((uint32_t)0x00) /* Replay Status in ON */
-#define REPEAT_OFF       ((uint32_t)0x01) /* Replay Status in OFF */
-/**
- * @}
- */
+#define DMA_MAX(_X_)                		(((_X_) <= DMA_MAX_SZE)? (_X_):DMA_MAX_SZE)
 
-/** @defgroup STM32F4_DISCOVERY_AUDIO_Exported_Variables STM32F4 DISCOVERY AUDIO Exported Variables
- * @{
- */
-/**
- * @}
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_Exported_Macros STM32F4 DISCOVERY AUDIO Exported Macros
- * @{
- */
-#define DMA_MAX(_X_)                (((_X_) <= DMA_MAX_SZE)? (_X_):DMA_MAX_SZE)
-/**
- * @}
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_OUT_Exported_Functions  STM32F4 DISCOVERY AUDIO OUT Exported Functions
- * @{
- */
 void WaveInit(void);
 void WavePlay(void);
 void WaveBeepPlay(uint8_t Frequency, uint16_t TimeMS);

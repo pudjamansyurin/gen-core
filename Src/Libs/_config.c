@@ -98,11 +98,3 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt) {
 	}
 	return sum; /* Return number */
 }
-
-//void BSP_Read_Handlebar(switch_t *DB_VCU_Switch, uint8_t DB_VCU_Switch_Size) {
-//	uint8_t i;
-//
-//	for (i = 0; i < DB_VCU_Switch_Size; i++) {
-//		DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
-//	}
-//}

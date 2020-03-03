@@ -5,7 +5,7 @@
 - [ ] Handle migration from STM32F407VG to STM32F423VH 
 - [ ] Use AES features in new STM32F423VH 
 - [ ] ~~Decrease System Clock to 100MHz~~ 
-- [ ] Edit file database.c data type to structure 
+- [x] Edit file database.c data type to structure 
 - [x] Move all constant (config variable) to config.h file 
 - [ ] Increase the baud-rate of all communication protocols 
 - [x] Pass pointer of chars from Simcom_Response() to Simcom_Send() 

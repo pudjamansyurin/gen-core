@@ -34,186 +34,35 @@
  ******************************************************************************
  */
 
-//==============================================================================
-// User NOTES
-// 1. How To use this driver:
-// --------------------------
-// - This driver supports STM32F4xx devices on STM32F4-Discovery Kit:
-//	 a) to play an audio file (all functions names start by AUDIO_OUT_xxx)
-//	 b) to record an audio file through MP45DT02, ST MEMS (all functions names start by AUDIO_IN_xxx)
-//
-// a) PLAY A FILE:
-// ==============
-// + Call the function AUDIO_OUT_Init(
-//		 OutputDevice: physical output mode (OUTPUT_DEVICE_SPEAKER,
-//		 OUTPUT_DEVICE_HEADPHONE, OUTPUT_DEVICE_AUTO or
-//		 OUTPUT_DEVICE_BOTH)
-//		 Volume: initial volume to be set (0 is min (mute), 100 is max (100%)
-//		 AudioFreq: Audio frequency in Hz (8000, 16000, 22500, 32000 ...)
-//		 this parameter is relative to the audio file/stream type.
-//	 )
-//
-// This function configures all the hardware required for the audio application (codec, I2C, I2S,
-// GPIOs, DMA and interrupt if needed). This function returns 0 if configuration is OK.
-//
-// If the returned value is different from 0 or the function is stuck then the communication with
-// the codec (try to un-plug the power or reset device in this case).
-//	 - OUTPUT_DEVICE_SPEAKER: only speaker will be set as output for the audio stream.
-//	 - OUTPUT_DEVICE_HEADPHONE: only headphones will be set as output for the audio stream.
-//	 - OUTPUT_DEVICE_AUTO: Selection of output device is made through external switch (implemented
-//		 into the audio jack on the discovery board). When the Headphone is connected it is used
-//		 as output. When the headphone is disconnected from the audio jack, the output is
-//		 automatically switched to Speaker.
-//	 - OUTPUT_DEVICE_BOTH: both Speaker and Headphone are used as outputs for the audio stream
-//		 at the same time.
-//
-// + Call the function AUDIO_OUT_Play(
-//	 pBuffer: pointer to the audio data file address
-//	 Size: size of the buffer to be sent in Bytes
-// ) to start playing (for the first time) from the audio file/stream.
-// + Call the function AUDIO_OUT_Pause() to pause playing
-// + Call the function AUDIO_OUT_Resume() to resume playing.
-//	 Note. After calling AUDIO_OUT_Pause() function for pause, only AUDIO_OUT_Resume() should be called
-//	 for resume (it is not allowed to call AUDIO_OUT_Play() in this case).
-//	 Note. This function should be called only when the audio file is played or paused (not stopped).
-// + For each mode, you may need to implement the relative callback functions into your code.
-//	 The Callback functions are named AUDIO_OUT_XXXCallBack() and only their prototypes are declared in
-//	 the stm32f4_discovery_audio.h file. (refer to the example for more details on the callbacks implementations)
-// + To Stop playing, to modify the volume level, the frequency or to mute, use the functions
-// 	 AUDIO_OUT_Stop(), AUDIO_OUT_SetVolume(), AUDIO_OUT_SetFrequency() AUDIO_OUT_SetOutputMode and AUDIO_OUT_SetMute().
-// + The driver API and the callback functions are at the end of the stm32f4_discovery_audio.h file.
-//
-// Driver architecture:
-// --------------------
-// + This driver provide the High Audio Layer: consists of the function API exported in the stm32f4_discovery_audio.h file
-// 	 (AUDIO_OUT_Init(), AUDIO_OUT_Play() ...)
-// + This driver provide also the Media Access Layer (MAL): which consists of functions allowing to access the media containing/
-// 	 providing the audio file/stream. These functions are also included as local functions into
-//	 the stm32f4_discovery_audio.c file (I2S3_Init()...)
-//
-// Known Limitations:
-// -------------------
-// 1- When using the Speaker, if the audio file quality is not high enough, the speaker output
-//	  may produce high and uncomfortable noise level. To avoid this issue, to use speaker
-//	  output properly, try to increase audio file sampling rate (typically higher than 48KHz).
-//	  This operation will lead to larger file size.
-// 2- Communication with the audio codec (through I2C) may be corrupted if it is interrupted by some
-//	  user interrupt routines (in this case, interrupts could be disabled just before the start of
-//	  communication then re-enabled when it is over). Note that this communication is only done at
-//	  the configuration phase (AUDIO_OUT_Init() or AUDIO_OUT_Stop()) and when Volume control modification is
-//	  performed (AUDIO_OUT_SetVolume() or AUDIO_OUT_SetMute()or AUDIO_OUT_SetOutputMode()).
-//	  When the audio data is played, no communication is required with the audio codec.
-// 3- Parsing of audio file is not implemented (in order to determine audio file properties: Mono/Stereo, Data size,
-//	  File size, Audio Frequency, Audio Data header size ...). The configuration is fixed for the given audio file.
-// 4- Supports only Stereo audio streaming. To play mono audio streams, each data should be sent twice
-// 	  on the I2S or should be duplicated on the source buffer. Or convert the stream in stereo before playing.
-// 5- Supports only 16-bits audio data size.
-//
-// b) RECORD A FILE:
-// ================
-// + Call the function AUDIO_IN_Init(
-//	 AudioFreq: Audio frequency in Hz (8000, 16000, 22500, 32000 ...)
-// )
-// This function configures all the hardware required for the audio application (I2S,
-// GPIOs, DMA and interrupt if needed). This function returns 0 if configuration is OK.
-//
-// + Call the function AUDIO_IN_Record(
-//	 pbuf Main buffer pointer for the recorded data storing
-//	 size Current size of the recorded buffer
-// )
-// to start recording from the microphone.
-//
-// + User needs to implement user callbacks to retrieve data saved in the record buffer
-// 	 (AUDIO_IN_RxHalfCpltCallback/AUDIO_IN_ReceiveComplete_CallBack)
-//
-// + Call the function AUDIO_IN_STOP() to stop recording
-//
-// ==============================================================================
 /* Includes ------------------------------------------------------------------*/
 #include "_audio.h"
 
-/** @addtogroup BSP
- * @{
- */
+/* Private define ------------------------------------------------------------*/
+#define AUDIO_BUFFER_SIZE             4096
 
-/** @addtogroup STM32F4_DISCOVERY
- * @{
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO STM32F4 DISCOVERY AUDIO
- * @brief This file includes the low layer audio driver available on STM32F4-Discovery
- *        discovery board.
- * @{
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_Private_Types STM32F4 DISCOVERY AUDIO Private Types
- * @{
- */
-/**
- * @}
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_Private_Defines STM32F4 DISCOVERY AUDIO Private Defines
- * @{
- */
-
+/* External variables ---------------------------------------------------------*/
 extern AUDIO_DrvTypeDef cs43l22_drv;
 extern osMutexId AudioBeepMutexHandle;
+extern I2S_HandleTypeDef hi2s3;
+extern uint32_t AUDIO_SAMPLE_FREQ;
+extern uint32_t AUDIO_SAMPLE_SIZE;
+extern uint16_t AUDIO_SAMPLE[];
+
+/* Private variables ---------------------------------------------------------*/
+I2S_HandleTypeDef *I2sHandle = &hi2s3;
+AUDIO_DrvTypeDef *pAudioDrv;
+uint8_t Volume = 50, AudioPlayDone = 0, Audio_Buffer[AUDIO_BUFFER_SIZE];
+uint16_t AudioPlaySize, i;
+uint32_t AudioRemSize;
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
 const uint32_t I2SFreq[7] = { 8000, 16000, 22050, 32000, 44100, 48000, 96000 };
 const uint32_t I2SPLLN[7] = { 256, 213, 429, 213, 271, 258, 344 };
 const uint32_t I2SPLLR[7] = { 5, 2, 4, 2, 2, 3, 2 };
 
-/**
- * @}
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_Private_Macros STM32F4 DISCOVERY AUDIO Private Macros
- * @{
- */
-/**
- * @}
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_Private_Variables STM32F4 DISCOVERY AUDIO Private Variables
- * @{
- */
-/*##### PLAY #####*/
-extern I2S_HandleTypeDef hi2s3;
-static I2S_HandleTypeDef *I2sHandle = &hi2s3;
-static AUDIO_DrvTypeDef *pAudioDrv;
-
-/**
- * @}
- */
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_Private_Function_Prototypes STM32F4 DISCOVERY AUDIO Private Function Prototypes
- * @{
- */
+/* Private functions ---------------------------------------------------------*/
 static uint8_t I2S3_Init(uint32_t AudioFreq);
-/**
- * @}
- */
-/* Get audio file */
-extern uint32_t AUDIO_SAMPLE_FREQ;
-extern uint32_t AUDIO_SAMPLE_SIZE;
-extern uint16_t AUDIO_SAMPLE[];
-/* Private define ------------------------------------------------------------*/
-#define AUDIO_BUFFER_SIZE             4096
 
-/* Private variables ---------------------------------------------------------*/
-uint16_t i;
-/* Ping-Pong buffer used for audio play */
-uint8_t Audio_Buffer[AUDIO_BUFFER_SIZE];
-/* Position in the audio play buffer */
-volatile uint8_t AudioPlayDone = 0;
-/* Initial Volume level (from 0 (Mute) to 100 (Max)) */
-static uint8_t Volume = 50;
-/* Audio wave remaining data length to be played */
-static uint32_t AudioRemSize;
-/* Audio wave to be played data at the moment */
-static uint16_t AudioPlaySize;
-
+/* The functions ---------------------------------------------------------*/
 void WaveInit(void) {
 	uint8_t ret;
 	do {
@@ -261,10 +110,6 @@ void WaveBeepStop(void) {
 
 	osRecursiveMutexRelease(AudioBeepMutexHandle);
 }
-
-/** @defgroup STM32F4_DISCOVERY_AUDIO_OUT_Private_Functions STM32F4 DISCOVERY AUDIO OUT Private Functions
- * @{
- */
 
 /**
  * @brief  Configures the audio peripherals.
@@ -474,29 +319,6 @@ void AUDIO_OUT_SetFrequency(uint32_t AudioFreq) {
 }
 
 /**
- * @brief  Tx Transfer completed callbacks.
- * @param  hi2s: I2S handle
- */
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
-	if (hi2s->Instance == I2S) {
-		/* Call the user function which will manage directly transfer complete */
-		AUDIO_OUT_TransferComplete_CallBack();
-	}
-}
-
-/**
- * @brief  Tx Half Transfer completed callbacks.
- * @param  hi2s: I2S handle
- */
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
-	if (hi2s->Instance == I2S) {
-		/* Manage the remaining file size and new address offset: This function should
-		 be coded by user (its prototype is already declared in stm32f4_discovery_audio.h) */
-		AUDIO_OUT_HalfTransfer_CallBack();
-	}
-}
-
-/**
  * @brief  Clock Config.
  * @param  hi2s: might be required to set audio peripheral predivider if any.
  * @param  AudioFreq: Audio frequency used to play the audio stream.
@@ -544,73 +366,6 @@ __weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq, v
 void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params) {
 	HAL_I2S_MspInit(hi2s);
 }
-//__weak void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params) {
-//	static DMA_HandleTypeDef hdma_i2sTx;
-//	GPIO_InitTypeDef GPIO_InitStruct;
-//
-//	/* Enable I2S3 clock */
-//	I2S3_CLK_ENABLE()
-//				;
-//
-//	/*** Configure the GPIOs ***/
-//	/* Enable I2S GPIO clocks */
-//	I2S3_SCK_SD_CLK_ENABLE()
-//				;
-//	I2S3_WS_CLK_ENABLE()
-//				;
-//
-//	/* I2S3 pins configuration: WS, SCK and SD pins ----------------------------*/
-//	GPIO_InitStruct.Pin = I2S3_SCK_PIN | I2S3_SD_PIN;
-//	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-//	GPIO_InitStruct.Pull = GPIO_NOPULL;
-//	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
-//	GPIO_InitStruct.Alternate = I2S3_SCK_SD_WS_AF;
-//	HAL_GPIO_Init(I2S3_SCK_SD_GPIO_PORT, &GPIO_InitStruct);
-//
-//	GPIO_InitStruct.Pin = I2S3_WS_PIN;
-//	HAL_GPIO_Init(I2S3_WS_GPIO_PORT, &GPIO_InitStruct);
-//
-//	/* I2S3 pins configuration: MCK pin */
-//	I2S3_MCK_CLK_ENABLE()
-//				;
-//	GPIO_InitStruct.Pin = I2S3_MCK_PIN;
-//	HAL_GPIO_Init(I2S3_MCK_GPIO_PORT, &GPIO_InitStruct);
-//
-//	/* Enable the I2S DMA clock */
-//	I2S3_DMAx_CLK_ENABLE()
-//				;
-//
-//	if (hi2s->Instance == I2S3) {
-//		/* Configure the hdma_i2sTx handle parameters */
-//		hdma_i2sTx.Init.Channel = I2S3_DMAx_CHANNEL;
-//		hdma_i2sTx.Init.Direction = DMA_MEMORY_TO_PERIPH;
-//		hdma_i2sTx.Init.PeriphInc = DMA_PINC_DISABLE;
-//		hdma_i2sTx.Init.MemInc = DMA_MINC_ENABLE;
-//		hdma_i2sTx.Init.PeriphDataAlignment = I2S3_DMAx_PERIPH_DATA_SIZE;
-//		hdma_i2sTx.Init.MemDataAlignment = I2S3_DMAx_MEM_DATA_SIZE;
-//		hdma_i2sTx.Init.Mode = DMA_NORMAL;
-//		hdma_i2sTx.Init.Priority = DMA_PRIORITY_HIGH;
-//		hdma_i2sTx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-//		hdma_i2sTx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-//		hdma_i2sTx.Init.MemBurst = DMA_MBURST_SINGLE;
-//		hdma_i2sTx.Init.PeriphBurst = DMA_PBURST_SINGLE;
-//
-//		hdma_i2sTx.Instance = I2S3_DMAx_STREAM;
-//
-//		/* Associate the DMA handle */
-//		__HAL_LINKDMA(hi2s, hdmatx, hdma_i2sTx);
-//
-//		/* Deinitialize the Stream for new transfer */
-//		HAL_DMA_DeInit(&hdma_i2sTx);
-//
-//		/* Configure the DMA Stream */
-//		HAL_DMA_Init(&hdma_i2sTx);
-//	}
-//
-//	/* I2S DMA IRQ Channel configuration */
-//	HAL_NVIC_SetPriority(I2S3_DMAx_IRQ, AUDIO_OUT_IRQ_PREPRIO, 0);
-//	HAL_NVIC_EnableIRQ(I2S3_DMAx_IRQ);
-//}
 
 /**
  * @brief  De-Initializes AUDIO_OUT MSP.
@@ -620,39 +375,6 @@ void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params) {
 void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params) {
 	HAL_I2S_MspDeInit(hi2s);
 }
-
-//__weak void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params) {
-//	GPIO_InitTypeDef GPIO_InitStruct;
-//
-//	/* I2S DMA IRQ Channel deactivation */
-//	HAL_NVIC_DisableIRQ(I2S3_DMAx_IRQ);
-//
-//	if (hi2s->Instance == I2S3) {
-//		/* Deinitialize the Stream for new transfer */
-//		HAL_DMA_DeInit(hi2s->hdmatx);
-//	}
-//
-//	/* Disable I2S block */
-//	__HAL_I2S_DISABLE(hi2s);
-//
-//	/* CODEC_I2S pins configuration: SCK and SD pins */
-//	GPIO_InitStruct.Pin = I2S3_SCK_PIN | I2S3_SD_PIN;
-//	HAL_GPIO_DeInit(I2S3_SCK_SD_GPIO_PORT, GPIO_InitStruct.Pin);
-//
-//	/* CODEC_I2S pins configuration: WS pin */
-//	GPIO_InitStruct.Pin = I2S3_WS_PIN;
-//	HAL_GPIO_DeInit(I2S3_WS_GPIO_PORT, GPIO_InitStruct.Pin);
-//
-//	/* CODEC_I2S pins configuration: MCK pin */
-//	GPIO_InitStruct.Pin = I2S3_MCK_PIN;
-//	HAL_GPIO_DeInit(I2S3_MCK_GPIO_PORT, GPIO_InitStruct.Pin);
-//
-//	/* Disable I2S clock */
-//	I2S3_CLK_DISABLE();
-//
-//	/* GPIO pins clock and DMA clock can be shut down in the applic
-//	 by surcgarging this __weak function */
-//}
 
 /**
  * @brief  Manages the DMA full Transfer complete event.
@@ -701,9 +423,28 @@ __weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
 __weak void AUDIO_OUT_Error_CallBack(void) {
 }
 
-/*******************************************************************************
- Static Functions
- *******************************************************************************/
+/**
+ * @brief  Tx Transfer completed callbacks.
+ * @param  hi2s: I2S handle
+ */
+void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
+	if (hi2s->Instance == I2S) {
+		/* Call the user function which will manage directly transfer complete */
+		AUDIO_OUT_TransferComplete_CallBack();
+	}
+}
+
+/**
+ * @brief  Tx Half Transfer completed callbacks.
+ * @param  hi2s: I2S handle
+ */
+void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
+	if (hi2s->Instance == I2S) {
+		/* Manage the remaining file size and new address offset: This function should
+		 be coded by user (its prototype is already declared in stm32f4_discovery_audio.h) */
+		AUDIO_OUT_HalfTransfer_CallBack();
+	}
+}
 
 /**
  * @brief  Initializes the Audio Codec audio interface (I2S).

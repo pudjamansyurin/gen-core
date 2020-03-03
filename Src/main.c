@@ -141,17 +141,12 @@ void StartCanTxTask(void const *argument);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
+extern vcu_t DB_VCU;
+extern hmi2_t DB_HMI2;
 extern nrf24l01 nrf;
 extern response_t response;
 extern report_t report;
 extern CAN_Rx RxCan;
-extern uint8_t DB_HMI2_Shutdown;
-extern switcher_t DB_HMI_Switcher;
-extern uint8_t DB_VCU_Signal;
-extern uint8_t DB_VCU_Speed;
-extern uint8_t DB_VCU_Switch_Count;
-extern switch_t DB_VCU_Switch[];
-extern switch_timer_t DB_VCU_Switch_Timer[];
 extern RTC_DateTypeDef LastCalibrationDate;
 
 const TickType_t tick5ms = pdMS_TO_TICKS(5);
@@ -1146,7 +1141,7 @@ void StartIotTask(void const *argument)
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
 		// get event data
-		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, 0);
+		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, tick100ms);
 
 		// Set default
 		success = 1;
@@ -1334,7 +1329,7 @@ void StartCommandTask(void const *argument)
 				case CMD_CODE_HMI2:
 					switch (command->data.sub_code) {
 						case CMD_HMI2_SHUTDOWN:
-							DB_HMI2_Shutdown = (uint8_t) command->data.value;
+							DB_HMI2.shutdown = (uint8_t) command->data.value;
 							break;
 
 						default:
@@ -1726,7 +1721,7 @@ void StartCanRxTask(void const *argument)
 				case CAN_ADDR_MCU_DUMMY:
 					CANBUS_MCU_Dummy_Read();
 					// set volume by speed
-					osMessagePut(AudioVolQueueHandle, DB_VCU_Speed, osWaitForever);
+					osMessagePut(AudioVolQueueHandle, DB_VCU.speed, osWaitForever);
 					break;
 				default:
 					break;
@@ -1749,24 +1744,24 @@ void StartSwitchTask(void const *argument)
 	/* USER CODE BEGIN StartSwitchTask */
 	uint8_t Last_Mode_Drive;
 	uint32_t ulNotifiedValue;
-	uint8_t i;
+	uint8_t i, swCount = sizeof(DB_VCU.sw.list) / sizeof(DB_VCU.sw.list[0]);
 
 // Read all EXTI state
-	for (i = 0; i < DB_VCU_Switch_Count; i++) {
-		DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
+	for (i = 0; i < swCount; i++) {
+		DB_VCU.sw.list[i].state = HAL_GPIO_ReadPin(DB_VCU.sw.list[i].port, DB_VCU.sw.list[i].pin);
 	}
 
 // Handle Reverse mode on init
-	if (DB_VCU_Switch[IDX_KEY_REVERSE].state) {
+	if (DB_VCU.sw.list[IDX_KEY_REVERSE].state) {
 		// save previous Drive Mode state
-		if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
-			Last_Mode_Drive = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
+		if (DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
+			Last_Mode_Drive = DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE];
 		}
 		// force state
-		DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
+		DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
 		// hazard on
-		DB_VCU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
-		DB_VCU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
+		DB_VCU.sw.list[IDX_KEY_SEIN_LEFT].state = 1;
+		DB_VCU.sw.list[IDX_KEY_SEIN_RIGHT].state = 1;
 	}
 
 	/* Infinite loop */
@@ -1777,88 +1772,89 @@ void StartSwitchTask(void const *argument)
 		osDelay(50);
 
 		// Read all (to handle multiple switch change at the same time)
-		for (i = 0; i < DB_VCU_Switch_Count; i++) {
-			DB_VCU_Switch[i].state = HAL_GPIO_ReadPin(DB_VCU_Switch[i].port, DB_VCU_Switch[i].pin);
+		for (i = 0; i < swCount; i++) {
+			DB_VCU.sw.list[i].state = HAL_GPIO_ReadPin(DB_VCU.sw.list[i].port, DB_VCU.sw.list[i].pin);
 
 			// handle select & set: timer
 			if (i == IDX_KEY_SELECT || i == IDX_KEY_SET) {
 				// reset SET timer
-				DB_VCU_Switch_Timer[i].time = 0;
+				DB_VCU.sw.timer[i].time = 0;
 
 				// next job
-				if (DB_VCU_Switch[i].state) {
-					if (i == IDX_KEY_SELECT || (i == IDX_KEY_SET && DB_HMI_Switcher.listening)) {
+				if (DB_VCU.sw.list[i].state) {
+					if (i == IDX_KEY_SELECT || (i == IDX_KEY_SET && DB_VCU.sw.runner.listening)) {
 						// start timer if not running
-						if (!DB_VCU_Switch_Timer[i].running) {
+						if (!DB_VCU.sw.timer[i].running) {
 							// set flag
-							DB_VCU_Switch_Timer[i].running = 1;
+							DB_VCU.sw.timer[i].running = 1;
 							// start timer for SET
-							DB_VCU_Switch_Timer[i].start = osKernelSysTick();
+							DB_VCU.sw.timer[i].start = osKernelSysTick();
 						}
 					}
 					// reverse it
-					DB_VCU_Switch[i].state = 0;
+					DB_VCU.sw.list[i].state = 0;
 				} else {
 					// stop timer if running
-					if (DB_VCU_Switch_Timer[i].running) {
+					if (DB_VCU.sw.timer[i].running) {
 						// set flag
-						DB_VCU_Switch_Timer[i].running = 0;
+						DB_VCU.sw.timer[i].running = 0;
 						// stop SET
-						DB_VCU_Switch_Timer[i].time = (uint8_t) ((osKernelSysTick()
-								- DB_VCU_Switch_Timer[i].start) / tick1000ms);
+						DB_VCU.sw.timer[i].time = (uint8_t) ((osKernelSysTick()
+								- DB_VCU.sw.timer[i].start) / tick1000ms);
 						// reverse it
-						DB_VCU_Switch[i].state = 1;
+						DB_VCU.sw.list[i].state = 1;
 					}
 				}
 			}
 		}
 
 		// Only handle Select & Set when in non-reverse mode
-		if (DB_VCU_Switch[IDX_KEY_REVERSE].state) {
+		if (DB_VCU.sw.list[IDX_KEY_REVERSE].state) {
 			// save previous Drive Mode state
-			if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
-				Last_Mode_Drive = DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE];
+			if (DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
+				Last_Mode_Drive = DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE];
 			}
 			// force state
-			DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
+			DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
 			// hazard on
-			DB_VCU_Switch[IDX_KEY_SEIN_LEFT].state = 1;
-			DB_VCU_Switch[IDX_KEY_SEIN_RIGHT].state = 1;
+			DB_VCU.sw.list[IDX_KEY_SEIN_LEFT].state = 1;
+			DB_VCU.sw.list[IDX_KEY_SEIN_RIGHT].state = 1;
 		} else {
 			// restore previous Drive Mode
-			if (DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] == SWITCH_MODE_DRIVE_R) {
-				DB_HMI_Switcher.mode_sub[SWITCH_MODE_DRIVE] = Last_Mode_Drive;
+			if (DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] == SWITCH_MODE_DRIVE_R) {
+				DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] = Last_Mode_Drive;
 			}
 
 			// handle Select & Set
-			if (DB_VCU_Switch[IDX_KEY_SELECT].state || DB_VCU_Switch[IDX_KEY_SET].state) {
+			if (DB_VCU.sw.list[IDX_KEY_SELECT].state || DB_VCU.sw.list[IDX_KEY_SET].state) {
 				// handle select key
-				if (DB_VCU_Switch[IDX_KEY_SELECT].state) {
-					if (DB_HMI_Switcher.listening) {
+				if (DB_VCU.sw.list[IDX_KEY_SELECT].state) {
+					if (DB_VCU.sw.runner.listening) {
 						// change mode position
-						if (DB_HMI_Switcher.mode == SWITCH_MODE_MAX) {
-							DB_HMI_Switcher.mode = 0;
+						if (DB_VCU.sw.runner.mode.val == SWITCH_MODE_MAX) {
+							DB_VCU.sw.runner.mode.val = 0;
 						} else {
-							DB_HMI_Switcher.mode++;
+							DB_VCU.sw.runner.mode.val++;
 						}
 					}
 					// Listening on option
-					DB_HMI_Switcher.listening = 1;
+					DB_VCU.sw.runner.listening = 1;
 
-				} else if (DB_VCU_Switch[IDX_KEY_SET].state) {
+				} else if (DB_VCU.sw.list[IDX_KEY_SET].state) {
 					// handle set key
-					if (DB_HMI_Switcher.listening
-							|| (DB_VCU_Switch_Timer[IDX_KEY_SET].time >= 3 && DB_HMI_Switcher.mode == SWITCH_MODE_TRIP)) {
+					if (DB_VCU.sw.runner.listening
+							|| (DB_VCU.sw.timer[IDX_KEY_SET].time >= 3 && DB_VCU.sw.runner.mode.val == SWITCH_MODE_TRIP)) {
 						// handle reset only if push more than n sec, and in trip mode
-						if (!DB_HMI_Switcher.listening) {
+						if (!DB_VCU.sw.runner.listening) {
 							// reset value
-							DB_HMI_Switcher.mode_sub_trip[DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]] = 0;
+							DB_VCU.sw.runner.mode.sub.trip[DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]] = 0;
 						} else {
 							// if less than n sec
-							if (DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode] == DB_HMI_Switcher.mode_sub_max[DB_HMI_Switcher.mode]) {
-								DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode] = 0;
+							if (DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]
+									== DB_VCU.sw.runner.mode.sub.max[DB_VCU.sw.runner.mode.val]) {
+								DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val] = 0;
 							} else {
-								DB_HMI_Switcher.mode_sub[DB_HMI_Switcher.mode]++;
+								DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]++;
 							}
 						}
 					}
@@ -1886,7 +1882,7 @@ void StartGeneralTask(void const *argument)
 	xLastWakeTime = xTaskGetTickCount();
 	for (;;) {
 		// Retrieve network signal quality (every-time this task wake-up)
-		Simcom_Read_Signal(&DB_VCU_Signal);
+		Simcom_Read_Signal(&DB_VCU.signal);
 
 		// read timestamp
 		RTC_Read_RAW(&timestampRTC);

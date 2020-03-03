@@ -111,6 +111,7 @@
 #define ToggleBitOf(var, x) 				(var ^= 1 << x)
 #define CHARISNUM(x)                ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x)                ((x) - '0')
+
 // Function prototype
 void BSP_LedWrite(uint8_t state);
 void BSP_LedToggle(void);
