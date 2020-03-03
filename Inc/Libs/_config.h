@@ -16,6 +16,8 @@
 #include "_swv.h"
 
 // GLOBAL CONFIG
+#define SWV_DEBUG 									1
+
 #define VCU_FIRMWARE_VERSION				"0.7"
 #define VCU_VENDOR									"GEN Indonesia"
 #define VCU_BUILD_YEAR							20U

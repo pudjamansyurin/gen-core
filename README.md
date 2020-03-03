@@ -40,6 +40,7 @@
 - [x] Check ACK on every REPORT / RESPONSE frame. If not receive ACK response, resend (2 times), then restart the SIMCOM if still failed. 
 - [x] Check COMMAND before clearing the Buffer 
 - [ ] Lock all global variable to minimize RTOS problem. 
+- [ ] Scale down "BMS Voltage", and set warning on 20% value.
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
