@@ -83,7 +83,7 @@
 - [x] Thinner the PCB height 
 - [x] Add "label name" for all solder jumper 
 - [x] Add marker for Pick & Place tool 
-- [x] Add many via (through hole) for best RF performance 
+- [x] Add many via (through hole) for best RF performance  
 - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
 
 ## RF PCB Guidelines : 
