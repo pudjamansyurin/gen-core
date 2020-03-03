@@ -1162,7 +1162,6 @@ void StartIotTask(void const *argument)
 			success = Simcom_Upload(pResponse, reportSize);
 			// validate ACK
 			if (Simcom_Read_ACK(&theACK, &(response.header))) {
-				// FIXME: handle invalid response ACK
 				pResponse = NULL;
 			}
 		}

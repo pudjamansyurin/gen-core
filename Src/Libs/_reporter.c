@@ -47,6 +47,7 @@ void Reporter_Reset(frame_t frame) {
 
 		// body optional
 		if (frame == FRAME_FULL) {
+			// FIXME: default value should be zero
 			report.data.opt.gps.longitude = 112.6935779 * 10000000;
 			report.data.opt.gps.latitude = -7.4337599 * 10000000;
 			report.data.opt.gps.hdop = 255;
@@ -72,25 +73,22 @@ void Reporter_Set_Odometer(uint32_t odom) {
 }
 
 void Reporter_Set_GPS(gps_t *hgps) {
-	// parse gps data
-	// FIXME handle float to S32 conversion
-	// FIXME check GPS data on the road and the calibration
-	report.data.opt.gps.latitude = hgps->latitude;
-	report.data.opt.gps.longitude = hgps->longitude;
-	report.data.opt.gps.hdop = hgps->dop_h;
-	// FIXME i should be updated based on GPS data
-	report.data.opt.gps.heading = hgps->variation;
+	// parse GPS data
+	report.data.opt.gps.latitude = (int32_t) (hgps->latitude * 10000000);
+	report.data.opt.gps.longitude = (int32_t) (hgps->longitude * 10000000);
+	report.data.opt.gps.hdop = (uint8_t) (hgps->dop_h * 10);
+	report.data.opt.gps.heading = (uint8_t) (hgps->variation / 2);
 }
 
 void Reporter_Set_Speed(gps_t *hgps) {
 	float d_distance;
-	// parse gps data
+	// parse GPS data
 	// FIXME use real speed calculation
 	// calculate speed from GPS data
 	report.data.req.speed = gps_to_speed(hgps->speed, gps_speed_kph);
-	// change odometer from GPS speed variation
+	// change ODOMETER from GPS speed variation
 	d_distance = (gps_to_speed(hgps->speed, gps_speed_mps) * REPORT_INTERVAL_SIMPLE);
-	// save odometer to flash (non-volatile)
+	// save ODOMETER to flash (non-volatile)
 	Reporter_Set_Odometer(Flash_Get_Odometer() + d_distance);
 
 }

@@ -15,31 +15,12 @@
 #include "_flash.h"
 #include "_swv.h"
 
-// macro to manipulate bit
-#define SetBit(x) 									(1 << x)
-#define SetBitOf(var, x) 						(var |= 1 << x)
-#define ClearBitOf(var, x) 					(var &= ~(1 << x))
-#define ToggleBitOf(var, x) 				(var ^= 1 << x)
-#define CHARISNUM(x)                ((x) >= '0' && (x) <= '9')
-#define CHARTONUM(x)                ((x) - '0')
-// Function prototype
-void BSP_LedWrite(uint8_t state);
-void BSP_LedToggle(void);
-void BSP_LedDisco(uint16_t ms);
-int8_t BSP_BitPosition(uint64_t event_id);
-uint32_t BSP_ChangeEndian32(uint32_t val);
-uint64_t BSP_ChangeEndian64(uint64_t val);
-int32_t BSP_ParseNumber(const char *ptr, uint8_t *cnt);
-float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
-// FIXME: remove me if unused
-//void ftoa(float f, char *str, char size);
-
 // GLOBAL CONFIG
 #define VCU_FIRMWARE_VERSION				"0.7"
 #define VCU_VENDOR									"GEN Indonesia"
 #define VCU_BUILD_YEAR							20U
 
-#define NET_SERVER_IP								"36.74.9.56"
+#define NET_SERVER_IP								"36.76.120.209"
 #define NET_SERVER_PORT							5044
 #define NET_APN											"3gprs"					// "telkomsel"
 #define	NET_APN_USERNAME						"3gprs"					// "wap"
@@ -114,11 +95,28 @@ float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 #define CMD_FINGER_DEL							1
 #define CMD_FINGER_RST							2
 
-#define CMD_HMI2_SHUTDOWN				0
+#define CMD_HMI2_SHUTDOWN						0
 
 // Response Status List
 #define RESPONSE_STATUS_ERROR				0
 #define RESPONSE_STATUS_OK					1
 #define RESPONSE_STATUS_INVALID			2
+
+// macro to manipulate bit
+#define SetBit(x) 									(1 << x)
+#define SetBitOf(var, x) 						(var |= 1 << x)
+#define ClearBitOf(var, x) 					(var &= ~(1 << x))
+#define ToggleBitOf(var, x) 				(var ^= 1 << x)
+#define CHARISNUM(x)                ((x) >= '0' && (x) <= '9')
+#define CHARTONUM(x)                ((x) - '0')
+// Function prototype
+void BSP_LedWrite(uint8_t state);
+void BSP_LedToggle(void);
+void BSP_LedDisco(uint16_t ms);
+int8_t BSP_BitPosition(uint64_t event_id);
+uint32_t BSP_ChangeEndian32(uint32_t val);
+uint64_t BSP_ChangeEndian64(uint64_t val);
+int32_t BSP_ParseNumber(const char *ptr, uint8_t *cnt);
+float BSP_ParseFloatNumber(const char *ptr, uint8_t *cnt);
 
 #endif /* CONFIG_H_ */
