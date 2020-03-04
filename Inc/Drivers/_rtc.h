@@ -22,5 +22,6 @@ uint64_t RTC_Read(void);
 void RTC_Write(uint64_t dateTime);
 void RTC_Read_RAW(timestamp_t *timestamp);
 void RTC_Write_RAW(timestamp_t *timestamp);
+uint8_t RTC_Daylight(void);
 
 #endif /* RTC_H_ */

@@ -75,8 +75,7 @@ uint8_t CAN_VCU_Switch(void) {
 	TxCan.TxData[0] |= iDB_HMI1_Status.finger << 5;
 	TxCan.TxData[0] |= iDB_HMI1_Status.keyless << 6;
 	// check daylight (for auto brightness of HMI)
-	RTC_Read_RAW(&DB_VCU.timestamp);
-	TxCan.TxData[0] |= (DB_VCU.timestamp.time.Hours >= 5 && DB_VCU.timestamp.time.Hours <= 16) << 7;
+	TxCan.TxData[0] |= RTC_Daylight() << 7;
 
 	// sein value
 	TxCan.TxData[1] = iSein_Left << 0;
@@ -123,8 +122,7 @@ uint8_t CAN_VCU_RTC(void) {
 uint8_t CAN_VCU_Select_Set(void) {
 	static TickType_t tick, tickPeriod;
 	static uint8_t iMode_Hide = 0;
-	static int8_t iMode_Name = -1;
-	static int8_t iMode_Name = -1;
+	static int8_t iMode_Name = -1, iMode_Value = -1;
 
 	// Mode Show/Hide Manipulator
 	if (DB_VCU.sw.runner.listening) {
@@ -133,8 +131,8 @@ uint8_t CAN_VCU_Select_Set(void) {
 			iMode_Name = DB_VCU.sw.runner.mode.val;
 			// reset period tick
 			tickPeriod = osKernelSysTick();
-		} else if (iMode_Name != DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]) {
-			iMode_Name = DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val];
+		} else if (iMode_Value != DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]) {
+			iMode_Value = DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val];
 			// reset period tick
 			tickPeriod = osKernelSysTick();
 		}
@@ -145,7 +143,7 @@ uint8_t CAN_VCU_Select_Set(void) {
 			DB_VCU.sw.runner.listening = 0;
 			iMode_Hide = 0;
 			iMode_Name = -1;
-			iMode_Name = -1;
+			iMode_Value = -1;
 		} else {
 			// blink
 			if ((osKernelSysTick() - tick) >= tick250ms) {

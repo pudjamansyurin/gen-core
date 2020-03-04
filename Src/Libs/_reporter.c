@@ -20,8 +20,8 @@ void Reporter_Reset(frame_t frame) {
 	report.header.crc = 0;
 	report.header.size = 0;
 	report.header.frame_id = frame;
-	Reporter_Set_UnitID(REPORT_UNITID);
 	report.header.seq_id = 0;
+	Reporter_Set_UnitID(REPORT_UNITID);
 
 	if (frame == FRAME_RESPONSE) {
 		// header response
@@ -72,24 +72,20 @@ void Reporter_Set_Odometer(uint32_t odom) {
 	Flash_Save_Odometer(odom);
 }
 
-void Reporter_Set_GPS(nmea_t *hgps) {
+void Reporter_Set_GPS(gps_t *hgps) {
 	// parse GPS data
 	report.data.opt.gps.latitude = (int32_t) (hgps->latitude * 10000000);
 	report.data.opt.gps.longitude = (int32_t) (hgps->longitude * 10000000);
 	report.data.opt.gps.hdop = (uint8_t) (hgps->dop_h * 10);
-	report.data.opt.gps.heading = (uint8_t) (hgps->variation / 2);
+	report.data.opt.gps.heading = (uint8_t) (hgps->heading / 2);
 }
 
-void Reporter_Set_Speed(nmea_t *hgps) {
-	float d_distance;
-	// parse GPS data
+void Reporter_Set_Speed(gps_t *hgps) {
 	// FIXME use real speed calculation
 	// calculate speed from GPS data
-	report.data.req.speed = nmea_to_speed(hgps->speed, nmea_speed_kph);
-	// change ODOMETER from GPS speed variation
-	d_distance = (nmea_to_speed(hgps->speed, nmea_speed_mps) * REPORT_INTERVAL_SIMPLE);
+	report.data.req.speed = hgps->speed_kph;
 	// save ODOMETER to flash (non-volatile)
-	Reporter_Set_Odometer(Flash_Get_Odometer() + d_distance);
+	Reporter_Set_Odometer(Flash_Get_Odometer() + (hgps->speed_mps * REPORT_INTERVAL_SIMPLE));
 
 }
 

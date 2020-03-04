@@ -11,7 +11,7 @@
 #include <stdio.h>											// for: sprintf()
 #include "_config.h"
 #include "_eeprom.h"
-#include "_nmea.h"
+#include "_gps.h"
 #include "_rtc.h"
 
 /*  typedef -----------------------------------------------------------*/
@@ -96,8 +96,8 @@ typedef struct __attribute__((packed)) {
 void Reporter_Reset(frame_t frame);
 void Reporter_Set_UnitID(uint32_t unitId);
 void Reporter_Set_Odometer(uint32_t odom);
-void Reporter_Set_GPS(nmea_t *hgps);
-void Reporter_Set_Speed(nmea_t *hgps);
+void Reporter_Set_GPS(gps_t *hgps);
+void Reporter_Set_Speed(gps_t *hgps);
 void Reporter_Set_Events(uint64_t value);
 void Reporter_Set_Event(uint64_t event_id, uint8_t bool);
 void Reporter_Capture(frame_t frame);
