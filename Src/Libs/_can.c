@@ -122,19 +122,19 @@ uint8_t CAN_VCU_RTC(void) {
 
 uint8_t CAN_VCU_Select_Set(void) {
 	static TickType_t tick, tickPeriod;
-	static uint8_t Mode_Hide_Internal = 0;
-	static int8_t Mode_Name_Internal = -1;
-	static int8_t Mode_Value_Internal = -1;
+	static uint8_t iMode_Hide = 0;
+	static int8_t iMode_Name = -1;
+	static int8_t iMode_Name = -1;
 
 	// Mode Show/Hide Manipulator
 	if (DB_VCU.sw.runner.listening) {
 		// if mode same
-		if (Mode_Name_Internal != DB_VCU.sw.runner.mode.val) {
-			Mode_Name_Internal = DB_VCU.sw.runner.mode.val;
+		if (iMode_Name != DB_VCU.sw.runner.mode.val) {
+			iMode_Name = DB_VCU.sw.runner.mode.val;
 			// reset period tick
 			tickPeriod = osKernelSysTick();
-		} else if (Mode_Value_Internal != DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]) {
-			Mode_Value_Internal = DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val];
+		} else if (iMode_Name != DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]) {
+			iMode_Name = DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val];
 			// reset period tick
 			tickPeriod = osKernelSysTick();
 		}
@@ -143,18 +143,18 @@ uint8_t CAN_VCU_Select_Set(void) {
 				(DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R)) {
 			// stop listening
 			DB_VCU.sw.runner.listening = 0;
-			Mode_Hide_Internal = 0;
-			Mode_Name_Internal = -1;
-			Mode_Value_Internal = -1;
+			iMode_Hide = 0;
+			iMode_Name = -1;
+			iMode_Name = -1;
 		} else {
 			// blink
 			if ((osKernelSysTick() - tick) >= tick250ms) {
 				tick = osKernelSysTick();
-				Mode_Hide_Internal = !Mode_Hide_Internal;
+				iMode_Hide = !iMode_Hide;
 			}
 		}
 	} else {
-		Mode_Hide_Internal = 0;
+		iMode_Hide = 0;
 	}
 
 	// set message
@@ -164,7 +164,7 @@ uint8_t CAN_VCU_Select_Set(void) {
 	TxCan.TxData[0] |= DB_VCU.sw.runner.mode.val << 4;
 
 	// Send Show/Hide flag
-	TxCan.TxData[0] |= Mode_Hide_Internal << 6;
+	TxCan.TxData[0] |= iMode_Hide << 6;
 
 	TxCan.TxData[1] = DB_VCU.sw.runner.mode.sub.report[SW_M_REPORT_RANGE];
 	TxCan.TxData[2] = DB_VCU.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE];
