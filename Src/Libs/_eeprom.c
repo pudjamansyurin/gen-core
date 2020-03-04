@@ -5,7 +5,7 @@
  *      Author: Puja
  */
 
-#include "_flash.h"
+#include "_eeprom.h"
 
 uint16_t VirtAddVarTab[NB_OF_VAR] = { VADDR_ODOMETER_L, VADDR_ODOMETER_H };
 

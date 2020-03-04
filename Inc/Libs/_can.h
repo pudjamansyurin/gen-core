@@ -5,10 +5,10 @@
  *      Author: Puja
  */
 
-#ifndef CANBUS_H_
-#define CANBUS_H_
+#ifndef CAN_H_
+#define CAN_H_
 
-#include "_can.h"
+#include "_canbus.h"
 #include "_config.h"
 
 // CAN Nodes
@@ -39,11 +39,11 @@
 #include "_rtc.h"
 #include "_database.h"
 
-uint8_t CANBUS_VCU_Switch(void);
-uint8_t CANBUS_VCU_RTC(void);
-uint8_t CANBUS_VCU_Select_Set(void);
-uint8_t CANBUS_VCU_Trip_Mode(void);
+uint8_t CAN_VCU_Switch(void);
+uint8_t CAN_VCU_RTC(void);
+uint8_t CAN_VCU_Select_Set(void);
+uint8_t CAN_VCU_Trip_Mode(void);
 
-void CANBUS_MCU_Dummy_Read(void);
+void CAN_MCU_Dummy_Read(void);
 #endif
-#endif /* CANBUS_H_ */
+#endif /* CAN_H_ */

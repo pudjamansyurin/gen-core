@@ -41,8 +41,8 @@
 #define AUDIO_BUFFER_SIZE             4096
 
 /* External variables ---------------------------------------------------------*/
-extern AUDIO_DrvTypeDef cs43l22_drv;
 extern osMutexId AudioBeepMutexHandle;
+extern AUDIO_DrvTypeDef cs43l22_drv;
 extern I2S_HandleTypeDef hi2s3;
 extern uint32_t AUDIO_SAMPLE_FREQ;
 extern uint32_t AUDIO_SAMPLE_SIZE;

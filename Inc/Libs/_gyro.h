@@ -5,8 +5,8 @@
  *      Author: Puja
  */
 
-#ifndef MEMS_H_
-#define MEMS_H_
+#ifndef GYRO_H_
+#define GYRO_H_
 
 #include <stdio.h>				// for: sprintf()
 #include <stdlib.h>				// for: abs()
@@ -34,8 +34,8 @@ typedef struct {
 } mems_decision_t;
 
 /* Public functions ---------------------------------------------------------*/
-void MEMS_Init(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu);
-mems_t MEMS_Average(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu, mems_t *calibrator, uint16_t sample);
-mems_decision_t MEMS_Decision(I2C_HandleTypeDef *i2c, SD_MPU6050 *mpu, mems_t *calibrator, uint16_t sample);
+void GYRO_Init(void);
+mems_t GYRO_Average(mems_t *calibrator, uint16_t sample);
+mems_decision_t GYRO_Decision(mems_t *calibrator, uint16_t sample);
 
-#endif /* MEMS_H_ */
+#endif /* GYRO_H_ */

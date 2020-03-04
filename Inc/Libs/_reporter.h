@@ -10,8 +10,7 @@
 
 #include <stdio.h>											// for: sprintf()
 #include "_config.h"
-#include "_flash.h"
-#include "_ee_emulation.h"
+#include "_eeprom.h"
 #include "_nmea.h"
 #include "_rtc.h"
 
@@ -35,33 +34,27 @@ typedef struct __attribute__((packed)) {
 
 // report frame
 typedef struct __attribute__((packed)) {
-	int32_t longitude;
-	int32_t latitude;
-	uint8_t hdop;
-	uint8_t heading;
-} report_data_gps_t;
-
-typedef struct __attribute__((packed)) {
-	uint64_t rtc_send_datetime;
-	uint64_t rtc_log_datetime;
-	uint8_t driver_id;
-	uint64_t events_group;
-	uint8_t speed;
-} report_data_req_t;
-
-typedef struct __attribute__((packed)) {
-	report_data_gps_t gps;
-	uint32_t odometer;
-	uint8_t bat_voltage;
-	uint8_t report_range;
-	uint8_t report_battery;
-	uint32_t trip_a;
-	uint32_t trip_b;
-} report_data_opt_t;
-
-typedef struct __attribute__((packed)) {
-	report_data_req_t req;
-	report_data_opt_t opt;
+	struct __attribute__((packed)) {
+		uint64_t rtc_send_datetime;
+		uint64_t rtc_log_datetime;
+		uint8_t driver_id;
+		uint64_t events_group;
+		uint8_t speed;
+	} req;
+	struct __attribute__((packed)) {
+		struct __attribute__((packed)) {
+			int32_t longitude;
+			int32_t latitude;
+			uint8_t hdop;
+			uint8_t heading;
+		} gps;
+		uint32_t odometer;
+		uint8_t bat_voltage;
+		uint8_t report_range;
+		uint8_t report_battery;
+		uint32_t trip_a;
+		uint32_t trip_b;
+	} opt;
 } report_data_t;
 
 typedef struct __attribute__((packed)) {
@@ -71,31 +64,25 @@ typedef struct __attribute__((packed)) {
 
 // response frame
 typedef struct __attribute__((packed)) {
-	uint8_t code;
-	char message[50];
-} response_data_t;
-
-typedef struct __attribute__((packed)) {
 	report_header_t header;
-	response_data_t data;
+	struct __attribute__((packed)) {
+		uint8_t code;
+		char message[50];
+	} data;
 } response_t;
 
 // command frame (from server)
 typedef struct __attribute__((packed)) {
-	uint16_t prefix;
-	uint32_t crc;
-	uint8_t size;
-} command_header_t;
-
-typedef struct __attribute__((packed)) {
-	uint8_t code;
-	uint8_t sub_code;
-	uint64_t value;
-} command_data_t;
-
-typedef struct __attribute__((packed)) {
-	command_header_t header;
-	command_data_t data;
+	struct __attribute__((packed)) {
+		uint16_t prefix;
+		uint32_t crc;
+		uint8_t size;
+	} header;
+	struct __attribute__((packed)) {
+		uint8_t code;
+		uint8_t sub_code;
+		uint64_t value;
+	} data;
 } command_t;
 
 // ACK frame (from server)
@@ -109,10 +96,11 @@ typedef struct __attribute__((packed)) {
 void Reporter_Reset(frame_t frame);
 void Reporter_Set_UnitID(uint32_t unitId);
 void Reporter_Set_Odometer(uint32_t odom);
-void Reporter_Set_GPS(gps_t *hgps);
-void Reporter_Set_Speed(gps_t *hgps);
+void Reporter_Set_GPS(nmea_t *hgps);
+void Reporter_Set_Speed(nmea_t *hgps);
+void Reporter_Set_Events(uint64_t value);
 void Reporter_Set_Event(uint64_t event_id, uint8_t bool);
-uint8_t Reporter_Read_Event(uint64_t event_id);
 void Reporter_Capture(frame_t frame);
+uint8_t Reporter_Read_Event(uint64_t event_id);
 
 #endif /* REPORTER_H_ */

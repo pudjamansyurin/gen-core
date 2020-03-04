@@ -25,19 +25,19 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "limits.h"
-#include "_config.h"
-#include "_reporter.h"
-#include "_nmea.h"
-#include "_mems.h"
-#include "_simcom.h"
-#include "_finger.h"
-#include "_ee_emulation.h"
-#include "_nrf24l01.h"
-#include "_canbus.h"
 #include "_database.h"
+#include "_config.h"
 #include "_rtc.h"
-#include "_audio.h"
 #include "_crc.h"
+
+#include "_simcom.h"
+#include "_gyro.h"
+#include "_gps.h"
+#include "_finger.h"
+#include "_audio.h"
+#include "_keyless.h"
+#include "_reporter.h"
+#include "_can.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -140,13 +140,11 @@ void StartCanTxTask(void const *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
 extern vcu_t DB_VCU;
 extern hmi2_t DB_HMI2;
-extern nrf24l01 nrf;
-extern response_t response;
+extern CANBUS_Rx RxCan;
 extern report_t report;
-extern CAN_Rx RxCan;
+extern response_t response;
 extern RTC_DateTypeDef LastCalibrationDate;
 
 const TickType_t tick5ms = pdMS_TO_TICKS(5);
@@ -155,8 +153,8 @@ const TickType_t tick250ms = pdMS_TO_TICKS(250);
 const TickType_t tick500ms = pdMS_TO_TICKS(500);
 const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
 const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
-const TickType_t xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
 const TickType_t xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000);
+const TickType_t xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
 
 gps_t *hGps;
 command_t *hCommand;
@@ -206,9 +204,8 @@ int main(void)
 	MX_IWDG_Init();
 	/* USER CODE BEGIN 2 */
 	EE_Init();
-	CAN_Init();
+	CANBUS_Init();
 	/* USER CODE END 2 */
-
 	/* Create the mutex(es) */
 	/* definition and creation of AudioBeepMutex */
 	osMutexDef(AudioBeepMutex);
@@ -933,12 +930,18 @@ static void MX_GPIO_Init(void)
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(INT_KEYLESS_CSN_GPIO_Port, INT_KEYLESS_CSN_Pin, GPIO_PIN_SET);
 
-	/*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HMI2_PHONE_Pin EXT_HBAR_REVERSE_Pin
-	 EXT_ABS_STATUS_Pin EXT_HBAR_SEIN_L_Pin EXT_HBAR_SEIN_R_Pin */
-	GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin | EXT_HBAR_SET_Pin | EXT_HMI2_PHONE_Pin | EXT_HBAR_REVERSE_Pin
-			| EXT_ABS_STATUS_Pin | EXT_HBAR_SEIN_L_Pin | EXT_HBAR_SEIN_R_Pin;
+	/*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HBAR_REVERSE_Pin EXT_ABS_STATUS_Pin
+	 EXT_HBAR_SEIN_L_Pin EXT_HBAR_SEIN_R_Pin */
+	GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin | EXT_HBAR_SET_Pin | EXT_HBAR_REVERSE_Pin | EXT_ABS_STATUS_Pin
+			| EXT_HBAR_SEIN_L_Pin | EXT_HBAR_SEIN_R_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : PE4 */
+	GPIO_InitStruct.Pin = GPIO_PIN_4;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin
@@ -1052,9 +1055,6 @@ static void MX_GPIO_Init(void)
 	HAL_NVIC_SetPriority(EXTI3_IRQn, 5, 0);
 	HAL_NVIC_EnableIRQ(EXTI3_IRQn);
 
-	HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
-	HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
 	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
 	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
@@ -1064,19 +1064,16 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void vApplicationIdleHook(void) {
-
-}
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	uint8_t i;
 
 	if (osKernelRunning()) {
 		// handle NRF24 IRQ
 		if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
-			nrf_irq_handler(&nrf);
+			KEYLESS_IrqHandler();
 		}
-		// handle Fingerprint IRQ
+		// handle Finger-print IRQ
 		if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
 			xTaskNotifyFromISR(
 					FingerTaskHandle,
@@ -1084,35 +1081,23 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 					eSetBits,
 					&xHigherPriorityTaskWoken);
 		}
-		// handle Handlebars
-		if (GPIO_Pin == EXT_HBAR_SELECT_Pin
-				|| GPIO_Pin == EXT_HBAR_SET_Pin
-				|| GPIO_Pin == EXT_HMI2_PHONE_Pin
-				|| GPIO_Pin == EXT_HBAR_REVERSE_Pin
-				|| GPIO_Pin == EXT_ABS_STATUS_Pin
-				|| GPIO_Pin == EXT_HBAR_SEIN_L_Pin
-				|| GPIO_Pin == EXT_HBAR_SEIN_R_Pin) {
-			xTaskNotifyFromISR(
-					SwitchTaskHandle,
-					(uint32_t ) GPIO_Pin,
-					eSetBits,
-					&xHigherPriorityTaskWoken);
+		// handle Switches EXTI
+		for (i = 0; i < DB_VCU.sw.count; i++) {
+			if (GPIO_Pin == DB_VCU.sw.list[i].pin) {
+				xTaskNotifyFromISR(
+						SwitchTaskHandle,
+						(uint32_t ) GPIO_Pin,
+						eSetBits,
+						&xHigherPriorityTaskWoken);
+
+				break;
+			}
 		}
 	}
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-}
-
-void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
-	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-	xTaskNotifyFromISR(
-			KeylessTaskHandle,
-			EVENT_KEYLESS_RX_IT,
-			eSetBits,
-			&xHigherPriorityTaskWoken);
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartIotTask */
@@ -1125,46 +1110,46 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 void StartIotTask(void const *argument)
 {
 	/* USER CODE BEGIN 5 */
-	uint32_t notifValue;
-	uint8_t success, reportSize, seq, n = 3;
-	TickType_t xLastWakeTime;
-	report_t *theReport;
-	ack_t theACK;
+	TickType_t last_wake;
 	osEvent evt;
-	char *pReport = NULL, *pResponse = NULL;
+	report_t *the_report;
+	ack_t the_ack;
+	uint8_t success, report_size, seq, retry = 3;
+	uint32_t notif_value;
+	char *p_report = NULL, *p_response = NULL;
 
 	// Start simcom module
 	SIMCOM_DMA_Init();
 	Simcom_Init();
 
 	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
+	last_wake = xTaskGetTickCount();
 	for (;;) {
 		// get event data
-		xTaskNotifyWait(0x00, ULONG_MAX, &notifValue, tick100ms);
+		xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, tick100ms);
 
 		// Set default
 		success = 1;
 
 		osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 		// check every event & send
-		if (pResponse || notifValue & EVENT_IOT_RESPONSE) {
+		if (p_response || notif_value & EVENT_IOT_RESPONSE) {
 			// calculate the size based on message size
-			reportSize = sizeof(response.header) + sizeof(response.data.code) + strlen(response.data.message);
+			report_size = sizeof(response.header) + sizeof(response.data.code) + strlen(response.data.message);
 			// response frame
-			pResponse = (char*) &response;
+			p_response = (char*) &response;
 			// Send to server
-			success = Simcom_Upload(pResponse, reportSize);
+			success = Simcom_Upload(p_response, report_size);
 			// validate ACK
-			if (Simcom_Read_ACK(&theACK, &(response.header))) {
-				pResponse = NULL;
+			if (Simcom_Read_ACK(&the_ack, &(response.header))) {
+				p_response = NULL;
 			}
 		}
 
 		// report frame
-		if (pReport || notifValue & EVENT_IOT_REPORT) {
+		if (p_report || notif_value & EVENT_IOT_REPORT) {
 			// check report log
-			if (pReport == NULL) {
+			if (p_report == NULL) {
 				evt = osMailGet(ReportMailHandle, 0);
 			}
 
@@ -1173,45 +1158,45 @@ void StartIotTask(void const *argument)
 
 				do {
 					// copy the pointer
-					theReport = evt.value.p;
+					the_report = evt.value.p;
 					// calculate the size based on frame_id
-					reportSize = sizeof(report.header) + sizeof(report.data.req);
-					if (theReport->header.frame_id == FRAME_FULL) {
-						reportSize += sizeof(report.data.opt);
+					report_size = sizeof(report.header) + sizeof(report.data.req);
+					if (the_report->header.frame_id == FRAME_FULL) {
+						report_size += sizeof(report.data.opt);
 					}
 					// get current sending datetime
-					theReport->data.req.rtc_send_datetime = RTC_Read();
+					the_report->data.req.rtc_send_datetime = RTC_Read();
 					// recalculate the CRC
-					theReport->header.crc = CRC_Calculate8(
-							(uint8_t*) &(theReport->header.size),
-							theReport->header.size + sizeof(theReport->header.size), 1);
+					the_report->header.crc = CRC_Calculate8(
+							(uint8_t*) &(the_report->header.size),
+							the_report->header.size + sizeof(the_report->header.size), 1);
 
 					// report frame
-					pReport = (char*) theReport;
+					p_report = (char*) the_report;
 
 					// Send to server
-					success = Simcom_Upload(pReport, reportSize);
+					success = Simcom_Upload(p_report, report_size);
 
 					// handle SIMCOM response
 					if (success) {
 						// validate ACK
-						if (Simcom_Read_ACK(&theACK, &(theReport->header))) {
+						if (Simcom_Read_ACK(&the_ack, &(the_report->header))) {
 							// Free the pointer after successfully sent
-							osMailFree(ReportMailHandle, theReport);
+							osMailFree(ReportMailHandle, the_report);
 
 							// Get next log (if any)
 							evt = osMailGet(ReportMailHandle, 0);
 							if (evt.status == osEventMail) {
-								pReport = (char*) evt.value.p;
+								p_report = (char*) evt.value.p;
 							} else {
-								pReport = NULL;
+								p_report = NULL;
 							}
 
 							// exit
 							break;
 						}
 					}
-				} while (++seq < n);
+				} while (++seq < retry);
 			}
 		}
 		osRecursiveMutexRelease(SimcomRecMutexHandle);
@@ -1228,7 +1213,7 @@ void StartIotTask(void const *argument)
 	}
 
 	// Periodic interval
-	vTaskDelayUntil(&xLastWakeTime, tick1000ms);
+	vTaskDelayUntil(&last_wake, tick1000ms);
 	/* USER CODE END 5 */
 }
 
@@ -1242,23 +1227,22 @@ void StartIotTask(void const *argument)
 void StartGyroTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGyroTask */
-	TickType_t xLastWakeTime;
+	TickType_t last_wake;
 	mems_t mems_calibration;
 	mems_decision_t mems_decision;
-	SD_MPU6050 mpu;
 
 	/* MPU6050 Initialization*/
-	MEMS_Init(&hi2c3, &mpu);
-// Set calibrator
-	mems_calibration = MEMS_Average(&hi2c3, &mpu, NULL, 500);
-// Give success indicator
+	GYRO_Init();
+	// Set calibrator
+	mems_calibration = GYRO_Average(NULL, 500);
+	// Give success indicator
 	WaveBeepPlay(BEEP_FREQ_2000_HZ, 100);
 
 	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
+	last_wake = xTaskGetTickCount();
 	for (;;) {
 		// Read all accelerometer, gyroscope (average)
-		mems_decision = MEMS_Decision(&hi2c3, &mpu, &mems_calibration, 25);
+		mems_decision = GYRO_Decision(&mems_calibration, 25);
 
 		// Check accelerometer, happens when impact detected
 		if (mems_decision.crash) {
@@ -1275,7 +1259,7 @@ void StartGyroTask(void const *argument)
 		}
 
 		// Report interval
-		vTaskDelayUntil(&xLastWakeTime, tick5ms);
+		vTaskDelayUntil(&last_wake, tick5ms);
 	}
 	/* USER CODE END StartGyroTask */
 }
@@ -1294,7 +1278,7 @@ void StartCommandTask(void const *argument)
 	osEvent evt;
 	int p;
 
-// reset response frame to default
+	// reset response frame to default
 	Reporter_Reset(FRAME_RESPONSE);
 
 	/* Infinite loop */
@@ -1413,7 +1397,7 @@ void StartCommandTask(void const *argument)
 					break;
 			}
 
-			// Set header
+			// Get current snapshot
 			Reporter_Capture(FRAME_RESPONSE);
 
 			// Report is ready, do what you want (send to server)
@@ -1438,25 +1422,22 @@ void StartCommandTask(void const *argument)
 void StartGpsTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGpsTask */
-	TickType_t xLastWakeTime;
+	TickType_t last_wake;
 
-// Start GPS module
+	// Start GPS module
 	UBLOX_DMA_Init();
-	Ublox_Init(hGps);
+	GPS_Init();
 
 	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
+	last_wake = xTaskGetTickCount();
 	for (;;) {
 		// get GPS info
-		gps_process(hGps, UBLOX_UART_RX_Buffer, strlen(UBLOX_UART_RX_Buffer));
-
-		// hand-over data to IOT_Task (if fixed)
-		if (hGps->fix > 0) {
+		if (GPS_Process(hGps)) {
 			osMailPut(GpsMailHandle, hGps);
 		}
 
 		// Report interval
-		vTaskDelayUntil(&xLastWakeTime, xDelayFull_ms);
+		vTaskDelayUntil(&last_wake, xDelayFull_ms);
 	}
 	/* USER CODE END StartGpsTask */
 }
@@ -1471,19 +1452,19 @@ void StartGpsTask(void const *argument)
 void StartFingerTask(void const *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
-	uint32_t ulNotifiedValue;
+	uint32_t notif_value;
 
-// Initialization
+	// Initialization
 	FINGER_DMA_Init();
 	Finger_Init();
 
 	/* Infinite loop */
 	for (;;) {
 		// check if user put finger
-		xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+		xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &notif_value, portMAX_DELAY);
 
 		// proceed event
-		if ((ulNotifiedValue & EVENT_FINGER_PLACED)) {
+		if (notif_value & EVENT_FINGER_PLACED) {
 			if (Finger_Auth_Fast() > 0) {
 				// indicator when finger is registered
 				BSP_LedWrite(1);
@@ -1505,35 +1486,32 @@ void StartFingerTask(void const *argument)
 void StartAudioTask(void const *argument)
 {
 	/* USER CODE BEGIN StartAudioTask */
-	TickType_t xLastWakeTime;
-	uint32_t ulNotifiedValue;
-	BaseType_t xResult;
+	TickType_t last_wake;
+	uint32_t notif_value;
 	osEvent evt;
 
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	WaveInit();
-// Play wave loop forever, handover to DMA, so CPU is free
+	// Play wave loop forever, handover to DMA, so CPU is free
 	WavePlay();
 
 	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
+	last_wake = xTaskGetTickCount();
 	for (;;) {
-		// check if event happen
-		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
 		// do this if events occurred
-		if (xResult == pdTRUE) {
-			// Beep command
-			if ((ulNotifiedValue & EVENT_AUDIO_BEEP)) {
+		if (xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0) == pdTRUE) {
+			// Beeping command
+			if (notif_value & EVENT_AUDIO_BEEP) {
 				// Beep
 				WaveBeepPlay(BEEP_FREQ_2000_HZ, 250);
 				osDelay(250);
 				WaveBeepPlay(BEEP_FREQ_2000_HZ, 250);
 			}
 			// Mute command
-			if ((ulNotifiedValue & EVENT_AUDIO_MUTE_ON)) {
+			if (notif_value & EVENT_AUDIO_MUTE_ON) {
 				AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
 			}
-			if ((ulNotifiedValue & EVENT_AUDIO_MUTE_OFF)) {
+			if (notif_value & EVENT_AUDIO_MUTE_OFF) {
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 			}
 		}
@@ -1546,7 +1524,7 @@ void StartAudioTask(void const *argument)
 		}
 
 		// Report interval
-		vTaskDelayUntil(&xLastWakeTime, tick500ms);
+		vTaskDelayUntil(&last_wake, tick500ms);
 	}
 	/* USER CODE END StartAudioTask */
 }
@@ -1561,26 +1539,20 @@ void StartAudioTask(void const *argument)
 void StartKeylessTask(void const *argument)
 {
 	/* USER CODE BEGIN StartKeylessTask */
-	nrf24l01_config config;
 	uint8_t msg;
-	uint8_t payload_length = 8;
-	uint8_t payload_rx[payload_length];
-	uint32_t ulNotifiedValue;
+	uint32_t notif_value;
 
-// set configuration
-	nrf_set_config(&config, payload_rx, payload_length);
-// initialization
-	nrf_init(&nrf, &config);
-	SWV_SendStrLn("NRF24_Init");
+	// initialization
+	KEYLESS_Init();
 
 	/* Infinite loop */
 	for (;;) {
 		// check if has new can message
-		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+		xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
 
 		// proceed event
-		if ((ulNotifiedValue & EVENT_KEYLESS_RX_IT)) {
-			msg = payload_rx[payload_length - 1];
+		if (notif_value & EVENT_KEYLESS_RX_IT) {
+			msg = KEYLESS_Read_Payload();
 
 			SWV_SendStr("NRF received packet, msg = ");
 			SWV_SendHex8(msg);
@@ -1607,37 +1579,34 @@ void StartKeylessTask(void const *argument)
 void StartReporterTask(void const *argument)
 {
 	/* USER CODE BEGIN StartReporterTask */
-	TickType_t xLastWakeTime, xLastFullWakeTime = 0;
-	BaseType_t xResult;
-	uint8_t simcomRestartState;
-	uint32_t ulNotifiedValue;
+	TickType_t last_wake, last_wake_full = 0;
 	osEvent evt;
 	frame_t frame;
-	report_t *logReport;
+	report_t *log_report;
+	uint8_t net_restart_state;
+	uint32_t notif_value;
 
-// reset report frame to default
+	// reset report frame to default
 	Reporter_Reset(FRAME_FULL);
 
 	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
+	last_wake = xTaskGetTickCount();
 	for (;;) {
 		// preserve simcom reboot from events group
-		simcomRestartState = Reporter_Read_Event(REPORT_NETWORK_RESTART);
+		net_restart_state = Reporter_Read_Event(REPORT_NETWORK_RESTART);
 		// reset all events group
-		report.data.req.events_group = 0;
+		Reporter_Set_Events(0);
 		// re-write the simcom reboot events
-		Reporter_Set_Event(REPORT_NETWORK_RESTART, simcomRestartState);
+		Reporter_Set_Event(REPORT_NETWORK_RESTART, net_restart_state);
 
-		// get event data
-		xResult = xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, 0);
 		// do this if events occurred
-		if (xResult == pdTRUE) {
+		if (xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0) == pdTRUE) {
 			// check & set every event
-			if (ulNotifiedValue & EVENT_REPORTER_CRASH) {
+			if (notif_value & EVENT_REPORTER_CRASH) {
 				Reporter_Set_Event(REPORT_BIKE_CRASHED, 1);
 			}
-			if ((ulNotifiedValue & EVENT_REPORTER_FALL) &&
-					!(ulNotifiedValue & EVENT_REPORTER_FALL_FIXED)) {
+			if ((notif_value & EVENT_REPORTER_FALL) &&
+					!(notif_value & EVENT_REPORTER_FALL_FIXED)) {
 				Reporter_Set_Event(REPORT_BIKE_FALLING, 1);
 			}
 		}
@@ -1652,9 +1621,10 @@ void StartReporterTask(void const *argument)
 			Reporter_Set_Speed(evt.value.p);
 		}
 
-		if ((xLastWakeTime - xLastFullWakeTime) >= xDelayFull_ms) {
+		// decide full/simple frame time
+		if ((last_wake - last_wake_full) >= xDelayFull_ms) {
 			// capture full frame wake time
-			xLastFullWakeTime = xLastWakeTime;
+			last_wake_full = last_wake;
 			// full frame
 			frame = FRAME_FULL;
 		} else {
@@ -1662,14 +1632,14 @@ void StartReporterTask(void const *argument)
 			frame = FRAME_SIMPLE;
 		}
 
-		// Set header
+		// Get current snapshot
 		Reporter_Capture(frame);
 
 		// Allocate memory, free on IoTTask after successfully sent
-		logReport = osMailAlloc(ReportMailHandle, osWaitForever);
+		log_report = osMailAlloc(ReportMailHandle, osWaitForever);
 
 		// check log capacity
-		while (logReport == NULL) {
+		while (log_report == NULL) {
 			// get first queue
 			evt = osMailGet(ReportMailHandle, 0);
 
@@ -1679,20 +1649,20 @@ void StartReporterTask(void const *argument)
 			}
 
 			// allocate again
-			logReport = osMailAlloc(ReportMailHandle, osWaitForever);
+			log_report = osMailAlloc(ReportMailHandle, osWaitForever);
 		}
 
 		// Copy snapshot of current report
-		*logReport = report;
+		*log_report = report;
 
 		// Put report to log
-		osMailPut(ReportMailHandle, logReport);
+		osMailPut(ReportMailHandle, log_report);
 
 		// Report is ready, do what you want (send to server)
 		xTaskNotify(IotTaskHandle, EVENT_IOT_REPORT, eSetBits);
 
 		// Report interval in second (based on lowest interval, the simple frame)
-		vTaskDelayUntil(&xLastWakeTime, xDelaySimple_ms);
+		vTaskDelayUntil(&last_wake, xDelaySimple_ms);
 	}
 	/* USER CODE END StartReporterTask */
 }
@@ -1707,19 +1677,19 @@ void StartReporterTask(void const *argument)
 void StartCanRxTask(void const *argument)
 {
 	/* USER CODE BEGIN StartCanRxTask */
-	uint32_t ulNotifiedValue;
+	uint32_t notif_value;
 
 	/* Infinite loop */
 	for (;;) {
 		// check if has new can message
-		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+		xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
 
 		// proceed event
-		if ((ulNotifiedValue & EVENT_CAN_RX_IT)) {
+		if (notif_value & EVENT_CAN_RX_IT) {
 			// handle message
 			switch (RxCan.RxHeader.StdId) {
 				case CAN_ADDR_MCU_DUMMY:
-					CANBUS_MCU_Dummy_Read();
+					CAN_MCU_Dummy_Read();
 					// set volume by speed
 					osMessagePut(AudioVolQueueHandle, DB_VCU.speed, osWaitForever);
 					break;
@@ -1742,47 +1712,46 @@ void StartCanRxTask(void const *argument)
 void StartSwitchTask(void const *argument)
 {
 	/* USER CODE BEGIN StartSwitchTask */
-	uint8_t Last_Mode_Drive;
-	uint32_t ulNotifiedValue;
-	uint8_t i, swCount = sizeof(DB_VCU.sw.list) / sizeof(DB_VCU.sw.list[0]);
+	uint8_t i, Last_Mode_Drive;
+	uint32_t notif_value;
 
-// Read all EXTI state
-	for (i = 0; i < swCount; i++) {
+	// Read all EXTI state
+	for (i = 0; i < DB_VCU.sw.count; i++) {
 		DB_VCU.sw.list[i].state = HAL_GPIO_ReadPin(DB_VCU.sw.list[i].port, DB_VCU.sw.list[i].pin);
 	}
 
-// Handle Reverse mode on init
-	if (DB_VCU.sw.list[IDX_KEY_REVERSE].state) {
+	// Handle Reverse mode on init
+	if (DB_VCU.sw.list[SW_K_REVERSE].state) {
 		// save previous Drive Mode state
-		if (DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
-			Last_Mode_Drive = DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE];
+		if (DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
+			Last_Mode_Drive = DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE];
 		}
 		// force state
-		DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
+		DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
 		// hazard on
-		DB_VCU.sw.list[IDX_KEY_SEIN_LEFT].state = 1;
-		DB_VCU.sw.list[IDX_KEY_SEIN_RIGHT].state = 1;
+		DB_VCU.sw.list[SW_K_SEIN_LEFT].state = 1;
+		DB_VCU.sw.list[SW_K_SEIN_RIGHT].state = 1;
 	}
 
 	/* Infinite loop */
 	for (;;) {
 		xTaskNotifyStateClear(NULL);
-		xTaskNotifyWait(0x00, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+		xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
 		// handle bounce effect
 		osDelay(50);
 
 		// Read all (to handle multiple switch change at the same time)
-		for (i = 0; i < swCount; i++) {
+		for (i = 0; i < DB_VCU.sw.count; i++) {
 			DB_VCU.sw.list[i].state = HAL_GPIO_ReadPin(DB_VCU.sw.list[i].port, DB_VCU.sw.list[i].pin);
 
 			// handle select & set: timer
-			if (i == IDX_KEY_SELECT || i == IDX_KEY_SET) {
+			if (i == SW_K_SELECT || i == SW_K_SET) {
 				// reset SET timer
 				DB_VCU.sw.timer[i].time = 0;
 
 				// next job
 				if (DB_VCU.sw.list[i].state) {
-					if (i == IDX_KEY_SELECT || (i == IDX_KEY_SET && DB_VCU.sw.runner.listening)) {
+					if (i == SW_K_SELECT || (i == SW_K_SET && DB_VCU.sw.runner.listening)) {
 						// start timer if not running
 						if (!DB_VCU.sw.timer[i].running) {
 							// set flag
@@ -1809,29 +1778,29 @@ void StartSwitchTask(void const *argument)
 		}
 
 		// Only handle Select & Set when in non-reverse mode
-		if (DB_VCU.sw.list[IDX_KEY_REVERSE].state) {
+		if (DB_VCU.sw.list[SW_K_REVERSE].state) {
 			// save previous Drive Mode state
-			if (DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] != SWITCH_MODE_DRIVE_R) {
-				Last_Mode_Drive = DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE];
+			if (DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
+				Last_Mode_Drive = DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE];
 			}
 			// force state
-			DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] = SWITCH_MODE_DRIVE_R;
+			DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
 			// hazard on
-			DB_VCU.sw.list[IDX_KEY_SEIN_LEFT].state = 1;
-			DB_VCU.sw.list[IDX_KEY_SEIN_RIGHT].state = 1;
+			DB_VCU.sw.list[SW_K_SEIN_LEFT].state = 1;
+			DB_VCU.sw.list[SW_K_SEIN_RIGHT].state = 1;
 		} else {
 			// restore previous Drive Mode
-			if (DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] == SWITCH_MODE_DRIVE_R) {
-				DB_VCU.sw.runner.mode.sub.val[SWITCH_MODE_DRIVE] = Last_Mode_Drive;
+			if (DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R) {
+				DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] = Last_Mode_Drive;
 			}
 
 			// handle Select & Set
-			if (DB_VCU.sw.list[IDX_KEY_SELECT].state || DB_VCU.sw.list[IDX_KEY_SET].state) {
+			if (DB_VCU.sw.list[SW_K_SELECT].state || DB_VCU.sw.list[SW_K_SET].state) {
 				// handle select key
-				if (DB_VCU.sw.list[IDX_KEY_SELECT].state) {
+				if (DB_VCU.sw.list[SW_K_SELECT].state) {
 					if (DB_VCU.sw.runner.listening) {
 						// change mode position
-						if (DB_VCU.sw.runner.mode.val == SWITCH_MODE_MAX) {
+						if (DB_VCU.sw.runner.mode.val == SW_M_MAX) {
 							DB_VCU.sw.runner.mode.val = 0;
 						} else {
 							DB_VCU.sw.runner.mode.val++;
@@ -1840,10 +1809,10 @@ void StartSwitchTask(void const *argument)
 					// Listening on option
 					DB_VCU.sw.runner.listening = 1;
 
-				} else if (DB_VCU.sw.list[IDX_KEY_SET].state) {
+				} else if (DB_VCU.sw.list[SW_K_SET].state) {
 					// handle set key
 					if (DB_VCU.sw.runner.listening
-							|| (DB_VCU.sw.timer[IDX_KEY_SET].time >= 3 && DB_VCU.sw.runner.mode.val == SWITCH_MODE_TRIP)) {
+							|| (DB_VCU.sw.timer[SW_K_SET].time >= 3 && DB_VCU.sw.runner.mode.val == SW_M_TRIP)) {
 						// handle reset only if push more than n sec, and in trip mode
 						if (!DB_VCU.sw.runner.listening) {
 							// reset value
@@ -1875,11 +1844,11 @@ void StartSwitchTask(void const *argument)
 void StartGeneralTask(void const *argument)
 {
 	/* USER CODE BEGIN StartGeneralTask */
-	TickType_t xLastWakeTime;
+	TickType_t last_wake;
 	timestamp_t timestampRTC, timestampCarrier;
 
 	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
+	last_wake = xTaskGetTickCount();
 	for (;;) {
 		// Retrieve network signal quality (every-time this task wake-up)
 		Simcom_Read_Signal(&DB_VCU.signal);
@@ -1926,7 +1895,7 @@ void StartGeneralTask(void const *argument)
 		}
 
 		// Periodic interval
-		vTaskDelayUntil(&xLastWakeTime, tick5000ms);
+		vTaskDelayUntil(&last_wake, tick5000ms);
 	}
 	/* USER CODE END StartGeneralTask */
 }
@@ -1941,22 +1910,22 @@ void StartGeneralTask(void const *argument)
 void StartCanTxTask(void const *argument)
 {
 	/* USER CODE BEGIN StartCanTxTask */
-	TickType_t xLastWakeTime;
+	TickType_t last_wake;
 
 	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
+	last_wake = xTaskGetTickCount();
 	for (;;) {
 		// Send CAN data
-		CANBUS_VCU_Switch();
-		CANBUS_VCU_RTC();
-		CANBUS_VCU_Select_Set();
-		CANBUS_VCU_Trip_Mode();
+		CAN_VCU_Switch();
+		CAN_VCU_RTC();
+		CAN_VCU_Select_Set();
+		CAN_VCU_Trip_Mode();
 
-		// Feed the dog (duration 1.02375 second)
+		// Feed the dog (duration x seconds)
 		HAL_IWDG_Refresh(&hiwdg);
 
 		// Periodic interval
-		vTaskDelayUntil(&xLastWakeTime, tick250ms);
+		vTaskDelayUntil(&last_wake, tick250ms);
 	}
 	/* USER CODE END StartCanTxTask */
 }
@@ -2000,18 +1969,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

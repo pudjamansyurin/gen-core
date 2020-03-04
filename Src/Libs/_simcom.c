@@ -9,14 +9,12 @@
 
 /* Private functions ---------------------------------------------------------*/
 static void Simcom_Reset(void);
+static void Simcom_Prepare(void);
+static void Simcom_Clear_Buffer(void);
 static uint8_t Simcom_Response(char *str);
 static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint32_t ms, char *res);
 static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
-static uint8_t Simcom_Command_Match(char *cmd, uint32_t ms, char *res, uint8_t n);
-static uint8_t Simcom_Payload(char *payload, uint16_t payload_length);
-static void Simcom_Prepare(void);
 static uint8_t Simcom_Boot(void);
-static void Simcom_Clear_Buffer(void);
 
 /* External variable ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
@@ -25,15 +23,9 @@ extern osMutexId SimcomRecMutexHandle;
 extern osThreadId CommandTaskHandle;
 extern osMailQId CommandMailHandle;
 extern command_t *hCommand;
+
 /* Private variable ---------------------------------------------------------*/
 simcom_t simcom;
-
-/* USER CODE END PV */
-void Ublox_Init(gps_t *hgps) {
-	HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_SET);
-	osDelay(100);
-	gps_init(hgps);
-}
 
 static void Simcom_Reset(void) {
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
@@ -59,7 +51,7 @@ static uint8_t Simcom_Boot(void) {
 	// reset the state of simcom module
 	Simcom_Reset();
 	// wait until booting is done
-	return Simcom_Command_Match(SIMCOM_BOOT_COMMAND, NET_BOOT_TIMEOUT, SIMCOM_STATUS_OK, 1);
+	return Simcom_Command(SIMCOM_BOOT_COMMAND, NET_BOOT_TIMEOUT, SIMCOM_STATUS_OK, 1);
 }
 
 static void Simcom_Clear_Buffer(void) {
@@ -158,16 +150,8 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
 	return ret;
 }
 
-static uint8_t Simcom_Payload(char *payload, uint16_t payload_length) {
-	return Simcom_Send_Indirect(payload, payload_length, 1, 5000, SIMCOM_STATUS_SENT, 1);
-}
-
-static uint8_t Simcom_Command_Match(char *cmd, uint32_t ms, char *res, uint8_t n) {
+uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n) {
 	return Simcom_Send_Indirect(cmd, strlen(cmd), 0, ms, res, n);
-}
-
-uint8_t Simcom_Command(char *cmd, uint32_t ms) {
-	return Simcom_Command_Match(cmd, ms, NULL, 1);
 }
 
 void Simcom_Init(void) {
@@ -195,79 +179,79 @@ void Simcom_Init(void) {
 		// Execute only on first setup
 		if (p) {
 			// disable command echo
-			p = Simcom_Command("ATE0\r", 500);
+			p = Simcom_Command("ATE0\r", 500, NULL, 1);
 		}
 		// =========== OTHERS CONFIGURATION
 		// enable time reporting
 		if (p) {
-			p = Simcom_Command("AT+CLTS=1\r", 500);
+			p = Simcom_Command("AT+CLTS=1\r", 500, NULL, 1);
 		}
 		//Hide “+IPD” header
 		if (p) {
-			p = Simcom_Command("AT+CIPHEAD=1\r", 500);
+			p = Simcom_Command("AT+CIPHEAD=1\r", 500, NULL, 1);
 		}
 		//Hide “RECV FROM” header
 		if (p) {
-			p = Simcom_Command("AT+CIPSRIP=0\r", 500);
+			p = Simcom_Command("AT+CIPSRIP=0\r", 500, NULL, 1);
 		}
 		//Set to Single IP Connection (Backend)
 		if (p) {
-			p = Simcom_Command("AT+CIPMUX=0\r", 500);
+			p = Simcom_Command("AT+CIPMUX=0\r", 500, NULL, 1);
 		}
 		//Select TCPIP application mode (0: Non Transparent (command mode), 1: Transparent (data mode))
 		if (p) {
-			p = Simcom_Command("AT+CIPMODE=0\r", 500);
+			p = Simcom_Command("AT+CIPMODE=0\r", 500, NULL, 1);
 		}
 		// Get data from network automatically
 		if (p) {
-			p = Simcom_Command("AT+CIPRXGET=0\r", 500);
+			p = Simcom_Command("AT+CIPRXGET=0\r", 500, NULL, 1);
 		}
 
 		// =========== NETWORK CONFIGURATION
 		// Check SIM Card
 		if (p) {
-			p = Simcom_Command("AT+CPIN?\r", 500);
+			p = Simcom_Command("AT+CPIN?\r", 500, NULL, 1);
 		}
 		// Disable presentation of <AcT>&<rac> at CREG and CGREG
 		if (p) {
-			p = Simcom_Command("AT+CSACT=0,0\r", 500);
+			p = Simcom_Command("AT+CSACT=0,0\r", 500, NULL, 1);
 		}
 
 		// Set signal Generation 2G/3G/AUTO
 		if (p) {
-			p = Simcom_Command_Match(simcom.CMD_CNMP, 10000, NULL, 2);
+			p = Simcom_Command(simcom.CMD_CNMP, 10000, NULL, 2);
 		}
 
 		// Network Registration Status
 		if (p) {
-			p = Simcom_Command("AT+CREG=2\r", 500);
+			p = Simcom_Command("AT+CREG=2\r", 500, NULL, 1);
 		}
 		// Network GPRS Registration Status
 		if (p) {
-			p = Simcom_Command("AT+CGREG=2\r", 500);
+			p = Simcom_Command("AT+CGREG=2\r", 500, NULL, 1);
 		}
 		//Attach to GPRS service
 		if (p) {
-			p = Simcom_Command_Match("AT+CGATT?\r", 10000, "+CGATT: 1", 3);
+			p = Simcom_Command("AT+CGATT?\r", 10000, "+CGATT: 1", 3);
 		}
 
 		// =========== TCP/IP CONFIGURATION
 		//Set type of authentication for PDP-IP connections of socket
 		if (p) {
-			p = Simcom_Command_Match(simcom.CMD_CSTT, 500, NULL, 5);
+			p = Simcom_Command(simcom.CMD_CSTT, 500, NULL, 5);
 		}
 		// Bring Up Wireless Connection with GPRS
 		if (p) {
-			p = Simcom_Command_Match("AT+CIICR\r", 5000, NULL, 5);
+			p = Simcom_Command("AT+CIICR\r", 5000, NULL, 5);
 		}
 		// Check IP Address
 		if (p) {
-			Simcom_Command("AT+CIFSR\r", 500);
+			Simcom_Command("AT+CIFSR\r", 500, NULL, 1);
 		}
 
 		// Establish connection with server
 		if (p) {
-			p = Simcom_Command_Match(simcom.CMD_CIPSTART, 10000, "CONNECT", 1);
+			p = Simcom_Command(simcom.CMD_CIPSTART, 10000, "CONNECT", 1);
 			// check either connection ok / error
 			if (p) {
 				p = Simcom_Response("CONNECT OK");
@@ -277,7 +261,7 @@ void Simcom_Init(void) {
 		// restart module to fix it
 		if (!p) {
 			// disable all connection
-			Simcom_Command("AT+CIPSHUT\r", 500);
+			Simcom_Command("AT+CIPSHUT\r", 500, NULL, 1);
 		}
 	} while (p == 0);
 
@@ -295,9 +279,9 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
 	sprintf(str, "AT+CIPSEND=%d\r", payload_length);
 
 	// confirm to server that command is executed
-	if (Simcom_Command_Match(str, 5000, SIMCOM_STATUS_SEND, 1)) {
+	if (Simcom_Command(str, 5000, SIMCOM_STATUS_SEND, 1)) {
 		// send response
-		if (Simcom_Payload(payload, payload_length)) {
+		if (Simcom_Send_Indirect(payload, payload_length, 1, 5000, SIMCOM_STATUS_SENT, 1)) {
 			// set timeout guard
 			tick = osKernelSysTick();
 			// wait ACK for payload
@@ -396,7 +380,7 @@ uint8_t Simcom_Read_Signal(uint8_t *signal_percentage) {
 			{ .name = "No Signal", .minValue = -115, .linMinValue = 0, .percentage = 0 }
 	};
 	// check signal quality
-	if (Simcom_Command("AT+CSQ\r", 500)) {
+	if (Simcom_Command("AT+CSQ\r", 500, NULL, 1)) {
 		// get pointer reference
 		str = strstr(SIMCOM_UART_RX_Buffer, prefix);
 
@@ -441,7 +425,7 @@ uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
 	char *str, *prefix = "+CCLK: \"";
 
 	// get local timestamp (from base station)
-	if (Simcom_Command("AT+CCLK?\r", 500)) {
+	if (Simcom_Command("AT+CCLK?\r", 500, NULL, 1)) {
 		// get pointer reference
 		str = strstr(SIMCOM_UART_RX_Buffer, prefix);
 

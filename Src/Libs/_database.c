@@ -11,8 +11,12 @@ vcu_t DB_VCU = {
 		.signal = 0,
 		.speed = 0,
 		.odometer = 0,
-		.timestamp = { 0 },
+		.timestamp = {
+				.time = { 0 },
+				.date = { 0 }
+		},
 		.sw = {
+				.count = 6,
 				.list = {
 						{
 								.event = "SELECT",
@@ -49,12 +53,6 @@ vcu_t DB_VCU = {
 								.pin = EXT_ABS_STATUS_Pin,
 								.port = EXT_ABS_STATUS_GPIO_Port,
 								.state = 0
-						},
-						{
-								.event = "MIRRORING",
-								.pin = EXT_HMI2_PHONE_Pin,
-								.port = EXT_HMI2_PHONE_GPIO_Port,
-								.state = 0
 						}
 				},
 				.timer = {
@@ -70,24 +68,24 @@ vcu_t DB_VCU = {
 						}
 				},
 				.runner = {
+						.listening = 0,
 						.mode = {
-								.val = SWITCH_MODE_DRIVE,
+								.val = SW_M_DRIVE,
 								.sub = {
 										.val = {
-												SWITCH_MODE_DRIVE_E,
-												SWITCH_MODE_TRIP_A,
-												SWITCH_MODE_REPORT_RANGE
+												SW_M_DRIVE_E,
+												SW_M_TRIP_A,
+												SW_M_REPORT_RANGE
 										},
 										.max = {
-												SWITCH_MODE_DRIVE_MAX,
-												SWITCH_MODE_TRIP_MAX,
-												SWITCH_MODE_REPORT_MAX
+												SW_M_DRIVE_MAX,
+												SW_M_TRIP_MAX,
+												SW_M_REPORT_MAX
 										},
-										.report = { 0 },
-										.trip = { 0 }
+										.report = { 0, 0 },
+										.trip = { 0, 0 }
 								}
-						},
-						.listening = 0,
+						}
 				}
 		}
 };

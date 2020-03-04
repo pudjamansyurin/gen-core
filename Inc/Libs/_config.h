@@ -12,7 +12,7 @@
 #include <string.h>									// for: strlen()
 #include <stdlib.h>									// for: itoa()
 #include <stdio.h>									// for: sprintf()
-#include "_flash.h"
+#include "_eeprom.h"
 #include "_swv.h"
 
 // GLOBAL CONFIG

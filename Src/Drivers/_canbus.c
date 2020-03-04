@@ -5,15 +5,15 @@
  *      Author: Puja Kusuma
  */
 
-#include "_can.h"
+#include "_canbus.h"
 
 extern osThreadId CanRxTaskHandle;
 extern osMutexId CanTxMutexHandle;
 extern CAN_HandleTypeDef hcan1;
 CAN_HandleTypeDef *CanHandle = &hcan1;
-CAN_Rx RxCan;
+CANBUS_Rx RxCan;
 
-void CAN_Init(void) {
+void CANBUS_Init(void) {
 	CAN_FilterTypeDef sFilterConfig;
 
 	/* Configure the CAN Filter */
@@ -50,7 +50,7 @@ void CAN_Init(void) {
 	}
 }
 
-void CAN_Set_Tx_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC) {
+void CANBUS_Set_Tx_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC) {
 	/* Configure Global Transmission process */
 	TxHeader->RTR = CAN_RTR_DATA;
 	TxHeader->IDE = CAN_ID_STD;
@@ -59,7 +59,7 @@ void CAN_Set_Tx_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t D
 	TxHeader->DLC = DLC;
 }
 
-HAL_StatusTypeDef CAN_Filter(void) {
+HAL_StatusTypeDef CANBUS_Filter(void) {
 	CAN_FilterTypeDef sFilterConfig;
 
 	/* Configure the CAN Filter */
@@ -83,7 +83,7 @@ HAL_StatusTypeDef CAN_Filter(void) {
 /*----------------------------------------------------------------------------
  wite a message to CAN peripheral and transmit it
  *----------------------------------------------------------------------------*/
-uint8_t CAN_Write(CAN_Tx *TxCan) {
+uint8_t CANBUS_Write(CANBUS_Tx *TxCan) {
 	osMutexWait(CanTxMutexHandle, osWaitForever);
 
 	uint32_t TxMailbox;
@@ -114,7 +114,7 @@ uint8_t CAN_Write(CAN_Tx *TxCan) {
 /*----------------------------------------------------------------------------
  read a message from CAN peripheral and release it
  *----------------------------------------------------------------------------*/
-uint8_t CAN_Read(CAN_Rx *RxCan) {
+uint8_t CANBUS_Read(CANBUS_Rx *RxCan) {
 	HAL_StatusTypeDef status;
 
 	/* Get RX message */
@@ -140,7 +140,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
 	// read rx fifo
-	if (CAN_Read(&RxCan)) {
+	if (CANBUS_Read(&RxCan)) {
 		// signal only when RTOS started
 		if (osKernelRunning()) {
 			xTaskNotifyFromISR(CanRxTaskHandle, EVENT_CAN_RX_IT, eSetBits, &xHigherPriorityTaskWoken);

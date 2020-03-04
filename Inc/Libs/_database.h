@@ -13,78 +13,41 @@
 #include "_rtc.h"
 
 // EXTI list
-#define IDX_KEY_SELECT 							0
-#define IDX_KEY_SET 								1
-#define IDX_KEY_SEIN_LEFT 					2
-#define IDX_KEY_SEIN_RIGHT 					3
-#define IDX_KEY_REVERSE		 					4
-#define IDX_KEY_ABS				 					5
-#define IDX_KEY_MIRRORING 					6
+#define SW_K_SELECT 						0
+#define SW_K_SET 								1
+#define SW_K_SEIN_LEFT 					2
+#define SW_K_SEIN_RIGHT 				3
+#define SW_K_REVERSE		 				4
+#define SW_K_ABS				 				5
+#define SW_K_MIRRORING 					6
 
 // enum list
 typedef enum {
-	SWITCH_MODE_DRIVE = 0,
-	SWITCH_MODE_TRIP = 1,
-	SWITCH_MODE_REPORT = 2,
-	SWITCH_MODE_MAX = 2
+	SW_M_DRIVE = 0,
+	SW_M_TRIP = 1,
+	SW_M_REPORT = 2,
+	SW_M_MAX = 2
 } sw_mode_t;
 
 typedef enum {
-	SWITCH_MODE_DRIVE_E = 0,
-	SWITCH_MODE_DRIVE_S = 1,
-	SWITCH_MODE_DRIVE_P = 2,
-	SWITCH_MODE_DRIVE_R = 3,
-	SWITCH_MODE_DRIVE_MAX = 2
+	SW_M_DRIVE_E = 0,
+	SW_M_DRIVE_S = 1,
+	SW_M_DRIVE_P = 2,
+	SW_M_DRIVE_R = 3,
+	SW_M_DRIVE_MAX = 2
 } sw_mode_drive_t;
 
 typedef enum {
-	SWITCH_MODE_TRIP_A = 0,
-	SWITCH_MODE_TRIP_B = 1,
-	SWITCH_MODE_TRIP_MAX = 1
+	SW_M_TRIP_A = 0,
+	SW_M_TRIP_B = 1,
+	SW_M_TRIP_MAX = 1
 } sw_mode_trip_t;
 
 typedef enum {
-	SWITCH_MODE_REPORT_RANGE = 0,
-	SWITCH_MODE_REPORT_AVERAGE = 1,
-	SWITCH_MODE_REPORT_MAX = 1
+	SW_M_REPORT_RANGE = 0,
+	SW_M_REPORT_AVERAGE = 1,
+	SW_M_REPORT_MAX = 1
 } sw_mode_report_t;
-
-// object list
-typedef struct {
-	uint8_t val[SWITCH_MODE_MAX + 1];
-	uint8_t max[SWITCH_MODE_MAX + 1];
-	uint8_t report[SWITCH_MODE_REPORT_MAX + 1];
-	uint32_t trip[SWITCH_MODE_TRIP_MAX + 1];
-} sw_mode_sub_t;
-
-typedef struct {
-	sw_mode_t val;
-	sw_mode_sub_t sub;
-} switch_mode_t;
-
-typedef struct {
-	switch_mode_t mode;
-	uint8_t listening;
-} switch_runner_t;
-
-typedef struct {
-	char event[20];
-	uint16_t pin;
-	GPIO_TypeDef *port;
-	uint8_t state;
-} switch_list_t;
-
-typedef struct {
-	uint32_t start;
-	uint8_t running;
-	uint8_t time;
-} switch_timer_t;
-
-typedef struct {
-	switch_list_t list[7];
-	switch_timer_t timer[2];
-	switch_runner_t runner;
-} switch_t;
 
 //FIXME active disabled GPIO input
 typedef struct {
@@ -106,7 +69,32 @@ typedef struct {
 	uint8_t speed;
 	uint32_t odometer;
 	timestamp_t timestamp;
-	switch_t sw;
+	struct {
+		uint8_t count;
+		struct {
+			char event[20];
+			uint16_t pin;
+			GPIO_TypeDef *port;
+			uint8_t state;
+		} list[6];
+		struct {
+			uint32_t start;
+			uint8_t running;
+			uint8_t time;
+		} timer[2];
+		struct {
+			uint8_t listening;
+			struct {
+				sw_mode_t val;
+				struct {
+					uint8_t val[SW_M_MAX + 1];
+					uint8_t max[SW_M_MAX + 1];
+					uint8_t report[SW_M_REPORT_MAX + 1];
+					uint32_t trip[SW_M_TRIP_MAX + 1];
+				} sub;
+			} mode;
+		} runner;
+	} sw;
 } vcu_t;
 
 typedef struct {

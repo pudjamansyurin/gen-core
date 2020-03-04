@@ -72,7 +72,7 @@ void Reporter_Set_Odometer(uint32_t odom) {
 	Flash_Save_Odometer(odom);
 }
 
-void Reporter_Set_GPS(gps_t *hgps) {
+void Reporter_Set_GPS(nmea_t *hgps) {
 	// parse GPS data
 	report.data.opt.gps.latitude = (int32_t) (hgps->latitude * 10000000);
 	report.data.opt.gps.longitude = (int32_t) (hgps->longitude * 10000000);
@@ -80,17 +80,21 @@ void Reporter_Set_GPS(gps_t *hgps) {
 	report.data.opt.gps.heading = (uint8_t) (hgps->variation / 2);
 }
 
-void Reporter_Set_Speed(gps_t *hgps) {
+void Reporter_Set_Speed(nmea_t *hgps) {
 	float d_distance;
 	// parse GPS data
 	// FIXME use real speed calculation
 	// calculate speed from GPS data
-	report.data.req.speed = gps_to_speed(hgps->speed, gps_speed_kph);
+	report.data.req.speed = nmea_to_speed(hgps->speed, nmea_speed_kph);
 	// change ODOMETER from GPS speed variation
-	d_distance = (gps_to_speed(hgps->speed, gps_speed_mps) * REPORT_INTERVAL_SIMPLE);
+	d_distance = (nmea_to_speed(hgps->speed, nmea_speed_mps) * REPORT_INTERVAL_SIMPLE);
 	// save ODOMETER to flash (non-volatile)
 	Reporter_Set_Odometer(Flash_Get_Odometer() + d_distance);
 
+}
+
+void Reporter_Set_Events(uint64_t value) {
+	report.data.req.events_group = value;
 }
 
 void Reporter_Set_Event(uint64_t event_id, uint8_t bool) {
