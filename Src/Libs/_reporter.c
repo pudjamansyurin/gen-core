@@ -52,7 +52,7 @@ void Reporter_Reset(frame_t frame) {
 			report.data.opt.gps.latitude = -7.4337599 * 10000000;
 			report.data.opt.gps.hdop = 255;
 			report.data.opt.gps.heading = 0;
-			report.data.opt.odometer = Flash_Get_Odometer();
+			report.data.opt.odometer = EEPROM_Get_Odometer();
 			report.data.opt.bat_voltage = 2600 / 13;
 			report.data.opt.report_range = 0;
 			report.data.opt.report_battery = 99;
@@ -69,7 +69,7 @@ void Reporter_Set_UnitID(uint32_t unitId) {
 
 void Reporter_Set_Odometer(uint32_t odom) {
 	report.data.opt.odometer = odom;
-	Flash_Save_Odometer(odom);
+	EEPROM_Save_Odometer(odom);
 }
 
 void Reporter_Set_GPS(gps_t *hgps) {
@@ -85,7 +85,7 @@ void Reporter_Set_Speed(gps_t *hgps) {
 	// calculate speed from GPS data
 	report.data.req.speed = hgps->speed_kph;
 	// save ODOMETER to flash (non-volatile)
-	Reporter_Set_Odometer(Flash_Get_Odometer() + (hgps->speed_mps * REPORT_INTERVAL_SIMPLE));
+	Reporter_Set_Odometer(EEPROM_Get_Odometer() + (hgps->speed_mps * REPORT_INTERVAL_SIMPLE));
 
 }
 

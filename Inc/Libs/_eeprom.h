@@ -5,8 +5,8 @@
  *      Author: Puja
  */
 
-#ifndef FLASH_H_
-#define FLASH_H_
+#ifndef EEPROM_H_
+#define EEPROM_H_
 
 #include "_ee_emulation.h"
 
@@ -16,7 +16,7 @@
 #define VADDR_ODOMETER_L			0x0000
 #define VADDR_ODOMETER_H			(VADDR_ODOMETER_L + 1)
 
-void Flash_Save_Odometer(uint32_t odometer);
-uint32_t Flash_Get_Odometer(void);
+void EEPROM_Save_Odometer(uint32_t odometer);
+uint32_t EEPROM_Get_Odometer(void);
 
-#endif /* FLASH_H_ */
+#endif /* EEPROM_H_ */
