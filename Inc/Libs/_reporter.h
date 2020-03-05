@@ -96,7 +96,6 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   report_t report;
   response_t response;
-  command_t command;
 } frame_t;
 
 // public function
