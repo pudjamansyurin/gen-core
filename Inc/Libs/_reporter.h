@@ -92,12 +92,6 @@ typedef struct __attribute__((packed)) {
   uint16_t seq_id;
 } ack_t;
 
-// the full FRAME
-typedef struct __attribute__((packed)) {
-  report_t report;
-  response_t response;
-} frame_t;
-
 // public function
 void Reporter_Reset(frame_type frame);
 void Reporter_Set_UnitID(uint32_t unitId);

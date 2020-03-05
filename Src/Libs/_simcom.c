@@ -306,18 +306,18 @@ uint8_t Simcom_Read_ACK(report_header_t *report_header) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t ret = 0;
-  ack_t *ack = NULL;
+  ack_t ack;
   char *str = NULL;
 
   if (strstr(SIMCOM_UART_RX_Buffer, SIMCOM_RESPONSE_IPD)) {
     // parse ACK
     str = strstr(SIMCOM_UART_RX_Buffer, NET_ACK_PREFIX);
     if (str != NULL) {
-      *ack = *(ack_t*) str;
+      ack = *(ack_t*) str;
 
       // validate the value
-      if (report_header->frame_id == ack->frame_id &&
-          report_header->seq_id == ack->seq_id) {
+      if (report_header->frame_id == ack.frame_id &&
+          report_header->seq_id == ack.seq_id) {
 
         // clear rx buffer
         Simcom_Clear_Buffer();

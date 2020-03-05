@@ -141,8 +141,9 @@ void StartCanTxTask(void const *argument);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 extern db_t DB;
-extern frame_t FR;
 extern canbus_t CB;
+extern report_t REPORT;
+extern response_t RESPONSE;
 extern RTC_DateTypeDef LastCalibrationDate;
 
 const TickType_t tick5ms = pdMS_TO_TICKS(5),
@@ -1131,13 +1132,13 @@ void StartIotTask(void const *argument)
     // check every event & send
     if (p_response || notif_value & EVENT_IOT_RESPONSE) {
       // calculate the size based on message size
-      report_size = sizeof(FR.response.header) + sizeof(FR.response.data.code) + strlen(FR.response.data.message);
+      report_size = sizeof(RESPONSE.header) + sizeof(RESPONSE.data.code) + strlen(RESPONSE.data.message);
       // response frame
-      p_response = (char*) &(FR.response);
+      p_response = (char*) &(RESPONSE);
       // Send to server
       success = Simcom_Upload(p_response, report_size);
       // validate ACK
-      if (Simcom_Read_ACK(&(FR.response.header))) {
+      if (Simcom_Read_ACK(&(RESPONSE.header))) {
         p_response = NULL;
       }
     }
@@ -1156,9 +1157,9 @@ void StartIotTask(void const *argument)
           // copy the pointer
           the_report = evt.value.p;
           // calculate the size based on frame_id
-          report_size = sizeof(FR.report.header) + sizeof(FR.report.data.req);
+          report_size = sizeof(REPORT.header) + sizeof(REPORT.data.req);
           if (the_report->header.frame_id == FR_FULL) {
-            report_size += sizeof(FR.report.data.opt);
+            report_size += sizeof(REPORT.data.opt);
           }
           // get current sending datetime
           the_report->data.req.rtc_send_datetime = RTC_Read();
@@ -1285,15 +1286,15 @@ void StartCommandTask(void const *argument)
     if (evt.status == osEventMail) {
       command = evt.value.p;
       // default command response
-      FR.response.data.code = RESPONSE_STATUS_OK;
-      strcpy(FR.response.data.message, "");
+      RESPONSE.data.code = RESPONSE_STATUS_OK;
+      strcpy(RESPONSE.data.message, "");
 
       // handle the command
       switch (command->data.code) {
         case CMD_CODE_GEN:
           switch (command->data.sub_code) {
             case CMD_GEN_INFO:
-              sprintf(FR.response.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
+              sprintf(RESPONSE.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
               break;
 
             case CMD_GEN_LED:
@@ -1301,7 +1302,7 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              FR.response.data.code = RESPONSE_STATUS_INVALID;
+              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
@@ -1313,7 +1314,7 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              FR.response.data.code = RESPONSE_STATUS_INVALID;
+              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
@@ -1333,7 +1334,7 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              FR.response.data.code = RESPONSE_STATUS_INVALID;
+              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
@@ -1359,7 +1360,7 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              FR.response.data.code = RESPONSE_STATUS_INVALID;
+              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
@@ -1379,17 +1380,17 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              FR.response.data.code = RESPONSE_STATUS_INVALID;
+              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           // handle response from finger-print module
           if (p != FINGERPRINT_OK) {
-            FR.response.data.code = RESPONSE_STATUS_ERROR;
+            RESPONSE.data.code = RESPONSE_STATUS_ERROR;
           }
           break;
 
         default:
-          FR.response.data.code = RESPONSE_STATUS_INVALID;
+          RESPONSE.data.code = RESPONSE_STATUS_INVALID;
           break;
       }
 
@@ -1649,7 +1650,7 @@ void StartReporterTask(void const *argument)
     }
 
     // Copy snapshot of current report
-    *log_report = FR.report;
+    *log_report = REPORT;
 
     // Put report to log
     osMailPut(ReportMailHandle, log_report);
