@@ -15,19 +15,24 @@
 
 // object list
 typedef struct {
-	CAN_TxHeaderTypeDef TxHeader;
-	uint8_t TxData[8];
-} CANBUS_Tx;
+  CAN_TxHeaderTypeDef header;
+  uint8_t data[8];
+} canbus_tx_t;
 
 typedef struct {
-	CAN_RxHeaderTypeDef RxHeader;
-	uint8_t RxData[8];
-} CANBUS_Rx;
+  CAN_RxHeaderTypeDef header;
+  uint8_t data[8];
+} canbus_rx_t;
+
+typedef struct {
+  canbus_tx_t tx;
+  canbus_rx_t rx;
+} canbus_t;
 
 // function list
 void CANBUS_Init(void);
 void CANBUS_Set_Tx_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC);
-uint8_t CANBUS_Write(CANBUS_Tx *TxCan);
-uint8_t CANBUS_Read(CANBUS_Rx *RxCan);
+uint8_t CANBUS_Write(canbus_tx_t *tx);
+uint8_t CANBUS_Read(canbus_rx_t *rx);
 
 #endif /* CANBUS_H_ */

@@ -140,21 +140,19 @@ void StartCanTxTask(void const *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern vcu_t DB_VCU;
-extern hmi2_t DB_HMI2;
-extern CANBUS_Rx RxCan;
-extern report_t report;
-extern response_t response;
+extern db_t DB;
+extern frame_t FR;
+extern canbus_t CB;
 extern RTC_DateTypeDef LastCalibrationDate;
 
-const TickType_t tick5ms = pdMS_TO_TICKS(5);
-const TickType_t tick100ms = pdMS_TO_TICKS(100);
-const TickType_t tick250ms = pdMS_TO_TICKS(250);
-const TickType_t tick500ms = pdMS_TO_TICKS(500);
-const TickType_t tick1000ms = pdMS_TO_TICKS(1000);
-const TickType_t tick5000ms = pdMS_TO_TICKS(5000);
-const TickType_t xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000);
-const TickType_t xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
+const TickType_t tick5ms = pdMS_TO_TICKS(5),
+    tick100ms = pdMS_TO_TICKS(100),
+    tick250ms = pdMS_TO_TICKS(250),
+    tick500ms = pdMS_TO_TICKS(500),
+    tick1000ms = pdMS_TO_TICKS(1000),
+    tick5000ms = pdMS_TO_TICKS(5000),
+    xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000),
+    xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
 
 gps_t *hGps;
 command_t *hCommand;
@@ -1081,8 +1079,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
           &xHigherPriorityTaskWoken);
     }
     // handle Switches EXTI
-    for (i = 0; i < DB_VCU.sw.count; i++) {
-      if (GPIO_Pin == DB_VCU.sw.list[i].pin) {
+    for (i = 0; i < DB.vcu.sw.count; i++) {
+      if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
         xTaskNotifyFromISR(
             SwitchTaskHandle,
             (uint32_t ) GPIO_Pin,
@@ -1112,7 +1110,6 @@ void StartIotTask(void const *argument)
   TickType_t last_wake;
   osEvent evt;
   report_t *the_report;
-  ack_t the_ack;
   uint8_t success, report_size, seq, retry = 3;
   uint32_t notif_value;
   char *p_report = NULL, *p_response = NULL;
@@ -1134,13 +1131,13 @@ void StartIotTask(void const *argument)
     // check every event & send
     if (p_response || notif_value & EVENT_IOT_RESPONSE) {
       // calculate the size based on message size
-      report_size = sizeof(response.header) + sizeof(response.data.code) + strlen(response.data.message);
+      report_size = sizeof(FR.response.header) + sizeof(FR.response.data.code) + strlen(FR.response.data.message);
       // response frame
-      p_response = (char*) &response;
+      p_response = (char*) &(FR.response);
       // Send to server
       success = Simcom_Upload(p_response, report_size);
       // validate ACK
-      if (Simcom_Read_ACK(&the_ack, &(response.header))) {
+      if (Simcom_Read_ACK(&(FR.response.header))) {
         p_response = NULL;
       }
     }
@@ -1159,9 +1156,9 @@ void StartIotTask(void const *argument)
           // copy the pointer
           the_report = evt.value.p;
           // calculate the size based on frame_id
-          report_size = sizeof(report.header) + sizeof(report.data.req);
-          if (the_report->header.frame_id == FRAME_FULL) {
-            report_size += sizeof(report.data.opt);
+          report_size = sizeof(FR.report.header) + sizeof(FR.report.data.req);
+          if (the_report->header.frame_id == FR_FULL) {
+            report_size += sizeof(FR.report.data.opt);
           }
           // get current sending datetime
           the_report->data.req.rtc_send_datetime = RTC_Read();
@@ -1179,7 +1176,7 @@ void StartIotTask(void const *argument)
           // handle SIMCOM response
           if (success) {
             // validate ACK
-            if (Simcom_Read_ACK(&the_ack, &(the_report->header))) {
+            if (Simcom_Read_ACK(&(the_report->header))) {
               // Free the pointer after successfully sent
               osMailFree(ReportMailHandle, the_report);
 
@@ -1278,7 +1275,7 @@ void StartCommandTask(void const *argument)
   int p;
 
   // reset response frame to default
-  Reporter_Reset(FRAME_RESPONSE);
+  Reporter_Reset(FR_RESPONSE);
 
   /* Infinite loop */
   for (;;) {
@@ -1288,15 +1285,15 @@ void StartCommandTask(void const *argument)
     if (evt.status == osEventMail) {
       command = evt.value.p;
       // default command response
-      response.data.code = RESPONSE_STATUS_OK;
-      strcpy(response.data.message, "");
+      FR.response.data.code = RESPONSE_STATUS_OK;
+      strcpy(FR.response.data.message, "");
 
       // handle the command
       switch (command->data.code) {
         case CMD_CODE_GEN:
           switch (command->data.sub_code) {
             case CMD_GEN_INFO:
-              sprintf(response.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
+              sprintf(FR.response.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
               break;
 
             case CMD_GEN_LED:
@@ -1304,7 +1301,7 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              response.data.code = RESPONSE_STATUS_INVALID;
+              FR.response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
@@ -1312,11 +1309,11 @@ void StartCommandTask(void const *argument)
         case CMD_CODE_HMI2:
           switch (command->data.sub_code) {
             case CMD_HMI2_SHUTDOWN:
-              DB_HMI2.shutdown = (uint8_t) command->data.value;
+              DB.hmi2.shutdown = (uint8_t) command->data.value;
               break;
 
             default:
-              response.data.code = RESPONSE_STATUS_INVALID;
+              FR.response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
@@ -1336,7 +1333,7 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              response.data.code = RESPONSE_STATUS_INVALID;
+              FR.response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
@@ -1362,7 +1359,7 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              response.data.code = RESPONSE_STATUS_INVALID;
+              FR.response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
@@ -1382,22 +1379,22 @@ void StartCommandTask(void const *argument)
               break;
 
             default:
-              response.data.code = RESPONSE_STATUS_INVALID;
+              FR.response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           // handle response from finger-print module
           if (p != FINGERPRINT_OK) {
-            response.data.code = RESPONSE_STATUS_ERROR;
+            FR.response.data.code = RESPONSE_STATUS_ERROR;
           }
           break;
 
         default:
-          response.data.code = RESPONSE_STATUS_INVALID;
+          FR.response.data.code = RESPONSE_STATUS_INVALID;
           break;
       }
 
       // Get current snapshot
-      Reporter_Capture(FRAME_RESPONSE);
+      Reporter_Capture(FR_RESPONSE);
 
       // Report is ready, do what you want (send to server)
       xTaskNotify(IotTaskHandle, EVENT_IOT_RESPONSE, eSetBits);
@@ -1580,13 +1577,13 @@ void StartReporterTask(void const *argument)
   /* USER CODE BEGIN StartReporterTask */
   TickType_t last_wake, last_wake_full = 0;
   osEvent evt;
-  frame_t frame;
+  frame_type frame;
   report_t *log_report;
   uint8_t net_restart_state;
   uint32_t notif_value;
 
   // reset report frame to default
-  Reporter_Reset(FRAME_FULL);
+  Reporter_Reset(FR_FULL);
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1625,10 +1622,10 @@ void StartReporterTask(void const *argument)
       // capture full frame wake time
       last_wake_full = last_wake;
       // full frame
-      frame = FRAME_FULL;
+      frame = FR_FULL;
     } else {
       // simple frame
-      frame = FRAME_SIMPLE;
+      frame = FR_SIMPLE;
     }
 
     // Get current snapshot
@@ -1652,7 +1649,7 @@ void StartReporterTask(void const *argument)
     }
 
     // Copy snapshot of current report
-    *log_report = report;
+    *log_report = FR.report;
 
     // Put report to log
     osMailPut(ReportMailHandle, log_report);
@@ -1686,11 +1683,11 @@ void StartCanRxTask(void const *argument)
     // proceed event
     if (notif_value & EVENT_CAN_RX_IT) {
       // handle message
-      switch (RxCan.RxHeader.StdId) {
+      switch (CB.rx.header.StdId) {
         case CAN_ADDR_MCU_DUMMY:
           CAN_MCU_Dummy_Read();
           // set volume by speed
-          osMessagePut(AudioVolQueueHandle, DB_VCU.speed, osWaitForever);
+          osMessagePut(AudioVolQueueHandle, DB.vcu.speed, osWaitForever);
           break;
         default:
           break;
@@ -1715,21 +1712,21 @@ void StartSwitchTask(void const *argument)
   uint32_t notif_value;
 
   // Read all EXTI state
-  for (i = 0; i < DB_VCU.sw.count; i++) {
-    DB_VCU.sw.list[i].state = HAL_GPIO_ReadPin(DB_VCU.sw.list[i].port, DB_VCU.sw.list[i].pin);
+  for (i = 0; i < DB.vcu.sw.count; i++) {
+    DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
   }
 
   // Handle Reverse mode on init
-  if (DB_VCU.sw.list[SW_K_REVERSE].state) {
+  if (DB.vcu.sw.list[SW_K_REVERSE].state) {
     // save previous Drive Mode state
-    if (DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
-      Last_Mode_Drive = DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE];
+    if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
+      Last_Mode_Drive = DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE];
     }
     // force state
-    DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
+    DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
     // hazard on
-    DB_VCU.sw.list[SW_K_SEIN_LEFT].state = 1;
-    DB_VCU.sw.list[SW_K_SEIN_RIGHT].state = 1;
+    DB.vcu.sw.list[SW_K_SEIN_LEFT].state = 1;
+    DB.vcu.sw.list[SW_K_SEIN_RIGHT].state = 1;
   }
 
   /* Infinite loop */
@@ -1740,89 +1737,89 @@ void StartSwitchTask(void const *argument)
     osDelay(50);
 
     // Read all (to handle multiple switch change at the same time)
-    for (i = 0; i < DB_VCU.sw.count; i++) {
-      DB_VCU.sw.list[i].state = HAL_GPIO_ReadPin(DB_VCU.sw.list[i].port, DB_VCU.sw.list[i].pin);
+    for (i = 0; i < DB.vcu.sw.count; i++) {
+      DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
 
       // handle select & set: timer
       if (i == SW_K_SELECT || i == SW_K_SET) {
         // reset SET timer
-        DB_VCU.sw.timer[i].time = 0;
+        DB.vcu.sw.timer[i].time = 0;
 
         // next job
-        if (DB_VCU.sw.list[i].state) {
-          if (i == SW_K_SELECT || (i == SW_K_SET && DB_VCU.sw.runner.listening)) {
+        if (DB.vcu.sw.list[i].state) {
+          if (i == SW_K_SELECT || (i == SW_K_SET && DB.vcu.sw.runner.listening)) {
             // start timer if not running
-            if (!DB_VCU.sw.timer[i].running) {
+            if (!DB.vcu.sw.timer[i].running) {
               // set flag
-              DB_VCU.sw.timer[i].running = 1;
+              DB.vcu.sw.timer[i].running = 1;
               // start timer for SET
-              DB_VCU.sw.timer[i].start = osKernelSysTick();
+              DB.vcu.sw.timer[i].start = osKernelSysTick();
             }
           }
           // reverse it
-          DB_VCU.sw.list[i].state = 0;
+          DB.vcu.sw.list[i].state = 0;
         } else {
           // stop timer if running
-          if (DB_VCU.sw.timer[i].running) {
+          if (DB.vcu.sw.timer[i].running) {
             // set flag
-            DB_VCU.sw.timer[i].running = 0;
+            DB.vcu.sw.timer[i].running = 0;
             // stop SET
-            DB_VCU.sw.timer[i].time = (uint8_t) ((osKernelSysTick()
-                - DB_VCU.sw.timer[i].start) / tick1000ms);
+            DB.vcu.sw.timer[i].time = (uint8_t) ((osKernelSysTick()
+                - DB.vcu.sw.timer[i].start) / tick1000ms);
             // reverse it
-            DB_VCU.sw.list[i].state = 1;
+            DB.vcu.sw.list[i].state = 1;
           }
         }
       }
     }
 
     // Only handle Select & Set when in non-reverse mode
-    if (DB_VCU.sw.list[SW_K_REVERSE].state) {
+    if (DB.vcu.sw.list[SW_K_REVERSE].state) {
       // save previous Drive Mode state
-      if (DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
-        Last_Mode_Drive = DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE];
+      if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
+        Last_Mode_Drive = DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE];
       }
       // force state
-      DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
+      DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
       // hazard on
-      DB_VCU.sw.list[SW_K_SEIN_LEFT].state = 1;
-      DB_VCU.sw.list[SW_K_SEIN_RIGHT].state = 1;
+      DB.vcu.sw.list[SW_K_SEIN_LEFT].state = 1;
+      DB.vcu.sw.list[SW_K_SEIN_RIGHT].state = 1;
     } else {
       // restore previous Drive Mode
-      if (DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R) {
-        DB_VCU.sw.runner.mode.sub.val[SW_M_DRIVE] = Last_Mode_Drive;
+      if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R) {
+        DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = Last_Mode_Drive;
       }
 
       // handle Select & Set
-      if (DB_VCU.sw.list[SW_K_SELECT].state || DB_VCU.sw.list[SW_K_SET].state) {
+      if (DB.vcu.sw.list[SW_K_SELECT].state || DB.vcu.sw.list[SW_K_SET].state) {
         // handle select key
-        if (DB_VCU.sw.list[SW_K_SELECT].state) {
-          if (DB_VCU.sw.runner.listening) {
+        if (DB.vcu.sw.list[SW_K_SELECT].state) {
+          if (DB.vcu.sw.runner.listening) {
             // change mode position
-            if (DB_VCU.sw.runner.mode.val == SW_M_MAX) {
-              DB_VCU.sw.runner.mode.val = 0;
+            if (DB.vcu.sw.runner.mode.val == SW_M_MAX) {
+              DB.vcu.sw.runner.mode.val = 0;
             } else {
-              DB_VCU.sw.runner.mode.val++;
+              DB.vcu.sw.runner.mode.val++;
             }
           }
           // Listening on option
-          DB_VCU.sw.runner.listening = 1;
+          DB.vcu.sw.runner.listening = 1;
 
-        } else if (DB_VCU.sw.list[SW_K_SET].state) {
+        } else if (DB.vcu.sw.list[SW_K_SET].state) {
           // handle set key
-          if (DB_VCU.sw.runner.listening
-              || (DB_VCU.sw.timer[SW_K_SET].time >= 3 && DB_VCU.sw.runner.mode.val == SW_M_TRIP)) {
+          if (DB.vcu.sw.runner.listening
+              || (DB.vcu.sw.timer[SW_K_SET].time >= 3 && DB.vcu.sw.runner.mode.val == SW_M_TRIP)) {
             // handle reset only if push more than n sec, and in trip mode
-            if (!DB_VCU.sw.runner.listening) {
+            if (!DB.vcu.sw.runner.listening) {
               // reset value
-              DB_VCU.sw.runner.mode.sub.trip[DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]] = 0;
+              DB.vcu.sw.runner.mode.sub.trip[DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val]] = 0;
             } else {
               // if less than n sec
-              if (DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]
-                  == DB_VCU.sw.runner.mode.sub.max[DB_VCU.sw.runner.mode.val]) {
-                DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val] = 0;
+              if (DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val]
+                  == DB.vcu.sw.runner.mode.sub.max[DB.vcu.sw.runner.mode.val]) {
+                DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val] = 0;
               } else {
-                DB_VCU.sw.runner.mode.sub.val[DB_VCU.sw.runner.mode.val]++;
+                DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val]++;
               }
             }
           }
@@ -1850,7 +1847,7 @@ void StartGeneralTask(void const *argument)
   last_wake = xTaskGetTickCount();
   for (;;) {
     // Retrieve network signal quality (every-time this task wake-up)
-    Simcom_Read_Signal(&DB_VCU.signal);
+    Simcom_Read_Signal(&DB.vcu.signal);
 
     // read timestamp
     RTC_Read_RAW(&timestampRTC);
