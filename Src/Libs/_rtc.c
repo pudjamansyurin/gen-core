@@ -104,6 +104,4 @@ void RTC_Write_RAW(timestamp_t *timestamp) {
   // save calibration date
   // source from server is always considered as valid
   DB.vcu.rtc.calibration = timestamp->date;
-  // update rtc database
-  DB.vcu.rtc.timestamp = *timestamp;
 }
