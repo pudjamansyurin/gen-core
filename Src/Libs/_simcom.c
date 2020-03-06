@@ -56,6 +56,7 @@ static uint8_t Simcom_Boot(void) {
 static void Simcom_Clear_Buffer(void) {
   // handle command (if any)
   if (Simcom_Read_Command(hCommand)) {
+    // FIXME: sometime command is timeout
     osMailPut(CommandMailHandle, hCommand);
   }
   // debugging
