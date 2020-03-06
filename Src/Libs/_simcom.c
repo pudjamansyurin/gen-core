@@ -5,7 +5,6 @@
  *      Author: Puja
  */
 #include "_simcom.h"
-#include "_crc.h"
 
 /* Private functions ---------------------------------------------------------*/
 static void Simcom_Reset(void);
@@ -306,18 +305,18 @@ uint8_t Simcom_Read_ACK(report_header_t *report_header) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t ret = 0;
-  ack_t *ack = NULL;
+  ack_t ack;
   char *str = NULL;
 
   if (strstr(SIMCOM_UART_RX_Buffer, SIMCOM_RESPONSE_IPD)) {
     // parse ACK
     str = strstr(SIMCOM_UART_RX_Buffer, NET_ACK_PREFIX);
     if (str != NULL) {
-      *ack = *(ack_t*) str;
+      ack = *(ack_t*) str;
 
       // validate the value
-      if (report_header->frame_id == ack->frame_id &&
-          report_header->seq_id == ack->seq_id) {
+      if (report_header->frame_id == ack.frame_id &&
+          report_header->seq_id == ack.seq_id) {
 
         // clear rx buffer
         Simcom_Clear_Buffer();
@@ -387,8 +386,8 @@ uint8_t Simcom_Read_Signal(uint8_t *signal_percentage) {
 
     if (str != NULL) {
       str += strlen(prefix);
-      rssi = BSP_ParseNumber(&str[0], &cnt);
-      //			ber = BSP_ParseNumber(&str[cnt + 1], NULL);
+      rssi = _ParseNumber(&str[0], &cnt);
+      //			ber = _ParseNumber(&str[cnt + 1], NULL);
 
       // handle not detectable rssi value
       rssi = rssi == 99 ? 0 : rssi;
@@ -433,25 +432,28 @@ uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
     if (str != NULL) {
       str += strlen(prefix);
       // get date part
-      timestamp->date.Year = BSP_ParseNumber(&str[0], &cnt);
+      timestamp->date.Year = _ParseNumber(&str[0], &cnt);
       len += cnt + 1;
-      timestamp->date.Month = BSP_ParseNumber(&str[len], &cnt);
+      timestamp->date.Month = _ParseNumber(&str[len], &cnt);
       len += cnt + 1;
-      timestamp->date.Date = BSP_ParseNumber(&str[len], &cnt);
+      timestamp->date.Date = _ParseNumber(&str[len], &cnt);
       // get time part
       len += cnt + 1;
-      timestamp->time.Hours = BSP_ParseNumber(&str[len], &cnt);
+      timestamp->time.Hours = _ParseNumber(&str[len], &cnt);
       len += cnt + 1;
-      timestamp->time.Minutes = BSP_ParseNumber(&str[len], &cnt);
+      timestamp->time.Minutes = _ParseNumber(&str[len], &cnt);
       len += cnt + 1;
-      timestamp->time.Seconds = BSP_ParseNumber(&str[len], NULL);
+      timestamp->time.Seconds = _ParseNumber(&str[len], NULL);
 
       // make sure it is valid datetime
       if (RTC_Encode(*timestamp)) {
-        // set weekday to default
-        timestamp->date.WeekDay = RTC_WEEKDAY_MONDAY;
+        // check is carrier timestamp valid
+        if (timestamp->date.Year >= VCU_BUILD_YEAR) {
+          // set weekday to default
+          timestamp->date.WeekDay = RTC_WEEKDAY_MONDAY;
 
-        ret = 1;
+          ret = 1;
+        }
       }
     }
   }

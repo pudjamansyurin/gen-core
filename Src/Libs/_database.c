@@ -12,9 +12,12 @@ db_t DB = {
         .signal = 0,
         .speed = 0,
         .odometer = 0,
-        .timestamp = {
-            .time = { 0 },
-            .date = { 0 }
+        .rtc = {
+            .calibration = { 0 },
+            .timestamp = {
+                .time = { 0 },
+                .date = { 0 }
+            },
         },
         .sw = {
             .count = 6,
@@ -96,7 +99,8 @@ db_t DB = {
             .warning = 1,
             .temperature = 1,
             .finger = 1,
-            .keyless = 1
+            .keyless = 1,
+            .daylight = 1
         }
     },
     .hmi2 = {

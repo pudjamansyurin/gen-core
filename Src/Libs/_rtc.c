@@ -5,13 +5,10 @@
  *      Author: Puja
  */
 
-#include <math.h>
-#include "_database.h"
 #include "_rtc.h"
 
 extern db_t DB;
 extern RTC_HandleTypeDef hrtc;
-RTC_DateTypeDef LastCalibrationDate;
 
 timestamp_t RTC_Decode(uint64_t dateTime) {
   // format dateTime: YYMMDDHHmmssE
@@ -106,9 +103,7 @@ void RTC_Write_RAW(timestamp_t *timestamp) {
 
   // save calibration date
   // source from server is always considered as valid
-  LastCalibrationDate = timestamp->date;
-}
-
-uint8_t RTC_Daylight(void) {
-  return (DB.vcu.timestamp.time.Hours >= 5 && DB.vcu.timestamp.time.Hours <= 16);
+  DB.vcu.rtc.calibration = timestamp->date;
+  // update rtc database
+  DB.vcu.rtc.timestamp = *timestamp;
 }

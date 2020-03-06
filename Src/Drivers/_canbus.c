@@ -95,17 +95,17 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
   status = HAL_CAN_AddTxMessage(CanHandle, &(tx->header), (uint8_t*) &(tx->data), &TxMailbox);
 
   // debugging
-  if (status == HAL_OK) {
-    SWV_SendStr("\n[TX] ");
-    SWV_SendHex32(tx->header.StdId);
-    SWV_SendStr(" => ");
-    if (tx->header.RTR == CAN_RTR_DATA) {
-      SWV_SendBufHex((char*) &(tx->data), sizeof(tx->data));
-    } else {
-      SWV_SendStr("RTR");
-    }
-    SWV_SendStrLn("");
-  }
+//  if (status == HAL_OK) {
+//    SWV_SendStr("\n[TX] ");
+//    SWV_SendHex32(tx->header.StdId);
+//    SWV_SendStr(" => ");
+//    if (tx->header.RTR == CAN_RTR_DATA) {
+//      SWV_SendBufHex((char*) &(tx->data), sizeof(tx->data));
+//    } else {
+//      SWV_SendStr("RTR");
+//    }
+//    SWV_SendStrLn("");
+//  }
 
   osMutexRelease(CanTxMutexHandle);
   return (status == HAL_OK);

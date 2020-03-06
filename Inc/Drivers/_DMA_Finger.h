@@ -8,8 +8,7 @@
 #ifndef DMA_FINGER_H_
 #define DMA_FINGER_H_
 
-#include "stm32f4xx_hal.h"
-#include <string.h>
+#include "_config.h"
 
 #define FINGER_UART_RX_BUFFER_SIZE 50
 #define FINGER_DMA_RX_BUFFER_SIZE FINGER_UART_RX_BUFFER_SIZE

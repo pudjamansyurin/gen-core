@@ -8,7 +8,7 @@
 #ifndef LIBS__CRC_H_
 #define LIBS__CRC_H_
 
-#include "stm32f4xx_hal.h"
+#include "_config.h"
 /**
  * @brief  Calculates 32-bit CRC value from 8-bit input array
  * @param  *arr: Pointer to 8-bit data array for CRC calculation

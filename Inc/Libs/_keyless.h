@@ -9,11 +9,11 @@
 #define KEYLESS_H_
 
 #include "_nrf24l01.h"
-#include "_swv.h"
+#include "_config.h"
 
 typedef struct {
-	uint8_t count;
-	uint8_t rx[8];
+  uint8_t count;
+  uint8_t rx[8];
 } payload_t;
 
 void KEYLESS_Init(void);

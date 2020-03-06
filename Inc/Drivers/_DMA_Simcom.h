@@ -8,9 +8,7 @@
 #ifndef SIMCOM_DMA_H_
 #define SIMCOM_DMA_H_
 
-#include "stm32f4xx_hal.h"
-#include "cmsis_os.h"
-#include <string.h>
+#include "_config.h"
 
 #define SIMCOM_UART_RX_BUFFER_SIZE 512
 #define SIMCOM_DMA_RX_BUFFER_SIZE 256

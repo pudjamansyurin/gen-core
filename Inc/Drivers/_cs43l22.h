@@ -38,7 +38,6 @@
 #define __CS43L22_H
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdint.h>
 #include "_config.h"
 
 /** @addtogroup BSP
@@ -282,20 +281,20 @@ uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg);
 
 /* Audio driver structure */
 typedef struct {
-	uint32_t (*Init)(uint16_t, uint16_t, uint8_t, uint32_t);
-	void (*DeInit)(void);
-	uint32_t (*ReadID)(uint16_t);
-	uint32_t (*Play)(uint16_t, uint16_t*, uint16_t);
-	uint32_t (*Pause)(uint16_t);
-	uint32_t (*Resume)(uint16_t);
-	uint32_t (*Stop)(uint16_t, uint32_t);
-	uint32_t (*SetFrequency)(uint16_t, uint32_t);
-	uint32_t (*SetVolume)(uint16_t, uint8_t);
-	uint32_t (*SetMute)(uint16_t, uint32_t);
-	uint32_t (*SetOutputMode)(uint16_t, uint8_t);
-	uint32_t (*Reset)(uint16_t);
-	uint32_t (*SetBeep)(uint16_t, uint8_t, uint8_t, uint8_t);
-	uint32_t (*Beep)(uint16_t, uint8_t, uint8_t);
+  uint32_t (*Init)(uint16_t, uint16_t, uint8_t, uint32_t);
+  void (*DeInit)(void);
+  uint32_t (*ReadID)(uint16_t);
+  uint32_t (*Play)(uint16_t, uint16_t*, uint16_t);
+  uint32_t (*Pause)(uint16_t);
+  uint32_t (*Resume)(uint16_t);
+  uint32_t (*Stop)(uint16_t, uint32_t);
+  uint32_t (*SetFrequency)(uint16_t, uint32_t);
+  uint32_t (*SetVolume)(uint16_t, uint8_t);
+  uint32_t (*SetMute)(uint16_t, uint32_t);
+  uint32_t (*SetOutputMode)(uint16_t, uint8_t);
+  uint32_t (*Reset)(uint16_t);
+  uint32_t (*SetBeep)(uint16_t, uint8_t, uint8_t, uint8_t);
+  uint32_t (*Beep)(uint16_t, uint8_t, uint8_t);
 } AUDIO_DrvTypeDef;
 
 #endif /* __CS43L22_H */

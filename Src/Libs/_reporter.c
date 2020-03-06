@@ -6,7 +6,6 @@
  */
 
 #include "_reporter.h"
-#include "_crc.h"
 
 // variable list
 frame_t FR;
@@ -92,18 +91,18 @@ void Reporter_Set_Events(uint64_t value) {
   FR.report.data.req.events_group = value;
 }
 
-void Reporter_Set_Event(uint64_t event_id, uint8_t bool) {
-  if (bool & 1) {
+void Reporter_Set_Event(uint64_t event_id, uint8_t value) {
+  if (value & 1) {
     // set
-    SetBitOf(FR.report.data.req.events_group, BSP_BitPosition(event_id));
+    SetBitOf(FR.report.data.req.events_group, _BitPosition(event_id));
   } else {
     // clear
-    ClearBitOf(FR.report.data.req.events_group, BSP_BitPosition(event_id));
+    ClearBitOf(FR.report.data.req.events_group, _BitPosition(event_id));
   }
 }
 
 uint8_t Reporter_Read_Event(uint64_t event_id) {
-  return (FR.report.data.req.events_group & event_id) >> BSP_BitPosition(event_id);
+  return (FR.report.data.req.events_group & event_id) >> _BitPosition(event_id);
 }
 
 void Reporter_Capture(frame_type frame) {

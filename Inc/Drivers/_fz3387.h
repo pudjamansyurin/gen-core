@@ -8,14 +8,7 @@
 #ifndef FINGER_ADA_H_
 #define FINGER_ADA_H_
 
-#include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "stm32f4xx_hal.h"
-#include "cmsis_os.h"
-#include "main.h"
 #include "_DMA_Finger.h"
-#include "_config.h"
 /***************************************************
  This is a library for our optical Fingerprint sensor
  Designed specifically to work with the Adafruit Fingerprint sensor
@@ -80,11 +73,11 @@
 
 // struct data
 typedef struct {
-	uint16_t start_code;      ///< "Wakeup" code for packet detection
-	uint8_t address[4];       ///< 32-bit Fingerprint sensor address
-	uint8_t type;             ///< Type of packet
-	uint16_t length;          ///< Length of packet
-	uint8_t data[64];         ///< The raw buffer for packet payload
+  uint16_t start_code;      ///< "Wakeup" code for packet detection
+  uint8_t address[4];       ///< 32-bit Fingerprint sensor address
+  uint8_t type;             ///< Type of packet
+  uint16_t length;          ///< Length of packet
+  uint8_t data[64];         ///< The raw buffer for packet payload
 } packet_t;
 
 ///! Helper class to communicate with and keep state for fingerprint sensors

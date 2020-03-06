@@ -8,17 +8,13 @@
 #ifndef SIMCOM_H_
 #define SIMCOM_H_
 
-#include "main.h"
-#include "cmsis_os.h"
-
-#include <stdio.h>							// for: sprintf()
-#include "_config.h"
-#include "_reporter.h"
 #include "_DMA_Simcom.h"
+#include "_reporter.h"
+#include "_crc.h"
 
 #define SIMCOM_STATUS_SEND 					">"
 #define SIMCOM_STATUS_SENT					"SEND OK\r\n"
-#define SIMCOM_STATUS_OK 						"OK\r\n"
+#define SIMCOM_STATUS_OK 					"OK\r\n"
 #define SIMCOM_STATUS_ERROR 				"ERROR\r\n"
 #define SIMCOM_STATUS_READY 				"RDY\r"
 #define SIMCOM_BOOT_COMMAND					"AT\r"

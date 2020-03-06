@@ -45,7 +45,6 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 /* Include audio component Driver */
 #include "_cs43l22.h"
-#include "_config.h"
 
 /*############################### AUDIO ######################################*/
 #define AUDIO_I2C_ADDRESS               0x94

@@ -8,29 +8,23 @@
 #ifndef GYRO_H_
 #define GYRO_H_
 
-#include <stdio.h>				// for: sprintf()
-#include <stdlib.h>				// for: abs()
-#include <math.h>					// for: pow(), sqrt()
-#include "main.h"
-#include "cmsis_os.h"
 #include "_mpu6050.h"
-#include "_swv.h"
 
 /* Public typedef -----------------------------------------------------------*/
 typedef struct {
-	int32_t x;
-	int32_t y;
-	int32_t z;
+  int32_t x;
+  int32_t y;
+  int32_t z;
 } coordinate_t;
 
 typedef struct {
-	coordinate_t accelerometer;
-	coordinate_t gyroscope;
+  coordinate_t accelerometer;
+  coordinate_t gyroscope;
 } mems_t;
 
 typedef struct {
-	uint8_t fall;
-	uint8_t crash;
+  uint8_t fall;
+  uint8_t crash;
 } mems_decision_t;
 
 /* Public functions ---------------------------------------------------------*/

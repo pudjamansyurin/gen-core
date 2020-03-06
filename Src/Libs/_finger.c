@@ -58,7 +58,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 			error = 1;
 		}
 		// send command
-		BSP_LedToggle();
+		_LedToggle();
 		p = FZ3387_getImage();
 		// check response
 		switch (p) {
@@ -110,7 +110,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
 	if (!error) {
 		//	 Wait for put your finger up
-		BSP_LedWrite(0);
+		_LedWrite(0);
 		SWV_SendStrLn("Remove finger");
 		osDelay(2000);
 
@@ -125,7 +125,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 				error = 1;
 			}
 			// send command
-			BSP_LedToggle();
+			_LedToggle();
 			p = FZ3387_getImage();
 			// handle response
 			switch (p) {
@@ -177,7 +177,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
 	if (!error) {
 		//	 Wait for put your finger up
-		BSP_LedWrite(0);
+		_LedWrite(0);
 		SWV_SendStrLn("Remove finger");
 		osDelay(2000);
 		//	Create Register model

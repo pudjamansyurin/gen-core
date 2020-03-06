@@ -8,8 +8,7 @@
 #ifndef UBLOX_DMA_H_
 #define UBLOX_DMA_H_
 
-#include "stm32f4xx_hal.h"
-#include <string.h>
+#include "_config.h"
 
 #define UBLOX_UART_RX_BUFFER_SIZE 1024
 #define UBLOX_DMA_RX_BUFFER_SIZE UBLOX_UART_RX_BUFFER_SIZE

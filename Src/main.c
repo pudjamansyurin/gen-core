@@ -26,8 +26,6 @@
 /* USER CODE BEGIN Includes */
 #include "limits.h"
 #include "_database.h"
-#include "_config.h"
-#include "_rtc.h"
 #include "_crc.h"
 
 #include "_simcom.h"
@@ -38,6 +36,7 @@
 #include "_keyless.h"
 #include "_reporter.h"
 #include "_can.h"
+#include "_rtc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -143,7 +142,6 @@ void StartCanTxTask(void const *argument);
 extern db_t DB;
 extern frame_t FR;
 extern canbus_t CB;
-extern RTC_DateTypeDef LastCalibrationDate;
 
 const TickType_t tick5ms = pdMS_TO_TICKS(5),
     tick100ms = pdMS_TO_TICKS(100),
@@ -154,8 +152,8 @@ const TickType_t tick5ms = pdMS_TO_TICKS(5),
     xDelayFull_ms = pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000),
     xDelaySimple_ms = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000);
 
-gps_t *hGps;
 command_t *hCommand;
+gps_t *hGps;
 /* USER CODE END 0 */
 
 /**
@@ -1107,7 +1105,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 void StartIotTask(void const *argument)
 {
   /* USER CODE BEGIN 5 */
-  TickType_t last_wake;
   osEvent evt;
   report_t *the_report;
   uint8_t success, report_size, seq, retry = 3;
@@ -1119,10 +1116,9 @@ void StartIotTask(void const *argument)
   Simcom_Init();
 
   /* Infinite loop */
-  last_wake = xTaskGetTickCount();
   for (;;) {
     // get event data
-    xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, tick100ms);
+    xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0);
 
     // Set default
     success = 1;
@@ -1203,13 +1199,13 @@ void StartIotTask(void const *argument)
     // handle sending error
     if (!success) {
       // restart module
-      BSP_LedDisco(1000);
+      _LedDisco(1000);
       Simcom_Init();
     }
   }
 
-  // Periodic interval
-  vTaskDelayUntil(&last_wake, tick1000ms);
+  // Give other threads a shot
+  vTaskDelay(tick100ms);
   /* USER CODE END 5 */
 }
 
@@ -1297,7 +1293,7 @@ void StartCommandTask(void const *argument)
               break;
 
             case CMD_GEN_LED:
-              BSP_LedWrite((uint8_t) command->data.value);
+              _LedWrite((uint8_t) command->data.value);
               break;
 
             default:
@@ -1463,11 +1459,11 @@ void StartFingerTask(void const *argument)
     if (notif_value & EVENT_FINGER_PLACED) {
       if (Finger_Auth_Fast() > 0) {
         // indicator when finger is registered
-        BSP_LedWrite(1);
+        _LedWrite(1);
         osDelay(1000);
       }
     }
-    BSP_LedWrite(0);
+    _LedWrite(0);
   }
   /* USER CODE END StartFingerTask */
 }
@@ -1557,7 +1553,7 @@ void StartKeylessTask(void const *argument)
       // indicator
       WaveBeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
       for (int i = 0; i < ((msg + 1) * 2); i++) {
-        BSP_LedToggle();
+        _LedToggle();
         osDelay(50);
       }
     }
@@ -1841,57 +1837,62 @@ void StartGeneralTask(void const *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
-  timestamp_t timestampRTC, timestampCarrier;
+  timestamp_t *timestampCarrier = NULL;
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
   for (;;) {
-    // Retrieve network signal quality (every-time this task wake-up)
-    Simcom_Read_Signal(&DB.vcu.signal);
+    // Retrieve network signal quality
+    Simcom_Read_Signal(&(DB.vcu.signal));
 
-    // read timestamp
-    RTC_Read_RAW(&timestampRTC);
-    // check calibration date (at least check every 1 day)
-    if (LastCalibrationDate.Year != timestampRTC.date.Year ||
-        LastCalibrationDate.Month != timestampRTC.date.Month ||
-        LastCalibrationDate.Date != timestampRTC.date.Date) {
+    // Retrieve RTC time
+    RTC_Read_RAW(&(DB.vcu.rtc.timestamp));
 
-      // debugging
-      SWV_SendStr("\nLastCalibrationDate : ");
-      SWV_SendInt(LastCalibrationDate.Year);
-      SWV_SendStr("-");
-      SWV_SendInt(LastCalibrationDate.Month);
-      SWV_SendStr("-");
-      SWV_SendInt(LastCalibrationDate.Date);
-      SWV_SendStr("\nRTCDate : ");
-      SWV_SendInt(timestampRTC.date.Year);
-      SWV_SendStr("-");
-      SWV_SendInt(timestampRTC.date.Month);
-      SWV_SendStr("-");
-      SWV_SendInt(timestampRTC.date.Date);
-      SWV_SendStr("");
-
+    // Check calibration by cellular network
+    if (_TimeNeedCalibration(DB.vcu.rtc)) {
       // get carrier timestamp
-      if (Simcom_Read_Carrier_Time(&timestampCarrier)) {
-        // check is carrier timestamp valid
-        if (timestampCarrier.date.Year >= VCU_BUILD_YEAR) {
-          // calibrate the RTC
-          RTC_Write_RAW(&timestampCarrier);
+      if (Simcom_Read_Carrier_Time(timestampCarrier)) {
+        // calibrate the RTC
+        RTC_Write_RAW(timestampCarrier);
+      }
+    }
 
-          // debugging
-          SWV_SendStr("\nCarrierDate : ");
-          SWV_SendInt(timestampCarrier.date.Year);
-          SWV_SendStr("-");
-          SWV_SendInt(timestampCarrier.date.Month);
-          SWV_SendStr("-");
-          SWV_SendInt(timestampCarrier.date.Date);
-          SWV_SendStrLn("");
-        }
+    // Control HMI brightness by daylight
+    DB.hmi1.status.daylight = _TimeCheckDaylight(DB.vcu.rtc.timestamp);
+
+    // Dummy algorithm
+    DB.vcu.odometer = (DB.vcu.odometer >= VCU_ODOMETER_MAX ? 0 : (DB.vcu.odometer + 1));
+
+    // Dummy Report Range
+    if (!DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]) {
+      DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE] = 255;
+    } else {
+      DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]--;
+    }
+
+    if (DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] >= 255) {
+      DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] = 0;
+    } else {
+      DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE]++;
+    }
+
+    // Dummy Report Trip
+    if (DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val] == SW_M_TRIP_A) {
+      if (DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] >= VCU_ODOMETER_MAX) {
+        DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] = 0;
+      } else {
+        DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A]++;
+      }
+    } else {
+      if (DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] >= VCU_ODOMETER_MAX) {
+        DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] = 0;
+      } else {
+        DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B]++;
       }
     }
 
     // Periodic interval
-    vTaskDelayUntil(&last_wake, tick5000ms);
+    vTaskDelayUntil(&last_wake, tick500ms);
   }
   /* USER CODE END StartGeneralTask */
 }

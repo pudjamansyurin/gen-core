@@ -6,7 +6,6 @@
  */
 
 #include "_can.h"
-#include "_rtc.h"
 
 extern const TickType_t tick5000ms,
     tick500ms,
@@ -71,8 +70,7 @@ uint8_t CAN_VCU_Switch(void) {
   CB.tx.data[0] |= iDB_hmi1_Status.temperature << 4;
   CB.tx.data[0] |= iDB_hmi1_Status.finger << 5;
   CB.tx.data[0] |= iDB_hmi1_Status.keyless << 6;
-  // check daylight (for auto brightness of HMI)
-  CB.tx.data[0] |= RTC_Daylight() << 7;
+  CB.tx.data[0] |= DB.hmi1.status.daylight << 7;
 
   // sein value
   CB.tx.data[1] = iSein_Left << 0;
@@ -90,9 +88,6 @@ uint8_t CAN_VCU_Switch(void) {
   CB.tx.data[6] = (DB.vcu.odometer >> 16) & 0xFF;
   CB.tx.data[7] = (DB.vcu.odometer >> 24) & 0xFF;
 
-  // dummy algorithm
-  DB.vcu.odometer = (DB.vcu.odometer >= VCU_ODOMETER_MAX ? 0 : (DB.vcu.odometer + 1));
-
   // set default header
   CANBUS_Set_Tx_Header(&(CB.tx.header), CAN_ADDR_VCU_SWITCH, 8);
   // send message
@@ -101,14 +96,13 @@ uint8_t CAN_VCU_Switch(void) {
 
 uint8_t CAN_VCU_RTC(void) {
   // set message
-  RTC_Read_RAW(&DB.vcu.timestamp);
-  CB.tx.data[0] = DB.vcu.timestamp.time.Seconds;
-  CB.tx.data[1] = DB.vcu.timestamp.time.Minutes;
-  CB.tx.data[2] = DB.vcu.timestamp.time.Hours;
-  CB.tx.data[3] = DB.vcu.timestamp.date.Date;
-  CB.tx.data[4] = DB.vcu.timestamp.date.Month;
-  CB.tx.data[5] = DB.vcu.timestamp.date.Year;
-  CB.tx.data[6] = DB.vcu.timestamp.date.WeekDay;
+  CB.tx.data[0] = DB.vcu.rtc.timestamp.time.Seconds;
+  CB.tx.data[1] = DB.vcu.rtc.timestamp.time.Minutes;
+  CB.tx.data[2] = DB.vcu.rtc.timestamp.time.Hours;
+  CB.tx.data[3] = DB.vcu.rtc.timestamp.date.Date;
+  CB.tx.data[4] = DB.vcu.rtc.timestamp.date.Month;
+  CB.tx.data[5] = DB.vcu.rtc.timestamp.date.Year;
+  CB.tx.data[6] = DB.vcu.rtc.timestamp.date.WeekDay;
 
   // set default header
   CANBUS_Set_Tx_Header(&(CB.tx.header), CAN_ADDR_VCU_RTC, 7);
@@ -164,19 +158,6 @@ uint8_t CAN_VCU_Select_Set(void) {
   CB.tx.data[1] = DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE];
   CB.tx.data[2] = DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE];
 
-  // dummy algorithm
-  if (!DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]) {
-    DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE] = 255;
-  } else {
-    DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]--;
-  }
-
-  if (DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] >= 255) {
-    DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] = 0;
-  } else {
-    DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE]++;
-  }
-
   // set default header
   CANBUS_Set_Tx_Header(&(CB.tx.header), CAN_ADDR_VCU_SELECT_SET, 3);
   // send message
@@ -194,20 +175,6 @@ uint8_t CAN_VCU_Trip_Mode(void) {
   CB.tx.data[6] = (DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] >> 16) & 0xFF;
   CB.tx.data[7] = (DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] >> 24) & 0xFF;
 
-  // dummy algorithm
-  if (DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val] == SW_M_TRIP_A) {
-    if (DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] >= VCU_ODOMETER_MAX) {
-      DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] = 0;
-    } else {
-      DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A]++;
-    }
-  } else {
-    if (DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] >= VCU_ODOMETER_MAX) {
-      DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] = 0;
-    } else {
-      DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B]++;
-    }
-  }
   // set default header
   CANBUS_Set_Tx_Header(&(CB.tx.header), CAN_ADDR_VCU_TRIP_MODE, 8);
   // send message
