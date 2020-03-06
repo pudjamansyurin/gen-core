@@ -5,10 +5,10 @@
  *      Author: Puja
  */
 
-#ifndef SIMCOM_DMA_H_
-#define SIMCOM_DMA_H_
+#ifndef DMA_SIMCOM_H_
+#define DMA_SIMCOM_H_
 
-#include "_config.h"
+#include "_utils.h"
 
 #define SIMCOM_UART_RX_BUFFER_SIZE 512
 #define SIMCOM_DMA_RX_BUFFER_SIZE 256
@@ -19,4 +19,4 @@ void SIMCOM_DMA_Init(void);
 void SIMCOM_Reset_Buffer(void);
 void SIMCOM_Transmit(char *pData, uint16_t Size);
 
-#endif /* SIMCOM_DMA_H_ */
+#endif /* DMA_SIMCOM_H_ */

@@ -35,12 +35,8 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32F4_DISCOVERY_AUDIO_H
-#define __STM32F4_DISCOVERY_AUDIO_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef AUDIO_H_
+#define AUDIO_H_
 
 /* Includes ------------------------------------------------------------------*/
 /* Include audio component Driver */
@@ -104,10 +100,6 @@ void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq, void *Pa
 void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params);
 void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __STM32F4_DISCOVERY_AUDIO_H */
+#endif /* AUDIO_H_ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

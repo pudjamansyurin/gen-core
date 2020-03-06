@@ -8,6 +8,7 @@
 #ifndef REPORTER_H_
 #define REPORTER_H_
 
+#include "_utils.h"
 #include "_eeprom.h"
 #include "_gps.h"
 #include "_rtc.h"

@@ -1,5 +1,5 @@
 /*
- * _DMA_Finger.h
+ * _dma_finger.h
  *
  *  Created on: Aug 27, 2019
  *      Author: Puja
@@ -8,7 +8,7 @@
 #ifndef DMA_FINGER_H_
 #define DMA_FINGER_H_
 
-#include "_config.h"
+#include "_utils.h"
 
 #define FINGER_UART_RX_BUFFER_SIZE 50
 #define FINGER_DMA_RX_BUFFER_SIZE FINGER_UART_RX_BUFFER_SIZE

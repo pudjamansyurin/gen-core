@@ -1,23 +1,21 @@
 /*
- * _config.h
+ * _utils.h
  *
  *  Created on: Aug 26, 2019
  *      Author: Puja
  */
 
-#ifndef CONFIG_H_
-#define CONFIG_H_
+#ifndef UTILS_H_
+#define UTILS_H_
 
-#include <string.h>								// for: strlen()
-#include <stdlib.h>								// for: itoa()
-#include <stdio.h>								// for: sprintf()
-#include <stdint.h>
-#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
 #include <math.h>
 
 #include "main.h"
 #include "cmsis_os.h"
-#include "_swv.h"
+#include "_log.h"
 #include "_database.h"
 
 // Function prototype
@@ -30,4 +28,4 @@ int8_t _BitPosition(uint64_t event_id);
 int32_t _ParseNumber(const char *ptr, uint8_t *cnt);
 float _ParseFloatNumber(const char *ptr, uint8_t *cnt);
 
-#endif /* CONFIG_H_ */
+#endif /* UTILS_H_ */

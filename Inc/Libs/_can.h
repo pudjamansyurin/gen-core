@@ -36,7 +36,6 @@
 // ==================================== VCU =========================================
 #if (CAN_NODE & CAN_NODE_VCU)
 #include "_rtc.h"
-#include "_database.h"
 
 uint8_t CAN_VCU_Switch(void);
 uint8_t CAN_VCU_RTC(void);

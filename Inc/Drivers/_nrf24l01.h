@@ -8,7 +8,7 @@
 #ifndef NRF24L01_H_
 #define NRF24L01_H_
 
-#include "_config.h"
+#include "_utils.h"
 
 /* Registers */
 typedef enum {
@@ -182,7 +182,7 @@ NRF_RESULT nrf_flush_tx(nrf24l01 *dev);
 /* RF_SETUP */
 NRF_RESULT nrf_set_data_rate(nrf24l01 *dev, NRF_DATA_RATE rate);
 NRF_RESULT nrf_set_tx_power(nrf24l01 *dev, NRF_TX_PWR pwr);
-NRF_RESULT nrf_set_ccw(nrf24l01 *dev, bool activate);
+NRF_RESULT nrf_set_ccw(nrf24l01 *dev, uint8_t activate);
 NRF_RESULT nrf_read_carrier_detect(nrf24l01 *dev, uint8_t *reg);
 
 /* STATUS */
@@ -206,13 +206,13 @@ NRF_RESULT nrf_enable_auto_ack(nrf24l01 *dev, uint8_t pipe);
 // TODO disable AA?
 
 /* CONFIG */
-NRF_RESULT nrf_enable_crc(nrf24l01 *dev, bool activate);
+NRF_RESULT nrf_enable_crc(nrf24l01 *dev, uint8_t activate);
 NRF_RESULT nrf_set_crc_width(nrf24l01 *dev, NRF_CRC_WIDTH width);
-NRF_RESULT nrf_power_up(nrf24l01 *dev, bool power_up);
+NRF_RESULT nrf_power_up(nrf24l01 *dev, uint8_t power_up);
 NRF_RESULT nrf_rx_tx_control(nrf24l01 *dev, NRF_TXRX_STATE rx);
-NRF_RESULT nrf_enable_rx_data_ready_irq(nrf24l01 *dev, bool activate);
-NRF_RESULT nrf_enable_tx_data_sent_irq(nrf24l01 *dev, bool activate);
-NRF_RESULT nrf_enable_max_retransmit_irq(nrf24l01 *dev, bool activate);
+NRF_RESULT nrf_enable_rx_data_ready_irq(nrf24l01 *dev, uint8_t activate);
+NRF_RESULT nrf_enable_tx_data_sent_irq(nrf24l01 *dev, uint8_t activate);
+NRF_RESULT nrf_enable_max_retransmit_irq(nrf24l01 *dev, uint8_t activate);
 
 /* RX_ADDR_P0 */
 NRF_RESULT nrf_set_rx_address_p0(nrf24l01 *dev, const uint8_t *address); // 5bytes of address

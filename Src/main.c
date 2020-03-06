@@ -24,10 +24,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "limits.h"
 #include "_database.h"
 #include "_crc.h"
-
+#include "_eeprom.h"
 #include "_simcom.h"
 #include "_gyro.h"
 #include "_gps.h"
@@ -121,18 +120,18 @@ static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 static void MX_IWDG_Init(void);
-void StartIotTask(void const *argument);
-void StartGyroTask(void const *argument);
-void StartCommandTask(void const *argument);
-void StartGpsTask(void const *argument);
-void StartFingerTask(void const *argument);
-void StartAudioTask(void const *argument);
-void StartKeylessTask(void const *argument);
-void StartReporterTask(void const *argument);
-void StartCanRxTask(void const *argument);
-void StartSwitchTask(void const *argument);
-void StartGeneralTask(void const *argument);
-void StartCanTxTask(void const *argument);
+void StartIotTask(const void *argument);
+void StartGyroTask(const void *argument);
+void StartCommandTask(const void *argument);
+void StartGpsTask(const void *argument);
+void StartFingerTask(const void *argument);
+void StartAudioTask(const void *argument);
+void StartKeylessTask(const void *argument);
+void StartReporterTask(const void *argument);
+void StartCanRxTask(const void *argument);
+void StartSwitchTask(const void *argument);
+void StartGeneralTask(const void *argument);
+void StartCanTxTask(const void *argument);
 
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -1103,7 +1102,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * @retval None
  */
 /* USER CODE END Header_StartIotTask */
-void StartIotTask(void const *argument)
+void StartIotTask(const void *argument)
 {
   /* USER CODE BEGIN 5 */
   osEvent evt;
@@ -1220,7 +1219,7 @@ void StartIotTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGyroTask */
-void StartGyroTask(void const *argument)
+void StartGyroTask(const void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
   TickType_t last_wake;
@@ -1267,7 +1266,7 @@ void StartGyroTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCommandTask */
-void StartCommandTask(void const *argument)
+void StartCommandTask(const void *argument)
 {
   /* USER CODE BEGIN StartCommandTask */
   command_t *command;
@@ -1321,7 +1320,7 @@ void StartCommandTask(void const *argument)
         case CMD_CODE_REPORT:
           switch (command->data.sub_code) {
             case CMD_REPORT_RTC:
-              RTC_Write(command->data.value);
+              RTC_Write(command->data.value, &(DB.vcu.rtc));
               break;
 
             case CMD_REPORT_ODOM:
@@ -1415,7 +1414,7 @@ void StartCommandTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGpsTask */
-void StartGpsTask(void const *argument)
+void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   TickType_t last_wake;
@@ -1445,7 +1444,7 @@ void StartGpsTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartFingerTask */
-void StartFingerTask(void const *argument)
+void StartFingerTask(const void *argument)
 {
   /* USER CODE BEGIN StartFingerTask */
   uint32_t notif_value;
@@ -1479,7 +1478,7 @@ void StartFingerTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartAudioTask */
-void StartAudioTask(void const *argument)
+void StartAudioTask(const void *argument)
 {
   /* USER CODE BEGIN StartAudioTask */
   TickType_t last_wake;
@@ -1532,7 +1531,7 @@ void StartAudioTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartKeylessTask */
-void StartKeylessTask(void const *argument)
+void StartKeylessTask(const void *argument)
 {
   /* USER CODE BEGIN StartKeylessTask */
   uint8_t msg;
@@ -1550,9 +1549,9 @@ void StartKeylessTask(void const *argument)
     if (notif_value & EVENT_KEYLESS_RX_IT) {
       msg = KEYLESS_Read_Payload();
 
-      SWV_SendStr("NRF received packet, msg = ");
-      SWV_SendHex8(msg);
-      SWV_SendChar('\n');
+      LOG_Str("NRF received packet, msg = ");
+      LOG_Hex8(msg);
+      LOG_Char('\n');
 
       // indicator
       WaveBeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
@@ -1572,7 +1571,7 @@ void StartKeylessTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReporterTask */
-void StartReporterTask(void const *argument)
+void StartReporterTask(const void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
   TickType_t last_wake, last_wake_full = 0;
@@ -1670,7 +1669,7 @@ void StartReporterTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanRxTask */
-void StartCanRxTask(void const *argument)
+void StartCanRxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
   uint32_t notif_value;
@@ -1705,7 +1704,7 @@ void StartCanRxTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSwitchTask */
-void StartSwitchTask(void const *argument)
+void StartSwitchTask(const void *argument)
 {
   /* USER CODE BEGIN StartSwitchTask */
   uint8_t i, Last_Mode_Drive;
@@ -1837,7 +1836,7 @@ void StartSwitchTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGeneralTask */
-void StartGeneralTask(void const *argument)
+void StartGeneralTask(const void *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
@@ -1857,7 +1856,7 @@ void StartGeneralTask(void const *argument)
       // get carrier timestamp
       if (Simcom_Read_Carrier_Time(timestampCarrier)) {
         // calibrate the RTC
-        RTC_Write_RAW(timestampCarrier);
+        RTC_Write_RAW(timestampCarrier, &(DB.vcu.rtc));
       }
     }
 
@@ -1908,7 +1907,7 @@ void StartGeneralTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanTxTask */
-void StartCanTxTask(void const *argument)
+void StartCanTxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
   TickType_t last_wake;
@@ -1961,7 +1960,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
 
-  SWV_SendStrLn("Error Handler fired.");
+  LOG_StrLn("Error Handler fired.");
 
   while (1)
     ;

@@ -15,7 +15,7 @@ void GYRO_Init(void) {
 	SD_MPU6050_Result result;
 
 	do {
-		SWV_SendStrLn("Gyroscope_Init");
+		LOG_StrLn("Gyroscope_Init");
 		// turn off module
 		HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_RESET);
 		osDelay(1000);
@@ -90,7 +90,7 @@ mems_decision_t GYRO_Decision(mems_t *calibrator, uint16_t sample) {
 	//			mems.accelerometer.x, mems.accelerometer.y, mems.accelerometer.z,
 	//			mems.gyroscope.x, mems.gyroscope.y, mems.gyroscope.z
 	//	);
-	//	SWV_SendStr(str);
+	//	LOG_Str(str);
 
 	return mems_decision;
 }

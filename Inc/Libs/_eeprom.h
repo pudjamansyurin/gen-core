@@ -8,7 +8,7 @@
 #ifndef EEPROM_H_
 #define EEPROM_H_
 
-#include "_ee_emulation.h"
+#include "_emulation.h"
 
 /* Virtual address */
 /* Virtual address defined by the user: 0xFFFF value is prohibited */

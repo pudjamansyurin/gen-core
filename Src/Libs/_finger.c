@@ -29,7 +29,7 @@ void Finger_Init(void) {
 
   //	 verify password and check hardware
   do {
-    SWV_SendStrLn("Finger_Init");
+    LOG_StrLn("Finger_Init");
 
     Finger_On();
     verified = FZ3387_verifyPassword();
@@ -47,7 +47,7 @@ uint8_t Finger_Enroll(uint8_t id) {
   Finger_On();
   //	Take Image
   sprintf(str, "Waiting for valid finger to enroll as # %d", id);
-  SWV_SendStrLn(str);
+  LOG_StrLn(str);
 
   // set timeout guard
   tick = osKernelSysTick();
@@ -62,19 +62,19 @@ uint8_t Finger_Enroll(uint8_t id) {
     // check response
     switch (p) {
       case FINGERPRINT_OK:
-        SWV_SendStrLn("Image taken");
+        LOG_StrLn("Image taken");
         break;
       case FINGERPRINT_NOFINGER:
-        SWV_SendStrLn(".");
+        LOG_StrLn(".");
         break;
       case FINGERPRINT_PACKETRECIEVEERR:
-        SWV_SendStrLn("Communication error");
+        LOG_StrLn("Communication error");
         break;
       case FINGERPRINT_IMAGEFAIL:
-        SWV_SendStrLn("Imaging error");
+        LOG_StrLn("Imaging error");
         break;
       default:
-        SWV_SendStrLn("Unknown error");
+        LOG_StrLn("Unknown error");
         break;
     }
   }
@@ -86,23 +86,23 @@ uint8_t Finger_Enroll(uint8_t id) {
     p = FZ3387_image2Tz(1);
     switch (p) {
       case FINGERPRINT_OK:
-        SWV_SendStrLn("Image converted");
+        LOG_StrLn("Image converted");
         error = 0;
         break;
       case FINGERPRINT_IMAGEMESS:
-        SWV_SendStrLn("Image too messy");
+        LOG_StrLn("Image too messy");
         break;
       case FINGERPRINT_PACKETRECIEVEERR:
-        SWV_SendStrLn("Communication error");
+        LOG_StrLn("Communication error");
         break;
       case FINGERPRINT_FEATUREFAIL:
-        SWV_SendStrLn("Could not find finger print features");
+        LOG_StrLn("Could not find finger print features");
         break;
       case FINGERPRINT_INVALIDIMAGE:
-        SWV_SendStrLn("Could not find finger print features");
+        LOG_StrLn("Could not find finger print features");
         break;
       default:
-        SWV_SendStrLn("Unknown error");
+        LOG_StrLn("Unknown error");
         break;
     }
   }
@@ -110,11 +110,11 @@ uint8_t Finger_Enroll(uint8_t id) {
   if (!error) {
     //	 Wait for put your finger up
     _LedWrite(0);
-    SWV_SendStrLn("Remove finger");
+    LOG_StrLn("Remove finger");
     osDelay(2000);
 
     //	Take Image again
-    SWV_SendStrLn("Place same finger again");
+    LOG_StrLn("Place same finger again");
     p = -1;
     // set timeout guard
     tick = osKernelSysTick();
@@ -129,19 +129,19 @@ uint8_t Finger_Enroll(uint8_t id) {
       // handle response
       switch (p) {
         case FINGERPRINT_OK:
-          SWV_SendStrLn("Image taken");
+          LOG_StrLn("Image taken");
           break;
         case FINGERPRINT_NOFINGER:
-          SWV_SendStr(".");
+          LOG_Str(".");
           break;
         case FINGERPRINT_PACKETRECIEVEERR:
-          SWV_SendStrLn("Communication error");
+          LOG_StrLn("Communication error");
           break;
         case FINGERPRINT_IMAGEFAIL:
-          SWV_SendStrLn("Imaging error");
+          LOG_StrLn("Imaging error");
           break;
         default:
-          SWV_SendStrLn("Unknown error");
+          LOG_StrLn("Unknown error");
           break;
       }
     }
@@ -153,23 +153,23 @@ uint8_t Finger_Enroll(uint8_t id) {
     p = FZ3387_image2Tz(2);
     switch (p) {
       case FINGERPRINT_OK:
-        SWV_SendStrLn("Image converted");
+        LOG_StrLn("Image converted");
         error = 0;
         break;
       case FINGERPRINT_IMAGEMESS:
-        SWV_SendStrLn("Image too messy");
+        LOG_StrLn("Image too messy");
         break;
       case FINGERPRINT_PACKETRECIEVEERR:
-        SWV_SendStrLn("Communication error");
+        LOG_StrLn("Communication error");
         break;
       case FINGERPRINT_FEATUREFAIL:
-        SWV_SendStrLn("Could not find fingerprint features");
+        LOG_StrLn("Could not find fingerprint features");
         break;
       case FINGERPRINT_INVALIDIMAGE:
-        SWV_SendStrLn("Could not find fingerprint features");
+        LOG_StrLn("Could not find fingerprint features");
         break;
       default:
-        SWV_SendStrLn("Unknown error");
+        LOG_StrLn("Unknown error");
         break;
     }
   }
@@ -177,23 +177,23 @@ uint8_t Finger_Enroll(uint8_t id) {
   if (!error) {
     //	 Wait for put your finger up
     _LedWrite(0);
-    SWV_SendStrLn("Remove finger");
+    LOG_StrLn("Remove finger");
     osDelay(2000);
     //	Create Register model
     error = 1;
     sprintf(str, "Creating model for #%d", id);
-    SWV_SendStrLn(str);
+    LOG_StrLn(str);
 
     p = FZ3387_createModel();
     if (p == FINGERPRINT_OK) {
-      SWV_SendStrLn("Prints matched!");
+      LOG_StrLn("Prints matched!");
       error = 0;
     } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
-      SWV_SendStrLn("Communication error");
+      LOG_StrLn("Communication error");
     } else if (p == FINGERPRINT_ENROLLMISMATCH) {
-      SWV_SendStrLn("Fingerprints did not match");
+      LOG_StrLn("Fingerprints did not match");
     } else {
-      SWV_SendStrLn("Unknown error");
+      LOG_StrLn("Unknown error");
     }
   }
 
@@ -201,20 +201,20 @@ uint8_t Finger_Enroll(uint8_t id) {
     error = 1;
     //	Store in memory
     sprintf(str, "ID %d", id);
-    SWV_SendStrLn(str);
+    LOG_StrLn(str);
 
     p = FZ3387_storeModel(id);
     if (p == FINGERPRINT_OK) {
-      SWV_SendStrLn("Stored!");
+      LOG_StrLn("Stored!");
       error = 0;
     } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
-      SWV_SendStrLn("Communication error");
+      LOG_StrLn("Communication error");
     } else if (p == FINGERPRINT_BADLOCATION) {
-      SWV_SendStrLn("Could not store in that location");
+      LOG_StrLn("Could not store in that location");
     } else if (p == FINGERPRINT_FLASHERR) {
-      SWV_SendStrLn("Error writing to flash");
+      LOG_StrLn("Error writing to flash");
     } else {
-      SWV_SendStrLn("Unknown error");
+      LOG_StrLn("Unknown error");
     }
   }
 
@@ -230,16 +230,16 @@ uint8_t Finger_Delete_ID(uint8_t id) {
   Finger_Off();
 
   if (p == FINGERPRINT_OK) {
-    SWV_SendStrLn("Deleted!");
+    LOG_StrLn("Deleted!");
   } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
-    SWV_SendStrLn("Communication error");
+    LOG_StrLn("Communication error");
   } else if (p == FINGERPRINT_BADLOCATION) {
-    SWV_SendStrLn("Could not delete in that location");
+    LOG_StrLn("Could not delete in that location");
   } else if (p == FINGERPRINT_FLASHERR) {
-    SWV_SendStrLn("Error writing to flash");
+    LOG_StrLn("Error writing to flash");
   } else {
     sprintf(str, "Unknown error: 0x%02x", p);
-    SWV_SendStrLn(str);
+    LOG_StrLn(str);
   }
 
   return p;
@@ -276,20 +276,20 @@ int8_t Finger_Auth(void) {
   p = FZ3387_getImage();
   switch (p) {
     case FINGERPRINT_OK:
-      SWV_SendStrLn("Image taken");
+      LOG_StrLn("Image taken");
       error = 0;
       break;
     case FINGERPRINT_NOFINGER:
-      SWV_SendStrLn("No finger detected");
+      LOG_StrLn("No finger detected");
       break;
     case FINGERPRINT_PACKETRECIEVEERR:
-      SWV_SendStrLn("Communication error");
+      LOG_StrLn("Communication error");
       break;
     case FINGERPRINT_IMAGEFAIL:
-      SWV_SendStrLn("Imaging error");
+      LOG_StrLn("Imaging error");
       break;
     default:
-      SWV_SendStrLn("Unknown error");
+      LOG_StrLn("Unknown error");
       break;
   }
 
@@ -299,23 +299,23 @@ int8_t Finger_Auth(void) {
     p = FZ3387_image2Tz(1);
     switch (p) {
       case FINGERPRINT_OK:
-        SWV_SendStrLn("Image converted");
+        LOG_StrLn("Image converted");
         error = 0;
         break;
       case FINGERPRINT_IMAGEMESS:
-        SWV_SendStrLn("Image too messy");
+        LOG_StrLn("Image too messy");
         break;
       case FINGERPRINT_PACKETRECIEVEERR:
-        SWV_SendStrLn("Communication error");
+        LOG_StrLn("Communication error");
         break;
       case FINGERPRINT_FEATUREFAIL:
-        SWV_SendStrLn("Could not find finger print features");
+        LOG_StrLn("Could not find finger print features");
         break;
       case FINGERPRINT_INVALIDIMAGE:
-        SWV_SendStrLn("Could not find finger print features");
+        LOG_StrLn("Could not find finger print features");
         break;
       default:
-        SWV_SendStrLn("Unknown error");
+        LOG_StrLn("Unknown error");
         break;
     }
   }
@@ -325,14 +325,14 @@ int8_t Finger_Auth(void) {
     // OK converted!
     p = FZ3387_fingerFastSearch();
     if (p == FINGERPRINT_OK) {
-      SWV_SendStrLn("Found a print match!");
+      LOG_StrLn("Found a print match!");
       error = 0;
     } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
-      SWV_SendStrLn("Communication error");
+      LOG_StrLn("Communication error");
     } else if (p == FINGERPRINT_NOTFOUND) {
-      SWV_SendStrLn("Did not find a match");
+      LOG_StrLn("Did not find a match");
     } else {
-      SWV_SendStrLn("Unknown error");
+      LOG_StrLn("Unknown error");
     }
   }
 
@@ -341,7 +341,7 @@ int8_t Finger_Auth(void) {
   if (!error) {
     // found a match!
     sprintf(str, "Found ID #%d  with confidence of %d", fingerID, fingerConfidence);
-    SWV_SendStrLn(str);
+    LOG_StrLn(str);
 
     if (fingerConfidence > FINGER_CONFIDENCE_MIN) {
       return fingerID;
@@ -371,7 +371,7 @@ int8_t Finger_Auth_Fast(void) {
   if (p == FINGERPRINT_OK) {
     // found a match!
     sprintf(str, "Found ID #%d  with confidence of %d", fingerID, fingerConfidence);
-    SWV_SendStrLn(str);
+    LOG_StrLn(str);
 
     if (fingerConfidence > FINGER_CONFIDENCE_MIN) {
       return fingerID;

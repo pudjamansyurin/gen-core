@@ -9,7 +9,6 @@
 #define KEYLESS_H_
 
 #include "_nrf24l01.h"
-#include "_config.h"
 
 typedef struct {
   uint8_t count;

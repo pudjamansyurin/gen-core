@@ -70,7 +70,7 @@ uint8_t FZ3387_SEND_CMD_PACKET(uint8_t *data, uint8_t size) {
  @returns True if password is correct
  */
 /**************************************************************************/
-bool FZ3387_verifyPassword(void) {
+uint8_t FZ3387_verifyPassword(void) {
   return FZ3387_checkPassword() == FINGERPRINT_OK;
 }
 

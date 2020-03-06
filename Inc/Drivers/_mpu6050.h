@@ -5,17 +5,10 @@
  *      Author: Sina Darvishi
  */
 
-#ifndef DRIVERS_MYLIB_SD_HAL_MPU6050_H_
-#define DRIVERS_MYLIB_SD_HAL_MPU6050_H_
+#ifndef MPU6050_H_
+#define MPU6050_H_
 
-/*
- C++ detection
- #ifdef __cplusplus
- extern "C" {
- #endif
- */
-
-# include "_config.h"
+#include "_utils.h"
 
 /**
  * @defgroup SD_MPU6050_Macros
@@ -26,7 +19,6 @@
 /* Default I2C used */
 #ifndef MPU6050_I2C
 #define	MPU6050_I2C                    I2C1              /*!< Default I2C */
-#define MPU6050_I2C_PINSPACK           SD_I2C_PinsPack_1 /*!< Default I2C pinspack. Check @ref SD_I2C for more information */
 #endif
 
 /* Default I2C clock */
@@ -259,4 +251,4 @@ SD_MPU6050_Result SD_MPU6050_ReadAll(I2C_HandleTypeDef *I2Cx, SD_MPU6050 *DataSt
  * @}
  */
 
-#endif /* DRIVERS_MYLIB_SD_HAL_MPU6050_H_ */
+#endif /* MPU6050_H_ */

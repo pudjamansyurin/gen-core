@@ -68,7 +68,7 @@ static uint8_t I2S3_Init(uint32_t AudioFreq);
 void WaveInit(void) {
   uint8_t ret;
   do {
-    SWV_SendStrLn("Wave_Init");
+    LOG_StrLn("Wave_Init");
 
     /* Initialize Wave player (Codec, DMA, I2C) */
     ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, Volume, AUDIO_SAMPLE_FREQ);

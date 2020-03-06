@@ -25,10 +25,10 @@
 #include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "_config.h"
-#include "_DMA_Simcom.h"
-#include "_DMA_Ublox.h"
-#include "_DMA_Finger.h"
+#include "_utils.h"
+#include "_dma_simcom.h"
+#include "_dma_ublox.h"
+#include "_dma_finger.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -87,7 +87,7 @@ extern TIM_HandleTypeDef htim1;
 void NMI_Handler(void)
 {
   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
-	SWV_SendStrLn("NMI_Handler.");
+	LOG_StrLn("NMI_Handler.");
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
@@ -101,7 +101,7 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-	SWV_SendStrLn("Hard fault interrupt.");
+	LOG_StrLn("Hard fault interrupt.");
 
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -117,7 +117,7 @@ void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
-	SWV_SendStrLn("Memory management fault.");
+	LOG_StrLn("Memory management fault.");
 
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
@@ -133,7 +133,7 @@ void MemManage_Handler(void)
 void BusFault_Handler(void)
 {
   /* USER CODE BEGIN BusFault_IRQn 0 */
-	SWV_SendStrLn("Pre-fetch fault, memory access fault.");
+	LOG_StrLn("Pre-fetch fault, memory access fault.");
 
   /* USER CODE END BusFault_IRQn 0 */
   while (1)
@@ -149,7 +149,7 @@ void BusFault_Handler(void)
 void UsageFault_Handler(void)
 {
   /* USER CODE BEGIN UsageFault_IRQn 0 */
-	SWV_SendStrLn("Undefined instruction or illegal state.");
+	LOG_StrLn("Undefined instruction or illegal state.");
 
   /* USER CODE END UsageFault_IRQn 0 */
   while (1)
@@ -165,7 +165,7 @@ void UsageFault_Handler(void)
 void DebugMon_Handler(void)
 {
   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
-	SWV_SendStrLn("DebugMon_Handler.");
+	LOG_StrLn("DebugMon_Handler.");
 
   /* USER CODE END DebugMonitor_IRQn 0 */
   /* USER CODE BEGIN DebugMonitor_IRQn 1 */

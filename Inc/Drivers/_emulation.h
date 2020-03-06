@@ -45,11 +45,11 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __EEPROM_H
-#define __EEPROM_H
+#ifndef EMULATION_H_
+#define EMULATION_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
+#include "_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 /* EEPROM emulation firmware error codes */
@@ -108,6 +108,6 @@ uint16_t EE_Init(void);
 uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t* Data);
 uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data);
 
-#endif /* __EEPROM_H */
+#endif /* EEPRO_EMULATION */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

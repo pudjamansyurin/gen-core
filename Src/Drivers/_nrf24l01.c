@@ -98,7 +98,7 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
   // enter standby I mode
   ce_reset(dev);
 
-  nrf_power_up(dev, true);
+  nrf_power_up(dev, 1);
 
   // wait for powerup
   while ((config_reg & 2) == 0) {
@@ -392,7 +392,7 @@ NRF_RESULT nrf_set_tx_power(nrf24l01 *dev, NRF_TX_PWR pwr) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_ccw(nrf24l01 *dev, bool activate) {
+NRF_RESULT nrf_set_ccw(nrf24l01 *dev, uint8_t activate) {
   uint8_t reg = 0;
   if (nrf_read_register(dev, NRF_RF_SETUP, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -518,7 +518,7 @@ NRF_RESULT nrf_enable_auto_ack(nrf24l01 *dev, uint8_t pipe) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_crc(nrf24l01 *dev, bool activate) {
+NRF_RESULT nrf_enable_crc(nrf24l01 *dev, uint8_t activate) {
   uint8_t reg = 0;
   if (nrf_read_register(dev, NRF_CONFIG, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -555,7 +555,7 @@ NRF_RESULT nrf_set_crc_width(nrf24l01 *dev, NRF_CRC_WIDTH width) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_power_up(nrf24l01 *dev, bool power_up) {
+NRF_RESULT nrf_power_up(nrf24l01 *dev, uint8_t power_up) {
   uint8_t reg = 0;
   if (nrf_read_register(dev, NRF_CONFIG, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -591,7 +591,7 @@ NRF_RESULT nrf_rx_tx_control(nrf24l01 *dev, NRF_TXRX_STATE rx) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_rx_data_ready_irq(nrf24l01 *dev, bool activate) {
+NRF_RESULT nrf_enable_rx_data_ready_irq(nrf24l01 *dev, uint8_t activate) {
   uint8_t reg = 0;
   if (nrf_read_register(dev, NRF_CONFIG, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -609,7 +609,7 @@ NRF_RESULT nrf_enable_rx_data_ready_irq(nrf24l01 *dev, bool activate) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_tx_data_sent_irq(nrf24l01 *dev, bool activate) {
+NRF_RESULT nrf_enable_tx_data_sent_irq(nrf24l01 *dev, uint8_t activate) {
   uint8_t reg = 0;
   if (nrf_read_register(dev, NRF_CONFIG, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -625,7 +625,7 @@ NRF_RESULT nrf_enable_tx_data_sent_irq(nrf24l01 *dev, bool activate) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_max_retransmit_irq(nrf24l01 *dev, bool activate) {
+NRF_RESULT nrf_enable_max_retransmit_irq(nrf24l01 *dev, uint8_t activate) {
   uint8_t reg = 0;
   if (nrf_read_register(dev, NRF_CONFIG, &reg) != NRF_OK) {
     return NRF_ERROR;

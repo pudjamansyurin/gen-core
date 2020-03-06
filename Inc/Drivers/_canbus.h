@@ -8,7 +8,7 @@
 #ifndef CANBUS_H_
 #define CANBUS_H_
 
-#include "_config.h"
+#include "_utils.h"
 
 // object list
 typedef struct {

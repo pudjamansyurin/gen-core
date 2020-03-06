@@ -30,14 +30,10 @@
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  */
-#ifndef NMEA_H
-#define NMEA_H
+#ifndef NMEA_H_
+#define NMEA_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-#include "_DMA_Ublox.h"
+#include "_dma_ublox.h"
 
 /**
  * \addtogroup      NMEA_NMEA
@@ -296,8 +292,4 @@ nmea_float_t nmea_to_speed(nmea_float_t sik, nmea_speed_t ts);
  * \}
  */
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /* NMEA_H */
+#endif /* NMEA_H_ */

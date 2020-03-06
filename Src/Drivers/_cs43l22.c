@@ -40,7 +40,6 @@
  * @{
  */
 extern I2C_HandleTypeDef hi2c1;
-static I2C_HandleTypeDef *I2cHandle = &hi2c1;
 
 /** @addtogroup Components
  * @{
@@ -555,7 +554,7 @@ void AUDIO_IO_DeInit(void) {
 void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
   HAL_StatusTypeDef status = HAL_OK;
 
-  status = HAL_I2C_Mem_Write(I2cHandle, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &Value, 1, I2Cx_TIMEOUT_MAX);
+  status = HAL_I2C_Mem_Write(&hi2c1, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &Value, 1, I2Cx_TIMEOUT_MAX);
 
   /* Check the communication status */
   if (status != HAL_OK) {
@@ -574,7 +573,7 @@ uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
   HAL_StatusTypeDef status = HAL_OK;
   uint8_t value = 0;
 
-  status = HAL_I2C_Mem_Read(I2cHandle, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &value, 1, I2Cx_TIMEOUT_MAX);
+  status = HAL_I2C_Mem_Read(&hi2c1, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &value, 1, I2Cx_TIMEOUT_MAX);
 
   /* Check the communication status */
   if (status != HAL_OK) {
@@ -590,9 +589,9 @@ uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
  */
 static void I2Cx_Error(uint8_t Addr) {
   /* De-initialize the I2C communication bus */
-  HAL_I2C_MspDeInit(I2cHandle);
+  HAL_I2C_MspDeInit(&hi2c1);
 
   /* Re-Initialize the I2C communication bus */
-  HAL_I2C_MspInit(I2cHandle);
+  HAL_I2C_MspInit(&hi2c1);
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -6,6 +6,15 @@
  */
 #include "_simcom.h"
 
+/* External variable ---------------------------------------------------------*/
+extern char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
+extern const TickType_t tick5000ms;
+extern osMutexId SimcomRecMutexHandle;
+extern osThreadId CommandTaskHandle;
+extern osMailQId CommandMailHandle;
+extern command_t *hCommand;
+simcom_t simcom;
+
 /* Private functions ---------------------------------------------------------*/
 static void Simcom_Reset(void);
 static void Simcom_Prepare(void);
@@ -14,17 +23,6 @@ static uint8_t Simcom_Response(char *str);
 static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint32_t ms, char *res);
 static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
 static uint8_t Simcom_Boot(void);
-
-/* External variable ---------------------------------------------------------*/
-extern char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
-extern const TickType_t tick5000ms;
-extern osMutexId SimcomRecMutexHandle;
-extern osThreadId CommandTaskHandle;
-extern osMailQId CommandMailHandle;
-extern command_t *hCommand;
-
-/* Private variable ---------------------------------------------------------*/
-simcom_t simcom;
 
 static void Simcom_Reset(void) {
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
@@ -60,9 +58,9 @@ static void Simcom_Clear_Buffer(void) {
     osMailPut(CommandMailHandle, hCommand);
   }
   // debugging
-  //	SWV_SendStrLn("\n=================== START ===================");
-  //	SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
-  //	SWV_SendStrLn("\n==================== END ====================");
+  //	LOG_StrLn("\n=================== START ===================");
+  //	LOG_Buf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+  //	LOG_StrLn("\n==================== END ====================");
   // reset rx buffer
   SIMCOM_Reset_Buffer();
 }
@@ -131,19 +129,19 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
 
     // print command for debugger
     if (!is_payload) {
-      SWV_SendStr("\n=> ");
-      SWV_SendBuf(data, data_length);
+      LOG_Str("\n=> ");
+      LOG_Buf(data, data_length);
     } else {
-      SWV_SendBufHex(data, data_length);
+      LOG_BufHex(data, data_length);
     }
-    SWV_SendChar('\n');
+    LOG_Char('\n');
 
     // send command
     ret = Simcom_Send_Direct(data, data_length, ms, res);
 
     // print response for debugger
-    SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
-    SWV_SendChar('\n');
+    LOG_Buf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+    LOG_Char('\n');
   }
 
   osRecursiveMutexRelease(SimcomRecMutexHandle);
@@ -163,13 +161,13 @@ void Simcom_Init(void) {
   // this do-while is complicated, but it doesn't use recursive function, so it's stack safe
   do {
     // show previous response
-    //		SWV_SendStr("\n========================================\n");
-    //		SWV_SendStr("Before: Simcom_Init()");
-    //		SWV_SendStr("\n----------------------------------------\n");
-    //		SWV_SendBuf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
-    //		SWV_SendStr("\n========================================\n");
+    //		LOG_Str("\n========================================\n");
+    //		LOG_Str("Before: Simcom_Init()");
+    //		LOG_Str("\n----------------------------------------\n");
+    //		LOG_Buf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+    //		LOG_Str("\n========================================\n");
 
-    SWV_SendStrLn("Simcom_Init");
+    LOG_StrLn("Simcom_Init");
 
     p = 0;
     //set default value to variable
@@ -409,11 +407,11 @@ uint8_t Simcom_Read_Signal(uint8_t *signal_percentage) {
       }
 
       // debugging
-      SWV_SendStr("\nSIGNAL RSSI = ");
-      SWV_SendBuf(rssiQuality.name, strlen(rssiQuality.name));
-      SWV_SendStr(", ");
-      SWV_SendInt(*signal_percentage);
-      SWV_SendStrLn("%");
+      LOG_Str("\nSIGNAL RSSI = ");
+      LOG_Buf(rssiQuality.name, strlen(rssiQuality.name));
+      LOG_Str(", ");
+      LOG_Int(*signal_percentage);
+      LOG_StrLn("%");
 
       ret = 1;
     }

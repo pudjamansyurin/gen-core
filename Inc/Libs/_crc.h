@@ -5,10 +5,10 @@
  *      Author: pudja
  */
 
-#ifndef LIBS__CRC_H_
-#define LIBS__CRC_H_
+#ifndef CRC_H_
+#define CRC_H_
 
-#include "_config.h"
+#include "_utils.h"
 /**
  * @brief  Calculates 32-bit CRC value from 8-bit input array
  * @param  *arr: Pointer to 8-bit data array for CRC calculation
@@ -31,4 +31,4 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset);
  */
 uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count, uint8_t reset);
 
-#endif /* LIBS__CRC_H_ */
+#endif /* CRC_H_ */

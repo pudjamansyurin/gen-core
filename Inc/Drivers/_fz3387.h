@@ -5,10 +5,10 @@
  *      Author: Puja
  */
 
-#ifndef FINGER_ADA_H_
-#define FINGER_ADA_H_
+#ifndef FZ3387_H_
+#define FZ3387_H_
 
-#include "_DMA_Finger.h"
+#include "_dma_finger.h"
 /***************************************************
  This is a library for our optical Fingerprint sensor
  Designed specifically to work with the Adafruit Fingerprint sensor
@@ -86,7 +86,7 @@ void FZ3387_SERIAL_WRITE(uint8_t c);
 void FZ3387_SERIAL_WRITE_U16(uint16_t cc);
 uint8_t FZ3387_SEND_CMD_PACKET(uint8_t *data, uint8_t size);
 
-bool FZ3387_verifyPassword(void);
+uint8_t FZ3387_verifyPassword(void);
 uint8_t FZ3387_checkPassword(void);
 uint8_t FZ3387_getImage(void);
 uint8_t FZ3387_image2Tz(uint8_t slot);
@@ -105,4 +105,4 @@ void FZ3387_setPacket(uint8_t type, uint16_t length, uint8_t *data);
 void FZ3387_writeStructuredPacket(void);
 uint8_t FZ3387_getStructuredPacket(void);
 
-#endif /* FINGER_ADA_H_ */
+#endif /* FZ3387_H_ */

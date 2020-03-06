@@ -10,7 +10,6 @@
 extern osThreadId CanRxTaskHandle;
 extern osMutexId CanTxMutexHandle;
 extern CAN_HandleTypeDef hcan1;
-CAN_HandleTypeDef *CanHandle = &hcan1;
 canbus_t CB;
 
 void CANBUS_Init(void) {
@@ -32,19 +31,19 @@ void CANBUS_Init(void) {
   sFilterConfig.FilterActivation = ENABLE;
 
   /* Configure the CAN Filter */
-  if (HAL_CAN_ConfigFilter(CanHandle, &sFilterConfig) != HAL_OK) {
+  if (HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK) {
     /* Start Error */
     Error_Handler();
   }
 
   /* Start the CAN peripheral */
-  if (HAL_CAN_Start(CanHandle) != HAL_OK) {
+  if (HAL_CAN_Start(&hcan1) != HAL_OK) {
     /* Start Error */
     Error_Handler();
   }
 
   /* Activate CAN RX notification */
-  if (HAL_CAN_ActivateNotification(CanHandle, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
+  if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
     /* Notification Error */
     Error_Handler();
   }
@@ -77,7 +76,7 @@ HAL_StatusTypeDef CANBUS_Filter(void) {
   // activate filter
   sFilterConfig.FilterActivation = ENABLE;
 
-  return HAL_CAN_ConfigFilter(CanHandle, &sFilterConfig);
+  return HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig);
 }
 
 /*----------------------------------------------------------------------------
@@ -89,22 +88,22 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
   uint32_t TxMailbox;
   HAL_StatusTypeDef status;
   // check tx mailbox is ready
-  while (HAL_CAN_GetTxMailboxesFreeLevel(CanHandle) == 0)
+  while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0)
     ;
   /* Start the Transmission process */
-  status = HAL_CAN_AddTxMessage(CanHandle, &(tx->header), (uint8_t*) &(tx->data), &TxMailbox);
+  status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), (uint8_t*) &(tx->data), &TxMailbox);
 
   // debugging
 //  if (status == HAL_OK) {
-//    SWV_SendStr("\n[TX] ");
-//    SWV_SendHex32(tx->header.StdId);
-//    SWV_SendStr(" => ");
+//    LOG_Str("\n[TX] ");
+//    LOG_Hex32(tx->header.StdId);
+//    LOG_Str(" => ");
 //    if (tx->header.RTR == CAN_RTR_DATA) {
-//      SWV_SendBufHex((char*) &(tx->data), sizeof(tx->data));
+//      LOG_BufHex((char*) &(tx->data), sizeof(tx->data));
 //    } else {
-//      SWV_SendStr("RTR");
+//      LOG_Str("RTR");
 //    }
-//    SWV_SendStrLn("");
+//    LOG_StrLn("");
 //  }
 
   osMutexRelease(CanTxMutexHandle);
@@ -118,19 +117,19 @@ uint8_t CANBUS_Read(canbus_rx_t *rx) {
   HAL_StatusTypeDef status;
 
   /* Get RX message */
-  status = HAL_CAN_GetRxMessage(CanHandle, CAN_RX_FIFO0, &(rx->header), rx->data);
+  status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data);
 
   // debugging
   if (status == HAL_OK) {
-    SWV_SendStr("\n[RX] ");
-    SWV_SendHex32(rx->header.StdId);
-    SWV_SendStr(" <= ");
+    LOG_Str("\n[RX] ");
+    LOG_Hex32(rx->header.StdId);
+    LOG_Str(" <= ");
     if (rx->header.RTR == CAN_RTR_DATA) {
-      SWV_SendBufHex((char*) &(rx->data), sizeof(rx->data));
+      LOG_BufHex((char*) &(rx->data), sizeof(rx->data));
     } else {
-      SWV_SendStr("RTR");
+      LOG_Str("RTR");
     }
-    SWV_SendStrLn("");
+    LOG_StrLn("");
   }
 
   return (status == HAL_OK);

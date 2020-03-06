@@ -34,11 +34,11 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __CS43L22_H
-#define __CS43L22_H
+#ifndef CS43L22_H_
+#define CS43L22_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_config.h"
+#include "_utils.h"
 
 /** @addtogroup BSP
  * @{
@@ -47,9 +47,6 @@
 /* Audio Reset Pin definition */
 #define AUDIO_RESET_PIN                       INT_AUDIO_RST_Pin
 #define AUDIO_RESET_GPIO                      INT_AUDIO_RST_GPIO_Port
-
-///* I2C peripheral configuration defines (control interface of the audio codec) */
-#define DISCOVERY_I2Cx                        I2C1
 
 ///* Maximum Timeout values for flags waiting loops. These timeouts are not based
 // on accurate values, they just guarantee that the application will not remain
@@ -297,7 +294,7 @@ typedef struct {
   uint32_t (*Beep)(uint16_t, uint8_t, uint8_t);
 } AUDIO_DrvTypeDef;
 
-#endif /* __CS43L22_H */
+#endif /* CS43L22_H_ */
 
 /**
  * @}

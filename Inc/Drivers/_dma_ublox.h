@@ -5,10 +5,10 @@
  *      Author: Puja
  */
 
-#ifndef UBLOX_DMA_H_
-#define UBLOX_DMA_H_
+#ifndef DMA_UBLOX_H_
+#define DMA_UBLOX_H_
 
-#include "_config.h"
+#include "_utils.h"
 
 #define UBLOX_UART_RX_BUFFER_SIZE 1024
 #define UBLOX_DMA_RX_BUFFER_SIZE UBLOX_UART_RX_BUFFER_SIZE
@@ -18,4 +18,4 @@ void UBLOX_DMA_IrqHandler(void);
 void UBLOX_DMA_Init(void);
 void UBLOX_Reset_Buffer(void);
 
-#endif /* UBLOX_DMA_H_ */
+#endif /* DMA_UBLOX_H_ */

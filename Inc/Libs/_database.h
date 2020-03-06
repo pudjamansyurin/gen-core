@@ -105,13 +105,13 @@
 #define RESPONSE_STATUS_INVALID                 2
 
 // EXTI list
-#define SW_K_SELECT 					        0
-#define SW_K_SET 						        1
-#define SW_K_SEIN_LEFT 					        2
-#define SW_K_SEIN_RIGHT 				        3
-#define SW_K_REVERSE		 			        4
-#define SW_K_ABS				 		        5
-#define SW_K_MIRRORING 					        6
+#define SW_K_SELECT 					                  0
+#define SW_K_SET 						                    1
+#define SW_K_SEIN_LEFT 					                2
+#define SW_K_SEIN_RIGHT 				                3
+#define SW_K_REVERSE		 			                  4
+#define SW_K_ABS				 		                    5
+#define SW_K_MIRRORING 					                6
 
 // enum list
 typedef enum {

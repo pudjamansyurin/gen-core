@@ -21,7 +21,7 @@ void KEYLESS_Init(void) {
 	// initialization
 	nrf_init(&nrf, &config);
 
-	SWV_SendStrLn("NRF24_Init");
+	LOG_StrLn("NRF24_Init");
 }
 
 void KEYLESS_IrqHandler(void) {

@@ -7,7 +7,6 @@
 
 #include "_rtc.h"
 
-extern db_t DB;
 extern RTC_HandleTypeDef hrtc;
 
 timestamp_t RTC_Decode(uint64_t dateTime) {
@@ -76,23 +75,23 @@ uint64_t RTC_Read(void) {
   return RTC_Encode(timestamp);
 }
 
-void RTC_Write(uint64_t dateTime) {
-  timestamp_t timestamp;
-
-  // decode datetime to timestamp
-  timestamp = RTC_Decode(dateTime);
-
-  // set the RTC
-  RTC_Write_RAW(&timestamp);
-}
-
 void RTC_Read_RAW(timestamp_t *timestamp) {
   // get the RTC
   HAL_RTC_GetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
   HAL_RTC_GetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
 }
 
-void RTC_Write_RAW(timestamp_t *timestamp) {
+void RTC_Write(uint64_t dateTime, rtc_t *rtc) {
+  timestamp_t timestamp;
+
+  // decode datetime to timestamp
+  timestamp = RTC_Decode(dateTime);
+
+  // set the RTC
+  RTC_Write_RAW(&timestamp, rtc);
+}
+
+void RTC_Write_RAW(timestamp_t *timestamp, rtc_t *rtc) {
   // add extra property
   timestamp->time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   timestamp->time.StoreOperation = RTC_STOREOPERATION_RESET;
@@ -103,5 +102,7 @@ void RTC_Write_RAW(timestamp_t *timestamp) {
 
   // save calibration date
   // source from server is always considered as valid
-  DB.vcu.rtc.calibration = timestamp->date;
+  rtc->calibration = timestamp->date;
+  // update time
+  rtc->timestamp = *timestamp;
 }
