@@ -93,16 +93,16 @@
 - http://www.summitdata.com/blog/parasitic-effects-rf-design/ 
 
 ## Sub-Modules Progress:
-| No | Sub Module                  | Chip           | Progress (%) |
-|:--:|-----------------------------|----------------|:------------:|
-|  1 | IoT                         | SIM5300e       |      95      |
-|  2 | GPS                         | Ublox NEO-6M   |      100     |
-|  3 | Gyroscope & Accelerometer   | MPU6050        |      100     |
-|  4 | Keyless                     | nRF24L01       |      50      |
-|  5 | Fingerprint                 | FZ3387         |      100     |
-|  6 | RTC                         | ST RTC		    |      100     |
-|  7 | Li-ION Charger & Protection | TP4056 & DW01A |      100     |
-|  8 | Artificial Audio            | CS43L22        |      100     |
-|  9 | CAN Transceiver             | SN65HVD230     |      100     |
-| 10 | EEPROM                      | 24AA32A        |       0      |
-| 11 | Handlebar/Switch            | ST EXTI        |      100     |
+| No | Sub Module                  | Chip           | ST Peripheral  | Progress (%) |
+|:--:|-----------------------------|----------------|:--------------:|:------------:|
+|  1 | IoT                         | SIM5300e       | USART1		 |      95      |
+|  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |
+|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |
+|  4 | Keyless                     | nRF24L01       | SPI1			 |      50      |
+|  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |
+|  6 | RTC                         | ST RTC		    | -				 |      100     |
+|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |
+|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |
+| 10 | EEPROM                      | 24AA32A        | I2C2			 |      0       |
+| 11 | Handlebar/Switch            | ST EXTI        | PE			 |      100     |
