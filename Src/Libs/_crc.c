@@ -11,60 +11,60 @@
 extern CRC_HandleTypeDef hcrc;
 
 uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
-	uint32_t cnt, remaining = 0;
+  uint32_t cnt, remaining = 0;
 
-	/* Reset CRC data register if necessary */
-	if (reset) {
-		/* Reset generator */
-		__HAL_CRC_DR_RESET(&hcrc);
-	}
+  /* Reset CRC data register if necessary */
+  if (reset) {
+    /* Reset generator */
+    __HAL_CRC_DR_RESET(&hcrc);
+  }
 
-	/* Calculate number of 32-bit blocks */
-	cnt = count >> 2;
+  /* Calculate number of 32-bit blocks */
+  cnt = count >> 2;
 
-	/* Calculate */
-	while (cnt--) {
-		/* Set new value */
-		hcrc.Instance->DR = *(uint32_t*) arr;
+  /* Calculate */
+  while (cnt--) {
+    /* Set new value */
+    hcrc.Instance->DR = *(uint32_t*) arr;
 
-		/* Increase by 4 */
-		arr += 4;
-	}
+    /* Increase by 4 */
+    arr += 4;
+  }
 
-	/* Calculate remaining data as 8-bit */
-	cnt = count % 4;
+  /* Calculate remaining data as 8-bit */
+  cnt = count % 4;
 
-	if (cnt) {
-		/* Calculate */
-		while (cnt--) {
-			/* Combine 8bit to 32bit using litle endian */
-			remaining |= ((*arr) << (24 - (cnt * 8)));
+  if (cnt) {
+    /* Calculate */
+    while (cnt--) {
+      /* Combine 8bit to 32bit using litle endian */
+      remaining |= ((*arr) << (24 - (cnt * 8)));
 
-			// increment pointer
-			arr++;
-		}
+      // increment pointer
+      arr++;
+    }
 
-		/* Set new value */
-		hcrc.Instance->DR = remaining;
-	}
+    /* Set new value */
+    hcrc.Instance->DR = remaining;
+  }
 
-	/* Return data */
-	return hcrc.Instance->DR;
+  /* Return data */
+  return hcrc.Instance->DR;
 }
 
 uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count, uint8_t reset) {
-	/* Reset CRC data register if necessary */
-	if (reset) {
-		/* Reset generator */
-		__HAL_CRC_DR_RESET(&hcrc);
-	}
+  /* Reset CRC data register if necessary */
+  if (reset) {
+    /* Reset generator */
+    __HAL_CRC_DR_RESET(&hcrc);
+  }
 
-	/* Calculate CRC */
-	while (count--) {
-		/* Set new value */
-		hcrc.Instance->DR = *arr++;
-	}
+  /* Calculate CRC */
+  while (count--) {
+    /* Set new value */
+    hcrc.Instance->DR = *arr++;
+  }
 
-	/* Return data */
-	return hcrc.Instance->DR;
+  /* Return data */
+  return hcrc.Instance->DR;
 }

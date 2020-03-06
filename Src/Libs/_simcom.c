@@ -17,7 +17,7 @@ static uint8_t Simcom_Boot(void);
 
 /* External variable ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
-extern const TickType_t tick500ms;
+extern const TickType_t tick5000ms;
 extern osMutexId SimcomRecMutexHandle;
 extern osThreadId CommandTaskHandle;
 extern osMailQId CommandMailHandle;
@@ -287,14 +287,18 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
       // wait ACK for payload
       while (1) {
         if (Simcom_Response(NET_ACK_PREFIX) ||
-            (osKernelSysTick() - tick) >= tick500ms) {
+            (osKernelSysTick() - tick) >= tick5000ms) {
+
           break;
         }
 
         osDelay(10);
       }
 
-      ret = 1;
+      // if receive ACK, valid
+      if (Simcom_Response(NET_ACK_PREFIX)) {
+        ret = 1;
+      }
     }
   }
 
