@@ -18,6 +18,15 @@
 #include "_log.h"
 #include "_database.h"
 
+extern const TickType_t tick5ms,
+    tick100ms,
+    tick250ms,
+    tick500ms,
+    tick1000ms,
+    tick5000ms,
+    tickDelayFull,
+    tickDelaySimple;
+
 // Function prototype
 void _LedWrite(uint8_t state);
 void _LedToggle(void);

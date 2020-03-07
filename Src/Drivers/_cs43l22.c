@@ -36,52 +36,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_cs43l22.h"
 
-/** @addtogroup BSP
- * @{
- */
 extern I2C_HandleTypeDef hi2c1;
 
-/** @addtogroup Components
- * @{
- */
-
-/** @addtogroup CS43L22
- * @brief     This file provides a set of functions needed to drive the
- *            CS43L22 audio codec.
- * @{
- */
-
-/** @defgroup CS43L22_Private_Types
- * @{
- */
-
-/**
- * @}
- */
-
-/** @defgroup CS43L22_Private_Defines
- * @{
- */
 /* Uncomment this line to enable verifying data sent to codec after each write
  operation (for debug purpose) */
 #if !defined (VERIFY_WRITTENDATA)
 /* #define VERIFY_WRITTENDATA */
 #endif /* VERIFY_WRITTENDATA */
-/**
- * @}
- */
-
-/** @defgroup CS43L22_Private_Macros
- * @{
- */
-
-/**
- * @}
- */
-
-/** @defgroup CS43L22_Private_Variables
- * @{
- */
 
 /* Audio codec driver structure initialization */
 AUDIO_DrvTypeDef cs43l22_drv =
@@ -107,23 +68,10 @@ static uint8_t theVolume;
 static uint16_t theOutputDevice;
 volatile uint8_t OutputDev = 0;
 
-/**
- * @}
- */
-
-/** @defgroup CS43L22_Function_Prototypes
- * @{
- */
 static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 static uint8_t VOLUME_CONVERT(uint8_t Volume);
 static void I2Cx_Error(uint8_t Addr);
-/**
- * @}
- */
 
-/** @defgroup CS43L22_Private_Functions
- * @{
- */
 /**
  * @brief Initializes the audio codec and the control interface.
  * @param DeviceAddr: Device address on communication Bus.
@@ -506,24 +454,8 @@ static uint8_t VOLUME_CONVERT(uint8_t Volume) {
 
   return Result;
 }
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
 
 /********************************* LINK AUDIO *********************************/
-
 /**
  * @brief  Initializes Audio low level.
  */

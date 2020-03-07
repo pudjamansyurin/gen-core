@@ -7,7 +7,7 @@
 
 #include "_log.h"
 
-extern osMutexId SwvMutexHandle;
+extern osMutexId LogMutexHandle;
 
 void LOG_Char(char ch) {
 #if LOG_DEBUG
@@ -20,7 +20,7 @@ void LOG_Char(char ch) {
 }
 
 void LOG_Int(int32_t num) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   char str[10]; // 10 chars max for INT32_MAX
   int i = 0;
@@ -34,11 +34,11 @@ void LOG_Int(int32_t num) {
   for (i--; i >= 0; i--)
     LOG_Char(str[i]);
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_Int0(int32_t num) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   char str[10]; // 10 chars max for INT32_MAX
   int i = 0;
@@ -54,71 +54,71 @@ void LOG_Int0(int32_t num) {
   for (i--; i >= 0; i--)
     LOG_Char(str[i]);
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_Hex8(uint8_t num) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   LOG_Char(HEX_CHARS[(num >> 4) % 0x10]);
   LOG_Char(HEX_CHARS[(num & 0x0f) % 0x10]);
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_Hex16(uint16_t num) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   uint8_t i;
   for (i = 12; i > 0; i -= 4)
     LOG_Char(HEX_CHARS[(num >> i) % 0x10]);
   LOG_Char(HEX_CHARS[(num & 0x0f) % 0x10]);
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_Hex32(uint32_t num) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   uint8_t i;
   for (i = 28; i > 0; i -= 4)
     LOG_Char(HEX_CHARS[(num >> i) % 0x10]);
   LOG_Char(HEX_CHARS[(num & 0x0f) % 0x10]);
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_Str(char *str) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   while (*str != '\0')
     LOG_Char(*str++);
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_StrLn(char *str) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   while (*str != '\0')
     LOG_Char(*str++);
   LOG_Char('\n');
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_Buf(char *buf, uint16_t bufsize) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   uint16_t i;
   for (i = 0; i < bufsize; i++)
     LOG_Char(*buf++);
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_BufPrintable(char *buf, uint16_t bufsize, char subst) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   uint16_t i;
   char ch;
@@ -127,11 +127,11 @@ void LOG_BufPrintable(char *buf, uint16_t bufsize, char subst) {
     LOG_Char(ch > 32 ? ch : subst);
   }
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_BufHex(char *buf, uint16_t bufsize) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   uint16_t i;
   char ch;
@@ -141,11 +141,11 @@ void LOG_BufHex(char *buf, uint16_t bufsize) {
     LOG_Char(HEX_CHARS[(ch & 0x0f) % 0x10]);
   }
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }
 
 void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char subst) {
-  osMutexWait(SwvMutexHandle, osWaitForever);
+  osMutexWait(LogMutexHandle, osWaitForever);
 
   uint16_t i = 0, len, pos;
   char buffer[column_width];
@@ -179,5 +179,5 @@ void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char sub
     i += len;
   }
 
-  osMutexRelease(SwvMutexHandle);
+  osMutexRelease(LogMutexHandle);
 }

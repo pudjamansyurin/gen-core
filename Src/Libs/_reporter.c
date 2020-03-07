@@ -95,10 +95,10 @@ void Reporter_Set_Events(uint64_t value) {
 void Reporter_Set_Event(uint64_t event_id, uint8_t value) {
   if (value & 1) {
     // set
-    SetBitOf(REPORT.data.req.events_group, _BitPosition(event_id));
+    BV(REPORT.data.req.events_group, _BitPosition(event_id));
   } else {
     // clear
-    ClearBitOf(REPORT.data.req.events_group, _BitPosition(event_id));
+    BC(REPORT.data.req.events_group, _BitPosition(event_id));
   }
 }
 

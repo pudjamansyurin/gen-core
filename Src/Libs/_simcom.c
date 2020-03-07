@@ -7,8 +7,7 @@
 #include "_simcom.h"
 
 /* External variable ---------------------------------------------------------*/
-extern char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
-extern const TickType_t tick5000ms;
+extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 extern osMutexId SimcomRecMutexHandle;
 extern osThreadId CommandTaskHandle;
 extern osMailQId CommandMailHandle;
@@ -59,14 +58,14 @@ static void Simcom_Clear_Buffer(void) {
   }
   // debugging
   //	LOG_StrLn("\n=================== START ===================");
-  //	LOG_Buf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+  //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
   //	LOG_StrLn("\n==================== END ====================");
   // reset rx buffer
   SIMCOM_Reset_Buffer();
 }
 
 static uint8_t Simcom_Response(char *str) {
-  if (strstr(SIMCOM_UART_RX_Buffer, str) != NULL) {
+  if (strstr(SIMCOM_UART_RX, str) != NULL) {
     return 1;
   }
   return 0;
@@ -140,7 +139,7 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
     ret = Simcom_Send_Direct(data, data_length, ms, res);
 
     // print response for debugger
-    LOG_Buf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+    LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
     LOG_Char('\n');
   }
 
@@ -164,7 +163,7 @@ void Simcom_Init(void) {
     //		LOG_Str("\n========================================\n");
     //		LOG_Str("Before: Simcom_Init()");
     //		LOG_Str("\n----------------------------------------\n");
-    //		LOG_Buf(SIMCOM_UART_RX_Buffer, strlen(SIMCOM_UART_RX_Buffer));
+    //		LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
     //		LOG_Str("\n========================================\n");
 
     LOG_StrLn("Simcom_Init");
@@ -311,9 +310,9 @@ uint8_t Simcom_Read_ACK(report_header_t *report_header) {
   ack_t ack;
   char *str = NULL;
 
-  if (strstr(SIMCOM_UART_RX_Buffer, SIMCOM_RESPONSE_IPD)) {
+  if (strstr(SIMCOM_UART_RX, SIMCOM_RESPONSE_IPD)) {
     // parse ACK
-    str = strstr(SIMCOM_UART_RX_Buffer, NET_ACK_PREFIX);
+    str = strstr(SIMCOM_UART_RX, NET_ACK_PREFIX);
     if (str != NULL) {
       ack = *(ack_t*) str;
 
@@ -340,9 +339,9 @@ uint8_t Simcom_Read_Command(command_t *command) {
   uint8_t ret = 0;
   char *str = NULL;
 
-  if (strstr(SIMCOM_UART_RX_Buffer, SIMCOM_RESPONSE_IPD)) {
+  if (strstr(SIMCOM_UART_RX, SIMCOM_RESPONSE_IPD)) {
     // get pointer reference
-    str = strstr(SIMCOM_UART_RX_Buffer, NET_COMMAND_PREFIX);
+    str = strstr(SIMCOM_UART_RX, NET_COMMAND_PREFIX);
     if (str != NULL) {
       // copy the whole value (any time the buffer can change)
       *command = *(command_t*) str;
@@ -385,7 +384,7 @@ uint8_t Simcom_Read_Signal(uint8_t *signal_percentage) {
   // check signal quality
   if (Simcom_Command("AT+CSQ\r", 500, NULL, 1)) {
     // get pointer reference
-    str = strstr(SIMCOM_UART_RX_Buffer, prefix);
+    str = strstr(SIMCOM_UART_RX, prefix);
 
     if (str != NULL) {
       str += strlen(prefix);
@@ -430,7 +429,7 @@ uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
   // get local timestamp (from base station)
   if (Simcom_Command("AT+CCLK?\r", 500, NULL, 1)) {
     // get pointer reference
-    str = strstr(SIMCOM_UART_RX_Buffer, prefix);
+    str = strstr(SIMCOM_UART_RX, prefix);
 
     if (str != NULL) {
       str += strlen(prefix);

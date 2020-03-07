@@ -21,7 +21,7 @@
 #include "_fz3387.h"
 
 extern UART_HandleTypeDef huart4;
-extern char FINGER_UART_RX_Buffer[FINGER_UART_RX_BUFFER_SIZE];
+extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
 
 /***************************************************************************
  VARIABLES
@@ -360,7 +360,7 @@ uint8_t FZ3387_getStructuredPacket(void) {
   uint16_t idx = 0;
 
   while (1) {
-    byte = FINGER_UART_RX_Buffer[idx];
+    byte = FINGER_UART_RX[idx];
 
     switch (idx) {
       case 0:

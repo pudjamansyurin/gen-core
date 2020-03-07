@@ -42,9 +42,6 @@
  *
  ******************************************************************************
  */
-/** @addtogroup EEPROM_Emulation
- * @{
- */
 
 /* Includes ------------------------------------------------------------------*/
 #include "_emulation.h"
@@ -640,9 +637,5 @@ static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data) {
   /* Return last operation flash status */
   return FlashStatus;
 }
-
-/**
- * @}
- */
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

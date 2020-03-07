@@ -40,41 +40,16 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
-/** @addtogroup BSP
- * @{
- */
-
 /* Audio Reset Pin definition */
 #define AUDIO_RESET_PIN                       INT_AUDIO_RST_Pin
 #define AUDIO_RESET_GPIO                      INT_AUDIO_RST_GPIO_Port
 
-///* Maximum Timeout values for flags waiting loops. These timeouts are not based
+/* Maximum Timeout values for flags waiting loops. These timeouts are not based
 // on accurate values, they just guarantee that the application will not remain
 // stuck if the SPI communication is corrupted.
 // You may modify these timeout values depending on CPU frequency and application
 // conditions (interrupts routines ...). */
 #define I2Cx_TIMEOUT_MAX    0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
-//
-
-/** @addtogroup Component
- * @{
- */
-
-/** @addtogroup CS43L22
- * @{
- */
-
-/** @defgroup CS43L22_Exported_Types
- * @{
- */
-
-/**
- * @}
- */
-
-/** @defgroup CS43L22_Exported_Constants
- * @{
- */
 
 /******************************************************************************/
 /***************************  Codec User defines ******************************/
@@ -235,22 +210,6 @@
  */
 #define CS43L22_CHIPID_ADDR    0x01
 
-/**
- * @}
- */
-
-/** @defgroup CS43L22_Exported_Macros
- * @{
- */
-
-/**
- * @}
- */
-
-/** @defgroup CS43L22_Exported_Functions
- * @{
- */
-
 /*------------------------------------------------------------------------------
  Audio Codec functions
  ------------------------------------------------------------------------------*/
@@ -295,21 +254,5 @@ typedef struct {
 } AUDIO_DrvTypeDef;
 
 #endif /* CS43L22_H_ */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -9,12 +9,15 @@
 #define DATABASE_H_
 
 #include "main.h"
+#include "cmsis_os.h"
 
 // macro to manipulate bit
-#define SetBit(x)                               (1 << x)
-#define SetBitOf(var, x)                        (var |= 1 << x)
-#define ClearBitOf(var, x)                      (var &= ~(1 << x))
-#define ToggleBitOf(var, x)                     (var ^= 1 << x)
+#define BIT(x)                                  (1 << x)
+#define BV(var, x)                              (var |= (1 << x))
+#define BC(var, x)                              (var &= ~(1 << x))
+#define BT(var, x)                              (var ^= (1 << x))
+#define BSL(var, x)                             (var << x)
+#define BSR(var, x)                             ((var >> x) & 0xFF)
 #define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x)                            ((x) - '0')
 
@@ -46,33 +49,33 @@
 #define GMT_TIME                                7                       // Asia/Jakarta
 
 // Event List (RTOS Tasks)
-#define EVENT_IOT_RESPONSE                      SetBit(0)
-#define EVENT_IOT_REPORT                        SetBit(1)
+#define EVENT_IOT_RESPONSE                      BIT(0)
+#define EVENT_IOT_REPORT                        BIT(1)
 
-#define EVENT_REPORTER_CRASH                    SetBit(0)
-#define EVENT_REPORTER_FALL                     SetBit(1)
-#define EVENT_REPORTER_FALL_FIXED               SetBit(2)
+#define EVENT_REPORTER_CRASH                    BIT(0)
+#define EVENT_REPORTER_FALL                     BIT(1)
+#define EVENT_REPORTER_FALL_FIXED               BIT(2)
 
-#define EVENT_AUDIO_BEEP                        SetBit(0)
-#define EVENT_AUDIO_MUTE_ON                     SetBit(1)
-#define EVENT_AUDIO_MUTE_OFF                    SetBit(2)
+#define EVENT_AUDIO_BEEP                        BIT(0)
+#define EVENT_AUDIO_MUTE_ON                     BIT(1)
+#define EVENT_AUDIO_MUTE_OFF                    BIT(2)
 
-#define EVENT_FINGER_PLACED                     SetBit(0)
+#define EVENT_FINGER_PLACED                     BIT(0)
 
-#define EVENT_CAN_RX_IT                         SetBit(0)
+#define EVENT_CAN_RX_IT                         BIT(0)
 
-#define EVENT_KEYLESS_RX_IT                     SetBit(0)
+#define EVENT_KEYLESS_RX_IT                     BIT(0)
 
 // Payload list (Keyless)
-#define KEYLESS_MSG_BROADCAST                   SetBit(0)
-#define KEYLESS_MSG_FINDER                      SetBit(1)
-#define KEYLESS_MSG_SEAT                        SetBit(2)
+#define KEYLESS_MSG_BROADCAST                   BIT(0)
+#define KEYLESS_MSG_FINDER                      BIT(1)
+#define KEYLESS_MSG_SEAT                        BIT(2)
 
 // Events group (Frame Report)
-#define REPORT_NETWORK_RESTART                  SetBit(0)
-#define REPORT_BIKE_FALLING                     SetBit(1)
-#define REPORT_BIKE_CRASHED                     SetBit(2)
-#define REPORT_KEYLESS_MISSING                  SetBit(3)
+#define REPORT_NETWORK_RESTART                  BIT(0)
+#define REPORT_BIKE_FALLING                     BIT(1)
+#define REPORT_BIKE_CRASHED                     BIT(2)
+#define REPORT_KEYLESS_MISSING                  BIT(3)
 
 // Command Code List
 #define CMD_CODE_GEN                            0
@@ -105,13 +108,12 @@
 #define RESPONSE_STATUS_INVALID                 2
 
 // EXTI list
-#define SW_K_SELECT 					                  0
-#define SW_K_SET 						                    1
-#define SW_K_SEIN_LEFT 					                2
-#define SW_K_SEIN_RIGHT 				                3
-#define SW_K_REVERSE		 			                  4
-#define SW_K_ABS				 		                    5
-#define SW_K_MIRRORING 					                6
+#define SW_K_SELECT 					        0
+#define SW_K_SET 						        1
+#define SW_K_SEIN_LEFT 					        2
+#define SW_K_SEIN_RIGHT 				        3
+#define SW_K_REVERSE		 			        4
+#define SW_K_ABS				 		        5
 
 // enum list
 typedef enum {
@@ -165,6 +167,19 @@ typedef struct {
 //	uint8_t sein_right;
 } status_t;
 
+typedef struct {
+  uint8_t listening;
+  struct {
+    sw_mode_t val;
+    struct {
+      uint8_t val[SW_M_MAX + 1];
+      uint8_t max[SW_M_MAX + 1];
+      uint8_t report[SW_M_REPORT_MAX + 1];
+      uint32_t trip[SW_M_TRIP_MAX + 1];
+    } sub;
+  } mode;
+} sw_runner_t;
+
 // Node struct
 typedef struct {
   struct {
@@ -185,18 +200,7 @@ typedef struct {
         uint8_t running;
         uint8_t time;
       } timer[2];
-      struct {
-        uint8_t listening;
-        struct {
-          sw_mode_t val;
-          struct {
-            uint8_t val[SW_M_MAX + 1];
-            uint8_t max[SW_M_MAX + 1];
-            uint8_t report[SW_M_REPORT_MAX + 1];
-            uint32_t trip[SW_M_TRIP_MAX + 1];
-          } sub;
-        } mode;
-      } runner;
+      sw_runner_t runner;
     } sw;
   } vcu;
   struct {

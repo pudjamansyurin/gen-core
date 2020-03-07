@@ -10,8 +10,8 @@
 
 #include "_utils.h"
 
-#define UBLOX_UART_RX_BUFFER_SIZE 1024
-#define UBLOX_DMA_RX_BUFFER_SIZE UBLOX_UART_RX_BUFFER_SIZE
+#define UBLOX_UART_RX_SZ 1024
+#define UBLOX_DMA_RX_SZ UBLOX_UART_RX_SZ
 
 void UBLOX_USART_IrqHandler(void);
 void UBLOX_DMA_IrqHandler(void);

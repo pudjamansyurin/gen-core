@@ -11,10 +11,10 @@
 #include "_canbus.h"
 
 // CAN Nodes
-#define CAN_NODE_VCU										SetBit(0)
-#define CAN_NODE_MCU										SetBit(1)
-#define CAN_NODE_BMS										SetBit(2)
-#define CAN_NODE_HMI								    	SetBit(3)
+#define CAN_NODE_VCU										BIT(0)
+#define CAN_NODE_MCU										BIT(1)
+#define CAN_NODE_BMS										BIT(2)
+#define CAN_NODE_HMI								    	BIT(3)
 
 // CAN Node Selector
 #define CAN_NODE								    		(CAN_NODE_VCU)
@@ -37,12 +37,12 @@
 #if (CAN_NODE & CAN_NODE_VCU)
 #include "_rtc.h"
 
-uint8_t CAN_VCU_Switch(void);
-uint8_t CAN_VCU_RTC(void);
-uint8_t CAN_VCU_Select_Set(void);
-uint8_t CAN_VCU_Trip_Mode(void);
+uint8_t CAN_VCU_Switch(db_t *DB);
+uint8_t CAN_VCU_RTC(timestamp_t *timestamp);
+uint8_t CAN_VCU_Select_Set(sw_runner_t *runner);
+uint8_t CAN_VCU_Trip_Mode(uint32_t *trip);
 
-void CAN_MCU_Dummy_Read(void);
+void CAN_MCU_Dummy_Read(uint8_t *speed);
 
 #endif
 

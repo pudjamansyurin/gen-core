@@ -39,7 +39,7 @@ int8_t _BitPosition(uint64_t event_id) {
   uint8_t pos = -1;
 
   for (int8_t i = 0; i < 64; i++) {
-    if (event_id & SetBit(i)) {
+    if (event_id & BIT(i)) {
       pos = i;
       break;
     }

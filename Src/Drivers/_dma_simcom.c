@@ -10,8 +10,8 @@
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern UART_HandleTypeDef huart1;
 
-char SIMCOM_UART_RX_Buffer[SIMCOM_UART_RX_BUFFER_SIZE];
-static char SIMCOM_DMA_RX_Buffer[SIMCOM_DMA_RX_BUFFER_SIZE];
+char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
+static char DMA_RX[SIMCOM_DMA_RX_SZ];
 static size_t write, len, copy;
 static uint8_t *ptr;
 
@@ -29,20 +29,20 @@ void SIMCOM_DMA_IrqHandler(void) {
     /* Clear the transfer complete flag */
     __HAL_DMA_CLEAR_FLAG(&hdma_usart1_rx, __HAL_DMA_GET_TC_FLAG_INDEX(&hdma_usart1_rx));
     /* Get the length of the data */
-    len = SIMCOM_DMA_RX_BUFFER_SIZE - hdma_usart1_rx.Instance->NDTR;
+    len = SIMCOM_DMA_RX_SZ - hdma_usart1_rx.Instance->NDTR;
 
     /* Only process if DMA is not empty */
     if (len > 0) {
       /* Get number of bytes we can copy to the end of buffer */
-      copy = SIMCOM_UART_RX_BUFFER_SIZE - write;
+      copy = SIMCOM_UART_RX_SZ - write;
       /* write received data for UART main buffer for manipulation later */
-      ptr = (uint8_t*) SIMCOM_DMA_RX_Buffer;
+      ptr = (uint8_t*) DMA_RX;
       /* Check how many bytes to copy */
       if (copy > len) {
         copy = len;
       }
       /* Copy first part */
-      memcpy(&SIMCOM_UART_RX_Buffer[write], ptr, copy);
+      memcpy(&SIMCOM_UART_RX[write], ptr, copy);
       /* Correct values for remaining data */
       write += copy;
       len -= copy;
@@ -50,11 +50,11 @@ void SIMCOM_DMA_IrqHandler(void) {
       /* If still data to write for beginning of buffer */
       if (len) {
         /* Don't care if we override Read pointer now */
-        memcpy(&SIMCOM_UART_RX_Buffer[0], ptr, len);
+        memcpy(&SIMCOM_UART_RX[0], ptr, len);
         write = len;
       }
       // set null at the end
-      SIMCOM_UART_RX_Buffer[write] = '\0';
+      SIMCOM_UART_RX[write] = '\0';
     }
 
     /* Start DMA transfer again */
@@ -66,12 +66,12 @@ void SIMCOM_DMA_Init(void) {
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);      // enable idle line interrupt
   __HAL_DMA_ENABLE_IT(&hdma_usart1_rx, DMA_IT_TC);  // enable DMA Tx cplt interrupt
   __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT); // disable half complete interrupt
-  HAL_UART_Receive_DMA(&huart1, (uint8_t*) SIMCOM_DMA_RX_Buffer, SIMCOM_DMA_RX_BUFFER_SIZE);
+  HAL_UART_Receive_DMA(&huart1, (uint8_t*) DMA_RX, SIMCOM_DMA_RX_SZ);
 }
 
 void SIMCOM_Reset_Buffer(void) {
   // clear rx buffer
-  memset(SIMCOM_UART_RX_Buffer, 0, strlen(SIMCOM_UART_RX_Buffer));
+  memset(SIMCOM_UART_RX, 0, strlen(SIMCOM_UART_RX));
   // wail until clear is done
   osDelay(50);
   // set index back to first

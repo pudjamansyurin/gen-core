@@ -7,7 +7,7 @@
 
 #include "_gps.h"
 
-extern char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
+extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
 nmea_t hnmea;
 
 void GPS_Init(void) {
@@ -18,7 +18,7 @@ void GPS_Init(void) {
 }
 
 uint8_t GPS_Process(gps_t *hgps) {
-	nmea_process(&hnmea, UBLOX_UART_RX_Buffer, strlen(UBLOX_UART_RX_Buffer));
+	nmea_process(&hnmea, UBLOX_UART_RX, strlen(UBLOX_UART_RX));
 
 	// copy only necessary part
 	hgps->dop_h = hnmea.dop_h;

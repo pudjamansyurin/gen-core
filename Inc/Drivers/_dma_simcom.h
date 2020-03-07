@@ -10,8 +10,8 @@
 
 #include "_utils.h"
 
-#define SIMCOM_UART_RX_BUFFER_SIZE 512
-#define SIMCOM_DMA_RX_BUFFER_SIZE 256
+#define SIMCOM_UART_RX_SZ 512
+#define SIMCOM_DMA_RX_SZ (SIMCOM_UART_RX_SZ/2)
 
 void SIMCOM_USART_IrqHandler(void);
 void SIMCOM_DMA_IrqHandler(void);

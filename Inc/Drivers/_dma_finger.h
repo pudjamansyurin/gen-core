@@ -10,8 +10,8 @@
 
 #include "_utils.h"
 
-#define FINGER_UART_RX_BUFFER_SIZE 50
-#define FINGER_DMA_RX_BUFFER_SIZE FINGER_UART_RX_BUFFER_SIZE
+#define FINGER_UART_RX_SZ 50
+#define FINGER_DMA_RX_SZ FINGER_UART_RX_SZ
 
 void FINGER_USART_IrqHandler(void);
 void FINGER_DMA_IrqHandler(void);

@@ -1,6 +1,6 @@
 /**
- * \file            gps.h
- * \brief           NMEA main file
+ * @file            gps.h
+ * @brief           NMEA main file
  */
 
 /*
@@ -36,14 +36,7 @@
 #include "_dma_ublox.h"
 
 /**
- * \addtogroup      NMEA_NMEA
- * \defgroup        NMEA_NMEA_CONFIG Configuration
- * \brief           Default configuration setup
- * \{
- */
-
-/**
- * \brief           Enables `1` or disables `0` `double precision` for floating point
+ * @brief           Enables `1` or disables `0` `double precision` for floating point
  *                  values such as latitude, longitude, altitude.
  *
  *                  `double` is used as variable type when enabled, `float` when disabled.
@@ -53,9 +46,9 @@
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` `GGA` statement parsing.
+ * @brief           Enables `1` or disables `0` `GGA` statement parsing.
  *
- * \note            This statement must be enabled to parse:
+ * @note            This statement must be enabled to parse:
  *                      - Latitude, Longitude, Altitude
  *                      - Number of satellites in use, fix (no fix, NMEA, DNMEA), UTC time
  */
@@ -64,9 +57,9 @@
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` `GSA` statement parsing.
+ * @brief           Enables `1` or disables `0` `GSA` statement parsing.
  *
- * \note            This statement must be enabled to parse:
+ * @note            This statement must be enabled to parse:
  *                      - Position/Vertical/Horizontal dilution of precision
  *                      - Fix mode (no fix, 2D, 3D fix)
  *                      - IDs of satellites in use
@@ -76,9 +69,9 @@
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` `RMC` statement parsing.
+ * @brief           Enables `1` or disables `0` `RMC` statement parsing.
  *
- * \note            This statement must be enabled to parse:
+ * @note            This statement must be enabled to parse:
  *                      - Validity of NMEA signal
  *                      - Ground speed in knots and coarse in degrees
  *                      - Magnetic variation
@@ -89,9 +82,9 @@
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` `GSV` statement parsing.
+ * @brief           Enables `1` or disables `0` `GSV` statement parsing.
  *
- * \note            This statement must be enabled to parse:
+ * @note            This statement must be enabled to parse:
  *                      - Number of satellites in view
  *                      - Optional details of each satellite in view. See \ref NMEA_CFG_STATEMENT_GPGSV_SAT_DET
  */
@@ -100,28 +93,18 @@
 #endif
 
 /**
- * \brief           Enables `1` or disables `0` detailed parsing of each
+ * @brief           Enables `1` or disables `0` detailed parsing of each
  *                  satellite in view for `GSV` statement.
  *
- * \note            When this feature is disabled, only number of "satellites in view" is parsed
+ * @note            When this feature is disabled, only number of "satellites in view" is parsed
  */
 #ifndef NMEA_CFG_STATEMENT_GPGSV_SAT_DET
 #define NMEA_CFG_STATEMENT_GPGSV_SAT_DET     0
 #endif
 
 /**
- * \}
- */
-
-/**
- * \defgroup        NMEA_NMEA API functions
- * \brief           Platform independent NMEA parser
- * \{
- */
-
-/**
- * \brief           NMEA float definition, can be either `float` or `double`
- * \note            Check for \ref NMEA_CFG_DOUBLE configuration
+ * @brief           NMEA float definition, can be either `float` or `double`
+ * @note            Check for \ref NMEA_CFG_DOUBLE configuration
  */
 #if NMEA_CFG_DOUBLE || __DOXYGEN__
 typedef double nmea_float_t;
@@ -130,7 +113,7 @@ typedef float nmea_float_t;
 #endif
 
 /**
- * \brief           Satellite descriptor
+ * @brief           Satellite descriptor
  */
 typedef struct {
   uint8_t num; /*!< Satellite number */
@@ -140,7 +123,7 @@ typedef struct {
 } nmea_sat_t;
 
 /**
- * \brief           NMEA main structure
+ * @brief           NMEA main structure
  */
 typedef struct {
 #if NMEA_CFG_STATEMENT_GPGGA || __DOXYGEN__
@@ -242,10 +225,10 @@ typedef struct {
 } nmea_t;
 
 /**
- * \brief           Check if current NMEA data contain valid signal
- * \note            \ref NMEA_CFG_STATEMENT_GPRMC must be enabled and `GPRMC` statement must be sent from NMEA receiver
- * \param[in]       _gh: NMEA handle
- * \return          `1` on success, `0` otherwise
+ * @brief           Check if current NMEA data contain valid signal
+ * @note            \ref NMEA_CFG_STATEMENT_GPRMC must be enabled and `GPRMC` statement must be sent from NMEA receiver
+ * @param[in]       _gh: NMEA handle
+ * @return          `1` on success, `0` otherwise
  */
 #if NMEA_CFG_STATEMENT_GPRMC || __DOXYGEN__
 #define nmea_is_valid(_gh)           ((_gh)->is_valid)
@@ -254,7 +237,7 @@ typedef struct {
 #endif /* NMEA_CFG_STATEMENT_GPRMC || __DOXYGEN__ */
 
 /**
- * \brief           List of optional speed transformation from NMEA values (in knots)
+ * @brief           List of optional speed transformation from NMEA values (in knots)
  */
 typedef enum {
   /* Metric values */
@@ -287,9 +270,5 @@ uint8_t nmea_process(nmea_t *gh, const void *data, size_t len);
 uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los, nmea_float_t lae, nmea_float_t loe, nmea_float_t *d,
     nmea_float_t *b);
 nmea_float_t nmea_to_speed(nmea_float_t sik, nmea_speed_t ts);
-
-/**
- * \}
- */
 
 #endif /* NMEA_H_ */

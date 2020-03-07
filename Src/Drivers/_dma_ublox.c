@@ -10,8 +10,8 @@
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern UART_HandleTypeDef huart2;
 
-char UBLOX_UART_RX_Buffer[UBLOX_UART_RX_BUFFER_SIZE];
-static char UBLOX_DMA_RX_Buffer[UBLOX_DMA_RX_BUFFER_SIZE];
+char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
+static char DMA_RX[UBLOX_DMA_RX_SZ];
 static size_t write, len, copy;
 static uint8_t *ptr;
 
@@ -31,21 +31,21 @@ void UBLOX_DMA_IrqHandler(void) {
     __HAL_DMA_CLEAR_FLAG(&hdma_usart2_rx, __HAL_DMA_GET_TC_FLAG_INDEX(&hdma_usart2_rx));
 
     /* Get the length of the data */
-    len = UBLOX_DMA_RX_BUFFER_SIZE - hdma_usart2_rx.Instance->NDTR;
+    len = UBLOX_DMA_RX_SZ - hdma_usart2_rx.Instance->NDTR;
     /* Only process if DMA is not empty */
     if (len > 0) {
       /* Reset the buffer */
       UBLOX_Reset_Buffer();
       /* Get number of bytes we can copy to the end of buffer */
-      copy = UBLOX_UART_RX_BUFFER_SIZE - write;
+      copy = UBLOX_UART_RX_SZ - write;
       /* write received data for UART main buffer for manipulation later */
-      ptr = (uint8_t*) UBLOX_DMA_RX_Buffer;
+      ptr = (uint8_t*) DMA_RX;
       /* Check how many bytes to copy */
       if (copy > len) {
         copy = len;
       }
       /* Copy first part */
-      memcpy(&UBLOX_UART_RX_Buffer[write], ptr, copy);
+      memcpy(&UBLOX_UART_RX[write], ptr, copy);
       /* Correct values for remaining data */
       write += copy;
       len -= copy;
@@ -54,11 +54,11 @@ void UBLOX_DMA_IrqHandler(void) {
       /* If still data to write for beginning of buffer */
       if (len) {
         /* Don't care if we override Read pointer now */
-        memcpy(&UBLOX_UART_RX_Buffer[0], ptr, len);
+        memcpy(&UBLOX_UART_RX[0], ptr, len);
         write = len;
       }
       // set null at the end
-      UBLOX_UART_RX_Buffer[write] = '\0';
+      UBLOX_UART_RX[write] = '\0';
     }
 
     /* Start DMA transfer again */
@@ -70,14 +70,14 @@ void UBLOX_DMA_Init(void) {
   __HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);      // enable idle line interrupt
   __HAL_DMA_ENABLE_IT(&hdma_usart2_rx, DMA_IT_TC);  // enable DMA Tx cplt interrupt
   __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT); // disable half complete interrupt
-  HAL_UART_Receive_DMA(&huart2, (uint8_t*) UBLOX_DMA_RX_Buffer, UBLOX_DMA_RX_BUFFER_SIZE);
+  HAL_UART_Receive_DMA(&huart2, (uint8_t*) DMA_RX, UBLOX_DMA_RX_SZ);
 }
 
 void UBLOX_Reset_Buffer(void) {
   // clear rx buffer
-  //	memset(UBLOX_UART_RX_Buffer, 0, sizeof(UBLOX_UART_RX_Buffer));
+  //	memset(UBLOX_UART_RX, 0, sizeof(UBLOX_UART_RX));
   // set index back to first
   write = 0;
   //	 set null at the end
-  UBLOX_UART_RX_Buffer[write] = '\0';
+  UBLOX_UART_RX[write] = '\0';
 }
