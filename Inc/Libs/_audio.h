@@ -67,38 +67,33 @@
 /* Defines for the Audio playing process */
 #define DMA_MAX(_X_)                		(((_X_) <= DMA_MAX_SZE)? (_X_):DMA_MAX_SZE)
 
-void WaveInit(void);
-void WavePlay(void);
-void WaveBeepPlay(uint8_t Frequency, uint16_t TimeMS);
-void WaveBeepStop(void);
+void AUDIO_Init(void);
+void AUDIO_Play(void);
+void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS);
+void AUDIO_BeepStop(void);
 
-uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
-uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
 void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size);
 uint8_t AUDIO_OUT_Pause(void);
 uint8_t AUDIO_OUT_Resume(void);
 uint8_t AUDIO_OUT_Stop(uint32_t Option);
 uint8_t AUDIO_OUT_SetVolume(uint8_t Volume);
 void AUDIO_OUT_SetFrequency(uint32_t AudioFreq);
-uint8_t AUDIO_OUT_SetMute(uint32_t Cmd);
 uint8_t AUDIO_OUT_SetOutputMode(uint8_t Output);
-
+void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params);
+void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params);
+uint8_t AUDIO_OUT_SetVolume(uint8_t Volume);
+uint8_t AUDIO_OUT_SetMute(uint32_t Cmd);
 /* User Callbacks: user has to implement these functions in his code if they are needed. */
 /* This function is called when the requested data has been completely transferred. */
 void AUDIO_OUT_TransferComplete_CallBack(void);
-
 /* This function is called when half of the requested buffer has been transferred. */
 void AUDIO_OUT_HalfTransfer_CallBack(void);
-
 /* This function is called when an Interrupt due to transfer error on or peripheral
  error occurs. */
 void AUDIO_OUT_Error_CallBack(void);
-
 /* These function can be modified in case the current settings (e.g. DMA stream)
  need to be changed for specific application needs */
 void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq, void *Params);
-void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params);
-void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params);
 
 #endif /* AUDIO_H_ */
 

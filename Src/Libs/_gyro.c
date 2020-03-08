@@ -7,10 +7,10 @@
 #include "_gyro.h"
 
 extern I2C_HandleTypeDef hi2c3;
-static SD_MPU6050 mpu;
+static MPU6050 mpu;
 
 void GYRO_Init(void) {
-  SD_MPU6050_Result result;
+  MPU6050_Result result;
 
   do {
     LOG_StrLn("Gyroscope_Init");
@@ -21,8 +21,8 @@ void GYRO_Init(void) {
     HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_SET);
     osDelay(1000);
     // module initialization
-    result = SD_MPU6050_Init(&hi2c3, &mpu, SD_MPU6050_Device_0, SD_MPU6050_Accelerometer_16G, SD_MPU6050_Gyroscope_250s);
-  } while (result != SD_MPU6050_Result_Ok);
+    result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_250s);
+  } while (result != MPU6050_Result_Ok);
 }
 
 mems_t GYRO_Average(mems_t *calibrator, uint16_t sample) {
@@ -38,7 +38,7 @@ mems_t GYRO_Average(mems_t *calibrator, uint16_t sample) {
   // sampling
   for (i = 0; i < sample; i++) {
     // read sensor
-    SD_MPU6050_ReadAll(&hi2c3, &mpu);
+    MPU6050_ReadAll(&hi2c3, &mpu);
     // sum all value
     mems.accelerometer.x += mpu.Gyroscope_X;
     mems.accelerometer.y += mpu.Gyroscope_Y;

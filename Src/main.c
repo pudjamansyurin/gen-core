@@ -103,6 +103,7 @@ osMailQId GpsMailHandle;
 osMailQId CommandMailHandle;
 osMailQId ReportMailHandle;
 osMailQId ResponseMailHandle;
+extern db_t DB;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -140,8 +141,6 @@ void StartCanTxTask(const void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern db_t DB;
-extern canbus_t CB;
 /* USER CODE END 0 */
 
 /**
@@ -1120,27 +1119,27 @@ void StartIotTask(const void *argument)
     // check every event & send
     if (notif_value & EVENT_IOT_RESPONSE) {
       // check report log
-        evt = osMailGet(ResponseMailHandle, 0);
-        // check is mail ready
-        if (evt.status == osEventMail) {
-          // copy the pointer
-          hResponse = evt.value.p;
-          
-          while (seq++ < 2) {
-            // Send to server
-            success = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
-            // handle SIMCOM reply
-            if (success) {
-              // validate ACK
-              if (Simcom_Read_ACK(&(hResponse->header))) {                
-                // Release back
-                osMailFree(ResponseMailHandle, hResponse);
+      evt = osMailGet(ResponseMailHandle, 0);
+      // check is mail ready
+      if (evt.status == osEventMail) {
+        // copy the pointer
+        hResponse = evt.value.p;
 
-                break;
-              }
+        while (seq++ < 2) {
+          // Send to server
+          success = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
+          // handle SIMCOM reply
+          if (success) {
+            // validate ACK
+            if (Simcom_ReadACK(&(hResponse->header))) {
+              // Release back
+              osMailFree(ResponseMailHandle, hResponse);
+
+              break;
             }
           }
         }
+      }
     }
 
     // report frame
@@ -1169,7 +1168,7 @@ void StartIotTask(const void *argument)
           // handle SIMCOM reply
           if (success) {
             // validate ACK
-            if (Simcom_Read_ACK(&(hReport->header))) {
+            if (Simcom_ReadACK(&(hReport->header))) {
               // Release back
               osMailFree(ReportMailHandle, hReport);
               hReport = NULL;
@@ -1184,7 +1183,7 @@ void StartIotTask(const void *argument)
     osRecursiveMutexRelease(SimcomRecMutexHandle);
 
     // save the simcom event
-    Reporter_Set_Event(REPORT_NETWORK_RESTART, !success);
+    Reporter_WriteEvent(REPORT_NETWORK_RESTART, !success);
 
     // handle sending error
     if (!success) {
@@ -1218,7 +1217,7 @@ void StartGyroTask(const void *argument)
   // Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
   // Give success indicator
-  WaveBeepPlay(BEEP_FREQ_2000_HZ, 100);
+  AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1234,10 +1233,10 @@ void StartGyroTask(const void *argument)
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
       xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
-      WaveBeepPlay(BEEP_FREQ_2000_HZ, 0);
+      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
     } else {
       xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
-      WaveBeepStop();
+      AUDIO_BeepStop();
     }
 
     // Report interval
@@ -1314,11 +1313,11 @@ void StartCommandTask(const void *argument)
               break;
 
             case CMD_REPORT_ODOM:
-              Reporter_Set_Odometer((uint32_t) hCommand->data.value);
+              Reporter_SetOdometer((uint32_t) hCommand->data.value);
               break;
 
             case CMD_REPORT_UNITID:
-              Reporter_Set_UnitID((uint32_t) hCommand->data.value);
+              Reporter_SetUnitID((uint32_t) hCommand->data.value);
               break;
 
             default:
@@ -1360,11 +1359,11 @@ void StartCommandTask(const void *argument)
               break;
 
             case CMD_FINGER_DEL:
-              p = Finger_Delete_ID((uint8_t) hCommand->data.value);
+              p = Finger_DeleteID((uint8_t) hCommand->data.value);
               break;
 
             case CMD_FINGER_RST:
-              p = Finger_Empty_Database();
+              p = Finger_EmptyDatabase();
               break;
 
             default:
@@ -1386,8 +1385,8 @@ void StartCommandTask(const void *argument)
 
       // Get current snapshot
       Reporter_Capture(FR_RESPONSE);
-     
-      // Allocate memory 
+
+      // Allocate memory
       hResponse = osMailAlloc(ResponseMailHandle, osWaitForever);
       // Copy snapshot of current report
       *hResponse = RESPONSE;
@@ -1396,7 +1395,7 @@ void StartCommandTask(const void *argument)
 
       // Report is ready, do what you want (send to server)
       xTaskNotify(IotTaskHandle, EVENT_IOT_RESPONSE, eSetBits);
-    } 
+    }
   }
   /* USER CODE END StartCommandTask */
 }
@@ -1421,9 +1420,9 @@ void StartGpsTask(const void *argument)
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
   for (;;) {
-    // Allocate memory 
+    // Allocate memory
     hGps = osMailAlloc(GpsMailHandle, osWaitForever);
-    
+
     // get GPS info
     if (GPS_Process(hGps)) {
       osMailPut(GpsMailHandle, hGps);
@@ -1458,7 +1457,7 @@ void StartFingerTask(const void *argument)
 
     // proceed event
     if (notif_value & EVENT_FINGER_PLACED) {
-      if (Finger_Auth_Fast() > 0) {
+      if (Finger_AuthFast() > 0) {
         // indicator when finger is registered
         _LedWrite(1);
         osDelay(1000);
@@ -1484,9 +1483,9 @@ void StartAudioTask(const void *argument)
   osEvent evt;
 
   /* Initialize Wave player (Codec, DMA, I2C) */
-  WaveInit();
+  AUDIO_Init();
   // Play wave loop forever, handover to DMA, so CPU is free
-  WavePlay();
+  AUDIO_Play();
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1496,9 +1495,9 @@ void StartAudioTask(const void *argument)
       // Beeping command
       if (notif_value & EVENT_AUDIO_BEEP) {
         // Beep
-        WaveBeepPlay(BEEP_FREQ_2000_HZ, 250);
+        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
         osDelay(250);
-        WaveBeepPlay(BEEP_FREQ_2000_HZ, 250);
+        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
       }
       // Mute command
       if (notif_value & EVENT_AUDIO_MUTE_ON) {
@@ -1545,14 +1544,14 @@ void StartKeylessTask(const void *argument)
 
     // proceed event
     if (notif_value & EVENT_KEYLESS_RX_IT) {
-      msg = KEYLESS_Read_Payload();
+      msg = KEYLESS_ReadPayload();
 
       LOG_Str("NRF received packet, msg = ");
       LOG_Hex8(msg);
       LOG_Char('\n');
 
       // indicator
-      WaveBeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
+      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
       for (int i = 0; i < ((msg + 1) * 2); i++) {
         _LedToggle();
         osDelay(50);
@@ -1573,7 +1572,7 @@ void StartReporterTask(const void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
   extern report_t REPORT;
-  
+
   TickType_t last_wake, last_wake_full = 0;
   osEvent evt;
   frame_type frame;
@@ -1589,20 +1588,20 @@ void StartReporterTask(const void *argument)
   last_wake = xTaskGetTickCount();
   for (;;) {
     // preserve simcom reboot from events group
-    net_restart_state = Reporter_Read_Event(REPORT_NETWORK_RESTART);
+    net_restart_state = Reporter_ReadEvent(REPORT_NETWORK_RESTART);
     // reset all events group
-    Reporter_Set_Events(0);
+    Reporter_SetEvents(0);
     // re-write the simcom reboot events
-    Reporter_Set_Event(REPORT_NETWORK_RESTART, net_restart_state);
+    Reporter_WriteEvent(REPORT_NETWORK_RESTART, net_restart_state);
 
     // do this if events occurred
     if (xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0) == pdTRUE) {
       // check & set every event
       if (notif_value & EVENT_REPORTER_CRASH) {
-        Reporter_Set_Event(REPORT_BIKE_CRASHED, 1);
+        Reporter_WriteEvent(REPORT_BIKE_CRASHED, 1);
       }
       if ((notif_value & EVENT_REPORTER_FALL) && !(notif_value & EVENT_REPORTER_FALL_FIXED)) {
-        Reporter_Set_Event(REPORT_BIKE_FALLING, 1);
+        Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
       }
     }
 
@@ -1612,9 +1611,9 @@ void StartReporterTask(const void *argument)
     if (evt.status == osEventMail) {
       hGps = evt.value.p;
       // set GPS data
-      Reporter_Set_GPS(hGps);
+      Reporter_SetGPS(hGps);
       // set speed value (based on GPS)
-      Reporter_Set_Speed(hGps);
+      Reporter_SetSpeed(hGps);
       // Release back
       osMailFree(GpsMailHandle, hGps);
     }
@@ -1669,7 +1668,7 @@ void StartCanRxTask(const void *argument)
     // proceed event
     if (notif_value & EVENT_CAN_RX_IT) {
       // handle message
-      switch (CB.rx.header.StdId) {
+      switch (CANBUS_ReadID()) {
         case CAN_ADDR_MCU_DUMMY:
           CAN_MCU_Dummy_Read(&(DB.vcu.speed));
           // set volume by speed
@@ -1833,17 +1832,17 @@ void StartGeneralTask(const void *argument)
   last_wake = xTaskGetTickCount();
   for (;;) {
     // Retrieve network signal quality
-    Simcom_Read_Signal(&(DB.vcu.signal));
+    Simcom_ReadSignal(&(DB.vcu.signal));
 
     // Retrieve RTC time
-    RTC_Read_RAW(&(DB.vcu.rtc.timestamp));
+    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
 
     // Check calibration by cellular network
     if (_TimeNeedCalibration(DB.vcu.rtc)) {
       // get carrier timestamp
-      if (Simcom_Read_Carrier_Time(timestampCarrier)) {
+      if (Simcom_ReadTime(timestampCarrier)) {
         // calibrate the RTC
-        RTC_Write_RAW(timestampCarrier, &(DB.vcu.rtc));
+        RTC_WriteRaw(timestampCarrier, &(DB.vcu.rtc));
       }
     }
 

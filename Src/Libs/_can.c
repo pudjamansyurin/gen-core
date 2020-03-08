@@ -86,7 +86,7 @@ uint8_t CAN_VCU_Switch(db_t *DB) {
   CB.tx.data[7] = BSR(DB->vcu.odometer, 24);
 
   // set default header
-  CANBUS_Set_Tx_Header(&(CB.tx.header), CAN_ADDR_VCU_SWITCH, 8);
+  CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_SWITCH, 8);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
@@ -102,7 +102,7 @@ uint8_t CAN_VCU_RTC(timestamp_t *timestamp) {
   CB.tx.data[6] = timestamp->date.WeekDay;
 
   // set default header
-  CANBUS_Set_Tx_Header(&(CB.tx.header), CAN_ADDR_VCU_RTC, 7);
+  CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_RTC, 7);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
@@ -156,7 +156,7 @@ uint8_t CAN_VCU_Select_Set(sw_runner_t *runner) {
   CB.tx.data[2] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
 
   // set default header
-  CANBUS_Set_Tx_Header(&(CB.tx.header), CAN_ADDR_VCU_SELECT_SET, 3);
+  CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_SELECT_SET, 3);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
@@ -173,7 +173,7 @@ uint8_t CAN_VCU_Trip_Mode(uint32_t *trip) {
   CB.tx.data[7] = BSR(trip[SW_M_TRIP_B], 24);
 
   // set default header
-  CANBUS_Set_Tx_Header(&(CB.tx.header), CAN_ADDR_VCU_TRIP_MODE, 8);
+  CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_TRIP_MODE, 8);
   // send message
   return CANBUS_Write(&(CB.tx));
 }

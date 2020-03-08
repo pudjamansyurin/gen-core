@@ -224,7 +224,7 @@ uint8_t Finger_Enroll(uint8_t id) {
   return p;
 }
 
-uint8_t Finger_Delete_ID(uint8_t id) {
+uint8_t Finger_DeleteID(uint8_t id) {
   uint8_t p = -1;
 
   Finger_On();
@@ -248,7 +248,7 @@ uint8_t Finger_Delete_ID(uint8_t id) {
   return p;
 }
 
-uint8_t Finger_Empty_Database(void) {
+uint8_t Finger_EmptyDatabase(void) {
   uint8_t p = -1;
 
   Finger_On();
@@ -258,7 +258,7 @@ uint8_t Finger_Empty_Database(void) {
   return p;
 }
 
-uint8_t Finger_Set_Password(uint32_t password) {
+uint8_t Finger_SetPassword(uint32_t password) {
   uint8_t p = -1;
 
   Finger_On();
@@ -357,7 +357,7 @@ int8_t Finger_Auth(void) {
   return -1;
 }
 
-int8_t Finger_Auth_Fast(void) {
+int8_t Finger_AuthFast(void) {
   uint8_t p = -1;
 
   Finger_On();

@@ -69,13 +69,13 @@ uint64_t RTC_Read(void) {
   timestamp_t timestamp;
 
   // get the RTC
-  RTC_Read_RAW(&timestamp);
+  RTC_ReadRaw(&timestamp);
 
   // encode timestamp to datetime
   return RTC_Encode(timestamp);
 }
 
-void RTC_Read_RAW(timestamp_t *timestamp) {
+void RTC_ReadRaw(timestamp_t *timestamp) {
   // get the RTC
   HAL_RTC_GetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
   HAL_RTC_GetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
@@ -88,10 +88,10 @@ void RTC_Write(uint64_t dateTime, rtc_t *rtc) {
   timestamp = RTC_Decode(dateTime);
 
   // set the RTC
-  RTC_Write_RAW(&timestamp, rtc);
+  RTC_WriteRaw(&timestamp, rtc);
 }
 
-void RTC_Write_RAW(timestamp_t *timestamp, rtc_t *rtc) {
+void RTC_WriteRaw(timestamp_t *timestamp, rtc_t *rtc) {
   // add extra property
   timestamp->time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   timestamp->time.StoreOperation = RTC_STOREOPERATION_RESET;

@@ -17,6 +17,6 @@ typedef struct {
 
 void KEYLESS_Init(void);
 void KEYLESS_IrqHandler(void);
-uint8_t KEYLESS_Read_Payload(void);
+uint8_t KEYLESS_ReadPayload(void);
 
 #endif /* KEYLESS_H_ */

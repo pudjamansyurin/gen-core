@@ -28,7 +28,7 @@ void KEYLESS_IrqHandler(void) {
   nrf_irq_handler(&nrf);
 }
 
-uint8_t KEYLESS_Read_Payload(void) {
+uint8_t KEYLESS_ReadPayload(void) {
   return payload.rx[payload.count - 1];
 }
 

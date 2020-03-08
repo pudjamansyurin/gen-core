@@ -19,9 +19,9 @@ void LOG_Char(char ch) {
 #endif
 }
 
-void LOG_Enter(void){  
+void LOG_Enter(void) {
   osMutexWait(LogMutexHandle, osWaitForever);
-  LOG_Char("\n");
+  LOG_Char('\n');
   osMutexRelease(LogMutexHandle);
 }
 

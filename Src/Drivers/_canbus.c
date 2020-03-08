@@ -49,7 +49,7 @@ void CANBUS_Init(void) {
   }
 }
 
-void CANBUS_Set_Tx_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC) {
+void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC) {
   /* Configure Global Transmission process */
   TxHeader->RTR = CAN_RTR_DATA;
   TxHeader->IDE = CAN_ID_STD;
@@ -133,6 +133,10 @@ uint8_t CANBUS_Read(canbus_rx_t *rx) {
   }
 
   return (status == HAL_OK);
+}
+
+uint32_t CANBUS_ReadID(void) {
+  return CB.rx.header.StdId;
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {

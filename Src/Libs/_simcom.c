@@ -60,7 +60,7 @@ static void Simcom_Clear_Buffer(void) {
     // Allocate memory 
     hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
     // handle command (if any)
-    if (Simcom_Read_Command(hCommand)) {
+    if (Simcom_ReadCommand(hCommand)) {
       // reset rx buffer
       SIMCOM_Reset_Buffer();
 
@@ -311,7 +311,7 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
   return ret;
 }
 
-uint8_t Simcom_Read_ACK(report_header_t *report_header) {
+uint8_t Simcom_ReadACK(report_header_t *report_header) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t ret = 0;
@@ -340,7 +340,7 @@ uint8_t Simcom_Read_ACK(report_header_t *report_header) {
   return ret;
 }
 
-uint8_t Simcom_Read_Command(command_t *command) {
+uint8_t Simcom_ReadCommand(command_t *command) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint32_t crcValue;
@@ -375,7 +375,7 @@ uint8_t Simcom_Read_Command(command_t *command) {
   return ret;
 }
 
-uint8_t Simcom_Read_Signal(uint8_t *signal_percentage) {
+uint8_t Simcom_ReadSignal(uint8_t *signal_percentage) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t i, ret = 0, rssi = 0, cnt;
@@ -428,7 +428,7 @@ uint8_t Simcom_Read_Signal(uint8_t *signal_percentage) {
   return ret;
 }
 
-uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp) {
+uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t ret = 0, len = 0, cnt;

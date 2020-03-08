@@ -16,7 +16,7 @@
 #define VADDR_ODOMETER_L			0x0000
 #define VADDR_ODOMETER_H			(VADDR_ODOMETER_L + 1)
 
-void EEPROM_Save_Odometer(uint32_t odometer);
-uint32_t EEPROM_Get_Odometer(void);
+void EEPROM_WriteOdometer(uint32_t odometer);
+uint32_t EEPROM_ReadOdometer(void);
 
 #endif /* EEPROM_H_ */

@@ -94,13 +94,13 @@ typedef struct __attribute__((packed)) {
 
 // public function
 void Reporter_Reset(frame_type frame);
-void Reporter_Set_UnitID(uint32_t unitId);
-void Reporter_Set_Odometer(uint32_t odom);
-void Reporter_Set_GPS(gps_t *hgps);
-void Reporter_Set_Speed(gps_t *hgps);
-void Reporter_Set_Events(uint64_t value);
-void Reporter_Set_Event(uint64_t event_id, uint8_t value);
+void Reporter_SetUnitID(uint32_t unitId);
+void Reporter_SetOdometer(uint32_t odom);
+void Reporter_SetGPS(gps_t *hgps);
+void Reporter_SetSpeed(gps_t *hgps);
+void Reporter_SetEvents(uint64_t value);
+void Reporter_WriteEvent(uint64_t event_id, uint8_t value);
 void Reporter_Capture(frame_type frame);
-uint8_t Reporter_Read_Event(uint64_t event_id);
+uint8_t Reporter_ReadEvent(uint64_t event_id);
 
 #endif /* REPORTER_H_ */

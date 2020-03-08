@@ -38,9 +38,9 @@ typedef struct {
 void Simcom_Init(void);
 uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n);
 uint8_t Simcom_Upload(char *message, uint16_t length);
-uint8_t Simcom_Read_ACK(report_header_t *report_header);
-uint8_t Simcom_Read_Command(command_t *command);
-uint8_t Simcom_Read_Signal(uint8_t *signal_percentage);
-uint8_t Simcom_Read_Carrier_Time(timestamp_t *timestamp);
+uint8_t Simcom_ReadACK(report_header_t *report_header);
+uint8_t Simcom_ReadCommand(command_t *command);
+uint8_t Simcom_ReadSignal(uint8_t *signal_percentage);
+uint8_t Simcom_ReadTime(timestamp_t *timestamp);
 
 #endif /* SIMCOM_H_ */

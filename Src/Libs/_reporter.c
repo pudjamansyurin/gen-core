@@ -20,7 +20,7 @@ void Reporter_Reset(frame_type frame) {
   REPORT.header.size = 0;
   REPORT.header.frame_id = frame;
   REPORT.header.seq_id = 0;
-  Reporter_Set_UnitID(REPORT_UNITID);
+  Reporter_SetUnitID(REPORT_UNITID);
 
   if (frame == FR_RESPONSE) {
     // header response
@@ -51,7 +51,7 @@ void Reporter_Reset(frame_type frame) {
       REPORT.data.opt.gps.latitude = -7.4337599 * 10000000;
       REPORT.data.opt.gps.hdop = 255;
       REPORT.data.opt.gps.heading = 0;
-      REPORT.data.opt.odometer = EEPROM_Get_Odometer();
+      REPORT.data.opt.odometer = EEPROM_ReadOdometer();
       REPORT.data.opt.bat_voltage = 2600 / 13;
       REPORT.data.opt.report_range = 0;
       REPORT.data.opt.report_battery = 99;
@@ -61,17 +61,17 @@ void Reporter_Reset(frame_type frame) {
   }
 }
 
-void Reporter_Set_UnitID(uint32_t unitId) {
+void Reporter_SetUnitID(uint32_t unitId) {
   RESPONSE.header.unit_id = unitId;
   REPORT.header.unit_id = unitId;
 }
 
-void Reporter_Set_Odometer(uint32_t odom) {
+void Reporter_SetOdometer(uint32_t odom) {
   REPORT.data.opt.odometer = odom;
-  EEPROM_Save_Odometer(odom);
+  EEPROM_WriteOdometer(odom);
 }
 
-void Reporter_Set_GPS(gps_t *hgps) {
+void Reporter_SetGPS(gps_t *hgps) {
   // parse GPS data
   REPORT.data.opt.gps.latitude = (int32_t) (hgps->latitude * 10000000);
   REPORT.data.opt.gps.longitude = (int32_t) (hgps->longitude * 10000000);
@@ -79,20 +79,20 @@ void Reporter_Set_GPS(gps_t *hgps) {
   REPORT.data.opt.gps.heading = (uint8_t) (hgps->heading / 2);
 }
 
-void Reporter_Set_Speed(gps_t *hgps) {
+void Reporter_SetSpeed(gps_t *hgps) {
   // FIXME use real speed calculation
   // calculate speed from GPS data
   REPORT.data.req.speed = hgps->speed_kph;
   // save ODOMETER to flash (non-volatile)
-  Reporter_Set_Odometer(EEPROM_Get_Odometer() + (hgps->speed_mps * REPORT_INTERVAL_SIMPLE));
+  Reporter_SetOdometer(EEPROM_ReadOdometer() + (hgps->speed_mps * REPORT_INTERVAL_SIMPLE));
 
 }
 
-void Reporter_Set_Events(uint64_t value) {
+void Reporter_SetEvents(uint64_t value) {
   REPORT.data.req.events_group = value;
 }
 
-void Reporter_Set_Event(uint64_t event_id, uint8_t value) {
+void Reporter_WriteEvent(uint64_t event_id, uint8_t value) {
   if (value & 1) {
     BV(REPORT.data.req.events_group, _BitPosition(event_id));
   } else {
@@ -100,7 +100,7 @@ void Reporter_Set_Event(uint64_t event_id, uint8_t value) {
   }
 }
 
-uint8_t Reporter_Read_Event(uint64_t event_id) {
+uint8_t Reporter_ReadEvent(uint64_t event_id) {
   return BSR((REPORT.data.req.events_group & event_id) , _BitPosition(event_id));
 }
 

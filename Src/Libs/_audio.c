@@ -61,9 +61,11 @@ static const uint32_t I2SPLLR[7] = { 5, 2, 4, 2, 2, 3, 2 };
 
 /* Private functions ---------------------------------------------------------*/
 static uint8_t I2S3_Init(uint32_t AudioFreq);
+static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
+static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
 
 /* The functions ---------------------------------------------------------*/
-void WaveInit(void) {
+void AUDIO_Init(void) {
   uint8_t ret;
   do {
     LOG_StrLn("Wave_Init");
@@ -75,7 +77,7 @@ void WaveInit(void) {
   } while (ret != AUDIO_OK);
 }
 
-void WavePlay(void) {
+void AUDIO_Play(void) {
   /* Get data size from audio file */
   AudioRemSize = AUDIO_SAMPLE_SIZE;
   /* Get total data to be played */
@@ -89,7 +91,7 @@ void WavePlay(void) {
   AUDIO_OUT_Play((uint16_t*) AUDIO_SAMPLE, AudioPlaySize);
 }
 
-void WaveBeepPlay(uint8_t Frequency, uint16_t TimeMS) {
+void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
   osRecursiveMutexWait(BeepMutexHandle, osWaitForever);
   pAudioDrv->SetBeep(AUDIO_I2C_ADDRESS, Frequency, 0, 0);
   pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_ON);
@@ -103,7 +105,7 @@ void WaveBeepPlay(uint8_t Frequency, uint16_t TimeMS) {
   osRecursiveMutexRelease(BeepMutexHandle);
 }
 
-void WaveBeepStop(void) {
+void AUDIO_BeepStop(void) {
   osRecursiveMutexWait(BeepMutexHandle, osWaitForever);
 
   pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
@@ -119,7 +121,7 @@ void WaveBeepStop(void) {
  * @param  AudioFreq: Audio frequency used to play the audio stream.
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
-uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
+static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
   uint8_t ret = AUDIO_OK;
 
   /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
@@ -163,7 +165,7 @@ uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq
  * @param  Size: Number of audio data BYTES.
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
-uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
+static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
   /* Call the audio Codec Play function */
   if (pAudioDrv->Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) {
     return AUDIO_ERROR;
