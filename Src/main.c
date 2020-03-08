@@ -92,7 +92,7 @@ osThreadId CanRxTaskHandle;
 osThreadId SwitchTaskHandle;
 osThreadId GeneralTaskHandle;
 osThreadId CanTxTaskHandle;
-osMessageQId AudioVolQueueHandle;
+osMessageQId VolumeQueueHandle;
 osMutexId BeepMutexHandle;
 osMutexId LogMutexHandle;
 osMutexId CanTxMutexHandle;
@@ -102,6 +102,7 @@ osMutexId FingerRecMutexHandle;
 osMailQId GpsMailHandle;
 osMailQId CommandMailHandle;
 osMailQId ReportMailHandle;
+osMailQId ResponseMailHandle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,18 +122,18 @@ static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 static void MX_IWDG_Init(void);
-void StartIotTask(void const * argument);
-void StartGyroTask(void const * argument);
-void StartCommandTask(void const * argument);
-void StartGpsTask(void const * argument);
-void StartFingerTask(void const * argument);
-void StartAudioTask(void const * argument);
-void StartKeylessTask(void const * argument);
-void StartReporterTask(void const * argument);
-void StartCanRxTask(void const * argument);
-void StartSwitchTask(void const * argument);
-void StartGeneralTask(void const * argument);
-void StartCanTxTask(void const * argument);
+void StartIotTask(const void *argument);
+void StartGyroTask(const void *argument);
+void StartCommandTask(const void *argument);
+void StartGpsTask(const void *argument);
+void StartFingerTask(const void *argument);
+void StartAudioTask(const void *argument);
+void StartKeylessTask(const void *argument);
+void StartReporterTask(const void *argument);
+void StartCanRxTask(const void *argument);
+void StartSwitchTask(const void *argument);
+void StartGeneralTask(const void *argument);
+void StartCanTxTask(const void *argument);
 
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -141,16 +142,12 @@ void StartCanTxTask(void const * argument);
 /* USER CODE BEGIN 0 */
 extern db_t DB;
 extern canbus_t CB;
-extern report_t REPORT;
-extern response_t RESPONSE;
-command_t *hCommand;
-gps_t *hGps;
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -229,21 +226,20 @@ int main(void)
   /* USER CODE END RTOS_TIMERS */
 
   /* Create the queue(s) */
-  /* definition and creation of AudioVolQueue */
-  osMessageQDef(AudioVolQueue, 1, uint8_t);
-  AudioVolQueueHandle = osMessageCreate(osMessageQ(AudioVolQueue), NULL);
+  /* definition and creation of VolumeQueue */
+  osMessageQDef(VolumeQueue, 1, uint8_t);
+  VolumeQueueHandle = osMessageCreate(osMessageQ(VolumeQueue), NULL);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   osMailQDef(GpsMail, 1, gps_t);
   GpsMailHandle = osMailCreate(osMailQ(GpsMail), NULL);
-  // Allocate memory once, and never free it
-  hGps = osMailAlloc(GpsMailHandle, osWaitForever);
 
   osMailQDef(CommandMail, 1, command_t);
   CommandMailHandle = osMailCreate(osMailQ(CommandMail), NULL);
-  // Allocate memory once, and never free it
-  hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
+
+  osMailQDef(ResponseMail, 1, response_t);
+  ResponseMailHandle = osMailCreate(osMailQ(ResponseMail), NULL);
 
   osMailQDef(ReportMail, 100, report_t);
   ReportMailHandle = osMailCreate(osMailQ(ReportMail), NULL);
@@ -305,7 +301,7 @@ int main(void)
 
   /* Start scheduler */
   osKernelStart();
- 
+
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -319,23 +315,23 @@ int main(void)
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
 
-  /** Configure the main internal regulator output voltage 
-  */
+  /** Configure the main internal regulator output voltage
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
-                              |RCC_OSCILLATORTYPE_LSE;
+  /** Initializes the CPU, AHB and APB busses clocks
+   */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
+      | RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
@@ -346,37 +342,37 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  /** Initializes the CPU, AHB and APB busses clocks
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+      | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S|RCC_PERIPHCLK_RTC;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S | RCC_PERIPHCLK_RTC;
   PeriphClkInitStruct.PLLI2S.PLLI2SN = 256;
   PeriphClkInitStruct.PLLI2S.PLLI2SR = 5;
   PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
 }
 
 /**
-  * @brief ADC1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief ADC1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_ADC1_Init(void)
 {
 
@@ -384,13 +380,13 @@ static void MX_ADC1_Init(void)
 
   /* USER CODE END ADC1_Init 0 */
 
-  ADC_ChannelConfTypeDef sConfig = {0};
+  ADC_ChannelConfTypeDef sConfig = { 0 };
 
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
-  */
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
@@ -404,16 +400,16 @@ static void MX_ADC1_Init(void)
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
-  */
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+   */
   sConfig.Channel = ADC_CHANNEL_8;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
@@ -423,10 +419,10 @@ static void MX_ADC1_Init(void)
 }
 
 /**
-  * @brief CAN1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief CAN1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_CAN1_Init(void)
 {
 
@@ -450,7 +446,7 @@ static void MX_CAN1_Init(void)
   hcan1.Init.ReceiveFifoLocked = DISABLE;
   hcan1.Init.TransmitFifoPriority = DISABLE;
   if (HAL_CAN_Init(&hcan1) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN CAN1_Init 2 */
@@ -460,10 +456,10 @@ static void MX_CAN1_Init(void)
 }
 
 /**
-  * @brief CRC Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief CRC Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_CRC_Init(void)
 {
 
@@ -476,7 +472,7 @@ static void MX_CRC_Init(void)
   /* USER CODE END CRC_Init 1 */
   hcrc.Instance = CRC;
   if (HAL_CRC_Init(&hcrc) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN CRC_Init 2 */
@@ -486,10 +482,10 @@ static void MX_CRC_Init(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief I2C1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_I2C1_Init(void)
 {
 
@@ -510,7 +506,7 @@ static void MX_I2C1_Init(void)
   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN I2C1_Init 2 */
@@ -520,10 +516,10 @@ static void MX_I2C1_Init(void)
 }
 
 /**
-  * @brief I2C2 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief I2C2 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_I2C2_Init(void)
 {
 
@@ -544,7 +540,7 @@ static void MX_I2C2_Init(void)
   hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   if (HAL_I2C_Init(&hi2c2) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN I2C2_Init 2 */
@@ -554,10 +550,10 @@ static void MX_I2C2_Init(void)
 }
 
 /**
-  * @brief I2C3 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief I2C3 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_I2C3_Init(void)
 {
 
@@ -578,7 +574,7 @@ static void MX_I2C3_Init(void)
   hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   if (HAL_I2C_Init(&hi2c3) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN I2C3_Init 2 */
@@ -588,10 +584,10 @@ static void MX_I2C3_Init(void)
 }
 
 /**
-  * @brief I2S3 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief I2S3 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_I2S3_Init(void)
 {
 
@@ -612,7 +608,7 @@ static void MX_I2S3_Init(void)
   hi2s3.Init.ClockSource = I2S_CLOCK_PLL;
   hi2s3.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
   if (HAL_I2S_Init(&hi2s3) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN I2S3_Init 2 */
@@ -622,10 +618,10 @@ static void MX_I2S3_Init(void)
 }
 
 /**
-  * @brief IWDG Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief IWDG Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_IWDG_Init(void)
 {
 
@@ -640,7 +636,7 @@ static void MX_IWDG_Init(void)
   hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
   hiwdg.Init.Reload = 4095;
   if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN IWDG_Init 2 */
@@ -650,10 +646,10 @@ static void MX_IWDG_Init(void)
 }
 
 /**
-  * @brief RTC Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief RTC Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_RTC_Init(void)
 {
 
@@ -661,14 +657,14 @@ static void MX_RTC_Init(void)
   uint32_t RTC_Reset_Trigger = 888;
   /* USER CODE END RTC_Init 0 */
 
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef sDate = {0};
+  RTC_TimeTypeDef sTime = { 0 };
+  RTC_DateTypeDef sDate = { 0 };
 
   /* USER CODE BEGIN RTC_Init 1 */
 
   /* USER CODE END RTC_Init 1 */
-  /** Initialize RTC Only 
-  */
+  /** Initialize RTC Only
+   */
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
   hrtc.Init.AsynchPrediv = 127;
@@ -677,35 +673,35 @@ static void MX_RTC_Init(void)
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
   if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
   if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_Reset_Trigger) {
-  /* USER CODE END Check_RTC_BKUP */
+    /* USER CODE END Check_RTC_BKUP */
 
-  /** Initialize RTC and set the Time and Date 
-  */
-  sTime.Hours = 0x0;
-  sTime.Minutes = 0x0;
-  sTime.Seconds = 0x0;
-  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sDate.WeekDay = RTC_WEEKDAY_WEDNESDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x20;
+    /** Initialize RTC and set the Time and Date
+     */
+    sTime.Hours = 0x0;
+    sTime.Minutes = 0x0;
+    sTime.Seconds = 0x0;
+    sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+    sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+    if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+        {
+      Error_Handler();
+    }
+    sDate.WeekDay = RTC_WEEKDAY_WEDNESDAY;
+    sDate.Month = RTC_MONTH_JANUARY;
+    sDate.Date = 0x1;
+    sDate.Year = 0x20;
 
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RTC_Init 2 */
+    if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+        {
+      Error_Handler();
+    }
+    /* USER CODE BEGIN RTC_Init 2 */
     // write backup register for the 1st time
     HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_Reset_Trigger);
   }
@@ -715,10 +711,10 @@ static void MX_RTC_Init(void)
 }
 
 /**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief SPI1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_SPI1_Init(void)
 {
 
@@ -743,7 +739,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 10;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN SPI1_Init 2 */
@@ -753,10 +749,10 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief UART4 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief UART4 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_UART4_Init(void)
 {
 
@@ -776,7 +772,7 @@ static void MX_UART4_Init(void)
   huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart4.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart4) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN UART4_Init 2 */
@@ -786,10 +782,10 @@ static void MX_UART4_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief USART1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_USART1_UART_Init(void)
 {
 
@@ -809,7 +805,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
@@ -819,10 +815,10 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief USART2 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_USART2_UART_Init(void)
 {
 
@@ -842,7 +838,7 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
+      {
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
@@ -851,10 +847,10 @@ static void MX_USART2_UART_Init(void)
 
 }
 
-/** 
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void) 
+/**
+ * Enable DMA controller clock
+ */
+static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
@@ -878,13 +874,13 @@ static void MX_DMA_Init(void)
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
@@ -895,31 +891,31 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin|INT_GPS_PWR_Pin|EXT_FINGER_PWR_Pin|EXT_HMI1_PWR_Pin 
-                          |EXT_HMI2_PWR_Pin|INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_GPS_PWR_Pin | EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin
+      | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, INT_NET_PWR_Pin|EXT_FINGER_TOUCH_PWR_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, INT_NET_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin|INT_NET_DTR_Pin|INT_GYRO_PWR_Pin|INT_KEYLESS_PWR_Pin 
-                          |EXT_KEYLESS_ALARM_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin
+      | EXT_KEYLESS_ALARM_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, EXT_GPIO_OUT1_Pin|EXT_GPIO_OUT2_Pin|EXT_GPIO_OUT3_Pin|EXT_GPIO_OUT4_Pin 
-                          |SYS_LED_Pin|EXT_HMI2_SHUTDOWN_Pin|EXT_HMI2_BRIGHTNESS_Pin|INT_AUDIO_RST_Pin 
-                          |EXT_BMS_WAKEUP_Pin|EXT_BMS_FAN_Pin|EXT_REG_12V_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, EXT_GPIO_OUT1_Pin | EXT_GPIO_OUT2_Pin | EXT_GPIO_OUT3_Pin | EXT_GPIO_OUT4_Pin
+      | SYS_LED_Pin | EXT_HMI2_SHUTDOWN_Pin | EXT_HMI2_BRIGHTNESS_Pin | INT_AUDIO_RST_Pin
+      | EXT_BMS_WAKEUP_Pin | EXT_BMS_FAN_Pin | EXT_REG_12V_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(INT_KEYLESS_CSN_GPIO_Port, INT_KEYLESS_CSN_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HBAR_REVERSE_Pin EXT_ABS_STATUS_Pin 
-                           EXT_HBAR_SEIN_L_Pin EXT_HBAR_SEIN_R_Pin */
-  GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin|EXT_HBAR_SET_Pin|EXT_HBAR_REVERSE_Pin|EXT_ABS_STATUS_Pin 
-                          |EXT_HBAR_SEIN_L_Pin|EXT_HBAR_SEIN_R_Pin;
+  /*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HBAR_REVERSE_Pin EXT_ABS_STATUS_Pin
+   EXT_HBAR_SEIN_L_Pin EXT_HBAR_SEIN_R_Pin */
+  GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin | EXT_HBAR_SET_Pin | EXT_HBAR_REVERSE_Pin | EXT_ABS_STATUS_Pin
+      | EXT_HBAR_SEIN_L_Pin | EXT_HBAR_SEIN_R_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -930,32 +926,32 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin 
-                           EXT_FINGER_PWR_Pin EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
-  GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin|INT_NET_PWR_Pin|INT_GPS_PWR_Pin|EXT_FINGER_TOUCH_PWR_Pin 
-                          |EXT_FINGER_PWR_Pin|EXT_HMI1_PWR_Pin|EXT_HMI2_PWR_Pin|INT_AUDIO_PWR_Pin;
+  /*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin
+   EXT_FINGER_PWR_Pin EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
+  GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
+      | EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EXT_SOLENOID_PWR_Pin INT_NET_RST_Pin INT_GYRO_PWR_Pin INT_KEYLESS_PWR_Pin 
-                           EXT_KEYLESS_ALARM_Pin */
-  GPIO_InitStruct.Pin = EXT_SOLENOID_PWR_Pin|INT_NET_RST_Pin|INT_GYRO_PWR_Pin|INT_KEYLESS_PWR_Pin 
-                          |EXT_KEYLESS_ALARM_Pin;
+  /*Configure GPIO pins : EXT_SOLENOID_PWR_Pin INT_NET_RST_Pin INT_GYRO_PWR_Pin INT_KEYLESS_PWR_Pin
+   EXT_KEYLESS_ALARM_Pin */
+  GPIO_InitStruct.Pin = EXT_SOLENOID_PWR_Pin | INT_NET_RST_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin
+      | EXT_KEYLESS_ALARM_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EXT_FINGER_IRQ_Pin EXT_KNOB_IRQ_Pin EXT_HBAR_LAMP_Pin EXT_BMS_IRQ_Pin */
-  GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin|EXT_KNOB_IRQ_Pin|EXT_HBAR_LAMP_Pin|EXT_BMS_IRQ_Pin;
+  GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin | EXT_KNOB_IRQ_Pin | EXT_HBAR_LAMP_Pin | EXT_BMS_IRQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EXT_GPIO_IN1_Pin EXT_GPIO_IN2_Pin EXT_GPIO_IN3_Pin EXT_GPIO_IN4_Pin */
-  GPIO_InitStruct.Pin = EXT_GPIO_IN1_Pin|EXT_GPIO_IN2_Pin|EXT_GPIO_IN3_Pin|EXT_GPIO_IN4_Pin;
+  GPIO_InitStruct.Pin = EXT_GPIO_IN1_Pin | EXT_GPIO_IN2_Pin | EXT_GPIO_IN3_Pin | EXT_GPIO_IN4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -967,7 +963,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(INT_KEYLESS_IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB12 PB13 PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_7;
+  GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -979,12 +975,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(INT_NET_DTR_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EXT_GPIO_OUT1_Pin EXT_GPIO_OUT2_Pin EXT_GPIO_OUT3_Pin EXT_GPIO_OUT4_Pin 
-                           SYS_LED_Pin EXT_HMI2_SHUTDOWN_Pin EXT_HMI2_BRIGHTNESS_Pin EXT_BMS_WAKEUP_Pin 
-                           EXT_BMS_FAN_Pin EXT_REG_12V_Pin */
-  GPIO_InitStruct.Pin = EXT_GPIO_OUT1_Pin|EXT_GPIO_OUT2_Pin|EXT_GPIO_OUT3_Pin|EXT_GPIO_OUT4_Pin 
-                          |SYS_LED_Pin|EXT_HMI2_SHUTDOWN_Pin|EXT_HMI2_BRIGHTNESS_Pin|EXT_BMS_WAKEUP_Pin 
-                          |EXT_BMS_FAN_Pin|EXT_REG_12V_Pin;
+  /*Configure GPIO pins : EXT_GPIO_OUT1_Pin EXT_GPIO_OUT2_Pin EXT_GPIO_OUT3_Pin EXT_GPIO_OUT4_Pin
+   SYS_LED_Pin EXT_HMI2_SHUTDOWN_Pin EXT_HMI2_BRIGHTNESS_Pin EXT_BMS_WAKEUP_Pin
+   EXT_BMS_FAN_Pin EXT_REG_12V_Pin */
+  GPIO_InitStruct.Pin = EXT_GPIO_OUT1_Pin | EXT_GPIO_OUT2_Pin | EXT_GPIO_OUT3_Pin | EXT_GPIO_OUT4_Pin
+      | SYS_LED_Pin | EXT_HMI2_SHUTDOWN_Pin | EXT_HMI2_BRIGHTNESS_Pin | EXT_BMS_WAKEUP_Pin
+      | EXT_BMS_FAN_Pin | EXT_REG_12V_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -997,19 +993,19 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(EXT_GPIO_IN0_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PD14 PD15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
+  GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC6 PC8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_8;
+  GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -1093,20 +1089,24 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * @retval None
  */
 /* USER CODE END Header_StartIotTask */
-void StartIotTask(void const * argument)
+void StartIotTask(const void *argument)
 {
   /* USER CODE BEGIN 5 */
-  osEvent evt;
-  report_t *the_report;
-  uint8_t success, report_size, seq, retry = 3;
+  uint8_t success, size, seq;
   uint32_t notif_value;
-  char *p_report = NULL, *p_response = NULL;
+  osEvent evt;
+  report_t *hReport = NULL;
+  response_t *hResponse = NULL;
 
   // Start simcom module
   SIMCOM_DMA_Init();
   Simcom_Init();
 
   /* Infinite loop */
+  size = sizeof(hReport->header.prefix) +
+      sizeof(hReport->header.crc) +
+      sizeof(hReport->header.size);
+
   for (;;) {
     // get event data
     xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0);
@@ -1116,73 +1116,69 @@ void StartIotTask(void const * argument)
     seq = 0;
 
     osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
     // check every event & send
-    if (p_response || notif_value & EVENT_IOT_RESPONSE) {
-      // calculate the size based on message size
-      report_size = sizeof(RESPONSE.header) + sizeof(RESPONSE.data.code) + strlen(RESPONSE.data.message);
-      // response frame
-      p_response = (char*) &(RESPONSE);
-      // Send to server
-      success = Simcom_Upload(p_response, report_size);
-      // FIXME: handle SIMCOM response
-      //      if (success) {
-      //        // validate ACK
-      //        if (Simcom_Read_ACK(&(RESPONSE.header))) {
-      //          p_response = NULL;
-      //        }
-      //      }
-      p_response = NULL;
+    if (notif_value & EVENT_IOT_RESPONSE) {
+      // check report log
+        evt = osMailGet(ResponseMailHandle, 0);
+        // check is mail ready
+        if (evt.status == osEventMail) {
+          // copy the pointer
+          hResponse = evt.value.p;
+          
+          while (seq++ < 2) {
+            // Send to server
+            success = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
+            // handle SIMCOM reply
+            if (success) {
+              // validate ACK
+              if (Simcom_Read_ACK(&(hResponse->header))) {                
+                // Release back
+                osMailFree(ResponseMailHandle, hResponse);
+
+                break;
+              }
+            }
+          }
+        }
     }
 
     // report frame
-    if (p_report || notif_value & EVENT_IOT_REPORT) {
+    if (hReport || notif_value & EVENT_IOT_REPORT) {
       // check report log
-      if (p_report == NULL) {
+      if (hReport == NULL) {
         evt = osMailGet(ReportMailHandle, 0);
+        // check is mail ready
+        if (evt.status == osEventMail) {
+          // copy the pointer
+          hReport = evt.value.p;
+        }
       }
 
-      if (evt.status == osEventMail) {
-        do {
-          // copy the pointer
-          the_report = evt.value.p;
-          // calculate the size based on frame_id
-          report_size = sizeof(REPORT.header) + sizeof(REPORT.data.req);
-          if (the_report->header.frame_id == FR_FULL) {
-            report_size += sizeof(REPORT.data.opt);
-          }
-          // get current sending datetime
-          the_report->data.req.rtc_send_datetime = RTC_Read();
+      if (hReport) {
+        while (seq++ < 2) {
+          // get current sending date-time
+          hReport->data.req.rtc_send_datetime = RTC_Read();
           // recalculate the CRC
-          the_report->header.crc = CRC_Calculate8(
-              (uint8_t*) &(the_report->header.size),
-              the_report->header.size + sizeof(the_report->header.size), 1);
-
-          // report frame
-          p_report = (char*) the_report;
-
+          hReport->header.crc = CRC_Calculate8(
+              (uint8_t*) &(hReport->header.size),
+              hReport->header.size + sizeof(hReport->header.size), 1);
           // Send to server
-          success = Simcom_Upload(p_report, report_size);
+          success = Simcom_Upload((char*) hReport, size + hReport->header.size);
 
-          // handle SIMCOM response
+          // handle SIMCOM reply
           if (success) {
             // validate ACK
-            if (Simcom_Read_ACK(&(the_report->header))) {
-              // Free the pointer after successfully sent
-              osMailFree(ReportMailHandle, the_report);
-
-              // Get next log (if any)
-              evt = osMailGet(ReportMailHandle, 0);
-              if (evt.status == osEventMail) {
-                p_report = (char*) evt.value.p;
-              } else {
-                p_report = NULL;
-              }
+            if (Simcom_Read_ACK(&(hReport->header))) {
+              // Release back
+              osMailFree(ReportMailHandle, hReport);
+              hReport = NULL;
 
               // exit
               break;
             }
           }
-        } while (++seq < retry);
+        }
       }
     }
     osRecursiveMutexRelease(SimcomRecMutexHandle);
@@ -1199,8 +1195,8 @@ void StartIotTask(void const * argument)
   }
 
   // Give other threads a shot
-  vTaskDelay(tick100ms);
-  /* USER CODE END 5 */ 
+  osDelay(100);
+  /* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_StartGyroTask */
@@ -1210,7 +1206,7 @@ void StartIotTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartGyroTask */
-void StartGyroTask(void const * argument)
+void StartGyroTask(const void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
   TickType_t last_wake;
@@ -1257,12 +1253,14 @@ void StartGyroTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartCommandTask */
-void StartCommandTask(void const * argument)
+void StartCommandTask(const void *argument)
 {
   /* USER CODE BEGIN StartCommandTask */
-  command_t *command;
-  osEvent evt;
   int p;
+  osEvent evt;
+  command_t *hCommand;
+  response_t *hResponse;
+  extern response_t RESPONSE;
 
   // reset response frame to default
   Reporter_Reset(FR_RESPONSE);
@@ -1270,24 +1268,25 @@ void StartCommandTask(void const * argument)
   /* Infinite loop */
   for (;;) {
     // get command in queue
-    evt = osMailGet(CommandMailHandle, tick500ms);
+    evt = osMailGet(CommandMailHandle, osWaitForever);
 
     if (evt.status == osEventMail) {
-      command = evt.value.p;
+      hCommand = evt.value.p;
+
       // default command response
       RESPONSE.data.code = RESPONSE_STATUS_OK;
       strcpy(RESPONSE.data.message, "");
 
       // handle the command
-      switch (command->data.code) {
+      switch (hCommand->data.code) {
         case CMD_CODE_GEN:
-          switch (command->data.sub_code) {
+          switch (hCommand->data.sub_code) {
             case CMD_GEN_INFO:
               sprintf(RESPONSE.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
               break;
 
             case CMD_GEN_LED:
-              _LedWrite((uint8_t) command->data.value);
+              _LedWrite((uint8_t) hCommand->data.value);
               break;
 
             default:
@@ -1297,9 +1296,9 @@ void StartCommandTask(void const * argument)
           break;
 
         case CMD_CODE_HMI2:
-          switch (command->data.sub_code) {
+          switch (hCommand->data.sub_code) {
             case CMD_HMI2_SHUTDOWN:
-              DB.hmi2.shutdown = (uint8_t) command->data.value;
+              DB.hmi2.shutdown = (uint8_t) hCommand->data.value;
               break;
 
             default:
@@ -1309,17 +1308,17 @@ void StartCommandTask(void const * argument)
           break;
 
         case CMD_CODE_REPORT:
-          switch (command->data.sub_code) {
+          switch (hCommand->data.sub_code) {
             case CMD_REPORT_RTC:
-              RTC_Write(command->data.value, &(DB.vcu.rtc));
+              RTC_Write(hCommand->data.value, &(DB.vcu.rtc));
               break;
 
             case CMD_REPORT_ODOM:
-              Reporter_Set_Odometer((uint32_t) command->data.value);
+              Reporter_Set_Odometer((uint32_t) hCommand->data.value);
               break;
 
             case CMD_REPORT_UNITID:
-              Reporter_Set_UnitID((uint32_t) command->data.value);
+              Reporter_Set_UnitID((uint32_t) hCommand->data.value);
               break;
 
             default:
@@ -1329,7 +1328,7 @@ void StartCommandTask(void const * argument)
           break;
 
         case CMD_CODE_AUDIO:
-          switch (command->data.sub_code) {
+          switch (hCommand->data.sub_code) {
             case CMD_AUDIO_BEEP:
               xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP, eSetBits);
               break;
@@ -1337,14 +1336,14 @@ void StartCommandTask(void const * argument)
             case CMD_AUDIO_MUTE:
               xTaskNotify(
                   AudioTaskHandle,
-                  (uint8_t) command->data.value ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF,
+                  (uint8_t) hCommand->data.value ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF,
                   eSetBits);
               break;
 
             case CMD_AUDIO_VOL:
               osMessagePut(
-                  AudioVolQueueHandle,
-                  (uint8_t) command->data.value,
+                  VolumeQueueHandle,
+                  (uint8_t) hCommand->data.value,
                   osWaitForever);
               break;
 
@@ -1355,13 +1354,13 @@ void StartCommandTask(void const * argument)
           break;
 
         case CMD_CODE_FINGER:
-          switch (command->data.sub_code) {
+          switch (hCommand->data.sub_code) {
             case CMD_FINGER_ADD:
-              p = Finger_Enroll((uint8_t) command->data.value);
+              p = Finger_Enroll((uint8_t) hCommand->data.value);
               break;
 
             case CMD_FINGER_DEL:
-              p = Finger_Delete_ID((uint8_t) command->data.value);
+              p = Finger_Delete_ID((uint8_t) hCommand->data.value);
               break;
 
             case CMD_FINGER_RST:
@@ -1382,18 +1381,22 @@ void StartCommandTask(void const * argument)
           RESPONSE.data.code = RESPONSE_STATUS_INVALID;
           break;
       }
+      // release back
+      osMailFree(CommandMailHandle, hCommand);
 
       // Get current snapshot
       Reporter_Capture(FR_RESPONSE);
+     
+      // Allocate memory 
+      hResponse = osMailAlloc(ResponseMailHandle, osWaitForever);
+      // Copy snapshot of current report
+      *hResponse = RESPONSE;
+      // Put report to log
+      osMailPut(ResponseMailHandle, hResponse);
 
       // Report is ready, do what you want (send to server)
       xTaskNotify(IotTaskHandle, EVENT_IOT_RESPONSE, eSetBits);
-    } else {
-      // handle command (if any)
-      if (Simcom_Read_Command(hCommand)) {
-        osMailPut(CommandMailHandle, hCommand);
-      }
-    }
+    } 
   }
   /* USER CODE END StartCommandTask */
 }
@@ -1405,10 +1408,11 @@ void StartCommandTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartGpsTask */
-void StartGpsTask(void const * argument)
+void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   TickType_t last_wake;
+  gps_t *hGps;
 
   // Start GPS module
   UBLOX_DMA_Init();
@@ -1417,6 +1421,9 @@ void StartGpsTask(void const * argument)
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
   for (;;) {
+    // Allocate memory 
+    hGps = osMailAlloc(GpsMailHandle, osWaitForever);
+    
     // get GPS info
     if (GPS_Process(hGps)) {
       osMailPut(GpsMailHandle, hGps);
@@ -1435,7 +1442,7 @@ void StartGpsTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartFingerTask */
-void StartFingerTask(void const * argument)
+void StartFingerTask(const void *argument)
 {
   /* USER CODE BEGIN StartFingerTask */
   uint32_t notif_value;
@@ -1469,7 +1476,7 @@ void StartFingerTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartAudioTask */
-void StartAudioTask(void const * argument)
+void StartAudioTask(const void *argument)
 {
   /* USER CODE BEGIN StartAudioTask */
   TickType_t last_wake;
@@ -1503,7 +1510,7 @@ void StartAudioTask(void const * argument)
     }
 
     // check if get volume message
-    evt = osMessageGet(AudioVolQueueHandle, 0);
+    evt = osMessageGet(VolumeQueueHandle, 0);
     // do this if message arrived
     if (evt.status == osEventMessage) {
       AUDIO_OUT_SetVolume((uint8_t) evt.value.v);
@@ -1522,7 +1529,7 @@ void StartAudioTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartKeylessTask */
-void StartKeylessTask(void const * argument)
+void StartKeylessTask(const void *argument)
 {
   /* USER CODE BEGIN StartKeylessTask */
   uint8_t msg;
@@ -1562,15 +1569,18 @@ void StartKeylessTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartReporterTask */
-void StartReporterTask(void const * argument)
+void StartReporterTask(const void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
+  extern report_t REPORT;
+  
   TickType_t last_wake, last_wake_full = 0;
   osEvent evt;
   frame_type frame;
-  report_t *log_report;
   uint8_t net_restart_state;
   uint32_t notif_value;
+  report_t *hReport;
+  gps_t *hGps;
 
   // reset report frame to default
   Reporter_Reset(FR_FULL);
@@ -1591,8 +1601,7 @@ void StartReporterTask(void const * argument)
       if (notif_value & EVENT_REPORTER_CRASH) {
         Reporter_Set_Event(REPORT_BIKE_CRASHED, 1);
       }
-      if ((notif_value & EVENT_REPORTER_FALL) &&
-          !(notif_value & EVENT_REPORTER_FALL_FIXED)) {
+      if ((notif_value & EVENT_REPORTER_FALL) && !(notif_value & EVENT_REPORTER_FALL_FIXED)) {
         Reporter_Set_Event(REPORT_BIKE_FALLING, 1);
       }
     }
@@ -1601,10 +1610,13 @@ void StartReporterTask(void const * argument)
     evt = osMailGet(GpsMailHandle, 0);
     // break-down RAW NMEA data from GPS module
     if (evt.status == osEventMail) {
+      hGps = evt.value.p;
       // set GPS data
-      Reporter_Set_GPS(evt.value.p);
+      Reporter_Set_GPS(hGps);
       // set speed value (based on GPS)
-      Reporter_Set_Speed(evt.value.p);
+      Reporter_Set_Speed(hGps);
+      // Release back
+      osMailFree(GpsMailHandle, hGps);
     }
 
     // decide full/simple frame time
@@ -1621,28 +1633,12 @@ void StartReporterTask(void const * argument)
     // Get current snapshot
     Reporter_Capture(frame);
 
-    // Allocate memory, free on IoTTask after successfully sent
-    log_report = osMailAlloc(ReportMailHandle, osWaitForever);
-
-    // check log capacity
-    while (log_report == NULL) {
-      // get first queue
-      evt = osMailGet(ReportMailHandle, 0);
-
-      // remove the first queue
-      if (evt.status == osEventMail) {
-        osMailFree(ReportMailHandle, evt.value.p);
-      }
-
-      // allocate again
-      log_report = osMailAlloc(ReportMailHandle, osWaitForever);
-    }
-
+    // Allocate memory
+    hReport = osMailAlloc(ReportMailHandle, osWaitForever);
     // Copy snapshot of current report
-    *log_report = REPORT;
-
+    *hReport = REPORT;
     // Put report to log
-    osMailPut(ReportMailHandle, log_report);
+    osMailPut(ReportMailHandle, hReport);
 
     // Report is ready, do what you want (send to server)
     xTaskNotify(IotTaskHandle, EVENT_IOT_REPORT, eSetBits);
@@ -1660,7 +1656,7 @@ void StartReporterTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanRxTask */
-void StartCanRxTask(void const * argument)
+void StartCanRxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
   uint32_t notif_value;
@@ -1677,7 +1673,7 @@ void StartCanRxTask(void const * argument)
         case CAN_ADDR_MCU_DUMMY:
           CAN_MCU_Dummy_Read(&(DB.vcu.speed));
           // set volume by speed
-          osMessagePut(AudioVolQueueHandle, DB.vcu.speed, osWaitForever);
+          osMessagePut(VolumeQueueHandle, DB.vcu.speed, osWaitForever);
           break;
         default:
           break;
@@ -1695,7 +1691,7 @@ void StartCanRxTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartSwitchTask */
-void StartSwitchTask(void const * argument)
+void StartSwitchTask(const void *argument)
 {
   /* USER CODE BEGIN StartSwitchTask */
   uint8_t i, Last_Mode_Drive;
@@ -1827,7 +1823,7 @@ void StartSwitchTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartGeneralTask */
-void StartGeneralTask(void const * argument)
+void StartGeneralTask(const void *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
@@ -1898,7 +1894,7 @@ void StartGeneralTask(void const * argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanTxTask */
-void StartCanTxTask(void const * argument)
+void StartCanTxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
   TickType_t last_wake;
@@ -1921,14 +1917,14 @@ void StartCanTxTask(void const * argument)
   /* USER CODE END StartCanTxTask */
 }
 
- /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
+/**
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM1 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
@@ -1943,9 +1939,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -1967,7 +1963,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

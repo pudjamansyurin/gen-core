@@ -11,7 +11,6 @@
 extern uint16_t fingerID, fingerConfidence;
 extern osMutexId FingerRecMutexHandle;
 /* Private variable ---------------------------------------------------------*/
-char str[50];
 
 void Finger_On(void) {
   osRecursiveMutexWait(FingerRecMutexHandle, osWaitForever);
@@ -46,8 +45,9 @@ uint8_t Finger_Enroll(uint8_t id) {
 
   Finger_On();
   //	Take Image
-  sprintf(str, "Waiting for valid finger to enroll as # %d", id);
-  LOG_StrLn(str);
+  LOG_Str("\nWaiting for valid finger to enroll as #");
+  LOG_Int(id);
+  LOG_Enter();
 
   // set timeout guard
   tick = osKernelSysTick();
@@ -181,8 +181,9 @@ uint8_t Finger_Enroll(uint8_t id) {
     osDelay(2000);
     //	Create Register model
     error = 1;
-    sprintf(str, "Creating model for #%d", id);
-    LOG_StrLn(str);
+    LOG_Str("\nCreating model for #");
+    LOG_Int(id);
+    LOG_Enter();
 
     p = FZ3387_createModel();
     if (p == FINGERPRINT_OK) {
@@ -200,8 +201,9 @@ uint8_t Finger_Enroll(uint8_t id) {
   if (!error) {
     error = 1;
     //	Store in memory
-    sprintf(str, "ID %d", id);
-    LOG_StrLn(str);
+    LOG_Str("\nID #");
+    LOG_Int(id);
+    LOG_Enter();
 
     p = FZ3387_storeModel(id);
     if (p == FINGERPRINT_OK) {
@@ -238,8 +240,9 @@ uint8_t Finger_Delete_ID(uint8_t id) {
   } else if (p == FINGERPRINT_FLASHERR) {
     LOG_StrLn("Error writing to flash");
   } else {
-    sprintf(str, "Unknown error: 0x%02x", p);
-    LOG_StrLn(str);
+    LOG_Str("\nUnknown error: 0x");
+    LOG_Hex8(p);
+    LOG_Enter();
   }
 
   return p;
@@ -340,8 +343,11 @@ int8_t Finger_Auth(void) {
 
   if (!error) {
     // found a match!
-    sprintf(str, "Found ID #%d  with confidence of %d", fingerID, fingerConfidence);
-    LOG_StrLn(str);
+    LOG_Str("\nFound ID #");
+    LOG_Int(fingerID);
+    LOG_Str(" with confidence of ");
+    LOG_Int(fingerConfidence);
+    LOG_Enter();
 
     if (fingerConfidence > FINGER_CONFIDENCE_MIN) {
       return fingerID;
@@ -370,8 +376,11 @@ int8_t Finger_Auth_Fast(void) {
 
   if (p == FINGERPRINT_OK) {
     // found a match!
-    sprintf(str, "Found ID #%d  with confidence of %d", fingerID, fingerConfidence);
-    LOG_StrLn(str);
+    LOG_Str("\nFound ID #");
+    LOG_Int(fingerID);
+    LOG_Str(" with confidence of ");
+    LOG_Int(fingerConfidence);
+    LOG_Enter();
 
     if (fingerConfidence > FINGER_CONFIDENCE_MIN) {
       return fingerID;

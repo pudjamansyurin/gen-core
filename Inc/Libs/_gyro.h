@@ -10,6 +10,9 @@
 
 #include "_mpu6050.h"
 
+#define GYROSCOPE_LIMIT               10000
+#define ACCELEROMETER_LIMIT           46000
+
 /* Public typedef -----------------------------------------------------------*/
 typedef struct {
   int32_t x;

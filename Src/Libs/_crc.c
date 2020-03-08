@@ -20,7 +20,7 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
   }
 
   /* Calculate number of 32-bit blocks */
-  cnt = count >> 2;
+  cnt = BSR(count, 2);
 
   /* Calculate */
   while (cnt--) {
@@ -38,7 +38,7 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
     /* Calculate */
     while (cnt--) {
       /* Combine 8bit to 32bit using litle endian */
-      remaining |= ((*arr) << (24 - (cnt * 8)));
+      remaining |= BSL((*arr), (24 - (cnt * 8)));
 
       // increment pointer
       arr++;

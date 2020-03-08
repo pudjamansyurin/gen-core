@@ -11,8 +11,7 @@ extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 extern osMutexId SimcomRecMutexHandle;
 extern osThreadId CommandTaskHandle;
 extern osMailQId CommandMailHandle;
-extern command_t *hCommand;
-simcom_t simcom;
+static simcom_t simcom;
 
 /* Private functions ---------------------------------------------------------*/
 static void Simcom_Reset(void);
@@ -51,17 +50,26 @@ static uint8_t Simcom_Boot(void) {
 }
 
 static void Simcom_Clear_Buffer(void) {
-  // handle command (if any)
-  if (Simcom_Read_Command(hCommand)) {
-    // FIXME: sometime command is timeout
-    osMailPut(CommandMailHandle, hCommand);
-  }
+  command_t *hCommand;
   // debugging
   //	LOG_StrLn("\n=================== START ===================");
   //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
   //	LOG_StrLn("\n==================== END ====================");
-  // reset rx buffer
-  SIMCOM_Reset_Buffer();
+  // check command
+  if(strstr(SIMCOM_UART_RX, NET_COMMAND_PREFIX) != NULL){  
+    // Allocate memory 
+    hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
+    // handle command (if any)
+    if (Simcom_Read_Command(hCommand)) {
+      // reset rx buffer
+      SIMCOM_Reset_Buffer();
+
+      osMailPut(CommandMailHandle, hCommand);
+    }
+  } else {
+    // reset rx buffer
+    SIMCOM_Reset_Buffer();
+  }
 }
 
 static uint8_t Simcom_Response(char *str) {
@@ -310,7 +318,7 @@ uint8_t Simcom_Read_ACK(report_header_t *report_header) {
   ack_t ack;
   char *str = NULL;
 
-  if (strstr(SIMCOM_UART_RX, SIMCOM_RESPONSE_IPD)) {
+  if (Simcom_Response(SIMCOM_RESPONSE_IPD)) {
     // parse ACK
     str = strstr(SIMCOM_UART_RX, NET_ACK_PREFIX);
     if (str != NULL) {
@@ -339,7 +347,7 @@ uint8_t Simcom_Read_Command(command_t *command) {
   uint8_t ret = 0;
   char *str = NULL;
 
-  if (strstr(SIMCOM_UART_RX, SIMCOM_RESPONSE_IPD)) {
+  if (Simcom_Response(SIMCOM_RESPONSE_IPD)) {
     // get pointer reference
     str = strstr(SIMCOM_UART_RX, NET_COMMAND_PREFIX);
     if (str != NULL) {

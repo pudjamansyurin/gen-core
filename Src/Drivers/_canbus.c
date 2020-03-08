@@ -103,7 +103,7 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
 //    } else {
 //      LOG_Str("RTR");
 //    }
-//    LOG_StrLn("");
+//    LOG_Enter();
 //  }
 
   osMutexRelease(CanTxMutexHandle);
@@ -129,7 +129,7 @@ uint8_t CANBUS_Read(canbus_rx_t *rx) {
     } else {
       LOG_Str("RTR");
     }
-    LOG_StrLn("");
+    LOG_Enter();
   }
 
   return (status == HAL_OK);

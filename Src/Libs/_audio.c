@@ -50,14 +50,14 @@ extern uint32_t AUDIO_SAMPLE_SIZE;
 extern uint16_t AUDIO_SAMPLE[];
 
 /* Private variables ---------------------------------------------------------*/
-AUDIO_DrvTypeDef *pAudioDrv;
-uint8_t AudioVolume = 50, AudioPlayDone = 0;
-uint16_t AudioPlaySize;
-uint32_t AudioRemSize;
+static AUDIO_DrvTypeDef *pAudioDrv;
+static uint8_t AudioVolume = 50, AudioPlayDone = 0;
+static uint16_t AudioPlaySize;
+static uint32_t AudioRemSize;
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
-const uint32_t I2SFreq[7] = { 8000, 16000, 22050, 32000, 44100, 48000, 96000 };
-const uint32_t I2SPLLN[7] = { 256, 213, 429, 213, 271, 258, 344 };
-const uint32_t I2SPLLR[7] = { 5, 2, 4, 2, 2, 3, 2 };
+static const uint32_t I2SFreq[7] = { 8000, 16000, 22050, 32000, 44100, 48000, 96000 };
+static const uint32_t I2SPLLN[7] = { 256, 213, 429, 213, 271, 258, 344 };
+static const uint32_t I2SPLLR[7] = { 5, 2, 4, 2, 2, 3, 2 };
 
 /* Private functions ---------------------------------------------------------*/
 static uint8_t I2S3_Init(uint32_t AudioFreq);

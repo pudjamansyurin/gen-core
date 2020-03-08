@@ -1,5 +1,7 @@
 {
   "files.associations": {
-    "_emulation.h": "c"
+    "_emulation.h": "c",
+    "_gyro.h": "c",
+    "_log.h": "c"
   }
 }

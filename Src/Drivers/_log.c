@@ -19,6 +19,12 @@ void LOG_Char(char ch) {
 #endif
 }
 
+void LOG_Enter(void){  
+  osMutexWait(LogMutexHandle, osWaitForever);
+  LOG_Char("\n");
+  osMutexRelease(LogMutexHandle);
+}
+
 void LOG_Int(int32_t num) {
   osMutexWait(LogMutexHandle, osWaitForever);
 

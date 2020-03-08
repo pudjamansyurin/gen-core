@@ -94,16 +94,14 @@ void Reporter_Set_Events(uint64_t value) {
 
 void Reporter_Set_Event(uint64_t event_id, uint8_t value) {
   if (value & 1) {
-    // set
     BV(REPORT.data.req.events_group, _BitPosition(event_id));
   } else {
-    // clear
     BC(REPORT.data.req.events_group, _BitPosition(event_id));
   }
 }
 
 uint8_t Reporter_Read_Event(uint64_t event_id) {
-  return (REPORT.data.req.events_group & event_id) >> _BitPosition(event_id);
+  return BSR((REPORT.data.req.events_group & event_id) , _BitPosition(event_id));
 }
 
 void Reporter_Capture(frame_type frame) {
