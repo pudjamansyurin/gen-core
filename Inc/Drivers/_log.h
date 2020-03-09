@@ -12,7 +12,7 @@
 #include "cmsis_os.h"
 #include <string.h>
 
-#define LOG_DEBUG                                0
+#define LOG_DEBUG                                1
 #define HEX_CHARS                                "0123456789ABCDEF"
 
 void LOG_Char(char ch);

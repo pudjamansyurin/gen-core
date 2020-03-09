@@ -18,8 +18,6 @@
 #define BT(var, x)                              (var ^= (1 << x))
 #define BSL(var, x)                             (var << x)
 #define BSR(var, x)                             ((var >> x) & 0xFF)
-#define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
-#define CHARTONUM(x)                            ((x) - '0')
 
 // GLOBAL CONFIG
 #define VCU_FIRMWARE_VERSION                    "0.7"

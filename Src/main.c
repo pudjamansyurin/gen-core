@@ -1171,7 +1171,16 @@ void StartIotTask(const void *argument)
             if (Simcom_ReadACK(&(hReport->header))) {
               // Release back
               osMailFree(ReportMailHandle, hReport);
-              hReport = NULL;
+
+              // check log again
+              evt = osMailGet(ReportMailHandle, 0);
+              // check is mail ready
+              if (evt.status == osEventMail) {
+                // copy the pointer
+                hReport = evt.value.p;
+              } else {
+                hReport = NULL;
+              }
 
               // exit
               break;
@@ -1826,7 +1835,7 @@ void StartGeneralTask(const void *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
-  timestamp_t *timestampCarrier = NULL;
+  timestamp_t timestampCarrier;
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1840,9 +1849,9 @@ void StartGeneralTask(const void *argument)
     // Check calibration by cellular network
     if (_TimeNeedCalibration(DB.vcu.rtc)) {
       // get carrier timestamp
-      if (Simcom_ReadTime(timestampCarrier)) {
+      if (Simcom_ReadTime(&timestampCarrier)) {
         // calibrate the RTC
-        RTC_WriteRaw(timestampCarrier, &(DB.vcu.rtc));
+        RTC_WriteRaw(&timestampCarrier, &(DB.vcu.rtc));
       }
     }
 

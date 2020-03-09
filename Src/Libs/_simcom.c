@@ -16,10 +16,10 @@ static simcom_t simcom;
 /* Private functions ---------------------------------------------------------*/
 static void Simcom_Reset(void);
 static void Simcom_Prepare(void);
-static void Simcom_Clear_Buffer(void);
+static void Simcom_ClearBuffer(void);
 static uint8_t Simcom_Response(char *str);
-static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint32_t ms, char *res);
-static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
+static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, char *res);
+static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
 static uint8_t Simcom_Boot(void);
 
 static void Simcom_Reset(void) {
@@ -49,20 +49,28 @@ static uint8_t Simcom_Boot(void) {
   return Simcom_Command(SIMCOM_BOOT_COMMAND, NET_BOOT_TIMEOUT, SIMCOM_STATUS_OK, 1);
 }
 
-static void Simcom_Clear_Buffer(void) {
+static void Simcom_ClearBuffer(void) {
   command_t *hCommand;
   // debugging
   //	LOG_StrLn("\n=================== START ===================");
   //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
   //	LOG_StrLn("\n==================== END ====================");
   // check command
-  if(strstr(SIMCOM_UART_RX, NET_COMMAND_PREFIX) != NULL){  
-    // Allocate memory 
+  if (strstr(SIMCOM_UART_RX, NET_COMMAND_PREFIX) != NULL) {
+    // Allocate memory
     hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
     // handle command (if any)
     if (Simcom_ReadCommand(hCommand)) {
       // reset rx buffer
       SIMCOM_Reset_Buffer();
+      // debug
+      LOG_Str("\nNew Command [");
+      LOG_Int(hCommand->data.code);
+      LOG_Str("-");
+      LOG_Int(hCommand->data.sub_code);
+      LOG_Str("] = ");
+      LOG_BufHex((char*) &(hCommand->data.value), sizeof(hCommand->data.value));
+      LOG_Enter();
 
       osMailPut(CommandMailHandle, hCommand);
     }
@@ -79,13 +87,13 @@ static uint8_t Simcom_Response(char *str) {
   return 0;
 }
 
-static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint32_t ms, char *res) {
+static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, char *res) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t ret;
   uint32_t tick, timeout_tick = 0;
 
-  Simcom_Clear_Buffer();
+  Simcom_ClearBuffer();
   // transmit to serial (low-level)
   SIMCOM_Transmit(data, data_length);
   // convert time to tick
@@ -118,7 +126,7 @@ static uint8_t Simcom_Send_Direct(char *data, uint16_t data_length, uint32_t ms,
   return ret;
 }
 
-static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n) {
+static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t ret = 0, seq = 0;
@@ -144,7 +152,7 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
     LOG_Char('\n');
 
     // send command
-    ret = Simcom_Send_Direct(data, data_length, ms, res);
+    ret = Simcom_SendDirect(data, data_length, ms, res);
 
     // print response for debugger
     LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
@@ -156,7 +164,7 @@ static uint8_t Simcom_Send_Indirect(char *data, uint16_t data_length, uint8_t is
 }
 
 uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n) {
-  return Simcom_Send_Indirect(cmd, strlen(cmd), 0, ms, res, n);
+  return Simcom_SendIndirect(cmd, strlen(cmd), 0, ms, res, n);
 }
 
 void Simcom_Init(void) {
@@ -286,7 +294,7 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
   // confirm to server that command is executed
   if (Simcom_Command(str, 5000, SIMCOM_STATUS_SEND, 1)) {
     // send response
-    if (Simcom_Send_Indirect(payload, payload_length, 1, 5000, SIMCOM_STATUS_SENT, 1)) {
+    if (Simcom_SendIndirect(payload, payload_length, 1, 5000, SIMCOM_STATUS_SENT, 1)) {
       // set timeout guard
       tick = osKernelSysTick();
       // wait ACK for payload
@@ -329,7 +337,7 @@ uint8_t Simcom_ReadACK(report_header_t *report_header) {
           report_header->seq_id == ack.seq_id) {
 
         // clear rx buffer
-        Simcom_Clear_Buffer();
+        Simcom_ClearBuffer();
 
         ret = 1;
       }
@@ -455,15 +463,12 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
       len += cnt + 1;
       timestamp->time.Seconds = _ParseNumber(&str[len], NULL);
 
-      // make sure it is valid datetime
-      if (RTC_Encode(*timestamp)) {
-        // check is carrier timestamp valid
-        if (timestamp->date.Year >= VCU_BUILD_YEAR) {
-          // set weekday to default
-          timestamp->date.WeekDay = RTC_WEEKDAY_MONDAY;
+      // check is carrier timestamp valid
+      if (timestamp->date.Year >= VCU_BUILD_YEAR) {
+        // set weekday to default
+        timestamp->date.WeekDay = RTC_WEEKDAY_MONDAY;
 
-          ret = 1;
-        }
+        ret = 1;
       }
     }
   }

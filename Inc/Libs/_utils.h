@@ -27,6 +27,9 @@ extern const TickType_t tick5ms,
     tickDelayFull,
     tickDelaySimple;
 
+#define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
+#define CHARTONUM(x)                            ((x) - '0')
+
 // Function prototype
 void _LedWrite(uint8_t state);
 void _LedToggle(void);
