@@ -24,7 +24,7 @@
 #define VCU_VENDOR                              "GEN Indonesia"
 #define VCU_BUILD_YEAR                          20U
 
-#define NET_SERVER_IP                           "36.76.120.209"
+#define NET_SERVER_IP                           "36.81.133.99"
 #define NET_SERVER_PORT                         5044
 #define NET_APN                                 "3gprs"                 // "telkomsel"
 #define NET_APN_USERNAME                        "3gprs"                 // "wap"
