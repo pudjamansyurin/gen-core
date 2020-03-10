@@ -24,7 +24,7 @@
 #define VCU_VENDOR                              "GEN Indonesia"
 #define VCU_BUILD_YEAR                          20U
 
-#define NET_SERVER_IP                           "36.81.133.99"
+#define NET_SERVER_IP                           "125.164.130.235"
 #define NET_SERVER_PORT                         5044
 #define NET_APN                                 "3gprs"                 // "telkomsel"
 #define NET_APN_USERNAME                        "3gprs"                 // "wap"
@@ -47,9 +47,6 @@
 #define GMT_TIME                                7                       // Asia/Jakarta
 
 // Event List (RTOS Tasks)
-#define EVENT_IOT_RESPONSE                      BIT(0)
-#define EVENT_IOT_REPORT                        BIT(1)
-
 #define EVENT_REPORTER_CRASH                    BIT(0)
 #define EVENT_REPORTER_FALL                     BIT(1)
 #define EVENT_REPORTER_FALL_FIXED               BIT(2)

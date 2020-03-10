@@ -1092,9 +1092,8 @@ void StartIotTask(const void *argument)
 {
   /* USER CODE BEGIN 5 */
   uint8_t success, size, seq;
-  uint32_t notif_value;
   osEvent evt;
-  report_t *hReport = NULL;
+  report_t *hReport = NULL, report;
   response_t *hResponse = NULL;
 
   // Start simcom module
@@ -1107,24 +1106,20 @@ void StartIotTask(const void *argument)
       sizeof(hReport->header.size);
 
   for (;;) {
-    // get event data
-    xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0);
-
     // Set default
     success = 1;
-    seq = 0;
 
     osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
-
-    // check every event & send
-    if (notif_value & EVENT_IOT_RESPONSE) {
-      // check report log
+    // response frame
+    {
+      // check response log
       evt = osMailGet(ResponseMailHandle, 0);
       // check is mail ready
       if (evt.status == osEventMail) {
         // copy the pointer
         hResponse = evt.value.p;
 
+        seq = 0;
         while (seq++ < 2) {
           // Send to server
           success = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
@@ -1139,11 +1134,17 @@ void StartIotTask(const void *argument)
             }
           }
         }
+
+        // Release otherwise
+        if (!success) {
+          // Release back
+          osMailFree(ResponseMailHandle, hResponse);
+        }
       }
     }
 
     // report frame
-    if (hReport || notif_value & EVENT_IOT_REPORT) {
+    {
       // check report log
       if (hReport == NULL) {
         evt = osMailGet(ReportMailHandle, 0);
@@ -1151,24 +1152,27 @@ void StartIotTask(const void *argument)
         if (evt.status == osEventMail) {
           // copy the pointer
           hReport = evt.value.p;
+          // copy value
+          report = *hReport;
         }
       }
 
       if (hReport) {
+        seq = 0;
         while (seq++ < 2) {
           // get current sending date-time
-          hReport->data.req.rtc_send_datetime = RTC_Read();
+          report.data.req.rtc_send_datetime = RTC_Read();
           // recalculate the CRC
-          hReport->header.crc = CRC_Calculate8(
-              (uint8_t*) &(hReport->header.size),
-              hReport->header.size + sizeof(hReport->header.size), 1);
+          report.header.crc = CRC_Calculate8(
+              (uint8_t*) &(report.header.size),
+              report.header.size + sizeof(report.header.size), 1);
           // Send to server
-          success = Simcom_Upload((char*) hReport, size + hReport->header.size);
+          success = Simcom_Upload((char*) &report, size + report.header.size);
 
           // handle SIMCOM reply
           if (success) {
             // validate ACK
-            if (Simcom_ReadACK(&(hReport->header))) {
+            if (Simcom_ReadACK(&(report.header))) {
               // Release back
               osMailFree(ReportMailHandle, hReport);
 
@@ -1178,6 +1182,8 @@ void StartIotTask(const void *argument)
               if (evt.status == osEventMail) {
                 // copy the pointer
                 hReport = evt.value.p;
+                // copy value
+                report = *hReport;
               } else {
                 hReport = NULL;
               }
@@ -1191,7 +1197,7 @@ void StartIotTask(const void *argument)
     }
     osRecursiveMutexRelease(SimcomRecMutexHandle);
 
-    // save the simcom event
+    // save the SIMCOM event
     Reporter_WriteEvent(REPORT_NETWORK_RESTART, !success);
 
     // handle sending error
@@ -1202,7 +1208,7 @@ void StartIotTask(const void *argument)
     }
   }
 
-  // Give other threads a shot
+// Give other threads a shot
   osDelay(100);
   /* USER CODE END 5 */
 }
@@ -1223,9 +1229,9 @@ void StartGyroTask(const void *argument)
 
   /* MPU6050 Initialization*/
   GYRO_Init();
-  // Set calibrator
+// Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
-  // Give success indicator
+// Give success indicator
   AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
 
   /* Infinite loop */
@@ -1270,7 +1276,7 @@ void StartCommandTask(const void *argument)
   response_t *hResponse;
   extern response_t RESPONSE;
 
-  // reset response frame to default
+// reset response frame to default
   Reporter_Reset(FR_RESPONSE);
 
   /* Infinite loop */
@@ -1401,9 +1407,6 @@ void StartCommandTask(const void *argument)
       *hResponse = RESPONSE;
       // Put report to log
       osMailPut(ResponseMailHandle, hResponse);
-
-      // Report is ready, do what you want (send to server)
-      xTaskNotify(IotTaskHandle, EVENT_IOT_RESPONSE, eSetBits);
     }
   }
   /* USER CODE END StartCommandTask */
@@ -1422,7 +1425,7 @@ void StartGpsTask(const void *argument)
   TickType_t last_wake;
   gps_t *hGps;
 
-  // Start GPS module
+// Start GPS module
   UBLOX_DMA_Init();
   GPS_Init();
 
@@ -1455,7 +1458,7 @@ void StartFingerTask(const void *argument)
   /* USER CODE BEGIN StartFingerTask */
   uint32_t notif_value;
 
-  // Initialization
+// Initialization
   FINGER_DMA_Init();
   Finger_Init();
 
@@ -1493,7 +1496,7 @@ void StartAudioTask(const void *argument)
 
   /* Initialize Wave player (Codec, DMA, I2C) */
   AUDIO_Init();
-  // Play wave loop forever, handover to DMA, so CPU is free
+// Play wave loop forever, handover to DMA, so CPU is free
   AUDIO_Play();
 
   /* Infinite loop */
@@ -1543,7 +1546,7 @@ void StartKeylessTask(const void *argument)
   uint8_t msg;
   uint32_t notif_value;
 
-  // initialization
+// initialization
   KEYLESS_Init();
 
   /* Infinite loop */
@@ -1590,7 +1593,7 @@ void StartReporterTask(const void *argument)
   report_t *hReport;
   gps_t *hGps;
 
-  // reset report frame to default
+// reset report frame to default
   Reporter_Reset(FR_FULL);
 
   /* Infinite loop */
@@ -1641,15 +1644,24 @@ void StartReporterTask(const void *argument)
     // Get current snapshot
     Reporter_Capture(frame);
 
-    // Allocate memory
-    hReport = osMailAlloc(ReportMailHandle, osWaitForever);
+    // Get log space
+    do {
+      // Allocate memory
+      hReport = osMailAlloc(ReportMailHandle, osWaitForever);
+      // Handle full log
+      if (hReport == NULL) {
+        // get first log
+        evt = osMailGet(ReportMailHandle, 0);
+        if (evt.status == osEventMail) {
+          // remove it
+          osMailFree(ReportMailHandle, evt.value.p);
+        }
+      }
+    } while (hReport == NULL);
     // Copy snapshot of current report
     *hReport = REPORT;
     // Put report to log
     osMailPut(ReportMailHandle, hReport);
-
-    // Report is ready, do what you want (send to server)
-    xTaskNotify(IotTaskHandle, EVENT_IOT_REPORT, eSetBits);
 
     // Report interval in second (based on lowest interval, the simple frame)
     vTaskDelayUntil(&last_wake, tickDelaySimple);
@@ -1705,12 +1717,12 @@ void StartSwitchTask(const void *argument)
   uint8_t i, Last_Mode_Drive;
   uint32_t notif_value;
 
-  // Read all EXTI state
+// Read all EXTI state
   for (i = 0; i < DB.vcu.sw.count; i++) {
     DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
   }
 
-  // Handle Reverse mode on init
+// Handle Reverse mode on init
   if (DB.vcu.sw.list[SW_K_REVERSE].state) {
     // save previous Drive Mode state
     if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
