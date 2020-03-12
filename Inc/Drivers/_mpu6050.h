@@ -8,27 +8,12 @@
 #ifndef MPU6050_H_
 #define MPU6050_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
-/**
- * @defgroup MPU6050_Macros
- * @brief    Library defines
- * @{
- */
-
-/* Default I2C used */
-#ifndef MPU6050_I2C
-#define	MPU6050_I2C                    I2C1              /*!< Default I2C */
-#endif
-
-/* Default I2C clock */
-#ifndef MPU6050_I2C_CLOCK
-#define MPU6050_I2C_CLOCK              100000            /*!< Default I2C clock speed */
-#endif
-
+/* Exported constants --------------------------------------------------------*/
 /**
  * @brief  Data rates predefined constants
- * @{
  */
 #define MPU6050_DataRate_8KHz       0   /*!< Sample rate set to 8 kHz */
 #define MPU6050_DataRate_4KHz       1   /*!< Sample rate set to 4 kHz */
@@ -38,20 +23,8 @@
 #define MPU6050_DataRate_250Hz      31  /*!< Sample rate set to 250 Hz */
 #define MPU6050_DataRate_125Hz      63  /*!< Sample rate set to 125 Hz */
 #define MPU6050_DataRate_100Hz      79  /*!< Sample rate set to 100 Hz */
-/**
- * @}
- */
 
-/**
- * @}
- */
-
-/**
- * @defgroup MPU6050_Typedefs
- * @brief    Library Typedefs
- * @{
- */
-
+/* Exported enum ----------------------------------------------------------------*/
 /**
  * @brief  MPU6050 can have 2 different slave addresses, depends on it's input AD0 pin
  *         This feature allows you to use 2 different sensors with this library at the same time
@@ -91,6 +64,7 @@ typedef enum {
   MPU6050_Gyroscope_2000s = 0x03 /*!< Range is +- 2000 degrees/s */
 } MPU6050_Gyroscope;
 
+/* Exported struct ----------------------------------------------------------------*/
 /**
  * @brief  Main MPU6050 structure
  */
@@ -110,6 +84,7 @@ typedef struct {
 //I2C_HandleTypeDef* I2Cx;
 } MPU6050;
 
+/* Public union ----------------------------------------------------------------*/
 /**
  * @brief  Interrupts union and structure
  */
@@ -126,16 +101,7 @@ typedef union {
   uint8_t Status;
 } MPU6050_Interrupt;
 
-/**
- * @}
- */
-
-/**
- * @defgroup MPU6050_Functions
- * @brief    Library Functions
- * @{
- */
-
+/* Public functions prototype ------------------------------------------------*/
 /**
  * @brief  Initializes MPU6050 and I2C peripheral
  * @param  *DataStruct: Pointer to empty @ref MPU6050_t structure
@@ -238,17 +204,5 @@ MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStr
  *            - Other: in other cases
  */
 MPU6050_Result MPU6050_ReadAll(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
 
 #endif /* MPU6050_H_ */

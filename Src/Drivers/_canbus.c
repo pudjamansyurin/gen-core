@@ -5,13 +5,18 @@
  *      Author: Puja Kusuma
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_canbus.h"
 
+/* External variables ---------------------------------------------------------*/
 extern osThreadId CanRxTaskHandle;
 extern osMutexId CanTxMutexHandle;
 extern CAN_HandleTypeDef hcan1;
+
+/* Public variables -----------------------------------------------------------*/
 canbus_t CB;
 
+/* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(void) {
   CAN_FilterTypeDef sFilterConfig;
 

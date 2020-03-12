@@ -5,10 +5,13 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_can.h"
 
+/* External variables ----------------------------------------------------------*/
 extern canbus_t CB;
 
+/* Public functions implementation --------------------------------------------*/
 // ==================================== VCU =========================================
 #if (CAN_NODE & CAN_NODE_VCU)
 uint8_t CAN_VCU_Switch(db_t *DB) {

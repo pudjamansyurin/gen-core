@@ -5,10 +5,13 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_log.h"
 
+/* External variables ----------------------------------------------------------*/
 extern osMutexId LogMutexHandle;
 
+/* Public functions implementation ---------------------------------------------*/
 void LOG_Char(char ch) {
 #if LOG_DEBUG
   // wait if busy

@@ -46,25 +46,22 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_emulation.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-
-/* Global variable used to store variable value in read sequence */
-static uint16_t DataVar = 0;
-
+/* External variables ----------------------------------------------------------*/
 /* Virtual address defined by the user: 0xFFFF value is prohibited */
 extern uint16_t VirtAddVarTab[NB_OF_VAR];
 
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
+/* Private variables -----------------------------------------------------------*/
+/* Public variables used to store variable value in read sequence */
+static uint16_t DataVar = 0;
+
+/* Private functions prototype ------------------------------------------------*/
 static HAL_StatusTypeDef EE_Format(void);
 static uint16_t EE_FindValidPage(uint8_t Operation);
 static uint16_t EE_VerifyPageFullWriteVariable(uint16_t VirtAddress, uint16_t Data);
 static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data);
 static uint16_t EE_VerifyPageFullyErased(uint32_t Address);
 
+/* Public functions implementation ---------------------------------------------*/
 /**
  * @brief  Restore the pages to a known good state in case of page's status
  *   corruption after a power loss.
@@ -318,7 +315,7 @@ uint16_t EE_VerifyPageFullyErased(uint32_t Address) {
  * @brief  Returns the last stored variable data, if found, which correspond to
  *   the passed virtual address
  * @param  VirtAddress: Variable virtual address
- * @param  Data: Global variable contains the read variable value
+ * @param  Data: Public variable contains the read variable value
  * @retval Success or error status:
  *           - 0: if variable was found
  *           - 1: if the variable was not found
@@ -393,6 +390,7 @@ uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data) {
   return Status;
 }
 
+/* Private functions implementation ---------------------------------------------*/
 /**
  * @brief  Erases PAGE and PAGE1 and writes VALID_PAGE header to PAGE
  * @param  None

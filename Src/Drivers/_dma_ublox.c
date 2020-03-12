@@ -5,16 +5,22 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_dma_ublox.h"
 
+/* External variables ---------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern UART_HandleTypeDef huart2;
 
+/* Public variables -----------------------------------------------------------*/
 char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
+
+/* Private variables ----------------------------------------------------------*/
 static char DMA_RX[UBLOX_DMA_RX_SZ];
 static size_t write, len, copy;
 static uint8_t *ptr;
 
+/* Public functions implementation ---------------------------------------------*/
 void UBLOX_USART_IrqHandler(void) {
   if (huart2.Instance->SR & UART_FLAG_IDLE) /* if Idle flag is set */
   {

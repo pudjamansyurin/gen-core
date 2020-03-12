@@ -4,16 +4,19 @@
  *  Created on: Aug 14, 2019
  *      Author: Puja
  */
+/* Includes ------------------------------------------------------------------*/
 #include "_simcom.h"
 
-/* External variable ---------------------------------------------------------*/
+/* External variables ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 extern osMutexId SimcomRecMutexHandle;
 extern osThreadId CommandTaskHandle;
 extern osMailQId CommandMailHandle;
+
+/* Private variables ----------------------------------------------------------*/
 static simcom_t simcom;
 
-/* Private functions ---------------------------------------------------------*/
+/* Private functions prototype -----------------------------------------------*/
 static void Simcom_Reset(void);
 static void Simcom_Prepare(void);
 static void Simcom_ClearBuffer(void);
@@ -22,147 +25,7 @@ static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, 
 static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
 static uint8_t Simcom_Boot(void);
 
-static void Simcom_Reset(void) {
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
-  osDelay(500);
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_RESET);
-  osDelay(5000);
-}
-
-static void Simcom_Prepare(void) {
-  // prepare command sequence
-  sprintf(simcom.CMD_CNMP, "AT+CNMP=%d\r", NET_SIGNAL);
-  sprintf(simcom.CMD_CSTT,
-      "AT+CSTT=\"%s\",\"%s\",\"%s\"\r",
-      NET_APN, NET_APN_USERNAME, NET_APN_PASSWORD);
-  sprintf(simcom.CMD_CIPSTART,
-      "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r",
-      NET_SERVER_IP, NET_SERVER_PORT);
-}
-
-static uint8_t Simcom_Boot(void) {
-  // reset rx buffer
-  SIMCOM_Reset_Buffer();
-  // reset the state of simcom module
-  Simcom_Reset();
-  // wait until booting is done
-  return Simcom_Command(SIMCOM_BOOT_COMMAND, NET_BOOT_TIMEOUT, SIMCOM_STATUS_OK, 1);
-}
-
-static void Simcom_ClearBuffer(void) {
-  command_t *hCommand;
-  // debugging
-  //	LOG_StrLn("\n=================== START ===================");
-  //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-  //	LOG_StrLn("\n==================== END ====================");
-  // check command
-  if (strstr(SIMCOM_UART_RX, NET_COMMAND_PREFIX) != NULL) {
-    // Allocate memory
-    hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
-    // handle command (if any)
-    if (Simcom_ReadCommand(hCommand)) {
-      // reset rx buffer
-      SIMCOM_Reset_Buffer();
-      // debug
-      LOG_Str("\nNew Command [");
-      LOG_Int(hCommand->data.code);
-      LOG_Str("-");
-      LOG_Int(hCommand->data.sub_code);
-      LOG_Str("] = ");
-      LOG_BufHex((char*) &(hCommand->data.value), sizeof(hCommand->data.value));
-      LOG_Enter();
-
-      osMailPut(CommandMailHandle, hCommand);
-    }
-  } else {
-    // reset rx buffer
-    SIMCOM_Reset_Buffer();
-  }
-}
-
-static uint8_t Simcom_Response(char *str) {
-  if (strstr(SIMCOM_UART_RX, str) != NULL) {
-    return 1;
-  }
-  return 0;
-}
-
-static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, char *res) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
-
-  uint8_t ret;
-  uint32_t tick, timeout_tick = 0;
-
-  Simcom_ClearBuffer();
-  // transmit to serial (low-level)
-  SIMCOM_Transmit(data, data_length);
-  // convert time to tick
-  timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME_MS);
-  // set timeout guard
-  tick = osKernelSysTick();
-  // wait response from SIMCOM
-  while (1) {
-    if (Simcom_Response(res) ||
-        Simcom_Response(SIMCOM_STATUS_ERROR) ||
-        Simcom_Response(SIMCOM_STATUS_READY) ||
-        (osKernelSysTick() - tick) >= timeout_tick) {
-
-      // set flag for timeout & error
-      ret = Simcom_Response(res);
-
-      // exception for auto reboot module
-      if (strstr(data, SIMCOM_BOOT_COMMAND) != NULL) {
-        ret = ret || Simcom_Response(SIMCOM_STATUS_READY);
-      }
-
-      // exit loop
-      break;
-    }
-
-    osDelay(10);
-  }
-
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
-  return ret;
-}
-
-static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
-
-  uint8_t ret = 0, seq = 0;
-  // default response
-  if (res == NULL) {
-    res = SIMCOM_STATUS_OK;
-  }
-
-  // repeat command until desired response
-  while (seq++ < n && !ret) {
-    // execute command every timeout guard elapsed
-    if (seq > 1) {
-      osDelay(NET_REPEAT_DELAY * 1000);
-    }
-
-    // print command for debugger
-    if (!is_payload) {
-      LOG_Str("\n=> ");
-      LOG_Buf(data, data_length);
-    } else {
-      LOG_BufHex(data, data_length);
-    }
-    LOG_Char('\n');
-
-    // send command
-    ret = Simcom_SendDirect(data, data_length, ms, res);
-
-    // print response for debugger
-    LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-    LOG_Char('\n');
-  }
-
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
-  return ret;
-}
-
+/* Public functions implementation --------------------------------------------*/
 uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n) {
   return Simcom_SendIndirect(cmd, strlen(cmd), 0, ms, res, n);
 }
@@ -471,6 +334,149 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
         ret = 1;
       }
     }
+  }
+
+  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  return ret;
+}
+
+
+/* Private functions implementation --------------------------------------------*/
+static void Simcom_Reset(void) {
+  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
+  osDelay(500);
+  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_RESET);
+  osDelay(5000);
+}
+
+static void Simcom_Prepare(void) {
+  // prepare command sequence
+  sprintf(simcom.CMD_CNMP, "AT+CNMP=%d\r", NET_SIGNAL);
+  sprintf(simcom.CMD_CSTT,
+      "AT+CSTT=\"%s\",\"%s\",\"%s\"\r",
+      NET_APN, NET_APN_USERNAME, NET_APN_PASSWORD);
+  sprintf(simcom.CMD_CIPSTART,
+      "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r",
+      NET_SERVER_IP, NET_SERVER_PORT);
+}
+
+static uint8_t Simcom_Boot(void) {
+  // reset rx buffer
+  SIMCOM_Reset_Buffer();
+  // reset the state of simcom module
+  Simcom_Reset();
+  // wait until booting is done
+  return Simcom_Command(SIMCOM_BOOT_COMMAND, NET_BOOT_TIMEOUT, SIMCOM_STATUS_OK, 1);
+}
+
+static void Simcom_ClearBuffer(void) {
+  command_t *hCommand;
+  // debugging
+  //	LOG_StrLn("\n=================== START ===================");
+  //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+  //	LOG_StrLn("\n==================== END ====================");
+  // check command
+  if (strstr(SIMCOM_UART_RX, NET_COMMAND_PREFIX) != NULL) {
+    // Allocate memory
+    hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
+    // handle command (if any)
+    if (Simcom_ReadCommand(hCommand)) {
+      // reset rx buffer
+      SIMCOM_Reset_Buffer();
+      // debug
+      LOG_Str("\nNew Command [");
+      LOG_Int(hCommand->data.code);
+      LOG_Str("-");
+      LOG_Int(hCommand->data.sub_code);
+      LOG_Str("] = ");
+      LOG_BufHex((char*) &(hCommand->data.value), sizeof(hCommand->data.value));
+      LOG_Enter();
+
+      osMailPut(CommandMailHandle, hCommand);
+    }
+  } else {
+    // reset rx buffer
+    SIMCOM_Reset_Buffer();
+  }
+}
+
+static uint8_t Simcom_Response(char *str) {
+  if (strstr(SIMCOM_UART_RX, str) != NULL) {
+    return 1;
+  }
+  return 0;
+}
+
+static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, char *res) {
+  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+  uint8_t ret;
+  uint32_t tick, timeout_tick = 0;
+
+  Simcom_ClearBuffer();
+  // transmit to serial (low-level)
+  SIMCOM_Transmit(data, data_length);
+  // convert time to tick
+  timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME_MS);
+  // set timeout guard
+  tick = osKernelSysTick();
+  // wait response from SIMCOM
+  while (1) {
+    if (Simcom_Response(res) ||
+        Simcom_Response(SIMCOM_STATUS_ERROR) ||
+        Simcom_Response(SIMCOM_STATUS_READY) ||
+        (osKernelSysTick() - tick) >= timeout_tick) {
+
+      // set flag for timeout & error
+      ret = Simcom_Response(res);
+
+      // exception for auto reboot module
+      if (strstr(data, SIMCOM_BOOT_COMMAND) != NULL) {
+        ret = ret || Simcom_Response(SIMCOM_STATUS_READY);
+      }
+
+      // exit loop
+      break;
+    }
+
+    osDelay(10);
+  }
+
+  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  return ret;
+}
+
+static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n) {
+  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+  uint8_t ret = 0, seq = 0;
+  // default response
+  if (res == NULL) {
+    res = SIMCOM_STATUS_OK;
+  }
+
+  // repeat command until desired response
+  while (seq++ < n && !ret) {
+    // execute command every timeout guard elapsed
+    if (seq > 1) {
+      osDelay(NET_REPEAT_DELAY * 1000);
+    }
+
+    // print command for debugger
+    if (!is_payload) {
+      LOG_Str("\n=> ");
+      LOG_Buf(data, data_length);
+    } else {
+      LOG_BufHex(data, data_length);
+    }
+    LOG_Char('\n');
+
+    // send command
+    ret = Simcom_SendDirect(data, data_length, ms, res);
+
+    // print response for debugger
+    LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+    LOG_Char('\n');
   }
 
   osRecursiveMutexRelease(SimcomRecMutexHandle);

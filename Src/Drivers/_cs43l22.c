@@ -36,42 +36,44 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_cs43l22.h"
 
-extern I2C_HandleTypeDef hi2c1;
-
-/* Uncomment this line to enable verifying data sent to codec after each write
- operation (for debug purpose) */
+/* Local constants -----------------------------------------------------------*/
 #if !defined (VERIFY_WRITTENDATA)
 /* #define VERIFY_WRITTENDATA */
 #endif /* VERIFY_WRITTENDATA */
 
-/* Audio codec driver structure initialization */
-AUDIO_DrvTypeDef cs43l22_drv =
-    {
-        cs43l22_Init,
-        cs43l22_DeInit,
-        cs43l22_ReadID,
-        cs43l22_Play,
-        cs43l22_Pause,
-        cs43l22_Resume,
-        cs43l22_Stop,
-        cs43l22_SetFrequency,
-        cs43l22_SetVolume,
-        cs43l22_SetMute,
-        cs43l22_SetOutputMode,
-        cs43l22_Reset,
-        cs43l22_SetBeep,
-        cs43l22_Beep
-    };
+/* External variables ---------------------------------------------------------*/
+extern I2C_HandleTypeDef hi2c1;
 
+/* Public variables -----------------------------------------------------------*/
+AUDIO_DrvTypeDef cs43l22_drv = {
+    cs43l22_Init,
+    cs43l22_DeInit,
+    cs43l22_ReadID,
+    cs43l22_Play,
+    cs43l22_Pause,
+    cs43l22_Resume,
+    cs43l22_Stop,
+    cs43l22_SetFrequency,
+    cs43l22_SetVolume,
+    cs43l22_SetMute,
+    cs43l22_SetOutputMode,
+    cs43l22_Reset,
+    cs43l22_SetBeep,
+    cs43l22_Beep
+};
+
+/* Private variables ----------------------------------------------------------*/
 static uint8_t Is_cs43l22_Stop = 1;
 static uint8_t theVolume;
 static uint16_t theOutputDevice;
-volatile uint8_t OutputDev = 0;
+static volatile uint8_t OutputDev = 0;
 
+/* Private functions prototype ------------------------------------------------*/
 static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 static uint8_t VOLUME_CONVERT(uint8_t Volume);
 static void I2Cx_Error(uint8_t Addr);
 
+/* Public functions implementation ---------------------------------------------*/
 /**
  * @brief Initializes the audio codec and the control interface.
  * @param DeviceAddr: Device address on communication Bus.
@@ -416,44 +418,6 @@ uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix) {
   return counter;
 }
 
-/**
- * @brief  Writes/Read a single data.
- * @param  Addr: I2C address
- * @param  Reg: Reg address
- * @param  Value: Data to be written
- * @retval None
- */
-static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
-  uint32_t result = 0;
-
-  AUDIO_IO_Write(Addr, Reg, Value);
-
-#ifdef VERIFY_WRITTENDATA
-	/* Verify that the data has been correctly written */
-	result = (AUDIO_IO_Read(Addr, Reg) == Value)? 0:1;
-#endif /* VERIFY_WRITTENDATA */
-
-  return result;
-}
-
-static uint8_t VOLUME_CONVERT(uint8_t Volume) {
-  uint64_t Vol, Multiplier = pow(10, 10);
-  uint8_t Log, Result;
-
-  // change zero to 1
-  Volume = Volume ? Volume : 1;
-
-  // expand resolution
-  Vol = Volume > 100 ? Multiplier : (uint64_t) ((Volume * Multiplier) / 100);
-
-  // convert linear to logarithmic (scale 100)
-  Log = (uint8_t) (10 * log10(1 + Vol));
-
-  // scale 100 to 255
-  Result = Log > 100 ? 255 : (uint8_t) ((Log * 255) / 100);
-
-  return Result;
-}
 
 /********************************* LINK AUDIO *********************************/
 /**
@@ -513,6 +477,47 @@ uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
     I2Cx_Error(Addr);
   }
   return value;
+}
+
+
+/* Private functions implementation ---------------------------------------------*/
+/**
+ * @brief  Writes/Read a single data.
+ * @param  Addr: I2C address
+ * @param  Reg: Reg address
+ * @param  Value: Data to be written
+ * @retval None
+ */
+static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
+  uint32_t result = 0;
+
+  AUDIO_IO_Write(Addr, Reg, Value);
+
+#ifdef VERIFY_WRITTENDATA
+	/* Verify that the data has been correctly written */
+	result = (AUDIO_IO_Read(Addr, Reg) == Value)? 0:1;
+#endif /* VERIFY_WRITTENDATA */
+
+  return result;
+}
+
+static uint8_t VOLUME_CONVERT(uint8_t Volume) {
+  uint64_t Vol, Multiplier = pow(10, 10);
+  uint8_t Log, Result;
+
+  // change zero to 1
+  Volume = Volume ? Volume : 1;
+
+  // expand resolution
+  Vol = Volume > 100 ? Multiplier : (uint64_t) ((Volume * Multiplier) / 100);
+
+  // convert linear to logarithmic (scale 100)
+  Log = (uint8_t) (10 * log10(1 + Vol));
+
+  // scale 100 to 255
+  Result = Log > 100 ? 255 : (uint8_t) ((Log * 255) / 100);
+
+  return Result;
 }
 
 /**

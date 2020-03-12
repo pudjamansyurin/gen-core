@@ -8,8 +8,10 @@
 #ifndef GPS_H_
 #define GPS_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_nmea.h"
 
+/* Exported struct --------------------------------------------------------------*/
 typedef struct {
   nmea_float_t dop_h;
   nmea_float_t latitude;
@@ -19,7 +21,7 @@ typedef struct {
   nmea_float_t speed_mps;
 } gps_t;
 
-/* Public functions ---------------------------------------------------------*/
+/* Public functions prototype ------------------------------------------------*/
 void GPS_Init(void);
 uint8_t GPS_Process(gps_t *hgps);
 

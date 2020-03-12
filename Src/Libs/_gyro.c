@@ -4,11 +4,16 @@
  *  Created on: Aug 23, 2019
  *      Author: Puja
  */
+/* Includes ------------------------------------------------------------------*/
 #include "_gyro.h"
 
+/* External variables ----------------------------------------------------------*/
 extern I2C_HandleTypeDef hi2c3;
+
+/* Private variables ----------------------------------------------------------*/
 static MPU6050 mpu;
 
+/* Public functions implementation --------------------------------------------*/
 void GYRO_Init(void) {
   MPU6050_Result result;
 

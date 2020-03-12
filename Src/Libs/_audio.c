@@ -37,14 +37,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_audio.h"
 
-/* Private define ------------------------------------------------------------*/
+/* Private constants ----------------------------------------------------------*/
 #define AUDIO_BUFFER_SIZE             4096
 
-/* External variables ---------------------------------------------------------*/
+/* External variabless ---------------------------------------------------------*/
 extern osMutexId BeepMutexHandle;
 extern AUDIO_DrvTypeDef cs43l22_drv;
 extern I2S_HandleTypeDef hi2s3;
-
 extern uint32_t AUDIO_SAMPLE_FREQ;
 extern uint32_t AUDIO_SAMPLE_SIZE;
 extern uint16_t AUDIO_SAMPLE[];
@@ -59,12 +58,12 @@ static const uint32_t I2SFreq[7] = { 8000, 16000, 22050, 32000, 44100, 48000, 96
 static const uint32_t I2SPLLN[7] = { 256, 213, 429, 213, 271, 258, 344 };
 static const uint32_t I2SPLLR[7] = { 5, 2, 4, 2, 2, 3, 2 };
 
-/* Private functions ---------------------------------------------------------*/
+/* Private functions prototype ------------------------------------------------*/
 static uint8_t I2S3_Init(uint32_t AudioFreq);
 static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
 
-/* The functions ---------------------------------------------------------*/
+/* Public functions implementation ---------------------------------------------*/
 void AUDIO_Init(void) {
   uint8_t ret;
   do {
@@ -111,71 +110,6 @@ void AUDIO_BeepStop(void) {
   pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
 
   osRecursiveMutexRelease(BeepMutexHandle);
-}
-
-/**
- * @brief  Configures the audio peripherals.
- * @param  OutputDevice: OUTPUT_DEVICE_SPEAKER, OUTPUT_DEVICE_HEADPHONE,
- *                       OUTPUT_DEVICE_BOTH or OUTPUT_DEVICE_AUTO .
- * @param  Volume: Initial volume level (from 0 (Mute) to 100 (Max))
- * @param  AudioFreq: Audio frequency used to play the audio stream.
- * @retval AUDIO_OK if correct communication, else wrong communication
- */
-static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
-  uint8_t ret = AUDIO_OK;
-
-  /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
-  AUDIO_OUT_ClockConfig(&hi2s3, AudioFreq, NULL);
-
-  /* I2S data transfer preparation:
-   Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
-  if (HAL_I2S_GetState(&hi2s3) == HAL_I2S_STATE_RESET) {
-    /* Init the I2S MSP: this __weak function can be redefined by the application*/
-    AUDIO_OUT_MspInit(&hi2s3, NULL);
-  }
-
-  /* I2S data transfer preparation:
-   Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
-  /* Configure the I2S peripheral */
-  if (I2S3_Init(AudioFreq) != AUDIO_OK) {
-    ret = AUDIO_ERROR;
-  }
-
-  if (ret == AUDIO_OK) {
-    /* Retieve audio codec identifier */
-    if (((cs43l22_drv.ReadID(AUDIO_I2C_ADDRESS)) & CS43L22_ID_MASK) == CS43L22_ID) {
-      /* Initialize the audio driver structure */
-      pAudioDrv = &cs43l22_drv;
-    } else {
-      ret = AUDIO_ERROR;
-    }
-
-  }
-
-  if (ret == AUDIO_OK) {
-    pAudioDrv->Init(AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
-  }
-
-  return ret;
-}
-
-/**
- * @brief  Starts playing audio stream from a data buffer for a determined size.
- * @param  pBuffer: Pointer to the buffer
- * @param  Size: Number of audio data BYTES.
- * @retval AUDIO_OK if correct communication, else wrong communication
- */
-static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
-  /* Call the audio Codec Play function */
-  if (pAudioDrv->Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) {
-    return AUDIO_ERROR;
-  } else {
-    /* Update the Media layer and enable it for play */
-
-    HAL_I2S_Transmit_DMA(&hi2s3, pBuffer, DMA_MAX(Size/AUDIODATA_SIZE));
-    /* Return AUDIO_OK when all operations are correctly done */
-    return AUDIO_OK;
-  }
 }
 
 /**
@@ -448,6 +382,73 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
   }
 }
 
+
+/* Private functions implementation ---------------------------------------------*/
+/**
+ * @brief  Configures the audio peripherals.
+ * @param  OutputDevice: OUTPUT_DEVICE_SPEAKER, OUTPUT_DEVICE_HEADPHONE,
+ *                       OUTPUT_DEVICE_BOTH or OUTPUT_DEVICE_AUTO .
+ * @param  Volume: Initial volume level (from 0 (Mute) to 100 (Max))
+ * @param  AudioFreq: Audio frequency used to play the audio stream.
+ * @retval AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
+  uint8_t ret = AUDIO_OK;
+
+  /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
+  AUDIO_OUT_ClockConfig(&hi2s3, AudioFreq, NULL);
+
+  /* I2S data transfer preparation:
+   Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
+  if (HAL_I2S_GetState(&hi2s3) == HAL_I2S_STATE_RESET) {
+    /* Init the I2S MSP: this __weak function can be redefined by the application*/
+    AUDIO_OUT_MspInit(&hi2s3, NULL);
+  }
+
+  /* I2S data transfer preparation:
+   Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
+  /* Configure the I2S peripheral */
+  if (I2S3_Init(AudioFreq) != AUDIO_OK) {
+    ret = AUDIO_ERROR;
+  }
+
+  if (ret == AUDIO_OK) {
+    /* Retieve audio codec identifier */
+    if (((cs43l22_drv.ReadID(AUDIO_I2C_ADDRESS)) & CS43L22_ID_MASK) == CS43L22_ID) {
+      /* Initialize the audio driver structure */
+      pAudioDrv = &cs43l22_drv;
+    } else {
+      ret = AUDIO_ERROR;
+    }
+
+  }
+
+  if (ret == AUDIO_OK) {
+    pAudioDrv->Init(AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
+  }
+
+  return ret;
+}
+
+/**
+ * @brief  Starts playing audio stream from a data buffer for a determined size.
+ * @param  pBuffer: Pointer to the buffer
+ * @param  Size: Number of audio data BYTES.
+ * @retval AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
+  /* Call the audio Codec Play function */
+  if (pAudioDrv->Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) {
+    return AUDIO_ERROR;
+  } else {
+    /* Update the Media layer and enable it for play */
+
+    HAL_I2S_Transmit_DMA(&hi2s3, pBuffer, DMA_MAX(Size/AUDIODATA_SIZE));
+    /* Return AUDIO_OK when all operations are correctly done */
+    return AUDIO_OK;
+  }
+}
+
 /**
  * @brief  Initializes the Audio Codec audio interface (I2S).
  * @param  AudioFreq: Audio frequency to be configured for the I2S peripheral.
@@ -473,5 +474,6 @@ static uint8_t I2S3_Init(uint32_t AudioFreq) {
     return AUDIO_OK;
   }
 }
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

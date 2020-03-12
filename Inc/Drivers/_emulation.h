@@ -52,7 +52,6 @@
 #include "_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-/* EEPROM emulation firmware error codes */
 #define EE_OK      (uint32_t)HAL_OK
 #define EE_ERROR   (uint32_t)HAL_ERROR
 #define EE_BUSY    (uint32_t)HAL_BUSY
@@ -101,9 +100,7 @@
 /* Variables' number */
 #define NB_OF_VAR             ((uint8_t)0x02)
 
-/* Exported types ------------------------------------------------------------*/
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
+/* Public functions prototype ------------------------------------------------*/
 uint16_t EE_Init(void);
 uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t* Data);
 uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data);

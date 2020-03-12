@@ -5,16 +5,22 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_dma_simcom.h"
 
+/* External variables ---------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern UART_HandleTypeDef huart1;
 
+/* Public variables -----------------------------------------------------------*/
 char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
+
+/* Private variables ----------------------------------------------------------*/
 static char DMA_RX[SIMCOM_DMA_RX_SZ];
 static size_t write, len, copy;
 static uint8_t *ptr;
 
+/* Public functions implementation ---------------------------------------------*/
 void SIMCOM_USART_IrqHandler(void) {
   if (huart1.Instance->SR & UART_FLAG_IDLE) /* if Idle flag is set */
   {

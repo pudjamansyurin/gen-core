@@ -5,13 +5,14 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_finger.h"
 
-/* External variable ---------------------------------------------------------*/
+/* External variables ---------------------------------------------------------*/
 extern uint16_t fingerID, fingerConfidence;
 extern osMutexId FingerRecMutexHandle;
-/* Private variable ---------------------------------------------------------*/
 
+/* Public functions implementation --------------------------------------------*/
 void Finger_On(void) {
   osRecursiveMutexWait(FingerRecMutexHandle, osWaitForever);
   FZ3387_SET_POWER(0);

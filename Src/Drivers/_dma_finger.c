@@ -5,16 +5,22 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_dma_finger.h"
 
+/* External variables ---------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_uart4_rx;
 extern UART_HandleTypeDef huart4;
 
+/* Public variables -----------------------------------------------------------*/
 char FINGER_UART_RX[FINGER_UART_RX_SZ];
+
+/* Private variables ----------------------------------------------------------*/
 static char DMA_RX[FINGER_DMA_RX_SZ];
 static size_t write, len, copy;
 static uint8_t *ptr;
 
+/* Public functions implementation ---------------------------------------------*/
 void FINGER_USART_IrqHandler(void) {
   if (huart4.Instance->SR & UART_FLAG_IDLE) /* if Idle flag is set */
   {

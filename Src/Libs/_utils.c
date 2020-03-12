@@ -5,8 +5,10 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
+/* Public functions implementation --------------------------------------------*/
 void _LedWrite(uint8_t state) {
   HAL_GPIO_WritePin(SYS_LED_GPIO_Port, SYS_LED_Pin, state);
 }

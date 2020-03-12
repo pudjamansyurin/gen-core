@@ -5,11 +5,16 @@
  *      Author: pudja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_gps.h"
 
+/* External variables ----------------------------------------------------------*/
 extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
+
+/* Private variables ----------------------------------------------------------*/
 static nmea_t nmea;
 
+/* Public functions implementation --------------------------------------------*/
 void GPS_Init(void) {
 	HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_SET);
 	osDelay(100);

@@ -4,57 +4,30 @@
  *  Created on: Sep 19, 2019
  *      Author: Puja
  */
-
-//Important Functions
-//=======================
-//1. EXTI Interrupt Handler
-//		void nrf_irq_handler(nrf24l01* dev)
-//
-//		You must call this function on Falling edge trigger detection interrupt handler, typically, from HAL_GPIO_EXTI_Callback
-//
-//2. Asynchronous Data Receiving
-//		void nrf_packet_received_callback(nrf24l01* dev, uint8_t* data)
-//
-//		Override this function (it is __weak by default) to handle received data asynchronously, default implementation is used in favor of nrf_receive_packet for blocking data receiving
-//
-//3. TODO: Revert: Blocking Data Receiving
-//		const uint8_t* nrf_receive_packet(nrf24l01* dev)
-//
-//		Blocks until the data has arrived, then returns a pointer to received data. Please note, once nrf_packet_received_callback routine is overridden, this one will stop working.
-//
-//4. Blocking Data Sending
-//		NRF_RESULT nrf_send_packet(nrf24l01* dev, const uint8_t* data)
-//
-//		If the Auto Acknowledgement is enabled (default), this method will return NRF_OK, if the data has been acknowledged by other party, and NRF_ERROR if the data has not been received (maximum retransmissions has occurred).
-//
-//		If the AA is disabled, returns NRF_OK once the data has been transmitted (with no guarantee the data was actually received).
-//
-//5. Blocking Data Sending, with NO_ACK flag
-//		NRF_RESULT nrf_send_packet_noack(nrf24l01* dev, const uint8_t* data)
-//
-//		Disables the AA for this packet, thus this method always returns NRF_OK.
+/* Includes ------------------------------------------------------------------*/
 #include "_nrf24l01.h"
 
+/* External variables ---------------------------------------------------------*/
 extern SPI_HandleTypeDef hspi1;
+
+/* Public variables -----------------------------------------------------------*/
+nrf24l01 nrf;
+
+/* Private variables ----------------------------------------------------------*/
 static const uint8_t tx_address[5] = { 0, 0, 0, 0, 1 };
 static const uint8_t rx_address[5] = { 0, 0, 0, 0, 2 };
 
-nrf24l01 nrf;
+/* Private functions prototype ------------------------------------------------*/
+static void csn_set(nrf24l01 *dev);
+static void csn_reset(nrf24l01 *dev);
 
+/* Public functions implementation ---------------------------------------------*/
 void ce_set(nrf24l01 *dev) {
   HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_SET);
 }
 
 void ce_reset(nrf24l01 *dev) {
   HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_RESET);
-}
-
-static void csn_set(nrf24l01 *dev) {
-  HAL_GPIO_WritePin(dev->config.csn_port, dev->config.csn_pin, GPIO_PIN_SET);
-}
-
-static void csn_reset(nrf24l01 *dev) {
-  HAL_GPIO_WritePin(dev->config.csn_port, dev->config.csn_pin, GPIO_PIN_RESET);
 }
 
 NRF_RESULT nrf_set_config(nrf24l01_config *config, uint8_t *rx_data, uint8_t payload_length) {
@@ -744,4 +717,13 @@ NRF_RESULT nrf_push_packet(nrf24l01 *dev, const uint8_t *data) {
   ce_set(dev);
 
   return NRF_OK;
+}
+
+/* Private functions implementation --------------------------------------------*/
+static void csn_set(nrf24l01 *dev) {
+  HAL_GPIO_WritePin(dev->config.csn_port, dev->config.csn_pin, GPIO_PIN_SET);
+}
+
+static void csn_reset(nrf24l01 *dev) {
+  HAL_GPIO_WritePin(dev->config.csn_port, dev->config.csn_pin, GPIO_PIN_RESET);
 }

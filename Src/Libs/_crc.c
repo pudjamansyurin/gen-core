@@ -6,10 +6,13 @@
  *      See: crccalc.com (CRC-32/MPEG-2)
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_crc.h"
 
+/* External variables ----------------------------------------------------------*/
 extern CRC_HandleTypeDef hcrc;
 
+/* Public functions implementation --------------------------------------------*/
 uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
   uint32_t cnt, remaining = 0;
 

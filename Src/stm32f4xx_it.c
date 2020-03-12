@@ -61,7 +61,7 @@
 
 /* USER CODE END 0 */
 
-/* External variables --------------------------------------------------------*/
+/* External variabless --------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan1;
 extern I2C_HandleTypeDef hi2c1;
 extern DMA_HandleTypeDef hdma_spi3_tx;

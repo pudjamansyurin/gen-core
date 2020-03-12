@@ -18,25 +18,20 @@
  BSD license, all text above must be included in any redistribution
  ****************************************************/
 
+/* Includes ------------------------------------------------------------------*/
 #include "_fz3387.h"
 
+/* External variables ----------------------------------------------------------*/
 extern UART_HandleTypeDef huart4;
 extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
 
-/***************************************************************************
- VARIABLES
- ***************************************************************************/
+/* Public variables -----------------------------------------------------------*/
 packet_t packet;
-/// The matching location that is set by fingerFastSearch()
 uint16_t fingerID;
-/// The fingerConfidence of the fingerFastSearch() match, higher numbers are more confidents
 uint16_t fingerConfidence;
-/// The number of stored templates in the sensor, set by getTemplateCount()
 uint16_t fingerTemplateCount;
 
-/***************************************************************************
- FUNCTIONS
- ***************************************************************************/
+/* Public functions implementation ---------------------------------------------*/
 void FZ3387_SET_POWER(uint8_t state) {
   HAL_GPIO_WritePin(EXT_FINGER_TOUCH_PWR_GPIO_Port, EXT_FINGER_TOUCH_PWR_Pin, state);
   osDelay(500);

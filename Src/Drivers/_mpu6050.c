@@ -24,15 +24,15 @@
  * |----------------------------------------------------------------------
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_mpu6050.h"
 
+/* Private constants ---------------------------------------------------------*/
 /* Default I2C address */
 #define MPU6050_I2C_ADDR			0xD0
-
 /* Who I am register value */
 #define MPU6050_I_AM				0x72
 #define MPU6050_I_AM2				0x68
-
 /* MPU6050 registers */
 #define MPU6050_AUX_VDDIO			0x01
 #define MPU6050_SMPLRT_DIV			0x19
@@ -67,19 +67,18 @@
 #define MPU6050_FIFO_COUNTL			0x73
 #define MPU6050_FIFO_R_W			0x74
 #define MPU6050_WHO_AM_I			0x75
-
 /* Gyro sensitivities in degrees/s */
 #define MPU6050_GYRO_SENS_250		((float) 131)
 #define MPU6050_GYRO_SENS_500		((float) 65.5)
 #define MPU6050_GYRO_SENS_1000		((float) 32.8)
 #define MPU6050_GYRO_SENS_2000		((float) 16.4)
-
 /* Acce sensitivities in g/s */
 #define MPU6050_ACCE_SENS_2			((float) 16384)
 #define MPU6050_ACCE_SENS_4			((float) 8192)
 #define MPU6050_ACCE_SENS_8			((float) 4096)
 #define MPU6050_ACCE_SENS_16		((float) 2048)
 
+/* Public functions implementation ---------------------------------------------*/
 MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU6050_Device DeviceNumber,
     MPU6050_Accelerometer AccelerometerSensitivity, MPU6050_Gyroscope GyroscopeSensitivity) {
   uint8_t WHO_AM_I = (uint8_t) MPU6050_WHO_AM_I;

@@ -8,8 +8,10 @@
 #ifndef FINGER_H_
 #define FINGER_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_fz3387.h"
 
+/* Public functions prototype ------------------------------------------------*/
 void Finger_On(void);
 void Finger_Off(void);
 void Finger_Init(void);

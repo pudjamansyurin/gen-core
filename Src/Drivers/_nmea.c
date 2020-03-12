@@ -6,8 +6,8 @@
  */
 
 /**
- * \file            nmea.c
- * \brief           NMEA main file
+ * @file            nmea.c
+ * @brief           NMEA main file
  */
 
 /*
@@ -37,18 +37,21 @@
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  */
+/* Includes ------------------------------------------------------------------*/
 #include "_nmea.h"
 
-#define FLT(x)              ((nmea_float_t)(x))
-#define D2R(x)              FLT(FLT(x) * FLT(0.01745329251994)) /*!< Degrees to radians */
-#define R2D(x)              FLT(FLT(x) * FLT(57.29577951308232))/*!< Radians to degrees */
-#define EARTH_RADIUS        FLT(6371.0) /*!< Earth radius in units of kilometers */
-
+/* Private constants ---------------------------------------------------------*/
 #define STAT_UNKNOWN        0
 #define STAT_GGA            1
 #define STAT_GSA            2
 #define STAT_GSV            3
 #define STAT_RMC            4
+
+/* Private macro functions  --------------------------------------------------*/
+#define FLT(x)              ((nmea_float_t)(x))
+#define D2R(x)              FLT(FLT(x) * FLT(0.01745329251994)) /*!< Degrees to radians */
+#define R2D(x)              FLT(FLT(x) * FLT(57.29577951308232))/*!< Radians to degrees */
+#define EARTH_RADIUS        FLT(6371.0) /*!< Earth radius in units of kilometers */
 
 #define CRC_ADD(_nh, ch)    (_nh)->p.crc_calc ^= (uint8_t)(ch)
 #define TERM_ADD(_nh, ch)   do {    \
@@ -64,14 +67,194 @@
 #define CTN(x)              ((x) - '0')
 #define CHTN(x)             (((x) >= '0' && (x) <= '9') ? ((x) - '0') : (((x) >= 'a' && (x) <= 'z') ? ((x) - 'a' + 10) : (((x) >= 'A' && (x) <= 'Z') ? ((x) - 'A' + 10) : 0)))
 
+/* Private functions prototype ------------------------------------------------*/
+static int32_t parse_number(nmea_t *nh, const char *t);
+static nmea_float_t parse_float_number(nmea_t *nh, const char *t);
+static nmea_float_t parse_lat_long(nmea_t *nh);
+static uint8_t parse_term(nmea_t *nh);
+static uint8_t check_crc(nmea_t *nh);
+static uint8_t copy_from_tmp_memory(nmea_t *nh);
+
+/* Public functions implementation ---------------------------------------------*/
 /**
- * \brief           Parse number as integer
- * \param[in]       gh: NMEA handle
- * \param[in]       t: Text to parse. Set to `NULL` to parse current NMEA term
- * \return          Parsed integer
+ * @brief           Init NMEA handle
+ * @param[in]       gh: NMEA handle structure
+ * @return          `1` on success, `0` otherwise
  */
-static int32_t
-parse_number(nmea_t *nh, const char *t) {
+uint8_t nmea_init(nmea_t *nh) {
+  memset(nh, 0x00, sizeof(*nh)); /* Reset structure */
+  return 1;
+}
+
+/**
+ * @brief           Process NMEA data from NMEA receiver
+ * @param[in]       gh: NMEA handle structure
+ * @param[in]       data: Received data
+ * @param[in]       len: Number of bytes to process
+ * @return          `1` on success, `0` otherwise
+ */
+uint8_t nmea_process(nmea_t *nh, const void *data, size_t len) {
+  const uint8_t *d = data;
+
+  while (len--) { /* Process all bytes */
+    if (*d == '$') { /* Check for beginning of NMEA line */
+      memset(&nh->p, 0x00, sizeof(nh->p));/* Reset private memory */
+      TERM_ADD(nh, *d); /* Add character to term */
+    } else if (*d == ',') { /* Term separator character */
+      parse_term(nh); /* Parse term we have currently in memory */
+      CRC_ADD(nh, *d); /* Add character to CRC computation */
+      TERM_NEXT(nh); /* Start with next term */
+    } else if (*d == '*') { /* Start indicates end of data for CRC computation */
+      parse_term(nh); /* Parse term we have currently in memory */
+      nh->p.star = 1; /* STAR detected */
+      TERM_NEXT(nh); /* Start with next term */
+    } else if (*d == '\r') {
+      if (check_crc(nh)) { /* Check for CRC result */
+        /* CRC is OK, in theory we can copy data from statements to user data */
+        copy_from_tmp_memory(nh); /* Copy memory from temporary to user memory */
+      }
+    } else {
+      if (!nh->p.star) { /* Add to CRC only if star not yet detected */
+        CRC_ADD(nh, *d); /* Add to CRC */
+      }
+      TERM_ADD(nh, *d); /* Add character to term */
+    }
+    d++; /* Process next character */
+  }
+  return 1;
+}
+
+/**
+ * @brief           Calculate distance and bearing between `2` latitude and longitude coordinates
+ * @param[in]       las: Latitude start coordinate, in units of degrees
+ * @param[in]       los: Longitude start coordinate, in units of degrees
+ * @param[in]       lae: Latitude end coordinate, in units of degrees
+ * @param[in]       loe: Longitude end coordinate, in units of degrees
+ * @param[out]      d: Pointer to output distance in units of meters
+ * @param[out]      b: Pointer to output bearing between start and end coordinate in relation to north in units of degrees
+ * @return          `1` on success, `0` otherwise
+ */
+uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los, nmea_float_t lae, nmea_float_t loe, nmea_float_t *d, nmea_float_t *b) {
+  nmea_float_t df, dfi, a;
+
+  if (d == NULL && b == NULL) {
+    return 0;
+  }
+
+  /* Convert degrees to radians */
+  df = D2R(lae - las);
+  dfi = D2R(loe - los);
+  las = D2R(las);
+  los = D2R(los);
+  lae = D2R(lae);
+  loe = D2R(loe);
+
+  /*
+   * Calculate distance
+   *
+   * Calculated distance is absolute value in meters between 2 points on earth.
+   */
+  if (d != NULL) {
+    /*
+     * a = sin(df / 2)^2 + cos(las) * cos(lae) * sin(dfi / 2)^2
+     * *d = RADIUS * 2 * atan(a / (1 - a)) * 1000 (for meters)
+     */
+#if NMEA_CFG_DOUBLE
+		a = FLT(sin(df * 0.5) * sin(df * 0.5) + sin(dfi * 0.5) * sin(dfi * 0.5) * cos(las) * cos(lae));
+		*d = FLT(EARTH_RADIUS * 2.0 * atan2(sqrt(a), sqrt(1.0 - a)) * 1000.0);
+#else /* NMEA_CFG_DOUBLE */
+    a = FLT(sinf(df * 0.5f) * sinf(df * 0.5f) + sinf(dfi * 0.5f) * sinf(dfi * 0.5f) * cosf(las) * cosf(lae));
+    *d = FLT(EARTH_RADIUS * 2.0f * atan2f(sqrtf(a), sqrtf(1.0f - a)) * 1000.0f);
+#endif /* !NMEA_CFG_DOUBLE */
+  }
+
+  /*
+   * Calculate bearing
+   *
+   * Bearing is calculated from point 1 to point 2.
+   * Result will tell us in which direction (according to north) we should move,
+   * to reach point 2.
+   *
+   * Example:
+   *      Bearing is 0 => move to north
+   *      Bearing is 90 => move to east
+   *      Bearing is 180 => move to south
+   *      Bearing is 270 => move to west
+   */
+  if (b != NULL) {
+#if NMEA_CFG_DOUBLE
+		df = FLT(sin(loe - los) * cos(lae));
+		dfi = FLT(cos(las) * sin(lae) - sin(las) * cos(lae) * cos(loe - los));
+
+		*b = R2D(atan2(df, dfi));               /* Calculate bearing and convert to degrees */
+#else /* NMEA_CFG_DOUBLE */
+    df = FLT(sinf(loe - los) * cosf(lae));
+    dfi = FLT(cosf(las) * sinf(lae) - sinf(las) * cosf(lae) * cosf(loe - los));
+
+    *b = R2D(atan2f(df, dfi)); /* Calculate bearing and convert to degrees */
+#endif /* !NMEA_CFG_DOUBLE */
+    if (*b < 0) { /* Check for negative angle */
+      *b += FLT(360); /* Make bearing always positive */
+    }
+  }
+  return 1;
+}
+
+/**
+ * @brief           Convert NMEA speed (in knots = nautical mile per hour) to different speed format
+ * @param[in]       sik: Speed in knots, received from NMEA statement
+ * @param[in]       ts: Target speed to convert to from knots
+ * @return          Speed calculated from knots
+ */
+nmea_float_t nmea_to_speed(nmea_float_t sik, nmea_speed_t ts) {
+  switch (ts) {
+    case nmea_speed_kps:
+      return FLT(sik * FLT(0.000514));
+    case nmea_speed_kph:
+      return FLT(sik * FLT(1.852));
+    case nmea_speed_mps:
+      return FLT(sik * FLT(0.5144));
+    case nmea_speed_mpm:
+      return FLT(sik * FLT(30.87));
+
+    case nmea_speed_mips:
+      return FLT(sik * FLT(0.0003197));
+    case nmea_speed_mph:
+      return FLT(sik * FLT(1.151));
+    case nmea_speed_fps:
+      return FLT(sik * FLT(1.688));
+    case nmea_speed_fpm:
+      return FLT(sik * FLT(101.3));
+
+    case nmea_speed_mpk:
+      return FLT(sik * FLT(32.4));
+    case nmea_speed_spk:
+      return FLT(sik * FLT(1944.0));
+    case nmea_speed_sp100m:
+      return FLT(sik * FLT(194.4));
+    case nmea_speed_mipm:
+      return FLT(sik * FLT(52.14));
+    case nmea_speed_spm:
+      return FLT(sik * FLT(3128.0));
+    case nmea_speed_sp100y:
+      return FLT(sik * FLT(177.7));
+
+    case nmea_speed_smph:
+      return FLT(sik * FLT(1.0));
+    default:
+      return 0;
+  }
+}
+
+
+/* Private functions implementation ---------------------------------------------*/
+/**
+ * @brief           Parse number as integer
+ * @param[in]       gh: NMEA handle
+ * @param[in]       t: Text to parse. Set to `NULL` to parse current NMEA term
+ * @return          Parsed integer
+ */
+static int32_t parse_number(nmea_t *nh, const char *t) {
   int32_t res = 0;
   uint8_t minus;
 
@@ -89,13 +272,12 @@ parse_number(nmea_t *nh, const char *t) {
 }
 
 /**
- * \brief           Parse number as double and convert it to \ref nmea_float_t
- * \param[in]       gh: NMEA handle
- * \param[in]       t: Text to parse. Set to `NULL` to parse current NMEA term
- * \return          Parsed double in \ref nmea_float_t format
+ * @brief           Parse number as double and convert it to \ref nmea_float_t
+ * @param[in]       gh: NMEA handle
+ * @param[in]       t: Text to parse. Set to `NULL` to parse current NMEA term
+ * @return          Parsed double in \ref nmea_float_t format
  */
-static nmea_float_t
-parse_float_number(nmea_t *nh, const char *t) {
+static nmea_float_t parse_float_number(nmea_t *nh, const char *t) {
   nmea_float_t res;
 
   if (t == NULL) {
@@ -114,14 +296,13 @@ parse_float_number(nmea_t *nh, const char *t) {
 }
 
 /**
- * \brief           Parse latitude/longitude NMEA format to double
+ * @brief           Parse latitude/longitude NMEA format to double
  *
  *                  NMEA output for latitude is ddmm.sss and longitude is dddmm.sss
- * \param[in]       gh: NMEA handle
- * \return          Latitude/Longitude value in degrees
+ * @param[in]       gh: NMEA handle
+ * @return          Latitude/Longitude value in degrees
  */
-static nmea_float_t
-parse_lat_long(nmea_t *nh) {
+static nmea_float_t parse_lat_long(nmea_t *nh) {
   nmea_float_t ll, deg, min;
 
   ll = parse_float_number(nh, NULL); /* Parse value as double */
@@ -133,12 +314,11 @@ parse_lat_long(nmea_t *nh) {
 }
 
 /**
- * \brief           Parse received term
- * \param[in]       gh: NMEA handle
- * \return          `1` on success, `0` otherwise
+ * @brief           Parse received term
+ * @param[in]       gh: NMEA handle
+ * @return          `1` on success, `0` otherwise
  */
-static uint8_t
-parse_term(nmea_t *nh) {
+static uint8_t parse_term(nmea_t *nh) {
   if (nh->p.term_num == 0) { /* Check string type */
     if (0) {
 #if NMEA_CFG_STATEMENT_GPGGA
@@ -293,24 +473,22 @@ parse_term(nmea_t *nh) {
 }
 
 /**
- * \brief           Compare calculated CRC with received CRC
- * \param[in]       gh: NMEA handle
- * \return          `1` on success, `0` otherwise
+ * @brief           Compare calculated CRC with received CRC
+ * @param[in]       gh: NMEA handle
+ * @return          `1` on success, `0` otherwise
  */
-static uint8_t
-check_crc(nmea_t *nh) {
+static uint8_t check_crc(nmea_t *nh) {
   uint8_t crc;
   crc = (uint8_t) ((CHTN(nh->p.term_str[0]) & 0x0F) << 0x04) | (CHTN(nh->p.term_str[1]) & 0x0F); /* Convert received CRC from string (hex) to number */
   return nh->p.crc_calc == crc; /* They must match! */
 }
 
 /**
- * \brief           Copy temporary memory to user memory
- * \param[in]       gh: NMEA handle
- * \return          `1` on success, `0` otherwise
+ * @brief           Copy temporary memory to user memory
+ * @param[in]       gh: NMEA handle
+ * @return          `1` on success, `0` otherwise
  */
-static uint8_t
-copy_from_tmp_memory(nmea_t *nh) {
+static uint8_t copy_from_tmp_memory(nmea_t *nh) {
   if (0) {
 #if NMEA_CFG_STATEMENT_GPGGA
   } else if (nh->p.stat == STAT_GGA) {
@@ -348,179 +526,5 @@ copy_from_tmp_memory(nmea_t *nh) {
 #endif /* NMEA_CFG_STATEMENT_GPRMC */
   }
   return 1;
-}
-
-/**
- * \brief           Init NMEA handle
- * \param[in]       gh: NMEA handle structure
- * \return          `1` on success, `0` otherwise
- */
-uint8_t
-nmea_init(nmea_t *nh) {
-  memset(nh, 0x00, sizeof(*nh)); /* Reset structure */
-  return 1;
-}
-
-/**
- * \brief           Process NMEA data from NMEA receiver
- * \param[in]       gh: NMEA handle structure
- * \param[in]       data: Received data
- * \param[in]       len: Number of bytes to process
- * \return          `1` on success, `0` otherwise
- */
-uint8_t
-nmea_process(nmea_t *nh, const void *data, size_t len) {
-  const uint8_t *d = data;
-
-  while (len--) { /* Process all bytes */
-    if (*d == '$') { /* Check for beginning of NMEA line */
-      memset(&nh->p, 0x00, sizeof(nh->p));/* Reset private memory */
-      TERM_ADD(nh, *d); /* Add character to term */
-    } else if (*d == ',') { /* Term separator character */
-      parse_term(nh); /* Parse term we have currently in memory */
-      CRC_ADD(nh, *d); /* Add character to CRC computation */
-      TERM_NEXT(nh); /* Start with next term */
-    } else if (*d == '*') { /* Start indicates end of data for CRC computation */
-      parse_term(nh); /* Parse term we have currently in memory */
-      nh->p.star = 1; /* STAR detected */
-      TERM_NEXT(nh); /* Start with next term */
-    } else if (*d == '\r') {
-      if (check_crc(nh)) { /* Check for CRC result */
-        /* CRC is OK, in theory we can copy data from statements to user data */
-        copy_from_tmp_memory(nh); /* Copy memory from temporary to user memory */
-      }
-    } else {
-      if (!nh->p.star) { /* Add to CRC only if star not yet detected */
-        CRC_ADD(nh, *d); /* Add to CRC */
-      }
-      TERM_ADD(nh, *d); /* Add character to term */
-    }
-    d++; /* Process next character */
-  }
-  return 1;
-}
-
-/**
- * \brief           Calculate distance and bearing between `2` latitude and longitude coordinates
- * \param[in]       las: Latitude start coordinate, in units of degrees
- * \param[in]       los: Longitude start coordinate, in units of degrees
- * \param[in]       lae: Latitude end coordinate, in units of degrees
- * \param[in]       loe: Longitude end coordinate, in units of degrees
- * \param[out]      d: Pointer to output distance in units of meters
- * \param[out]      b: Pointer to output bearing between start and end coordinate in relation to north in units of degrees
- * \return          `1` on success, `0` otherwise
- */
-uint8_t
-nmea_distance_bearing(nmea_float_t las, nmea_float_t los, nmea_float_t lae, nmea_float_t loe, nmea_float_t *d, nmea_float_t *b) {
-  nmea_float_t df, dfi, a;
-
-  if (d == NULL && b == NULL) {
-    return 0;
-  }
-
-  /* Convert degrees to radians */
-  df = D2R(lae - las);
-  dfi = D2R(loe - los);
-  las = D2R(las);
-  los = D2R(los);
-  lae = D2R(lae);
-  loe = D2R(loe);
-
-  /*
-   * Calculate distance
-   *
-   * Calculated distance is absolute value in meters between 2 points on earth.
-   */
-  if (d != NULL) {
-    /*
-     * a = sin(df / 2)^2 + cos(las) * cos(lae) * sin(dfi / 2)^2
-     * *d = RADIUS * 2 * atan(a / (1 - a)) * 1000 (for meters)
-     */
-#if NMEA_CFG_DOUBLE
-		a = FLT(sin(df * 0.5) * sin(df * 0.5) + sin(dfi * 0.5) * sin(dfi * 0.5) * cos(las) * cos(lae));
-		*d = FLT(EARTH_RADIUS * 2.0 * atan2(sqrt(a), sqrt(1.0 - a)) * 1000.0);
-#else /* NMEA_CFG_DOUBLE */
-    a = FLT(sinf(df * 0.5f) * sinf(df * 0.5f) + sinf(dfi * 0.5f) * sinf(dfi * 0.5f) * cosf(las) * cosf(lae));
-    *d = FLT(EARTH_RADIUS * 2.0f * atan2f(sqrtf(a), sqrtf(1.0f - a)) * 1000.0f);
-#endif /* !NMEA_CFG_DOUBLE */
-  }
-
-  /*
-   * Calculate bearing
-   *
-   * Bearing is calculated from point 1 to point 2.
-   * Result will tell us in which direction (according to north) we should move,
-   * to reach point 2.
-   *
-   * Example:
-   *      Bearing is 0 => move to north
-   *      Bearing is 90 => move to east
-   *      Bearing is 180 => move to south
-   *      Bearing is 270 => move to west
-   */
-  if (b != NULL) {
-#if NMEA_CFG_DOUBLE
-		df = FLT(sin(loe - los) * cos(lae));
-		dfi = FLT(cos(las) * sin(lae) - sin(las) * cos(lae) * cos(loe - los));
-
-		*b = R2D(atan2(df, dfi));               /* Calculate bearing and convert to degrees */
-#else /* NMEA_CFG_DOUBLE */
-    df = FLT(sinf(loe - los) * cosf(lae));
-    dfi = FLT(cosf(las) * sinf(lae) - sinf(las) * cosf(lae) * cosf(loe - los));
-
-    *b = R2D(atan2f(df, dfi)); /* Calculate bearing and convert to degrees */
-#endif /* !NMEA_CFG_DOUBLE */
-    if (*b < 0) { /* Check for negative angle */
-      *b += FLT(360); /* Make bearing always positive */
-    }
-  }
-  return 1;
-}
-
-/**
- * \brief           Convert NMEA speed (in knots = nautical mile per hour) to different speed format
- * \param[in]       sik: Speed in knots, received from NMEA statement
- * \param[in]       ts: Target speed to convert to from knots
- * \return          Speed calculated from knots
- */
-nmea_float_t
-nmea_to_speed(nmea_float_t sik, nmea_speed_t ts) {
-  switch (ts) {
-    case nmea_speed_kps:
-      return FLT(sik * FLT(0.000514));
-    case nmea_speed_kph:
-      return FLT(sik * FLT(1.852));
-    case nmea_speed_mps:
-      return FLT(sik * FLT(0.5144));
-    case nmea_speed_mpm:
-      return FLT(sik * FLT(30.87));
-
-    case nmea_speed_mips:
-      return FLT(sik * FLT(0.0003197));
-    case nmea_speed_mph:
-      return FLT(sik * FLT(1.151));
-    case nmea_speed_fps:
-      return FLT(sik * FLT(1.688));
-    case nmea_speed_fpm:
-      return FLT(sik * FLT(101.3));
-
-    case nmea_speed_mpk:
-      return FLT(sik * FLT(32.4));
-    case nmea_speed_spk:
-      return FLT(sik * FLT(1944.0));
-    case nmea_speed_sp100m:
-      return FLT(sik * FLT(194.4));
-    case nmea_speed_mipm:
-      return FLT(sik * FLT(52.14));
-    case nmea_speed_spm:
-      return FLT(sik * FLT(3128.0));
-    case nmea_speed_sp100y:
-      return FLT(sik * FLT(177.7));
-
-    case nmea_speed_smph:
-      return FLT(sik * FLT(1.0));
-    default:
-      return 0;
-  }
 }
 

@@ -8,12 +8,14 @@
 #ifndef GYRO_H_
 #define GYRO_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_mpu6050.h"
 
+/* Exported constants --------------------------------------------------------*/
 #define GYROSCOPE_LIMIT               10000
 #define ACCELEROMETER_LIMIT           46000
 
-/* Public typedef -----------------------------------------------------------*/
+/* Exported struct --------------------------------------------------------------*/
 typedef struct {
   int32_t x;
   int32_t y;
@@ -30,7 +32,7 @@ typedef struct {
   uint8_t crash;
 } mems_decision_t;
 
-/* Public functions ---------------------------------------------------------*/
+/* Public functions prototype ------------------------------------------------*/
 void GYRO_Init(void);
 mems_t GYRO_Average(mems_t *calibrator, uint16_t sample);
 mems_decision_t GYRO_Decision(mems_t *calibrator, uint16_t sample);

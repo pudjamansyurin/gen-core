@@ -8,16 +8,17 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
-
 #include "main.h"
 #include "cmsis_os.h"
 #include "_log.h"
 #include "_database.h"
 
+/* External variables ---------------------------------------------------------*/
 extern const TickType_t tick5ms,
     tick100ms,
     tick250ms,
@@ -27,10 +28,11 @@ extern const TickType_t tick5ms,
     tickDelayFull,
     tickDelaySimple;
 
+/* Exported constants --------------------------------------------------------*/
 #define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x)                            ((x) - '0')
 
-// Function prototype
+/* Public functions prototype ------------------------------------------------*/
 void _LedWrite(uint8_t state);
 void _LedToggle(void);
 void _LedDisco(uint16_t ms);

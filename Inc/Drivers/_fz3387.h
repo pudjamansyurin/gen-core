@@ -4,11 +4,6 @@
  *  Created on: Aug 28, 2019
  *      Author: Puja
  */
-
-#ifndef FZ3387_H_
-#define FZ3387_H_
-
-#include "_dma_finger.h"
 /***************************************************
  This is a library for our optical Fingerprint sensor
  Designed specifically to work with the Adafruit Fingerprint sensor
@@ -22,6 +17,13 @@
  BSD license, all text above must be included in any redistribution
  ****************************************************/
 
+#ifndef FZ3387_H_
+#define FZ3387_H_
+
+/* Includes ------------------------------------------------------------------*/
+#include "_dma_finger.h"
+
+/* Exported constants --------------------------------------------------------*/
 #define FINGERPRINT_OK 0x00
 #define FINGERPRINT_PACKETRECIEVEERR 0x01
 #define FINGERPRINT_NOFINGER 0x02
@@ -71,7 +73,7 @@
 #define FINGERPRINT_PASSWORD 	0x0000000
 #define FINGERPRINT_ADDRESS 	0xFFFFFFFF
 
-// struct data
+/* Exported struct --------------------------------------------------------------*/
 typedef struct {
   uint16_t start_code;      ///< "Wakeup" code for packet detection
   uint8_t address[4];       ///< 32-bit Fingerprint sensor address
@@ -80,18 +82,16 @@ typedef struct {
   uint8_t data[64];         ///< The raw buffer for packet payload
 } packet_t;
 
-///! Helper class to communicate with and keep state for fingerprint sensors
+/* Public functions prototype ------------------------------------------------*/
 void FZ3387_SET_POWER(uint8_t state);
 void FZ3387_SERIAL_WRITE(uint8_t c);
 void FZ3387_SERIAL_WRITE_U16(uint16_t cc);
 uint8_t FZ3387_SEND_CMD_PACKET(uint8_t *data, uint8_t size);
-
 uint8_t FZ3387_verifyPassword(void);
 uint8_t FZ3387_checkPassword(void);
 uint8_t FZ3387_getImage(void);
 uint8_t FZ3387_image2Tz(uint8_t slot);
 uint8_t FZ3387_createModel(void);
-
 uint8_t FZ3387_emptyDatabase(void);
 uint8_t FZ3387_storeModel(uint16_t id);
 uint8_t FZ3387_loadModel(uint16_t id);
@@ -100,7 +100,6 @@ uint8_t FZ3387_deleteModel(uint16_t id);
 uint8_t FZ3387_fingerFastSearch(void);
 uint8_t FZ3387_getTemplateCount(void);
 uint8_t FZ3387_setPassword(uint32_t password);
-
 void FZ3387_setPacket(uint8_t type, uint16_t length, uint8_t *data);
 void FZ3387_writeStructuredPacket(void);
 uint8_t FZ3387_getStructuredPacket(void);

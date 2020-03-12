@@ -8,10 +8,11 @@
 #ifndef DATABASE_H_
 #define DATABASE_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
 
-// macro to manipulate bit
+/* Exported macro functions --------------------------------------------------*/
 #define BIT(x)                                  (1 << x)
 #define BV(var, x)                              (var |= (1 << x))
 #define BC(var, x)                              (var &= ~(1 << x))
@@ -19,6 +20,7 @@
 #define BSL(var, x)                             (var << x)
 #define BSR(var, x)                             ((var >> x) & 0xFF)
 
+/* Exported constants --------------------------------------------------------*/
 // GLOBAL CONFIG
 #define VCU_FIRMWARE_VERSION                    "0.7"
 #define VCU_VENDOR                              "GEN Indonesia"
@@ -110,7 +112,7 @@
 #define SW_K_REVERSE		 			        4
 #define SW_K_ABS				 		        5
 
-// enum list
+/* Exported enum ----------------------------------------------------------------*/
 typedef enum {
   SW_M_DRIVE = 0,
   SW_M_TRIP = 1,
@@ -138,6 +140,7 @@ typedef enum {
   SW_M_REPORT_MAX = 1
 } sw_mode_report_t;
 
+/* Exported struct --------------------------------------------------------------*/
 typedef struct {
   RTC_TimeTypeDef time;
   RTC_DateTypeDef date;

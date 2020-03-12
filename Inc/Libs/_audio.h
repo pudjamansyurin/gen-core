@@ -39,10 +39,9 @@
 #define AUDIO_H_
 
 /* Includes ------------------------------------------------------------------*/
-/* Include audio component Driver */
 #include "_cs43l22.h"
 
-/*############################### AUDIO ######################################*/
+/* Exported constants --------------------------------------------------------*/
 #define AUDIO_I2C_ADDRESS               0x94
 #define AUDIO_RESET_PIN                 INT_AUDIO_RST_Pin
 #define AUDIO_RESET_GPIO                INT_AUDIO_RST_GPIO_Port
@@ -50,9 +49,6 @@
 /* I2S peripheral configuration defines */
 #define I2S                            	SPI3
 #define DMA_MAX_SZE                     0xFFFF
-/*------------------------------------------------------------------------------
- CONFIGURATION: Audio Driver Configuration parameters
- ------------------------------------------------------------------------------*/
 #define AUDIODATA_SIZE                  2   /* 16-bits audio data size */
 
 /* Audio status definition */
@@ -60,18 +56,14 @@
 #define AUDIO_ERROR                     1
 #define AUDIO_TIMEOUT                   2
 
-/*------------------------------------------------------------------------------
- OPTIONAL Configuration defines parameters
- ------------------------------------------------------------------------------*/
-
-/* Defines for the Audio playing process */
+/* Exported macro functions ---------------------------------------------------*/
 #define DMA_MAX(_X_)                		(((_X_) <= DMA_MAX_SZE)? (_X_):DMA_MAX_SZE)
 
+/* Public functions prototype -------------------------------------------------*/
 void AUDIO_Init(void);
 void AUDIO_Play(void);
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS);
 void AUDIO_BeepStop(void);
-
 void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size);
 uint8_t AUDIO_OUT_Pause(void);
 uint8_t AUDIO_OUT_Resume(void);

@@ -5,13 +5,14 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_reporter.h"
 
-// variable list
+/* Public variables -----------------------------------------------------------*/
 report_t REPORT;
 response_t RESPONSE;
 
-// function list
+/* Public functions implementation --------------------------------------------*/
 void Reporter_Reset(frame_type frame) {
   // set default data
   // header report

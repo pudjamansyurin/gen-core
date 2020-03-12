@@ -8,8 +8,10 @@
 #ifndef CAN_H_
 #define CAN_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_canbus.h"
 
+/* Exported constants --------------------------------------------------------*/
 // CAN Nodes
 #define CAN_NODE_VCU										BIT(0)
 #define CAN_NODE_MCU										BIT(1)
@@ -33,6 +35,7 @@
 #define VCU_ODOMETER_MAX									99999
 #define HMI_DRIVE_MODE_MAX									3
 
+/* Public functions prototype ------------------------------------------------*/
 // ==================================== VCU =========================================
 #if (CAN_NODE & CAN_NODE_VCU)
 #include "_rtc.h"
@@ -41,7 +44,6 @@ uint8_t CAN_VCU_Switch(db_t *DB);
 uint8_t CAN_VCU_RTC(timestamp_t *timestamp);
 uint8_t CAN_VCU_Select_Set(sw_runner_t *runner);
 uint8_t CAN_VCU_Trip_Mode(uint32_t *trip);
-
 void CAN_MCU_Dummy_Read(uint8_t *speed);
 
 #endif

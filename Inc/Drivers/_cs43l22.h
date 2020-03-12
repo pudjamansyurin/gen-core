@@ -40,6 +40,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
+/* Exported constants --------------------------------------------------------*/
 /* Audio Reset Pin definition */
 #define AUDIO_RESET_PIN                       INT_AUDIO_RST_Pin
 #define AUDIO_RESET_GPIO                      INT_AUDIO_RST_GPIO_Port
@@ -210,9 +211,26 @@
  */
 #define CS43L22_CHIPID_ADDR    0x01
 
-/*------------------------------------------------------------------------------
- Audio Codec functions
- ------------------------------------------------------------------------------*/
+/* Exported struct -------------------------------------------------------------*/
+/* Audio driver structure */
+typedef struct {
+  uint32_t (*Init)(uint16_t, uint16_t, uint8_t, uint32_t);
+  void (*DeInit)(void);
+  uint32_t (*ReadID)(uint16_t);
+  uint32_t (*Play)(uint16_t, uint16_t*, uint16_t);
+  uint32_t (*Pause)(uint16_t);
+  uint32_t (*Resume)(uint16_t);
+  uint32_t (*Stop)(uint16_t, uint32_t);
+  uint32_t (*SetFrequency)(uint16_t, uint32_t);
+  uint32_t (*SetVolume)(uint16_t, uint8_t);
+  uint32_t (*SetMute)(uint16_t, uint32_t);
+  uint32_t (*SetOutputMode)(uint16_t, uint8_t);
+  uint32_t (*Reset)(uint16_t);
+  uint32_t (*SetBeep)(uint16_t, uint8_t, uint8_t, uint8_t);
+  uint32_t (*Beep)(uint16_t, uint8_t, uint8_t);
+} AUDIO_DrvTypeDef;
+
+/* Public functions prototype ------------------------------------------------*/
 /* High Layer codec functions */
 uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
 void cs43l22_DeInit(void);
@@ -234,24 +252,6 @@ void AUDIO_IO_Init(void);
 void AUDIO_IO_DeInit(void);
 void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg);
-
-/* Audio driver structure */
-typedef struct {
-  uint32_t (*Init)(uint16_t, uint16_t, uint8_t, uint32_t);
-  void (*DeInit)(void);
-  uint32_t (*ReadID)(uint16_t);
-  uint32_t (*Play)(uint16_t, uint16_t*, uint16_t);
-  uint32_t (*Pause)(uint16_t);
-  uint32_t (*Resume)(uint16_t);
-  uint32_t (*Stop)(uint16_t, uint32_t);
-  uint32_t (*SetFrequency)(uint16_t, uint32_t);
-  uint32_t (*SetVolume)(uint16_t, uint8_t);
-  uint32_t (*SetMute)(uint16_t, uint32_t);
-  uint32_t (*SetOutputMode)(uint16_t, uint8_t);
-  uint32_t (*Reset)(uint16_t);
-  uint32_t (*SetBeep)(uint16_t, uint8_t, uint8_t, uint8_t);
-  uint32_t (*Beep)(uint16_t, uint8_t, uint8_t);
-} AUDIO_DrvTypeDef;
 
 #endif /* CS43L22_H_ */
 

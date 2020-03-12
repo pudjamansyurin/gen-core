@@ -8,11 +8,14 @@
 #ifndef DMA_UBLOX_H_
 #define DMA_UBLOX_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
+/* Exported constants --------------------------------------------------------*/
 #define UBLOX_UART_RX_SZ 1024
 #define UBLOX_DMA_RX_SZ UBLOX_UART_RX_SZ
 
+/* Public functions prototype ------------------------------------------------*/
 void UBLOX_USART_IrqHandler(void);
 void UBLOX_DMA_IrqHandler(void);
 void UBLOX_DMA_Init(void);

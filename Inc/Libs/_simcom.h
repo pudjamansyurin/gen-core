@@ -8,10 +8,12 @@
 #ifndef SIMCOM_H_
 #define SIMCOM_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_dma_simcom.h"
 #include "_reporter.h"
 #include "_crc.h"
 
+/* Exported constants --------------------------------------------------------*/
 #define SIMCOM_STATUS_SEND 					">"
 #define SIMCOM_STATUS_SENT					"SEND OK\r\n"
 #define SIMCOM_STATUS_OK 					  "OK\r\n"
@@ -20,7 +22,7 @@
 #define SIMCOM_BOOT_COMMAND					"AT\r"
 #define SIMCOM_RESPONSE_IPD					"+IPD,"
 
-/* Public typedef -----------------------------------------------------------*/
+/* Exported struct -----------------------------------------------------------*/
 typedef struct {
   char CMD_CIPSTART[100];
   char CMD_CSTT[75];
@@ -34,7 +36,7 @@ typedef struct {
   uint8_t percentage;
 } rssi_t;
 
-/* Public functions ---------------------------------------------------------*/
+/* Public functions prototype ------------------------------------------------*/
 void Simcom_Init(void);
 uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n);
 uint8_t Simcom_Upload(char *message, uint16_t length);

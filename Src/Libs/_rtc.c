@@ -5,10 +5,13 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_rtc.h"
 
+/* External variables ----------------------------------------------------------*/
 extern RTC_HandleTypeDef hrtc;
 
+/* Public functions implementation --------------------------------------------*/
 timestamp_t RTC_Decode(uint64_t dateTime) {
   // format dateTime: YYMMDDHHmmssE
   uint8_t dt[7];

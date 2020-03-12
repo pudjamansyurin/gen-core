@@ -8,11 +8,14 @@
 #ifndef DMA_FINGER_H_
 #define DMA_FINGER_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
+/* Exported constants --------------------------------------------------------*/
 #define FINGER_UART_RX_SZ 50
 #define FINGER_DMA_RX_SZ FINGER_UART_RX_SZ
 
+/* Public functions prototype ------------------------------------------------*/
 void FINGER_USART_IrqHandler(void);
 void FINGER_DMA_IrqHandler(void);
 void FINGER_DMA_Init(void);

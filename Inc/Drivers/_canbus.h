@@ -8,25 +8,24 @@
 #ifndef CANBUS_H_
 #define CANBUS_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
-// object list
+/* Exported struct -------------------------------------------------------------*/
 typedef struct {
   CAN_TxHeaderTypeDef header;
   uint8_t data[8];
 } canbus_tx_t;
-
 typedef struct {
   CAN_RxHeaderTypeDef header;
   uint8_t data[8];
 } canbus_rx_t;
-
 typedef struct {
   canbus_tx_t tx;
   canbus_rx_t rx;
 } canbus_t;
 
-// function list
+/* Public functions prototype ------------------------------------------------*/
 void CANBUS_Init(void);
 void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC);
 uint8_t CANBUS_Write(canbus_tx_t *tx);

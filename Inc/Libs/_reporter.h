@@ -8,20 +8,21 @@
 #ifndef REPORTER_H_
 #define REPORTER_H_
 
+/* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 #include "_eeprom.h"
 #include "_gps.h"
 #include "_rtc.h"
 #include "_crc.h"
 
-/*  typedef -----------------------------------------------------------*/
+/* Exported enum ---------------------------------------------------------------*/
 typedef enum {
   FR_RESPONSE = 0,
   FR_SIMPLE = 1,
   FR_FULL = 2,
 } frame_type;
 
-/*  typedef struct -----------------------------------------------------------*/
+/* Exported struct --------------------------------------------------------------*/
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {
   uint16_t prefix;
@@ -92,7 +93,7 @@ typedef struct __attribute__((packed)) {
   uint16_t seq_id;
 } ack_t;
 
-// public function
+/* Public functions prototype ------------------------------------------------*/
 void Reporter_Reset(frame_type frame);
 void Reporter_SetUnitID(uint32_t unitId);
 void Reporter_SetOdometer(uint32_t odom);

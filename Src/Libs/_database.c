@@ -5,8 +5,10 @@
  *      Author: Puja
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "_database.h"
 
+/* Public variables -----------------------------------------------------------*/
 const TickType_t tick5ms = pdMS_TO_TICKS(5),
     tick100ms = pdMS_TO_TICKS(100),
     tick250ms = pdMS_TO_TICKS(250),
