@@ -31,8 +31,7 @@
 /* Default I2C address */
 #define MPU6050_I2C_ADDR			0xD0
 /* Who I am register value */
-#define MPU6050_I_AM				0x72
-#define MPU6050_I_AM2				0x68
+#define MPU6050_I_AM				0x68
 /* MPU6050 registers */
 #define MPU6050_AUX_VDDIO			0x01
 #define MPU6050_SMPLRT_DIV			0x19
@@ -94,6 +93,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   if (HAL_I2C_IsDeviceReady(Handle, address, 2, 5) != HAL_OK) {
     return MPU6050_Result_Error;
   }
+
   /* Check who am I */
   //------------------
   /* Send address */
@@ -107,7 +107,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   }
 
   /* Checking */
-  while (!(temp == MPU6050_I_AM || temp == MPU6050_I_AM2)) {
+  while (temp == MPU6050_I_AM) {
     /* Return error */
     return MPU6050_Result_DeviceInvalid;
   }
