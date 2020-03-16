@@ -27,6 +27,7 @@ void GYRO_Init(void) {
     osDelay(1000);
     // module initialization
     result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_250s);
+
   } while (result != MPU6050_Result_Ok);
 }
 

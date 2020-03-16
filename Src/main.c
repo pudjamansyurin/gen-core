@@ -248,7 +248,7 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+//  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
@@ -271,7 +271,7 @@ int main(void)
   AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
-  osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
+  osThreadDef(KeylessTask, StartKeylessTask, osPriorityRealtime, 0, 256);
   KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
   /* definition and creation of ReporterTask */

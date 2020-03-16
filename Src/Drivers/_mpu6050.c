@@ -107,7 +107,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   }
 
   /* Checking */
-  while (temp == MPU6050_I_AM) {
+  while (temp != MPU6050_I_AM) {
     /* Return error */
     return MPU6050_Result_DeviceInvalid;
   }
