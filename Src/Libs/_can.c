@@ -12,8 +12,6 @@
 extern canbus_t CB;
 
 /* Public functions implementation --------------------------------------------*/
-// ==================================== VCU =========================================
-#if (CAN_NODE & CAN_NODE_VCU)
 uint8_t CAN_VCU_Switch(db_t *DB) {
   static TickType_t tick, tickSein;
   static uint8_t iSeinLeft = 0, iSeinRight = 0;
@@ -64,20 +62,20 @@ uint8_t CAN_VCU_Switch(db_t *DB) {
   // set message
   CB.tx.data[0] = DB->vcu.sw.list[SW_K_ABS].state;
   // FIXME: handle me with real data
-  CB.tx.data[0] |= BSL(1,1);
-  CB.tx.data[0] |= BSL(1,2);
-  CB.tx.data[0] |= BSL(1,3);
+  CB.tx.data[0] |= BSL(1, 1);
+  CB.tx.data[0] |= BSL(1, 2);
+  CB.tx.data[0] |= BSL(1, 3);
   CB.tx.data[0] |= BSL(iStatus.temperature, 4);
-  CB.tx.data[0] |= BSL(iStatus.finger , 5);
-  CB.tx.data[0] |= BSL(iStatus.keyless , 6);
-  CB.tx.data[0] |= BSL(DB->hmi1.status.daylight , 7);
+  CB.tx.data[0] |= BSL(iStatus.finger, 5);
+  CB.tx.data[0] |= BSL(iStatus.keyless, 6);
+  CB.tx.data[0] |= BSL(DB->hmi1.status.daylight, 7);
 
   // sein value
   CB.tx.data[1] = iSeinLeft;
-  CB.tx.data[1] |= BSL(iSeinRight , 1);
+  CB.tx.data[1] |= BSL(iSeinRight, 1);
 
   // HMI-2 Shutdown Request
-  CB.tx.data[1] |= BSL(DB->hmi2.shutdown ,2);
+  CB.tx.data[1] |= BSL(DB->hmi2.shutdown, 2);
 
   // signal strength
   CB.tx.data[2] = DB->vcu.signal;
@@ -148,9 +146,9 @@ uint8_t CAN_VCU_Select_Set(sw_runner_t *runner) {
 
   // set message
   CB.tx.data[0] = runner->mode.sub.val[SW_M_DRIVE];
-  CB.tx.data[0] |= BSL(runner->mode.sub.val[SW_M_TRIP] , 2);
-  CB.tx.data[0] |= BSL(runner->mode.sub.val[SW_M_REPORT] , 3);
-  CB.tx.data[0] |= BSL(runner->mode.val , 4);
+  CB.tx.data[0] |= BSL(runner->mode.sub.val[SW_M_TRIP], 2);
+  CB.tx.data[0] |= BSL(runner->mode.sub.val[SW_M_REPORT], 3);
+  CB.tx.data[0] |= BSL(runner->mode.val, 4);
 
   // Send Show/Hide flag
   CB.tx.data[0] |= BSL(iHide, 6);
@@ -187,13 +185,12 @@ void CAN_MCU_Dummy_Read(uint8_t *speed) {
 
   // read message
   DB_MCU_RPM = (
-      BSL(CB.rx.data[3], 24) |
+  BSL(CB.rx.data[3], 24) |
       BSL(CB.rx.data[2], 16) |
       BSL(CB.rx.data[1], 8) |
       CB.rx.data[0]
-  );
+      );
   // convert RPM to Speed
   *speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
 }
-#endif
 

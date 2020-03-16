@@ -27,6 +27,42 @@ void _LedDisco(uint16_t ms) {
   }
 }
 
+void _DummyGenerator(db_t *db) {
+  // Control HMI brightness by daylight
+  db->hmi1.status.daylight = _TimeCheckDaylight(db->vcu.rtc.timestamp);
+
+  // Dummy algorithm
+  db->vcu.odometer = (db->vcu.odometer >= VCU_ODOMETER_MAX ? 0 : (db->vcu.odometer + 1));
+
+  // Dummy Report Range
+  if (!db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]) {
+    db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE] = 255;
+  } else {
+    db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]--;
+  }
+
+  if (db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] >= 255) {
+    db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] = 0;
+  } else {
+    db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE]++;
+  }
+
+  // Dummy Report Trip
+  if (db->vcu.sw.runner.mode.sub.val[db->vcu.sw.runner.mode.val] == SW_M_TRIP_A) {
+    if (db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] >= VCU_ODOMETER_MAX) {
+      db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] = 0;
+    } else {
+      db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A]++;
+    }
+  } else {
+    if (db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] >= VCU_ODOMETER_MAX) {
+      db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] = 0;
+    } else {
+      db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B]++;
+    }
+  }
+}
+
 uint8_t _TimeCheckDaylight(timestamp_t timestamp) {
   return (timestamp.time.Hours >= 5 && timestamp.time.Hours <= 16);
 }

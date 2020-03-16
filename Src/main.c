@@ -1867,39 +1867,8 @@ void StartGeneralTask(const void *argument)
       }
     }
 
-    // Control HMI brightness by daylight
-    DB.hmi1.status.daylight = _TimeCheckDaylight(DB.vcu.rtc.timestamp);
-
-    // Dummy algorithm
-    DB.vcu.odometer = (DB.vcu.odometer >= VCU_ODOMETER_MAX ? 0 : (DB.vcu.odometer + 1));
-
-    // Dummy Report Range
-    if (!DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]) {
-      DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE] = 255;
-    } else {
-      DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]--;
-    }
-
-    if (DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] >= 255) {
-      DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] = 0;
-    } else {
-      DB.vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE]++;
-    }
-
-    // Dummy Report Trip
-    if (DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val] == SW_M_TRIP_A) {
-      if (DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] >= VCU_ODOMETER_MAX) {
-        DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] = 0;
-      } else {
-        DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A]++;
-      }
-    } else {
-      if (DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] >= VCU_ODOMETER_MAX) {
-        DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] = 0;
-      } else {
-        DB.vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B]++;
-      }
-    }
+    // Dummy data generator
+    _DummyGenerator(&DB);
 
     // Periodic interval
     vTaskDelayUntil(&last_wake, tick500ms);
@@ -1930,6 +1899,9 @@ void StartCanTxTask(const void *argument)
 
     // Feed the dog (duration x seconds)
     HAL_IWDG_Refresh(&hiwdg);
+
+    // Running Indicator
+    _LedToggle();
 
     // Periodic interval
     vTaskDelayUntil(&last_wake, tick250ms);

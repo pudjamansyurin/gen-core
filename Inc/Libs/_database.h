@@ -35,7 +35,6 @@
 #define NET_BOOT_TIMEOUT                        10                      // in second
 #define NET_REPEAT_DELAY                        5                       // in second
 #define NET_EXTRA_TIME_MS                       500                     // in ms
-
 #define NET_COMMAND_PREFIX                      "$T"
 #define NET_ACK_PREFIX                          "@C"
 
@@ -52,15 +51,11 @@
 #define EVENT_REPORTER_CRASH                    BIT(0)
 #define EVENT_REPORTER_FALL                     BIT(1)
 #define EVENT_REPORTER_FALL_FIXED               BIT(2)
-
 #define EVENT_AUDIO_BEEP                        BIT(0)
 #define EVENT_AUDIO_MUTE_ON                     BIT(1)
 #define EVENT_AUDIO_MUTE_OFF                    BIT(2)
-
 #define EVENT_FINGER_PLACED                     BIT(0)
-
 #define EVENT_CAN_RX_IT                         BIT(0)
-
 #define EVENT_KEYLESS_RX_IT                     BIT(0)
 
 // Payload list (Keyless)
@@ -111,6 +106,12 @@
 #define SW_K_SEIN_RIGHT 				        3
 #define SW_K_REVERSE		 			        4
 #define SW_K_ABS				 		        5
+
+// Others Parameters
+#define MCU_SPEED_MAX                           200
+#define MCU_RPM_MAX                             99999
+#define VCU_ODOMETER_MAX                        99999
+#define HMI_DRIVE_MODE_MAX                      3
 
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {
