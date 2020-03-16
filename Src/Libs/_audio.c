@@ -50,7 +50,7 @@ extern uint16_t AUDIO_SAMPLE[];
 
 /* Private variables ---------------------------------------------------------*/
 static AUDIO_DrvTypeDef *pAudioDrv;
-static uint8_t AudioVolume = 50, AudioPlayDone = 0;
+static uint8_t AudioVolume = 0, AudioPlayDone = 0;
 static uint16_t AudioPlaySize;
 static uint32_t AudioRemSize;
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
@@ -382,7 +382,6 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
   }
 }
 
-
 /* Private functions implementation ---------------------------------------------*/
 /**
  * @brief  Configures the audio peripherals.
@@ -474,6 +473,5 @@ static uint8_t I2S3_Init(uint32_t AudioFreq) {
     return AUDIO_OK;
   }
 }
-
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
