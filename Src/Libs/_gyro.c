@@ -21,10 +21,10 @@ void GYRO_Init(void) {
     LOG_StrLn("Gyroscope_Init");
     // turn off module
     HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_RESET);
-    osDelay(1000);
+    osDelay(500);
     // turn on module
     HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_SET);
-    osDelay(1000);
+    osDelay(500);
     // module initialization
     result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_250s);
 

@@ -252,7 +252,7 @@ int main(void)
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
@@ -268,7 +268,7 @@ int main(void)
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
+  //  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
@@ -296,18 +296,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  //  osThreadTerminate(IotTaskHandle);
-  //  osThreadTerminate(GyroTaskHandle);
-  //  osThreadTerminate(CommandTaskHandle);
-  //  osThreadTerminate(GpsTaskHandle);
-  //  osThreadTerminate(FingerTaskHandle);
-  //  osThreadTerminate(AudioTaskHandle);
-  //  osThreadTerminate(KeylessTaskHandle);
-  //  osThreadTerminate(ReporterTaskHandle);
-  //  osThreadTerminate(CanRxTaskHandle);
-  //  osThreadTerminate(SwitchTaskHandle);
-  //  osThreadTerminate(GeneralTaskHandle);
-  //  osThreadTerminate(CanTxTaskHandle);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -1244,7 +1232,7 @@ void StartGyroTask(void const *argument)
   // Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
   // Give success indicator
-  AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
+//  AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1252,21 +1240,21 @@ void StartGyroTask(void const *argument)
     // Read all accelerometer, gyroscope (average)
     mems_decision = GYRO_Decision(&mems_calibration, 25);
 
-    // Check accelerometer, happens when impact detected
-    if (mems_decision.crash) {
-      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_CRASH, eSetBits);
-    }
+//    // Check accelerometer, happens when impact detected
+//    if (mems_decision.crash) {
+//      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_CRASH, eSetBits);
+//    }
+//
+//    // Check gyroscope, happens when fall detected
+//    if (mems_decision.fall) {
+//      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
+//      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
+//    } else {
+//      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
+//      AUDIO_BeepStop();
+//    }
 
-    // Check gyroscope, happens when fall detected
-    if (mems_decision.fall) {
-      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
-      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
-    } else {
-      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
-      AUDIO_BeepStop();
-    }
-
-    // Report interval
+// Report interval
     vTaskDelayUntil(&last_wake, tick5ms);
   }
   /* USER CODE END StartGyroTask */
