@@ -123,18 +123,18 @@ static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 static void MX_IWDG_Init(void);
-void StartIotTask(const void *argument);
-void StartGyroTask(const void *argument);
-void StartCommandTask(const void *argument);
-void StartGpsTask(const void *argument);
-void StartFingerTask(const void *argument);
-void StartAudioTask(const void *argument);
-void StartKeylessTask(const void *argument);
-void StartReporterTask(const void *argument);
-void StartCanRxTask(const void *argument);
-void StartSwitchTask(const void *argument);
-void StartGeneralTask(const void *argument);
-void StartCanTxTask(const void *argument);
+void StartIotTask(void const *argument);
+void StartGyroTask(void const *argument);
+void StartCommandTask(void const *argument);
+void StartGpsTask(void const *argument);
+void StartFingerTask(void const *argument);
+void StartAudioTask(void const *argument);
+void StartKeylessTask(void const *argument);
+void StartReporterTask(void const *argument);
+void StartCanRxTask(void const *argument);
+void StartSwitchTask(void const *argument);
+void StartGeneralTask(void const *argument);
+void StartCanTxTask(void const *argument);
 
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -184,7 +184,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-  MX_IWDG_Init();
+  //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   EE_Init();
   CANBUS_Init();
@@ -248,54 +248,66 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-//  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+  //  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
-  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
+  //  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
-  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
+  //  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
   AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
-  osThreadDef(KeylessTask, StartKeylessTask, osPriorityRealtime, 0, 256);
-  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
+  osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
+  //  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
-  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
+  //  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
+  //  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  //  osThreadTerminate(IotTaskHandle);
+  //  osThreadTerminate(GyroTaskHandle);
+  //  osThreadTerminate(CommandTaskHandle);
+  //  osThreadTerminate(GpsTaskHandle);
+  //  osThreadTerminate(FingerTaskHandle);
+  //  osThreadTerminate(AudioTaskHandle);
+  //  osThreadTerminate(KeylessTaskHandle);
+  //  osThreadTerminate(ReporterTaskHandle);
+  //  osThreadTerminate(CanRxTaskHandle);
+  //  osThreadTerminate(SwitchTaskHandle);
+  //  osThreadTerminate(GeneralTaskHandle);
+  //  osThreadTerminate(CanTxTaskHandle);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -1088,7 +1100,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * @retval None
  */
 /* USER CODE END Header_StartIotTask */
-void StartIotTask(const void *argument)
+void StartIotTask(void const *argument)
 {
   /* USER CODE BEGIN 5 */
   uint8_t success, size, seq;
@@ -1208,7 +1220,7 @@ void StartIotTask(const void *argument)
     }
   }
 
-// Give other threads a shot
+  // Give other threads a shot
   osDelay(100);
   /* USER CODE END 5 */
 }
@@ -1220,7 +1232,7 @@ void StartIotTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGyroTask */
-void StartGyroTask(const void *argument)
+void StartGyroTask(void const *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
   TickType_t last_wake;
@@ -1229,9 +1241,9 @@ void StartGyroTask(const void *argument)
 
   /* MPU6050 Initialization*/
   GYRO_Init();
-// Set calibrator
+  // Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
-// Give success indicator
+  // Give success indicator
   AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
 
   /* Infinite loop */
@@ -1267,7 +1279,7 @@ void StartGyroTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCommandTask */
-void StartCommandTask(const void *argument)
+void StartCommandTask(void const *argument)
 {
   /* USER CODE BEGIN StartCommandTask */
   int p;
@@ -1276,7 +1288,7 @@ void StartCommandTask(const void *argument)
   response_t *hResponse;
   extern response_t RESPONSE;
 
-// reset response frame to default
+  // reset response frame to default
   Reporter_Reset(FR_RESPONSE);
 
   /* Infinite loop */
@@ -1419,13 +1431,13 @@ void StartCommandTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGpsTask */
-void StartGpsTask(const void *argument)
+void StartGpsTask(void const *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   TickType_t last_wake;
   gps_t *hGps;
 
-// Start GPS module
+  // Start GPS module
   UBLOX_DMA_Init();
   GPS_Init();
 
@@ -1453,12 +1465,12 @@ void StartGpsTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartFingerTask */
-void StartFingerTask(const void *argument)
+void StartFingerTask(void const *argument)
 {
   /* USER CODE BEGIN StartFingerTask */
   uint32_t notif_value;
 
-// Initialization
+  // Initialization
   FINGER_DMA_Init();
   Finger_Init();
 
@@ -1487,7 +1499,7 @@ void StartFingerTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartAudioTask */
-void StartAudioTask(const void *argument)
+void StartAudioTask(void const *argument)
 {
   /* USER CODE BEGIN StartAudioTask */
   TickType_t last_wake;
@@ -1496,7 +1508,7 @@ void StartAudioTask(const void *argument)
 
   /* Initialize Wave player (Codec, DMA, I2C) */
   AUDIO_Init();
-// Play wave loop forever, handover to DMA, so CPU is free
+  // Play wave loop forever, handover to DMA, so CPU is free
   AUDIO_Play();
 
   /* Infinite loop */
@@ -1540,13 +1552,13 @@ void StartAudioTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartKeylessTask */
-void StartKeylessTask(const void *argument)
+void StartKeylessTask(void const *argument)
 {
   /* USER CODE BEGIN StartKeylessTask */
   uint8_t msg;
   uint32_t notif_value;
 
-// initialization
+  // initialization
   KEYLESS_Init();
 
   /* Infinite loop */
@@ -1563,7 +1575,7 @@ void StartKeylessTask(const void *argument)
       LOG_Char('\n');
 
       // indicator
-      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
+      //      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
       for (int i = 0; i < ((msg + 1) * 2); i++) {
         _LedToggle();
         osDelay(50);
@@ -1580,7 +1592,7 @@ void StartKeylessTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReporterTask */
-void StartReporterTask(const void *argument)
+void StartReporterTask(void const *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
   extern report_t REPORT;
@@ -1593,7 +1605,7 @@ void StartReporterTask(const void *argument)
   report_t *hReport;
   gps_t *hGps;
 
-// reset report frame to default
+  // reset report frame to default
   Reporter_Reset(FR_FULL);
 
   /* Infinite loop */
@@ -1676,7 +1688,7 @@ void StartReporterTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanRxTask */
-void StartCanRxTask(const void *argument)
+void StartCanRxTask(void const *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
   uint32_t notif_value;
@@ -1711,18 +1723,18 @@ void StartCanRxTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSwitchTask */
-void StartSwitchTask(const void *argument)
+void StartSwitchTask(void const *argument)
 {
   /* USER CODE BEGIN StartSwitchTask */
   uint8_t i, Last_Mode_Drive;
   uint32_t notif_value;
 
-// Read all EXTI state
+  // Read all EXTI state
   for (i = 0; i < DB.vcu.sw.count; i++) {
     DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
   }
 
-// Handle Reverse mode on init
+  // Handle Reverse mode on init
   if (DB.vcu.sw.list[SW_K_REVERSE].state) {
     // save previous Drive Mode state
     if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
@@ -1843,7 +1855,7 @@ void StartSwitchTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGeneralTask */
-void StartGeneralTask(const void *argument)
+void StartGeneralTask(void const *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
@@ -1883,7 +1895,7 @@ void StartGeneralTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanTxTask */
-void StartCanTxTask(const void *argument)
+void StartCanTxTask(void const *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
   TickType_t last_wake;
@@ -1948,12 +1960,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

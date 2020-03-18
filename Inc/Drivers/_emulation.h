@@ -52,10 +52,10 @@
 #include "_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define EE_OK      (uint32_t)HAL_OK
-#define EE_ERROR   (uint32_t)HAL_ERROR
-#define EE_BUSY    (uint32_t)HAL_BUSY
-#define EE_TIMEOUT (uint32_t)HAL_TIMEOUT
+#define EE_OK                   (uint32_t)HAL_OK
+#define EE_ERROR                (uint32_t)HAL_ERROR
+#define EE_BUSY                 (uint32_t)HAL_BUSY
+#define EE_TIMEOUT              (uint32_t)HAL_TIMEOUT
 
 /* Define the size of the sectors to be used */
 #define PAGE_SIZE               (uint32_t)0x20000  /* Page size = 128KByte */
@@ -102,7 +102,7 @@
 
 /* Public functions prototype ------------------------------------------------*/
 uint16_t EE_Init(void);
-uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t* Data);
+uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t *Data);
 uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data);
 
 #endif /* EEPRO_EMULATION */

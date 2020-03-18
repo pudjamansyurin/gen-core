@@ -65,6 +65,13 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
     if (result == NRF_ERROR) {
       osDelay(1000);
     }
+
+    // turn on the mosfet
+    HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 0);
+    osDelay(500);
+    HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
+    osDelay(500);
+
     result = nrf_check(&nrf);
   } while (result == NRF_ERROR);
 

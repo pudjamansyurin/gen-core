@@ -90,7 +90,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   uint8_t address = DataStruct->Address;
 
   /* Check if device is connected */
-  if (HAL_I2C_IsDeviceReady(Handle, address, 2, 5) != HAL_OK) {
+  if (HAL_I2C_IsDeviceReady(Handle, address, 2, 500) != HAL_OK) {
     return MPU6050_Result_Error;
   }
 

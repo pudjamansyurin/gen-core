@@ -418,7 +418,6 @@ uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix) {
   return counter;
 }
 
-
 /********************************* LINK AUDIO *********************************/
 /**
  * @brief  Initializes Audio low level.
@@ -427,11 +426,11 @@ void AUDIO_IO_Init(void) {
   /* Power Down the codec */
   HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
   /* Wait for a delay to insure registers erasing */
-  osDelay(50);
+  osDelay(500);
   /* Power on the codec */
   HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_SET);
   /* Wait for a delay to insure registers erasing */
-  osDelay(50);
+  osDelay(500);
 }
 
 /**
@@ -478,7 +477,6 @@ uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
   }
   return value;
 }
-
 
 /* Private functions implementation ---------------------------------------------*/
 /**
