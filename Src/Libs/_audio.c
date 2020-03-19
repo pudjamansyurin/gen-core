@@ -37,10 +37,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_audio.h"
 
-/* Private constants ----------------------------------------------------------*/
+/* Private constants ---------------------------------------------------------*/
 #define AUDIO_BUFFER_SIZE             4096
 
-/* External variabless ---------------------------------------------------------*/
+/* External variabless -------------------------------------------------------*/
 extern osMutexId BeepMutexHandle;
 extern AUDIO_DrvTypeDef cs43l22_drv;
 extern I2S_HandleTypeDef hi2s3;
@@ -73,7 +73,7 @@ void AUDIO_Init(void) {
     HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 0);
     osDelay(500);
     HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 1);
-    osDelay(500);
+    osDelay(1000);
 
     /* Initialize Wave player (Codec, DMA, I2C) */
     ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AudioVolume, AUDIO_SAMPLE_FREQ);
