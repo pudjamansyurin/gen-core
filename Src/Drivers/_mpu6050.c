@@ -113,21 +113,20 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   }
   //------------------
 
-  /* Wakeup MPU6050 */
-  //------------------
-  /* Format array to send */
-  d[0] = MPU6050_PWR_MGMT_1;
-  d[1] = 0x00;
-
-  /* Try to transmit via I2C */
-  if (HAL_I2C_Master_Transmit(Handle, address, d, 2, 1000) != HAL_OK) {
-    return MPU6050_Result_Error;
-  }
-  osDelay(100);
-  //------------------
+//  /* Wakeup MPU6050 */
+//  //------------------
+//  /* Format array to send */
+//  d[0] = MPU6050_PWR_MGMT_1;
+//  d[1] = 0x00;
+//
+//  /* Try to transmit via I2C */
+//  if (HAL_I2C_Master_Transmit(Handle, address, d, 2, 1000) != HAL_OK) {
+//    return MPU6050_Result_Error;
+//  }
+//  //------------------
 
   /* Set sample rate to 1kHz */
-  if (MPU6050_SetDataRate(I2Cx, DataStruct, MPU6050_DataRate_8KHz) != MPU6050_Result_Ok) {
+  if (MPU6050_SetDataRate(I2Cx, DataStruct, MPU6050_DataRate_500Hz) != MPU6050_Result_Ok) {
     return MPU6050_Result_Error;
   }
 
@@ -150,7 +149,7 @@ MPU6050_Result MPU6050_SetDataRate(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
   d[1] = rate;
 
   /* Set data sample rate */
-  if (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, (uint8_t*) d, 2, 1000) != HAL_OK) {
+  if (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, (uint8_t*) d, 2, 5000) != HAL_OK) {
     return MPU6050_Result_Error;
   }
 

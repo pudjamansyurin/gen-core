@@ -27,6 +27,7 @@
 #include "_database.h"
 #include "_crc.h"
 #include "_eeprom.h"
+#include "_eeprom24xx.h"
 #include "_simcom.h"
 #include "_gyro.h"
 #include "_gps.h"
@@ -252,7 +253,7 @@ int main(void)
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-//  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
@@ -268,7 +269,7 @@ int main(void)
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
+  //  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
@@ -1056,20 +1057,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     }
     // handle Finger-print IRQ
     if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
-      xTaskNotifyFromISR(
-          FingerTaskHandle,
-          EVENT_FINGER_PLACED,
-          eSetBits,
-          &xHigherPriorityTaskWoken);
+//      xTaskNotifyFromISR(
+//          FingerTaskHandle,
+//          EVENT_FINGER_PLACED,
+//          eSetBits,
+//          &xHigherPriorityTaskWoken);
     }
     // handle Switches EXTI
     for (i = 0; i < DB.vcu.sw.count; i++) {
       if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
-        xTaskNotifyFromISR(
-            SwitchTaskHandle,
-            (uint32_t ) GPIO_Pin,
-            eSetBits,
-            &xHigherPriorityTaskWoken);
+//        xTaskNotifyFromISR(
+//            SwitchTaskHandle,
+//            (uint32_t ) GPIO_Pin,
+//            eSetBits,
+//            &xHigherPriorityTaskWoken);
 
         break;
       }
@@ -1232,7 +1233,7 @@ void StartGyroTask(void const *argument)
   // Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
   // Give success indicator
-//  AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
+  //  AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1240,21 +1241,21 @@ void StartGyroTask(void const *argument)
     // Read all accelerometer, gyroscope (average)
     mems_decision = GYRO_Decision(&mems_calibration, 25);
 
-//    // Check accelerometer, happens when impact detected
-//    if (mems_decision.crash) {
-//      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_CRASH, eSetBits);
-//    }
-//
-//    // Check gyroscope, happens when fall detected
-//    if (mems_decision.fall) {
-//      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
-//      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
-//    } else {
-//      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
-//      AUDIO_BeepStop();
-//    }
+    //    // Check accelerometer, happens when impact detected
+    //    if (mems_decision.crash) {
+    //      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_CRASH, eSetBits);
+    //    }
+    //
+    //    // Check gyroscope, happens when fall detected
+    //    if (mems_decision.fall) {
+    //      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
+    //      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
+    //    } else {
+    //      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
+    //      AUDIO_BeepStop();
+    //    }
 
-// Report interval
+    // Report interval
     vTaskDelayUntil(&last_wake, tick5ms);
   }
   /* USER CODE END StartGyroTask */
@@ -1849,26 +1850,49 @@ void StartGeneralTask(void const *argument)
   TickType_t last_wake;
   timestamp_t timestampCarrier;
 
+  uint32_t write = 0, read, address = 0;
+
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
+
   for (;;) {
-    // Retrieve network signal quality
-    Simcom_ReadSignal(&(DB.vcu.signal));
+    //    // Retrieve network signal quality
+    //    Simcom_ReadSignal(&(DB.vcu.signal));
+    //
+    //    // Retrieve RTC time
+    //    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
+    //
+    //    // Check calibration by cellular network
+    //    if (_TimeNeedCalibration(DB.vcu.rtc)) {
+    //      // get carrier timestamp
+    //      if (Simcom_ReadTime(&timestampCarrier)) {
+    //        // calibrate the RTC
+    //        RTC_WriteRaw(&timestampCarrier, &(DB.vcu.rtc));
+    //      }
+    //    }
+    //
+    //    // Dummy data generator
+    //    _DummyGenerator(&DB);
 
-    // Retrieve RTC time
-    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
+    //    if (EEPROM24XX_IsConnected() && address < 100) {
+    //      read = 0;
+    //
+    //      EEPROM24XX_Save(address, &write, 1);
+    //      LOG_Str("Write = ");
+    //      LOG_Hex8(write);
+    //      LOG_Enter();
+    //
+    //      EEPROM24XX_Load(address, &read, 1);
+    //      LOG_Str("Read = ");
+    //      LOG_Hex8(read);
+    //      LOG_Enter();
+    //
+    //      write++;
+    //      address++;
+    //    }
 
-    // Check calibration by cellular network
-    if (_TimeNeedCalibration(DB.vcu.rtc)) {
-      // get carrier timestamp
-      if (Simcom_ReadTime(&timestampCarrier)) {
-        // calibrate the RTC
-        RTC_WriteRaw(&timestampCarrier, &(DB.vcu.rtc));
-      }
-    }
-
-    // Dummy data generator
-    _DummyGenerator(&DB);
+    _LedToggle();
+    LOG_StrLn("Holla");
 
     // Periodic interval
     vTaskDelayUntil(&last_wake, tick500ms);

@@ -51,13 +51,13 @@
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.frequency" value="0"/>
 <booleanAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.halt_all_on_reset" value="false"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.log_file" value="D:\GEN Drive\Source Code\STM32CubeIDE\HUB\Debug\st-link_gdbserver_log.txt"/>
-<stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.low_power_debug" value="enable"/>
+<stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.low_power_debug" value="disable"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.max_halt_delay" value="2"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.reset_strategy" value="system_reset"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.stlink_ap_id" value="0"/>
 <booleanAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.stlink_check_serial_number" value="true"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.stlink_txt_serial_number" value="48FF76067266535235441967"/>
-<stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.watchdog_config" value="none"/>
+<stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.watchdog_config" value="enable"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.swv.datatrace_0" value="Enabled=false:Address=0x0:Access=Read/Write:Size=Word:Function=Data Value"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.swv.datatrace_1" value="Enabled=false:Address=0x0:Access=Read/Write:Size=Word:Function=Data Value"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.swv.datatrace_2" value="Enabled=false:Address=0x0:Access=Read/Write:Size=Word:Function=Data Value"/>
