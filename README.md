@@ -111,3 +111,4 @@
 |  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |              |
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      0       |       ✔      |
 | 11 | Handlebar/Switch            | ST EXTI        | PE			 |      100     |              |
+| 12 | Backup Battery Monitor      | ST ADC			| ADC1			 | 		0		| 			   |
