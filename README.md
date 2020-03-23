@@ -103,7 +103,7 @@
 |  1 | IoT                         | SIM5300e       | USART1		 |      95      |              |
 |  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |              |
 |  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |  On Progress |
-|  4 | Keyless                     | nRF24L01       | SPI1			 |      50      |       ✔      |
+|  4 | Keyless/RF                  | nRF24L01       | SPI1			 |      50      |       ✔      |
 |  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |              |
 |  6 | RTC                         | ST RTC		    | -				 |      100     |       ✔      |
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |              |
@@ -112,3 +112,4 @@
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      0       |       ✔      |
 | 11 | Handlebar/Switch            | ST EXTI        | PE			 |      100     |              |
 | 12 | Backup Battery Monitor      | ST ADC			| ADC1			 | 		0		| 			   |
+| 13 | Encryption IoT & RF		   | ST AES			| AES			 | 		0 		| 			   |
