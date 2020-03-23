@@ -98,7 +98,7 @@
 - http://www.summitdata.com/blog/parasitic-effects-rf-design/ 
 
 ## Sub-Modules Progress:
-| No | Sub Module                  | Chip           | ST Peripheral  | Firmware (%) | Hardware (%) |
+| No | Sub Module                  | Chip           | ST Peripheral  | Firmware (%) | Hardware     |
 |:--:|-----------------------------|----------------|:--------------:|:------------:|:------------:|
 |  1 | IoT                         | SIM5300e       | USART1		 |      95      |              |
 |  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |              |
