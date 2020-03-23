@@ -112,5 +112,5 @@
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      |
 | 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |              |
 | 12 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔	   |
-| 13 | Encryption IoT & RF		   | ST-AES			| AES			 | 		0 		| 		-	   |
-| 14 | Firmware upgrade OTA (FOTA) | ST-FLASH		| FLASH			 |      0 		| 		-      |
+| 13 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   |
+| 14 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      |
