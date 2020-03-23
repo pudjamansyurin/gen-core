@@ -106,9 +106,9 @@
 |  4 | Keyless/RF                  | nRF24L01       | SPI1			 |      50      |       ✔      |
 |  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |              |
 |  6 | RTC                         | ST RTC		    | -				 |      100     |       ✔      |
-|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |              |
+|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      |
 |  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |              |
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |              |
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      |
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      |
 | 11 | Handlebar/Switch            | ST EXTI        | PE			 |      100     |              |
 | 12 | Backup Battery Monitor      | ST ADC			| ADC1			 | 		0		| 		✔	   |

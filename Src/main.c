@@ -1052,7 +1052,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   uint8_t i;
 
-  if (osKernelRunning()) {
+  if (!osKernelRunning()) {
     // handle NRF24 IRQ
     if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
       KEYLESS_IrqHandler();
