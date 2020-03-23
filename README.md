@@ -87,22 +87,27 @@
 - [x] Add many via (through hole) for best RF performance  
 - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
 
+## Schematic Update:
+- [ ] Use same 6 pin connector for fingerprint I/O and power I/O.
+- [ ] Add separate 3v3 regulator for gyroscope module.
+- [x] Edit Q4, the gyro mosfet control GYRO_GND should not connected to GND.
+
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
 - http://www.pcbtechguide.com/2010/07/wifi-module-layout-guidelines.html 
 - http://www.summitdata.com/blog/parasitic-effects-rf-design/ 
 
 ## Sub-Modules Progress:
-| No | Sub Module                  | Chip           | ST Peripheral  | Progress (%) |
-|:--:|-----------------------------|----------------|:--------------:|:------------:|
-|  1 | IoT                         | SIM5300e       | USART1		 |      95      |
-|  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |
-|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |
-|  4 | Keyless                     | nRF24L01       | SPI1			 |      50      |
-|  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |
-|  6 | RTC                         | ST RTC		    | -				 |      100     |
-|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |
-|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |
-| 10 | EEPROM                      | 24AA32A        | I2C2			 |      0       |
-| 11 | Handlebar/Switch            | ST EXTI        | PE			 |      100     |
+| No | Sub Module                  | Chip           | ST Peripheral  | Firmware (%) | Hardware (%) |
+|:--:|-----------------------------|----------------|:--------------:|:------------:|:------------:|
+|  1 | IoT                         | SIM5300e       | USART1		 |      95      |              |
+|  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |              |
+|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |  On Progress |
+|  4 | Keyless                     | nRF24L01       | SPI1			 |      50      |       ✔      |
+|  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |              |
+|  6 | RTC                         | ST RTC		    | -				 |      100     |       ✔      |
+|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |              |
+|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |              |
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |              |
+| 10 | EEPROM                      | 24AA32A        | I2C2			 |      0       |       ✔      |
+| 11 | Handlebar/Switch            | ST EXTI        | PE			 |      100     |              |

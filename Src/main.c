@@ -124,18 +124,18 @@ static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 static void MX_IWDG_Init(void);
-void StartIotTask(void const *argument);
-void StartGyroTask(void const *argument);
-void StartCommandTask(void const *argument);
-void StartGpsTask(void const *argument);
-void StartFingerTask(void const *argument);
-void StartAudioTask(void const *argument);
-void StartKeylessTask(void const *argument);
-void StartReporterTask(void const *argument);
-void StartCanRxTask(void const *argument);
-void StartSwitchTask(void const *argument);
-void StartGeneralTask(void const *argument);
-void StartCanTxTask(void const *argument);
+void StartIotTask(const void *argument);
+void StartGyroTask(const void *argument);
+void StartCommandTask(const void *argument);
+void StartGpsTask(const void *argument);
+void StartFingerTask(const void *argument);
+void StartAudioTask(const void *argument);
+void StartKeylessTask(const void *argument);
+void StartReporterTask(const void *argument);
+void StartCanRxTask(const void *argument);
+void StartSwitchTask(const void *argument);
+void StartGeneralTask(const void *argument);
+void StartCanTxTask(const void *argument);
 
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -1055,22 +1055,24 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
       KEYLESS_IrqHandler();
     }
+
     // handle Finger-print IRQ
     if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
-//      xTaskNotifyFromISR(
-//          FingerTaskHandle,
-//          EVENT_FINGER_PLACED,
-//          eSetBits,
-//          &xHigherPriorityTaskWoken);
+      xTaskNotifyFromISR(
+          FingerTaskHandle,
+          EVENT_FINGER_PLACED,
+          eSetBits,
+          &xHigherPriorityTaskWoken);
     }
+
     // handle Switches EXTI
     for (i = 0; i < DB.vcu.sw.count; i++) {
       if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
-//        xTaskNotifyFromISR(
-//            SwitchTaskHandle,
-//            (uint32_t ) GPIO_Pin,
-//            eSetBits,
-//            &xHigherPriorityTaskWoken);
+        xTaskNotifyFromISR(
+            SwitchTaskHandle,
+            (uint32_t ) GPIO_Pin,
+            eSetBits,
+            &xHigherPriorityTaskWoken);
 
         break;
       }
@@ -1089,13 +1091,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * @retval None
  */
 /* USER CODE END Header_StartIotTask */
-void StartIotTask(void const *argument)
+void StartIotTask(const void *argument)
 {
   /* USER CODE BEGIN 5 */
-  uint8_t success, size, seq;
   osEvent evt;
   report_t *hReport = NULL, report;
   response_t *hResponse = NULL;
+  uint8_t success, size, seq;
 
   // Start simcom module
   SIMCOM_DMA_Init();
@@ -1221,7 +1223,7 @@ void StartIotTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGyroTask */
-void StartGyroTask(void const *argument)
+void StartGyroTask(const void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
   TickType_t last_wake;
@@ -1268,7 +1270,7 @@ void StartGyroTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCommandTask */
-void StartCommandTask(void const *argument)
+void StartCommandTask(const void *argument)
 {
   /* USER CODE BEGIN StartCommandTask */
   int p;
@@ -1420,7 +1422,7 @@ void StartCommandTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGpsTask */
-void StartGpsTask(void const *argument)
+void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   TickType_t last_wake;
@@ -1454,7 +1456,7 @@ void StartGpsTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartFingerTask */
-void StartFingerTask(void const *argument)
+void StartFingerTask(const void *argument)
 {
   /* USER CODE BEGIN StartFingerTask */
   uint32_t notif_value;
@@ -1488,7 +1490,7 @@ void StartFingerTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartAudioTask */
-void StartAudioTask(void const *argument)
+void StartAudioTask(const void *argument)
 {
   /* USER CODE BEGIN StartAudioTask */
   TickType_t last_wake;
@@ -1541,7 +1543,7 @@ void StartAudioTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartKeylessTask */
-void StartKeylessTask(void const *argument)
+void StartKeylessTask(const void *argument)
 {
   /* USER CODE BEGIN StartKeylessTask */
   uint8_t msg;
@@ -1559,12 +1561,12 @@ void StartKeylessTask(void const *argument)
     if (notif_value & EVENT_KEYLESS_RX_IT) {
       msg = KEYLESS_ReadPayload();
 
+      // indicator
       LOG_Str("NRF received packet, msg = ");
       LOG_Hex8(msg);
       LOG_Char('\n');
 
-      // indicator
-      //      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
+      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
       for (int i = 0; i < ((msg + 1) * 2); i++) {
         _LedToggle();
         osDelay(50);
@@ -1581,7 +1583,7 @@ void StartKeylessTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReporterTask */
-void StartReporterTask(void const *argument)
+void StartReporterTask(const void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
   extern report_t REPORT;
@@ -1677,7 +1679,7 @@ void StartReporterTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanRxTask */
-void StartCanRxTask(void const *argument)
+void StartCanRxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
   uint32_t notif_value;
@@ -1712,10 +1714,10 @@ void StartCanRxTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSwitchTask */
-void StartSwitchTask(void const *argument)
+void StartSwitchTask(const void *argument)
 {
   /* USER CODE BEGIN StartSwitchTask */
-  uint8_t i, Last_Mode_Drive;
+  uint8_t i, iModeDrive;
   uint32_t notif_value;
 
   // Read all EXTI state
@@ -1727,7 +1729,7 @@ void StartSwitchTask(void const *argument)
   if (DB.vcu.sw.list[SW_K_REVERSE].state) {
     // save previous Drive Mode state
     if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
-      Last_Mode_Drive = DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE];
+      iModeDrive = DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE];
     }
     // force state
     DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
@@ -1784,7 +1786,7 @@ void StartSwitchTask(void const *argument)
     if (DB.vcu.sw.list[SW_K_REVERSE].state) {
       // save previous Drive Mode state
       if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
-        Last_Mode_Drive = DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE];
+        iModeDrive = DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE];
       }
       // force state
       DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
@@ -1794,7 +1796,7 @@ void StartSwitchTask(void const *argument)
     } else {
       // restore previous Drive Mode
       if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R) {
-        DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = Last_Mode_Drive;
+        DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = iModeDrive;
       }
 
       // handle Select & Set
@@ -1844,35 +1846,34 @@ void StartSwitchTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGeneralTask */
-void StartGeneralTask(void const *argument)
+void StartGeneralTask(const void *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
   timestamp_t timestampCarrier;
-
-  uint32_t write = 0, read, address = 0;
+  //  uint32_t write = 0, read, address = 0;
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
 
   for (;;) {
-    //    // Retrieve network signal quality
-    //    Simcom_ReadSignal(&(DB.vcu.signal));
-    //
-    //    // Retrieve RTC time
-    //    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
-    //
-    //    // Check calibration by cellular network
-    //    if (_TimeNeedCalibration(DB.vcu.rtc)) {
-    //      // get carrier timestamp
-    //      if (Simcom_ReadTime(&timestampCarrier)) {
-    //        // calibrate the RTC
-    //        RTC_WriteRaw(&timestampCarrier, &(DB.vcu.rtc));
-    //      }
-    //    }
-    //
-    //    // Dummy data generator
-    //    _DummyGenerator(&DB);
+    // Retrieve network signal quality
+    Simcom_ReadSignal(&(DB.vcu.signal));
+
+    // Retrieve RTC time
+    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
+
+    // Check calibration by cellular network
+    if (_TimeNeedCalibration(DB.vcu.rtc)) {
+      // get carrier timestamp
+      if (Simcom_ReadTime(&timestampCarrier)) {
+        // calibrate the RTC
+        RTC_WriteRaw(&timestampCarrier, &(DB.vcu.rtc));
+      }
+    }
+
+    // Dummy data generator
+    _DummyGenerator(&DB);
 
     //    if (EEPROM24XX_IsConnected() && address < 100) {
     //      read = 0;
@@ -1891,8 +1892,8 @@ void StartGeneralTask(void const *argument)
     //      address++;
     //    }
 
+    // Toggling LED
     _LedToggle();
-    LOG_StrLn("Holla");
 
     // Periodic interval
     vTaskDelayUntil(&last_wake, tick500ms);
@@ -1907,7 +1908,7 @@ void StartGeneralTask(void const *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanTxTask */
-void StartCanTxTask(void const *argument)
+void StartCanTxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
   TickType_t last_wake;
