@@ -26,8 +26,6 @@
 /* USER CODE BEGIN Includes */
 #include "_database.h"
 #include "_crc.h"
-#include "_eeprom.h"
-#include "_eeprom24xx.h"
 #include "_simcom.h"
 #include "_gyro.h"
 #include "_gps.h"
@@ -187,7 +185,6 @@ int main(void)
   MX_CRC_Init();
   //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-  EE_Init();
   CANBUS_Init();
   /* USER CODE END 2 */
 
@@ -654,7 +651,6 @@ static void MX_RTC_Init(void)
 {
 
   /* USER CODE BEGIN RTC_Init 0 */
-  uint32_t RTC_Reset_Trigger = 888;
   /* USER CODE END RTC_Init 0 */
 
   RTC_TimeTypeDef sTime = { 0 };
@@ -678,7 +674,7 @@ static void MX_RTC_Init(void)
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
-  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_Reset_Trigger) {
+  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
     /* USER CODE END Check_RTC_BKUP */
 
     /** Initialize RTC and set the Time and Date
@@ -702,8 +698,14 @@ static void MX_RTC_Init(void)
       Error_Handler();
     }
     /* USER CODE BEGIN RTC_Init 2 */
-    // write backup register for the 1st time
-    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_Reset_Trigger);
+    // ONE-TIME configurations:
+    // reporter configuration
+    Reporter_SetUnitID(REPORT_UNITID);
+    Reporter_SetOdometer(0);
+    // simcom configuration
+
+    // re-write backup register
+    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
   }
 
   /* USER CODE END RTC_Init 2 */
@@ -1587,7 +1589,6 @@ void StartReporterTask(const void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
   extern report_t REPORT;
-
   TickType_t last_wake, last_wake_full = 0;
   osEvent evt;
   frame_type frame;
@@ -1595,6 +1596,15 @@ void StartReporterTask(const void *argument)
   uint32_t notif_value;
   report_t *hReport;
   gps_t *hGps;
+
+  // EEPROM initialization
+  EEPROM24XX_SetDevice(EEPROM24_MAIN);
+  if (EEPROM24XX_IsConnected()) {
+    LOG_StrLn("MAIN EEPROM is ready.");
+  } else {
+    EEPROM24XX_SetDevice(EEPROM24_BACKUP);
+    LOG_StrLn("BACKUP EEPROM is used, instead MAIN EEPROM.");
+  }
 
   // reset report frame to default
   Reporter_Reset(FR_FULL);
@@ -1851,7 +1861,6 @@ void StartGeneralTask(const void *argument)
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
   timestamp_t timestampCarrier;
-  //  uint32_t write = 0, read, address = 0;
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1874,23 +1883,6 @@ void StartGeneralTask(const void *argument)
 
     // Dummy data generator
     _DummyGenerator(&DB);
-
-    //    if (EEPROM24XX_IsConnected() && address < 100) {
-    //      read = 0;
-    //
-    //      EEPROM24XX_Save(address, &write, 1);
-    //      LOG_Str("Write = ");
-    //      LOG_Hex8(write);
-    //      LOG_Enter();
-    //
-    //      EEPROM24XX_Load(address, &read, 1);
-    //      LOG_Str("Read = ");
-    //      LOG_Hex8(read);
-    //      LOG_Enter();
-    //
-    //      write++;
-    //      address++;
-    //    }
 
     // Toggling LED
     _LedToggle();

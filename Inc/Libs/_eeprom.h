@@ -9,15 +9,21 @@
 #define EEPROM_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_emulation.h"
+#include "_utils.h"
+#include "_eeprom24xx.h"
 
 /* Exported constants --------------------------------------------------------*/
-/* Virtual address defined by the user: 0xFFFF value is prohibited */
-#define VADDR_ODOMETER_L			0x0000
-#define VADDR_ODOMETER_H			(VADDR_ODOMETER_L + 1)
+#define VADDR_ODOMETER              0x000
+#define VADDR_UNITID                VADDR_ODOMETER + sizeof(uint32_t)
+
+/* Exported enum -------------------------------------------------------------*/
+typedef enum {
+  EE_CMD_R = 0,
+  EE_CMD_W = 1
+} EEPROM_COMMAND;
 
 /* Public functions prototype ------------------------------------------------*/
-void EEPROM_WriteOdometer(uint32_t odometer);
-uint32_t EEPROM_ReadOdometer(void);
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t *value);
+uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t *value);
 
 #endif /* EEPROM_H_ */

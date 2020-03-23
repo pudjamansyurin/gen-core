@@ -8,22 +8,22 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_eeprom.h"
 
-/* Public variables -----------------------------------------------------------*/
-uint16_t VirtAddVarTab[NB_OF_VAR] = { VADDR_ODOMETER_L, VADDR_ODOMETER_H };
+/* Private functions prototype ------------------------------------------------*/
+static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value);
 
 /* Public functions implementation --------------------------------------------*/
-void EEPROM_WriteOdometer(uint32_t odometer) {
-  EE_WriteVariable(VADDR_ODOMETER_L, (uint16_t) odometer);
-  EE_WriteVariable(VADDR_ODOMETER_H, (uint16_t) BSR(odometer, 16));
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t *value) {
+  return EE_32(VADDR_ODOMETER, cmd, value);
 }
 
-uint32_t EEPROM_ReadOdometer(void) {
-  uint16_t odom_L, odom_H;
+uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t *value) {
+  return EE_32(VADDR_UNITID, cmd, value);
+}
 
-  if (EE_ReadVariable(VADDR_ODOMETER_L, &odom_L) == HAL_OK) {
-    if (EE_ReadVariable(VADDR_ODOMETER_H, &odom_H) == HAL_OK) {
-      return BSL(odom_H, 16) | odom_L;
-    }
+/* Private functions implementation --------------------------------------------*/
+static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value) {
+  if (cmd == EE_CMD_W) {
+    return EEPROM24XX_Save(vaddr, value, sizeof(uint32_t));
   }
-  return 0;
+  return EEPROM24XX_Load(vaddr, value, sizeof(uint32_t));
 }

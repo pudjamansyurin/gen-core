@@ -15,9 +15,12 @@ extern I2C_HandleTypeDef hi2c2;
 
 /* Private variables ----------------------------------------------------------*/
 static I2C_HandleTypeDef *hi2c = &hi2c2;
-static uint16_t DevAddress = 0xA0;
+static uint16_t DevAddress = EEPROM24_MAIN;
 
 /* Public functions implementation ---------------------------------------------*/
+void EEPROM24XX_SetDevice(EEPROM24_DEVICE Device) {
+  DevAddress = Device;
+}
 
 //##########################################################################
 uint8_t EEPROM24XX_IsConnected(void)

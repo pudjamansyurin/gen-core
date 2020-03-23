@@ -21,7 +21,8 @@
 #define BSR(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-// GLOBAL CONFIG
+#define RTC_ONE_TIME_RESET                      1
+
 #define VCU_FIRMWARE_VERSION                    "0.7"
 #define VCU_VENDOR                              "GEN Indonesia"
 #define VCU_BUILD_YEAR                          20U
@@ -40,9 +41,11 @@
 
 #define FINGER_CONFIDENCE_MIN                   10
 #define FINGER_SCAN_TIMEOUT                     20                      // in second
+
 #define REPORT_INTERVAL_SIMPLE                  5                       // in second
 #define REPORT_INTERVAL_FULL                    20                      // in second
 #define REPORT_UNITID                           354313U
+
 #define FRAME_PREFIX                            0x4047                  // "@G"
 
 #define GMT_TIME                                7                       // Asia/Jakarta
