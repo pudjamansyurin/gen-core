@@ -92,17 +92,13 @@
 - [ ] Change jack connector
 - [ ] Check crystals footprint: HCLK, RTC
 - [ ] Other use 5V, B+ only for: MCU, GPS, SIMCOM, CAN
+- [ ] Gyro: Add separate 3v3 regulator
 - [ ] Gyro: Connect INT pin to MCU (give jumper)
 - [ ] Gyro: Connect AD0 pin to GND (the problem)
 - [ ] Gyro: Separate Q4 GND and GYRO_GND
 - [ ] GPS: Give jumper for serial to MCU
 - [ ] GPS: Give jumper for V_BCKP, it can use VDD / VCC
 - [ ] GPS: Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
-
-## Schematic Update:
-- [ ] Use same 6 pin connector for fingerprint I/O and power I/O.
-- [ ] Add separate 3v3 regulator for gyroscope module.
-- [x] Edit Q4, the gyro mosfet control GYRO_GND should not connected to GND.
 
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
