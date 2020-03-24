@@ -250,7 +250,7 @@ int main(void)
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
@@ -294,6 +294,24 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+
+  // ONE-TIME configurations:
+  //  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
+  uint32_t unitId = 0, odometer = 0;
+  // EEPROM initialization
+  EEPROM_Init();
+  // reporter configuration
+  Reporter_SetUnitID(REPORT_UNITID);
+  Reporter_SetOdometer(999);
+  // simcom configuration
+
+  EEPROM_UnitID(EE_CMD_W, &unitId);
+  EEPROM_Odometer(EE_CMD_R, &odometer);
+
+  // re-write backup register
+  HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
+  //  }
+
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -698,14 +716,6 @@ static void MX_RTC_Init(void)
       Error_Handler();
     }
     /* USER CODE BEGIN RTC_Init 2 */
-    // ONE-TIME configurations:
-    // reporter configuration
-    Reporter_SetUnitID(REPORT_UNITID);
-    Reporter_SetOdometer(0);
-    // simcom configuration
-
-    // re-write backup register
-    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
   }
 
   /* USER CODE END RTC_Init 2 */
@@ -1596,15 +1606,6 @@ void StartReporterTask(const void *argument)
   uint32_t notif_value;
   report_t *hReport;
   gps_t *hGps;
-
-  // EEPROM initialization
-  EEPROM24XX_SetDevice(EEPROM24_MAIN);
-  if (EEPROM24XX_IsConnected()) {
-    LOG_StrLn("MAIN EEPROM is ready.");
-  } else {
-    EEPROM24XX_SetDevice(EEPROM24_BACKUP);
-    LOG_StrLn("BACKUP EEPROM is used, instead MAIN EEPROM.");
-  }
 
   // reset report frame to default
   Reporter_Reset(FR_FULL);

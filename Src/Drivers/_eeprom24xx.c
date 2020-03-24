@@ -28,7 +28,7 @@ uint8_t EEPROM24XX_IsConnected(void)
 #if (_EEPROM_USE_WP_PIN==1)
     HAL_GPIO_WritePin(_EEPROM_WP_GPIO,_EEPROM_WP_PIN,GPIO_PIN_SET);
     #endif
-  if (HAL_I2C_IsDeviceReady(hi2c, DevAddress, 1, 100) == HAL_OK)
+  if (HAL_I2C_IsDeviceReady(hi2c, DevAddress, 2, 5) == HAL_OK)
     return 1;
   else
     return 0;
