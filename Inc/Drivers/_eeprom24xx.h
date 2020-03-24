@@ -12,7 +12,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define		_EEPROM_SIZE_KBIT										32
-#define		_EEPROM_FREERTOS_IS_ENABLE					            1
+#define		_EEPROM_FREERTOS_IS_ENABLE					            0
 #define		_EEPROM_USE_WP_PIN									    0
 #if ( _EEPROM_USE_WP_PIN == 1 )
 #define		_EEPROM_WP_GPIO											EE_WP_GPIO_Port

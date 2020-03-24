@@ -296,21 +296,17 @@ int main(void)
   /* add threads, ... */
 
   // ONE-TIME configurations:
-  //  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
-  uint32_t unitId = 0, odometer = 0;
-  // EEPROM initialization
-  EEPROM_Init();
-  // reporter configuration
-  Reporter_SetUnitID(REPORT_UNITID);
-  Reporter_SetOdometer(999);
-  // simcom configuration
+  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
+    // EEPROM initialization
+    EEPROM_Init();
+    // reporter configuration
+    Reporter_SetUnitID(REPORT_UNITID);
+    Reporter_SetOdometer(999);
+    // simcom configuration
 
-  EEPROM_UnitID(EE_CMD_W, &unitId);
-  EEPROM_Odometer(EE_CMD_R, &odometer);
-
-  // re-write backup register
-  HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
-  //  }
+    // re-write backup register
+    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
+  }
 
   /* USER CODE END RTOS_THREADS */
 

@@ -61,8 +61,7 @@ uint8_t EEPROM24XX_Save(uint16_t Address, void *data, size_t size_of_data)
     #elif   (_EEPROM_SIZE_KBIT==16)
     if(HAL_I2C_Mem_Write(hi2c,DevAddress|((Address&0x0700>>7)),(Address&0xff),I2C_MEMADD_SIZE_8BIT,(uint8_t*)data,size_of_data,100) == HAL_OK)
     #else
-  if (HAL_I2C_Mem_Write(hi2c, DevAddress, Address, I2C_MEMADD_SIZE_16BIT, (uint8_t*) data, size_of_data, 100)
-      == HAL_OK)
+  if (HAL_I2C_Mem_Write(hi2c, DevAddress, Address, I2C_MEMADD_SIZE_16BIT, (uint8_t*) data, size_of_data, 100) == HAL_OK)
       #endif
       {
 #if (_EEPROM_FREERTOS_IS_ENABLE==1)
