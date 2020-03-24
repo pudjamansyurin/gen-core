@@ -107,31 +107,30 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   //------------------
 
   /* Wakeup MPU6050 */
-  HAL_I2C_Mem_Read(Handle, address, MPU6050_SIGNAL_PATH_RESET, 1, &d[1], 1, 1000);
-
-  d[0] = 0x40;
-  if (HAL_I2C_Mem_Write(Handle, address, MPU6050_PWR_MGMT_1, 1, &d[0], 1, 1000) != HAL_OK) {
-    return MPU6050_Result_Error;
-  }
-  osDelay(500);
-
-  d[0] = (d[1] & 0xF8) | 0x07;
-  if (HAL_I2C_Mem_Write(Handle, address, MPU6050_SIGNAL_PATH_RESET, 1, &d[0], 1, 1000) != HAL_OK) {
-    return MPU6050_Result_Error;
-  }
-  osDelay(500);
-
-  //  //------------------
-  //  /* Format array to send */
-  //  d[0] = MPU6050_PWR_MGMT_1;
-  //  d[1] = 0x00;
+  //  HAL_I2C_Mem_Read(Handle, address, MPU6050_SIGNAL_PATH_RESET, 1, &d[1], 1, 1000);
   //
-  //  /* Try to transmit via I2C */
-  //  if (HAL_I2C_Master_Transmit(Handle, address, d, 2, 1000) != HAL_OK) {
+  //  d[0] = 0x40;
+  //  if (HAL_I2C_Mem_Write(Handle, address, MPU6050_PWR_MGMT_1, 1, &d[0], 1, 1000) != HAL_OK) {
   //    return MPU6050_Result_Error;
   //  }
-  //  //------------------
+  //  osDelay(500);
   //
+  //  d[0] = (d[1] & 0xF8) | 0x07;
+  //  if (HAL_I2C_Mem_Write(Handle, address, MPU6050_SIGNAL_PATH_RESET, 1, &d[0], 1, 1000) != HAL_OK) {
+  //    return MPU6050_Result_Error;
+  //  }
+  //  osDelay(500);
+  //------------------
+  /* Format array to send */
+  d[0] = MPU6050_PWR_MGMT_1;
+  d[1] = 0x00;
+
+  /* Try to transmit via I2C */
+  if (HAL_I2C_Master_Transmit(Handle, address, d, 2, 1000) != HAL_OK) {
+    return MPU6050_Result_Error;
+  }
+  //------------------
+
   /* Set sample rate to 1kHz */
   MPU6050_SetDataRate(I2Cx, DataStruct, MPU6050_DataRate_8KHz);
 
@@ -140,8 +139,6 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
 
   /* Config Gyroscope */
   MPU6050_SetGyroscope(I2Cx, DataStruct, GyroscopeSensitivity);
-
-  //  MPU6050_ReadGyroscope(I2Cx, DataStruct);
 
   /* Return OK */
   return MPU6050_Result_Ok;
