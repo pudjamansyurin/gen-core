@@ -186,7 +186,6 @@ int main(void)
   //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   CANBUS_Init();
-  EEPROM_Init();
   /* USER CODE END 2 */
 
   /* Create the mutex(es) */
@@ -259,7 +258,7 @@ int main(void)
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
@@ -295,18 +294,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-
-  // ONE-TIME configurations:
-  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
-    // reporter configuration
-    Reporter_SetUnitID(REPORT_UNITID);
-    Reporter_SetOdometer(0);
-    // simcom configuration
-
-    // re-write backup register
-    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
-  }
-
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -1059,10 +1046,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
   if (osKernelRunning()) {
     // handle NRF24 IRQ
-    if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
-      KEYLESS_IrqHandler();
-    }
-
+    //    if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
+    //      KEYLESS_IrqHandler();
+    //    }
+    //
     //    // handle Finger-print IRQ
     //    if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
     //      xTaskNotifyFromISR(
@@ -1242,7 +1229,7 @@ void StartGyroTask(const void *argument)
   // Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
   // Give success indicator
-  //  AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
+  AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1250,19 +1237,19 @@ void StartGyroTask(const void *argument)
     // Read all accelerometer, gyroscope (average)
     mems_decision = GYRO_Decision(&mems_calibration, 25);
 
-    //    // Check accelerometer, happens when impact detected
-    //    if (mems_decision.crash) {
-    //      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_CRASH, eSetBits);
-    //    }
-    //
-    //    // Check gyroscope, happens when fall detected
-    //    if (mems_decision.fall) {
-    //      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
-    //      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
-    //    } else {
-    //      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
-    //      AUDIO_BeepStop();
-    //    }
+    // Check accelerometer, happens when impact detected
+    if (mems_decision.crash) {
+      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_CRASH, eSetBits);
+    }
+
+    // Check gyroscope, happens when fall detected
+    if (mems_decision.fall) {
+      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
+      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
+    } else {
+      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
+      AUDIO_BeepStop();
+    }
 
     // Report interval
     vTaskDelayUntil(&last_wake, tick5ms);
@@ -1434,6 +1421,7 @@ void StartGpsTask(const void *argument)
   /* USER CODE BEGIN StartGpsTask */
   TickType_t last_wake;
   gps_t *hGps;
+  gps_t xGps;
 
   // Start GPS module
   UBLOX_DMA_Init();
@@ -1443,12 +1431,14 @@ void StartGpsTask(const void *argument)
   last_wake = xTaskGetTickCount();
   for (;;) {
     // Allocate memory
-    hGps = osMailAlloc(GpsMailHandle, osWaitForever);
+    //    hGps = osMailAlloc(GpsMailHandle, osWaitForever);
+    //
+    //    // get GPS info
+    //    if (GPS_Process(hGps)) {
+    //      osMailPut(GpsMailHandle, hGps);
+    //    }
 
-    // get GPS info
-    if (GPS_Process(hGps)) {
-      osMailPut(GpsMailHandle, hGps);
-    }
+    GPS_Process(&xGps);
 
     // Report interval
     vTaskDelayUntil(&last_wake, tickDelayFull);
@@ -1573,6 +1563,7 @@ void StartKeylessTask(const void *argument)
       LOG_Hex8(msg);
       LOG_Char('\n');
 
+      // just fun indicator
       AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
       for (int i = 0; i < ((msg + 1) * 2); i++) {
         _LedToggle();
@@ -1601,6 +1592,19 @@ void StartReporterTask(const void *argument)
   uint32_t notif_value;
   report_t *hReport;
   gps_t *hGps;
+
+  // FIXME: create master thread
+  // ONE-TIME configurations:
+  EEPROM_Init();
+  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
+    // reporter configuration
+    Reporter_SetUnitID(REPORT_UNITID);
+    Reporter_SetOdometer(0);
+    // simcom configuration
+
+    // re-write backup register
+    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
+  }
 
   // reset report frame to default
   Reporter_Reset(FR_FULL);

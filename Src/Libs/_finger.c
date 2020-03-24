@@ -27,10 +27,16 @@ void Finger_Off(void) {
 void Finger_Init(void) {
   uint8_t verified = 0;
 
-  //	 verify password and check hardware
   do {
     LOG_StrLn("Finger_Init");
 
+    // mosfet control
+    HAL_GPIO_WritePin(EXT_FINGER_PWR_GPIO_Port, EXT_FINGER_PWR_Pin, 0);
+    osDelay(100);
+    HAL_GPIO_WritePin(EXT_FINGER_PWR_GPIO_Port, EXT_FINGER_PWR_Pin, 1);
+    osDelay(500);
+
+    // verify password and check hardware
     Finger_On();
     verified = FZ3387_verifyPassword();
     Finger_Off();
