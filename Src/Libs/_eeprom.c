@@ -13,19 +13,35 @@ static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(void) {
+  uint8_t retry = 5, ret = 0;
+
+  // check main eeprom
   EEPROM24XX_SetDevice(EEPROM24_MAIN);
-  if (EEPROM24XX_IsConnected()) {
-    LOG_StrLn("MAIN EEPROM is used.");
-    return 1;
-  } else {
-    EEPROM24XX_SetDevice(EEPROM24_BACKUP);
+  do {
     if (EEPROM24XX_IsConnected()) {
-      LOG_StrLn("BACKUP EEPROM is used.");
-      return 1;
+      LOG_StrLn("MAIN EEPROM is used.");
+      ret = 1;
+      break;
     }
+    HAL_Delay(50);
+  } while (retry--);
+  // check backup eeprom
+  retry = 5;
+  EEPROM24XX_SetDevice(EEPROM24_BACKUP);
+  do {
+    if (EEPROM24XX_IsConnected()) {
+      LOG_StrLn("MAIN EEPROM is used.");
+      ret = 1;
+      break;
+    }
+    HAL_Delay(50);
+  } while (retry--);
+  // all failed
+  if (!ret) {
+    LOG_StrLn("All EEPROM are failed.");
   }
-  LOG_StrLn("All EEPROM is failed.");
-  return 0;
+
+  return ret;
 }
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t *value) {

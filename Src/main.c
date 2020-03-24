@@ -186,6 +186,7 @@ int main(void)
   //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   CANBUS_Init();
+  EEPROM_Init();
   /* USER CODE END 2 */
 
   /* Create the mutex(es) */
@@ -297,11 +298,9 @@ int main(void)
 
   // ONE-TIME configurations:
   if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
-    // EEPROM initialization
-    EEPROM_Init();
     // reporter configuration
     Reporter_SetUnitID(REPORT_UNITID);
-    Reporter_SetOdometer(999);
+    Reporter_SetOdometer(0);
     // simcom configuration
 
     // re-write backup register
@@ -1058,33 +1057,33 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   uint8_t i;
 
-  if (!osKernelRunning()) {
+  if (osKernelRunning()) {
     // handle NRF24 IRQ
     if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
       KEYLESS_IrqHandler();
     }
 
-    // handle Finger-print IRQ
-    if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
-      xTaskNotifyFromISR(
-          FingerTaskHandle,
-          EVENT_FINGER_PLACED,
-          eSetBits,
-          &xHigherPriorityTaskWoken);
-    }
-
-    // handle Switches EXTI
-    for (i = 0; i < DB.vcu.sw.count; i++) {
-      if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
-        xTaskNotifyFromISR(
-            SwitchTaskHandle,
-            (uint32_t ) GPIO_Pin,
-            eSetBits,
-            &xHigherPriorityTaskWoken);
-
-        break;
-      }
-    }
+    //    // handle Finger-print IRQ
+    //    if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
+    //      xTaskNotifyFromISR(
+    //          FingerTaskHandle,
+    //          EVENT_FINGER_PLACED,
+    //          eSetBits,
+    //          &xHigherPriorityTaskWoken);
+    //    }
+    //
+    //    // handle Switches EXTI
+    //    for (i = 0; i < DB.vcu.sw.count; i++) {
+    //      if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
+    //        xTaskNotifyFromISR(
+    //            SwitchTaskHandle,
+    //            (uint32_t ) GPIO_Pin,
+    //            eSetBits,
+    //            &xHigherPriorityTaskWoken);
+    //
+    //        break;
+    //      }
+    //    }
   }
 
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
