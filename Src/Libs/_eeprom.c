@@ -25,17 +25,21 @@ uint8_t EEPROM_Init(void) {
     }
     osDelay(50);
   } while (retry--);
+
   // check backup eeprom
-  retry = 5;
-  EEPROM24XX_SetDevice(EEPROM24_BACKUP);
-  do {
-    if (EEPROM24XX_IsConnected()) {
-      LOG_StrLn("MAIN EEPROM is used.");
-      ret = 1;
-      break;
-    }
-    osDelay(50);
-  } while (retry--);
+  if (!ret) {
+    retry = 5;
+    EEPROM24XX_SetDevice(EEPROM24_BACKUP);
+    do {
+      if (EEPROM24XX_IsConnected()) {
+        LOG_StrLn("MAIN EEPROM is used.");
+        ret = 1;
+        break;
+      }
+      osDelay(50);
+    } while (retry--);
+  }
+
   // all failed
   if (!ret) {
     LOG_StrLn("All EEPROM are failed.");
