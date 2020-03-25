@@ -65,6 +65,10 @@ void UBLOX_DMA_IrqHandler(void) {
       }
       // set null at the end
       UBLOX_UART_RX[write] = '\0';
+
+      // debug
+      LOG_Buf(UBLOX_UART_RX, sizeof(UBLOX_UART_RX));
+      LOG_Enter();
     }
 
     /* Start DMA transfer again */

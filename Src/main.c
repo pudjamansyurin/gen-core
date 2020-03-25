@@ -183,7 +183,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-  //  MX_IWDG_Init();
+//  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   CANBUS_Init();
   /* USER CODE END 2 */
@@ -246,15 +246,15 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  //  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+//  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+//  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
-  //  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
+//  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
@@ -262,35 +262,35 @@ int main(void)
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
-  //  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
+//  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-  //  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
+//  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
-  //  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
+//  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
-  //  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
+//  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+//  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+//  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-  //  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
+//  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+//  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1422,7 +1422,6 @@ void StartGpsTask(const void *argument)
   TickType_t last_wake;
   //  gps_t *hGps;
   gps_t xGps;
-  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
 
   // Start GPS module
   UBLOX_DMA_Init();
@@ -1440,10 +1439,6 @@ void StartGpsTask(const void *argument)
     //    }
 
     GPS_Process(&xGps);
-
-    // debug
-    LOG_BufPrintable(UBLOX_UART_RX, sizeof(UBLOX_UART_RX), ' ');
-    LOG_Enter();
 
     // Report interval
     vTaskDelayUntil(&last_wake, tickDelayFull);
@@ -1970,12 +1965,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
