@@ -1420,8 +1420,9 @@ void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   TickType_t last_wake;
-  gps_t *hGps;
+  //  gps_t *hGps;
   gps_t xGps;
+  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
 
   // Start GPS module
   UBLOX_DMA_Init();
@@ -1439,6 +1440,10 @@ void StartGpsTask(const void *argument)
     //    }
 
     GPS_Process(&xGps);
+
+    // debug
+    LOG_BufPrintable(UBLOX_UART_RX, sizeof(UBLOX_UART_RX), ' ');
+    LOG_Enter();
 
     // Report interval
     vTaskDelayUntil(&last_wake, tickDelayFull);

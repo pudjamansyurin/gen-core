@@ -16,7 +16,9 @@ static nmea_t nmea;
 
 /* Public functions implementation --------------------------------------------*/
 void GPS_Init(void) {
-  HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
+  osDelay(1000);
+  HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
   osDelay(1000);
 
   nmea_init(&nmea);
