@@ -67,7 +67,7 @@ void UBLOX_DMA_IrqHandler(void) {
       UBLOX_UART_RX[write] = '\0';
 
       // debug
-      LOG_Buf(UBLOX_UART_RX, sizeof(UBLOX_UART_RX));
+      LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
       LOG_Enter();
     }
 
