@@ -118,9 +118,9 @@
 |  6 | RTC                         | ST-RTC		    | -				 |      100     |       ✔      | **Done**								|
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | **Done**								|
 |  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |              |										|
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | Pending: Need to be validated			|
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | Done: Need to be validated				|
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
-| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | Pending: Need to be validated			|
+| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | Done: Need to be validated				|
 | 12 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔ 	   | Pending: Auxiliary						|
 | 13 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
 | 14 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Waitting: Auxiliary					|
