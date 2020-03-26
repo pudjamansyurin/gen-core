@@ -89,9 +89,10 @@
 ### PCB (Hardware) Revision:
 - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
 - [ ] Make 6 pin connector same: Fingerprint & CAN
-- [ ] Change jack connector
 - [ ] Check crystals footprint: HCLK, RTC
-- [ ] Other use 5V, B+ only for: MCU, GPS, SIMCOM, CAN
+- [ ] Audio: Change jack connector
+- [ ] Li-ion Charger: B+ only for: MCU, GPS, SIMCOM & CAN
+- [ ] Li-ion Charger: Add switch to disable the Li-ion battery
 - [ ] Gyro: Add separate 3v3 regulator
 - [ ] Gyro: Connect INT pin to MCU (give jumper)
 - [ ] Gyro: Connect AD0 pin to GND (the problem)
@@ -99,6 +100,7 @@
 - [ ] GPS: Give jumper for serial to MCU
 - [ ] GPS: Give jumper for V_BCKP, it can use VDD / VCC
 - [ ] GPS: Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
+
 
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
@@ -108,17 +110,17 @@
 ## Sub-Modules Progress:
 | No | Sub Module                  | Chip           | ST-Peripheral  | Firmware(%)  | Hardware     | Note		  							|
 |:--:|-----------------------------|----------------|:--------------:|:------------:|:------------:|----------------------------------------|
-|  1 | IoT                         | SIM5300e       | USART1		 |      95      |              | Waitting: real server 					|
-|  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     | On Progress  |										|
+|  1 | IoT                         | SIM5300e       | USART1		 |      95      | On Progress  | Waitting: Real server 					|
+|  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |   	✔ 	   | **Done**: Use long-cable antenna		|
 |  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |  		✔	   | **Done**: AD0 pin should be grounded	|
-|  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1			 |      50      |       ✔      | **Done**: using semi module			|
+|  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1			 |      50      |       ✔      | **Done**: Use semi module				|
 |  5 | Fingerprint                 | FZ3387         | UART4			 |      100     | On Progress  | 										|
-|  6 | RTC                         | ST-RTC		    | -				 |      100     |       ✔      | Pending: Need to be validated			|
-|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | Pending: Need to be validated			|
+|  6 | RTC                         | ST-RTC		    | -				 |      100     |       ✔      | **Done**								|
+|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | **Done**								|
 |  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |              |										|
 |  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | Pending: Need to be validated			|
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
 | 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | Pending: Need to be validated			|
-| 12 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔ 	   |										|
-| 13 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: server & pocket keyless		|
-| 14 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Waitting: auxiliary					|
+| 12 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔ 	   | Pending: Auxiliary						|
+| 13 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
+| 14 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Waitting: Auxiliary					|

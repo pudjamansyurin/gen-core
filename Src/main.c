@@ -1438,7 +1438,7 @@ void StartGpsTask(const void *argument)
     }
 
     // Report interval
-    vTaskDelayUntil(&last_wake, tickDelayFull);
+    vTaskDelayUntil(&last_wake, tick1000ms);
   }
   /* USER CODE END StartGpsTask */
 }
