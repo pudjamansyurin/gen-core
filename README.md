@@ -114,13 +114,13 @@
 |  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |   	✔ 	   | **Done**: Use long-cable antenna		|
 |  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |  		✔	   | **Done**: AD0 pin should be grounded	|
 |  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1			 |      50      |       ✔      | **Done**: Use semi module				|
-|  5 | Fingerprint                 | FZ3387         | UART4			 |      100     | On Progress  | 										|
+|  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |   	✔	   | **Done**: Replace Q6 from NPN to PNP	|
 |  6 | RTC                         | ST-RTC		    | -				 |      100     |       ✔      | **Done**								|
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | **Done**								|
-|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |              |										|
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | Done: Need to be validated				|
+|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     | On Progress  |										|
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | *Done*: Need to be validated			|
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
-| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | Done: Need to be validated				|
+| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | *Done*: Need to be validated			|
 | 12 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔ 	   | Pending: Auxiliary						|
 | 13 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
 | 14 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Pending: Auxiliary						|

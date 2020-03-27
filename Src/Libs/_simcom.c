@@ -340,13 +340,18 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
   return ret;
 }
 
-
 /* Private functions implementation --------------------------------------------*/
 static void Simcom_Reset(void) {
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
+  // turn on 3.8v regulator
+  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
   osDelay(500);
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_RESET);
-  osDelay(5000);
+  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
+  osDelay(500);
+  // simcom reset pin
+//  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
+//  osDelay(500);
+//  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_RESET);
+//  osDelay(5000);
 }
 
 static void Simcom_Prepare(void) {

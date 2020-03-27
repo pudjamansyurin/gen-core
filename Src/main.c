@@ -246,7 +246,7 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  //  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
@@ -258,7 +258,7 @@ int main(void)
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+//  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
