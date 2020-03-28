@@ -87,10 +87,11 @@
 - [x] Add many via (through hole) for best RF performance  
 
 ### PCB (Hardware) Revision:
-- [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
-- [ ] Make 6 pin connector same: Fingerprint & CAN
 - [ ] Check crystals footprint: HCLK, RTC
-- [ ] Audio: Change jack connector
+- [ ] Connector:
+  - [ ] Connector: Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
+  - [ ] Connector: Make 6 pin connector same (Fingerprint & CAN)
+  - [ ] Connector: Change audio jack connector
 - [ ] Li-ion Charger: B+ only for: MCU, GPS, SIMCOM & CAN
 - [ ] Li-ion Charger: Add switch to disable the Li-ion battery
 - [ ] Gyro: Add separate 3v3 regulator
@@ -100,6 +101,7 @@
 - [ ] GPS: Give jumper for serial to MCU
 - [ ] GPS: Give jumper for V_BCKP, it can use VDD / VCC
 - [ ] GPS: Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
+- [ ] Finger: Change Q6 from NPN to PNP
 
 
 ## RF PCB Guidelines : 
@@ -115,12 +117,13 @@
 |  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |  		✔	   | **Done**: AD0 pin should be grounded	|
 |  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1			 |      50      |       ✔      | **Done**: Use semi module				|
 |  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |   	✔	   | **Done**: Replace Q6 from NPN to PNP	|
-|  6 | RTC                         | ST-RTC		    | -				 |      100     |       ✔      | **Done**								|
+|  6 | RTC                         | ST-RTC		    | RTC			 |      100     |       ✔      | **Done**								|
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | **Done**								|
 |  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     | On Progress  |										|
 |  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | *Done*: Need to be validated			|
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
 | 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | *Done*: Need to be validated			|
-| 12 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔ 	   | Pending: Auxiliary						|
-| 13 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
-| 14 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Pending: Auxiliary						|
+| 12 | Data Validator	           | ST-CRC        	| CRC			 |      100     |       -      | **Done**: For backend frame			|
+| 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔ 	   | Pending: Auxiliary						|
+| 14 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
+| 15 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Pending: Auxiliary						|
