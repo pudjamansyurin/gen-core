@@ -89,19 +89,23 @@
 ### PCB (Hardware) Revision:
 - [ ] Check crystals footprint: HCLK, RTC
 - [ ] Connector:
-  - [ ] Connector: Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
-  - [ ] Connector: Make 6 pin connector same (Fingerprint & CAN)
-  - [ ] Connector: Change audio jack connector
-- [ ] Li-ion Charger: B+ only for: MCU, GPS, SIMCOM & CAN
-- [ ] Li-ion Charger: Add switch to disable the Li-ion battery
-- [ ] Gyro: Add separate 3v3 regulator
-- [ ] Gyro: Connect INT pin to MCU (give jumper)
-- [ ] Gyro: Connect AD0 pin to GND (the problem)
-- [ ] Gyro: Separate Q4 GND and GYRO_GND
-- [ ] GPS: Give jumper for serial to MCU
-- [ ] GPS: Give jumper for V_BCKP, it can use VDD / VCC
-- [ ] GPS: Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
-- [ ] Finger: Change Q6 from NPN to PNP
+  - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
+  - [ ] Make 6 pin connector same (Fingerprint & CAN)
+  - [ ] Change audio jack connector
+ -[ ] Li-ion Charger:
+  - [ ] B+ only for: MCU, GPS, SIMCOM & CAN
+  - [ ] Add switch to disable the Li-ion battery
+- [ ] Gyro:
+  - [ ] Add separate 3v3 regulator
+  - [ ] Connect INT pin to MCU (give jumper)
+  - [ ] Connect AD0 pin to GND (the problem)
+  - [ ] Separate Q4 GND and GYRO_GND
+- [ ] GPS:
+  - [ ] Give jumper for serial to MCU
+  - [ ] Give jumper for V_BCKP, it can use VDD / VCC
+  - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
+- [ ] Fingerprint:
+  - [ ] Change Q6 from NPN to PNP
 
 
 ## RF PCB Guidelines : 
