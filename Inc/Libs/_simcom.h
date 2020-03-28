@@ -16,11 +16,17 @@
 /* Exported constants --------------------------------------------------------*/
 #define SIMCOM_STATUS_SEND 					">"
 #define SIMCOM_STATUS_SENT					"SEND OK\r\n"
-#define SIMCOM_STATUS_OK 					  "OK\r\n"
-#define SIMCOM_STATUS_ERROR 				"ERROR\r\n"
+#define SIMCOM_STATUS_OK 					"OK\r\n"
+#define SIMCOM_STATUS_ERROR 				"ERROR"
 #define SIMCOM_STATUS_READY 				"RDY\r"
 #define SIMCOM_BOOT_COMMAND					"AT\r"
 #define SIMCOM_RESPONSE_IPD					"+IPD,"
+
+/* Exported enum -------------------------------------------------------------*/
+typedef enum {
+  SIMCOM_RESTART = 0,
+  SIMCOM_POWER_UP = 1
+} SIMCOM_PWR;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
@@ -37,12 +43,13 @@ typedef struct {
 } rssi_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void Simcom_Init(void);
+void Simcom_Init(SIMCOM_PWR state);
 uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n);
 uint8_t Simcom_Upload(char *message, uint16_t length);
 uint8_t Simcom_ReadACK(report_header_t *report_header);
 uint8_t Simcom_ReadCommand(command_t *command);
 uint8_t Simcom_ReadSignal(uint8_t *signal_percentage);
 uint8_t Simcom_ReadTime(timestamp_t *timestamp);
+void Simcom_Power(uint8_t state);
 
 #endif /* SIMCOM_H_ */

@@ -258,7 +258,7 @@ int main(void)
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-//  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
@@ -1095,7 +1095,7 @@ void StartIotTask(const void *argument)
 
   // Start simcom module
   SIMCOM_DMA_Init();
-  Simcom_Init();
+  Simcom_Init(SIMCOM_POWER_UP);
 
   /* Infinite loop */
   size = sizeof(hReport->header.prefix) +
@@ -1201,7 +1201,7 @@ void StartIotTask(const void *argument)
     if (!success) {
       // restart module
       _LedDisco(1000);
-      Simcom_Init();
+      Simcom_Init(SIMCOM_RESTART);
     }
   }
 

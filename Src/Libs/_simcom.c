@@ -30,10 +30,15 @@ uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n) {
   return Simcom_SendIndirect(cmd, strlen(cmd), 0, ms, res, n);
 }
 
-void Simcom_Init(void) {
+void Simcom_Init(SIMCOM_PWR state) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t p;
+
+  // activate power source
+  if (state == SIMCOM_POWER_UP) {
+    Simcom_Power(1);
+  }
 
   // FIXME: should use hierarchy algorithm in error handling
   // this do-while is complicated, but it doesn't use recursive function, so it's stack safe
@@ -58,6 +63,10 @@ void Simcom_Init(void) {
       p = Simcom_Command("ATE0\r", 500, NULL, 1);
     }
     // =========== OTHERS CONFIGURATION
+    // activate error report verbose
+    if (p) {
+      p = Simcom_Command("AT+CMEE=2\r", 500, NULL, 1);
+    }
     // enable time reporting
     if (p) {
       p = Simcom_Command("AT+CLTS=1\r", 500, NULL, 1);
@@ -340,18 +349,20 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
   return ret;
 }
 
+void Simcom_Power(uint8_t state) {
+  // disable reset pin
+  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
+  // run pin of 3.8v regulator
+  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, state);
+  osDelay(500);
+}
 /* Private functions implementation --------------------------------------------*/
 static void Simcom_Reset(void) {
-  // turn on 3.8v regulator
-  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-  osDelay(500);
-  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
-  osDelay(500);
   // simcom reset pin
-//  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
-//  osDelay(500);
-//  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_RESET);
-//  osDelay(5000);
+  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
+  osDelay(200);
+  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
+  osDelay(5000);
 }
 
 static void Simcom_Prepare(void) {
