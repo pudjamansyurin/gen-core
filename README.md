@@ -106,6 +106,8 @@
   - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
+- [ ] SIMCOM:
+  - [ ] Replace C42 like as C92
 
 
 ## RF PCB Guidelines : 

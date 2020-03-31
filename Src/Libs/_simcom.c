@@ -17,7 +17,8 @@ extern osMailQId CommandMailHandle;
 static simcom_t simcom;
 
 /* Private functions prototype -----------------------------------------------*/
-static void Simcom_Reset(void);
+static void Simcom_Power(uint8_t state);
+static void Simcom_Reboot(void);
 static void Simcom_Prepare(void);
 static void Simcom_ClearBuffer(void);
 static uint8_t Simcom_Response(char *str);
@@ -35,8 +36,11 @@ void Simcom_Init(SIMCOM_PWR state) {
 
   uint8_t p;
 
-  // activate power source
+  // first init hook
   if (state == SIMCOM_POWER_UP) {
+    //set default value to variable
+    Simcom_Prepare();
+    // activate power source
     Simcom_Power(1);
   }
 
@@ -49,12 +53,8 @@ void Simcom_Init(SIMCOM_PWR state) {
     //		LOG_Str("\n----------------------------------------\n");
     //		LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
     //		LOG_Str("\n========================================\n");
-
     LOG_StrLn("Simcom_Init");
 
-    p = 0;
-    //set default value to variable
-    Simcom_Prepare();
     // booting
     p = Simcom_Boot();
     // Execute only on first setup
@@ -146,7 +146,7 @@ void Simcom_Init(SIMCOM_PWR state) {
     // restart module to fix it
     if (!p) {
       // disable all connection
-      Simcom_Command("AT+CIPSHUT\r", 500, NULL, 1);
+      //      Simcom_Command("AT+CIPSHUT\r", 500, NULL, 1);
     }
   } while (p == 0);
 
@@ -173,10 +173,8 @@ uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
       while (1) {
         if (Simcom_Response(NET_ACK_PREFIX) ||
             (osKernelSysTick() - tick) >= tick5000ms) {
-
           break;
         }
-
         osDelay(10);
       }
 
@@ -349,20 +347,36 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
   return ret;
 }
 
-void Simcom_Power(uint8_t state) {
-  // disable reset pin
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-  // run pin of 3.8v regulator
-  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, state);
-  osDelay(500);
-}
 /* Private functions implementation --------------------------------------------*/
-static void Simcom_Reset(void) {
+static void Simcom_Power(uint8_t state) {
+  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, state);
+  osDelay(100);
+}
+
+static void Simcom_Reboot(void) {
+  uint32_t tick;
   // simcom reset pin
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
-  osDelay(200);
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-  osDelay(5000);
+  osDelay(100);
+  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
+  // wait response
+  tick = osKernelSysTick();
+  while (1) {
+    if (Simcom_Response(SIMCOM_STATUS_READY) ||
+        (osKernelSysTick() - tick) >= NET_BOOT_TIMEOUT) {
+      break;
+    }
+    osDelay(1);
+  }
+}
+
+static uint8_t Simcom_Boot(void) {
+  // reset rx buffer
+  SIMCOM_Reset_Buffer();
+  // reset the state of simcom module
+  Simcom_Reboot();
+  // wait until booting is done
+  return Simcom_Command(SIMCOM_BOOT_COMMAND, 500, SIMCOM_STATUS_OK, 1);
 }
 
 static void Simcom_Prepare(void) {
@@ -374,15 +388,6 @@ static void Simcom_Prepare(void) {
   sprintf(simcom.CMD_CIPSTART,
       "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r",
       NET_SERVER_IP, NET_SERVER_PORT);
-}
-
-static uint8_t Simcom_Boot(void) {
-  // reset rx buffer
-  SIMCOM_Reset_Buffer();
-  // reset the state of simcom module
-  Simcom_Reset();
-  // wait until booting is done
-  return Simcom_Command(SIMCOM_BOOT_COMMAND, NET_BOOT_TIMEOUT, SIMCOM_STATUS_OK, 1);
 }
 
 static void Simcom_ClearBuffer(void) {
@@ -417,10 +422,7 @@ static void Simcom_ClearBuffer(void) {
 }
 
 static uint8_t Simcom_Response(char *str) {
-  if (strstr(SIMCOM_UART_RX, str) != NULL) {
-    return 1;
-  }
-  return 0;
+  return (strstr(SIMCOM_UART_RX, str) != NULL);
 }
 
 static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, char *res) {
@@ -450,11 +452,9 @@ static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, 
       if (strstr(data, SIMCOM_BOOT_COMMAND) != NULL) {
         ret = ret || Simcom_Response(SIMCOM_STATUS_READY);
       }
-
       // exit loop
       break;
     }
-
     osDelay(10);
   }
 
@@ -475,7 +475,7 @@ static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_
   while (seq++ < n && !ret) {
     // execute command every timeout guard elapsed
     if (seq > 1) {
-      osDelay(NET_REPEAT_DELAY * 1000);
+      osDelay(NET_REPEAT_DELAY);
     }
 
     // print command for debugger

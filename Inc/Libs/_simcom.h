@@ -18,7 +18,7 @@
 #define SIMCOM_STATUS_SENT					"SEND OK\r\n"
 #define SIMCOM_STATUS_OK 					"OK\r\n"
 #define SIMCOM_STATUS_ERROR 				"ERROR"
-#define SIMCOM_STATUS_READY 				"RDY\r"
+#define SIMCOM_STATUS_READY 				"RDY"
 #define SIMCOM_BOOT_COMMAND					"AT\r"
 #define SIMCOM_RESPONSE_IPD					"+IPD,"
 
@@ -50,6 +50,5 @@ uint8_t Simcom_ReadACK(report_header_t *report_header);
 uint8_t Simcom_ReadCommand(command_t *command);
 uint8_t Simcom_ReadSignal(uint8_t *signal_percentage);
 uint8_t Simcom_ReadTime(timestamp_t *timestamp);
-void Simcom_Power(uint8_t state);
 
 #endif /* SIMCOM_H_ */

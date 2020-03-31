@@ -286,7 +286,7 @@ int main(void)
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-  //  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
+  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
@@ -885,18 +885,15 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_GPS_PWR_Pin | EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin
-      | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_PWR_Pin
+      | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, INT_NET_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(EXT_FINGER_TOUCH_PWR_GPIO_Port, EXT_FINGER_TOUCH_PWR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin
-      | EXT_KEYLESS_ALARM_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin | INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin
+      | INT_KEYLESS_PWR_Pin | EXT_KEYLESS_ALARM_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, EXT_GPIO_OUT1_Pin | EXT_GPIO_OUT2_Pin | EXT_GPIO_OUT3_Pin | EXT_GPIO_OUT4_Pin
@@ -920,14 +917,21 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin
-   EXT_FINGER_PWR_Pin EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
-  GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
-      | EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
+  /*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin EXT_FINGER_PWR_Pin
+   EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
+  GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin | EXT_FINGER_PWR_Pin
+      | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : INT_NET_PWR_Pin */
+  GPIO_InitStruct.Pin = INT_NET_PWR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(INT_NET_PWR_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EXT_SOLENOID_PWR_Pin INT_NET_RST_Pin INT_GYRO_PWR_Pin INT_KEYLESS_PWR_Pin
    EXT_KEYLESS_ALARM_Pin */
@@ -1863,23 +1867,23 @@ void StartGeneralTask(const void *argument)
   last_wake = xTaskGetTickCount();
 
   for (;;) {
-    // Retrieve network signal quality
-    Simcom_ReadSignal(&(DB.vcu.signal));
-
-    // Retrieve RTC time
-    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
-
-    // Check calibration by cellular network
-    if (_TimeNeedCalibration(DB.vcu.rtc)) {
-      // get carrier timestamp
-      if (Simcom_ReadTime(&timestampCarrier)) {
-        // calibrate the RTC
-        RTC_WriteRaw(&timestampCarrier, &(DB.vcu.rtc));
-      }
-    }
-
-    // Dummy data generator
-    _DummyGenerator(&DB);
+    //    // Retrieve network signal quality
+    //    Simcom_ReadSignal(&(DB.vcu.signal));
+    //
+    //    // Retrieve RTC time
+    //    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
+    //
+    //    // Check calibration by cellular network
+    //    if (_TimeNeedCalibration(DB.vcu.rtc)) {
+    //      // get carrier timestamp
+    //      if (Simcom_ReadTime(&timestampCarrier)) {
+    //        // calibrate the RTC
+    //        RTC_WriteRaw(&timestampCarrier, &(DB.vcu.rtc));
+    //      }
+    //    }
+    //
+    //    // Dummy data generator
+    //    _DummyGenerator(&DB);
 
     // Toggling LED
     _LedToggle();
