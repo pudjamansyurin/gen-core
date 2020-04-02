@@ -50,7 +50,7 @@ extern uint16_t AUDIO_SAMPLE[];
 
 /* Private variables ---------------------------------------------------------*/
 static AUDIO_DrvTypeDef *pAudioDrv;
-static uint8_t AudioVolume = 0, AudioPlayDone = 0;
+static uint8_t AudioVolume = 100, AudioPlayDone = 0;
 static uint16_t AudioPlaySize;
 static uint32_t AudioRemSize;
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
@@ -74,6 +74,10 @@ void AUDIO_Init(void) {
     osDelay(500);
     HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 1);
     osDelay(1000);
+
+    // wakeup the chip
+    HAL_GPIO_WritePin(INT_AUDIO_RST_GPIO_Port, INT_AUDIO_RST_Pin, 1);
+    osDelay(100);
 
     /* Initialize Wave player (Codec, DMA, I2C) */
     ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AudioVolume, AUDIO_SAMPLE_FREQ);
