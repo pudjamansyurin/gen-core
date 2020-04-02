@@ -105,12 +105,16 @@
   - [ ] Give jumper for serial to MCU
   - [ ] Give jumper for V_BCKP, it can use VDD / VCC
   - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
+  - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
 - [ ] SIMCOM:
-  - [ ] Replace C42 like as C92
   - [ ] Remove R24 & R25, instead connect "LED_NET" directly to MOSFET's gate pin.
   - [ ] Add MOSFET between INT_NET_RST (VCU) and RESET (SIMCOM).
+  - [ ] Re-swap the USIM_VDD and USIM_DATA pin.
+  - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
+- [ ] AUDIO:
+  - [ ] Connect pin 41 to GND (bellow the chip)
 
 
 ## RF PCB Guidelines : 
@@ -121,10 +125,10 @@
 ## Sub-Modules Progress:
 | No | Sub Module                  | Chip           | ST-Peripheral  | Firmware(%)  | Hardware     | Note		  							|
 |:--:|-----------------------------|----------------|:--------------:|:------------:|:------------:|----------------------------------------|
-|  1 | IoT                         | SIM5300e       | USART1		 |      95      | On Progress  |					 					|
+|  1 | IoT                         | SIM5300e       | USART1		 |      95      |   	✔	   | **Done**: See PCB Revision				|
 |  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |   	✔ 	   | **Done**: Use long-cable antenna		|
 |  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |  		✔	   | **Done**: AD0 pin should be grounded	|
-|  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1			 |      50      |       ✔      | **Done**: Use semi module				|
+|  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1			 |      75      |       ✔      | **Done**: Use semi module				|
 |  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |   	✔	   | **Done**: Replace Q6 from NPN to PNP	|
 |  6 | RTC                         | ST-RTC		    | RTC			 |      100     |       ✔      | **Done**								|
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | **Done**								|
