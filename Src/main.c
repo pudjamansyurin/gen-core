@@ -171,7 +171,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_CAN1_Init();
+  //  MX_CAN1_Init();
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   MX_UART4_Init();
@@ -185,7 +185,7 @@ int main(void)
   MX_CRC_Init();
   //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-  CANBUS_Init();
+  //  CANBUS_Init();
   /* USER CODE END 2 */
 
   /* Create the mutex(es) */
@@ -258,7 +258,7 @@ int main(void)
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
@@ -274,7 +274,7 @@ int main(void)
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
-  //  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
+  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);

@@ -14,7 +14,6 @@
 #include <string.h>
 
 /* Exported constants --------------------------------------------------------*/
-#define LOG_DEBUG                                1
 #define HEX_CHARS                                "0123456789ABCDEF"
 
 /* Public functions prototype ------------------------------------------------*/

@@ -13,13 +13,18 @@ extern osMutexId LogMutexHandle;
 
 /* Public functions implementation ---------------------------------------------*/
 void LOG_Char(char ch) {
-#if LOG_DEBUG
+  uint32_t tick;
+  tick = osKernelSysTick();
   // wait if busy
-  while (ITM->PORT[0].u32 == 0)
-    ;
+  while (1) {
+    if (ITM->PORT[0].u32 != 0 ||
+        osKernelSysTick() - tick >= pdMS_TO_TICKS(10)) {
+      break;
+    }
+    osDelay(1);
+  }
   // send to ITM0
   ITM->PORT[0].u8 = (uint8_t) ch;
-#endif
 }
 
 void LOG_Enter(void) {

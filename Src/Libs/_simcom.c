@@ -349,15 +349,17 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
 
 /* Private functions implementation --------------------------------------------*/
 static void Simcom_Power(uint8_t state) {
+//  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
+//  osDelay(1000);
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, state);
-  osDelay(100);
+  osDelay(1000);
 }
 
 static void Simcom_Reboot(void) {
   uint32_t tick;
   // simcom reset pin
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-  osDelay(100);
+  HAL_Delay(1);
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
   // wait response
   tick = osKernelSysTick();

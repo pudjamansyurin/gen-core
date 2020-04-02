@@ -88,6 +88,7 @@
 
 ### PCB (Hardware) Revision:
 - [ ] Check crystals footprint: HCLK, RTC
+- [ ] Move all solder jumpers at the top layer
 - [ ] Connector:
   - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
   - [ ] Make 6 pin connector same (Fingerprint & CAN)
@@ -108,6 +109,8 @@
   - [ ] Change Q6 from NPN to PNP
 - [ ] SIMCOM:
   - [ ] Replace C42 like as C92
+  - [ ] Remove R24 & R25, instead connect "LED_NET" directly to MOSFET's gate pin.
+  - [ ] Add MOSFET between INT_NET_RST (VCU) and RESET (SIMCOM).
 
 
 ## RF PCB Guidelines : 
