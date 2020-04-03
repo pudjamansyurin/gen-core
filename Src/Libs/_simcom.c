@@ -349,8 +349,8 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
 
 /* Private functions implementation --------------------------------------------*/
 static void Simcom_Power(uint8_t state) {
-//  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-//  osDelay(1000);
+  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
+  osDelay(1000);
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, state);
   osDelay(1000);
 }

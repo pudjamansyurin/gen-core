@@ -93,6 +93,8 @@
   - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
   - [ ] Make 6 pin connector same (Fingerprint & CAN)
   - [ ] Change audio jack connector
+- [ ] EEPROM:
+  - [ ] Change the footprint
  -[ ] Li-ion Charger:
   - [ ] B+ only for: MCU, GPS, SIMCOM & CAN
   - [ ] Add switch to disable the Li-ion battery
@@ -115,6 +117,7 @@
   - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
+  - [ ] Give GND hole (un-isolated) bellow the chip.
 
 
 ## RF PCB Guidelines : 
@@ -132,10 +135,10 @@
 |  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |   	✔	   | **Done**: Replace Q6 from NPN to PNP	|
 |  6 | RTC                         | ST-RTC		    | RTC			 |      100     |       ✔      | **Done**								|
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | **Done**								|
-|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     | On Progress  |										|
+|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |   	✔	   | **Done**: Connect pin 41 to GND		|
 |  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | *Done*: Need to be validated			|
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
-| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | *Done*: Need to be validated			|
+| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | *Done*: **Validating**					|
 | 12 | Data Validator	           | ST-CRC        	| CRC			 |      100     |       -      | **Done**: For backend frame			|
 | 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔ 	   | Pending: Auxiliary						|
 | 14 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
