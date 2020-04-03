@@ -95,7 +95,7 @@
   - [ ] Change audio jack connector
 - [ ] EEPROM:
   - [ ] Change the footprint
--[ ] Li-ion Charger:
+- [ ] Li-ion Charger:
   - [ ] B+ only for: MCU, GPS, SIMCOM & CAN
   - [ ] Add switch to disable the Li-ion battery
 - [ ] Gyro:
@@ -115,10 +115,11 @@
   - [ ] Add MOSFET between INT_NET_RST (VCU) and RESET (SIMCOM).
   - [ ] Re-swap the USIM_VDD and USIM_DATA pin.
   - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
+  - [ ] Give serial solder connector like GPS (for debugging)
+  - [ ] Remove LTC if not needed, instead use B+ directly
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
   - [ ] Give GND hole (un-isolated) bellow the chip.
-
 
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
