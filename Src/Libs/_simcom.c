@@ -17,7 +17,7 @@ extern osMailQId CommandMailHandle;
 static simcom_t simcom;
 
 /* Private functions prototype -----------------------------------------------*/
-static void Simcom_Power(uint8_t state);
+static void Simcom_Power(void);
 static void Simcom_Reboot(void);
 static void Simcom_Prepare(void);
 static void Simcom_ClearBuffer(void);
@@ -40,8 +40,6 @@ void Simcom_Init(SIMCOM_PWR state) {
   if (state == SIMCOM_POWER_UP) {
     //set default value to variable
     Simcom_Prepare();
-    // activate power source
-    Simcom_Power(1);
   }
 
   // FIXME: should use hierarchy algorithm in error handling
@@ -144,11 +142,11 @@ void Simcom_Init(SIMCOM_PWR state) {
     }
 
     // restart module to fix it
-    if (!p) {
-      // disable all connection
-      //      Simcom_Command("AT+CIPSHUT\r", 500, NULL, 1);
-    }
-  } while (p == 0);
+    //    if (!p) {
+    //      // disable all connection
+    //      Simcom_Command("AT+CIPSHUT\r", 500, NULL, 1);
+    //    }
+  } while (!p);
 
   osRecursiveMutexRelease(SimcomRecMutexHandle);
 }
@@ -348,10 +346,10 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static void Simcom_Power(uint8_t state) {
+static void Simcom_Power(void) {
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-  osDelay(1000);
-  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, state);
+  osDelay(500);
+  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
   osDelay(1000);
 }
 
@@ -375,6 +373,8 @@ static void Simcom_Reboot(void) {
 static uint8_t Simcom_Boot(void) {
   // reset rx buffer
   SIMCOM_Reset_Buffer();
+  // activate power source
+  Simcom_Power();
   // reset the state of simcom module
   Simcom_Reboot();
   // wait until booting is done

@@ -36,6 +36,7 @@ extern const TickType_t tick5ms,
 void _LedWrite(uint8_t state);
 void _LedToggle(void);
 void _LedDisco(uint16_t ms);
+void _Error(char msg[50]);
 void _DummyGenerator(db_t *db);
 uint8_t _TimeNeedCalibration(rtc_t rtc);
 uint8_t _TimeCheckDaylight(timestamp_t timestamp);

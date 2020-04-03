@@ -33,7 +33,7 @@
 #define NET_APN_USERNAME                        "3gprs"                 // "wap"
 #define NET_APN_PASSWORD                        "3gprs"                 // "wap123"
 #define NET_SIGNAL                              2                       // 2=AUTO, 13=2G, 14=3G
-#define NET_BOOT_TIMEOUT                        10000                   // in ms
+#define NET_BOOT_TIMEOUT                        6000                   // in ms
 #define NET_REPEAT_DELAY                        5000                    // in ms
 #define NET_EXTRA_TIME_MS                       500                     // in ms
 #define NET_COMMAND_PREFIX                      "$T"

@@ -27,6 +27,17 @@ void _LedDisco(uint16_t ms) {
   }
 }
 
+void _Error(char msg[50]) {
+  if (osKernelRunning()) {
+    LOG_StrLn(msg);
+  } else {
+    while (1) {
+      _LedToggle();
+      HAL_Delay(50);
+    }
+  }
+}
+
 void _DummyGenerator(db_t *db) {
   // Control HMI brightness by daylight
   db->hmi1.status.daylight = _TimeCheckDaylight(db->vcu.rtc.timestamp);
