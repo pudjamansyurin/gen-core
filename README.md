@@ -95,7 +95,7 @@
   - [ ] Change audio jack connector
 - [ ] EEPROM:
   - [ ] Change the footprint
- -[ ] Li-ion Charger:
+-[ ] Li-ion Charger:
   - [ ] B+ only for: MCU, GPS, SIMCOM & CAN
   - [ ] Add switch to disable the Li-ion battery
 - [ ] Gyro:
