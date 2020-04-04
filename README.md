@@ -93,6 +93,7 @@
   - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
   - [ ] Make 6 pin connector same (Fingerprint & CAN)
   - [ ] Change audio jack connector
+  - [ ] Give more space between each connector
 - [ ] EEPROM:
   - [ ] Change the footprint
 - [ ] Li-ion Charger:
@@ -117,6 +118,7 @@
   - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
   - [ ] Give serial solder connector like GPS (for debugging)
   - [ ] Remove LTC if not needed, instead use B+ directly
+  - [ ] Increase C42 value
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
   - [ ] Give GND hole (un-isolated) bellow the chip.

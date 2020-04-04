@@ -21,12 +21,12 @@ static payload_t payload = {
 
 /* Public functions implementation --------------------------------------------*/
 void KEYLESS_Init(void) {
+  LOG_StrLn("NRF:Init");
+
   // set configuration
   nrf_set_config(&config, payload.rx, payload.count);
   // initialization
   nrf_init(&nrf, &config);
-
-  LOG_StrLn("NRF24_Init");
 }
 
 void KEYLESS_IrqHandler(void) {

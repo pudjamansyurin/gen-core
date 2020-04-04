@@ -18,7 +18,7 @@ static simcom_t simcom;
 
 /* Private functions prototype -----------------------------------------------*/
 static void Simcom_Power(void);
-static void Simcom_Reboot(void);
+static void Simcom_Reset(void);
 static void Simcom_Prepare(void);
 static void Simcom_ClearBuffer(void);
 static uint8_t Simcom_Response(char *str);
@@ -32,11 +32,10 @@ uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n) {
 }
 
 void Simcom_Init(SIMCOM_PWR state) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
-
   uint8_t p;
 
   // first init hook
+  simcom.online = 0;
   if (state == SIMCOM_POWER_UP) {
     //set default value to variable
     Simcom_Prepare();
@@ -45,26 +44,31 @@ void Simcom_Init(SIMCOM_PWR state) {
   // FIXME: should use hierarchy algorithm in error handling
   // this do-while is complicated, but it doesn't use recursive function, so it's stack safe
   do {
+    osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
     // show previous response
     //		LOG_Str("\n========================================\n");
     //		LOG_Str("Before: Simcom_Init()");
     //		LOG_Str("\n----------------------------------------\n");
     //		LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
     //		LOG_Str("\n========================================\n");
-    LOG_StrLn("Simcom_Init");
+    LOG_StrLn("Simcom:Init");
 
     // booting
+    simcom.ready = 0;
     p = Simcom_Boot();
-    // Execute only on first setup
+    // disable command echo
     if (p) {
-      // disable command echo
       p = Simcom_Command("ATE0\r", 500, NULL, 1);
     }
-    // =========== OTHERS CONFIGURATION
     // activate error report verbose
     if (p) {
       p = Simcom_Command("AT+CMEE=2\r", 500, NULL, 1);
     }
+    // set default baud-rate
+    if (p) {
+      //      p = Simcom_Command("AT+IPR=9600\r", 500, NULL, 1);
+    }
+    // =========== OTHERS CONFIGURATION
     // enable time reporting
     if (p) {
       p = Simcom_Command("AT+CLTS=1\r", 500, NULL, 1);
@@ -102,7 +106,7 @@ void Simcom_Init(SIMCOM_PWR state) {
 
     // Set signal Generation 2G/3G/AUTO
     if (p) {
-      p = Simcom_Command(simcom.CMD_CNMP, 10000, NULL, 2);
+      p = Simcom_Command(simcom.cmd.CNMP, 10000, NULL, 2);
     }
 
     // Network Registration Status
@@ -115,13 +119,13 @@ void Simcom_Init(SIMCOM_PWR state) {
     }
     //Attach to GPRS service
     if (p) {
-      p = Simcom_Command("AT+CGATT?\r", 10000, "+CGATT: 1", 3);
+      p = Simcom_Command("AT+CGATT?\r", 3000, "+CGATT: 1", 20);
     }
 
     // =========== TCP/IP CONFIGURATION
     //Set type of authentication for PDP-IP connections of socket
     if (p) {
-      p = Simcom_Command(simcom.CMD_CSTT, 500, NULL, 5);
+      p = Simcom_Command(simcom.cmd.CSTT, 500, NULL, 5);
     }
     // Bring Up Wireless Connection with GPRS
     if (p) {
@@ -134,7 +138,7 @@ void Simcom_Init(SIMCOM_PWR state) {
 
     // Establish connection with server
     if (p) {
-      p = Simcom_Command(simcom.CMD_CIPSTART, 10000, "CONNECT", 1);
+      p = Simcom_Command(simcom.cmd.CIPSTART, 10000, "CONNECT", 1);
       // check either connection ok / error
       if (p) {
         p = Simcom_Response("CONNECT OK");
@@ -146,9 +150,12 @@ void Simcom_Init(SIMCOM_PWR state) {
     //      // disable all connection
     //      Simcom_Command("AT+CIPSHUT\r", 500, NULL, 1);
     //    }
+
+    osRecursiveMutexRelease(SimcomRecMutexHandle);
+    osDelay(10);
   } while (!p);
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  simcom.online = 1;
 }
 
 uint8_t Simcom_Upload(char *payload, uint16_t payload_length) {
@@ -252,6 +259,10 @@ uint8_t Simcom_ReadCommand(command_t *command) {
 }
 
 uint8_t Simcom_ReadSignal(uint8_t *signal_percentage) {
+  if (!simcom.ready) {
+    return 0;
+  }
+
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t i, ret = 0, rssi = 0, cnt;
@@ -305,6 +316,10 @@ uint8_t Simcom_ReadSignal(uint8_t *signal_percentage) {
 }
 
 uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
+  if (!simcom.ready) {
+    return 0;
+  }
+
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   uint8_t ret = 0, len = 0, cnt;
@@ -347,14 +362,28 @@ uint8_t Simcom_ReadTime(timestamp_t *timestamp) {
 
 /* Private functions implementation --------------------------------------------*/
 static void Simcom_Power(void) {
+  uint32_t tick;
+
+  LOG_StrLn("Simcom:Powered");
+  // power control
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-  osDelay(500);
-  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
   osDelay(1000);
+  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
+  // wait response
+  tick = osKernelSysTick();
+  while (1) {
+    if (Simcom_Response(SIMCOM_STATUS_READY) ||
+        (osKernelSysTick() - tick) >= NET_BOOT_TIMEOUT) {
+      break;
+    }
+    osDelay(1);
+  }
 }
 
-static void Simcom_Reboot(void) {
+static void Simcom_Reset(void) {
   uint32_t tick;
+
+  LOG_StrLn("Simcom:Reseted");
   // simcom reset pin
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
   HAL_Delay(1);
@@ -375,19 +404,23 @@ static uint8_t Simcom_Boot(void) {
   SIMCOM_Reset_Buffer();
   // activate power source
   Simcom_Power();
+  // check
+  if (Simcom_Command(SIMCOM_BOOT_COMMAND, 500, SIMCOM_STATUS_READY, 1)) {
+    return 1;
+  }
   // reset the state of simcom module
-  Simcom_Reboot();
-  // wait until booting is done
-  return Simcom_Command(SIMCOM_BOOT_COMMAND, 500, SIMCOM_STATUS_OK, 1);
+  Simcom_Reset();
+  // check
+  return Simcom_Command(SIMCOM_BOOT_COMMAND, 500, SIMCOM_STATUS_READY, 1);
 }
 
 static void Simcom_Prepare(void) {
   // prepare command sequence
-  sprintf(simcom.CMD_CNMP, "AT+CNMP=%d\r", NET_SIGNAL);
-  sprintf(simcom.CMD_CSTT,
+  sprintf(simcom.cmd.CNMP, "AT+CNMP=%d\r", NET_SIGNAL);
+  sprintf(simcom.cmd.CSTT,
       "AT+CSTT=\"%s\",\"%s\",\"%s\"\r",
       NET_APN, NET_APN_USERNAME, NET_APN_PASSWORD);
-  sprintf(simcom.CMD_CIPSTART,
+  sprintf(simcom.cmd.CIPSTART,
       "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r",
       NET_SERVER_IP, NET_SERVER_PORT);
 }
@@ -395,9 +428,9 @@ static void Simcom_Prepare(void) {
 static void Simcom_ClearBuffer(void) {
   command_t *hCommand;
   // debugging
-  //	LOG_StrLn("\n=================== START ===================");
-  //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-  //	LOG_StrLn("\n==================== END ====================");
+  //  LOG_StrLn("\n=================== START ===================");
+  //  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+  //  LOG_StrLn("\n==================== END ====================");
   // check command
   if (strstr(SIMCOM_UART_RX, NET_COMMAND_PREFIX) != NULL) {
     // Allocate memory
@@ -450,10 +483,6 @@ static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, 
       // set flag for timeout & error
       ret = Simcom_Response(res);
 
-      // exception for auto reboot module
-      if (strstr(data, SIMCOM_BOOT_COMMAND) != NULL) {
-        ret = ret || Simcom_Response(SIMCOM_STATUS_READY);
-      }
       // exit loop
       break;
     }
@@ -467,19 +496,15 @@ static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, 
 static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
-  uint8_t ret = 0, seq = 0;
+  uint8_t ret = 0;
   // default response
   if (res == NULL) {
     res = SIMCOM_STATUS_OK;
   }
 
   // repeat command until desired response
-  while (seq++ < n && !ret) {
-    // execute command every timeout guard elapsed
-    if (seq > 1) {
-      osDelay(NET_REPEAT_DELAY);
-    }
-
+  n--;
+  do {
     // print command for debugger
     if (!is_payload) {
       LOG_Str("\n=> ");
@@ -487,15 +512,36 @@ static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_
     } else {
       LOG_BufHex(data, data_length);
     }
-    LOG_Char('\n');
+    LOG_Enter();
 
     // send command
     ret = Simcom_SendDirect(data, data_length, ms, res);
 
     // print response for debugger
     LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-    LOG_Char('\n');
-  }
+    LOG_Enter();
+
+    // exception for auto reboot module
+    if (Simcom_Response(SIMCOM_STATUS_READY)) {
+      if (strstr(data, SIMCOM_BOOT_COMMAND) == NULL) {
+        LOG_StrLn("Simcom:AutoRestart");
+        simcom.ready = 0;
+        ret = 0;
+        break;
+      }
+    }
+    // exception if no response
+    if (strlen(SIMCOM_UART_RX) == 0) {
+      LOG_StrLn("Simcom:BufferEmpty");
+      simcom.ready = 0;
+      ret = 0;
+      break;
+    }
+
+    // execute command every timeout guard elapsed
+    //    osDelay(NET_REPEAT_DELAY);
+
+  } while (n-- && !ret);
 
   osRecursiveMutexRelease(SimcomRecMutexHandle);
   return ret;

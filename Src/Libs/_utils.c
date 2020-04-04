@@ -38,6 +38,12 @@ void _Error(char msg[50]) {
   }
 }
 
+void _DebugTask(char name[20]) {
+//  LOG_Str("Task:");
+//  LOG_Buf(name, strlen(name));
+//  LOG_Enter();
+}
+
 void _DummyGenerator(db_t *db) {
   // Control HMI brightness by daylight
   db->hmi1.status.daylight = _TimeCheckDaylight(db->vcu.rtc.timestamp);

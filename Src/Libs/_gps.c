@@ -16,14 +16,15 @@ static nmea_t nmea;
 
 /* Public functions implementation --------------------------------------------*/
 void GPS_Init(void) {
+  LOG_StrLn("GPS:Init");
+
+  // mosfet controll
   HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
   osDelay(500);
   HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
   osDelay(1000);
 
   nmea_init(&nmea);
-
-  LOG_StrLn("GPS Init");
 }
 
 uint8_t GPS_Process(gps_t *hgps) {

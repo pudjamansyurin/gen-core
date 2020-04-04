@@ -30,9 +30,13 @@ typedef enum {
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-  char CMD_CIPSTART[100];
-  char CMD_CSTT[75];
-  char CMD_CNMP[12];
+  uint8_t ready;
+  uint8_t online;
+  struct {
+    char CIPSTART[100];
+    char CSTT[75];
+    char CNMP[12];
+  } cmd;
 } simcom_t;
 
 typedef struct {

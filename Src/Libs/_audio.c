@@ -67,7 +67,7 @@ static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
 void AUDIO_Init(void) {
   uint8_t ret;
   do {
-    LOG_StrLn("Wave_Init");
+    LOG_StrLn("Audio:Init");
 
     // Mosftet control
     HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 0);

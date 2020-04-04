@@ -28,7 +28,7 @@ void Finger_Init(void) {
   uint8_t verified = 0;
 
   do {
-    LOG_StrLn("Finger_Init");
+    LOG_StrLn("Finger:Init");
 
     // mosfet control
     HAL_GPIO_WritePin(EXT_FINGER_PWR_GPIO_Port, EXT_FINGER_PWR_Pin, 0);

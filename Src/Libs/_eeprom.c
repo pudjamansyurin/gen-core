@@ -15,11 +15,12 @@ static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value);
 uint8_t EEPROM_Init(void) {
   uint8_t retry = 5;
 
+  LOG_StrLn("EEPROM:Init");
   // check main eeprom
   EEPROM24XX_SetDevice(EEPROM24_MAIN);
   do {
     if (EEPROM24XX_IsConnected()) {
-      LOG_StrLn("MAIN EEPROM is used.");
+      LOG_StrLn("EEPROM:Main");
       return 1;
     }
     osDelay(50);
@@ -30,14 +31,14 @@ uint8_t EEPROM_Init(void) {
   EEPROM24XX_SetDevice(EEPROM24_BACKUP);
   do {
     if (EEPROM24XX_IsConnected()) {
-      LOG_StrLn("MAIN EEPROM is used.");
+      LOG_StrLn("EEPROM:Backup");
       return 1;
     }
     osDelay(50);
   } while (retry--);
 
   // all failed
-  LOG_StrLn("All EEPROM are failed.");
+  LOG_StrLn("EEPROM:Error");
   return 0;
 }
 

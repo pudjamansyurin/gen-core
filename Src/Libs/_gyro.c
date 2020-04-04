@@ -18,7 +18,7 @@ void GYRO_Init(void) {
   MPU6050_Result result;
 
   do {
-    LOG_StrLn("Gyroscope_Init");
+    LOG_StrLn("Gyro:Init");
 
     // MOSFET Control
     HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 0);

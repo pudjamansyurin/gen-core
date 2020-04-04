@@ -171,7 +171,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  //  MX_CAN1_Init();
+//  MX_CAN1_Init();
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   MX_UART4_Init();
@@ -183,7 +183,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-  //  MX_IWDG_Init();
+//  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   //  CANBUS_Init();
   /* USER CODE END 2 */
@@ -250,11 +250,11 @@ int main(void)
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+//  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
-  //  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
+//  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
@@ -262,15 +262,15 @@ int main(void)
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
-  //  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
+//  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-  //  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
+//  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
-  //  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
+//  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
@@ -278,11 +278,11 @@ int main(void)
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+//  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+//  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
@@ -290,7 +290,7 @@ int main(void)
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+//  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -327,15 +327,14 @@ void SystemClock_Config(void)
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the CPU, AHB and APB busses clocks
    */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
       | RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 16;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 336;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
@@ -1108,6 +1107,7 @@ void StartIotTask(const void *argument)
       sizeof(hReport->header.size);
 
   for (;;) {
+    _DebugTask("IoT");
     // Set default
     success = 1;
 
@@ -1239,6 +1239,7 @@ void StartGyroTask(const void *argument)
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
   for (;;) {
+    _DebugTask("Gyro");
     // Read all accelerometer, gyroscope (average)
     mems_decision = GYRO_Decision(&mems_calibration, 25);
 
@@ -1283,6 +1284,7 @@ void StartCommandTask(const void *argument)
 
   /* Infinite loop */
   for (;;) {
+    _DebugTask("Command");
     // get command in queue
     evt = osMailGet(CommandMailHandle, osWaitForever);
 
@@ -1434,6 +1436,7 @@ void StartGpsTask(const void *argument)
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
   for (;;) {
+    _DebugTask("GPS");
     // Allocate memory
     hGps = osMailAlloc(GpsMailHandle, osWaitForever);
 
@@ -1466,6 +1469,7 @@ void StartFingerTask(const void *argument)
 
   /* Infinite loop */
   for (;;) {
+    _DebugTask("Finger");
     // check if user put finger
     xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &notif_value, portMAX_DELAY);
 
@@ -1504,6 +1508,7 @@ void StartAudioTask(const void *argument)
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
   for (;;) {
+    _DebugTask("Audio");
     // do this if events occurred
     if (xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0) == pdTRUE) {
       // Beeping command
@@ -1553,6 +1558,7 @@ void StartKeylessTask(const void *argument)
 
   /* Infinite loop */
   for (;;) {
+    _DebugTask("Keyless");
     // check if has new can message
     xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
 
@@ -1563,7 +1569,7 @@ void StartKeylessTask(const void *argument)
       // indicator
       LOG_Str("NRF received packet, msg = ");
       LOG_Hex8(msg);
-      LOG_Char('\n');
+      LOG_Enter();
 
       // just fun indicator
       AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
@@ -1597,16 +1603,17 @@ void StartReporterTask(const void *argument)
 
   // FIXME: create master thread
   // ONE-TIME configurations:
-  EEPROM_Init();
-  //  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
-  // reporter configuration
-  Reporter_SetUnitID(REPORT_UNITID);
-  Reporter_SetOdometer(0);
-  // simcom configuration
+  if (EEPROM_Init()) {
+    if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
+      // reporter configuration
+      Reporter_SetUnitID(REPORT_UNITID);
+      Reporter_SetOdometer(0);
+      // simcom configuration
 
-  // re-write backup register
-  //    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
-  //  }
+      // re-write backup register
+      HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
+    }
+  }
 
   // reset report frame to default
   Reporter_Reset(FR_FULL);
@@ -1614,6 +1621,7 @@ void StartReporterTask(const void *argument)
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
   for (;;) {
+    _DebugTask("Reporter");
     // preserve simcom reboot from events group
     net_restart_state = Reporter_ReadEvent(REPORT_NETWORK_RESTART);
     // reset all events group
@@ -1698,6 +1706,7 @@ void StartCanRxTask(const void *argument)
 
   /* Infinite loop */
   for (;;) {
+    _DebugTask("CanRx");
     // check if has new can message
     xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
 
@@ -1752,6 +1761,8 @@ void StartSwitchTask(const void *argument)
 
   /* Infinite loop */
   for (;;) {
+    _DebugTask("Switch");
+
     xTaskNotifyStateClear(NULL);
     xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
     // handle bounce effect
@@ -1868,9 +1879,10 @@ void StartGeneralTask(const void *argument)
   last_wake = xTaskGetTickCount();
 
   for (;;) {
-    //    // Retrieve network signal quality
-    //    Simcom_ReadSignal(&(DB.vcu.signal));
-    //
+    _DebugTask("General");
+    // Retrieve network signal quality
+    Simcom_ReadSignal(&(DB.vcu.signal));
+
     //    // Retrieve RTC time
     //    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
     //
@@ -1910,6 +1922,7 @@ void StartCanTxTask(const void *argument)
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
   for (;;) {
+    _DebugTask("CanTx");
     // Send CAN data
     CAN_VCU_Switch(&DB);
     CAN_VCU_RTC(&(DB.vcu.rtc.timestamp));
@@ -1918,9 +1931,6 @@ void StartCanTxTask(const void *argument)
 
     // Feed the dog (duration x seconds)
     HAL_IWDG_Refresh(&hiwdg);
-
-    // Running Indicator
-    _LedToggle();
 
     // Periodic interval
     vTaskDelayUntil(&last_wake, tick250ms);
@@ -1967,12 +1977,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
