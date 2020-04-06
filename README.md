@@ -95,6 +95,9 @@
 - [ ] Add Voltage-divider for 5V line as Main Power Monitor
 - [ ] Fix Q4 & Q7 shielded pad
 - [ ] Swap GPS & NET leds position
+- [ ] Change R67 value as R63
+- [ ] CAN Module:
+  - [ ] Give Resistor 120 Ohm between CAN_H and CAN_L (optional, just give the space)
 - [ ] Connector:
   - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
   - [ ] Make 6 pin connector same (Fingerprint & CAN)
@@ -117,6 +120,7 @@
   - [ ] Give jumper for V_BCKP, it can use VDD / VCC
   - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
   - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
+  - [ ] Configure the EEPROM address using u-center app
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
 - [ ] SIMCOM:
@@ -152,6 +156,6 @@
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
 | 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | *Done*: **Validating**					|
 | 12 | Data Validator	           | ST-CRC        	| CRC			 |      100     |       -      | **Done**: For backend frame			|
-| 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		0		| 		✔ 	   | Pending: Auxiliary						|
+| 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		100		| 		✔ 	   | *Done*: Need to be validated			|
 | 14 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
 | 15 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Pending: Auxiliary						|

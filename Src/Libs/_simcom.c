@@ -25,7 +25,6 @@ static void Simcom_ClearBuffer(void);
 static uint8_t Simcom_Response(char *str);
 static uint8_t Simcom_SendDirect(char *data, uint16_t data_length, uint32_t ms, char *res);
 static uint8_t Simcom_SendIndirect(char *data, uint16_t data_length, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
-static uint8_t Simcom_Boot(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n) {
@@ -40,8 +39,10 @@ void Simcom_Init(SIMCOM_PWR state) {
   // first init hook
   simcom.online = 0;
   if (state == SIMCOM_POWER_UP) {
-    //set default value to variable
+    // set default value to variable
     Simcom_Prepare();
+    // simcom power control
+    p = Simcom_Power();
   }
 
   // FIXME: should use hierarchy algorithm in error handling
@@ -57,7 +58,10 @@ void Simcom_Init(SIMCOM_PWR state) {
 
     // booting
     simcom.ready = 0;
-    p = Simcom_Boot();
+    SIMCOM_Reset_Buffer();
+    if (!p) {
+      p = Simcom_Reset();
+    }
 
     // disable command echo
     if (p) {
@@ -107,50 +111,90 @@ void Simcom_Init(SIMCOM_PWR state) {
     if (p) {
       p = Simcom_Command("AT+CSACT=0,0\r", 500, NULL, 1);
     }
-
     // Set signal Generation 2G/3G/AUTO
     if (p) {
       p = Simcom_Command(simcom.cmd.CNMP, 10000, NULL, 1);
     }
 
+    // =========== GPRS CONFIGURATION
     // Network Registration Status
     if (p) {
       p = Simcom_Command("AT+CREG=0\r", 500, NULL, 1);
-    }
+      // wait until attached
+      if (p) {
+        iteration = 0;
+        while (1) {
+          p = Simcom_Command("AT+CREG?\r", 500, "+CREG:", 1);
+          if (!p || Simcom_Response("+CREG: 0,1")) {
+            break;
+          }
 
-    // =========== GPRS CONFIGURATION
+          Simcom_ReadSignal(NULL);
+
+          LOG_Str("Simcom:Iteration [AT+CREG] = ");
+          LOG_Int(iteration++);
+          LOG_Enter();
+
+          osDelay(NET_REPEAT_DELAY);
+        }
+
+      }
+    }
     // Network GPRS Registration Status
     if (p) {
       p = Simcom_Command("AT+CGREG=0\r", 500, NULL, 1);
+      // wait until attached
+      if (p) {
+        iteration = 0;
+        while (1) {
+          p = Simcom_Command("AT+CGREG?\r", 500, "+CGREG:", 1);
+          if (!p || Simcom_Response("+CGREG: 0,1")) {
+            break;
+          }
+
+          Simcom_ReadSignal(NULL);
+
+          LOG_Str("Simcom:Iteration [AT+CGREG] = ");
+          LOG_Int(iteration++);
+          LOG_Enter();
+
+          osDelay(NET_REPEAT_DELAY);
+        }
+
+      }
     }
+    //Attach to GPRS service
+    if (p) {
+      p = Simcom_Command("AT+CGATT=1\r", 500, NULL, 1);
+      // wait until attached
+      if (p) {
+        iteration = 0;
+        while (1) {
+          p = Simcom_Command("AT+CGATT?\r", 500, "+CGATT:", 1);
+          if (!p || Simcom_Response("+CGATT: 1")) {
+            break;
+          }
+
+          Simcom_ReadSignal(NULL);
+          //        Simcom_Command("AT+COPS?\r", 3000, NULL, 1);
+          //        Simcom_Command("AT+CSQ\r", 500, NULL, 1);
+          //        Simcom_Command("AT+CBAND?\r", 500, NULL, 1);
+          //        Simcom_Command("AT+CBC\r", 500, NULL, 1);
+
+          LOG_Str("Simcom:Iteration [AT+CGATT] = ");
+          LOG_Int(iteration++);
+          LOG_Enter();
+
+          osDelay(NET_REPEAT_DELAY);
+        };
+      }
+    }
+
+    // =========== TCP/IP CONFIGURATION
     //Set type of authentication for PDP connections of socket
     if (p) {
       p = Simcom_Command(simcom.cmd.CSTT, 1000, NULL, 1);
     }
-    //Attach to GPRS service
-    if (p) {
-      iteration = 0;
-      while (1) {
-        p = Simcom_Command("AT+CGATT?\r", 500, "+CGATT:", 1);
-        if (!p || Simcom_Response("+CGATT: 1")) {
-          break;
-        }
-
-        Simcom_ReadSignal(NULL);
-        //        Simcom_Command("AT+COPS?\r", 3000, NULL, 1);
-        //        Simcom_Command("AT+CSQ\r", 500, NULL, 1);
-        //        Simcom_Command("AT+CBAND?\r", 500, NULL, 1);
-        //        Simcom_Command("AT+CBC\r", 500, NULL, 1);
-
-        LOG_Str("Simcom:Iteration = ");
-        LOG_Int(iteration++);
-        LOG_Enter();
-
-        osDelay(NET_REPEAT_DELAY);
-      };
-    }
-
-    // =========== TCP/IP CONFIGURATION
     // Bring Up Wireless Connection with GPRS
     if (p) {
       p = Simcom_Command("AT+CIICR\r", 10000, NULL, 3);
@@ -395,11 +439,12 @@ static uint8_t Simcom_IsReady(void) {
   // check
   return Simcom_Command(SIMCOM_CMD_BOOT, 500, SIMCOM_RSP_READY, 1);
 }
+
 static uint8_t Simcom_Power(void) {
   LOG_StrLn("Simcom:Powered");
   // power control
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-  osDelay(500);
+  osDelay(00);
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
   // wait response
   return Simcom_IsReady();
@@ -413,14 +458,6 @@ static uint8_t Simcom_Reset(void) {
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
   // wait response
   return Simcom_IsReady();
-}
-
-static uint8_t Simcom_Boot(void) {
-  // reset rx buffer
-  SIMCOM_Reset_Buffer();
-  // activate chip
-  return Simcom_Power();
-  //  return Simcom_Reset();
 }
 
 static void Simcom_Prepare(void) {

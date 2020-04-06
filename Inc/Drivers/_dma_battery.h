@@ -12,7 +12,7 @@
 #include "_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define BATTERY_DMA_SZ                100
+#define BATTERY_DMA_SZ                200
 
 /* Public functions prototype ------------------------------------------------*/
 void Battery_DMA_Init(void);
