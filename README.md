@@ -93,6 +93,8 @@
 - [ ] Move all solder jumpers at the top layer
 - [ ] Make screw corner hole bigger in 4 positions
 - [ ] Add Voltage-divider for 5V line as Main Power Monitor
+- [ ] Fix Q4 & Q7 shielded pad
+- [ ] Swap GPS & NET leds position
 - [ ] Connector:
   - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
   - [ ] Make 6 pin connector same (Fingerprint & CAN)
