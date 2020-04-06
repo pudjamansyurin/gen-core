@@ -36,6 +36,7 @@
 #include "_can.h"
 #include "_rtc.h"
 #include "_utils.h"
+#include "_dma_battery.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,6 +55,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 CAN_HandleTypeDef hcan1;
 
@@ -91,7 +93,6 @@ osThreadId CanRxTaskHandle;
 osThreadId SwitchTaskHandle;
 osThreadId GeneralTaskHandle;
 osThreadId CanTxTaskHandle;
-osMessageQId VolumeQueueHandle;
 osMutexId BeepMutexHandle;
 osMutexId LogMutexHandle;
 osMutexId CanTxMutexHandle;
@@ -171,7 +172,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-//  MX_CAN1_Init();
+  //  MX_CAN1_Init();
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   MX_UART4_Init();
@@ -183,9 +184,10 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-//  MX_IWDG_Init();
+  //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   //  CANBUS_Init();
+  Battery_DMA_Init();
   /* USER CODE END 2 */
 
   /* Create the mutex(es) */
@@ -222,11 +224,6 @@ int main(void)
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
-  /* Create the queue(s) */
-  /* definition and creation of VolumeQueue */
-  osMessageQDef(VolumeQueue, 1, uint8_t);
-  VolumeQueueHandle = osMessageCreate(osMessageQ(VolumeQueue), NULL);
-
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   osMailQDef(GpsMail, 1, gps_t);
@@ -246,43 +243,43 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+  //  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-//  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
-//  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
+  //  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
-//  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
+  //  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-//  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
+  //  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
-//  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
+  //  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
-  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
+  //  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-//  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-//  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
@@ -290,7 +287,7 @@ int main(void)
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-//  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -388,13 +385,13 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
       {
@@ -402,7 +399,7 @@ static void MX_ADC1_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
    */
-  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -861,6 +858,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
@@ -1046,7 +1046,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  uint8_t i;
 
   if (osKernelRunning()) {
     // handle NRF24 IRQ
@@ -1064,6 +1063,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     //    }
     //
     //    // handle Switches EXTI
+    //    uint8_t i;
     //    for (i = 0; i < DB.vcu.sw.count; i++) {
     //      if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
     //        xTaskNotifyFromISR(
@@ -1111,7 +1111,6 @@ void StartIotTask(const void *argument)
     // Set default
     success = 1;
 
-    osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
     // response frame
     {
       // check response log
@@ -1197,7 +1196,6 @@ void StartIotTask(const void *argument)
         }
       }
     }
-    osRecursiveMutexRelease(SimcomRecMutexHandle);
 
     // save the SIMCOM event
     Reporter_WriteEvent(REPORT_NETWORK_RESTART, !success);
@@ -1359,10 +1357,8 @@ void StartCommandTask(const void *argument)
               break;
 
             case CMD_AUDIO_VOL:
-              osMessagePut(
-                  VolumeQueueHandle,
-                  (uint8_t) hCommand->data.value,
-                  osWaitForever);
+              DB.vcu.volume = hCommand->data.value;
+              xTaskNotify(AudioTaskHandle, EVENT_AUDIO_VOLUME, eSetBits);
               break;
 
             default:
@@ -1498,7 +1494,6 @@ void StartAudioTask(const void *argument)
   /* USER CODE BEGIN StartAudioTask */
   TickType_t last_wake;
   uint32_t notif_value;
-  osEvent evt;
 
   /* Initialize Wave player (Codec, DMA, I2C) */
   AUDIO_Init();
@@ -1525,13 +1520,10 @@ void StartAudioTask(const void *argument)
       if (notif_value & EVENT_AUDIO_MUTE_OFF) {
         AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
       }
-    }
-
-    // check if get volume message
-    evt = osMessageGet(VolumeQueueHandle, 0);
-    // do this if message arrived
-    if (evt.status == osEventMessage) {
-      AUDIO_OUT_SetVolume((uint8_t) evt.value.v);
+      // Beeping command
+      if (notif_value & EVENT_AUDIO_VOLUME) {
+        AUDIO_OUT_SetVolume(DB.vcu.volume);
+      }
     }
 
     // Report interval
@@ -1595,7 +1587,7 @@ void StartReporterTask(const void *argument)
   extern report_t REPORT;
   TickType_t last_wake, last_wake_full = 0;
   osEvent evt;
-  frame_type frame;
+  FRAME_TYPE frame;
   uint8_t net_restart_state;
   uint32_t notif_value;
   report_t *hReport;
@@ -1715,9 +1707,9 @@ void StartCanRxTask(const void *argument)
       // handle message
       switch (CANBUS_ReadID()) {
         case CAN_ADDR_MCU_DUMMY:
-          CAN_MCU_Dummy_Read(&(DB.vcu.speed));
-          // set volume by speed
-          osMessagePut(VolumeQueueHandle, DB.vcu.speed, osWaitForever);
+          CAN_MCU_Dummy_Read(&DB);
+          // update audio volume
+          xTaskNotify(AudioTaskHandle, EVENT_AUDIO_VOLUME, eSetBits);
           break;
         default:
           break;
@@ -1873,16 +1865,16 @@ void StartGeneralTask(const void *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
-  timestamp_t timestampCarrier;
+  //  timestamp_t timestampCarrier;
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
 
   for (;;) {
     _DebugTask("General");
-    // Retrieve network signal quality
-    Simcom_ReadSignal(&(DB.vcu.signal));
-
+    //    // Retrieve network signal quality
+    //    Simcom_ReadSignal(&(DB.vcu.signal));
+    //
     //    // Retrieve RTC time
     //    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
     //
@@ -1897,6 +1889,14 @@ void StartGeneralTask(const void *argument)
     //
     //    // Dummy data generator
     //    _DummyGenerator(&DB);
+    //
+    //    // Feed the dog
+    //    HAL_IWDG_Refresh(&hiwdg);
+
+    // Battery Monitor
+    LOG_Str("Battery:Voltage = ");
+    LOG_Int(DB.vcu.battery);
+    LOG_StrLn(" mV");
 
     // Toggling LED
     _LedToggle();
@@ -1928,9 +1928,6 @@ void StartCanTxTask(const void *argument)
     CAN_VCU_RTC(&(DB.vcu.rtc.timestamp));
     CAN_VCU_Select_Set(&(DB.vcu.sw.runner));
     CAN_VCU_Trip_Mode(&(DB.vcu.sw.runner.mode.sub.trip[0]));
-
-    // Feed the dog (duration x seconds)
-    HAL_IWDG_Refresh(&hiwdg);
 
     // Periodic interval
     vTaskDelayUntil(&last_wake, tick250ms);
@@ -1977,12 +1974,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

@@ -99,17 +99,17 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
   status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), (uint8_t*) &(tx->data), &TxMailbox);
 
   // debugging
-//  if (status == HAL_OK) {
-//    LOG_Str("\n[TX] ");
-//    LOG_Hex32(tx->header.StdId);
-//    LOG_Str(" => ");
-//    if (tx->header.RTR == CAN_RTR_DATA) {
-//      LOG_BufHex((char*) &(tx->data), sizeof(tx->data));
-//    } else {
-//      LOG_Str("RTR");
-//    }
-//    LOG_Enter();
-//  }
+  //  if (status == HAL_OK) {
+  //    LOG_Str("\n[TX] ");
+  //    LOG_Hex32(tx->header.StdId);
+  //    LOG_Str(" => ");
+  //    if (tx->header.RTR == CAN_RTR_DATA) {
+  //      LOG_BufHex((char*) &(tx->data), sizeof(tx->data));
+  //    } else {
+  //      LOG_Str("RTR");
+  //    }
+  //    LOG_Enter();
+  //  }
 
   osMutexRelease(CanTxMutexHandle);
   return (status == HAL_OK);

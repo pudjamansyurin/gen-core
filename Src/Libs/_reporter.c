@@ -13,7 +13,7 @@ report_t REPORT;
 response_t RESPONSE;
 
 /* Public functions implementation --------------------------------------------*/
-void Reporter_Reset(frame_type frame) {
+void Reporter_Reset(FRAME_TYPE frame) {
   // set default data
   // header report
   REPORT.header.prefix = FRAME_PREFIX;
@@ -106,7 +106,7 @@ uint8_t Reporter_ReadEvent(uint64_t event_id) {
   return BSR((REPORT.data.req.events_group & event_id), _BitPosition(event_id));
 }
 
-void Reporter_Capture(frame_type frame) {
+void Reporter_Capture(FRAME_TYPE frame) {
   if (frame == FR_RESPONSE) {
     //Reconstruct the header
     RESPONSE.header.seq_id++;

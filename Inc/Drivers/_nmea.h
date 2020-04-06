@@ -266,12 +266,12 @@ typedef enum {
 
   /* Nautical values */
   nmea_speed_smph, /*!< Sea miles per hour */
-} nmea_speed_t;
+} NMEA_SPEED;
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t nmea_init(nmea_t *gh);
 uint8_t nmea_process(nmea_t *gh, const void *data, size_t len);
 uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los, nmea_float_t lae, nmea_float_t loe, nmea_float_t *d, nmea_float_t *b);
-nmea_float_t nmea_to_speed(nmea_float_t sik, nmea_speed_t ts);
+nmea_float_t nmea_to_speed(nmea_float_t sik, NMEA_SPEED ts);
 
 #endif /* NMEA_H_ */

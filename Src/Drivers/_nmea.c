@@ -206,7 +206,7 @@ uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los, nmea_float_t l
  * @param[in]       ts: Target speed to convert to from knots
  * @return          Speed calculated from knots
  */
-nmea_float_t nmea_to_speed(nmea_float_t sik, nmea_speed_t ts) {
+nmea_float_t nmea_to_speed(nmea_float_t sik, NMEA_SPEED ts) {
   switch (ts) {
     case nmea_speed_kps:
       return FLT(sik * FLT(0.000514));

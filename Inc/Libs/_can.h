@@ -22,10 +22,10 @@
 
 /* Public functions prototype ------------------------------------------------*/
 
-uint8_t CAN_VCU_Switch(db_t *DB);
+uint8_t CAN_VCU_Switch(db_t *db);
 uint8_t CAN_VCU_RTC(timestamp_t *timestamp);
 uint8_t CAN_VCU_Select_Set(sw_runner_t *runner);
 uint8_t CAN_VCU_Trip_Mode(uint32_t *trip);
-void CAN_MCU_Dummy_Read(uint8_t *speed);
+void CAN_MCU_Dummy_Read(db_t *db);
 
 #endif /* CAN_H_ */

@@ -14,13 +14,13 @@
 #include "_crc.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define SIMCOM_STATUS_SEND 					">"
-#define SIMCOM_STATUS_SENT					"SEND OK\r\n"
-#define SIMCOM_STATUS_OK 					"OK\r\n"
-#define SIMCOM_STATUS_ERROR 				"ERROR"
-#define SIMCOM_STATUS_READY 				"RDY"
-#define SIMCOM_BOOT_COMMAND					"AT\r"
-#define SIMCOM_RESPONSE_IPD					"+IPD,"
+#define SIMCOM_RSP_SEND 				">"
+#define SIMCOM_RSP_SENT					"SEND OK\r\n"
+#define SIMCOM_RSP_OK 					"OK\r\n"
+#define SIMCOM_RSP_ERROR 				"ERROR"
+#define SIMCOM_RSP_READY 				"RDY"
+#define SIMCOM_RSP_IPD                  "+IPD,"
+#define SIMCOM_CMD_BOOT 				"AT\r"
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
@@ -33,7 +33,7 @@ typedef struct {
   uint8_t ready;
   uint8_t online;
   struct {
-    char CIPSTART[100];
+    char CIPSTART[200];
     char CSTT[75];
     char CNMP[12];
   } cmd;

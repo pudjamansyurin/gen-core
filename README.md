@@ -10,7 +10,7 @@
 - [x] ~~Increase the baud-rate of all communication protocols~~ 
 - [x] Pass pointer of chars from Simcom_Response() to Simcom_Send() 
 - [x] De-structure "stm32f4_discovery_audio.c" and "stm32f4_discovery.c" 
-- [ ] Configure UBLOX if you order the IC separately, so build the library for it 
+- [x] ~~Configure UBLOX if you order the IC separately, so build the library for it~~ 
 - [x] Handle AT Command of new SIM5300e 
 - [x] SIM5300e TCP communication 
 - [ ] SIM5300e SSL communication 
@@ -41,6 +41,8 @@
 - [x] Check COMMAND before clearing the Buffer 
 - [ ] Lock all global variable to minimize RTOS problem. 
 - [ ] Scale down "BMS Voltage", and set warning on 20% value.
+- [ ] RTOS: add master thread
+- [ ] RTOS: give timeout for any osWaitForever
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
@@ -89,16 +91,20 @@
 ### PCB (Hardware) Revision:
 - [ ] Check crystals footprint: HCLK, RTC
 - [ ] Move all solder jumpers at the top layer
+- [ ] Make screw corner hole bigger in 4 positions
+- [ ] Add Voltage-divider for 5V line as Main Power Monitor
 - [ ] Connector:
   - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
   - [ ] Make 6 pin connector same (Fingerprint & CAN)
   - [ ] Change audio jack connector
   - [ ] Give more space between each connector
+  - [ ] Replace downloader connector with pin-header (3*2)
 - [ ] EEPROM:
   - [ ] Change the footprint
 - [ ] Li-ion Charger:
   - [ ] B+ only for: MCU, GPS, SIMCOM & CAN
   - [ ] Add switch to disable the Li-ion battery
+  - [ ] Move Battery connector to top
 - [ ] Gyro:
   - [ ] Add separate 3v3 regulator
   - [ ] Connect INT pin to MCU (give jumper)
@@ -117,8 +123,9 @@
   - [ ] Re-swap the USIM_VDD and USIM_DATA pin.
   - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
   - [ ] Give serial solder connector like GPS (for debugging)
-  - [ ] Remove LTC if not needed, instead use B+ directly
+  - [ ] Change LTC output from 3.8v to 4.2v
   - [ ] Increase C42 value
+  - [ ] Move SIMcard related components closer to the SIMcard-holder
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
   - [ ] Give GND hole (un-isolated) bellow the chip.

@@ -27,13 +27,13 @@
 #define VCU_VENDOR                              "GEN Indonesia"
 #define VCU_BUILD_YEAR                          20U
 
-#define NET_SERVER_IP                           "180.247.217.142"
-#define NET_SERVER_PORT                         5044
+#define NET_SERVER_IP                           "pujakusumae-41515.portmap.host"
+#define NET_SERVER_PORT                         37006
 #define NET_APN                                 "3gprs"                 // "telkomsel"
 #define NET_APN_USERNAME                        "3gprs"                 // "wap"
 #define NET_APN_PASSWORD                        "3gprs"                 // "wap123"
 #define NET_SIGNAL                              2                       // 2=AUTO, 13=2G, 14=3G
-#define NET_BOOT_TIMEOUT                        10000                   // in ms
+#define NET_BOOT_TIMEOUT                        6000                   // in ms
 #define NET_REPEAT_DELAY                        5000                    // in ms
 #define NET_EXTRA_TIME_MS                       1000                     // in ms
 #define NET_COMMAND_PREFIX                      "$T"
@@ -57,6 +57,7 @@
 #define EVENT_AUDIO_BEEP                        BIT(0)
 #define EVENT_AUDIO_MUTE_ON                     BIT(1)
 #define EVENT_AUDIO_MUTE_OFF                    BIT(2)
+#define EVENT_AUDIO_VOLUME                      BIT(3)
 #define EVENT_FINGER_PLACED                     BIT(0)
 #define EVENT_CAN_RX_IT                         BIT(0)
 #define EVENT_KEYLESS_RX_IT                     BIT(0)
@@ -103,12 +104,12 @@
 #define RESPONSE_STATUS_INVALID                 2
 
 // EXTI list
-#define SW_K_SELECT 					        0
-#define SW_K_SET 						        1
-#define SW_K_SEIN_LEFT 					        2
-#define SW_K_SEIN_RIGHT 				        3
-#define SW_K_REVERSE		 			        4
-#define SW_K_ABS				 		        5
+#define SW_K_SELECT 					                  0
+#define SW_K_SET 						                    1
+#define SW_K_SEIN_LEFT 					                2
+#define SW_K_SEIN_RIGHT 				                3
+#define SW_K_REVERSE		 			                  4
+#define SW_K_ABS				 		                    5
 
 // Others Parameters
 #define MCU_SPEED_MAX                           200
@@ -122,7 +123,7 @@ typedef enum {
   SW_M_TRIP = 1,
   SW_M_REPORT = 2,
   SW_M_MAX = 2
-} sw_mode_t;
+} SW_MODE;
 
 typedef enum {
   SW_M_DRIVE_E = 0,
@@ -130,19 +131,19 @@ typedef enum {
   SW_M_DRIVE_P = 2,
   SW_M_DRIVE_R = 3,
   SW_M_DRIVE_MAX = 2
-} sw_mode_drive_t;
+} SW_MODE_DRIVE;
 
 typedef enum {
   SW_M_TRIP_A = 0,
   SW_M_TRIP_B = 1,
   SW_M_TRIP_MAX = 1
-} sw_mode_trip_t;
+} SW_MODE_TRIP;
 
 typedef enum {
   SW_M_REPORT_RANGE = 0,
   SW_M_REPORT_AVERAGE = 1,
   SW_M_REPORT_MAX = 1
-} sw_mode_report_t;
+} SW_MODE_REPORT;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
@@ -172,7 +173,7 @@ typedef struct {
 typedef struct {
   uint8_t listening;
   struct {
-    sw_mode_t val;
+    SW_MODE val;
     struct {
       uint8_t val[SW_M_MAX + 1];
       uint8_t max[SW_M_MAX + 1];
@@ -185,10 +186,13 @@ typedef struct {
 // Node struct
 typedef struct {
   struct {
+    uint8_t volume;
+    uint16_t battery;
     uint8_t signal;
     uint8_t speed;
     uint32_t odometer;
     rtc_t rtc;
+    // FIXME: SW need to be separated
     struct {
       uint8_t count;
       struct {

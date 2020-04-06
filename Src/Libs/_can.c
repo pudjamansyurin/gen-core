@@ -12,7 +12,7 @@
 extern canbus_t CB;
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t CAN_VCU_Switch(db_t *DB) {
+uint8_t CAN_VCU_Switch(db_t *db) {
   static TickType_t tick, tickSein;
   static uint8_t iSeinLeft = 0, iSeinRight = 0;
   static status_t iStatus;
@@ -20,17 +20,17 @@ uint8_t CAN_VCU_Switch(db_t *DB) {
   // indicator manipulator
   if ((osKernelSysTick() - tick) >= tick500ms) {
     // finger
-    if (DB->hmi1.status.finger) {
+    if (db->hmi1.status.finger) {
       tick = osKernelSysTick();
       iStatus.finger = !iStatus.finger;
     }
     // keyless
-    if (DB->hmi1.status.keyless) {
+    if (db->hmi1.status.keyless) {
       tick = osKernelSysTick();
       iStatus.keyless = !iStatus.keyless;
     }
     // temperature
-    if (DB->hmi1.status.temperature) {
+    if (db->hmi1.status.temperature) {
       tick = osKernelSysTick();
       iStatus.temperature = !iStatus.temperature;
     }
@@ -38,17 +38,17 @@ uint8_t CAN_VCU_Switch(db_t *DB) {
 
   // sein manipulator
   if ((osKernelSysTick() - tickSein) >= tick500ms) {
-    if (DB->vcu.sw.list[SW_K_SEIN_LEFT].state && DB->vcu.sw.list[SW_K_SEIN_RIGHT].state) {
+    if (db->vcu.sw.list[SW_K_SEIN_LEFT].state && db->vcu.sw.list[SW_K_SEIN_RIGHT].state) {
       // hazard
       tickSein = osKernelSysTick();
       iSeinLeft = !iSeinLeft;
       iSeinRight = iSeinLeft;
-    } else if (DB->vcu.sw.list[SW_K_SEIN_LEFT].state) {
+    } else if (db->vcu.sw.list[SW_K_SEIN_LEFT].state) {
       // left sein
       tickSein = osKernelSysTick();
       iSeinLeft = !iSeinLeft;
       iSeinRight = 0;
-    } else if (DB->vcu.sw.list[SW_K_SEIN_RIGHT].state) {
+    } else if (db->vcu.sw.list[SW_K_SEIN_RIGHT].state) {
       // right sein
       tickSein = osKernelSysTick();
       iSeinLeft = 0;
@@ -60,7 +60,7 @@ uint8_t CAN_VCU_Switch(db_t *DB) {
   }
 
   // set message
-  CB.tx.data[0] = DB->vcu.sw.list[SW_K_ABS].state;
+  CB.tx.data[0] = db->vcu.sw.list[SW_K_ABS].state;
   // FIXME: handle me with real data
   CB.tx.data[0] |= BSL(1, 1);
   CB.tx.data[0] |= BSL(1, 2);
@@ -68,23 +68,23 @@ uint8_t CAN_VCU_Switch(db_t *DB) {
   CB.tx.data[0] |= BSL(iStatus.temperature, 4);
   CB.tx.data[0] |= BSL(iStatus.finger, 5);
   CB.tx.data[0] |= BSL(iStatus.keyless, 6);
-  CB.tx.data[0] |= BSL(DB->hmi1.status.daylight, 7);
+  CB.tx.data[0] |= BSL(db->hmi1.status.daylight, 7);
 
   // sein value
   CB.tx.data[1] = iSeinLeft;
   CB.tx.data[1] |= BSL(iSeinRight, 1);
 
   // HMI-2 Shutdown Request
-  CB.tx.data[1] |= BSL(DB->hmi2.shutdown, 2);
+  CB.tx.data[1] |= BSL(db->hmi2.shutdown, 2);
 
   // signal strength
-  CB.tx.data[2] = DB->vcu.signal;
+  CB.tx.data[2] = db->vcu.signal;
 
   // odometer
-  CB.tx.data[4] = BSR(DB->vcu.odometer, 0);
-  CB.tx.data[5] = BSR(DB->vcu.odometer, 8);
-  CB.tx.data[6] = BSR(DB->vcu.odometer, 16);
-  CB.tx.data[7] = BSR(DB->vcu.odometer, 24);
+  CB.tx.data[4] = BSR(db->vcu.odometer, 0);
+  CB.tx.data[5] = BSR(db->vcu.odometer, 8);
+  CB.tx.data[6] = BSR(db->vcu.odometer, 16);
+  CB.tx.data[7] = BSR(db->vcu.odometer, 24);
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_SWITCH, 8);
@@ -180,17 +180,22 @@ uint8_t CAN_VCU_Trip_Mode(uint32_t *trip) {
 }
 
 /* ------------------------------------ READER ------------------------------------- */
-void CAN_MCU_Dummy_Read(uint8_t *speed) {
+void CAN_MCU_Dummy_Read(db_t *db) {
   uint32_t DB_MCU_RPM;
 
   // read message
   DB_MCU_RPM = (
-  BSL(CB.rx.data[3], 24) |
+      BSL(CB.rx.data[3], 24) |
       BSL(CB.rx.data[2], 16) |
       BSL(CB.rx.data[1], 8) |
       CB.rx.data[0]
-      );
+  );
+
   // convert RPM to Speed
-  *speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
+  db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
+
+  // convert Speed to Volume
+  db->vcu.volume = db->vcu.speed * 100 / MCU_SPEED_MAX;
+
 }
 

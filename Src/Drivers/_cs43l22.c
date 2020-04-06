@@ -36,11 +36,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_cs43l22.h"
 
-/* Local constants -----------------------------------------------------------*/
-#if !defined (VERIFY_WRITTENDATA)
-/* #define VERIFY_WRITTENDATA */
-#endif /* VERIFY_WRITTENDATA */
-
 /* External variables ---------------------------------------------------------*/
 extern I2C_HandleTypeDef hi2c1;
 
@@ -61,6 +56,11 @@ AUDIO_DrvTypeDef cs43l22_drv = {
     cs43l22_SetBeep,
     cs43l22_Beep
 };
+
+/* Local constants -----------------------------------------------------------*/
+#if !defined (VERIFY_WRITTENDATA)
+/* #define VERIFY_WRITTENDATA */
+#endif /* VERIFY_WRITTENDATA */
 
 /* Private variables ----------------------------------------------------------*/
 static uint8_t Is_cs43l22_Stop = 1;

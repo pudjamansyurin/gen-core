@@ -20,6 +20,8 @@ const TickType_t tick5ms = pdMS_TO_TICKS(5),
 
 db_t DB = {
     .vcu = {
+        .volume = 0,
+        .battery = 0,
         .signal = 0,
         .speed = 0,
         .odometer = 0,
