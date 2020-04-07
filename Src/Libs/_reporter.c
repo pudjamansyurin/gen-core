@@ -8,6 +8,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_reporter.h"
 
+/* External variables ----------------------------------------------------------*/
+extern db_t DB;
+
 /* Public variables -----------------------------------------------------------*/
 report_t REPORT;
 response_t RESPONSE;
@@ -48,12 +51,14 @@ void Reporter_Reset(FRAME_TYPE frame) {
     // body optional
     if (frame == FR_FULL) {
       // FIXME: default value should be zero
-      REPORT.data.opt.gps.longitude = 112.6935779 * 10000000;
-      REPORT.data.opt.gps.latitude = -7.4337599 * 10000000;
-      REPORT.data.opt.gps.hdop = 255;
+      //      REPORT.data.opt.gps.longitude = 112.6935779 * 10000000;
+      //      REPORT.data.opt.gps.latitude = -7.4337599 * 10000000;
+      REPORT.data.opt.gps.longitude = 0;
+      REPORT.data.opt.gps.latitude = 0;
+      REPORT.data.opt.gps.hdop = 0;
       REPORT.data.opt.gps.heading = 0;
       EEPROM_Odometer(EE_CMD_R, &(REPORT.data.opt.odometer));
-      REPORT.data.opt.bat_voltage = 2600 / 13;
+      REPORT.data.opt.bat_voltage = 0;
       REPORT.data.opt.report_range = 0;
       REPORT.data.opt.report_battery = 99;
       REPORT.data.opt.trip_a = 0x01234567;
@@ -135,6 +140,8 @@ void Reporter_Capture(FRAME_TYPE frame) {
     // Add opt on FR_FULL
     if (frame == FR_FULL) {
       REPORT.header.size += sizeof(REPORT.data.opt);
+      // set battery voltage
+      REPORT.data.opt.bat_voltage = DB.vcu.battery / 18.;
     }
     // CRC will be recalculated when sending the payload
     // (because RTC_Send_Datetime will be changed later)

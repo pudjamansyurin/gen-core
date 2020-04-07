@@ -109,7 +109,9 @@
   - [ ] Change the footprint
 - [ ] Li-ion Charger:
   - [ ] B+ only for: MCU, GPS, SIMCOM & EEPROM
+  - [ ] Add solder jumper (connect to B+ or 5V) for other components not listed above
   - [ ] Add switch to disable the Li-ion battery
+  - [ ] Add solder switch to charge / discharge li-ion
 - [ ] Gyro:
   - [ ] Add separate 3v3 regulator
   - [ ] Connect INT pin to MCU (give jumper)
@@ -122,6 +124,7 @@
   - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
   - [ ] Configure the EEPROM address using u-center app
   - [ ] Fix eagle footprint problem, the un-shielded ground near every pins
+  - [ ] Add recharge-able coin battery connector also for RTC
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
 - [ ] SIMCOM:
@@ -154,7 +157,7 @@
 |  6 | RTC                         | ST-RTC		    | RTC			 |      100     |       ✔      | **Done**								|
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | **Done**								|
 |  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |   	✔	   | **Done**: Connect pin 41 to GND		|
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | *Done*: Need to be validated			|
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | **Done**								|
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
 | 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | *Done*: **Validating**					|
 | 12 | Data Validator	           | ST-CRC        	| CRC			 |      100     |       -      | **Done**: For backend frame			|

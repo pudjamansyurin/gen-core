@@ -62,9 +62,9 @@ void Simcom_Init(SIMCOM_PWR state) {
     if (!p) {
       p = Simcom_Reset();
 
-//      if (!p) {
-//        p = Simcom_Power();
-//      }
+      //      if (!p) {
+      //        p = Simcom_Power();
+      //      }
     }
 
     // disable command echo

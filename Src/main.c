@@ -1865,6 +1865,7 @@ void StartGeneralTask(const void *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
+  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
   //  timestamp_t timestampCarrier;
 
   /* Infinite loop */
@@ -1897,6 +1898,11 @@ void StartGeneralTask(const void *argument)
     LOG_Str("Battery:Voltage = ");
     LOG_Int(DB.vcu.battery);
     LOG_StrLn(" mV");
+
+    // debug
+    LOG_StrLn("GPS:Buffer = ");
+    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
+    LOG_Enter();
 
     // Toggling LED
     _LedToggle();
