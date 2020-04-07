@@ -61,6 +61,10 @@ void Simcom_Init(SIMCOM_PWR state) {
     SIMCOM_Reset_Buffer();
     if (!p) {
       p = Simcom_Reset();
+
+//      if (!p) {
+//        p = Simcom_Power();
+//      }
     }
 
     // disable command echo
@@ -444,8 +448,9 @@ static uint8_t Simcom_Power(void) {
   LOG_StrLn("Simcom:Powered");
   // power control
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-  osDelay(00);
+  osDelay(3000);
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
+  osDelay(5000);
   // wait response
   return Simcom_IsReady();
 }

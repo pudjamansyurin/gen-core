@@ -1894,9 +1894,9 @@ void StartGeneralTask(const void *argument)
     //    HAL_IWDG_Refresh(&hiwdg);
 
     //     Battery Monitor
-    //    LOG_Str("Battery:Voltage = ");
-    //    LOG_Int(DB.vcu.battery);
-    //    LOG_StrLn(" mV");
+    LOG_Str("Battery:Voltage = ");
+    LOG_Int(DB.vcu.battery);
+    LOG_StrLn(" mV");
 
     // Toggling LED
     _LedToggle();

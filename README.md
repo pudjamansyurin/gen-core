@@ -98,6 +98,7 @@
 - [ ] Change R67 value as R63
 - [ ] CAN Module:
   - [ ] Give Resistor 120 Ohm between CAN_H and CAN_L (optional, just give the space)
+  - [ ] Add MOSFET power control and the GPIO pins
 - [ ] Connector:
   - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
   - [ ] Make 6 pin connector same (Fingerprint & CAN)
@@ -107,9 +108,8 @@
 - [ ] EEPROM:
   - [ ] Change the footprint
 - [ ] Li-ion Charger:
-  - [ ] B+ only for: MCU, GPS, SIMCOM & CAN
+  - [ ] B+ only for: MCU, GPS, SIMCOM & EEPROM
   - [ ] Add switch to disable the Li-ion battery
-  - [ ] Move Battery connector to top
 - [ ] Gyro:
   - [ ] Add separate 3v3 regulator
   - [ ] Connect INT pin to MCU (give jumper)
@@ -121,6 +121,7 @@
   - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
   - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
   - [ ] Configure the EEPROM address using u-center app
+  - [ ] Fix eagle footprint problem, the un-shielded ground near every pins
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
 - [ ] SIMCOM:
@@ -130,6 +131,7 @@
   - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
   - [ ] Give serial solder connector like GPS (for debugging)
   - [ ] Change LTC output from 3.8v to 4.2v
+  - [ ] or Remove the LTC, then add MOSFET power control (used RUN pin) between B+ and VBAT
   - [ ] Increase C42 value
   - [ ] Move SIMcard related components closer to the SIMcard-holder
 - [ ] AUDIO:
