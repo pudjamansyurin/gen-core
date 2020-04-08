@@ -251,7 +251,7 @@ int main(void)
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
-  //  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
+  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
@@ -1422,6 +1422,7 @@ void StartCommandTask(const void *argument)
 void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
+  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
   TickType_t last_wake;
   gps_t *hGps;
 
@@ -1440,6 +1441,11 @@ void StartGpsTask(const void *argument)
     if (GPS_Process(hGps)) {
       osMailPut(GpsMailHandle, hGps);
     }
+
+    // debug
+    //    LOG_StrLn("GPS:Buffer = ");
+    //    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
+    //    LOG_Enter();
 
     // Report interval
     vTaskDelayUntil(&last_wake, tick1000ms);
@@ -1865,7 +1871,6 @@ void StartGeneralTask(const void *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t last_wake;
-  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
   //  timestamp_t timestampCarrier;
 
   /* Infinite loop */
@@ -1895,14 +1900,9 @@ void StartGeneralTask(const void *argument)
     //    HAL_IWDG_Refresh(&hiwdg);
 
     //     Battery Monitor
-    LOG_Str("Battery:Voltage = ");
-    LOG_Int(DB.vcu.battery);
-    LOG_StrLn(" mV");
-
-    // debug
-    LOG_StrLn("GPS:Buffer = ");
-    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
-    LOG_Enter();
+    //    LOG_Str("Battery:Voltage = ");
+    //    LOG_Int(DB.vcu.battery);
+    //    LOG_StrLn(" mV");
 
     // Toggling LED
     _LedToggle();

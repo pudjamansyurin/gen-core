@@ -20,6 +20,6 @@ void SIMCOM_USART_IrqHandler(void);
 void SIMCOM_DMA_IrqHandler(void);
 void SIMCOM_DMA_Init(void);
 void SIMCOM_Reset_Buffer(void);
-void SIMCOM_Transmit(char *pData, uint16_t Size);
+uint8_t SIMCOM_Transmit(char *pData, uint16_t Size);
 
 #endif /* DMA_SIMCOM_H_ */

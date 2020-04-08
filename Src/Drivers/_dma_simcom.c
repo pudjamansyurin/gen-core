@@ -53,6 +53,7 @@ void SIMCOM_DMA_IrqHandler(void) {
       write += copy;
       len -= copy;
       ptr += copy;
+
       /* If still data to write for beginning of buffer */
       if (len) {
         /* Don't care if we override Read pointer now */
@@ -79,11 +80,11 @@ void SIMCOM_Reset_Buffer(void) {
   // clear rx buffer
   memset(SIMCOM_UART_RX, 0, strlen(SIMCOM_UART_RX));
   // wail until clear is done
-  osDelay(50);
+  //  osDelay(50);
   // set index back to first
   write = 0;
 }
 
-void SIMCOM_Transmit(char *pData, uint16_t Size) {
-  HAL_UART_Transmit(&huart1, (uint8_t*) pData, Size, HAL_MAX_DELAY);
+uint8_t SIMCOM_Transmit(char *pData, uint16_t Size) {
+  return (HAL_UART_Transmit(&huart1, (uint8_t*) pData, Size, HAL_MAX_DELAY) == HAL_OK);
 }

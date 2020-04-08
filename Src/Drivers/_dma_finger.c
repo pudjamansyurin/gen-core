@@ -50,6 +50,7 @@ void FINGER_DMA_IrqHandler(void) {
       if (copy > len) {
         copy = len;
       }
+
       /* Copy first part */
       memcpy(&FINGER_UART_RX[write], ptr, copy);
       /* Correct values for remaining data */
@@ -81,9 +82,9 @@ void FINGER_DMA_Init(void) {
 
 void FINGER_Reset_Buffer(void) {
   // clear rx buffer
-  //  memset(FINGER_UART_RX, 0, sizeof(FINGER_UART_RX));
+  memset(FINGER_UART_RX, 0, strlen(FINGER_UART_RX));
   // set index back to first
   write = 0;
   //     set null at the end
-  FINGER_UART_RX[write] = '\0';
+  //  FINGER_UART_RX[write] = '\0';
 }

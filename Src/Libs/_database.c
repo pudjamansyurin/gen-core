@@ -15,6 +15,7 @@ const TickType_t tick5ms = pdMS_TO_TICKS(5),
     tick500ms = pdMS_TO_TICKS(500),
     tick1000ms = pdMS_TO_TICKS(1000),
     tick5000ms = pdMS_TO_TICKS(5000),
+    tick10000ms = pdMS_TO_TICKS(10000),
     tickDelayFull = pdMS_TO_TICKS(REPORT_INTERVAL_FULL * 1000),
     tickDelaySimple = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE * 1000);
 

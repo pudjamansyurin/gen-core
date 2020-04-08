@@ -25,6 +25,7 @@ extern const TickType_t tick5ms,
     tick500ms,
     tick1000ms,
     tick5000ms,
+    tick10000ms,
     tickDelayFull,
     tickDelaySimple;
 

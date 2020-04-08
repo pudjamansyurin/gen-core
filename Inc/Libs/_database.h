@@ -27,13 +27,13 @@
 #define VCU_VENDOR                              "GEN Indonesia"
 #define VCU_BUILD_YEAR                          20U
 
-#define NET_SERVER_IP                           "pujakusumae-41515.portmap.host"
-#define NET_SERVER_PORT                         37006
+//#define NET_SERVER_IP                           "pujakusumae-31974.portmap.io"
+#define NET_SERVER_IP                           "0.tcp.ngrok.io"
+#define NET_SERVER_PORT                         11519
 #define NET_APN                                 "3gprs"                 // "telkomsel"
 #define NET_APN_USERNAME                        "3gprs"                 // "wap"
 #define NET_APN_PASSWORD                        "3gprs"                 // "wap123"
-#define NET_SIGNAL                              14                       // 2=AUTO, 13=2G, 14=3G
-#define NET_BOOT_TIMEOUT                        6000                   // in ms
+#define NET_BOOT_TIMEOUT                        7000                   // in ms
 #define NET_REPEAT_DELAY                        5000                    // in ms
 #define NET_EXTRA_TIME_MS                       1000                     // in ms
 #define NET_COMMAND_PREFIX                      "$T"

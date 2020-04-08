@@ -35,7 +35,6 @@ typedef struct {
   struct {
     char CIPSTART[200];
     char CSTT[75];
-    char CNMP[12];
   } cmd;
 } simcom_t;
 

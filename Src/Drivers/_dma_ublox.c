@@ -50,6 +50,7 @@ void UBLOX_DMA_IrqHandler(void) {
       if (copy > len) {
         copy = len;
       }
+
       /* Copy first part */
       memcpy(&UBLOX_UART_RX[write], ptr, copy);
       /* Correct values for remaining data */
@@ -81,9 +82,9 @@ void UBLOX_DMA_Init(void) {
 
 void UBLOX_Reset_Buffer(void) {
   // clear rx buffer
-  //	memset(UBLOX_UART_RX, 0, sizeof(UBLOX_UART_RX));
+  memset(UBLOX_UART_RX, 0, strlen(UBLOX_UART_RX));
   // set index back to first
   write = 0;
   //	 set null at the end
-  UBLOX_UART_RX[write] = '\0';
+  //  UBLOX_UART_RX[write] = '\0';
 }
