@@ -78,7 +78,7 @@ void SIMCOM_DMA_Init(void) {
 
 void SIMCOM_Reset_Buffer(void) {
   // clear rx buffer
-  memset(SIMCOM_UART_RX, 0, strlen(SIMCOM_UART_RX));
+  memset(SIMCOM_UART_RX, 0x00, SIMCOM_UART_RX_SZ);
   // wail until clear is done
   //  osDelay(50);
   // set index back to first

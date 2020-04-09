@@ -15,7 +15,7 @@ extern db_t DB;
 /* Local constants -----------------------------------------------------------*/
 #define ADC_MAX_VALUE               4095    // 12 bit
 #define REFFERENCE_MAX_VOLTAGE      3300    // mV
-#define RATIO                       1460
+#define RATIO                       1260
 #define RATIO_MULTIPLIER            1000
 
 /* Private variables ----------------------------------------------------------*/

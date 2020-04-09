@@ -35,6 +35,7 @@ void GYRO_Init(void) {
 mems_t GYRO_Average(mems_t *calibrator, uint16_t sample) {
   uint16_t i;
   mems_t mems;
+
   // reset value
   mems.accelerometer.x = 0;
   mems.accelerometer.y = 0;
@@ -42,6 +43,7 @@ mems_t GYRO_Average(mems_t *calibrator, uint16_t sample) {
   mems.gyroscope.x = 0;
   mems.gyroscope.y = 0;
   mems.gyroscope.z = 0;
+
   // sampling
   for (i = 0; i < sample; i++) {
     // read sensor
@@ -54,6 +56,7 @@ mems_t GYRO_Average(mems_t *calibrator, uint16_t sample) {
     mems.gyroscope.y += mpu.Accelerometer_Y;
     mems.gyroscope.z += mpu.Accelerometer_Z;
   }
+
   // calculate the average
   mems.accelerometer.x = mems.accelerometer.x / sample;
   mems.accelerometer.y = mems.accelerometer.y / sample;
@@ -61,6 +64,7 @@ mems_t GYRO_Average(mems_t *calibrator, uint16_t sample) {
   mems.gyroscope.x = mems.gyroscope.x / sample;
   mems.gyroscope.y = mems.gyroscope.y / sample;
   mems.gyroscope.z = mems.gyroscope.z / sample;
+
   // set for calibration
   if (calibrator != NULL) {
     mems.accelerometer.x -= calibrator->accelerometer.x;
@@ -76,20 +80,39 @@ mems_t GYRO_Average(mems_t *calibrator, uint16_t sample) {
 
 mems_decision_t GYRO_Decision(mems_t *calibrator, uint16_t sample) {
   int32_t g_force;
-  mems_decision_t mems_decision;
   mems_t mems;
+  mems_decision_t mems_decision;
 
   // get mems data
   mems = GYRO_Average(calibrator, sample);
+
   // calculate g-force
   g_force = sqrt(pow(mems.accelerometer.x, 2) +
       pow(mems.accelerometer.y, 2) +
       pow(mems.accelerometer.z, 2));
   mems_decision.crash = (g_force > ACCELEROMETER_LIMIT);
+
   // calculate movement change
   mems_decision.fall = (abs(mems.gyroscope.z) > GYROSCOPE_LIMIT);
 
   // for debugging
+  // calculated data
+  //  LOG_Str("IMU:Accel[");
+  //  LOG_Int(g_force * 100 / ACCELEROMETER_LIMIT);
+  //  LOG_Str(" %] = ");
+  //  LOG_Int(g_force);
+  //  LOG_Str(" / ");
+  //  LOG_Int(ACCELEROMETER_LIMIT);
+  //  LOG_Enter();
+  //  LOG_Str("IMU:Gyros[");
+  //  LOG_Int(abs(mems.gyroscope.z) * 100 / GYROSCOPE_LIMIT);
+  //  LOG_Str(" %] = ");
+  //  LOG_Int(abs(mems.gyroscope.z));
+  //  LOG_Str(" / ");
+  //  LOG_Int(GYROSCOPE_LIMIT);
+  //  LOG_Enter();
+
+  // raw data
   char str[100];
   sprintf(str,
       "Accelerometer\n- X:%ld\n- Y:%ld\n- Z:%ld\n"

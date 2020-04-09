@@ -92,7 +92,7 @@
 - [ ] Check crystals footprint: HCLK, RTC
 - [ ] Move all solder jumpers at the top layer
 - [ ] Make screw corner hole bigger in 4 positions
-- [ ] Add Voltage-divider for 5V line as Main Power Monitor
+- [ ] ~~Add Voltage-divider for 5V line as Main Power Monitor~~
 - [ ] Fix Q4 & Q7 shielded pad
 - [ ] Swap GPS & NET leds position
 - [ ] Change R67 value as R63
@@ -140,6 +140,7 @@
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
   - [ ] Give GND hole (un-isolated) bellow the chip.
+  - [ ] VL & VP pin should use its own 3v3 regulator (so add it), and it must be controlled also using MOSFET
 
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 

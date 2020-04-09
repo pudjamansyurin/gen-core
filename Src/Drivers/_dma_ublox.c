@@ -82,9 +82,9 @@ void UBLOX_DMA_Init(void) {
 
 void UBLOX_Reset_Buffer(void) {
   // clear rx buffer
-  memset(UBLOX_UART_RX, 0, strlen(UBLOX_UART_RX));
+  memset(UBLOX_UART_RX, 0x00, UBLOX_UART_RX_SZ);
   // set index back to first
   write = 0;
   //	 set null at the end
-  //  UBLOX_UART_RX[write] = '\0';
+//  UBLOX_UART_RX[write] = '\0';
 }

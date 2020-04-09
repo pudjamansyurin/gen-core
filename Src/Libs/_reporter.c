@@ -18,6 +18,9 @@ response_t RESPONSE;
 /* Public functions implementation --------------------------------------------*/
 void Reporter_Reset(FRAME_TYPE frame) {
   // set default data
+  LOG_Str("Reporter:Frame = ");
+  LOG_Int(frame);
+  LOG_Enter();
   // header report
   REPORT.header.prefix[0] = PREFIX_REPORT[1];
   REPORT.header.prefix[1] = PREFIX_REPORT[0];

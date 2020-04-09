@@ -172,7 +172,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  //  MX_CAN1_Init();
+//  MX_CAN1_Init();
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   MX_UART4_Init();
@@ -184,7 +184,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-  //  MX_IWDG_Init();
+//  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   //  CANBUS_Init();
   Battery_DMA_Init();
@@ -247,7 +247,7 @@ int main(void)
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+//  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
@@ -259,15 +259,15 @@ int main(void)
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
-  //  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
+//  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-  //  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
+  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
-  //  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
+//  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
@@ -275,11 +275,11 @@ int main(void)
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+//  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+//  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
@@ -287,7 +287,7 @@ int main(void)
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+//  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -401,7 +401,7 @@ static void MX_ADC1_Init(void)
    */
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
       {
     Error_Handler();
@@ -1231,8 +1231,6 @@ void StartGyroTask(const void *argument)
   GYRO_Init();
   // Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
-  // Give success indicator
-  AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 100);
 
   /* Infinite loop */
   last_wake = xTaskGetTickCount();
@@ -1249,10 +1247,10 @@ void StartGyroTask(const void *argument)
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
       xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
-      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
+      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
     } else {
       xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
-      AUDIO_BeepStop();
+      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
     }
 
     // Report interval
@@ -1422,9 +1420,9 @@ void StartCommandTask(const void *argument)
 void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
-  //  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
+  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
   TickType_t last_wake;
-  gps_t *hGps;
+  gps_t *hGps = NULL;
 
   // Start GPS module
   UBLOX_DMA_Init();
@@ -1438,14 +1436,18 @@ void StartGpsTask(const void *argument)
     hGps = osMailAlloc(GpsMailHandle, osWaitForever);
 
     // get GPS info
-    if (GPS_Process(hGps)) {
-      osMailPut(GpsMailHandle, hGps);
+    if (hGps != NULL) {
+      if (GPS_Process(hGps)) {
+        osMailPut(GpsMailHandle, hGps);
+      } else {
+        osMailFree(GpsMailHandle, hGps);
+      }
     }
 
     // debug
-    //    LOG_StrLn("GPS:Buffer = ");
-    //    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
-    //    LOG_Enter();
+    LOG_StrLn("GPS:Buffer = ");
+    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
+    LOG_Enter();
 
     // Report interval
     vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(1000));
@@ -1512,12 +1514,18 @@ void StartAudioTask(const void *argument)
     _DebugTask("Audio");
     // do this if events occurred
     if (xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0) == pdTRUE) {
-      // Beeping command
+      // Beep command
       if (notif_value & EVENT_AUDIO_BEEP) {
         // Beep
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
         osDelay(250);
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
+      }
+      // Long-Beep Command
+      if (notif_value & EVENT_AUDIO_BEEP_START) {
+        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
+      } else if (notif_value & EVENT_AUDIO_BEEP_STOP) {
+        AUDIO_BeepStop();
       }
       // Mute command
       if (notif_value & EVENT_AUDIO_MUTE_ON) {
@@ -1526,7 +1534,7 @@ void StartAudioTask(const void *argument)
       if (notif_value & EVENT_AUDIO_MUTE_OFF) {
         AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
       }
-      // Beeping command
+      // Volume command
       if (notif_value & EVENT_AUDIO_VOLUME) {
         AUDIO_OUT_SetVolume(DB.vcu.volume);
       }
@@ -1899,9 +1907,9 @@ void StartGeneralTask(const void *argument)
     //    HAL_IWDG_Refresh(&hiwdg);
 
     //     Battery Monitor
-    //    LOG_Str("Battery:Voltage = ");
-    //    LOG_Int(DB.vcu.battery);
-    //    LOG_StrLn(" mV");
+    LOG_Str("Battery:Voltage = ");
+    LOG_Int(DB.vcu.battery);
+    LOG_StrLn(" mV");
 
     // Toggling LED
     _LedToggle();
@@ -1979,12 +1987,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

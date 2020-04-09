@@ -107,19 +107,6 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   //------------------
 
   /* Wakeup MPU6050 */
-  //  HAL_I2C_Mem_Read(Handle, address, MPU6050_SIGNAL_PATH_RESET, 1, &d[1], 1, 1000);
-  //
-  //  d[0] = 0x40;
-  //  if (HAL_I2C_Mem_Write(Handle, address, MPU6050_PWR_MGMT_1, 1, &d[0], 1, 1000) != HAL_OK) {
-  //    return MPU6050_Result_Error;
-  //  }
-  //  osDelay(500);
-  //
-  //  d[0] = (d[1] & 0xF8) | 0x07;
-  //  if (HAL_I2C_Mem_Write(Handle, address, MPU6050_SIGNAL_PATH_RESET, 1, &d[0], 1, 1000) != HAL_OK) {
-  //    return MPU6050_Result_Error;
-  //  }
-  //  osDelay(500);
   //------------------
   /* Format array to send */
   d[0] = MPU6050_PWR_MGMT_1;
@@ -132,7 +119,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   //------------------
 
   /* Set sample rate to 1kHz */
-  MPU6050_SetDataRate(I2Cx, DataStruct, MPU6050_DataRate_8KHz);
+  MPU6050_SetDataRate(I2Cx, DataStruct, MPU6050_DataRate_1KHz);
 
   /* Config accelerometer */
   MPU6050_SetAccelerometer(I2Cx, DataStruct, AccelerometerSensitivity);

@@ -82,7 +82,7 @@ void FINGER_DMA_Init(void) {
 
 void FINGER_Reset_Buffer(void) {
   // clear rx buffer
-  memset(FINGER_UART_RX, 0, strlen(FINGER_UART_RX));
+  memset(FINGER_UART_RX, 0x00, FINGER_UART_RX_SZ);
   // set index back to first
   write = 0;
   //     set null at the end
