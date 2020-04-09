@@ -25,7 +25,7 @@ typedef enum {
 /* Exported struct --------------------------------------------------------------*/
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {
-  uint16_t prefix;
+  char prefix[2];
   uint32_t crc;
   uint8_t size;
   uint8_t frame_id;
@@ -75,7 +75,7 @@ typedef struct __attribute__((packed)) {
 // command frame (from server)
 typedef struct __attribute__((packed)) {
   struct __attribute__((packed)) {
-    uint16_t prefix;
+    char prefix[2];
     uint32_t crc;
     uint8_t size;
   } header;
@@ -88,7 +88,7 @@ typedef struct __attribute__((packed)) {
 
 // ACK frame (from server)
 typedef struct __attribute__((packed)) {
-  uint16_t prefix;
+  char prefix[2];
   uint8_t frame_id;
   uint16_t seq_id;
 } ack_t;

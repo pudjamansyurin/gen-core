@@ -19,15 +19,8 @@
 #include "_database.h"
 
 /* External variables ---------------------------------------------------------*/
-extern const TickType_t tick5ms,
-    tick100ms,
-    tick250ms,
-    tick500ms,
-    tick1000ms,
-    tick5000ms,
-    tick10000ms,
-    tickDelayFull,
-    tickDelaySimple;
+extern const TickType_t tickDelayFull;
+extern const TickType_t tickDelaySimple;
 
 /* Exported constants --------------------------------------------------------*/
 #define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')

@@ -14,6 +14,7 @@
 #include "_crc.h"
 
 /* Exported constants --------------------------------------------------------*/
+#define SIMCOM_RSP_NONE                 "\r\n"
 #define SIMCOM_RSP_SEND 				">"
 #define SIMCOM_RSP_SENT					"SEND OK\r\n"
 #define SIMCOM_RSP_OK 					"OK\r\n"
@@ -28,6 +29,16 @@ typedef enum {
   SIMCOM_POWER_UP = 1
 } SIMCOM_PWR;
 
+typedef enum {
+  SIMCOM_R_NACK = -4,
+  SIMCOM_R_RESTARTED = -3,
+  SIMCOM_R_NO_RESPONSE = -2,
+  SIMCOM_R_TIMEOUT = -1,
+  SIMCOM_R_ERROR = 0,
+  SIMCOM_R_OK = 1,
+  SIMCOM_R_ACK = 2,
+} SIMCOM_RESULT;
+
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
   uint8_t ready;
@@ -40,18 +51,15 @@ typedef struct {
 
 typedef struct {
   char name[10];
-  int8_t minValue;
-  uint8_t linMinValue;
+  uint8_t min;
   uint8_t percentage;
 } rssi_t;
 
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Init(SIMCOM_PWR state);
-uint8_t Simcom_Command(char *cmd, uint32_t ms, char *res, uint8_t n);
-uint8_t Simcom_Upload(char *message, uint16_t length);
-uint8_t Simcom_ReadACK(report_header_t *report_header);
-uint8_t Simcom_ReadCommand(command_t *command);
-uint8_t Simcom_ReadSignal(uint8_t *signal_percentage);
-uint8_t Simcom_ReadTime(timestamp_t *timestamp);
+SIMCOM_RESULT Simcom_Upload(char *message, uint16_t length);
+SIMCOM_RESULT Simcom_ReadACK(report_header_t *report_header);
+SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage);
+SIMCOM_RESULT Simcom_ReadTime(timestamp_t *timestamp);
 
 #endif /* SIMCOM_H_ */

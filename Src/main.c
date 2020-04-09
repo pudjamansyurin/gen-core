@@ -1095,7 +1095,8 @@ void StartIotTask(const void *argument)
   osEvent evt;
   report_t *hReport = NULL, report;
   response_t *hResponse = NULL;
-  uint8_t success, size, seq;
+  uint8_t size;
+  SIMCOM_RESULT res;
 
   // Start simcom module
   SIMCOM_DMA_Init();
@@ -1109,35 +1110,41 @@ void StartIotTask(const void *argument)
   for (;;) {
     _DebugTask("IoT");
     // Set default
-    success = 1;
+    res = SIMCOM_R_ACK;
 
     // response frame
     {
       // check response log
       evt = osMailGet(ResponseMailHandle, 0);
+
       // check is mail ready
       if (evt.status == osEventMail) {
         // copy the pointer
         hResponse = evt.value.p;
 
-        seq = 0;
-        while (seq++ < 2) {
+        do {
           // Send to server
-          success = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
-          // handle SIMCOM reply
-          if (success) {
+          res = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
+
+          // handle SIMCOM result
+          if (res == SIMCOM_R_ACK) {
             // validate ACK
             if (Simcom_ReadACK(&(hResponse->header))) {
               // Release back
               osMailFree(ResponseMailHandle, hResponse);
 
               break;
+            } else {
+              res = SIMCOM_R_NACK;
             }
           }
-        }
+
+          // delay
+          osDelay(100);
+        } while (res == SIMCOM_R_NACK || res == SIMCOM_R_TIMEOUT);
 
         // Release otherwise
-        if (!success) {
+        if (res != SIMCOM_R_ACK) {
           // Release back
           osMailFree(ResponseMailHandle, hResponse);
         }
@@ -1158,9 +1165,9 @@ void StartIotTask(const void *argument)
         }
       }
 
+      // check is report ready
       if (hReport) {
-        seq = 0;
-        while (seq++ < 2) {
+        do {
           // get current sending date-time
           report.data.req.rtc_send_datetime = RTC_Read();
           // recalculate the CRC
@@ -1168,48 +1175,41 @@ void StartIotTask(const void *argument)
               (uint8_t*) &(report.header.size),
               report.header.size + sizeof(report.header.size), 1);
           // Send to server
-          success = Simcom_Upload((char*) &report, size + report.header.size);
+          res = Simcom_Upload((char*) &report, size + report.header.size);
 
-          // handle SIMCOM reply
-          if (success) {
+          // handle SIMCOM result
+          if (res == SIMCOM_R_ACK) {
             // validate ACK
             if (Simcom_ReadACK(&(report.header))) {
               // Release back
               osMailFree(ReportMailHandle, hReport);
-
-              // check log again
-              evt = osMailGet(ReportMailHandle, 0);
-              // check is mail ready
-              if (evt.status == osEventMail) {
-                // copy the pointer
-                hReport = evt.value.p;
-                // copy value
-                report = *hReport;
-              } else {
-                hReport = NULL;
-              }
+              hReport = NULL;
 
               // exit
               break;
+            } else {
+              res = SIMCOM_R_NACK;
             }
           }
-        }
+
+          // delay
+          osDelay(100);
+        } while (res == SIMCOM_R_NACK || res == SIMCOM_R_TIMEOUT);
       }
     }
 
-    // save the SIMCOM event
-    Reporter_WriteEvent(REPORT_NETWORK_RESTART, !success);
-
     // handle sending error
-    if (!success) {
+    if (res != SIMCOM_R_ACK) {
+      // save the SIMCOM event
+      Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
       // restart module
-      _LedDisco(1000);
       Simcom_Init(SIMCOM_RESTART);
+      _LedDisco(1000);
     }
-  }
 
-  // Give other threads a shot
-  osDelay(100);
+    // Give other threads a shot
+    osDelay(100);
+  }
   /* USER CODE END 5 */
 }
 
@@ -1256,7 +1256,7 @@ void StartGyroTask(const void *argument)
     }
 
     // Report interval
-    vTaskDelayUntil(&last_wake, tick5ms);
+    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(10));
   }
   /* USER CODE END StartGyroTask */
 }
@@ -1422,7 +1422,7 @@ void StartCommandTask(const void *argument)
 void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
-  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
+  //  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
   TickType_t last_wake;
   gps_t *hGps;
 
@@ -1448,7 +1448,7 @@ void StartGpsTask(const void *argument)
     //    LOG_Enter();
 
     // Report interval
-    vTaskDelayUntil(&last_wake, tick1000ms);
+    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(1000));
   }
   /* USER CODE END StartGpsTask */
 }
@@ -1533,7 +1533,7 @@ void StartAudioTask(const void *argument)
     }
 
     // Report interval
-    vTaskDelayUntil(&last_wake, tick500ms);
+    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(500));
   }
   /* USER CODE END StartAudioTask */
 }
@@ -1721,7 +1721,6 @@ void StartCanRxTask(const void *argument)
           break;
       }
     }
-
   }
   /* USER CODE END StartCanRxTask */
 }
@@ -1795,7 +1794,7 @@ void StartSwitchTask(const void *argument)
             DB.vcu.sw.timer[i].running = 0;
             // stop SET
             DB.vcu.sw.timer[i].time = (uint8_t) ((osKernelSysTick()
-                - DB.vcu.sw.timer[i].start) / tick1000ms);
+                - DB.vcu.sw.timer[i].start) / pdMS_TO_TICKS(1000));
             // reverse it
             DB.vcu.sw.list[i].state = 1;
           }
@@ -1908,7 +1907,7 @@ void StartGeneralTask(const void *argument)
     _LedToggle();
 
     // Periodic interval
-    vTaskDelayUntil(&last_wake, tick1000ms);
+    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(1000));
   }
   /* USER CODE END StartGeneralTask */
 }
@@ -1936,7 +1935,7 @@ void StartCanTxTask(const void *argument)
     CAN_VCU_Trip_Mode(&(DB.vcu.sw.runner.mode.sub.trip[0]));
 
     // Periodic interval
-    vTaskDelayUntil(&last_wake, tick250ms);
+    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(250));
   }
   /* USER CODE END StartCanTxTask */
 }

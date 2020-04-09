@@ -18,7 +18,7 @@ uint8_t CAN_VCU_Switch(db_t *db) {
   static status_t iStatus;
 
   // indicator manipulator
-  if ((osKernelSysTick() - tick) >= tick500ms) {
+  if ((osKernelSysTick() - tick) >= pdMS_TO_TICKS(500)) {
     // finger
     if (db->hmi1.status.finger) {
       tick = osKernelSysTick();
@@ -37,7 +37,7 @@ uint8_t CAN_VCU_Switch(db_t *db) {
   }
 
   // sein manipulator
-  if ((osKernelSysTick() - tickSein) >= tick500ms) {
+  if ((osKernelSysTick() - tickSein) >= pdMS_TO_TICKS(500)) {
     if (db->vcu.sw.list[SW_K_SEIN_LEFT].state && db->vcu.sw.list[SW_K_SEIN_RIGHT].state) {
       // hazard
       tickSein = osKernelSysTick();
@@ -126,7 +126,7 @@ uint8_t CAN_VCU_Select_Set(sw_runner_t *runner) {
       tickPeriod = osKernelSysTick();
     }
 
-    if ((osKernelSysTick() - tickPeriod) >= tick5000ms ||
+    if ((osKernelSysTick() - tickPeriod) >= pdMS_TO_TICKS(5000) ||
         (runner->mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R)) {
       // stop listening
       runner->listening = 0;
@@ -135,7 +135,7 @@ uint8_t CAN_VCU_Select_Set(sw_runner_t *runner) {
       iValue = -1;
     } else {
       // blink
-      if ((osKernelSysTick() - tick) >= tick250ms) {
+      if ((osKernelSysTick() - tick) >= pdMS_TO_TICKS(250)) {
         tick = osKernelSysTick();
         iHide = !iHide;
       }
@@ -185,11 +185,11 @@ void CAN_MCU_Dummy_Read(db_t *db) {
 
   // read message
   DB_MCU_RPM = (
-      BSL(CB.rx.data[3], 24) |
+  BSL(CB.rx.data[3], 24) |
       BSL(CB.rx.data[2], 16) |
       BSL(CB.rx.data[1], 8) |
       CB.rx.data[0]
-  );
+      );
 
   // convert RPM to Speed
   db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;

@@ -19,7 +19,8 @@ response_t RESPONSE;
 void Reporter_Reset(FRAME_TYPE frame) {
   // set default data
   // header report
-  REPORT.header.prefix = FRAME_PREFIX;
+  REPORT.header.prefix[0] = PREFIX_REPORT[1];
+  REPORT.header.prefix[1] = PREFIX_REPORT[0];
   REPORT.header.crc = 0;
   REPORT.header.size = 0;
   REPORT.header.frame_id = frame;
