@@ -16,13 +16,23 @@ static nmea_t nmea;
 
 /* Public functions implementation --------------------------------------------*/
 void GPS_Init(void) {
-  LOG_StrLn("GPS:Init");
+  // mosfet control
+  while (1) {
+    LOG_StrLn("GPS:Init");
 
-  // mosfet controll
-  HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
-  osDelay(500);
-  HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
-  osDelay(1000);
+    HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
+    osDelay(500);
+    HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
+    osDelay(2000);
+
+    // debug
+    if (strlen(UBLOX_UART_RX) > 50) {
+      LOG_StrLn("GPS:OK");
+
+      break;
+    }
+
+  };
 
   nmea_init(&nmea);
 }

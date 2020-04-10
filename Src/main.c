@@ -1130,9 +1130,6 @@ void StartIotTask(const void *argument)
           if (res == SIMCOM_R_ACK) {
             // validate ACK
             if (Simcom_ReadACK(&(hResponse->header))) {
-              // Release back
-              osMailFree(ResponseMailHandle, hResponse);
-
               break;
             } else {
               res = SIMCOM_R_NACK;
@@ -1143,11 +1140,8 @@ void StartIotTask(const void *argument)
           osDelay(100);
         } while (res == SIMCOM_R_NACK || res == SIMCOM_R_TIMEOUT);
 
-        // Release otherwise
-        if (res != SIMCOM_R_ACK) {
-          // Release back
-          osMailFree(ResponseMailHandle, hResponse);
-        }
+        // Release back
+        osMailFree(ResponseMailHandle, hResponse);
       }
     }
 
@@ -1271,8 +1265,8 @@ void StartCommandTask(const void *argument)
   /* USER CODE BEGIN StartCommandTask */
   int p;
   osEvent evt;
-  command_t *hCommand;
-  response_t *hResponse;
+  command_t *hCommand = NULL;
+  response_t *hResponse = NULL;
   extern response_t RESPONSE;
 
   // reset response frame to default
@@ -1286,6 +1280,15 @@ void StartCommandTask(const void *argument)
 
     if (evt.status == osEventMail) {
       hCommand = evt.value.p;
+
+      // debug
+      LOG_Str("\nCommand:New [");
+      LOG_Int(hCommand->data.code);
+      LOG_Str("-");
+      LOG_Int(hCommand->data.sub_code);
+      LOG_Str("] = ");
+      LOG_BufHex((char*) &(hCommand->data.value), sizeof(hCommand->data.value));
+      LOG_Enter();
 
       // default command response
       RESPONSE.data.code = RESPONSE_STATUS_OK;
@@ -1450,7 +1453,7 @@ void StartGpsTask(const void *argument)
     LOG_Enter();
 
     // Report interval
-    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(1000));
+    vTaskDelayUntil(&last_wake, tickDelayFull);
   }
   /* USER CODE END StartGpsTask */
 }

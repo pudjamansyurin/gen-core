@@ -39,9 +39,9 @@ void _Error(char msg[50]) {
 }
 
 void _DebugTask(char name[20]) {
-//  LOG_Str("Task:");
-//  LOG_Buf(name, strlen(name));
-//  LOG_Enter();
+  //  LOG_Str("Task:");
+  //  LOG_Buf(name, strlen(name));
+  //  LOG_Enter();
 }
 
 void _DummyGenerator(db_t *db) {

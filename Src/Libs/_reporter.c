@@ -91,12 +91,17 @@ void Reporter_SetGPS(gps_t *hgps) {
 }
 
 void Reporter_SetSpeed(gps_t *hgps) {
+  //  static uint16_t odom_meter = 0;
   // FIXME use real speed calculation
   // calculate speed from GPS data
   REPORT.data.req.speed = hgps->speed_kph;
-  // save ODOMETER to flash (non-volatile)
+  // dummy odometer
   Reporter_SetOdometer(REPORT.data.opt.odometer + (hgps->speed_mps * REPORT_INTERVAL_SIMPLE));
-
+  //  odom_meter += (hgps->speed_mps * REPORT_INTERVAL_SIMPLE);
+  //  if (odom_meter >= 1000) {
+  //    Reporter_SetOdometer(REPORT.data.opt.odometer++);
+  //    odom_meter = 0;
+  //  }
 }
 
 void Reporter_SetEvents(uint64_t value) {

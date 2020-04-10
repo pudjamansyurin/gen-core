@@ -164,7 +164,7 @@ void Simcom_Init(SIMCOM_PWR state) {
     // ============ SOCKET CONFIGURAITON
     // Establish connection with server
     if (p == SIMCOM_R_OK) {
-      p = Simcom_Command(simcom.cmd.CIPSTART, 20000, 1, "CONNECT");
+      p = Simcom_Command(simcom.cmd.CIPSTART, 30000, 1, "CONNECT");
       // check either connection ok / error
       if (p == SIMCOM_R_OK) {
         p = Simcom_Response("CONNECT OK");
@@ -197,19 +197,25 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
   p = Simcom_Command(str, 5000, 1, SIMCOM_RSP_SEND);
   if (p == SIMCOM_R_OK) {
     // send response
-    p = Simcom_SendIndirect(payload, payload_length, 1, 10000, SIMCOM_RSP_SENT, 1);
+    p = Simcom_SendIndirect(payload, payload_length, 1, 20000, SIMCOM_RSP_SENT, 1);
     if (p == SIMCOM_R_OK) {
+//      Simcom_ClearBuffer();
+
       // set timeout guard
       tick = osKernelSysTick();
       // wait ACK for payload
       while (1) {
         if (Simcom_Response(PREFIX_ACK) ||
             Simcom_Response(PREFIX_NACK) ||
-            (osKernelSysTick() - tick) >= pdMS_TO_TICKS(15000)) {
+            (osKernelSysTick() - tick) >= pdMS_TO_TICKS(20000)) {
           break;
         }
         osDelay(10);
       }
+
+      // debug
+      LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+      LOG_Enter();
 
       // exception handler
       if (Simcom_Response(PREFIX_ACK)) {
@@ -505,8 +511,10 @@ static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_pa
     p = Simcom_SendDirect(data, len, ms, res);
 
     // print response for debugger
-    LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-    LOG_Enter();
+    if (!is_payload) {
+      LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+      LOG_Enter();
+    }
 
     // exception debug
     switch (p) {
@@ -553,14 +561,6 @@ static void Simcom_ClearBuffer(void) {
     if (Simcom_ParseCommand(hCommand)) {
       // reset rx buffer
       SIMCOM_Reset_Buffer();
-      // debug
-      LOG_Str("\nSimcom:NewCommand [");
-      LOG_Int(hCommand->data.code);
-      LOG_Str("-");
-      LOG_Int(hCommand->data.sub_code);
-      LOG_Str("] = ");
-      LOG_BufHex((char*) &(hCommand->data.value), sizeof(hCommand->data.value));
-      LOG_Enter();
 
       osMailPut(CommandMailHandle, hCommand);
     }
