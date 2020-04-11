@@ -12,8 +12,8 @@
 #include "_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define SIMCOM_UART_RX_SZ               512
-#define SIMCOM_DMA_RX_SZ                (SIMCOM_UART_RX_SZ/2)
+#define SIMCOM_UART_RX_SZ               1024
+#define SIMCOM_DMA_RX_SZ                (SIMCOM_UART_RX_SZ)
 
 /* Public functions prototype ------------------------------------------------*/
 void SIMCOM_USART_IrqHandler(void);

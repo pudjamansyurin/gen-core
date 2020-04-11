@@ -21,18 +21,18 @@ void GPS_Init(void) {
     LOG_StrLn("GPS:Init");
 
     HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
+    _LedWrite(1);
     osDelay(500);
     HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
+    _LedWrite(0);
     osDelay(2000);
 
     // debug
     if (strlen(UBLOX_UART_RX) > 50) {
-      LOG_StrLn("GPS:OK");
-
       break;
     }
-
   };
+  _LedWrite(1);
 
   nmea_init(&nmea);
 }

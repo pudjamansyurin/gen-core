@@ -263,7 +263,7 @@ int main(void)
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
+//  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
@@ -283,7 +283,7 @@ int main(void)
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
+//  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
@@ -1441,8 +1441,10 @@ void StartGpsTask(const void *argument)
     // get GPS info
     if (hGps != NULL) {
       if (GPS_Process(hGps)) {
+        _LedWrite(0);
         osMailPut(GpsMailHandle, hGps);
       } else {
+        _LedWrite(1);
         osMailFree(GpsMailHandle, hGps);
       }
     }
@@ -1915,7 +1917,7 @@ void StartGeneralTask(const void *argument)
     LOG_StrLn(" mV");
 
     // Toggling LED
-    _LedToggle();
+    //    _LedToggle();
 
     // Periodic interval
     vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(1000));
