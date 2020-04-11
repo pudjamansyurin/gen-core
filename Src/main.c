@@ -172,7 +172,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-//  MX_CAN1_Init();
+  //  MX_CAN1_Init();
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   MX_UART4_Init();
@@ -184,7 +184,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-//  MX_IWDG_Init();
+  //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   //  CANBUS_Init();
   Battery_DMA_Init();
@@ -247,7 +247,7 @@ int main(void)
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-//  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
@@ -259,15 +259,15 @@ int main(void)
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
-//  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
+  //  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
 
   /* definition and creation of AudioTask */
   osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-//  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
+  //  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
-//  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
+  //  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
@@ -275,19 +275,19 @@ int main(void)
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-//  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-//  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-//  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
+  //  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-//  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1199,6 +1199,8 @@ void StartIotTask(const void *argument)
       // restart module
       Simcom_Init(SIMCOM_RESTART);
       _LedDisco(1000);
+    } else {
+      Reporter_WriteEvent(REPORT_NETWORK_RESTART, 0);
     }
 
     // Give other threads a shot
@@ -1235,15 +1237,15 @@ void StartGyroTask(const void *argument)
 
     // Check accelerometer, happens when impact detected
     if (mems_decision.crash) {
-      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_CRASH, eSetBits);
+      Reporter_WriteEvent(REPORT_BIKE_CRASHED, 1);
     }
 
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
-      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL, eSetBits);
+      Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
       xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
     } else {
-      xTaskNotify(ReporterTaskHandle, EVENT_REPORTER_FALL_FIXED, eSetBits);
+      Reporter_WriteEvent(REPORT_BIKE_FALLING, 0);
       xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
     }
 
@@ -1609,8 +1611,8 @@ void StartReporterTask(const void *argument)
   FRAME_TYPE frame;
   uint8_t net_restart_state;
   uint32_t notif_value;
-  report_t *hReport;
-  gps_t *hGps;
+  report_t *hReport = NULL;
+  gps_t *hGps = NULL;
 
   // FIXME: create master thread
   // ONE-TIME configurations:
@@ -1633,23 +1635,6 @@ void StartReporterTask(const void *argument)
   last_wake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("Reporter");
-    // preserve simcom reboot from events group
-    net_restart_state = Reporter_ReadEvent(REPORT_NETWORK_RESTART);
-    // reset all events group
-    Reporter_SetEvents(0);
-    // re-write the simcom reboot events
-    Reporter_WriteEvent(REPORT_NETWORK_RESTART, net_restart_state);
-
-    // do this if events occurred
-    if (xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0) == pdTRUE) {
-      // check & set every event
-      if (notif_value & EVENT_REPORTER_CRASH) {
-        Reporter_WriteEvent(REPORT_BIKE_CRASHED, 1);
-      }
-      if ((notif_value & EVENT_REPORTER_FALL) && !(notif_value & EVENT_REPORTER_FALL_FIXED)) {
-        Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
-      }
-    }
 
     // get processed GPS data
     evt = osMailGet(GpsMailHandle, 0);
@@ -1696,6 +1681,8 @@ void StartReporterTask(const void *argument)
     *hReport = REPORT;
     // Put report to log
     osMailPut(ReportMailHandle, hReport);
+    // reset all events group
+    Reporter_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
     vTaskDelayUntil(&last_wake, tickDelaySimple);
@@ -1992,12 +1979,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

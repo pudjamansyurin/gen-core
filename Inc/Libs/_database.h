@@ -53,9 +53,9 @@
 #define GMT_TIME                                7                       // Asia/Jakarta
 
 // Event List (RTOS Tasks)
-#define EVENT_REPORTER_CRASH                    BIT(0)
-#define EVENT_REPORTER_FALL                     BIT(1)
-#define EVENT_REPORTER_FALL_FIXED               BIT(2)
+//#define EVENT_REPORTER_CRASH                    BIT(0)
+//#define EVENT_REPORTER_FALL                     BIT(1)
+//#define EVENT_REPORTER_FALL_FIXED               BIT(2)
 #define EVENT_AUDIO_BEEP                        BIT(0)
 #define EVENT_AUDIO_BEEP_START                  BIT(1)
 #define EVENT_AUDIO_BEEP_STOP                   BIT(2)
