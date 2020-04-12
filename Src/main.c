@@ -243,19 +243,19 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+  //  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
-  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
+  //  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
@@ -271,7 +271,7 @@ int main(void)
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
-  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
+  //  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
@@ -283,7 +283,7 @@ int main(void)
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
+  //  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
@@ -1236,11 +1236,17 @@ void StartGyroTask(const void *argument)
     Reporter_WriteEvent(REPORT_BIKE_CRASHED, mems_decision.crash);
 
     // Check gyroscope, happens when fall detected
-    Reporter_WriteEvent(REPORT_BIKE_FALLING, mems_decision.fall);
-    xTaskNotify(AudioTaskHandle, mems_decision.fall ? EVENT_AUDIO_BEEP_START : EVENT_AUDIO_BEEP_STOP, eSetBits);
-
+    if (mems_decision.fall) {
+      //      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
+      Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
+      _LedWrite(1);
+    } else {
+      //      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
+      Reporter_WriteEvent(REPORT_BIKE_FALLING, 0);
+      _LedWrite(0);
+    }
     // Report interval
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(10));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(100));
   }
   /* USER CODE END StartGyroTask */
 }

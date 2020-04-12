@@ -27,7 +27,7 @@ void GYRO_Init(void) {
     osDelay(1000);
 
     // module initialization
-    result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_250s);
+    result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
 
   } while (result != MPU6050_Result_Ok);
 }
@@ -96,31 +96,31 @@ mems_decision_t GYRO_Decision(mems_t *calibrator, uint16_t sample) {
   mems_decision.fall = (abs(mems.gyroscope.z) > GYROSCOPE_LIMIT);
 
   // for debugging
-  // calculated data
-  //  LOG_Str("IMU:Accel[");
-  //  LOG_Int(g_force * 100 / ACCELEROMETER_LIMIT);
-  //  LOG_Str(" %] = ");
-  //  LOG_Int(g_force);
-  //  LOG_Str(" / ");
-  //  LOG_Int(ACCELEROMETER_LIMIT);
-  //  LOG_Enter();
-  //  LOG_Str("IMU:Gyros[");
-  //  LOG_Int(abs(mems.gyroscope.z) * 100 / GYROSCOPE_LIMIT);
-  //  LOG_Str(" %] = ");
-  //  LOG_Int(abs(mems.gyroscope.z));
-  //  LOG_Str(" / ");
-  //  LOG_Int(GYROSCOPE_LIMIT);
-  //  LOG_Enter();
+  //   calculated data
+  LOG_Str("IMU:Accel[");
+  LOG_Int(g_force * 100 / ACCELEROMETER_LIMIT);
+  LOG_Str(" %] = ");
+  LOG_Int(g_force);
+  LOG_Str(" / ");
+  LOG_Int(ACCELEROMETER_LIMIT);
+  LOG_Enter();
+  LOG_Str("IMU:Gyros[");
+  LOG_Int(abs(mems.gyroscope.z) * 100 / GYROSCOPE_LIMIT);
+  LOG_Str(" %] = ");
+  LOG_Int(abs(mems.gyroscope.z));
+  LOG_Str(" / ");
+  LOG_Int(GYROSCOPE_LIMIT);
+  LOG_Enter();
 
-  // raw data
-  char str[100];
-  sprintf(str,
-      "Accelerometer\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-          "Gyroscope\n- X:%ld\n- Y:%ld\n- Z:%ld\n\n",
-      mems.accelerometer.x, mems.accelerometer.y, mems.accelerometer.z,
-      mems.gyroscope.x, mems.gyroscope.y, mems.gyroscope.z
-      );
-  LOG_Str(str);
+//// raw data
+//  char str[100];
+//  sprintf(str,
+//      "Accelerometer\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+//          "Gyroscope\n- X:%ld\n- Y:%ld\n- Z:%ld\n\n",
+//      mems.accelerometer.x, mems.accelerometer.y, mems.accelerometer.z,
+//      mems.gyroscope.x, mems.gyroscope.y, mems.gyroscope.z
+//      );
+//  LOG_Str(str);
 
   return mems_decision;
 }

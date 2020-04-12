@@ -110,7 +110,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   //------------------
   /* Format array to send */
   d[0] = MPU6050_PWR_MGMT_1;
-  d[1] = 0x00;
+  d[1] = 0x01;
 
   /* Try to transmit via I2C */
   if (HAL_I2C_Master_Transmit(Handle, address, d, 2, 1000) != HAL_OK) {
@@ -119,7 +119,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
   //------------------
 
   /* Set sample rate to 1kHz */
-  MPU6050_SetDataRate(I2Cx, DataStruct, MPU6050_DataRate_1KHz);
+  MPU6050_SetDataRate(I2Cx, DataStruct, MPU6050_DataRate_8KHz);
 
   /* Config accelerometer */
   MPU6050_SetAccelerometer(I2Cx, DataStruct, AccelerometerSensitivity);

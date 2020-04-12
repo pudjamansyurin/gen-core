@@ -12,8 +12,8 @@
 #include "_mpu6050.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define GYROSCOPE_LIMIT               10000
-#define ACCELEROMETER_LIMIT           46000
+#define GYROSCOPE_LIMIT               (10000/10)
+#define ACCELEROMETER_LIMIT           (46000/3)
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
