@@ -283,7 +283,7 @@ int main(void)
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-  //  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
+  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
@@ -904,9 +904,11 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(INT_KEYLESS_CSN_GPIO_Port, INT_KEYLESS_CSN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HBAR_REVERSE_Pin EXT_ABS_STATUS_Pin
-   EXT_HBAR_SEIN_L_Pin EXT_HBAR_SEIN_R_Pin */
+   EXT_KNOB_IRQ_Pin EXT_HBAR_LAMP_Pin EXT_BMS_IRQ_Pin EXT_HBAR_SEIN_L_Pin
+   EXT_HBAR_SEIN_R_Pin */
   GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin | EXT_HBAR_SET_Pin | EXT_HBAR_REVERSE_Pin | EXT_ABS_STATUS_Pin
-      | EXT_HBAR_SEIN_L_Pin | EXT_HBAR_SEIN_R_Pin;
+      | EXT_KNOB_IRQ_Pin | EXT_HBAR_LAMP_Pin | EXT_BMS_IRQ_Pin | EXT_HBAR_SEIN_L_Pin
+      | EXT_HBAR_SEIN_R_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -917,41 +919,34 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin EXT_FINGER_PWR_Pin
-   EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
-  GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin | EXT_FINGER_PWR_Pin
-      | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
+  /*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin
+   EXT_FINGER_PWR_Pin EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
+  GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
+      | EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : INT_NET_PWR_Pin */
-  GPIO_InitStruct.Pin = INT_NET_PWR_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(INT_NET_PWR_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : EXT_SOLENOID_PWR_Pin INT_NET_RST_Pin INT_GYRO_PWR_Pin INT_KEYLESS_PWR_Pin
-   EXT_KEYLESS_ALARM_Pin */
-  GPIO_InitStruct.Pin = EXT_SOLENOID_PWR_Pin | INT_NET_RST_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin
-      | EXT_KEYLESS_ALARM_Pin;
+  /*Configure GPIO pins : EXT_SOLENOID_PWR_Pin INT_NET_RST_Pin INT_NET_DTR_Pin INT_GYRO_PWR_Pin
+   INT_KEYLESS_PWR_Pin EXT_KEYLESS_ALARM_Pin */
+  GPIO_InitStruct.Pin = EXT_SOLENOID_PWR_Pin | INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin
+      | INT_KEYLESS_PWR_Pin | EXT_KEYLESS_ALARM_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EXT_FINGER_IRQ_Pin EXT_KNOB_IRQ_Pin EXT_HBAR_LAMP_Pin EXT_BMS_IRQ_Pin */
-  GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin | EXT_KNOB_IRQ_Pin | EXT_HBAR_LAMP_Pin | EXT_BMS_IRQ_Pin;
+  /*Configure GPIO pin : EXT_FINGER_IRQ_Pin */
+  GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(EXT_FINGER_IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EXT_GPIO_IN1_Pin EXT_GPIO_IN2_Pin EXT_GPIO_IN3_Pin EXT_GPIO_IN4_Pin */
   GPIO_InitStruct.Pin = EXT_GPIO_IN1_Pin | EXT_GPIO_IN2_Pin | EXT_GPIO_IN3_Pin | EXT_GPIO_IN4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : INT_KEYLESS_IRQ_Pin */
@@ -965,13 +960,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : INT_NET_DTR_Pin */
-  GPIO_InitStruct.Pin = INT_NET_DTR_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(INT_NET_DTR_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EXT_GPIO_OUT1_Pin EXT_GPIO_OUT2_Pin EXT_GPIO_OUT3_Pin EXT_GPIO_OUT4_Pin
    SYS_LED_Pin EXT_HMI2_SHUTDOWN_Pin EXT_HMI2_BRIGHTNESS_Pin EXT_BMS_WAKEUP_Pin
@@ -987,7 +975,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : EXT_GPIO_IN0_Pin */
   GPIO_InitStruct.Pin = EXT_GPIO_IN0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(EXT_GPIO_IN0_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PD14 PD15 */
@@ -1048,7 +1036,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
   if (osKernelRunning()) {
-    // handle NRF24 IRQ
+    // handle BMS_IRQ (is 5v exist?)
+    if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
+      xTaskNotifyFromISR(
+          GeneralTaskHandle,
+          EVENT_GENERAL_BMS_IRQ,
+          eSetBits,
+          &xHigherPriorityTaskWoken);
+    }
+
+    //    // handle NRF24 IRQ
     //    if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
     //      KEYLESS_IrqHandler();
     //    }
@@ -1219,7 +1216,7 @@ void StartIotTask(const void *argument)
 void StartGyroTask(const void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
-  TickType_t last_wake;
+  TickType_t lastWake;
   mems_t mems_calibration;
   mems_decision_t mems_decision;
 
@@ -1229,28 +1226,21 @@ void StartGyroTask(const void *argument)
   mems_calibration = GYRO_Average(NULL, 500);
 
   /* Infinite loop */
-  last_wake = xTaskGetTickCount();
+  lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("Gyro");
     // Read all accelerometer, gyroscope (average)
     mems_decision = GYRO_Decision(&mems_calibration, 25);
 
     // Check accelerometer, happens when impact detected
-    if (mems_decision.crash) {
-      Reporter_WriteEvent(REPORT_BIKE_CRASHED, 1);
-    }
+    Reporter_WriteEvent(REPORT_BIKE_CRASHED, mems_decision.crash);
 
     // Check gyroscope, happens when fall detected
-    if (mems_decision.fall) {
-      Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
-      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
-    } else {
-      Reporter_WriteEvent(REPORT_BIKE_FALLING, 0);
-      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
-    }
+    Reporter_WriteEvent(REPORT_BIKE_FALLING, mems_decision.fall);
+    xTaskNotify(AudioTaskHandle, mems_decision.fall ? EVENT_AUDIO_BEEP_START : EVENT_AUDIO_BEEP_STOP, eSetBits);
 
     // Report interval
-    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(10));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(10));
   }
   /* USER CODE END StartGyroTask */
 }
@@ -1426,7 +1416,7 @@ void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
-  TickType_t last_wake;
+  TickType_t lastWake;
   gps_t *hGps = NULL;
 
   // Start GPS module
@@ -1434,7 +1424,7 @@ void StartGpsTask(const void *argument)
   GPS_Init();
 
   /* Infinite loop */
-  last_wake = xTaskGetTickCount();
+  lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("GPS");
     // Allocate memory
@@ -1457,7 +1447,7 @@ void StartGpsTask(const void *argument)
     LOG_Enter();
 
     // Report interval
-    vTaskDelayUntil(&last_wake, tickDelayFull);
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000*DB.bms.interval));
   }
   /* USER CODE END StartGpsTask */
 }
@@ -1472,7 +1462,7 @@ void StartGpsTask(const void *argument)
 void StartFingerTask(const void *argument)
 {
   /* USER CODE BEGIN StartFingerTask */
-  uint32_t notif_value;
+  uint32_t notif;
 
   // Initialization
   FINGER_DMA_Init();
@@ -1482,10 +1472,10 @@ void StartFingerTask(const void *argument)
   for (;;) {
     _DebugTask("Finger");
     // check if user put finger
-    xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &notif_value, portMAX_DELAY);
+    xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &notif, portMAX_DELAY);
 
     // proceed event
-    if (notif_value & EVENT_FINGER_PLACED) {
+    if (notif & EVENT_FINGER_PLACED) {
       if (Finger_AuthFast() > 0) {
         // indicator when finger is registered
         _LedWrite(1);
@@ -1507,8 +1497,8 @@ void StartFingerTask(const void *argument)
 void StartAudioTask(const void *argument)
 {
   /* USER CODE BEGIN StartAudioTask */
-  TickType_t last_wake;
-  uint32_t notif_value;
+  TickType_t lastWake;
+  uint32_t notif;
 
   /* Initialize Wave player (Codec, DMA, I2C) */
   AUDIO_Init();
@@ -1516,39 +1506,39 @@ void StartAudioTask(const void *argument)
   AUDIO_Play();
 
   /* Infinite loop */
-  last_wake = xTaskGetTickCount();
+  lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("Audio");
     // do this if events occurred
-    if (xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, 0) == pdTRUE) {
+    if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
       // Beep command
-      if (notif_value & EVENT_AUDIO_BEEP) {
+      if (notif & EVENT_AUDIO_BEEP) {
         // Beep
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
         osDelay(250);
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
       }
       // Long-Beep Command
-      if (notif_value & EVENT_AUDIO_BEEP_START) {
+      if (notif & EVENT_AUDIO_BEEP_START) {
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
-      } else if (notif_value & EVENT_AUDIO_BEEP_STOP) {
+      } else if (notif & EVENT_AUDIO_BEEP_STOP) {
         AUDIO_BeepStop();
       }
       // Mute command
-      if (notif_value & EVENT_AUDIO_MUTE_ON) {
+      if (notif & EVENT_AUDIO_MUTE_ON) {
         AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
       }
-      if (notif_value & EVENT_AUDIO_MUTE_OFF) {
+      if (notif & EVENT_AUDIO_MUTE_OFF) {
         AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
       }
       // Volume command
-      if (notif_value & EVENT_AUDIO_VOLUME) {
+      if (notif & EVENT_AUDIO_VOLUME) {
         AUDIO_OUT_SetVolume(DB.vcu.volume);
       }
     }
 
     // Report interval
-    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(500));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(500));
   }
   /* USER CODE END StartAudioTask */
 }
@@ -1564,7 +1554,7 @@ void StartKeylessTask(const void *argument)
 {
   /* USER CODE BEGIN StartKeylessTask */
   uint8_t msg;
-  uint32_t notif_value;
+  uint32_t notif;
 
   // initialization
   KEYLESS_Init();
@@ -1573,10 +1563,10 @@ void StartKeylessTask(const void *argument)
   for (;;) {
     _DebugTask("Keyless");
     // check if has new can message
-    xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
+    xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
 
     // proceed event
-    if (notif_value & EVENT_KEYLESS_RX_IT) {
+    if (notif & EVENT_KEYLESS_RX_IT) {
       msg = KEYLESS_ReadPayload();
 
       // indicator
@@ -1606,11 +1596,9 @@ void StartReporterTask(const void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
   extern report_t REPORT;
-  TickType_t last_wake, last_wake_full = 0;
+  TickType_t lastWake, lastFull = 0;
   osEvent evt;
   FRAME_TYPE frame;
-  uint8_t net_restart_state;
-  uint32_t notif_value;
   report_t *hReport = NULL;
   gps_t *hGps = NULL;
 
@@ -1632,7 +1620,7 @@ void StartReporterTask(const void *argument)
   Reporter_Reset(FR_FULL);
 
   /* Infinite loop */
-  last_wake = xTaskGetTickCount();
+  lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("Reporter");
 
@@ -1650,9 +1638,9 @@ void StartReporterTask(const void *argument)
     }
 
     // decide full/simple frame time
-    if ((last_wake - last_wake_full) >= tickDelayFull) {
+    if ((lastWake - lastFull) >= pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000*DB.bms.interval)) {
       // capture full frame wake time
-      last_wake_full = last_wake;
+      lastFull = lastWake;
       // full frame
       frame = FR_FULL;
     } else {
@@ -1682,10 +1670,10 @@ void StartReporterTask(const void *argument)
     // Put report to log
     osMailPut(ReportMailHandle, hReport);
     // reset all events group
-    Reporter_SetEvents(0);
+    //    Reporter_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
-    vTaskDelayUntil(&last_wake, tickDelaySimple);
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000*DB.bms.interval));
   }
   /* USER CODE END StartReporterTask */
 }
@@ -1700,16 +1688,16 @@ void StartReporterTask(const void *argument)
 void StartCanRxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
-  uint32_t notif_value;
+  uint32_t notif;
 
   /* Infinite loop */
   for (;;) {
     _DebugTask("CanRx");
     // check if has new can message
-    xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
+    xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
 
     // proceed event
-    if (notif_value & EVENT_CAN_RX_IT) {
+    if (notif & EVENT_CAN_RX_IT) {
       // handle message
       switch (CANBUS_ReadID()) {
         case CAN_ADDR_MCU_DUMMY:
@@ -1736,7 +1724,7 @@ void StartSwitchTask(const void *argument)
 {
   /* USER CODE BEGIN StartSwitchTask */
   uint8_t i, iModeDrive;
-  uint32_t notif_value;
+  uint32_t notif;
 
   // Read all EXTI state
   for (i = 0; i < DB.vcu.sw.count; i++) {
@@ -1761,15 +1749,17 @@ void StartSwitchTask(const void *argument)
     _DebugTask("Switch");
 
     xTaskNotifyStateClear(NULL);
-    xTaskNotifyWait(0x00, ULONG_MAX, &notif_value, portMAX_DELAY);
+    xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
     // handle bounce effect
     osDelay(50);
 
     // Read all (to handle multiple switch change at the same time)
     for (i = 0; i < DB.vcu.sw.count; i++) {
       DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
+    }
 
-      // handle select & set: timer
+    // handle select & set: timer
+    for (i = 0; i < DB.vcu.sw.count; i++) {
       if (i == SW_K_SELECT || i == SW_K_SET) {
         // reset SET timer
         DB.vcu.sw.timer[i].time = 0;
@@ -1869,14 +1859,31 @@ void StartSwitchTask(const void *argument)
 void StartGeneralTask(const void *argument)
 {
   /* USER CODE BEGIN StartGeneralTask */
-  TickType_t last_wake;
+  TickType_t lastWake;
+  uint32_t notif;
   //  timestamp_t timestampCarrier;
 
   /* Infinite loop */
-  last_wake = xTaskGetTickCount();
+  lastWake = xTaskGetTickCount();
+  // get current state
+  DB.bms.interval = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin) ? 1 : 5;
+  Reporter_WriteEvent(REPORT_BMS_OFF, !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin));
 
   for (;;) {
     _DebugTask("General");
+
+    // do this if events occurred
+    if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
+      // proceed event
+      if (notif & EVENT_GENERAL_BMS_IRQ) {
+        // handle bounce effect
+        osDelay(50);
+        // get current state
+        DB.bms.interval = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin) ? 1 : 5;
+        Reporter_WriteEvent(REPORT_BMS_OFF, !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin));
+      }
+    }
+
     //    // Retrieve network signal quality
     //    Simcom_ReadSignal(&(DB.vcu.signal));
     //
@@ -1907,7 +1914,7 @@ void StartGeneralTask(const void *argument)
     //    _LedToggle();
 
     // Periodic interval
-    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(1000));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(1000));
   }
   /* USER CODE END StartGeneralTask */
 }
@@ -1922,10 +1929,10 @@ void StartGeneralTask(const void *argument)
 void StartCanTxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
-  TickType_t last_wake;
+  TickType_t lastWake;
 
   /* Infinite loop */
-  last_wake = xTaskGetTickCount();
+  lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("CanTx");
     // Send CAN data
@@ -1935,7 +1942,7 @@ void StartCanTxTask(const void *argument)
     CAN_VCU_Trip_Mode(&(DB.vcu.sw.runner.mode.sub.trip[0]));
 
     // Periodic interval
-    vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(250));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(250));
   }
   /* USER CODE END StartCanTxTask */
 }

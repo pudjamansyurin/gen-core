@@ -65,6 +65,7 @@
 #define EVENT_FINGER_PLACED                     BIT(0)
 #define EVENT_CAN_RX_IT                         BIT(0)
 #define EVENT_KEYLESS_RX_IT                     BIT(0)
+#define EVENT_GENERAL_BMS_IRQ                   BIT(0)
 
 // Payload list (Keyless)
 #define KEYLESS_MSG_BROADCAST                   BIT(0)
@@ -76,6 +77,7 @@
 #define REPORT_BIKE_FALLING                     BIT(1)
 #define REPORT_BIKE_CRASHED                     BIT(2)
 #define REPORT_KEYLESS_MISSING                  BIT(3)
+#define REPORT_BMS_OFF                          BIT(4)
 
 // Command Code List
 #define CMD_CODE_GEN                            0
@@ -108,12 +110,12 @@
 #define RESPONSE_STATUS_INVALID                 2
 
 // EXTI list
-#define SW_K_SELECT 					                  0
-#define SW_K_SET 						                    1
-#define SW_K_SEIN_LEFT 					                2
-#define SW_K_SEIN_RIGHT 				                3
-#define SW_K_REVERSE		 			                  4
-#define SW_K_ABS				 		                    5
+#define SW_K_SELECT                             0
+#define SW_K_SET                                1
+#define SW_K_SEIN_LEFT 				            2
+#define SW_K_SEIN_RIGHT 		                3
+#define SW_K_REVERSE		 	                4
+#define SW_K_ABS				                5
 
 // Others Parameters
 #define MCU_SPEED_MAX                           200
@@ -219,6 +221,9 @@ typedef struct {
   struct {
     uint8_t shutdown;
   } hmi2;
+  struct {
+    uint8_t interval;
+  } bms;
 } db_t;
 
 #endif /* DATABASE_H_ */

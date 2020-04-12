@@ -18,10 +18,6 @@
 #include "_log.h"
 #include "_database.h"
 
-/* External variables ---------------------------------------------------------*/
-extern const TickType_t tickDelayFull;
-extern const TickType_t tickDelaySimple;
-
 /* Exported constants --------------------------------------------------------*/
 #define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x)                            ((x) - '0')

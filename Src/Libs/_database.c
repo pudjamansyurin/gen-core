@@ -9,9 +9,6 @@
 #include "_database.h"
 
 /* Public variables -----------------------------------------------------------*/
-const TickType_t tickDelayFull = pdMS_TO_TICKS(REPORT_INTERVAL_FULL * 1000);
-const TickType_t tickDelaySimple = pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE * 1000);
-
 db_t DB = {
     .vcu = {
         .volume = 0,
@@ -112,6 +109,9 @@ db_t DB = {
     },
     .hmi2 = {
         .shutdown = 0
+    },
+    .bms = {
+        .interval = 1
     }
 };
 
