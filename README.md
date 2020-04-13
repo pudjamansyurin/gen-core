@@ -43,6 +43,8 @@
 - [ ] Scale down "BMS Voltage", and set warning on 20% value.
 - [ ] RTOS: add master thread
 - [ ] RTOS: give timeout for any osWaitForever
+- [ ] Implement this UBX library:
+  - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
@@ -112,35 +114,43 @@
   - [ ] Add solder jumper (connect to B+ or 5V) for other components not listed above
   - [ ] Add switch to disable the Li-ion battery
   - [ ] Add solder switch to charge / discharge li-ion
+  - [ ] Remove me, instead connect B+ directly to Li-ion battery. Then add PNP for power control.
 - [ ] Gyro:
   - [ ] Add separate 3v3 regulator
   - [ ] Connect INT pin to MCU (give jumper)
   - [ ] Connect AD0 pin to GND (the problem)
   - [ ] Separate Q4 GND and GYRO_GND
 - [ ] GPS:
+  - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
   - [ ] Give jumper for serial to MCU
   - [ ] Give jumper for V_BCKP, it can use VDD / VCC
   - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
-  - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
   - [ ] Configure the EEPROM address using u-center app
   - [ ] Fix eagle footprint problem, the un-shielded ground near every pins
   - [ ] Add recharge-able coin battery connector also for RTC
+  - [ ] Increase C90 value to 100uF (tantalum)
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
 - [ ] SIMCOM:
+  - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
   - [ ] Remove R24 & R25, instead connect "LED_NET" directly to MOSFET's gate pin.
   - [ ] Add MOSFET between INT_NET_RST (VCU) and RESET (SIMCOM).
   - [ ] Re-swap the USIM_VDD and USIM_DATA pin.
-  - [ ] Add Matching Network between ANT and Solder-Jumper (for next optimization)
   - [ ] Give serial solder connector like GPS (for debugging)
   - [ ] Change LTC output from 3.8v to 4.2v
   - [ ] or Remove the LTC, then add MOSFET power control (used RUN pin) between B+ and VBAT
-  - [ ] Increase C42 value
+  - [ ] Increase C42 value to 1000uF (tantalum)
   - [ ] Move SIMcard related components closer to the SIMcard-holder
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
   - [ ] Give GND hole (un-isolated) bellow the chip.
   - [ ] VL & VP pin should use its own 3v3 regulator (so add it), and it must be controlled also using MOSFET
+- [ ] Keyless:
+  - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
+  - [ ] Increase C91 value to 100uF (tantalum)
+  - [ ] Preserve on-board NRF chip
+  - [ ] Add uFL connector for on-board chip like GPS & SIMCOM
+  
 
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
