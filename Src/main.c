@@ -243,11 +243,11 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  //  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+  //    IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
@@ -255,7 +255,7 @@ int main(void)
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
@@ -1237,11 +1237,11 @@ void StartGyroTask(const void *argument)
 
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
-      //      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
+      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
       Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
       _LedWrite(1);
     } else {
-      //      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
+      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
       Reporter_WriteEvent(REPORT_BIKE_FALLING, 0);
       _LedWrite(0);
     }

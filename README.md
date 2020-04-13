@@ -2,8 +2,6 @@
 
 ## Software Progress:
 - [x] Add IWDG to VCU 
-- [ ] Handle migration from STM32F407VG to STM32F423VH 
-- [ ] Use AES features in new STM32F423VH 
 - [x] ~~Decrease System Clock to 100MHz~~ 
 - [x] Edit file database.c data type to structure 
 - [x] Move all constant (config variable) to config.h file 
@@ -13,7 +11,6 @@
 - [x] ~~Configure UBLOX if you order the IC separately, so build the library for it~~ 
 - [x] Handle AT Command of new SIM5300e 
 - [x] SIM5300e TCP communication 
-- [ ] SIM5300e SSL communication 
 - [x] Add SIMCOM signal strength CAN and the display 
 - [x] Handle command from Server to IOT 
 - [x] ~~MQTT Protocol with backend server~~ 
@@ -22,29 +19,33 @@
 - [x] Day names in RTC is not editable yet 
 - [x] Handle SIMCOM logs array when offline 
 - [x] ~~EEPROM Emulation ? How about external EEPROM modules?~~
-- [ ] Handle DTR pin for SIM5300e (sleep mode) 
 - [x] Handle HMI Secondary CAN 
 - [x] Handle RTC reset when (no BMS & Li-ION empty), need sync RTC 
 - [x] Standardize frame data which sent to server, ignore ATrack frame. 
 - [x] Change HAL_Delay() to osDelay() 
-- [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [x] ~~Remove DMA_handler files~~ 
 - [x] Remove any un-necessary array, use pointer if possible for simplicity 
-- [ ] Slow down report time when no BMS 
 - [x] Calibrate audio volume 
-- [ ] Use hierarchy algorithm to handle simcom error 
 - [x] Encode Command Frame from Server to IOT 
 - [x] Calibrate simcom signal level from db to linear 
-- [ ] Handle "Phone Plugged Status" from HMI-2 
 - [x] ~~Set audio volume to max at first, then set to default. Because the external speaker has AGC.~~
 - [x] Check ACK on every REPORT / RESPONSE frame. If not receive ACK response, resend (2 times), then restart the SIMCOM if still failed. 
 - [x] Check COMMAND before clearing the Buffer 
+- [x] Slow down report time when no BMS (5x longer)
+- [ ] Handle "Phone Plugged Status" from HMI-2 
+- [ ] Use hierarchy algorithm to handle simcom error 
+- [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
+- [ ] Handle DTR pin for SIM5300e (sleep mode) 
+- [ ] SIM5300e SSL communication 
+- [ ] Handle migration from STM32F407VG to STM32F423VH 
+  - [ ] Use AES features in new STM32F423VH 
 - [ ] Lock all global variable to minimize RTOS problem. 
 - [ ] Scale down "BMS Voltage", and set warning on 20% value.
 - [ ] RTOS: add master thread
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Implement this UBX library:
   - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
+- [ ] Fix SIMCOM auto restart when receive Command from server
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
@@ -96,7 +97,7 @@
 - [ ] Make screw corner hole bigger in 4 positions
 - [ ] ~~Add Voltage-divider for 5V line as Main Power Monitor~~
 - [ ] Fix Q4 & Q7 shielded pad
-- [ ] Swap GPS & NET leds position
+- [ ] ~~Swap GPS & NET leds position~~
 - [ ] Change R67 value as R63
 - [ ] CAN Module:
   - [ ] Give Resistor 120 Ohm between CAN_H and CAN_L (optional, just give the space)
@@ -114,7 +115,6 @@
   - [ ] Add solder jumper (connect to B+ or 5V) for other components not listed above
   - [ ] Add switch to disable the Li-ion battery
   - [ ] Add solder switch to charge / discharge li-ion
-  - [ ] Remove me, instead connect B+ directly to Li-ion battery. Then add PNP for power control.
 - [ ] Gyro:
   - [ ] Add separate 3v3 regulator
   - [ ] Connect INT pin to MCU (give jumper)
@@ -138,7 +138,7 @@
   - [ ] Re-swap the USIM_VDD and USIM_DATA pin.
   - [ ] Give serial solder connector like GPS (for debugging)
   - [ ] Change LTC output from 3.8v to 4.2v
-  - [ ] or Remove the LTC, then add MOSFET power control (used RUN pin) between B+ and VBAT
+    - [ ] or Remove the LTC, then add MOSFET power control (used RUN pin) between B+ and VBAT
   - [ ] Increase C42 value to 1000uF (tantalum)
   - [ ] Move SIMcard related components closer to the SIMcard-holder
 - [ ] AUDIO:

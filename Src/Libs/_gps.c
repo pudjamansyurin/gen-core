@@ -25,7 +25,7 @@ void GPS_Init(void) {
     osDelay(500);
     HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
     _LedWrite(0);
-    osDelay(2000);
+    osDelay(6000);
 
     // debug
     if (strlen(UBLOX_UART_RX) > 50) {
