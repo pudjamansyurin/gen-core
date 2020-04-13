@@ -138,13 +138,15 @@
   - [ ] Re-swap the USIM_VDD and USIM_DATA pin.
   - [ ] Give serial solder connector like GPS (for debugging)
   - [ ] Change LTC output from 3.8v to 4.2v
-    - [ ] or Remove the LTC, then add MOSFET power control (used RUN pin) between B+ and VBAT
+    - [ ] or Remove the LTC,
+    - [ ] then add MOSFET/PNP power control (used RUN pin) between B+ and VBAT
   - [ ] Increase C42 value to 1000uF (tantalum)
   - [ ] Move SIMcard related components closer to the SIMcard-holder
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
   - [ ] Give GND hole (un-isolated) bellow the chip.
-  - [ ] VL & VP pin should use its own 3v3 regulator (so add it), and it must be controlled also using MOSFET
+  - [ ] VL & VP pin should use its own 3v3 regulator (so add it), 
+  - [ ] and it must be controlled also using MOSFET or GPIO pin (directly)
 - [ ] Keyless:
   - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
   - [ ] Increase C91 value to 100uF (tantalum)
@@ -172,6 +174,6 @@
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
 | 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | *Done*: **Validating**					|
 | 12 | Data Validator	           | ST-CRC        	| CRC			 |      100     |       -      | **Done**: For backend frame			|
-| 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		100		| 		✔ 	   | *Done*: Need to be validated			|
+| 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		100		| 		✔ 	   | **Done**: Need more accurate			|
 | 14 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
 | 15 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Pending: Auxiliary						|
