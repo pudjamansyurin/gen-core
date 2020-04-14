@@ -27,6 +27,7 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void CANBUS_Init(void);
+uint8_t CANBUS_Filter(void);
 void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC);
 uint8_t CANBUS_Write(canbus_tx_t *tx);
 uint8_t CANBUS_Read(canbus_rx_t *rx);
