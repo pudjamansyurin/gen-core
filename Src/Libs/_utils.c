@@ -9,6 +9,10 @@
 #include "_utils.h"
 
 /* Public functions implementation --------------------------------------------*/
+uint8_t _LedRead(void) {
+  return HAL_GPIO_ReadPin(SYS_LED_GPIO_Port, SYS_LED_Pin);
+}
+
 void _LedWrite(uint8_t state) {
   HAL_GPIO_WritePin(SYS_LED_GPIO_Port, SYS_LED_Pin, state);
 }
@@ -18,13 +22,20 @@ void _LedToggle(void) {
 }
 
 void _LedDisco(uint16_t ms) {
-  uint8_t i = 100;
+  uint8_t i = 20, temp;
   uint16_t delay = ms / i;
 
+  // preserve previous state
+  temp = _LedRead();
+
+  // run the disco
   while (i--) {
-    _LedToggle();
+    _LedWrite(i % 2);
     osDelay(delay);
   }
+
+  // restore previous state
+  _LedWrite(temp);
 }
 
 void _Error(char msg[50]) {

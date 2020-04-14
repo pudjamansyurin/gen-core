@@ -243,15 +243,15 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  //    IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
-  //  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
+  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
@@ -271,7 +271,7 @@ int main(void)
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
-  //  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
+  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
@@ -1195,7 +1195,6 @@ void StartIotTask(const void *argument)
       Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
       // restart module
       Simcom_Init(SIMCOM_RESTART);
-      _LedDisco(1000);
     } else {
       Reporter_WriteEvent(REPORT_NETWORK_RESTART, 0);
     }
@@ -1224,6 +1223,7 @@ void StartGyroTask(const void *argument)
   GYRO_Init();
   // Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
+  LOG_StrLn("Gyro:Calibrated");
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
@@ -1237,13 +1237,12 @@ void StartGyroTask(const void *argument)
 
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
-      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
+      //      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
       Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
-      _LedWrite(1);
+      _LedDisco(1000);
     } else {
-      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
+      //      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
       Reporter_WriteEvent(REPORT_BIKE_FALLING, 0);
-      _LedWrite(0);
     }
     // Report interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(100));
@@ -1439,11 +1438,11 @@ void StartGpsTask(const void *argument)
     // get GPS info
     if (hGps != NULL) {
       if (GPS_Process(hGps)) {
-        _LedWrite(0);
         osMailPut(GpsMailHandle, hGps);
+        _LedWrite(0);
       } else {
-        _LedWrite(1);
         osMailFree(GpsMailHandle, hGps);
+        _LedWrite(1);
       }
     }
 

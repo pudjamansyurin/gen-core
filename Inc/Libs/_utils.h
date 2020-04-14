@@ -23,6 +23,7 @@
 #define CHARTONUM(x)                            ((x) - '0')
 
 /* Public functions prototype ------------------------------------------------*/
+uint8_t _LedRead(void);
 void _LedWrite(uint8_t state);
 void _LedToggle(void);
 void _LedDisco(uint16_t ms);

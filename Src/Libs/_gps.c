@@ -16,8 +16,10 @@ static nmea_t nmea;
 
 /* Public functions implementation --------------------------------------------*/
 void GPS_Init(void) {
+  uint32_t tick;
+
   // mosfet control
-  while (1) {
+  while (strlen(UBLOX_UART_RX) <= 50) {
     LOG_StrLn("GPS:Init");
 
     HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
@@ -25,11 +27,14 @@ void GPS_Init(void) {
     osDelay(500);
     HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
     _LedWrite(0);
-    osDelay(6000);
 
-    // debug
-    if (strlen(UBLOX_UART_RX) > 50) {
-      break;
+    // set timeout guard
+    tick = osKernelSysTick();
+    while ((osKernelSysTick() - tick) < pdMS_TO_TICKS(5000)) {
+      if (strlen(UBLOX_UART_RX) > 50) {
+        break;
+      }
+      osDelay(10);
     }
   };
   _LedWrite(1);
@@ -44,7 +49,7 @@ uint8_t GPS_Process(gps_t *hgps) {
   hgps->dop_h = nmea.dop_h;
   hgps->latitude = nmea.latitude;
   hgps->longitude = nmea.longitude;
-  hgps->heading = nmea.variation;
+  hgps->heading = nmea.coarse;
   hgps->speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
   hgps->speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
 
