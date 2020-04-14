@@ -53,5 +53,5 @@ uint8_t GPS_Process(gps_t *hgps) {
   hgps->speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
   hgps->speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
 
-  return nmea.fix;
+  return nmea.fix > 0;
 }

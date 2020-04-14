@@ -283,7 +283,7 @@ int main(void)
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-  //  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
+  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
