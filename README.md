@@ -130,6 +130,8 @@
   - [ ] Add recharge-able coin battery connector also for RTC
   - [ ] Increase C90 value to 100uF (tantalum)
   - [ ] Add solder jumper for TX pin between VCU & Ublox chip
+  - [ ] Use EXTINT pin to control Sleep mode
+    - See section "9.3.2.7 EXTINT pin control" in "Receiver Description" datasheet
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
 - [ ] SIMCOM:
@@ -143,6 +145,7 @@
     - [ ] then add MOSFET/PNP power control (used RUN pin) between B+ and VBAT
   - [ ] Increase C42 value to 1000uF (tantalum)
   - [ ] Move SIMcard related components closer to the SIMcard-holder
+  - [x] Utilize DTR pin for Sleep Mode
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
   - [ ] Give GND hole (un-isolated) bellow the chip.
