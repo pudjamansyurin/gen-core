@@ -58,6 +58,7 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Init(SIMCOM_PWR state);
 SIMCOM_RESULT Simcom_Upload(char *message, uint16_t length);
+SIMCOM_RESULT Simcom_ReadCommand(command_t *command);
 SIMCOM_RESULT Simcom_ReadACK(report_header_t *report_header);
 SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage);
 SIMCOM_RESULT Simcom_ReadTime(timestamp_t *timestamp);

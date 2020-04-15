@@ -129,6 +129,7 @@
   - [ ] Fix eagle footprint problem, the un-shielded ground near every pins
   - [ ] Add recharge-able coin battery connector also for RTC
   - [ ] Increase C90 value to 100uF (tantalum)
+  - [ ] Add solder jumper for TX pin between VCU & Ublox chip
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
 - [ ] SIMCOM:

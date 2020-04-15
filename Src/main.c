@@ -247,7 +247,7 @@ int main(void)
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
+  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
 
   /* definition and creation of CommandTask */
   osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
@@ -1090,10 +1090,11 @@ void StartIotTask(const void *argument)
 {
   /* USER CODE BEGIN 5 */
   osEvent evt;
-  report_t *hReport = NULL, report;
+  command_t *hCommand = NULL;
+  report_t *hReport = NULL;
   response_t *hResponse = NULL;
   uint8_t size;
-  SIMCOM_RESULT res;
+  SIMCOM_RESULT p;
 
   // Start simcom module
   SIMCOM_DMA_Init();
@@ -1107,38 +1108,44 @@ void StartIotTask(const void *argument)
   for (;;) {
     _DebugTask("IoT");
     // Set default
-    res = SIMCOM_R_ACK;
+    p = SIMCOM_R_ACK;
 
     // response frame
     {
-      // check response log
-      evt = osMailGet(ResponseMailHandle, 0);
+      // check report log
+      if (hResponse == NULL) {
+        evt = osMailGet(ResponseMailHandle, 0);
+        // check is mail ready
+        if (evt.status == osEventMail) {
+          // copy the pointer
+          hResponse = evt.value.p;
+        }
+      }
 
       // check is mail ready
-      if (evt.status == osEventMail) {
-        // copy the pointer
-        hResponse = evt.value.p;
-
+      if (hResponse) {
         do {
+          osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
           // Send to server
-          res = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
+          p = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
 
           // handle SIMCOM result
-          if (res == SIMCOM_R_ACK) {
+          if (p == SIMCOM_R_ACK) {
             // validate ACK
             if (Simcom_ReadACK(&(hResponse->header))) {
-              break;
+              // Release back
+              osMailFree(ResponseMailHandle, hResponse);
+              hResponse = NULL;
             } else {
-              res = SIMCOM_R_NACK;
+              p = SIMCOM_R_TIMEOUT;
             }
           }
 
           // delay
+          osRecursiveMutexRelease(SimcomRecMutexHandle);
           osDelay(100);
-        } while (res == SIMCOM_R_NACK || res == SIMCOM_R_TIMEOUT);
+        } while ((p == SIMCOM_R_NACK || p == SIMCOM_R_TIMEOUT) && hResponse);
 
-        // Release back
-        osMailFree(ResponseMailHandle, hResponse);
       }
     }
 
@@ -1151,46 +1158,55 @@ void StartIotTask(const void *argument)
         if (evt.status == osEventMail) {
           // copy the pointer
           hReport = evt.value.p;
-          // copy value
-          report = *hReport;
         }
       }
 
       // check is report ready
       if (hReport) {
         do {
+          osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
           // get current sending date-time
-          report.data.req.rtc_send_datetime = RTC_Read();
+          hReport->data.req.rtc_send_datetime = RTC_Read();
           // recalculate the CRC
-          report.header.crc = CRC_Calculate8(
-              (uint8_t*) &(report.header.size),
-              report.header.size + sizeof(report.header.size), 1);
+          hReport->header.crc = CRC_Calculate8(
+              (uint8_t*) &(hReport->header.size),
+              hReport->header.size + sizeof(hReport->header.size), 1);
           // Send to server
-          res = Simcom_Upload((char*) &report, size + report.header.size);
+          p = Simcom_Upload((char*) hReport, size + hReport->header.size);
 
           // handle SIMCOM result
-          if (res == SIMCOM_R_ACK) {
+          if (p == SIMCOM_R_ACK) {
             // validate ACK
-            if (Simcom_ReadACK(&(report.header))) {
+            if (Simcom_ReadACK(&(hReport->header))) {
               // Release back
               osMailFree(ReportMailHandle, hReport);
               hReport = NULL;
-
-              // exit
-              break;
             } else {
-              res = SIMCOM_R_NACK;
+              p = SIMCOM_R_TIMEOUT;
+            }
+          }
+
+          // handle command (if any)
+          if (p == SIMCOM_R_ACK) {
+            // Allocate memory
+            hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
+            // handle command (if any)
+            if (Simcom_ReadCommand(hCommand)) {
+              osMailPut(CommandMailHandle, hCommand);
+            } else {
+              osMailFree(CommandMailHandle, hCommand);
             }
           }
 
           // delay
+          osRecursiveMutexRelease(SimcomRecMutexHandle);
           osDelay(100);
-        } while (res == SIMCOM_R_NACK || res == SIMCOM_R_TIMEOUT);
+        } while ((p == SIMCOM_R_NACK || p == SIMCOM_R_TIMEOUT) && hReport);
       }
     }
 
     // handle sending error
-    if (res != SIMCOM_R_ACK) {
+    if (p != SIMCOM_R_ACK) {
       // save the SIMCOM event
       Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
       // restart module
@@ -1237,11 +1253,11 @@ void StartGyroTask(const void *argument)
 
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
-      //      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
+      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
       Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
       _LedDisco(1000);
     } else {
-      //      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
+      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
       Reporter_WriteEvent(REPORT_BIKE_FALLING, 0);
     }
     // Report interval
@@ -1279,7 +1295,7 @@ void StartCommandTask(const void *argument)
       hCommand = evt.value.p;
 
       // debug
-      LOG_Str("\nCommand:New [");
+      LOG_Str("\nCommand:Payload [");
       LOG_Int(hCommand->data.code);
       LOG_Str("-");
       LOG_Int(hCommand->data.sub_code);
@@ -1601,7 +1617,7 @@ void StartReporterTask(const void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
   extern report_t REPORT;
-  TickType_t lastWake, lastFull = 0;
+  TickType_t interval, lastWake, lastFull = 0;
   osEvent evt;
   FRAME_TYPE frame;
   report_t *hReport = NULL;
@@ -1643,14 +1659,22 @@ void StartReporterTask(const void *argument)
     }
 
     // decide full/simple frame time
-    if ((lastWake - lastFull) >= pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000*DB.bms.interval)) {
-      // capture full frame wake time
-      lastFull = lastWake;
-      // full frame
-      frame = FR_FULL;
+    if (DB.bms.interval == 1) {
+      // BMS plugged
+      if ((lastWake - lastFull) >= pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000)) {
+        // capture full frame wake time
+        lastFull = lastWake;
+        // full frame
+        frame = FR_FULL;
+      } else {
+        // simple frame
+        frame = FR_SIMPLE;
+      }
+      interval = (REPORT_INTERVAL_SIMPLE * 1000);
     } else {
-      // simple frame
-      frame = FR_SIMPLE;
+      // BMS un-plugged (every 1 minute, always full frame)
+      frame = FR_FULL;
+      interval = 60 * 1000;
     }
 
     // Get current snapshot
@@ -1678,7 +1702,7 @@ void StartReporterTask(const void *argument)
     //    Reporter_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(REPORT_INTERVAL_SIMPLE*1000*DB.bms.interval));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(interval));
   }
   /* USER CODE END StartReporterTask */
 }
@@ -1889,8 +1913,8 @@ void StartGeneralTask(const void *argument)
       }
     }
 
-    //    // Retrieve network signal quality
-    //    Simcom_ReadSignal(&(DB.vcu.signal));
+    // Retrieve network signal quality
+    Simcom_ReadSignal(&(DB.vcu.signal));
     //
     //    // Retrieve RTC time
     //    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));

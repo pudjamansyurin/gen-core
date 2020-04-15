@@ -10,7 +10,6 @@
 /* External variables ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 extern osMutexId SimcomRecMutexHandle;
-extern osThreadId CommandTaskHandle;
 extern osMailQId CommandMailHandle;
 
 /* Private variables ----------------------------------------------------------*/
@@ -27,7 +26,6 @@ static SIMCOM_RESULT Simcom_Response(char *str);
 static void Simcom_Prepare(void);
 static void Simcom_ClearBuffer(void);
 
-static SIMCOM_RESULT Simcom_ParseCommand(command_t *command);
 static SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res);
 static SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
 
@@ -75,12 +73,13 @@ void Simcom_Init(SIMCOM_PWR state) {
     // activate error report verbose
     if (p == SIMCOM_R_OK) {
       simcom.ready = 1;
-      p = Simcom_Cmd("AT+CMEE=2\r", 500, 1);
+      //      p = Simcom_Cmd("AT+CMEE=2\r", 500, 1);
     }
     // set default baud-rate
     if (p == SIMCOM_R_OK) {
       //      p = Simcom_Cmd("AT+IPR=9600\r", 500, 1);
     }
+
     // =========== OTHERS CONFIGURATION
     // enable time reporting
     if (p == SIMCOM_R_OK) {
@@ -178,7 +177,7 @@ void Simcom_Init(SIMCOM_PWR state) {
     }
     osRecursiveMutexRelease(SimcomRecMutexHandle);
     osDelay(100);
-  } while (!p);
+  } while (p != SIMCOM_R_OK);
 
   simcom.online = 1;
 }
@@ -199,7 +198,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
     // send response
     p = Simcom_SendIndirect(payload, payload_length, 1, 20000, SIMCOM_RSP_SENT, 1);
     if (p == SIMCOM_R_OK) {
-//      Simcom_ClearBuffer();
+      //      Simcom_ClearBuffer();
 
       // set timeout guard
       tick = osKernelSysTick();
@@ -232,6 +231,42 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
   return p;
 }
 
+SIMCOM_RESULT Simcom_ReadCommand(command_t *command) {
+  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+  SIMCOM_RESULT p = SIMCOM_R_ERROR;
+  uint32_t crcValue;
+  char *str = NULL;
+
+  if (Simcom_Response(SIMCOM_RSP_IPD)) {
+    str = strstr(SIMCOM_UART_RX, PREFIX_ACK);
+    // get pointer reference
+    str = strstr(str + sizeof(ack_t), PREFIX_COMMAND);
+    if (str != NULL) {
+      // copy the whole value (any time the buffer can change)
+      *command = *(command_t*) str;
+
+      // check the Size
+      if (command->header.size == sizeof(command->data)) {
+        // calculate the CRC
+        crcValue = CRC_Calculate8((uint8_t*) &(command->header.size),
+            sizeof(command->header.size) + sizeof(command->data), 1);
+
+        // check the CRC
+        if (command->header.crc == crcValue) {
+          // reset rx buffer
+          SIMCOM_Reset_Buffer();
+
+          p = SIMCOM_R_OK;
+        }
+      }
+    }
+  }
+
+  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  return p;
+}
+
 SIMCOM_RESULT Simcom_ReadACK(report_header_t *report_header) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
@@ -250,7 +285,7 @@ SIMCOM_RESULT Simcom_ReadACK(report_header_t *report_header) {
           report_header->seq_id == ack.seq_id) {
 
         // clear rx buffer
-        Simcom_ClearBuffer();
+        //        Simcom_ClearBuffer();
 
         p = SIMCOM_R_OK;
       }
@@ -548,26 +583,12 @@ static void Simcom_Prepare(void) {
 }
 
 static void Simcom_ClearBuffer(void) {
-  command_t *hCommand;
   // debugging
   //  LOG_StrLn("\n=================== START ===================");
   //  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
   //  LOG_StrLn("\n==================== END ====================");
-  // check command
-  if (Simcom_Response(PREFIX_COMMAND)) {
-    // Allocate memory
-    hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
-    // handle command (if any)
-    if (Simcom_ParseCommand(hCommand)) {
-      // reset rx buffer
-      SIMCOM_Reset_Buffer();
-
-      osMailPut(CommandMailHandle, hCommand);
-    }
-  } else {
-    // reset rx buffer
-    SIMCOM_Reset_Buffer();
-  }
+  // reset rx buffer
+  SIMCOM_Reset_Buffer();
 }
 
 static SIMCOM_RESULT Simcom_Response(char *str) {
@@ -583,40 +604,5 @@ static SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n) {
 
 static SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res) {
   return Simcom_SendIndirect(cmd, strlen(cmd), 0, ms, res, n);
-}
-
-static SIMCOM_RESULT Simcom_ParseCommand(command_t *command) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
-
-  SIMCOM_RESULT p = SIMCOM_R_ERROR;
-  uint32_t crcValue;
-  char *str = NULL;
-
-  if (Simcom_Response(SIMCOM_RSP_IPD)) {
-    // get pointer reference
-    str = strstr(SIMCOM_UART_RX, PREFIX_COMMAND);
-    if (str != NULL) {
-      // copy the whole value (any time the buffer can change)
-      *command = *(command_t*) str;
-
-      // check the Size
-      if (command->header.size == sizeof(command->data)) {
-        // calculate the CRC
-        crcValue = CRC_Calculate8((uint8_t*) &(command->header.size),
-            sizeof(command->header.size) + sizeof(command->data), 1);
-
-        // check the CRC
-        if (command->header.crc == crcValue) {
-          // reset rx buffer
-          SIMCOM_Reset_Buffer();
-
-          p = SIMCOM_R_OK;
-        }
-      }
-    }
-  }
-
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
-  return p;
 }
 
