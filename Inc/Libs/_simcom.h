@@ -56,6 +56,7 @@ typedef struct {
 } rssi_t;
 
 /* Public functions prototype ------------------------------------------------*/
+void Simcom_Sleep(uint8_t state);
 void Simcom_Init(SIMCOM_PWR state);
 SIMCOM_RESULT Simcom_Upload(char *message, uint16_t length);
 SIMCOM_RESULT Simcom_ReadCommand(command_t *command);

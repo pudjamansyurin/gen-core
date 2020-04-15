@@ -1094,6 +1094,7 @@ void StartIotTask(const void *argument)
   report_t *hReport = NULL;
   response_t *hResponse = NULL;
   uint8_t size;
+  timestamp_t timestamp;
   SIMCOM_RESULT p;
 
   // Start simcom module
@@ -1124,6 +1125,9 @@ void StartIotTask(const void *argument)
 
       // check is mail ready
       if (hResponse) {
+        // wake-up the SIMCOM
+        Simcom_Sleep(0);
+
         do {
           osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
           // Send to server
@@ -1146,6 +1150,8 @@ void StartIotTask(const void *argument)
           osDelay(100);
         } while ((p == SIMCOM_R_NACK || p == SIMCOM_R_TIMEOUT) && hResponse);
 
+        // sleep the SIMCOM
+        Simcom_Sleep(1);
       }
     }
 
@@ -1163,6 +1169,9 @@ void StartIotTask(const void *argument)
 
       // check is report ready
       if (hReport) {
+        // wake-up the SIMCOM
+        Simcom_Sleep(0);
+
         do {
           osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
           // get current sending date-time
@@ -1202,6 +1211,23 @@ void StartIotTask(const void *argument)
           osRecursiveMutexRelease(SimcomRecMutexHandle);
           osDelay(100);
         } while ((p == SIMCOM_R_NACK || p == SIMCOM_R_TIMEOUT) && hReport);
+
+        // Retrieve network signal quality
+        Simcom_ReadSignal(&(DB.vcu.signal));
+
+        // Retrieve RTC time
+        RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
+        // Check calibration by cellular network
+        if (_TimeNeedCalibration(DB.vcu.rtc)) {
+          // get carrier timestamp
+          if (Simcom_ReadTime(&timestamp)) {
+            // calibrate the RTC
+            RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
+          }
+        }
+
+        // sleep the SIMCOM
+        Simcom_Sleep(1);
       }
     }
 
@@ -1216,7 +1242,7 @@ void StartIotTask(const void *argument)
     }
 
     // Give other threads a shot
-    osDelay(100);
+    osDelay(1000);
   }
   /* USER CODE END 5 */
 }
@@ -1468,7 +1494,7 @@ void StartGpsTask(const void *argument)
     LOG_Enter();
 
     // Report interval
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000*DB.bms.interval));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval));
   }
   /* USER CODE END StartGpsTask */
 }
@@ -1617,7 +1643,7 @@ void StartReporterTask(const void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
   extern report_t REPORT;
-  TickType_t interval, lastWake, lastFull = 0;
+  TickType_t lastWake, lastFull = 0;
   osEvent evt;
   FRAME_TYPE frame;
   report_t *hReport = NULL;
@@ -1659,7 +1685,7 @@ void StartReporterTask(const void *argument)
     }
 
     // decide full/simple frame time
-    if (DB.bms.interval == 1) {
+    if (DB.bms.on) {
       // BMS plugged
       if ((lastWake - lastFull) >= pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000)) {
         // capture full frame wake time
@@ -1670,11 +1696,11 @@ void StartReporterTask(const void *argument)
         // simple frame
         frame = FR_SIMPLE;
       }
-      interval = (REPORT_INTERVAL_SIMPLE * 1000);
+      DB.bms.interval = (REPORT_INTERVAL_SIMPLE * 1000);
     } else {
       // BMS un-plugged (every 1 minute, always full frame)
       frame = FR_FULL;
-      interval = 60 * 1000;
+      DB.bms.interval = 60 * 1000;
     }
 
     // Get current snapshot
@@ -1702,7 +1728,7 @@ void StartReporterTask(const void *argument)
     //    Reporter_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(interval));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval));
   }
   /* USER CODE END StartReporterTask */
 }
@@ -1890,12 +1916,11 @@ void StartGeneralTask(const void *argument)
   /* USER CODE BEGIN StartGeneralTask */
   TickType_t lastWake;
   uint32_t notif;
-  //  timestamp_t timestampCarrier;
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
   // get current state
-  DB.bms.interval = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin) ? 1 : 5;
+  DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
   Reporter_WriteEvent(REPORT_BMS_OFF, !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin));
 
   for (;;) {
@@ -1908,26 +1933,11 @@ void StartGeneralTask(const void *argument)
         // handle bounce effect
         osDelay(50);
         // get current state
-        DB.bms.interval = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin) ? 1 : 5;
+        DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
         Reporter_WriteEvent(REPORT_BMS_OFF, !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin));
       }
     }
 
-    // Retrieve network signal quality
-    Simcom_ReadSignal(&(DB.vcu.signal));
-    //
-    //    // Retrieve RTC time
-    //    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
-    //
-    //    // Check calibration by cellular network
-    //    if (_TimeNeedCalibration(DB.vcu.rtc)) {
-    //      // get carrier timestamp
-    //      if (Simcom_ReadTime(&timestampCarrier)) {
-    //        // calibrate the RTC
-    //        RTC_WriteRaw(&timestampCarrier, &(DB.vcu.rtc));
-    //      }
-    //    }
-    //
     //    // Dummy data generator
     //    _DummyGenerator(&DB);
     //

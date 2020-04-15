@@ -222,7 +222,8 @@ typedef struct {
     uint8_t shutdown;
   } hmi2;
   struct {
-    uint8_t interval;
+    uint8_t on;
+    uint32_t interval;
   } bms;
 } db_t;
 

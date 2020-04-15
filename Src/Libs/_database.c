@@ -111,7 +111,8 @@ db_t DB = {
         .shutdown = 0
     },
     .bms = {
-        .interval = 1
+        .on = 1,
+        .interval = REPORT_INTERVAL_SIMPLE * 1000
     }
 };
 

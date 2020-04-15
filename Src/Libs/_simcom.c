@@ -30,10 +30,18 @@ static SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res
 static SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
 
 /* Public functions implementation --------------------------------------------*/
+void Simcom_Sleep(uint8_t state) {
+  HAL_GPIO_WritePin(INT_NET_DTR_GPIO_Port, INT_NET_DTR_Pin, state);
+  osDelay(50);
+}
+
 void Simcom_Init(SIMCOM_PWR state) {
   SIMCOM_RESULT p;
 
   LOG_StrLn("Simcom:Init");
+
+  // wakeup the SIMCOM
+  Simcom_Sleep(0);
 
   // first init hook
   simcom.online = 0;
@@ -78,6 +86,10 @@ void Simcom_Init(SIMCOM_PWR state) {
     // set default baud-rate
     if (p == SIMCOM_R_OK) {
       //      p = Simcom_Cmd("AT+IPR=9600\r", 500, 1);
+    }
+    // use pin DTR as sleep control
+    if (p == SIMCOM_R_OK) {
+      p = Simcom_Cmd("AT+CSCLK=1\r", 500, 1);
     }
 
     // =========== OTHERS CONFIGURATION
@@ -198,8 +210,6 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
     // send response
     p = Simcom_SendIndirect(payload, payload_length, 1, 20000, SIMCOM_RSP_SENT, 1);
     if (p == SIMCOM_R_OK) {
-      //      Simcom_ClearBuffer();
-
       // set timeout guard
       tick = osKernelSysTick();
       // wait ACK for payload
