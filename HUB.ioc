@@ -2,12 +2,13 @@
 ADC1.Channel-1\#ChannelRegularConversion=ADC_CHANNEL_9
 ADC1.ContinuousConvMode=ENABLE
 ADC1.DMAContinuousRequests=ENABLE
-ADC1.IPParameters=Rank-1\#ChannelRegularConversion,master,Channel-1\#ChannelRegularConversion,SamplingTime-1\#ChannelRegularConversion,NbrOfConversionFlag,ContinuousConvMode,InjNumberOfConversion,NbrOfConversion,DMAContinuousRequests,ScanConvMode
+ADC1.EOCSelection=ADC_EOC_SEQ_CONV
+ADC1.IPParameters=Rank-1\#ChannelRegularConversion,master,Channel-1\#ChannelRegularConversion,SamplingTime-1\#ChannelRegularConversion,NbrOfConversionFlag,ContinuousConvMode,InjNumberOfConversion,NbrOfConversion,DMAContinuousRequests,ScanConvMode,EOCSelection
 ADC1.InjNumberOfConversion=0
 ADC1.NbrOfConversion=1
 ADC1.NbrOfConversionFlag=1
 ADC1.Rank-1\#ChannelRegularConversion=1
-ADC1.SamplingTime-1\#ChannelRegularConversion=ADC_SAMPLETIME_480CYCLES
+ADC1.SamplingTime-1\#ChannelRegularConversion=ADC_SAMPLETIME_15CYCLES
 ADC1.ScanConvMode=DISABLE
 ADC1.master=1
 CAN1.ABOM=ENABLE

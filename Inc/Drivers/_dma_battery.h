@@ -11,9 +11,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
-#define BATTERY_DMA_SZ                100
-
 /* Public functions prototype ------------------------------------------------*/
 void Battery_DMA_Init(void);
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
