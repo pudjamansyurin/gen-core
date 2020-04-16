@@ -62,7 +62,7 @@ uint8_t CAN_VCU_Switch(db_t *db) {
   // set message
   CB.tx.data[0] = db->vcu.sw.list[SW_K_ABS].state;
   // FIXME: handle me with real data
-  CB.tx.data[0] |= BSL(1, 1);
+  CB.tx.data[0] |= BSL(db->hmi1.status.mirroring, 1);
   CB.tx.data[0] |= BSL(db->vcu.sw.list[SW_K_LAMP].state, 2);
   CB.tx.data[0] |= BSL(1, 3);
   CB.tx.data[0] |= BSL(iStatus.temperature, 4);
