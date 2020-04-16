@@ -32,6 +32,7 @@
 - [x] Check ACK on every REPORT / RESPONSE frame. If not receive ACK response, resend (2 times), then restart the SIMCOM if still failed. 
 - [x] Check COMMAND before clearing the Buffer 
 - [x] Slow down report time when no BMS (5x longer)
+- [x] Fix SIMCOM auto restart when receive Command from server
 - [ ] Handle "Phone Plugged Status" from HMI-2 
 - [ ] Use hierarchy algorithm to handle simcom error 
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
@@ -45,7 +46,6 @@
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Implement this UBX library:
   - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
-- [ ] Fix SIMCOM auto restart when receive Command from server
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
@@ -157,7 +157,6 @@
   - [ ] Preserve on-board NRF chip
   - [ ] Add uFL connector for on-board chip like GPS & SIMCOM
   
-
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
 - http://www.pcbtechguide.com/2010/07/wifi-module-layout-guidelines.html 
@@ -176,7 +175,7 @@
 |  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |   	✔	   | **Done**: Connect pin 41 to GND		|
 |  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | **Done**								|
 | 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
-| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | *Done*: **Validating**					|
+| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | **Done**								|
 | 12 | Data Validator	           | ST-CRC        	| CRC			 |      100     |       -      | **Done**: For backend frame			|
 | 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		100		| 		✔ 	   | **Done**: Need more accurate			|
 | 14 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
