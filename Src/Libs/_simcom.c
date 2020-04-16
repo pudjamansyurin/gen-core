@@ -40,9 +40,6 @@ void Simcom_Init(SIMCOM_PWR state) {
 
   LOG_StrLn("Simcom:Init");
 
-  // wakeup the SIMCOM
-  Simcom_Sleep(0);
-
   // first init hook
   simcom.online = 0;
   if (state == SIMCOM_POWER_UP) {
@@ -56,6 +53,10 @@ void Simcom_Init(SIMCOM_PWR state) {
   // this do-while is complicated, but it doesn't use recursive function, so it's stack safe
   do {
     osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+    // wakeup the SIMCOM
+    Simcom_Sleep(0);
+
     // show previous response
     //		LOG_Str("\n========================================\n");
     //		LOG_Str("Before: Simcom_Init()");
@@ -187,8 +188,12 @@ void Simcom_Init(SIMCOM_PWR state) {
       // disable all connection
       Simcom_Cmd("AT+CIPSHUT\r", 500, 1);
     }
+
+    // sleep the SIMCOM
+    Simcom_Sleep(1);
+
     osRecursiveMutexRelease(SimcomRecMutexHandle);
-    osDelay(100);
+    osDelay(60 * 1000);
   } while (p != SIMCOM_R_OK);
 
   simcom.online = 1;
