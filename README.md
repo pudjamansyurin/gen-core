@@ -99,6 +99,9 @@
 - [ ] Fix Q4 & Q7 shielded pad
 - [ ] ~~Swap GPS & NET leds position~~
 - [ ] Change R67 value as R63
+- [ ] Change R23 value to 30k
+- [ ] Change C30, C31, C70, C71 value to 20pf
+- [ ] Change Q3, Q5, Q6, Q9, Q13 to TRANSISTOR
 - [ ] CAN Module:
   - [ ] Give Resistor 120 Ohm between CAN_H and CAN_L (optional, just give the space)
   - [ ] Add MOSFET power control and the GPIO pins
@@ -119,7 +122,7 @@
   - [ ] Add separate 3v3 regulator
   - [ ] Connect INT pin to MCU (give jumper)
   - [ ] Connect AD0 pin to GND (the problem)
-  - [ ] Separate Q4 GND and GYRO_GND
+  - [ ] Separate Q4 GND and GYRO_GND (in schematic)
 - [ ] GPS:
   - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
   - [ ] Give jumper for serial to MCU
