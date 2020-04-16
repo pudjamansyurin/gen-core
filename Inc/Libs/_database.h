@@ -67,7 +67,9 @@
 #define EVENT_FINGER_PLACED                     BIT(0)
 #define EVENT_CAN_RX_IT                         BIT(0)
 #define EVENT_KEYLESS_RX_IT                     BIT(0)
+
 #define EVENT_GENERAL_BMS_IRQ                   BIT(0)
+#define EVENT_GENERAL_KNOB_IRQ                  BIT(1)
 
 // Payload list (Keyless)
 #define KEYLESS_MSG_BROADCAST                   BIT(0)

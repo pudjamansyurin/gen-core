@@ -1044,6 +1044,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
           eSetBits,
           &xHigherPriorityTaskWoken);
     }
+    // handle KNOB IRQ (Power control for HMI1 & HMI2)
+    if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
+      xTaskNotifyFromISR(
+          GeneralTaskHandle,
+          EVENT_GENERAL_BMS_IRQ,
+          eSetBits,
+          &xHigherPriorityTaskWoken);
+    }
 
     //    // handle NRF24 IRQ
     //    if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
@@ -1931,13 +1939,20 @@ void StartGeneralTask(const void *argument)
 
     // do this if events occurred
     if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
-      // proceed event
+      // BMS Power IRQ
       if (notif & EVENT_GENERAL_BMS_IRQ) {
         // handle bounce effect
         osDelay(50);
         // get current state
         DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
         Reporter_WriteEvent(REPORT_BMS_OFF, !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin));
+      }
+      // BMS Power IRQ
+      if (notif & EVENT_GENERAL_KNOB_IRQ) {
+        // handle bounce effect
+        osDelay(50);
+        // get current state
+        DB.hmi2.shutdown = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
       }
     }
 
