@@ -19,6 +19,8 @@
 #define CAN_ADDR_VCU_TRIP_MODE			 					0x003
 #define CAN_ADDR_MCU_DUMMY									0x7A0
 #define CAN_ADDR_BMS_DUMMY									0x7B0
+#define CAN_ADDR_HMI1_LEFT                                  0x7C0
+#define CAN_ADDR_HMI1_RIGHT                                 (CAN_ADDR_HMI1_LEFT + 1)
 #define CAN_ADDR_HMI2                                       0x7D0
 
 /* Public functions prototype ------------------------------------------------*/

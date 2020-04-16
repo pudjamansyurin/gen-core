@@ -33,6 +33,7 @@
 - [x] Check COMMAND before clearing the Buffer 
 - [x] Slow down report time when no BMS (5x longer)
 - [x] Fix SIMCOM auto restart when receive Command from server
+- [ ] Use double buffering for ADC-DMA (HT & TC)
 - [ ] Handle "Phone Plugged Status" from HMI-2 
 - [ ] Use hierarchy algorithm to handle simcom error 
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 

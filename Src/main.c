@@ -1034,21 +1034,22 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  uint32_t event;
 
   if (osKernelRunning()) {
-    // handle BMS_IRQ (is 5v exist?)
-    if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
+    if (GPIO_Pin == EXT_BMS_IRQ_Pin || GPIO_Pin == EXT_KNOB_IRQ_Pin) {
+      // handle BMS_IRQ (is 5v exist?)
+      if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
+        event = EVENT_GENERAL_BMS_IRQ;
+      }
+      // handle KNOB IRQ (Power control for HMI1 & HMI2)
+      if (GPIO_Pin == EXT_KNOB_IRQ_Pin) {
+        event = EVENT_GENERAL_KNOB_IRQ;
+      }
+      // send notification
       xTaskNotifyFromISR(
           GeneralTaskHandle,
-          EVENT_GENERAL_BMS_IRQ,
-          eSetBits,
-          &xHigherPriorityTaskWoken);
-    }
-    // handle KNOB IRQ (Power control for HMI1 & HMI2)
-    if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
-      xTaskNotifyFromISR(
-          GeneralTaskHandle,
-          EVENT_GENERAL_BMS_IRQ,
+          event,
           eSetBits,
           &xHigherPriorityTaskWoken);
     }
@@ -1771,7 +1772,12 @@ void StartCanRxTask(const void *argument)
         case CAN_ADDR_HMI2:
           CAN_HMI2_Read(&DB);
           break;
+        case CAN_ADDR_HMI1_LEFT:
+          break;
+        case CAN_ADDR_HMI1_RIGHT:
+          break;
         default:
+
           break;
       }
     }
