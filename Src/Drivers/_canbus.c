@@ -20,7 +20,7 @@ canbus_t CB;
 void CANBUS_Init(void) {
 
   /* Configure the CAN Filter */
-  if (CANBUS_Filter()) {
+  if (!CANBUS_Filter()) {
     /* Start Error */
     Error_Handler();
   }

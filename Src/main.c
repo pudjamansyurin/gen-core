@@ -186,7 +186,7 @@ int main(void)
   MX_CRC_Init();
   //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-  //  CANBUS_Init();
+  CANBUS_Init();
   Battery_DMA_Init();
   /* USER CODE END 2 */
 
