@@ -9,6 +9,7 @@
 #define CAN_H_
 
 /* Includes ------------------------------------------------------------------*/
+#include "_handlebar.h"
 #include "_canbus.h"
 #include "_rtc.h"
 
@@ -24,7 +25,7 @@
 #define CAN_ADDR_HMI2                                       0x7D0
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t CAN_VCU_Switch(db_t *db);
+uint8_t CAN_VCU_Switch(db_t *db, sw_t *sw);
 uint8_t CAN_VCU_RTC(timestamp_t *timestamp);
 uint8_t CAN_VCU_Select_Set(sw_runner_t *runner);
 uint8_t CAN_VCU_Trip_Mode(uint32_t *trip);

@@ -12,7 +12,7 @@
 extern canbus_t CB;
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t CAN_VCU_Switch(db_t *db) {
+uint8_t CAN_VCU_Switch(db_t *db, sw_t *sw) {
   static TickType_t tick, tickSein;
   static uint8_t iSeinLeft = 0, iSeinRight = 0;
   static status_t iStatus;
@@ -38,17 +38,17 @@ uint8_t CAN_VCU_Switch(db_t *db) {
 
   // sein manipulator
   if ((osKernelSysTick() - tickSein) >= pdMS_TO_TICKS(500)) {
-    if (db->vcu.sw.list[SW_K_SEIN_LEFT].state && db->vcu.sw.list[SW_K_SEIN_RIGHT].state) {
+    if (sw->list[SW_K_SEIN_LEFT].state && sw->list[SW_K_SEIN_RIGHT].state) {
       // hazard
       tickSein = osKernelSysTick();
       iSeinLeft = !iSeinLeft;
       iSeinRight = iSeinLeft;
-    } else if (db->vcu.sw.list[SW_K_SEIN_LEFT].state) {
+    } else if (sw->list[SW_K_SEIN_LEFT].state) {
       // left sein
       tickSein = osKernelSysTick();
       iSeinLeft = !iSeinLeft;
       iSeinRight = 0;
-    } else if (db->vcu.sw.list[SW_K_SEIN_RIGHT].state) {
+    } else if (sw->list[SW_K_SEIN_RIGHT].state) {
       // right sein
       tickSein = osKernelSysTick();
       iSeinLeft = 0;
@@ -60,10 +60,10 @@ uint8_t CAN_VCU_Switch(db_t *db) {
   }
 
   // set message
-  CB.tx.data[0] = db->vcu.sw.list[SW_K_ABS].state;
+  CB.tx.data[0] = sw->list[SW_K_ABS].state;
   // FIXME: handle me with real data
   CB.tx.data[0] |= BSL(db->hmi1.status.mirroring, 1);
-  CB.tx.data[0] |= BSL(db->vcu.sw.list[SW_K_LAMP].state, 2);
+  CB.tx.data[0] |= BSL(sw->list[SW_K_LAMP].state, 2);
   CB.tx.data[0] |= BSL(1, 3);
   CB.tx.data[0] |= BSL(iStatus.temperature, 4);
   CB.tx.data[0] |= BSL(iStatus.finger, 5);

@@ -17,6 +17,7 @@
 #include "cmsis_os.h"
 #include "_log.h"
 #include "_database.h"
+#include "_handlebar.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
@@ -29,7 +30,7 @@ void _LedToggle(void);
 void _LedDisco(uint16_t ms);
 void _Error(char msg[50]);
 void _DebugTask(char name[20]);
-void _DummyGenerator(db_t *db);
+void _DummyGenerator(db_t *db, sw_t *sw);
 uint8_t _TimeNeedCalibration(rtc_t rtc);
 uint8_t _TimeCheckDaylight(timestamp_t timestamp);
 int8_t _BitPosition(uint64_t event_id);

@@ -113,49 +113,11 @@
 #define RESPONSE_STATUS_OK                      1
 #define RESPONSE_STATUS_INVALID                 2
 
-// EXTI list
-#define SW_TOTAL_LIST                           7
-#define SW_K_SELECT                             0
-#define SW_K_SET                                1
-#define SW_K_SEIN_LEFT 				            2
-#define SW_K_SEIN_RIGHT 		                3
-#define SW_K_REVERSE		 	                4
-#define SW_K_ABS				                5
-#define SW_K_LAMP                               6
-
 // Others Parameters
 #define MCU_SPEED_MAX                           200
 #define MCU_RPM_MAX                             99999
 #define VCU_ODOMETER_MAX                        99999
 #define HMI_DRIVE_MODE_MAX                      3
-
-/* Exported enum ----------------------------------------------------------------*/
-typedef enum {
-  SW_M_DRIVE = 0,
-  SW_M_TRIP = 1,
-  SW_M_REPORT = 2,
-  SW_M_MAX = 2
-} SW_MODE;
-
-typedef enum {
-  SW_M_DRIVE_E = 0,
-  SW_M_DRIVE_S = 1,
-  SW_M_DRIVE_P = 2,
-  SW_M_DRIVE_R = 3,
-  SW_M_DRIVE_MAX = 2
-} SW_MODE_DRIVE;
-
-typedef enum {
-  SW_M_TRIP_A = 0,
-  SW_M_TRIP_B = 1,
-  SW_M_TRIP_MAX = 1
-} SW_MODE_TRIP;
-
-typedef enum {
-  SW_M_REPORT_RANGE = 0,
-  SW_M_REPORT_AVERAGE = 1,
-  SW_M_REPORT_MAX = 1
-} SW_MODE_REPORT;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
@@ -182,19 +144,6 @@ typedef struct {
 //	uint8_t sein_right;
 } status_t;
 
-typedef struct {
-  uint8_t listening;
-  struct {
-    SW_MODE val;
-    struct {
-      uint8_t val[SW_M_MAX + 1];
-      uint8_t max[SW_M_MAX + 1];
-      uint8_t report[SW_M_REPORT_MAX + 1];
-      uint32_t trip[SW_M_TRIP_MAX + 1];
-    } sub;
-  } mode;
-} sw_runner_t;
-
 // Node struct
 typedef struct {
   struct {
@@ -204,21 +153,6 @@ typedef struct {
     uint8_t speed;
     uint32_t odometer;
     rtc_t rtc;
-    // FIXME: SW need to be separated
-    struct {
-      struct {
-        char event[20];
-        uint16_t pin;
-        GPIO_TypeDef *port;
-        uint8_t state;
-      } list[SW_TOTAL_LIST];
-      struct {
-        uint32_t start;
-        uint8_t running;
-        uint8_t time;
-      } timer[2];
-      sw_runner_t runner;
-    } sw;
   } vcu;
   struct {
     status_t status;

@@ -36,6 +36,7 @@
 #include "_can.h"
 #include "_rtc.h"
 #include "_utils.h"
+#include "_handlebar.h"
 #include "_dma_battery.h"
 /* USER CODE END Includes */
 
@@ -104,6 +105,7 @@ osMailQId CommandMailHandle;
 osMailQId ReportMailHandle;
 osMailQId ResponseMailHandle;
 extern db_t DB;
+extern sw_t SW;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1071,7 +1073,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     // handle Switches EXTI
     uint8_t i;
     for (i = 0; i < SW_TOTAL_LIST; i++) {
-      if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
+      if (GPIO_Pin == SW.list[i].pin) {
         xTaskNotifyFromISR(
             SwitchTaskHandle,
             (uint32_t ) GPIO_Pin,
@@ -1799,21 +1801,19 @@ void StartSwitchTask(const void *argument)
   uint32_t notif;
 
   // Read all EXTI state
-  for (i = 0; i < SW_TOTAL_LIST; i++) {
-    DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
-  }
+  HBAR_ReadStates();
 
   // Handle Reverse mode on init
-  if (DB.vcu.sw.list[SW_K_REVERSE].state) {
+  if (SW.list[SW_K_REVERSE].state) {
     // save previous Drive Mode state
-    if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
-      iModeDrive = DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE];
+    if (SW.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
+      iModeDrive = SW.runner.mode.sub.val[SW_M_DRIVE];
     }
     // force state
-    DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
+    SW.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
     // hazard on
-    DB.vcu.sw.list[SW_K_SEIN_LEFT].state = 1;
-    DB.vcu.sw.list[SW_K_SEIN_RIGHT].state = 1;
+    SW.list[SW_K_SEIN_LEFT].state = 1;
+    SW.list[SW_K_SEIN_RIGHT].state = 1;
   }
 
   /* Infinite loop */
@@ -1826,91 +1826,89 @@ void StartSwitchTask(const void *argument)
     osDelay(50);
 
     // Read all (to handle multiple switch change at the same time)
-    for (i = 0; i < SW_TOTAL_LIST; i++) {
-      DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
-    }
+    HBAR_ReadStates();
 
     // handle select & set: timer
     for (i = 0; i < SW_TOTAL_LIST; i++) {
       if (i == SW_K_SELECT || i == SW_K_SET) {
         // reset SET timer
-        DB.vcu.sw.timer[i].time = 0;
+        SW.timer[i].time = 0;
 
         // next job
-        if (DB.vcu.sw.list[i].state) {
-          if (i == SW_K_SELECT || (i == SW_K_SET && DB.vcu.sw.runner.listening)) {
+        if (SW.list[i].state) {
+          if (i == SW_K_SELECT || (i == SW_K_SET && SW.runner.listening)) {
             // start timer if not running
-            if (!DB.vcu.sw.timer[i].running) {
+            if (!SW.timer[i].running) {
               // set flag
-              DB.vcu.sw.timer[i].running = 1;
+              SW.timer[i].running = 1;
               // start timer for SET
-              DB.vcu.sw.timer[i].start = osKernelSysTick();
+              SW.timer[i].start = osKernelSysTick();
             }
           }
           // reverse it
-          DB.vcu.sw.list[i].state = 0;
+          SW.list[i].state = 0;
         } else {
           // stop timer if running
-          if (DB.vcu.sw.timer[i].running) {
+          if (SW.timer[i].running) {
             // set flag
-            DB.vcu.sw.timer[i].running = 0;
+            SW.timer[i].running = 0;
             // stop SET
-            DB.vcu.sw.timer[i].time = (uint8_t) ((osKernelSysTick()
-                - DB.vcu.sw.timer[i].start) / pdMS_TO_TICKS(1000));
+            SW.timer[i].time = (uint8_t) ((osKernelSysTick()
+                - SW.timer[i].start) / pdMS_TO_TICKS(1000));
             // reverse it
-            DB.vcu.sw.list[i].state = 1;
+            SW.list[i].state = 1;
           }
         }
       }
     }
 
     // Only handle Select & Set when in non-reverse mode
-    if (DB.vcu.sw.list[SW_K_REVERSE].state) {
+    if (SW.list[SW_K_REVERSE].state) {
       // save previous Drive Mode state
-      if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
-        iModeDrive = DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE];
+      if (SW.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
+        iModeDrive = SW.runner.mode.sub.val[SW_M_DRIVE];
       }
       // force state
-      DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
+      SW.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
       // hazard on
-      DB.vcu.sw.list[SW_K_SEIN_LEFT].state = 1;
-      DB.vcu.sw.list[SW_K_SEIN_RIGHT].state = 1;
+      SW.list[SW_K_SEIN_LEFT].state = 1;
+      SW.list[SW_K_SEIN_RIGHT].state = 1;
     } else {
       // restore previous Drive Mode
-      if (DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R) {
-        DB.vcu.sw.runner.mode.sub.val[SW_M_DRIVE] = iModeDrive;
+      if (SW.runner.mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R) {
+        SW.runner.mode.sub.val[SW_M_DRIVE] = iModeDrive;
       }
 
       // handle Select & Set
-      if (DB.vcu.sw.list[SW_K_SELECT].state || DB.vcu.sw.list[SW_K_SET].state) {
+      if (SW.list[SW_K_SELECT].state || SW.list[SW_K_SET].state) {
         // handle select key
-        if (DB.vcu.sw.list[SW_K_SELECT].state) {
-          if (DB.vcu.sw.runner.listening) {
+        if (SW.list[SW_K_SELECT].state) {
+          if (SW.runner.listening) {
             // change mode position
-            if (DB.vcu.sw.runner.mode.val == SW_M_MAX) {
-              DB.vcu.sw.runner.mode.val = 0;
+            if (SW.runner.mode.val == SW_M_MAX) {
+              SW.runner.mode.val = 0;
             } else {
-              DB.vcu.sw.runner.mode.val++;
+              SW.runner.mode.val++;
             }
           }
           // Listening on option
-          DB.vcu.sw.runner.listening = 1;
+          SW.runner.listening = 1;
 
-        } else if (DB.vcu.sw.list[SW_K_SET].state) {
+        } else if (SW.list[SW_K_SET].state) {
           // handle set key
-          if (DB.vcu.sw.runner.listening
-              || (DB.vcu.sw.timer[SW_K_SET].time >= 3 && DB.vcu.sw.runner.mode.val == SW_M_TRIP)) {
+          if (SW.runner.listening
+              || (SW.timer[SW_K_SET].time >= 3 && SW.runner.mode.val == SW_M_TRIP)) {
             // handle reset only if push more than n sec, and in trip mode
-            if (!DB.vcu.sw.runner.listening) {
+            if (!SW.runner.listening) {
               // reset value
-              DB.vcu.sw.runner.mode.sub.trip[DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val]] = 0;
+              SW.runner.mode.sub.trip[SW.runner.mode.sub.val[SW.runner.mode.val]] = 0;
             } else {
               // if less than n sec
-              if (DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val]
-                  == DB.vcu.sw.runner.mode.sub.max[DB.vcu.sw.runner.mode.val]) {
-                DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val] = 0;
+              if (SW.runner.mode.sub.val[SW.runner.mode.val]
+                  == SW.runner.mode.sub.max[SW.runner.mode.val]) {
+                SW.runner.mode.sub.val[SW.runner.mode.val] = 0;
               } else {
-                DB.vcu.sw.runner.mode.sub.val[DB.vcu.sw.runner.mode.val]++;
+                SW.runner.mode.sub.val[SW.runner.mode.val]++;
               }
             }
           }
@@ -1963,7 +1961,7 @@ void StartGeneralTask(const void *argument)
     }
 
     // Dummy data generator
-    _DummyGenerator(&DB);
+    _DummyGenerator(&DB, &SW);
 
     //    // Feed the dog
     //    HAL_IWDG_Refresh(&hiwdg);
@@ -1999,10 +1997,10 @@ void StartCanTxTask(const void *argument)
   for (;;) {
     _DebugTask("CanTx");
     // Send CAN data
-    CAN_VCU_Switch(&DB);
+    CAN_VCU_Switch(&DB, &SW);
     CAN_VCU_RTC(&(DB.vcu.rtc.timestamp));
-    CAN_VCU_Select_Set(&(DB.vcu.sw.runner));
-    CAN_VCU_Trip_Mode(&(DB.vcu.sw.runner.mode.sub.trip[0]));
+    CAN_VCU_Select_Set(&(SW.runner));
+    CAN_VCU_Trip_Mode(&(SW.runner.mode.sub.trip[0]));
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(250));

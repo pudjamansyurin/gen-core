@@ -55,7 +55,7 @@ void _DebugTask(char name[20]) {
   //  LOG_Enter();
 }
 
-void _DummyGenerator(db_t *db) {
+void _DummyGenerator(db_t *db, sw_t *sw) {
   // Control HMI brightness by daylight
   db->hmi1.status.daylight = _TimeCheckDaylight(db->vcu.rtc.timestamp);
 
@@ -63,30 +63,30 @@ void _DummyGenerator(db_t *db) {
   db->vcu.odometer = (db->vcu.odometer >= VCU_ODOMETER_MAX ? 0 : (db->vcu.odometer + 1));
 
   // Dummy Report Range
-  if (!db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]) {
-    db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE] = 255;
+  if (!sw->runner.mode.sub.report[SW_M_REPORT_RANGE]) {
+    sw->runner.mode.sub.report[SW_M_REPORT_RANGE] = 255;
   } else {
-    db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_RANGE]--;
+    sw->runner.mode.sub.report[SW_M_REPORT_RANGE]--;
   }
 
-  if (db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] >= 255) {
-    db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE] = 0;
+  if (sw->runner.mode.sub.report[SW_M_REPORT_AVERAGE] >= 255) {
+    sw->runner.mode.sub.report[SW_M_REPORT_AVERAGE] = 0;
   } else {
-    db->vcu.sw.runner.mode.sub.report[SW_M_REPORT_AVERAGE]++;
+    sw->runner.mode.sub.report[SW_M_REPORT_AVERAGE]++;
   }
 
   // Dummy Report Trip
-  if (db->vcu.sw.runner.mode.sub.val[db->vcu.sw.runner.mode.val] == SW_M_TRIP_A) {
-    if (db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] >= VCU_ODOMETER_MAX) {
-      db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A] = 0;
+  if (sw->runner.mode.sub.val[sw->runner.mode.val] == SW_M_TRIP_A) {
+    if (sw->runner.mode.sub.trip[SW_M_TRIP_A] >= VCU_ODOMETER_MAX) {
+      sw->runner.mode.sub.trip[SW_M_TRIP_A] = 0;
     } else {
-      db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_A]++;
+      sw->runner.mode.sub.trip[SW_M_TRIP_A]++;
     }
   } else {
-    if (db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] >= VCU_ODOMETER_MAX) {
-      db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B] = 0;
+    if (sw->runner.mode.sub.trip[SW_M_TRIP_B] >= VCU_ODOMETER_MAX) {
+      sw->runner.mode.sub.trip[SW_M_TRIP_B] = 0;
     } else {
-      db->vcu.sw.runner.mode.sub.trip[SW_M_TRIP_B]++;
+      sw->runner.mode.sub.trip[SW_M_TRIP_B]++;
     }
   }
 }

@@ -15,7 +15,7 @@
 #define GYROSCOPE_LIMIT               (10000/10)
 #define ACCELEROMETER_LIMIT           (46000/3)
 
-/* Exported struct --------------------------------------------------------------*/
+/* Exported struct ------------------------------------------------------------*/
 typedef struct {
   int32_t x;
   int32_t y;
