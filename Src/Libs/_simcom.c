@@ -33,10 +33,15 @@ static SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
 void Simcom_Sleep(uint8_t state) {
   HAL_GPIO_WritePin(INT_NET_DTR_GPIO_Port, INT_NET_DTR_Pin, state);
   osDelay(50);
+  // debug
+  LOG_Str("Simcom:Sleep = ");
+  LOG_Int(state);
+  LOG_Enter();
 }
 
 void Simcom_Init(SIMCOM_PWR state) {
   SIMCOM_RESULT p;
+  uint8_t step = 0;
 
   LOG_StrLn("Simcom:Init");
 
@@ -190,10 +195,14 @@ void Simcom_Init(SIMCOM_PWR state) {
     }
 
     // sleep the SIMCOM
-    Simcom_Sleep(1);
+    if (step++ == 3) {
+      step = 0;
+      Simcom_Sleep(1);
+      osDelay(60 * 1000);
+    }
 
     osRecursiveMutexRelease(SimcomRecMutexHandle);
-    osDelay(60 * 1000);
+    osDelay(1000);
   } while (p != SIMCOM_R_OK);
 
   simcom.online = 1;
