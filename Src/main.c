@@ -172,7 +172,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  //  MX_CAN1_Init();
+  MX_CAN1_Init();
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   MX_UART4_Init();
@@ -275,11 +275,11 @@ int main(void)
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
@@ -287,7 +287,7 @@ int main(void)
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1058,20 +1058,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     //          eSetBits,
     //          &xHigherPriorityTaskWoken);
     //    }
-    //
-    //    // handle Switches EXTI
-    //    uint8_t i;
-    //    for (i = 0; i < DB.vcu.sw.count; i++) {
-    //      if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
-    //        xTaskNotifyFromISR(
-    //            SwitchTaskHandle,
-    //            (uint32_t ) GPIO_Pin,
-    //            eSetBits,
-    //            &xHigherPriorityTaskWoken);
-    //
-    //        break;
-    //      }
-    //    }
+
+    // handle Switches EXTI
+    uint8_t i;
+    for (i = 0; i < SW_TOTAL_LIST; i++) {
+      if (GPIO_Pin == DB.vcu.sw.list[i].pin) {
+        xTaskNotifyFromISR(
+            SwitchTaskHandle,
+            (uint32_t ) GPIO_Pin,
+            eSetBits,
+            &xHigherPriorityTaskWoken);
+
+        break;
+      }
+    }
   }
 
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -1760,6 +1760,9 @@ void StartCanRxTask(const void *argument)
           // update audio volume
           xTaskNotify(AudioTaskHandle, EVENT_AUDIO_VOLUME, eSetBits);
           break;
+        case CAN_ADDR_HMI2:
+          CAN_HMI2_Read(&DB);
+          break;
         default:
           break;
       }
@@ -1782,7 +1785,7 @@ void StartSwitchTask(const void *argument)
   uint32_t notif;
 
   // Read all EXTI state
-  for (i = 0; i < DB.vcu.sw.count; i++) {
+  for (i = 0; i < SW_TOTAL_LIST; i++) {
     DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
   }
 
@@ -1809,12 +1812,12 @@ void StartSwitchTask(const void *argument)
     osDelay(50);
 
     // Read all (to handle multiple switch change at the same time)
-    for (i = 0; i < DB.vcu.sw.count; i++) {
+    for (i = 0; i < SW_TOTAL_LIST; i++) {
       DB.vcu.sw.list[i].state = HAL_GPIO_ReadPin(DB.vcu.sw.list[i].port, DB.vcu.sw.list[i].pin);
     }
 
     // handle select & set: timer
-    for (i = 0; i < DB.vcu.sw.count; i++) {
+    for (i = 0; i < SW_TOTAL_LIST; i++) {
       if (i == SW_K_SELECT || i == SW_K_SET) {
         // reset SET timer
         DB.vcu.sw.timer[i].time = 0;
@@ -1938,9 +1941,9 @@ void StartGeneralTask(const void *argument)
       }
     }
 
-    //    // Dummy data generator
-    //    _DummyGenerator(&DB);
-    //
+    // Dummy data generator
+    _DummyGenerator(&DB);
+
     //    // Feed the dog
     //    HAL_IWDG_Refresh(&hiwdg);
 

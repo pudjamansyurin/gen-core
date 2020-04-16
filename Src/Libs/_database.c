@@ -24,7 +24,6 @@ db_t DB = {
             },
         },
         .sw = {
-            .count = 6,
             .list = {
                 {
                     .event = "SELECT",
@@ -60,6 +59,12 @@ db_t DB = {
                     .event = "ABS",
                     .pin = EXT_ABS_STATUS_Pin,
                     .port = EXT_ABS_STATUS_GPIO_Port,
+                    .state = 0
+                },
+                {
+                    .event = "LAMP",
+                    .pin = EXT_HBAR_LAMP_Pin,
+                    .port = EXT_HBAR_LAMP_GPIO_Port,
                     .state = 0
                 }
             },
@@ -99,7 +104,7 @@ db_t DB = {
     },
     .hmi1 = {
         .status = {
-            .lamp = 1,
+            .mirroring = 0,
             .warning = 1,
             .temperature = 1,
             .finger = 1,

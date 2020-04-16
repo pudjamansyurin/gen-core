@@ -19,6 +19,8 @@
 #define BT(var, x)                              (var ^= (1 << x))
 #define BSL(var, x)                             (var << x)
 #define BSR(var, x)                             ((var >> x) & 0xFF)
+#define BBR(var, x)                             ((var >> x) & 0x01)
+#define BBR2(var, x)                            ((var >> x) & 0x03)
 
 /* Exported constants --------------------------------------------------------*/
 #define RTC_ONE_TIME_RESET                      3
@@ -110,12 +112,14 @@
 #define RESPONSE_STATUS_INVALID                 2
 
 // EXTI list
+#define SW_TOTAL_LIST                           7
 #define SW_K_SELECT                             0
 #define SW_K_SET                                1
 #define SW_K_SEIN_LEFT 				            2
 #define SW_K_SEIN_RIGHT 		                3
 #define SW_K_REVERSE		 	                4
 #define SW_K_ABS				                5
+#define SW_K_LAMP                               6
 
 // Others Parameters
 #define MCU_SPEED_MAX                           200
@@ -165,8 +169,8 @@ typedef struct {
 //FIXME active disabled GPIO input
 typedef struct {
   //	uint8_t abs;
-  //	uint8_t mirror;
-  uint8_t lamp;
+  uint8_t mirroring;
+  //  uint8_t lamp;
   uint8_t warning;
   uint8_t temperature;
   uint8_t finger;
@@ -200,13 +204,12 @@ typedef struct {
     rtc_t rtc;
     // FIXME: SW need to be separated
     struct {
-      uint8_t count;
       struct {
         char event[20];
         uint16_t pin;
         GPIO_TypeDef *port;
         uint8_t state;
-      } list[6];
+      } list[SW_TOTAL_LIST];
       struct {
         uint32_t start;
         uint8_t running;

@@ -63,7 +63,7 @@ uint8_t CAN_VCU_Switch(db_t *db) {
   CB.tx.data[0] = db->vcu.sw.list[SW_K_ABS].state;
   // FIXME: handle me with real data
   CB.tx.data[0] |= BSL(1, 1);
-  CB.tx.data[0] |= BSL(1, 2);
+  CB.tx.data[0] |= BSL(db->vcu.sw.list[SW_K_LAMP].state, 2);
   CB.tx.data[0] |= BSL(1, 3);
   CB.tx.data[0] |= BSL(iStatus.temperature, 4);
   CB.tx.data[0] |= BSL(iStatus.finger, 5);
@@ -184,18 +184,17 @@ void CAN_MCU_Dummy_Read(db_t *db) {
   uint32_t DB_MCU_RPM;
 
   // read message
-  DB_MCU_RPM = (
-  BSL(CB.rx.data[3], 24) |
-      BSL(CB.rx.data[2], 16) |
-      BSL(CB.rx.data[1], 8) |
-      CB.rx.data[0]
-      );
+  DB_MCU_RPM = CB.rx.data[0] | BSL(CB.rx.data[1], 8) | BSL(CB.rx.data[2], 16) | BSL(CB.rx.data[3], 24);
 
   // convert RPM to Speed
   db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
 
   // convert Speed to Volume
   db->vcu.volume = db->vcu.speed * 100 / MCU_SPEED_MAX;
+}
 
+void CAN_HMI2_Read(db_t *db) {
+  // read message
+  db->hmi1.status.mirroring = BBR(CB.rx.data[0], 0);
 }
 
