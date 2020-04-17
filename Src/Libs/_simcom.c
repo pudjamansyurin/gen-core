@@ -44,6 +44,7 @@ void Simcom_Init(SIMCOM_STATE state) {
   uint8_t step = 1;
   static uint8_t init = 1;
 
+  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
   // this do-while is complicated, but it doesn't use recursive function, so it's stack safe
   do {
     // debug
@@ -54,24 +55,25 @@ void Simcom_Init(SIMCOM_STATE state) {
     // only executed at power up
     if (init) {
       init = 0;
-      // wake-up the SIMCOM
-      //      Simcom_Sleep(0);
+      LOG_StrLn("Simcom:Init");
       // set default value to variable
       Simcom_Prepare();
       // simcom power control
       p = Simcom_Power();
     } else {
-      p = SIM_RESULT_OK;
+      if (SIM.state == SIM_STATE_DOWN) {
+        LOG_StrLn("Simcom:Down");
+        p = SIM_RESULT_ERROR;
+      } else {
+        p = SIM_RESULT_OK;
+      }
     }
 
     // handle simcom states
     switch (SIM.state) {
       case SIM_STATE_DOWN:
-        LOG_StrLn("Simcom:Init");
         // save event
         Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
-        // wake-up the SIMCOM
-        //        Simcom_Sleep(0);
         // reset buffer
         SIMCOM_Reset_Buffer();
         if (p != SIM_RESULT_OK) {
@@ -153,7 +155,6 @@ void Simcom_Init(SIMCOM_STATE state) {
         }
 
         break;
-
       case SIM_STATE_NETWORK_ON:
         // =========== GPRS ATTACH
         // GPRS Registration Status
@@ -247,8 +248,8 @@ void Simcom_Init(SIMCOM_STATE state) {
         if (p == SIM_RESULT_OK) {
           SIM.state = SIM_STATE_INTERNET_ON;
         } else {
+          Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
           if (SIM.state == SIM_STATE_PDP_ON) {
-            Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
             SIM.state = SIM_STATE_GPRS_ON;
           }
         }
@@ -262,7 +263,7 @@ void Simcom_Init(SIMCOM_STATE state) {
         //        }
         // Establish connection with server
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Command(SIM.cmd.CIPSTART, 30000, 1, "CONNECT");
+          p = Simcom_Command(SIM.cmd.CIPSTART, 15000, 1, "CONNECT");
           // check either connection ok / error
           if (p == SIM_RESULT_OK) {
             p = Simcom_Response("CONNECT OK");
@@ -272,9 +273,9 @@ void Simcom_Init(SIMCOM_STATE state) {
         if (p == SIM_RESULT_OK) {
           SIM.state = SIM_STATE_SERVER_ON;
         } else {
+          Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
           if (SIM.state == SIM_STATE_INTERNET_ON) {
-            Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
-            SIM.state = SIM_STATE_INTERNET_ON;
+            SIM.state = SIM_STATE_PDP_ON;
           }
         }
 
@@ -283,17 +284,20 @@ void Simcom_Init(SIMCOM_STATE state) {
         break;
     }
 
-    // delay 10 seconds after retry 3 times failed
+    // delay x seconds after retry 3 times failed
     if (p != SIM_RESULT_OK) {
-      // sleep the SIMCOM
-      if (step++ == 2) {
+      if (step++ == 3) {
         step = 1;
-        osDelay(10 * 1000);
+        LOG_StrLn("Simcom:DelayLong");
+        osDelay(30 * 1000);
       } else {
-        osDelay(100);
+        LOG_StrLn("Simcom:DelayShort");
+        osDelay(1000);
       }
     }
   } while (SIM.state < state);
+
+  osRecursiveMutexRelease(SimcomRecMutexHandle);
 }
 
 SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
@@ -306,7 +310,8 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
   // combine the size
   sprintf(str, "AT+CIPSEND=%d\r", payload_length);
 
-  if (SIM.state == SIM_STATE_SERVER_ON) {
+  Simcom_Init(SIM_STATE_SERVER_ON);
+  if (SIM.state >= SIM_STATE_SERVER_ON) {
     // wake-up the SIMCOM
     Simcom_Sleep(0);
     SIM.uploading = 1;
@@ -315,7 +320,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
     p = Simcom_Command(str, 5000, 1, SIMCOM_RSP_SEND);
     if (p == SIM_RESULT_OK) {
       // send response
-      p = Simcom_SendIndirect(payload, payload_length, 1, 20000, SIMCOM_RSP_SENT, 1);
+      p = Simcom_SendIndirect(payload, payload_length, 1, 15000, SIMCOM_RSP_SENT, 1);
       // wait for ACK/NACK
       if (p == SIM_RESULT_OK) {
         // set timeout guard
@@ -324,7 +329,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
         while (1) {
           if (Simcom_Response(PREFIX_ACK) ||
               Simcom_Response(PREFIX_NACK) ||
-              (osKernelSysTick() - tick) >= pdMS_TO_TICKS(20000)) {
+              (osKernelSysTick() - tick) >= pdMS_TO_TICKS(15000)) {
             break;
           }
           osDelay(10);
@@ -423,7 +428,6 @@ SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage) {
   uint8_t i, cnt, rssi = 0;
   rssi_t rssiQuality;
   char *str, *prefix = "+CSQ: ";
-
   // see: http://wiki.teltonika-networks.com/view/Mobile_Signal_Strength_Recommendations
   const rssi_t rssiQualities[5] = {
       { .name = "Excellent", .min = 22, .percentage = 100 },
@@ -529,7 +533,9 @@ static SIMCOM_RESULT Simcom_Ready(void) {
     osDelay(1);
   }
   // check
-  return Simcom_Cmd(SIMCOM_CMD_BOOT, 500, 1);
+
+  return Simcom_Command(SIMCOM_CMD_BOOT, 1000, 1, SIMCOM_RSP_READY);
+  //  return Simcom_Cmd(SIMCOM_CMD_BOOT, 1000, 1);
 }
 
 static SIMCOM_RESULT Simcom_Power(void) {
@@ -678,7 +684,7 @@ static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_pa
         SIM.state = SIM_STATE_DOWN;
         break;
       case SIM_RESULT_NO_RESPONSE:
-        LOG_StrLn("Simcom:NoResposne");
+        LOG_StrLn("Simcom:NoResponse");
         SIM.state = SIM_STATE_DOWN;
         break;
       case SIM_RESULT_TIMEOUT:

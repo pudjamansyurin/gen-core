@@ -39,7 +39,7 @@ db_t DB = {
     },
     .bms = {
         .on = 1,
-        .interval = REPORT_INTERVAL_SIMPLE * 1000
+        .interval = REPORT_INTERVAL_SIMPLE
     }
 };
 

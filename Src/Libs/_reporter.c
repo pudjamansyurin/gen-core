@@ -16,59 +16,45 @@ report_t REPORT;
 response_t RESPONSE;
 
 /* Public functions implementation --------------------------------------------*/
-void Reporter_Reset(FRAME_TYPE frame) {
+void Reporter_Init(void) {
   // set default data
-  LOG_Str("Reporter:Frame = ");
-  LOG_Int(frame);
-  LOG_Enter();
+  LOG_StrLn("Reporter:Init");
+  // =============== REPORT ==============
   // header report
   REPORT.header.prefix[0] = PREFIX_REPORT[1];
   REPORT.header.prefix[1] = PREFIX_REPORT[0];
   REPORT.header.crc = 0;
   REPORT.header.size = 0;
-  REPORT.header.frame_id = frame;
+  REPORT.header.frame_id = FR_FULL;
   REPORT.header.seq_id = 0;
   EEPROM_UnitID(EE_CMD_R, &(REPORT.header.unit_id));
+  // (already set)
+  // body required
+  REPORT.data.req.rtc_send_datetime = 0;
+  REPORT.data.req.rtc_log_datetime = 0;
+  REPORT.data.req.driver_id = 1;
+  REPORT.data.req.events_group = 0;
+  REPORT.data.req.speed = 1;
+  // body optional
+  REPORT.data.opt.gps.longitude = 0;
+  REPORT.data.opt.gps.latitude = 0;
+  REPORT.data.opt.gps.hdop = 0;
+  REPORT.data.opt.gps.heading = 0;
+  EEPROM_Odometer(EE_CMD_R, &(REPORT.data.opt.odometer));
+  REPORT.data.opt.bat_voltage = 0;
+  REPORT.data.opt.report_range = 0;
+  REPORT.data.opt.report_battery = 99;
+  REPORT.data.opt.trip_a = 0x01234567;
+  REPORT.data.opt.trip_b = 0x89A;
 
-  if (frame == FR_RESPONSE) {
-    // header response
-    // (copy from report)
-    RESPONSE.header = REPORT.header;
+  // =============== RESPONSE ==============
+  // header response (copy from report)
+  RESPONSE.header = REPORT.header;
+  RESPONSE.header.frame_id = FR_RESPONSE;
+  // body response
+  RESPONSE.data.code = 1;
+  strcpy(RESPONSE.data.message, "");
 
-    // body response
-    RESPONSE.data.code = 1;
-    strcpy(RESPONSE.data.message, "");
-
-  } else {
-    // header report
-    // (already set)
-
-    // body required
-    if (frame == FR_SIMPLE || frame == FR_FULL) {
-      REPORT.data.req.rtc_send_datetime = 0;
-      REPORT.data.req.rtc_log_datetime = 0;
-      REPORT.data.req.driver_id = 1;
-      REPORT.data.req.events_group = 0;
-      REPORT.data.req.speed = 1;
-    }
-
-    // body optional
-    if (frame == FR_FULL) {
-      // FIXME: default value should be zero
-      //      REPORT.data.opt.gps.longitude = 112.6935779 * 10000000;
-      //      REPORT.data.opt.gps.latitude = -7.4337599 * 10000000;
-      REPORT.data.opt.gps.longitude = 0;
-      REPORT.data.opt.gps.latitude = 0;
-      REPORT.data.opt.gps.hdop = 0;
-      REPORT.data.opt.gps.heading = 0;
-      EEPROM_Odometer(EE_CMD_R, &(REPORT.data.opt.odometer));
-      REPORT.data.opt.bat_voltage = 0;
-      REPORT.data.opt.report_range = 0;
-      REPORT.data.opt.report_battery = 99;
-      REPORT.data.opt.trip_a = 0x01234567;
-      REPORT.data.opt.trip_b = 0x89A;
-    }
-  }
 }
 
 void Reporter_SetUnitID(uint32_t unitId) {
@@ -96,7 +82,7 @@ void Reporter_SetSpeed(gps_t *hgps) {
   // calculate speed from GPS data
   REPORT.data.req.speed = hgps->speed_kph;
   // dummy odometer
-  Reporter_SetOdometer(REPORT.data.opt.odometer + (hgps->speed_mps * REPORT_INTERVAL_SIMPLE));
+  Reporter_SetOdometer(REPORT.data.opt.odometer + (hgps->speed_mps * DB.bms.interval));
   //  odom_meter += (hgps->speed_mps * REPORT_INTERVAL_SIMPLE);
   //  if (odom_meter >= 1000) {
   //    Reporter_SetOdometer(REPORT.data.opt.odometer++);
@@ -150,7 +136,7 @@ void Reporter_Capture(FRAME_TYPE frame) {
     if (frame == FR_FULL) {
       REPORT.header.size += sizeof(REPORT.data.opt);
       // set battery voltage
-      REPORT.data.opt.bat_voltage = DB.vcu.battery / 18.;
+      REPORT.data.opt.bat_voltage = DB.vcu.battery / 18;
     }
     // CRC will be recalculated when sending the payload
     // (because RTC_Send_Datetime will be changed later)

@@ -12,7 +12,7 @@
 #include "_utils.h"
 
 /* Public functions prototype ------------------------------------------------*/
-void Battery_DMA_Init(void);
+void BAT_DMA_Init(void);
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
 
 #endif /* DRIVERS__DMA_BATTERY_H_ */

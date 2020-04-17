@@ -190,7 +190,7 @@ int main(void)
   //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   //  CANBUS_Init();
-  Battery_DMA_Init();
+  BAT_DMA_Init();
   /* USER CODE END 2 */
 
   /* Create the mutex(es) */
@@ -258,7 +258,7 @@ int main(void)
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
@@ -385,7 +385,7 @@ static void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
    */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
@@ -404,7 +404,7 @@ static void MX_ADC1_Init(void)
    */
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
       {
     Error_Handler();
@@ -1138,7 +1138,6 @@ void StartIotTask(const void *argument)
       // check is mail ready
       if (hResponse) {
         retry = 1;
-        Simcom_Init(SIM_STATE_SERVER_ON);
         do {
           // Send to server
           p = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
@@ -1183,8 +1182,6 @@ void StartIotTask(const void *argument)
                 }
               }
             }
-            // reinit
-            Simcom_Init(SIM_STATE_SERVER_ON);
           }
 
           // delay
@@ -1208,7 +1205,6 @@ void StartIotTask(const void *argument)
       // check is report ready
       if (hReport) {
         retry = 1;
-        Simcom_Init(SIM_STATE_SERVER_ON);
         do {
           // get current sending date-time
           hReport->data.req.rtc_send_datetime = RTC_Read();
@@ -1270,32 +1266,31 @@ void StartIotTask(const void *argument)
                 }
               }
             }
-            // reinit
-            Simcom_Init(SIM_STATE_SERVER_ON);
           }
 
           // delay
           osDelay(100);
         } while ((p == SIM_RESULT_NACK || p == SIM_RESULT_TIMEOUT) && hReport);
+
+        // ================= SIMCOM Related Routines ================
+        Simcom_Init(SIM_STATE_READY);
+        // Retrieve network signal quality
+        Simcom_ReadSignal(&(DB.vcu.signal));
+        // Retrieve RTC time
+        RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
+        // Check calibration by cellular network
+        if (_TimeNeedCalibration(DB.vcu.rtc)) {
+          // get carrier timestamp
+          if (Simcom_ReadTime(&timestamp)) {
+            // calibrate the RTC
+            RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
+          }
+        }
+        // ============ End of SIMCOM Related Routines ===============
       }
     }
 
-    // ============ SIMCOM Related Routines ===============
-    Simcom_Init(SIM_STATE_READY);
-    // Retrieve network signal quality
-    Simcom_ReadSignal(&(DB.vcu.signal));
-    // Retrieve RTC time
-    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
-    // Check calibration by cellular network
-    if (_TimeNeedCalibration(DB.vcu.rtc)) {
-      // get carrier timestamp
-      if (Simcom_ReadTime(&timestamp)) {
-        // calibrate the RTC
-        RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
-      }
-    }
-
-    // Give other threads a shot
+    // scan ADC while simcom at rest
     osDelay(1000);
   }
   /* USER CODE END 5 */
@@ -1361,9 +1356,6 @@ void StartCommandTask(const void *argument)
   command_t *hCommand = NULL;
   response_t *hResponse = NULL;
   extern response_t RESPONSE;
-
-  // reset response frame to default
-  Reporter_Reset(FR_RESPONSE);
 
   /* Infinite loop */
   for (;;) {
@@ -1548,7 +1540,7 @@ void StartGpsTask(const void *argument)
     LOG_Enter();
 
     // Report interval
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval * 1000));
   }
   /* USER CODE END StartGpsTask */
 }
@@ -1718,7 +1710,7 @@ void StartReporterTask(const void *argument)
   }
 
   // reset report frame to default
-  Reporter_Reset(FR_FULL);
+  Reporter_Init();
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
@@ -1750,11 +1742,11 @@ void StartReporterTask(const void *argument)
         // simple frame
         frame = FR_SIMPLE;
       }
-      DB.bms.interval = (REPORT_INTERVAL_SIMPLE * 1000);
+      DB.bms.interval = REPORT_INTERVAL_SIMPLE;
     } else {
       // BMS un-plugged (every 1 minute, always full frame)
       frame = FR_FULL;
-      DB.bms.interval = 60 * 1000;
+      DB.bms.interval = 60;
     }
 
     // Get current snapshot
@@ -1783,7 +1775,7 @@ void StartReporterTask(const void *argument)
     //    Reporter_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval * 1000));
   }
   /* USER CODE END StartReporterTask */
 }
@@ -1978,27 +1970,27 @@ void StartGeneralTask(const void *argument)
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
+  // wait until reporter ready
+  osDelay(5000);
   // get current state
   DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-  Reporter_WriteEvent(REPORT_BMS_OFF, !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin));
+  Reporter_WriteEvent(REPORT_BMS_OFF, !DB.bms.on);
 
   for (;;) {
     _DebugTask("General");
 
     // do this if events occurred
     if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
+      // handle bounce effect
+      osDelay(50);
       // BMS Power IRQ
       if (notif & EVENT_GENERAL_BMS_IRQ) {
-        // handle bounce effect
-        osDelay(50);
         // get current state
         DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-        Reporter_WriteEvent(REPORT_BMS_OFF, !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin));
+        Reporter_WriteEvent(REPORT_BMS_OFF, !DB.bms.on);
       }
-      // BMS Power IRQ
+      // KNOB IRQ
       if (notif & EVENT_GENERAL_KNOB_IRQ) {
-        // handle bounce effect
-        osDelay(50);
         // get current state
         DB.hmi2.shutdown = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
       }
