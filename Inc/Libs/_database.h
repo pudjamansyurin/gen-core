@@ -30,10 +30,10 @@
 #define VCU_BUILD_YEAR                          20U
 
 //#define NET_SERVER_PORT                         5044
-//#define NET_SERVER_IP                           "pujakusumae-31974.portmap.io"
-//#define NET_SERVER_PORT                         31974
-#define NET_SERVER_IP                           "0.tcp.ngrok.io"
-#define NET_SERVER_PORT                         18123
+#define NET_SERVER_IP                           "pujakusumae-31974.portmap.io"
+#define NET_SERVER_PORT                         31974
+//#define NET_SERVER_IP                           "0.tcp.ngrok.io"
+//#define NET_SERVER_PORT                         18123
 #define NET_APN                                 "3gprs"                 // "telkomsel"
 #define NET_APN_USERNAME                        "3gprs"                 // "wap"
 #define NET_APN_PASSWORD                        "3gprs"                 // "wap123"
@@ -51,6 +51,7 @@
 
 #define REPORT_INTERVAL_SIMPLE                  5                       // in second
 #define REPORT_INTERVAL_FULL                    20                      // in second
+#define REPORT_INTERVAL_BMS_OFF                 10                      // in second
 #define REPORT_UNITID                           354313U
 
 #define GMT_TIME                                7                       // Asia/Jakarta

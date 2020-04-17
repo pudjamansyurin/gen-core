@@ -54,7 +54,6 @@ void Reporter_Init(void) {
   // body response
   RESPONSE.data.code = 1;
   strcpy(RESPONSE.data.message, "");
-
 }
 
 void Reporter_SetUnitID(uint32_t unitId) {

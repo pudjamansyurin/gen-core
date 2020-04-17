@@ -404,7 +404,7 @@ static void MX_ADC1_Init(void)
    */
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
       {
     Error_Handler();
@@ -1695,6 +1695,14 @@ void StartReporterTask(const void *argument)
   report_t *hReport = NULL;
   gps_t *hGps = NULL;
 
+  // reset report frame to default
+  Reporter_Init();
+
+  // Init things before reporter capture
+  // get current state
+  DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
+  Reporter_WriteEvent(REPORT_BMS_OFF, !DB.bms.on);
+
   // FIXME: create master thread
   // ONE-TIME configurations:
   if (EEPROM_Init()) {
@@ -1708,9 +1716,6 @@ void StartReporterTask(const void *argument)
       HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
     }
   }
-
-  // reset report frame to default
-  Reporter_Init();
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
@@ -1746,7 +1751,7 @@ void StartReporterTask(const void *argument)
     } else {
       // BMS un-plugged (every 1 minute, always full frame)
       frame = FR_FULL;
-      DB.bms.interval = 60;
+      DB.bms.interval = REPORT_INTERVAL_BMS_OFF;
     }
 
     // Get current snapshot
@@ -1970,11 +1975,6 @@ void StartGeneralTask(const void *argument)
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
-  // wait until reporter ready
-  osDelay(5000);
-  // get current state
-  DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-  Reporter_WriteEvent(REPORT_BMS_OFF, !DB.bms.on);
 
   for (;;) {
     _DebugTask("General");

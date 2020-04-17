@@ -11,6 +11,7 @@
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 extern osMutexId SimcomRecMutexHandle;
 extern osMailQId CommandMailHandle;
+extern db_t DB;
 
 /* Public variables ----------------------------------------------------------*/
 sim_t SIM;
@@ -62,6 +63,8 @@ void Simcom_Init(SIMCOM_STATE state) {
       p = Simcom_Power();
     } else {
       if (SIM.state == SIM_STATE_DOWN) {
+        // save event
+        Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
         LOG_StrLn("Simcom:Down");
         p = SIM_RESULT_ERROR;
       } else {
@@ -72,8 +75,6 @@ void Simcom_Init(SIMCOM_STATE state) {
     // handle simcom states
     switch (SIM.state) {
       case SIM_STATE_DOWN:
-        // save event
-        Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
         // reset buffer
         SIMCOM_Reset_Buffer();
         if (p != SIM_RESULT_OK) {
@@ -289,11 +290,10 @@ void Simcom_Init(SIMCOM_STATE state) {
       if (step++ == 3) {
         step = 1;
         LOG_StrLn("Simcom:DelayLong");
-        osDelay(30 * 1000);
       } else {
         LOG_StrLn("Simcom:DelayShort");
-        osDelay(1000);
       }
+      osDelay(DB.bms.interval * 1000);
     }
   } while (SIM.state < state);
 
@@ -316,10 +316,10 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
     Simcom_Sleep(0);
     SIM.uploading = 1;
 
-    // confirm to server that command is executed
+    // send command
     p = Simcom_Command(str, 5000, 1, SIMCOM_RSP_SEND);
     if (p == SIM_RESULT_OK) {
-      // send response
+      // send the payload
       p = Simcom_SendIndirect(payload, payload_length, 1, 15000, SIMCOM_RSP_SENT, 1);
       // wait for ACK/NACK
       if (p == SIM_RESULT_OK) {
@@ -329,7 +329,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
         while (1) {
           if (Simcom_Response(PREFIX_ACK) ||
               Simcom_Response(PREFIX_NACK) ||
-              (osKernelSysTick() - tick) >= pdMS_TO_TICKS(15000)) {
+              (osKernelSysTick() - tick) >= pdMS_TO_TICKS(20000)) {
             break;
           }
           osDelay(10);

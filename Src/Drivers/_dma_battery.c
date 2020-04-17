@@ -15,8 +15,8 @@ extern db_t DB;
 extern sim_t SIM;
 
 /* Local constants -----------------------------------------------------------*/
-#define DMA_SZ                      255
-#define AVERAGE_SZ                  255
+#define DMA_SZ                      200
+#define AVERAGE_SZ                  500U
 
 #define ADC_MAX_VALUE               4095    // 12 bit
 #define REFFERENCE_MAX_VOLTAGE      3300    // mV
@@ -28,7 +28,7 @@ static uint16_t DMA_BUFFER[DMA_SZ];
 static uint16_t AVERAGE_BUFFER[AVERAGE_SZ] = { 0 };
 
 /* Public functions declaration ------------------------------------------------*/
-static uint16_t MovingAverage(uint16_t *pBuffer, uint8_t len, uint16_t value);
+static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value);
 
 /* Public functions implementation ---------------------------------------------*/
 void BAT_DMA_Init(void) {
@@ -50,13 +50,13 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
   ADC_AverageValue = sum / (DMA_SZ / 2);
 
   // calculate the moving average
-  ADC_AverageValue = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, ADC_AverageValue);
+  DB.vcu.battery = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, ADC_AverageValue);
 
-  // change to refference value
-  ADC_RefferenceVoltage = ADC_AverageValue * REFFERENCE_MAX_VOLTAGE / ADC_MAX_VALUE;
-
-  // change to battery value
-  DB.vcu.battery = ADC_RefferenceVoltage * RATIO / RATIO_MULTIPLIER;
+  //  // change to refference value
+  //  ADC_RefferenceVoltage = ADC_AverageValue * REFFERENCE_MAX_VOLTAGE / ADC_MAX_VALUE;
+  //
+  //  // change to battery value
+  //  DB.vcu.battery = ADC_RefferenceVoltage * RATIO / RATIO_MULTIPLIER;
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
@@ -73,17 +73,17 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
   ADC_AverageValue = sum / (DMA_SZ / 2);
 
   // calculate the moving average
-  ADC_AverageValue = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, ADC_AverageValue);
+  DB.vcu.battery = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, ADC_AverageValue);
 
-  // change to refference value
-  ADC_RefferenceVoltage = ADC_AverageValue * REFFERENCE_MAX_VOLTAGE / ADC_MAX_VALUE;
-
-  // change to battery value
-  DB.vcu.battery = ADC_RefferenceVoltage * RATIO / RATIO_MULTIPLIER;
+  //  // change to refference value
+  //  ADC_RefferenceVoltage = ADC_AverageValue * REFFERENCE_MAX_VOLTAGE / ADC_MAX_VALUE;
+  //
+  //  // change to battery value
+  //  DB.vcu.battery = ADC_RefferenceVoltage * RATIO / RATIO_MULTIPLIER;
 }
 
 /* Private functions implementation ---------------------------------------------*/
-static uint16_t MovingAverage(uint16_t *pBuffer, uint8_t len, uint16_t value) {
+static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
   static uint32_t Sum = 0, pos = 0;
 
   //Subtract the oldest number from the prev sum, add the new number
