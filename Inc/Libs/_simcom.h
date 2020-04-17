@@ -25,29 +25,36 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-  SIMCOM_RESTART = 0,
-  SIMCOM_POWER_UP = 1
-} SIMCOM_PWR;
+  SIM_RESULT_NACK = -4,
+  SIM_RESULT_RESTARTED = -3,
+  SIM_RESULT_NO_RESPONSE = -2,
+  SIM_RESULT_TIMEOUT = -1,
+  SIM_RESULT_ERROR = 0,
+  SIM_RESULT_OK = 1,
+  SIM_RESULT_ACK = 2,
+} SIMCOM_RESULT;
 
 typedef enum {
-  SIMCOM_R_NACK = -4,
-  SIMCOM_R_RESTARTED = -3,
-  SIMCOM_R_NO_RESPONSE = -2,
-  SIMCOM_R_TIMEOUT = -1,
-  SIMCOM_R_ERROR = 0,
-  SIMCOM_R_OK = 1,
-  SIMCOM_R_ACK = 2,
-} SIMCOM_RESULT;
+  SIM_STATE_DOWN = -1,
+  SIM_STATE_READY = 0,
+  SIM_STATE_CONFIGURED = 1,
+  SIM_STATE_NETWORK_ON = 2,
+  SIM_STATE_GPRS_ON = 3,
+  SIM_STATE_PDP_ON = 4,
+  SIM_STATE_INTERNET_ON = 5,
+  SIM_STATE_SERVER_ON = 6
+} SIMCOM_STATE;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-  uint8_t ready;
-  uint8_t online;
+  SIMCOM_STATE state;
+  uint8_t uploading;
+  uint8_t sleep;
   struct {
     char CIPSTART[200];
     char CSTT[75];
   } cmd;
-} simcom_t;
+} sim_t;
 
 typedef struct {
   char name[10];
@@ -57,8 +64,9 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Sleep(uint8_t state);
-void Simcom_Init(SIMCOM_PWR state);
+void Simcom_Init(SIMCOM_STATE state);
 SIMCOM_RESULT Simcom_Upload(char *message, uint16_t length);
+SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
 SIMCOM_RESULT Simcom_ReadCommand(command_t *command);
 SIMCOM_RESULT Simcom_ReadACK(report_header_t *report_header);
 SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage);

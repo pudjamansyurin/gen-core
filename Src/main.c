@@ -106,6 +106,7 @@ osMailQId ReportMailHandle;
 osMailQId ResponseMailHandle;
 extern db_t DB;
 extern sw_t SW;
+extern sim_t SIM;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -174,7 +175,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_CAN1_Init();
+  //  MX_CAN1_Init();
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   MX_UART4_Init();
@@ -188,7 +189,7 @@ int main(void)
   MX_CRC_Init();
   //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-  CANBUS_Init();
+  //  CANBUS_Init();
   Battery_DMA_Init();
   /* USER CODE END 2 */
 
@@ -257,7 +258,7 @@ int main(void)
 
   /* definition and creation of GpsTask */
   osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
+  //  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
 
   /* definition and creation of FingerTask */
   osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
@@ -277,11 +278,11 @@ int main(void)
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
+  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
 
   /* definition and creation of GeneralTask */
   osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
@@ -289,7 +290,7 @@ int main(void)
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1104,13 +1105,13 @@ void StartIotTask(const void *argument)
   command_t *hCommand = NULL;
   report_t *hReport = NULL;
   response_t *hResponse = NULL;
-  uint8_t size;
+  uint8_t size, retry;
   timestamp_t timestamp;
   SIMCOM_RESULT p;
 
   // Start simcom module
   SIMCOM_DMA_Init();
-  Simcom_Init(SIMCOM_POWER_UP);
+  Simcom_Init(SIM_STATE_CONFIGURED);
 
   /* Infinite loop */
   size = sizeof(hReport->header.prefix) +
@@ -1120,10 +1121,13 @@ void StartIotTask(const void *argument)
   for (;;) {
     _DebugTask("IoT");
     // Set default
-    p = SIMCOM_R_ACK;
+    p = SIM_RESULT_ACK;
+
+    // wake-up the SIMCOM
+    Simcom_Sleep(0);
 
     // response frame
-    {
+    if (p == SIM_RESULT_ACK) {
       // check report log
       if (hResponse == NULL) {
         evt = osMailGet(ResponseMailHandle, 0);
@@ -1136,38 +1140,64 @@ void StartIotTask(const void *argument)
 
       // check is mail ready
       if (hResponse) {
-        // wake-up the SIMCOM
-        Simcom_Sleep(0);
-
+        retry = 1;
+        Simcom_Init(SIM_STATE_SERVER_ON);
         do {
-          osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
           // Send to server
           p = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
 
           // handle SIMCOM result
-          if (p == SIMCOM_R_ACK) {
+          if (p == SIM_RESULT_ACK) {
             // validate ACK
             if (Simcom_ReadACK(&(hResponse->header))) {
               // Release back
               osMailFree(ResponseMailHandle, hResponse);
               hResponse = NULL;
+
             } else {
-              p = SIMCOM_R_TIMEOUT;
+              p = SIM_RESULT_NACK;
             }
+          } else {
+            // handle comm. failure
+            if (SIM.state == SIM_STATE_SERVER_ON) {
+              if (p != SIM_RESULT_NACK) {
+                // handle failure
+                switch (retry++) {
+                  case 1:
+                    // try closing the IP
+                    SIM.state = SIM_STATE_INTERNET_ON;
+                    Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
+
+                    break;
+                  case 2:
+                    // try closing the PDP
+                    SIM.state = SIM_STATE_PDP_ON;
+                    Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+
+                    break;
+                  case 3:
+                    // try reset the module
+                    SIM.state = SIM_STATE_DOWN;
+                    retry = 1;
+
+                    break;
+                  default:
+                    break;
+                }
+              }
+            }
+            // reinit
+            Simcom_Init(SIM_STATE_SERVER_ON);
           }
 
           // delay
-          osRecursiveMutexRelease(SimcomRecMutexHandle);
           osDelay(100);
-        } while ((p == SIMCOM_R_NACK || p == SIMCOM_R_TIMEOUT) && hResponse);
-
-        // sleep the SIMCOM
-        Simcom_Sleep(1);
+        } while ((p == SIM_RESULT_NACK || p == SIM_RESULT_TIMEOUT) && hResponse);
       }
     }
 
     // report frame
-    {
+    if (p == SIM_RESULT_ACK) {
       // check report log
       if (hReport == NULL) {
         evt = osMailGet(ReportMailHandle, 0);
@@ -1180,11 +1210,9 @@ void StartIotTask(const void *argument)
 
       // check is report ready
       if (hReport) {
-        // wake-up the SIMCOM
-        Simcom_Sleep(0);
-
+        retry = 1;
+        Simcom_Init(SIM_STATE_SERVER_ON);
         do {
-          osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
           // get current sending date-time
           hReport->data.req.rtc_send_datetime = RTC_Read();
           // recalculate the CRC
@@ -1195,62 +1223,82 @@ void StartIotTask(const void *argument)
           p = Simcom_Upload((char*) hReport, size + hReport->header.size);
 
           // handle SIMCOM result
-          if (p == SIMCOM_R_ACK) {
+          if (p == SIM_RESULT_ACK) {
             // validate ACK
             if (Simcom_ReadACK(&(hReport->header))) {
               // Release back
               osMailFree(ReportMailHandle, hReport);
               hReport = NULL;
-            } else {
-              p = SIMCOM_R_TIMEOUT;
-            }
-          }
 
-          // handle command (if any)
-          if (p == SIMCOM_R_ACK) {
-            // Allocate memory
-            hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
-            // handle command (if any)
-            if (Simcom_ReadCommand(hCommand)) {
-              osMailPut(CommandMailHandle, hCommand);
+              // handle COMMAND (if any)
+              // Allocate memory
+              hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
+              // handle command (if any)
+              if (Simcom_ReadCommand(hCommand)) {
+                osMailPut(CommandMailHandle, hCommand);
+              } else {
+                osMailFree(CommandMailHandle, hCommand);
+              }
+
+              break;
             } else {
-              osMailFree(CommandMailHandle, hCommand);
+              p = SIM_RESULT_NACK;
             }
+          } else {
+            // handle comm. failure
+            if (SIM.state == SIM_STATE_SERVER_ON) {
+              if (p != SIM_RESULT_NACK) {
+                // handle failure
+                switch (retry++) {
+                  case 1:
+                    // try closing the IP
+                    SIM.state = SIM_STATE_INTERNET_ON;
+                    Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
+
+                    break;
+                  case 2:
+                    // try closing the PDP
+                    SIM.state = SIM_STATE_PDP_ON;
+                    Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+
+                    break;
+                  case 3:
+                    // try reset the module
+                    SIM.state = SIM_STATE_DOWN;
+                    retry = 1;
+
+                    break;
+                  default:
+                    break;
+                }
+              }
+            }
+            // reinit
+            Simcom_Init(SIM_STATE_SERVER_ON);
           }
 
           // delay
-          osRecursiveMutexRelease(SimcomRecMutexHandle);
           osDelay(100);
-        } while ((p == SIMCOM_R_NACK || p == SIMCOM_R_TIMEOUT) && hReport);
-
-        // Retrieve network signal quality
-        Simcom_ReadSignal(&(DB.vcu.signal));
-
-        // Retrieve RTC time
-        RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
-        // Check calibration by cellular network
-        if (_TimeNeedCalibration(DB.vcu.rtc)) {
-          // get carrier timestamp
-          if (Simcom_ReadTime(&timestamp)) {
-            // calibrate the RTC
-            RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
-          }
-        }
-
-        // sleep the SIMCOM
-        Simcom_Sleep(1);
+        } while ((p == SIM_RESULT_NACK || p == SIM_RESULT_TIMEOUT) && hReport);
       }
     }
 
-    // handle sending error
-    if (p != SIMCOM_R_ACK) {
-      // save the SIMCOM event
-      Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
-      // restart module
-      Simcom_Init(SIMCOM_RESTART);
-    } else {
-      Reporter_WriteEvent(REPORT_NETWORK_RESTART, 0);
+    // ============ SIMCOM Related Routines ===============
+    Simcom_Init(SIM_STATE_READY);
+    // Retrieve network signal quality
+    Simcom_ReadSignal(&(DB.vcu.signal));
+    // Retrieve RTC time
+    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
+    // Check calibration by cellular network
+    if (_TimeNeedCalibration(DB.vcu.rtc)) {
+      // get carrier timestamp
+      if (Simcom_ReadTime(&timestamp)) {
+        // calibrate the RTC
+        RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
+      }
     }
+    // sleep the SIMCOM
+    Simcom_Sleep(1);
 
     // Give other threads a shot
     osDelay(1000);
@@ -1736,6 +1784,7 @@ void StartReporterTask(const void *argument)
     // Put report to log
     osMailPut(ReportMailHandle, hReport);
     // reset all events group
+    Reporter_WriteEvent(REPORT_NETWORK_RESTART, 0);
     //    Reporter_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
@@ -1961,15 +2010,15 @@ void StartGeneralTask(const void *argument)
     }
 
     // Dummy data generator
-    _DummyGenerator(&DB, &SW);
+    //    _DummyGenerator(&DB, &SW);
 
-    //    // Feed the dog
+    // Feed the dog
     //    HAL_IWDG_Refresh(&hiwdg);
 
-    //     Battery Monitor
-    LOG_Str("Battery:Voltage = ");
-    LOG_Int(DB.vcu.battery);
-    LOG_StrLn(" mV");
+    // Battery Monitor
+    //    LOG_Str("Battery:Voltage = ");
+    //    LOG_Int(DB.vcu.battery);
+    //    LOG_StrLn(" mV");
 
     // Toggling LED
     //    _LedToggle();

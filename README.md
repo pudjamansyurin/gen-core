@@ -33,11 +33,13 @@
 - [x] Check COMMAND before clearing the Buffer 
 - [x] Slow down report time when no BMS (5x longer)
 - [x] Fix SIMCOM auto restart when receive Command from server
+- [x] Handle "Phone Plugged Status" from HMI-2 
+- [x] Handle DTR pin for SIM5300e (sleep mode) 
+- [x] Use hierarchy algorithm to handle simcom error 
+- [ ] Simplify SIMCOM library
+- [ ] Calibrate the ADC of Backup Battery Monitor
 - [ ] Use double buffering for ADC-DMA (HT & TC)
-- [ ] Handle "Phone Plugged Status" from HMI-2 
-- [ ] Use hierarchy algorithm to handle simcom error 
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
-- [ ] Handle DTR pin for SIM5300e (sleep mode) 
 - [ ] SIM5300e SSL communication 
 - [ ] Handle migration from STM32F407VG to STM32F423VH 
   - [ ] Use AES features in new STM32F423VH 
