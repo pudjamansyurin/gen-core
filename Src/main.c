@@ -1111,7 +1111,7 @@ void StartIotTask(const void *argument)
 
   // Start simcom module
   SIMCOM_DMA_Init();
-  Simcom_Init(SIM_STATE_CONFIGURED);
+  Simcom_SetState(SIM_STATE_CONFIGURED);
 
   /* Infinite loop */
   size = sizeof(hReport->header.prefix) +
@@ -1140,6 +1140,7 @@ void StartIotTask(const void *argument)
         retry = 1;
         do {
           // Send to server
+          Simcom_SetState(SIM_STATE_SERVER_ON);
           p = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
 
           // handle SIMCOM result
@@ -1185,7 +1186,7 @@ void StartIotTask(const void *argument)
           }
 
           // delay
-          osDelay(100);
+          osDelay(500);
         } while ((p == SIM_RESULT_NACK || p == SIM_RESULT_TIMEOUT) && hResponse);
       }
     }
@@ -1213,6 +1214,7 @@ void StartIotTask(const void *argument)
               (uint8_t*) &(hReport->header.size),
               hReport->header.size + sizeof(hReport->header.size), 1);
           // Send to server
+          Simcom_SetState(SIM_STATE_SERVER_ON);
           p = Simcom_Upload((char*) hReport, size + hReport->header.size);
 
           // handle SIMCOM result
@@ -1269,11 +1271,11 @@ void StartIotTask(const void *argument)
           }
 
           // delay
-          osDelay(100);
+          osDelay(500);
         } while ((p == SIM_RESULT_NACK || p == SIM_RESULT_TIMEOUT) && hReport);
 
         // ================= SIMCOM Related Routines ================
-        Simcom_Init(SIM_STATE_READY);
+        Simcom_SetState(SIM_STATE_READY);
         // Retrieve network signal quality
         Simcom_ReadSignal(&(DB.vcu.signal));
         // Retrieve RTC time

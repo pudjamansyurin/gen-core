@@ -40,7 +40,7 @@ void Simcom_Sleep(uint8_t state) {
   //  LOG_Enter();
 }
 
-void Simcom_Init(SIMCOM_STATE state) {
+void Simcom_SetState(SIMCOM_STATE state) {
   SIMCOM_RESULT p;
   uint8_t step = 1;
   static uint8_t init = 1;
@@ -55,7 +55,6 @@ void Simcom_Init(SIMCOM_STATE state) {
 
     // only executed at power up
     if (init) {
-      init = 0;
       LOG_StrLn("Simcom:Init");
       // set default value to variable
       Simcom_Prepare();
@@ -86,7 +85,7 @@ void Simcom_Init(SIMCOM_STATE state) {
         }
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
-          SIM.state = SIM_STATE_READY;
+          SIM.state++;
         }
 
         break;
@@ -136,7 +135,7 @@ void Simcom_Init(SIMCOM_STATE state) {
 
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
-          SIM.state = SIM_STATE_CONFIGURED;
+          SIM.state++;
         }
 
         break;
@@ -152,7 +151,7 @@ void Simcom_Init(SIMCOM_STATE state) {
         }
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
-          SIM.state = SIM_STATE_NETWORK_ON;
+          SIM.state++;
         }
 
         break;
@@ -168,10 +167,10 @@ void Simcom_Init(SIMCOM_STATE state) {
         }
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
-          SIM.state = SIM_STATE_GPRS_ON;
+          SIM.state++;
         } else {
           if (SIM.state == SIM_STATE_NETWORK_ON) {
-            SIM.state = SIM_STATE_CONFIGURED;
+            SIM.state--;
           }
         }
 
@@ -221,10 +220,10 @@ void Simcom_Init(SIMCOM_STATE state) {
 
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
-          SIM.state = SIM_STATE_PDP_ON;
+          SIM.state++;
         } else {
           if (SIM.state == SIM_STATE_GPRS_ON) {
-            SIM.state = SIM_STATE_NETWORK_ON;
+            SIM.state--;
           }
         }
 
@@ -247,11 +246,13 @@ void Simcom_Init(SIMCOM_STATE state) {
 
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
-          SIM.state = SIM_STATE_INTERNET_ON;
+          SIM.state++;
         } else {
+          // Close PDP
           Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+
           if (SIM.state == SIM_STATE_PDP_ON) {
-            SIM.state = SIM_STATE_GPRS_ON;
+            SIM.state--;
           }
         }
 
@@ -272,11 +273,13 @@ void Simcom_Init(SIMCOM_STATE state) {
         }
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
-          SIM.state = SIM_STATE_SERVER_ON;
+          SIM.state++;
         } else {
-          Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+          // Close IP
+          Simcom_Cmd("AT+CIPCLOSE\r", 1000, 1);
+
           if (SIM.state == SIM_STATE_INTERNET_ON) {
-            SIM.state = SIM_STATE_PDP_ON;
+            SIM.state--;
           }
         }
 
@@ -296,6 +299,8 @@ void Simcom_Init(SIMCOM_STATE state) {
         osDelay(1000);
       }
     }
+
+    init = 0;
   } while (SIM.state < state);
 
   osRecursiveMutexRelease(SimcomRecMutexHandle);
@@ -311,7 +316,6 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
   // combine the size
   sprintf(str, "AT+CIPSEND=%d\r", payload_length);
 
-  Simcom_Init(SIM_STATE_SERVER_ON);
   if (SIM.state >= SIM_STATE_SERVER_ON) {
     // wake-up the SIMCOM
     Simcom_Sleep(0);
@@ -321,7 +325,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
     p = Simcom_Command(str, 5000, 1, SIMCOM_RSP_SEND);
     if (p == SIM_RESULT_OK) {
       // send the payload
-      p = Simcom_SendIndirect(payload, payload_length, 1, 15000, SIMCOM_RSP_SENT, 1);
+      p = Simcom_SendIndirect(payload, payload_length, 1, 20000, SIMCOM_RSP_SENT, 1);
       // wait for ACK/NACK
       if (p == SIM_RESULT_OK) {
         // set timeout guard
