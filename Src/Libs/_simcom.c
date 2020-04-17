@@ -46,9 +46,16 @@ void Simcom_Init(SIMCOM_STATE state) {
 
   // this do-while is complicated, but it doesn't use recursive function, so it's stack safe
   do {
+    // debug
+    //    LOG_Str("Simcom:State = ");
+    //    LOG_Int(SIM.state);
+    //    LOG_Enter();
+
     // only executed at power up
     if (init) {
       init = 0;
+      // wake-up the SIMCOM
+      //      Simcom_Sleep(0);
       // set default value to variable
       Simcom_Prepare();
       // simcom power control
@@ -56,18 +63,15 @@ void Simcom_Init(SIMCOM_STATE state) {
     } else {
       p = SIM_RESULT_OK;
     }
-    // debug
-    //    LOG_Str("Simcom:State = ");
-    //    LOG_Int(SIM.state);
-    //    LOG_Enter();
-    // wake-up the SIMCOM
-    Simcom_Sleep(0);
 
     // handle simcom states
     switch (SIM.state) {
       case SIM_STATE_DOWN:
         LOG_StrLn("Simcom:Init");
+        // save event
         Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
+        // wake-up the SIMCOM
+        //        Simcom_Sleep(0);
         // reset buffer
         SIMCOM_Reset_Buffer();
         if (p != SIM_RESULT_OK) {
@@ -281,7 +285,6 @@ void Simcom_Init(SIMCOM_STATE state) {
 
     // delay 10 seconds after retry 3 times failed
     if (p != SIM_RESULT_OK) {
-      Simcom_Sleep(1);
       // sleep the SIMCOM
       if (step++ == 2) {
         step = 1;
@@ -300,10 +303,13 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
   uint32_t tick;
   char str[20];
 
+  // combine the size
+  sprintf(str, "AT+CIPSEND=%d\r", payload_length);
+
   if (SIM.state == SIM_STATE_SERVER_ON) {
+    // wake-up the SIMCOM
+    Simcom_Sleep(0);
     SIM.uploading = 1;
-    // combine the size
-    sprintf(str, "AT+CIPSEND=%d\r", payload_length);
 
     // confirm to server that command is executed
     p = Simcom_Command(str, 5000, 1, SIMCOM_RSP_SEND);
@@ -338,6 +344,9 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
         }
       }
     }
+
+    // sleep the SIMCOM
+    Simcom_Sleep(1);
     SIM.uploading = 0;
   }
 
@@ -713,11 +722,23 @@ static SIMCOM_RESULT Simcom_Response(char *str) {
 }
 
 static SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res) {
-  // only handle command if BOOT_CMD or SIM_STATE_READY
-  if ((strstr(cmd, SIMCOM_CMD_BOOT) != NULL) || SIM.state >= SIM_STATE_READY) {
-    return Simcom_SendIndirect(cmd, strlen(cmd), 0, ms, res, n);
+  SIMCOM_RESULT p = SIM_RESULT_ERROR;
+
+  // wake-up the SIMCOM
+  if (!SIM.uploading) {
+    Simcom_Sleep(0);
   }
 
-  return SIM_RESULT_ERROR;
+  // only handle command if BOOT_CMD or SIM_STATE_READY
+  if ((strstr(cmd, SIMCOM_CMD_BOOT) != NULL) || SIM.state >= SIM_STATE_READY) {
+    p = Simcom_SendIndirect(cmd, strlen(cmd), 0, ms, res, n);
+  }
+
+  // sleep the SIMCOM
+  if (!SIM.uploading) {
+    Simcom_Sleep(1);
+  }
+
+  return p;
 }
 

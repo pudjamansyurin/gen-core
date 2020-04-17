@@ -1123,9 +1123,6 @@ void StartIotTask(const void *argument)
     // Set default
     p = SIM_RESULT_ACK;
 
-    // wake-up the SIMCOM
-    Simcom_Sleep(0);
-
     // response frame
     if (p == SIM_RESULT_ACK) {
       // check report log
@@ -1297,8 +1294,6 @@ void StartIotTask(const void *argument)
         RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
       }
     }
-    // sleep the SIMCOM
-    Simcom_Sleep(1);
 
     // Give other threads a shot
     osDelay(1000);
@@ -2016,9 +2011,9 @@ void StartGeneralTask(const void *argument)
     //    HAL_IWDG_Refresh(&hiwdg);
 
     // Battery Monitor
-    //    LOG_Str("Battery:Voltage = ");
-    //    LOG_Int(DB.vcu.battery);
-    //    LOG_StrLn(" mV");
+    LOG_Str("Battery:Voltage = ");
+    LOG_Int(DB.vcu.battery);
+    LOG_StrLn(" mV");
 
     // Toggling LED
     //    _LedToggle();

@@ -7,10 +7,12 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_dma_battery.h"
+#include "_simcom.h"
 
 /* External variables ---------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
 extern db_t DB;
+extern sim_t SIM;
 
 /* Local constants -----------------------------------------------------------*/
 #define DMA_SZ                      25
@@ -38,19 +40,22 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
   uint16_t ADC_AverageValue, ADC_RefferenceVoltage;
   uint32_t tempValue = 0;
 
-  // sum all buffer sample
-  for (i = 0; i < DMA_SZ; i++) {
-    tempValue += DMA_BUFFER[i];
+  // only capture when simcom is sleeping
+  if ((SIM.sleep && !SIM.uploading) || SIM.state == SIM_STATE_DOWN) {
+    // sum all buffer sample
+    for (i = 0; i < DMA_SZ; i++) {
+      tempValue += DMA_BUFFER[i];
+    }
+
+    // calculate the average
+    ADC_AverageValue = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, (tempValue / DMA_SZ));
+
+    // change to refference value
+    ADC_RefferenceVoltage = ADC_AverageValue * REFFERENCE_MAX_VOLTAGE / ADC_MAX_VALUE;
+
+    // change to battery value
+    DB.vcu.battery = ADC_RefferenceVoltage * RATIO / RATIO_MULTIPLIER;
   }
-
-  // calculate the average
-  ADC_AverageValue = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, (tempValue / DMA_SZ));
-
-  // change to refference value
-  ADC_RefferenceVoltage = ADC_AverageValue * REFFERENCE_MAX_VOLTAGE / ADC_MAX_VALUE;
-
-  // change to battery value
-  DB.vcu.battery = ADC_RefferenceVoltage * RATIO / RATIO_MULTIPLIER;
 }
 
 /* Private functions implementation ---------------------------------------------*/
