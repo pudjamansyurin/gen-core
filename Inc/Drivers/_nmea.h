@@ -91,7 +91,7 @@
  *                      - Optional details of each satellite in view. See \ref NMEA_CFG_STATEMENT_GPGSV_SAT_DET
  */
 #ifndef NMEA_CFG_STATEMENT_GPGSV
-#define NMEA_CFG_STATEMENT_GPGSV             0
+#define NMEA_CFG_STATEMENT_GPGSV             1
 #endif
 
 /**
@@ -152,8 +152,8 @@ typedef struct {
 #endif /* NMEA_CFG_STATEMENT_GPGSA || __DOXYGEN__ */
 
 #if NMEA_CFG_STATEMENT_GPGSV || __DOXYGEN__
-    /* Information related to GPGSV statement */
-    uint8_t sats_in_view;                       /*!< Number of satellites in view */
+  /* Information related to GPGSV statement */
+  uint8_t sats_in_view; /*!< Number of satellites in view */
 #if NMEA_CFG_STATEMENT_GPGSV_SAT_DET || __DOXYGEN__
     nmea_sat_t sats_in_view_desc[12];
 #endif
@@ -206,10 +206,10 @@ typedef struct {
       } gsa; /*!< GPGSA message */
 #endif /* NMEA_CFG_STATEMENT_GPGSA */
 #if NMEA_CFG_STATEMENT_GPGSV
-            struct {
-                uint8_t sats_in_view;           /*!< Number of stallites in view */
-                uint8_t stat_num;               /*!< Satellite line number during parsing GPGSV data */
-            } gsv;                              /*!< GPGSV message */
+      struct {
+        uint8_t sats_in_view; /*!< Number of stallites in view */
+        uint8_t stat_num; /*!< Satellite line number during parsing GPGSV data */
+      } gsv; /*!< GPGSV message */
 #endif /* NMEA_CFG_STATEMENT_GPGSV */
 #if NMEA_CFG_STATEMENT_GPRMC
       struct {
@@ -271,7 +271,8 @@ typedef enum {
 /* Public functions prototype ------------------------------------------------*/
 uint8_t nmea_init(nmea_t *gh);
 uint8_t nmea_process(nmea_t *gh, const void *data, size_t len);
-uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los, nmea_float_t lae, nmea_float_t loe, nmea_float_t *d, nmea_float_t *b);
+uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los, nmea_float_t lae, nmea_float_t loe, nmea_float_t *d,
+    nmea_float_t *b);
 nmea_float_t nmea_to_speed(nmea_float_t sik, NMEA_SPEED ts);
 
 #endif /* NMEA_H_ */
