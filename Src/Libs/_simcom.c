@@ -290,10 +290,11 @@ void Simcom_Init(SIMCOM_STATE state) {
       if (step++ == 3) {
         step = 1;
         LOG_StrLn("Simcom:DelayLong");
+        osDelay(DB.bms.interval * 1000);
       } else {
         LOG_StrLn("Simcom:DelayShort");
+        osDelay(1000);
       }
-      osDelay(DB.bms.interval * 1000);
     }
   } while (SIM.state < state);
 
