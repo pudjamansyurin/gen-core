@@ -1146,7 +1146,7 @@ void StartIotTask(const void *argument)
           // handle SIMCOM result
           if (p == SIM_RESULT_ACK) {
             // validate ACK
-            if (Simcom_ReadACK(&(hResponse->header))) {
+            if (Simcom_ProcessACK(&(hResponse->header))) {
               // Release back
               osMailFree(ResponseMailHandle, hResponse);
               hResponse = NULL;
@@ -1220,7 +1220,7 @@ void StartIotTask(const void *argument)
           // handle SIMCOM result
           if (p == SIM_RESULT_ACK) {
             // validate ACK
-            if (Simcom_ReadACK(&(hReport->header))) {
+            if (Simcom_ProcessACK(&(hReport->header))) {
               // Release back
               osMailFree(ReportMailHandle, hReport);
               hReport = NULL;
@@ -1229,7 +1229,7 @@ void StartIotTask(const void *argument)
               // Allocate memory
               hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
               // handle command (if any)
-              if (Simcom_ReadCommand(hCommand)) {
+              if (Simcom_ProcessCommand(hCommand)) {
                 osMailPut(CommandMailHandle, hCommand);
               } else {
                 osMailFree(CommandMailHandle, hCommand);
@@ -1277,13 +1277,14 @@ void StartIotTask(const void *argument)
         // ================= SIMCOM Related Routines ================
         Simcom_SetState(SIM_STATE_READY);
         // Retrieve network signal quality
-        Simcom_ReadSignal(&(DB.vcu.signal));
+        SIM_SignalQuality(&(DB.vcu.signal));
+        SIM_BatteryCharge();
         // Retrieve RTC time
         RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
         // Check calibration by cellular network
         if (_TimeNeedCalibration(DB.vcu.rtc)) {
           // get carrier timestamp
-          if (Simcom_ReadTime(&timestamp)) {
+          if (SIM_Clock(&timestamp)) {
             // calibrate the RTC
             RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
           }

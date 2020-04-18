@@ -67,9 +67,10 @@ void Simcom_Sleep(uint8_t state);
 void Simcom_SetState(SIMCOM_STATE state);
 SIMCOM_RESULT Simcom_Upload(char *message, uint16_t length);
 SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
-SIMCOM_RESULT Simcom_ReadCommand(command_t *command);
-SIMCOM_RESULT Simcom_ReadACK(report_header_t *report_header);
-SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage);
-SIMCOM_RESULT Simcom_ReadTime(timestamp_t *timestamp);
+SIMCOM_RESULT Simcom_ProcessCommand(command_t *command);
+SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header);
+SIMCOM_RESULT SIM_BatteryCharge(void);
+SIMCOM_RESULT SIM_SignalQuality(uint8_t *signal_percentage);
+SIMCOM_RESULT SIM_Clock(timestamp_t *timestamp);
 
 #endif /* SIMCOM_H_ */

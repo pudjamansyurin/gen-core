@@ -16,6 +16,16 @@ extern db_t DB;
 /* Public variables ----------------------------------------------------------*/
 sim_t SIM;
 
+/* Private variables ----------------------------------------------------------*/
+// see: http://wiki.teltonika-networks.com/view/Mobile_Signal_Strength_Recommendations
+static const rssi_t rssiList[5] = {
+    { .name = "Excellent", .min = 22, .percentage = 100 },
+    { .name = "Good", .min = 14, .percentage = 75 },
+    { .name = "Fair", .min = 7, .percentage = 50 },
+    { .name = "Poor", .min = 2, .percentage = 25 },
+    { .name = "NoSignal", .min = 0, .percentage = 0 }
+};
+
 /* Private functions prototype -----------------------------------------------*/
 static SIMCOM_RESULT Simcom_Ready(void);
 static SIMCOM_RESULT Simcom_Power(void);
@@ -86,6 +96,10 @@ void Simcom_SetState(SIMCOM_STATE state) {
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
           SIM.state++;
+          // skip configuration (not working)
+          //          if (!init) {
+          //            SIM.state++;
+          //          }
         }
 
         break;
@@ -101,23 +115,63 @@ void Simcom_SetState(SIMCOM_STATE state) {
         //        }
         // Error report format: 0, 1(Numeric), 2(verbose)
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CMEE=2\r", 500, 1);
+          p = Simcom_Command("AT+CMEE?\r", 500, 1, "+CMEE:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CMEE: 2")) {
+              p = Simcom_Cmd("AT+CMEE=2\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CMEE=2\r", 500, 1);
         }
         // Use pin DTR as sleep control
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CSCLK=1\r", 500, 1);
+          p = Simcom_Command("AT+CSCLK?\r", 500, 1, "+CSCLK:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CSCLK: 1")) {
+              p = Simcom_Cmd("AT+CSCLK=1\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CSCLK=1\r", 500, 1);
         }
         // Enable time reporting
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CLTS=1\r", 500, 1);
+          p = Simcom_Command("AT+CLTS?\r", 500, 1, "+CLTS:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CLTS: 1")) {
+              p = Simcom_Cmd("AT+CLTS=1\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CLTS=1\r", 500, 1);
         }
         // Show “+IPD” header
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CIPHEAD=1\r", 500, 1);
+          p = Simcom_Command("AT+CIPHEAD?\r", 500, 1, "+CIPHEAD:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CIPHEAD: 1")) {
+              p = Simcom_Cmd("AT+CIPHEAD=1\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CIPHEAD=1\r", 500, 1);
         }
         // Hide “RECV FROM” header
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CIPSRIP=0\r", 500, 1);
+          p = Simcom_Command("AT+CIPSRIP?\r", 500, 1, "+CIPSRIP:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CIPSRIP: 0")) {
+              p = Simcom_Cmd("AT+CIPSRIP=0\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CIPSRIP=0\r", 500, 1);
         }
         // =========== NETWORK CONFIGURATION
         // Check SIM Card
@@ -126,12 +180,32 @@ void Simcom_SetState(SIMCOM_STATE state) {
         }
         // Disable presentation of <AcT>&<rac> at CREG and CGREG
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CSACT=0,0\r", 500, 1);
+          p = Simcom_Command("AT+CSACT?\r", 500, 1, "+CSACT:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("\",0,0")) {
+              p = Simcom_Cmd("AT+CSACT=0,0\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CSACT=0,0\r", 500, 1);
         }
         // Set signal Generation 2G(13)/3G(14)/AUTO(2)
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CNMP=2,14\r", 10000, 1);
+          p = Simcom_Command("AT+CNMP?\r", 10000, 1, "+CNMP:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CNMP: 2,14")) {
+              p = Simcom_Cmd("AT+CNMP=2,14\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CNMP=2,14\r", 10000, 1);
         }
+        // Save configuration to FLASH (not working)
+        //        if (p == SIM_RESULT_OK) {
+        //          p = Simcom_Cmd("AT&W\r", 500, 1);
+        //        }
 
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
@@ -143,7 +217,15 @@ void Simcom_SetState(SIMCOM_STATE state) {
         // =========== NETWORK ATTACH
         // Network Registration Status
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CREG=0\r", 500, 1);
+          p = Simcom_Command("AT+CREG?\r", 500, 1, "+CREG:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CREG: 0")) {
+              p = Simcom_Cmd("AT+CREG=0\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CREG=0\r", 500, 1);
         }
         // wait until attached
         if (p == SIM_RESULT_OK) {
@@ -159,7 +241,15 @@ void Simcom_SetState(SIMCOM_STATE state) {
         // =========== GPRS ATTACH
         // GPRS Registration Status
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CGREG=0\r", 500, 1);
+          p = Simcom_Command("AT+CGREG?\r", 500, 1, "+CGREG:");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CGREG: 0")) {
+              p = Simcom_Cmd("AT+CGREG=0\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CGREG=0\r", 500, 1);
         }
         // wait until attached
         if (p == SIM_RESULT_OK) {
@@ -179,7 +269,15 @@ void Simcom_SetState(SIMCOM_STATE state) {
         // =========== PDP CONFIGURATION
         // Attach to GPRS service
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CGATT=1\r", 500, 1);
+          p = Simcom_Command("AT+CGATT?\r", 500, 1, "+CGATT");
+
+          if (p == SIM_RESULT_OK) {
+            if (!Simcom_Response("+CGATT: 1")) {
+              p = Simcom_Cmd("AT+CGATT=1\r", 500, 1);
+            }
+          }
+
+          //          p = Simcom_Cmd("AT+CGATT=1\r", 500, 1);
         }
         // wait until attached
         if (p == SIM_RESULT_OK) {
@@ -237,7 +335,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
         // =========== IP ATTACH
         // Bring Up IP Connection
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Cmd("AT+CIICR\r", 10000, 3);
+          p = Simcom_Cmd("AT+CIICR\r", 20000, 3);
         }
         // Check IP Address
         if (p == SIM_RESULT_OK) {
@@ -265,7 +363,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
         //        }
         // Establish connection with server
         if (p == SIM_RESULT_OK) {
-          p = Simcom_Command(SIM.cmd.CIPSTART, 15000, 1, "CONNECT");
+          p = Simcom_Command(SIM.cmd.CIPSTART, 20000, 1, "CONNECT");
           // check either connection ok / error
           if (p == SIM_RESULT_OK) {
             p = Simcom_Response("CONNECT OK");
@@ -325,7 +423,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
     p = Simcom_Command(str, 5000, 1, SIMCOM_RSP_SEND);
     if (p == SIM_RESULT_OK) {
       // send the payload
-      p = Simcom_SendIndirect(payload, payload_length, 1, 20000, SIMCOM_RSP_SENT, 1);
+      p = Simcom_SendIndirect(payload, payload_length, 1, 30000, SIMCOM_RSP_SENT, 1);
       // wait for ACK/NACK
       if (p == SIM_RESULT_OK) {
         // set timeout guard
@@ -334,7 +432,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
         while (1) {
           if (Simcom_Response(PREFIX_ACK) ||
               Simcom_Response(PREFIX_NACK) ||
-              (osKernelSysTick() - tick) >= pdMS_TO_TICKS(20000)) {
+              (osKernelSysTick() - tick) >= pdMS_TO_TICKS(30000)) {
             break;
           }
           osDelay(10);
@@ -368,7 +466,7 @@ SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n) {
   return Simcom_Command(cmd, ms, n, NULL);
 }
 
-SIMCOM_RESULT Simcom_ReadCommand(command_t *command) {
+SIMCOM_RESULT Simcom_ProcessCommand(command_t *command) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
@@ -401,7 +499,7 @@ SIMCOM_RESULT Simcom_ReadCommand(command_t *command) {
   return p;
 }
 
-SIMCOM_RESULT Simcom_ReadACK(report_header_t *report_header) {
+SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
@@ -426,25 +524,61 @@ SIMCOM_RESULT Simcom_ReadACK(report_header_t *report_header) {
   return p;
 }
 
-SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage) {
+SIMCOM_RESULT SIM_BatteryCharge(void) {
+  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
+  SIMCOM_RESULT p = SIM_RESULT_ERROR;
+  uint8_t len = 0, cnt;
+  char *str, *prefix = "+CBC: ", *cmd = "AT+CBC\r";
+
+  if (SIM.state >= SIM_STATE_READY) {
+    // get local timestamp (from base station)
+    if (Simcom_Cmd(cmd, 500, 1) == SIM_RESULT_OK) {
+      // get pointer reference
+      str = strstr(SIMCOM_UART_RX, prefix);
+
+      //      if (str != NULL) {
+      //        str += strlen(prefix);
+      //        // get date part
+      //        timestamp->date.Year = _ParseNumber(&str[0], &cnt);
+      //        len += cnt + 1;
+      //        timestamp->date.Month = _ParseNumber(&str[len], &cnt);
+      //        len += cnt + 1;
+      //        timestamp->date.Date = _ParseNumber(&str[len], &cnt);
+      //        // get time part
+      //        len += cnt + 1;
+      //        timestamp->time.Hours = _ParseNumber(&str[len], &cnt);
+      //        len += cnt + 1;
+      //        timestamp->time.Minutes = _ParseNumber(&str[len], &cnt);
+      //        len += cnt + 1;
+      //        timestamp->time.Seconds = _ParseNumber(&str[len], NULL);
+      //
+      //        // check is carrier timestamp valid
+      //        if (timestamp->date.Year >= VCU_BUILD_YEAR) {
+      //          // set weekday to default
+      //          timestamp->date.WeekDay = RTC_WEEKDAY_MONDAY;
+      //
+      //          p = SIM_RESULT_OK;
+      //        }
+      //      }
+    }
+  }
+
+  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  return p;
+
+}
+SIMCOM_RESULT SIM_SignalQuality(uint8_t *signal_percentage) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint8_t i, cnt, rssi = 0;
-  rssi_t rssiQuality;
-  char *str, *prefix = "+CSQ: ";
-  // see: http://wiki.teltonika-networks.com/view/Mobile_Signal_Strength_Recommendations
-  const rssi_t rssiQualities[5] = {
-      { .name = "Excellent", .min = 22, .percentage = 100 },
-      { .name = "Good", .min = 14, .percentage = 75 },
-      { .name = "Fair", .min = 7, .percentage = 50 },
-      { .name = "Poor", .min = 2, .percentage = 25 },
-      { .name = "NoSignal", .min = 0, .percentage = 0 }
-  };
+  rssi_t _rssi;
+  char *str, *prefix = "+CSQ: ", *cmd = "AT+CSQ\r";
 
   if (SIM.state >= SIM_STATE_READY) {
     // check signal quality
-    if (Simcom_Cmd("AT+CSQ\r", 500, 1) == SIM_RESULT_OK) {
+    if (Simcom_Cmd(cmd, 500, 1) == SIM_RESULT_OK) {
       // get pointer reference
       str = strstr(SIMCOM_UART_RX, prefix);
 
@@ -457,11 +591,11 @@ SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage) {
         rssi = rssi == 99 ? 0 : rssi;
 
         // find the rssi quality
-        for (i = 0; i < (sizeof(rssiQualities) / sizeof(rssiQualities[0])); i++) {
-          if (rssi >= rssiQualities[i].min) {
-            rssiQuality = rssiQualities[i];
+        for (i = 0; i < (sizeof(rssiList) / sizeof(rssiList[0])); i++) {
+          if (rssi >= rssiList[i].min) {
+            _rssi = rssiList[i];
             // set result
-            *signal_percentage = rssiQuality.percentage;
+            *signal_percentage = _rssi.percentage;
 
             break;
           }
@@ -469,7 +603,7 @@ SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage) {
 
         // debugging
         LOG_Str("\nSimcom:RSSI = ");
-        LOG_Buf(rssiQuality.name, strlen(rssiQuality.name));
+        LOG_Buf(_rssi.name, strlen(_rssi.name));
         LOG_Enter();
 
         p = SIM_RESULT_OK;
@@ -481,16 +615,16 @@ SIMCOM_RESULT Simcom_ReadSignal(uint8_t *signal_percentage) {
   return p;
 }
 
-SIMCOM_RESULT Simcom_ReadTime(timestamp_t *timestamp) {
+SIMCOM_RESULT SIM_Clock(timestamp_t *timestamp) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint8_t len = 0, cnt;
-  char *str, *prefix = "+CCLK: \"";
+  char *str, *prefix = "+CCLK: \"", *cmd = "AT+CCLK?\r";
 
   if (SIM.state >= SIM_STATE_READY) {
     // get local timestamp (from base station)
-    if (Simcom_Cmd("AT+CCLK?\r", 500, 1) == SIM_RESULT_OK) {
+    if (Simcom_Cmd(cmd, 500, 1) == SIM_RESULT_OK) {
       // get pointer reference
       str = strstr(SIMCOM_UART_RX, prefix);
 
@@ -581,8 +715,11 @@ static SIMCOM_RESULT Simcom_Iterate(char cmd[20], char contain[10], char resp[15
       }
     }
 
-    Simcom_ReadSignal(NULL);
+    // other routines
+    SIM_SignalQuality(NULL);
+    SIM_BatteryCharge();
 
+    // debug
     LOG_Str("Simcom:Iteration[");
     LOG_Buf(contain, strlen(contain));
     LOG_Str("] = ");
