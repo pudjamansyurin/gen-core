@@ -51,12 +51,12 @@ void Simcom_Sleep(uint8_t state) {
 }
 
 void Simcom_SetState(SIMCOM_STATE state) {
+  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+
   SIMCOM_RESULT p;
   uint8_t step = 1;
   static uint8_t init = 1;
 
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
-  // this do-while is complicated, but it doesn't use recursive function, so it's stack safe
   do {
     // debug
     //    LOG_Str("Simcom:State = ");
@@ -429,7 +429,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
         // set timeout guard
         tick = osKernelSysTick();
         // wait ACK for payload
-        while (1) {
+        while (SIM.state >= SIM_STATE_SERVER_ON) {
           if (Simcom_Response(PREFIX_ACK) ||
               Simcom_Response(PREFIX_NACK) ||
               (osKernelSysTick() - tick) >= pdMS_TO_TICKS(30000)) {
@@ -664,7 +664,7 @@ static SIMCOM_RESULT Simcom_Ready(void) {
   uint32_t tick;
 
   tick = osKernelSysTick();
-  while (1) {
+  while (SIM.state == SIM_STATE_DOWN) {
     if (Simcom_Response(SIMCOM_RSP_READY) ||
         (osKernelSysTick() - tick) >= NET_BOOT_TIMEOUT) {
       break;
@@ -702,12 +702,9 @@ static SIMCOM_RESULT Simcom_Iterate(char cmd[20], char contain[10], char resp[15
   SIMCOM_RESULT p;
   uint8_t iteration = 0;
 
-  while (1) {
+  while (SIM.state >= SIM_STATE_READY) {
     p = Simcom_Command(cmd, 500, 1, contain);
-    // handle error
-    if (SIM.state == SIM_STATE_DOWN) {
-      break;
-    }
+
     // handle contain
     if (p == SIM_RESULT_OK) {
       if (Simcom_Response(resp)) {
@@ -717,7 +714,6 @@ static SIMCOM_RESULT Simcom_Iterate(char cmd[20], char contain[10], char resp[15
 
     // other routines
     SIM_SignalQuality(NULL);
-    SIM_BatteryCharge();
 
     // debug
     LOG_Str("Simcom:Iteration[");
@@ -740,9 +736,7 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
 
   Simcom_ClearBuffer();
   // transmit to serial (low-level)
-  if (!SIMCOM_Transmit(data, len)) {
-    LOG_StrLn("Simcom:Transmit = ERROR");
-  }
+  SIMCOM_Transmit(data, len);
   // convert time to tick
   timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME_MS);
   // set timeout guard
