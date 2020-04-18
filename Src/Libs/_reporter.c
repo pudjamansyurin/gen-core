@@ -81,7 +81,9 @@ void Reporter_SetSpeed(gps_t *hgps) {
   // calculate speed from GPS data
   REPORT.data.req.speed = hgps->speed_kph;
   // dummy odometer
-  Reporter_SetOdometer(REPORT.data.opt.odometer + (hgps->speed_mps * DB.bms.interval));
+  if (hgps->speed_mps > 10) {
+    Reporter_SetOdometer(REPORT.data.opt.odometer + (hgps->speed_mps * DB.bms.interval));
+  }
   //  odom_meter += (hgps->speed_mps * REPORT_INTERVAL_SIMPLE);
   //  if (odom_meter >= 1000) {
   //    Reporter_SetOdometer(REPORT.data.opt.odometer++);
