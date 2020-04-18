@@ -72,8 +72,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
       p = Simcom_Power();
     } else {
       if (SIM.state == SIM_STATE_DOWN) {
-        // save event
-        Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
         LOG_StrLn("Simcom:Down");
         p = SIM_RESULT_ERROR;
       } else {
@@ -390,10 +388,10 @@ void Simcom_SetState(SIMCOM_STATE state) {
     if (p != SIM_RESULT_OK) {
       if (step++ == 3) {
         step = 1;
-        LOG_StrLn("Simcom:DelayLong");
+        LOG_StrLn("Simcom:LongDelay");
         osDelay(DB.bms.interval * 1000);
       } else {
-        LOG_StrLn("Simcom:DelayShort");
+        LOG_StrLn("Simcom:ShortDelay");
         osDelay(1000);
       }
     }
@@ -663,6 +661,10 @@ SIMCOM_RESULT SIM_Clock(timestamp_t *timestamp) {
 static SIMCOM_RESULT Simcom_Ready(void) {
   uint32_t tick;
 
+  // save event
+  Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
+
+  // wait until 1s response
   tick = osKernelSysTick();
   while (SIM.state == SIM_STATE_DOWN) {
     if (Simcom_Response(SIMCOM_RSP_READY) ||
@@ -671,8 +673,8 @@ static SIMCOM_RESULT Simcom_Ready(void) {
     }
     osDelay(1);
   }
-  // check
 
+  // check
   return Simcom_Command(SIMCOM_CMD_BOOT, 1000, 1, SIMCOM_RSP_READY);
   //  return Simcom_Cmd(SIMCOM_CMD_BOOT, 1000, 1);
 }
@@ -752,17 +754,25 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
       p = Simcom_Response(res);
 
       // check & check
-      // exception for auto reboot module
-      if (Simcom_Response(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {
-        p = SIM_RESULT_RESTARTED;
-      }
-      // exception for timeout
-      if ((osKernelSysTick() - tick) >= timeout_tick) {
-        p = SIM_RESULT_TIMEOUT;
-      }
       // exception for no response
       if (strlen(SIMCOM_UART_RX) == 0) {
         p = SIM_RESULT_NO_RESPONSE;
+        SIM.state = SIM_STATE_DOWN;
+        LOG_StrLn("Simcom:NoResponse");
+      } else {
+        // exception for auto reboot module
+        if (Simcom_Response(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {
+          p = SIM_RESULT_RESTARTED;
+          SIM.state = SIM_STATE_READY;
+          LOG_StrLn("Simcom:Restarted");
+          // save event
+          Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
+        }
+        // exception for timeout
+        if ((osKernelSysTick() - tick) >= timeout_tick) {
+          p = SIM_RESULT_TIMEOUT;
+          LOG_StrLn("Simcom:Timeout");
+        }
       }
 
       // exit loop
@@ -811,23 +821,6 @@ static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_pa
     if (!is_payload) {
       LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
       LOG_Enter();
-    }
-
-    // exception debug
-    switch (p) {
-      case SIM_RESULT_RESTARTED:
-        LOG_StrLn("Simcom:Restarted");
-        SIM.state = SIM_STATE_DOWN;
-        break;
-      case SIM_RESULT_NO_RESPONSE:
-        LOG_StrLn("Simcom:NoResponse");
-        SIM.state = SIM_STATE_DOWN;
-        break;
-      case SIM_RESULT_TIMEOUT:
-        LOG_StrLn("Simcom:Timeout");
-        break;
-      default:
-        break;
     }
 
   } while (seq-- && p == SIM_RESULT_ERROR);
