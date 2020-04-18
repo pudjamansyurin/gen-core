@@ -386,13 +386,12 @@ void Simcom_SetState(SIMCOM_STATE state) {
 
     // delay on failure
     if (p != SIM_RESULT_OK) {
-      if (step++ > 1) {
-        LOG_StrLn("Simcom:LongDelay");
-        osDelay(DB.bms.interval * step * 1000);
-      } else {
-        LOG_StrLn("Simcom:ShortDelay");
-        osDelay(1000);
-      }
+      LOG_Str("Simcom:Delay = ");
+      LOG_Int(step * 5);
+      LOG_StrLn(" s");
+
+      osDelay(step * 5 * 1000);
+      step++;
     }
 
     init = 0;
