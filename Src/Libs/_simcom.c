@@ -384,12 +384,11 @@ void Simcom_SetState(SIMCOM_STATE state) {
         break;
     }
 
-    // delay x seconds after retry 3 times failed
+    // delay on failure
     if (p != SIM_RESULT_OK) {
-      if (step++ == 3) {
-        step = 1;
+      if (step++ > 1) {
         LOG_StrLn("Simcom:LongDelay");
-        osDelay(DB.bms.interval * 1000);
+        osDelay(DB.bms.interval * step * 1000);
       } else {
         LOG_StrLn("Simcom:ShortDelay");
         osDelay(1000);
