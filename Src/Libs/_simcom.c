@@ -19,11 +19,11 @@ sim_t SIM;
 /* Private variables ----------------------------------------------------------*/
 // see: http://wiki.teltonika-networks.com/view/Mobile_Signal_Strength_Recommendations
 static const rssi_t rssiList[5] = {
-    { .name = "Excellent", .min = 22, .percentage = 100 },
-    { .name = "Good", .min = 14, .percentage = 75 },
-    { .name = "Fair", .min = 7, .percentage = 50 },
-    { .name = "Poor", .min = 2, .percentage = 25 },
-    { .name = "NoSignal", .min = 0, .percentage = 0 }
+    { .name = "Excellent", .min = 22, .percent = 100 },
+    { .name = "Good", .min = 14, .percent = 75 },
+    { .name = "Fair", .min = 7, .percent = 50 },
+    { .name = "Poor", .min = 2, .percent = 25 },
+    { .name = "NoSignal", .min = 0, .percent = 0 }
 };
 
 /* Private functions prototype -----------------------------------------------*/
@@ -75,6 +75,14 @@ void Simcom_SetState(SIMCOM_STATE state) {
         LOG_StrLn("Simcom:Down");
         p = SIM_RESULT_ERROR;
       } else {
+        if (SIM.state >= SIM_STATE_CONFIGURED) {
+          SIM_SignalQuality(&(DB.vcu.signal));
+          if (DB.vcu.signal < 75) {
+            LOG_StrLn("Simcom:PendingBySignal");
+            osDelay(5 * 1000);
+            break;
+          }
+        }
         p = SIM_RESULT_OK;
       }
     }
@@ -386,12 +394,14 @@ void Simcom_SetState(SIMCOM_STATE state) {
 
     // delay on failure
     if (p != SIM_RESULT_OK) {
-      LOG_Str("Simcom:Delay = ");
-      LOG_Int(step * 5);
-      LOG_StrLn(" s");
+      //      if (step > 3) {
+      //        step = 1;
+      //        LOG_StrLn("Simcom:Delayed");
+      //        osDelay(10 * 1000);
+      //      }
 
-      osDelay(step * 5 * 1000);
-      step++;
+      osDelay(1000);
+      //      step++;
     }
 
     init = 0;
@@ -564,13 +574,13 @@ SIMCOM_RESULT SIM_BatteryCharge(void) {
   return p;
 
 }
-SIMCOM_RESULT SIM_SignalQuality(uint8_t *signal_percentage) {
+SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
-  uint8_t i, cnt, rssi = 0;
-  rssi_t _rssi;
+  uint8_t i, cnt;
   char *str, *prefix = "+CSQ: ", *cmd = "AT+CSQ\r";
+  signal_t signal;
 
   if (SIM.state >= SIM_STATE_READY) {
     // check signal quality
@@ -580,26 +590,28 @@ SIMCOM_RESULT SIM_SignalQuality(uint8_t *signal_percentage) {
 
       if (str != NULL) {
         str += strlen(prefix);
-        rssi = _ParseNumber(&str[0], &cnt);
-        //        ber = _ParseNumber(&str[cnt + 1], NULL);
+        signal.rssi.value = _ParseNumber(&str[0], &cnt);
+        signal.ber = _ParseNumber(&str[cnt + 1], NULL);
 
         // handle not detectable rssi value
-        rssi = rssi == 99 ? 0 : rssi;
+        if (signal.rssi.value == 9) {
+          signal.rssi.value = 0;
+        }
 
         // find the rssi quality
         for (i = 0; i < (sizeof(rssiList) / sizeof(rssiList[0])); i++) {
-          if (rssi >= rssiList[i].min) {
-            _rssi = rssiList[i];
-            // set result
-            *signal_percentage = _rssi.percentage;
-
+          if (signal.rssi.value >= rssiList[i].min) {
+            signal.rssi.list = rssiList[i];
             break;
           }
         }
 
+        // set
+        *percent = signal.rssi.list.percent;
+
         // debugging
         LOG_Str("\nSimcom:RSSI = ");
-        LOG_Buf(_rssi.name, strlen(_rssi.name));
+        LOG_Buf(signal.rssi.list.name, strlen(signal.rssi.list.name));
         LOG_Enter();
 
         p = SIM_RESULT_OK;
@@ -713,7 +725,7 @@ static SIMCOM_RESULT Simcom_Iterate(char cmd[20], char contain[10], char resp[15
     }
 
     // other routines
-    SIM_SignalQuality(NULL);
+    SIM_SignalQuality(&(DB.vcu.signal));
 
     // debug
     LOG_Str("Simcom:Iteration[");

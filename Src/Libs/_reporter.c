@@ -73,22 +73,12 @@ void Reporter_SetGPS(gps_t *hgps) {
   REPORT.data.opt.gps.longitude = (int32_t) (hgps->longitude * 10000000);
   REPORT.data.opt.gps.hdop = (uint8_t) (hgps->dop_h * 10);
   REPORT.data.opt.gps.heading = (uint8_t) (hgps->heading / 2);
-}
-
-void Reporter_SetSpeed(gps_t *hgps) {
-  //  static uint16_t odom_meter = 0;
-  // FIXME use real speed calculation
   // calculate speed from GPS data
   REPORT.data.req.speed = hgps->speed_kph;
   // dummy odometer
-  if (hgps->speed_mps > 10) {
+  if (hgps->speed_mps > 1) {
     Reporter_SetOdometer(REPORT.data.opt.odometer + (hgps->speed_mps * DB.bms.interval));
   }
-  //  odom_meter += (hgps->speed_mps * REPORT_INTERVAL_SIMPLE);
-  //  if (odom_meter >= 1000) {
-  //    Reporter_SetOdometer(REPORT.data.opt.odometer++);
-  //    odom_meter = 0;
-  //  }
 }
 
 void Reporter_SetEvents(uint64_t value) {

@@ -98,7 +98,6 @@ void Reporter_Init(void);
 void Reporter_SetUnitID(uint32_t unitId);
 void Reporter_SetOdometer(uint32_t odom);
 void Reporter_SetGPS(gps_t *hgps);
-void Reporter_SetSpeed(gps_t *hgps);
 void Reporter_SetEvents(uint64_t value);
 void Reporter_WriteEvent(uint64_t event_id, uint8_t value);
 void Reporter_Capture(FRAME_TYPE frame);

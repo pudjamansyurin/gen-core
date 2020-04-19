@@ -59,8 +59,16 @@ typedef struct {
 typedef struct {
   char name[10];
   uint8_t min;
-  uint8_t percentage;
+  uint8_t percent;
 } rssi_t;
+
+typedef struct {
+  struct {
+    rssi_t list;
+    uint8_t value;
+  } rssi;
+  uint8_t ber;
+} signal_t;
 
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Sleep(uint8_t state);
@@ -69,8 +77,9 @@ SIMCOM_RESULT Simcom_Upload(char *message, uint16_t length);
 SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
 SIMCOM_RESULT Simcom_ProcessCommand(command_t *command);
 SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header);
+
 SIMCOM_RESULT SIM_BatteryCharge(void);
-SIMCOM_RESULT SIM_SignalQuality(uint8_t *signal_percentage);
+SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent);
 SIMCOM_RESULT SIM_Clock(timestamp_t *timestamp);
 
 #endif /* SIMCOM_H_ */

@@ -58,7 +58,6 @@ void _DebugTask(char name[20]) {
 void _DummyGenerator(db_t *db, sw_t *sw) {
   // Control HMI brightness by daylight
   db->hmi1.status.daylight = _TimeCheckDaylight(db->vcu.rtc.timestamp);
-
   // Dummy algorithm
   db->vcu.odometer = (db->vcu.odometer >= VCU_ODOMETER_MAX ? 0 : (db->vcu.odometer + 1));
 

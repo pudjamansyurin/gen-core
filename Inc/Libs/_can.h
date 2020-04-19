@@ -13,6 +13,7 @@
 #include "_canbus.h"
 #include "_rtc.h"
 
+/* Exported constants --------------------------------------------------------*/
 // CAN Message Address
 #define CAN_ADDR_VCU_SWITCH					 			    0x000
 #define CAN_ADDR_VCU_RTC						 			0x001

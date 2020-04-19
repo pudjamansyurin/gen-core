@@ -1273,25 +1273,24 @@ void StartIotTask(const void *argument)
           // delay
           osDelay(500);
         } while ((p == SIM_RESULT_NACK || p == SIM_RESULT_TIMEOUT) && hReport);
-
-        // ================= SIMCOM Related Routines ================
-        Simcom_SetState(SIM_STATE_READY);
-        // Retrieve network signal quality
-        SIM_SignalQuality(&(DB.vcu.signal));
-        SIM_BatteryCharge();
-        // Retrieve RTC time
-        RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
-        // Check calibration by cellular network
-        if (_TimeNeedCalibration(DB.vcu.rtc)) {
-          // get carrier timestamp
-          if (SIM_Clock(&timestamp)) {
-            // calibrate the RTC
-            RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
-          }
-        }
-        // ============ End of SIMCOM Related Routines ===============
       }
     }
+
+    // ================= SIMCOM Related Routines ================
+    Simcom_SetState(SIM_STATE_READY);
+    // Retrieve network signal quality
+    SIM_SignalQuality(&(DB.vcu.signal));
+    // Retrieve RTC time
+    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
+    // Check calibration by cellular network
+    if (_TimeNeedCalibration(DB.vcu.rtc)) {
+      // get carrier timestamp
+      if (SIM_Clock(&timestamp)) {
+        // calibrate the RTC
+        RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
+      }
+    }
+    // ============ End of SIMCOM Related Routines ===============
 
     // scan ADC while simcom at rest
     osDelay(1000);
@@ -1538,12 +1537,13 @@ void StartGpsTask(const void *argument)
     }
 
     // debug
-    LOG_StrLn("GPS:Buffer = ");
-    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
-    LOG_Enter();
+    //    LOG_StrLn("GPS:Buffer = ");
+    //    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
+    //    LOG_Enter();
 
     // Report interval
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval * 1000));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(GPS_INTERVAL_MS));
+    //    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval * 1000));
   }
   /* USER CODE END StartGpsTask */
 }
@@ -1732,8 +1732,6 @@ void StartReporterTask(const void *argument)
       hGps = evt.value.p;
       // set GPS data
       Reporter_SetGPS(hGps);
-      // set speed value (based on GPS)
-      Reporter_SetSpeed(hGps);
       // Release back
       osMailFree(GpsMailHandle, hGps);
     }
@@ -2000,7 +1998,7 @@ void StartGeneralTask(const void *argument)
     }
 
     // Dummy data generator
-    //    _DummyGenerator(&DB, &SW);
+    _DummyGenerator(&DB, &SW);
 
     // Feed the dog
     //    HAL_IWDG_Refresh(&hiwdg);

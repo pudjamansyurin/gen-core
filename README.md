@@ -37,6 +37,7 @@
 - [x] Handle DTR pin for SIM5300e (sleep mode) 
 - [x] Use hierarchy algorithm to handle simcom error 
 - [x] Use double buffering for ADC-DMA (HT & TC)
+- [ ] Fix duplicate variables
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Simplify SIMCOM library
 - [ ] Calibrate the ADC of Backup Battery Monitor
@@ -152,7 +153,6 @@
     - [ ] then add MOSFET/PNP power control (used RUN pin) between B+ and VBAT
   - [ ] Increase C42 value to 1000uF (tantalum)
   - [ ] Move SIMcard related components closer to the SIMcard-holder
-  - [x] Utilize DTR pin for Sleep Mode
 - [ ] AUDIO:
   - [ ] Connect pin 41 to GND (bellow the chip)
   - [ ] Give GND hole (un-isolated) bellow the chip.
