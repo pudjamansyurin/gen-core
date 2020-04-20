@@ -36,25 +36,35 @@ typedef struct __attribute__((packed)) {
 // report frame
 typedef struct __attribute__((packed)) {
   struct __attribute__((packed)) {
-    uint64_t rtc_send_datetime;
-    uint64_t rtc_log_datetime;
-    uint8_t driver_id;
-    uint64_t events_group;
-    uint8_t speed;
+    struct __attribute__((packed)) {
+      struct __attribute__((packed)) {
+        uint64_t send;
+        uint64_t log;
+      } rtc;
+      uint8_t driver_id;
+      uint64_t events_group;
+      uint8_t speed;
+    } vcu;
   } req;
   struct __attribute__((packed)) {
     struct __attribute__((packed)) {
-      int32_t longitude;
-      int32_t latitude;
-      uint8_t hdop;
-      uint8_t heading;
-    } gps;
-    uint32_t odometer;
-    uint8_t bat_voltage;
-    uint8_t report_range;
-    uint8_t report_battery;
-    uint32_t trip_a;
-    uint32_t trip_b;
+      struct __attribute__((packed)) {
+        int32_t longitude;
+        int32_t latitude;
+        uint8_t hdop;
+        uint8_t heading;
+      } gps;
+      uint32_t odometer;
+      uint8_t bat_voltage;
+      struct __attribute__((packed)) {
+        uint8_t range;
+        uint8_t battery;
+      } report;
+      struct __attribute__((packed)) {
+        uint32_t a;
+        uint32_t b;
+      } trip;
+    } vcu;
   } opt;
 } report_data_t;
 

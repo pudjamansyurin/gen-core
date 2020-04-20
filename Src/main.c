@@ -1208,7 +1208,7 @@ void StartIotTask(const void *argument)
         retry = 1;
         do {
           // get current sending date-time
-          hReport->data.req.rtc_send_datetime = RTC_Read();
+          hReport->data.req.vcu.rtc.send = RTC_Read();
           // recalculate the CRC
           hReport->header.crc = CRC_Calculate8(
               (uint8_t*) &(hReport->header.size),
@@ -1808,17 +1808,20 @@ void StartCanRxTask(const void *argument)
     if (notif & EVENT_CAN_RX_IT) {
       // handle message
       switch (CANBUS_ReadID()) {
-        case CAN_ADDR_MCU_DUMMY:
-          CAN_MCU_Dummy_Read(&DB);
+        case CAND_MCU_DUMMY:
+          CANR_MCU_Dummy(&DB);
           // update audio volume
           xTaskNotify(AudioTaskHandle, EVENT_AUDIO_VOLUME, eSetBits);
           break;
-        case CAN_ADDR_HMI2:
-          CAN_HMI2_Read(&DB);
+        case CAND_BMS_PARAM_1:
+          CANR_BMS_Param1(&DB);
           break;
-        case CAN_ADDR_HMI1_LEFT:
+        case CAND_HMI2:
+          CANR_HMI2(&DB);
           break;
-        case CAN_ADDR_HMI1_RIGHT:
+        case CAND_HMI1_LEFT:
+          break;
+        case CAND_HMI1_RIGHT:
           break;
         default:
 
@@ -2034,10 +2037,10 @@ void StartCanTxTask(const void *argument)
   for (;;) {
     _DebugTask("CanTx");
     // Send CAN data
-    CAN_VCU_Switch(&DB, &SW);
-    CAN_VCU_RTC(&(DB.vcu.rtc.timestamp));
-    CAN_VCU_Select_Set(&(SW.runner));
-    CAN_VCU_Trip_Mode(&(SW.runner.mode.sub.trip[0]));
+    CANT_VCU_Switch(&DB, &SW);
+    CANT_VCU_RTC(&(DB.vcu.rtc.timestamp));
+    CANT_VCU_Select_Set(&(SW.runner));
+    CANT_VCU_Trip_Mode(&(SW.runner.mode.sub.trip[0]));
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(250));

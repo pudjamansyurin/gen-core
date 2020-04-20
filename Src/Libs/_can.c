@@ -12,7 +12,7 @@
 extern canbus_t CB;
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t CAN_VCU_Switch(db_t *db, sw_t *sw) {
+uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   static TickType_t tick, tickSein;
   static uint8_t iSeinLeft = 0, iSeinRight = 0;
   static status_t iStatus;
@@ -87,12 +87,12 @@ uint8_t CAN_VCU_Switch(db_t *db, sw_t *sw) {
   CB.tx.data[7] = BSR(db->vcu.odometer, 24);
 
   // set default header
-  CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_SWITCH, 8);
+  CANBUS_Header(&(CB.tx.header), CAND_VCU_SWITCH, 8);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CAN_VCU_RTC(timestamp_t *timestamp) {
+uint8_t CANT_VCU_RTC(timestamp_t *timestamp) {
   // set message
   CB.tx.data[0] = timestamp->time.Seconds;
   CB.tx.data[1] = timestamp->time.Minutes;
@@ -103,12 +103,12 @@ uint8_t CAN_VCU_RTC(timestamp_t *timestamp) {
   CB.tx.data[6] = timestamp->date.WeekDay;
 
   // set default header
-  CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_RTC, 7);
+  CANBUS_Header(&(CB.tx.header), CAND_VCU_RTC, 7);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CAN_VCU_Select_Set(sw_runner_t *runner) {
+uint8_t CANT_VCU_Select_Set(sw_runner_t *runner) {
   static TickType_t tick, tickPeriod;
   static uint8_t iHide = 0;
   static int8_t iName = -1, iValue = -1;
@@ -157,12 +157,12 @@ uint8_t CAN_VCU_Select_Set(sw_runner_t *runner) {
   CB.tx.data[2] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
 
   // set default header
-  CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_SELECT_SET, 3);
+  CANBUS_Header(&(CB.tx.header), CAND_VCU_SELECT_SET, 3);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CAN_VCU_Trip_Mode(uint32_t *trip) {
+uint8_t CANT_VCU_Trip_Mode(uint32_t *trip) {
   // set message
   CB.tx.data[0] = BSR(trip[SW_M_TRIP_A], 0);
   CB.tx.data[1] = BSR(trip[SW_M_TRIP_A], 8);
@@ -174,17 +174,24 @@ uint8_t CAN_VCU_Trip_Mode(uint32_t *trip) {
   CB.tx.data[7] = BSR(trip[SW_M_TRIP_B], 24);
 
   // set default header
-  CANBUS_Header(&(CB.tx.header), CAN_ADDR_VCU_TRIP_MODE, 8);
+  CANBUS_Header(&(CB.tx.header), CAND_VCU_TRIP_MODE, 8);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
 
 /* ------------------------------------ READER ------------------------------------- */
-void CAN_MCU_Dummy_Read(db_t *db) {
+void CANR_BMS_Param1(db_t *db) {
+  db->bms.voltage = (BSL(CB.rx.data[1], 8) | CB.rx.data[0]) * 0.01;
+  db->bms.current = ((BSL(CB.rx.data[3], 8) | CB.rx.data[2]) * 0.01) + 50;
+  db->bms.soc = BSL(CB.rx.data[5], 8) | CB.rx.data[4];
+  db->bms.temperature = BSL(CB.rx.data[7], 8) | CB.rx.data[6];
+}
+
+void CANR_MCU_Dummy(db_t *db) {
   uint32_t DB_MCU_RPM;
 
   // read message
-  DB_MCU_RPM = CB.rx.data[0] | BSL(CB.rx.data[1], 8) | BSL(CB.rx.data[2], 16) | BSL(CB.rx.data[3], 24);
+  DB_MCU_RPM = BSL(CB.rx.data[3], 24) | BSL(CB.rx.data[2], 16) | BSL(CB.rx.data[1], 8) | CB.rx.data[0];
 
   // convert RPM to Speed
   db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
@@ -193,7 +200,7 @@ void CAN_MCU_Dummy_Read(db_t *db) {
   db->vcu.volume = db->vcu.speed * 100 / MCU_SPEED_MAX;
 }
 
-void CAN_HMI2_Read(db_t *db) {
+void CANR_HMI2(db_t *db) {
   // read message
   db->hmi1.status.mirroring = BBR(CB.rx.data[0], 0);
 }

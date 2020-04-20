@@ -38,6 +38,7 @@
 - [x] Use hierarchy algorithm to handle simcom error 
 - [x] Use double buffering for ADC-DMA (HT & TC)
 - [ ] Fix duplicate variables
+- [ ] Fix Odometer estimation based on GPS speed
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Simplify SIMCOM library
 - [ ] Calibrate the ADC of Backup Battery Monitor
@@ -51,6 +52,8 @@
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Implement this UBX library:
   - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
+- [ ] Street View Locations and Point-of-View (POV)
+  - https://developers.google.com/maps/documentation/javascript/streetview?hl=id
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
@@ -107,6 +110,8 @@
 - [ ] Change R23 value to 30k
 - [ ] Change C30, C31, C70, C71 value to 20pf
 - [ ] Change Q3, Q5, Q6, Q9, Q13 to TRANSISTOR
+- [ ] The Power Trace should be wider to fix voltage drop
+  - [ ] Trace between B+ to SIMCOM's VBAT at least 60mil
 - [ ] CAN Module:
   - [ ] Give Resistor 120 Ohm between CAN_H and CAN_L (optional, just give the space)
   - [ ] Add MOSFET power control and the GPIO pins
