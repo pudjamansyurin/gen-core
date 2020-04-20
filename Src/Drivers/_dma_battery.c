@@ -15,7 +15,7 @@ extern db_t DB;
 extern sim_t SIM;
 
 /* Local constants -----------------------------------------------------------*/
-#define DMA_SZ                      10
+#define DMA_SZ                      200
 #define AVERAGE_SZ                  500U
 #define ADC_MAX_VALUE               4095    // 12 bit
 #define REF_MAX_VOLTAGE             3300    // mV
@@ -62,7 +62,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
   // calculate the moving average
   temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
   // change to battery value
-  DB.vcu.battery = temp * RATIO;
+  DB.vcu.bat_voltage = temp * RATIO;
 }
 
 /* Private functions implementation ---------------------------------------------*/

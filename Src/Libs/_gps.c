@@ -7,9 +7,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_gps.h"
+#include "_reporter.h"
 
 /* External variables ---------------------------------------------------------*/
 extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
+extern db_t DB;
+
+/* Public variables -----------------------------------------------------------*/
+gps_t GPS;
 
 /* Private variables ----------------------------------------------------------*/
 static nmea_t nmea;
@@ -42,16 +47,23 @@ void GPS_Init(void) {
   nmea_init(&nmea);
 }
 
-uint8_t GPS_Process(gps_t *hgps) {
+uint8_t GPS_Capture(void) {
   nmea_process(&nmea, UBLOX_UART_RX, strlen(UBLOX_UART_RX));
 
   // copy only necessary part
-  hgps->dop_h = nmea.dop_h;
-  hgps->latitude = nmea.latitude;
-  hgps->longitude = nmea.longitude;
-  hgps->heading = nmea.coarse;
-  hgps->speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
-  hgps->speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
+  GPS.dop_h = nmea.dop_h;
+  GPS.latitude = nmea.latitude;
+  GPS.longitude = nmea.longitude;
+  GPS.heading = nmea.coarse;
+  GPS.speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
+  GPS.speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
 
   return nmea.fix > 0;
+}
+
+void GPS_CalculateOdometer(void) {
+  // dummy odometer
+  if (GPS.speed_mps > 1) {
+    Reporter_SetOdometer(DB.vcu.odometer + (GPS.speed_mps * (GPS_INTERVAL_MS / 1000)));
+  }
 }

@@ -13,7 +13,7 @@
 #include "cmsis_os.h"
 
 /* Exported macro functions --------------------------------------------------*/
-#define BIT(x)                                  (1 << x)
+#define BIT(x)                                  (1ULL << x)
 #define BV(var, x)                              (var |= (1 << x))
 #define BC(var, x)                              (var &= ~(1 << x))
 #define BT(var, x)                              (var ^= (1 << x))
@@ -83,7 +83,19 @@
 #define REPORT_BIKE_FALLING                     BIT(1)
 #define REPORT_BIKE_CRASHED                     BIT(2)
 #define REPORT_KEYLESS_MISSING                  BIT(3)
-#define REPORT_BMS_OFF                          BIT(4)
+#define REPORT_POWER_OFF                        BIT(4)
+#define REPORT_BMS_DISCHARGE_OVER_CURRENT       BIT(30)
+#define REPORT_BMS_CHARGE_OVER_CURRENT          BIT(31)
+#define REPORT_BMS_SHORT_CIRCUIT                BIT(32)
+#define REPORT_BMS_DISCHARGE_OVER_TEMPERATURE   BIT(33)
+#define REPORT_BMS_DISCHARGE_UNDER_TEMPERATURE  BIT(34)
+#define REPORT_BMS_CHARGE_OVER_TEMPERATURE      BIT(35)
+#define REPORT_BMS_CHARGE_UNDER_TEMPERATURE     BIT(36)
+#define REPORT_BMS_UNDER_VOLTAGE                BIT(37)
+#define REPORT_BMS_OVER_VOLTAGE                 BIT(38)
+#define REPORT_BMS_OVER_DISCHARGE_CAPACITY      BIT(39)
+#define REPORT_BMS_UNBALANCE                    BIT(40)
+#define REPORT_BMS_SYSTEM_FAILURE               BIT(41)
 
 // Command Code List
 #define CMD_CODE_GEN                            0
@@ -150,8 +162,8 @@ typedef struct {
 typedef struct {
   struct {
     uint8_t volume;
-    uint16_t battery;
-    uint8_t signal;
+    uint16_t bat_voltage;
+    uint8_t signal_percent;
     uint8_t speed;
     uint32_t odometer;
     rtc_t rtc;
@@ -171,23 +183,9 @@ typedef struct {
       float current;
       float soc;
       float temperature;
-      struct {
-        uint8_t dischargeOverCurrent;
-        uint8_t chargeOverCurrent;
-        uint8_t shortCircuit;
-        uint8_t dischargeOverTemperature;
-        uint8_t dischargeUnderTemperature;
-        uint8_t chargeOverTemperature;
-        uint8_t chargeUnderTemperature;
-        uint8_t underVoltage;
-        uint8_t overVoltage;
-        uint8_t overDischargeCapacity;
-        uint8_t unbalance;
-        uint8_t systemFailure;
-      } flag;
       uint8_t start;
       uint8_t state;
-    } pack;
+    } pack[2];
   } bms;
 } db_t;
 

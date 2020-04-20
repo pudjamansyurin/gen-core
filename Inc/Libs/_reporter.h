@@ -45,6 +45,13 @@ typedef struct __attribute__((packed)) {
       uint64_t events_group;
       uint8_t speed;
     } vcu;
+    struct __attribute__((packed)) {
+      struct __attribute__((packed)) {
+        uint64_t id;
+        uint16_t voltage;
+        uint16_t current;
+      } pack[2];
+    } bms;
   } req;
   struct __attribute__((packed)) {
     struct __attribute__((packed)) {
@@ -65,6 +72,12 @@ typedef struct __attribute__((packed)) {
         uint32_t b;
       } trip;
     } vcu;
+    struct __attribute__((packed)) {
+      struct __attribute__((packed)) {
+        uint16_t soc;
+        uint16_t temperature;
+      } pack[2];
+    } bms;
   } opt;
 } report_data_t;
 
@@ -107,7 +120,6 @@ typedef struct __attribute__((packed)) {
 void Reporter_Init(void);
 void Reporter_SetUnitID(uint32_t unitId);
 void Reporter_SetOdometer(uint32_t odom);
-void Reporter_SetGPS(gps_t *hgps);
 void Reporter_SetEvents(uint64_t value);
 void Reporter_WriteEvent(uint64_t event_id, uint8_t value);
 void Reporter_Capture(FRAME_TYPE frame);

@@ -1279,7 +1279,7 @@ void StartIotTask(const void *argument)
     // ================= SIMCOM Related Routines ================
     Simcom_SetState(SIM_STATE_READY);
     // Retrieve network signal quality
-    SIM_SignalQuality(&(DB.vcu.signal));
+    SIM_SignalQuality(&(DB.vcu.signal_percent));
     // Retrieve RTC time
     RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
     // Check calibration by cellular network
@@ -1510,9 +1510,9 @@ void StartCommandTask(const void *argument)
 void StartGpsTask(const void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
-  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
+  //  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
   TickType_t lastWake;
-  gps_t *hGps = NULL;
+  //  gps_t *hGps = NULL;
 
   // Start GPS module
   UBLOX_DMA_Init();
@@ -1522,19 +1522,25 @@ void StartGpsTask(const void *argument)
   lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("GPS");
-    // Allocate memory
-    hGps = osMailAlloc(GpsMailHandle, osWaitForever);
 
-    // get GPS info
-    if (hGps != NULL) {
-      if (GPS_Process(hGps)) {
-        osMailPut(GpsMailHandle, hGps);
-        _LedWrite(0);
-      } else {
-        osMailFree(GpsMailHandle, hGps);
-        _LedWrite(1);
-      }
-    }
+    // FIXME: remove me if not used
+    //    // Allocate memory
+    //    hGps = osMailAlloc(GpsMailHandle, osWaitForever);
+    //
+    //    // get GPS info
+    //    if (hGps != NULL) {
+    //      if (GPS_Process(hGps)) {
+    //        osMailPut(GpsMailHandle, hGps);
+    //        _LedWrite(0);
+    //      } else {
+    //        osMailFree(GpsMailHandle, hGps);
+    //        _LedWrite(1);
+    //      }
+    //    }
+
+    GPS_Capture();
+    // Dummy odometer (based on GPS)
+    GPS_CalculateOdometer();
 
     // debug
     //    LOG_StrLn("GPS:Buffer = ");
@@ -1704,7 +1710,7 @@ void StartReporterTask(const void *argument)
   // Init things before reporter capture
   // get current state
   DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-  Reporter_WriteEvent(REPORT_BMS_OFF, !DB.bms.on);
+  Reporter_WriteEvent(REPORT_POWER_OFF, !DB.bms.on);
 
   // FIXME: create master thread
   // ONE-TIME configurations:
@@ -1717,6 +1723,10 @@ void StartReporterTask(const void *argument)
 
       // re-write backup register
       HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
+    } else {
+      // load from EEPROM
+      EEPROM_UnitID(EE_CMD_R, &(REPORT.header.unit_id));
+      EEPROM_Odometer(EE_CMD_R, &(DB.vcu.odometer));
     }
   }
 
@@ -1725,16 +1735,16 @@ void StartReporterTask(const void *argument)
   for (;;) {
     _DebugTask("Reporter");
 
-    // get processed GPS data
-    evt = osMailGet(GpsMailHandle, 0);
-    // break-down RAW NMEA data from GPS module
-    if (evt.status == osEventMail) {
-      hGps = evt.value.p;
-      // set GPS data
-      Reporter_SetGPS(hGps);
-      // Release back
-      osMailFree(GpsMailHandle, hGps);
-    }
+    //    // get processed GPS data
+    //    evt = osMailGet(GpsMailHandle, 0);
+    //    // break-down RAW NMEA data from GPS module
+    //    if (evt.status == osEventMail) {
+    //      hGps = evt.value.p;
+    //      // set GPS data
+    //      Reporter_SetGPS(hGps);
+    //      // Release back
+    //      osMailFree(GpsMailHandle, hGps);
+    //    }
 
     // decide full/simple frame time
     if (DB.bms.on) {
@@ -1997,7 +2007,7 @@ void StartGeneralTask(const void *argument)
       if (notif & EVENT_GENERAL_BMS_IRQ) {
         // get current state
         DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-        Reporter_WriteEvent(REPORT_BMS_OFF, !DB.bms.on);
+        Reporter_WriteEvent(REPORT_POWER_OFF, !DB.bms.on);
       }
       // KNOB IRQ
       if (notif & EVENT_GENERAL_KNOB_IRQ) {
@@ -2014,7 +2024,7 @@ void StartGeneralTask(const void *argument)
 
     // Battery Monitor
     LOG_Str("Battery:Voltage = ");
-    LOG_Int(DB.vcu.battery);
+    LOG_Int(DB.vcu.bat_voltage);
     LOG_StrLn(" mV");
 
     // Toggling LED

@@ -26,6 +26,7 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void GPS_Init(void);
-uint8_t GPS_Process(gps_t *hgps);
+uint8_t GPS_Capture(void);
+void GPS_CalculateOdometer(void);
 
 #endif /* GPS_H_ */

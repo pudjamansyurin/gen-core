@@ -12,8 +12,8 @@
 db_t DB = {
     .vcu = {
         .volume = 0,
-        .battery = 0,
-        .signal = 0,
+        .bat_voltage = 0,
+        .signal_percent = 0,
         .speed = 0,
         .odometer = 0,
         .rtc = {

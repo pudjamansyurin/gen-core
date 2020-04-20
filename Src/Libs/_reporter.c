@@ -10,6 +10,7 @@
 
 /* External variables ----------------------------------------------------------*/
 extern db_t DB;
+extern gps_t GPS;
 
 /* Public variables -----------------------------------------------------------*/
 report_t REPORT;
@@ -27,7 +28,7 @@ void Reporter_Init(void) {
   REPORT.header.size = 0;
   REPORT.header.frame_id = FR_FULL;
   REPORT.header.seq_id = 0;
-  EEPROM_UnitID(EE_CMD_R, &(REPORT.header.unit_id));
+  REPORT.header.unit_id = 0;
   // (already set)
   // body required
   REPORT.data.req.vcu.rtc.send = 0;
@@ -40,7 +41,7 @@ void Reporter_Init(void) {
   REPORT.data.opt.vcu.gps.latitude = 0;
   REPORT.data.opt.vcu.gps.hdop = 0;
   REPORT.data.opt.vcu.gps.heading = 0;
-  EEPROM_Odometer(EE_CMD_R, &(REPORT.data.opt.vcu.odometer));
+  REPORT.data.opt.vcu.odometer = 0;
   REPORT.data.opt.vcu.bat_voltage = 0;
   REPORT.data.opt.vcu.report.range = 0;
   REPORT.data.opt.vcu.report.battery = 99;
@@ -63,22 +64,8 @@ void Reporter_SetUnitID(uint32_t unitId) {
 }
 
 void Reporter_SetOdometer(uint32_t odom) {
-  REPORT.data.opt.vcu.odometer = odom;
+  DB.vcu.odometer = odom;
   EEPROM_Odometer(EE_CMD_W, &odom);
-}
-
-void Reporter_SetGPS(gps_t *hgps) {
-  // parse GPS data
-  REPORT.data.opt.vcu.gps.latitude = (int32_t) (hgps->latitude * 10000000);
-  REPORT.data.opt.vcu.gps.longitude = (int32_t) (hgps->longitude * 10000000);
-  REPORT.data.opt.vcu.gps.hdop = (uint8_t) (hgps->dop_h * 10);
-  REPORT.data.opt.vcu.gps.heading = (uint8_t) (hgps->heading / 2);
-  // calculate speed from GPS data
-  REPORT.data.req.vcu.speed = hgps->speed_kph;
-  // dummy odometer
-  if (hgps->speed_mps > 1) {
-    Reporter_SetOdometer(REPORT.data.opt.vcu.odometer + (hgps->speed_mps * DB.bms.interval));
-  }
 }
 
 void Reporter_SetEvents(uint64_t value) {
@@ -112,10 +99,6 @@ void Reporter_Capture(FRAME_TYPE frame) {
         RESPONSE.header.size + sizeof(RESPONSE.header.size), 1);
 
   } else {
-    // Reconstruct the body
-    REPORT.data.req.vcu.rtc.log = RTC_Read();
-    REPORT.data.req.vcu.rtc.send = 0;
-
     // Reconstruct the header
     REPORT.header.seq_id++;
     REPORT.header.frame_id = frame;
@@ -123,15 +106,35 @@ void Reporter_Capture(FRAME_TYPE frame) {
         sizeof(REPORT.header.unit_id) +
         sizeof(REPORT.header.seq_id) +
         sizeof(REPORT.data.req);
-    // Add opt on FR_FULL
-    if (frame == FR_FULL) {
-      REPORT.header.size += sizeof(REPORT.data.opt);
-      // set battery voltage
-      REPORT.data.opt.vcu.bat_voltage = DB.vcu.battery / 18;
-    }
     // CRC will be recalculated when sending the payload
     // (because RTC_Send_Datetime will be changed later)
     REPORT.header.crc = 0;
+
+    // Reconstruct the body
+    // set parameter
+    REPORT.data.req.vcu.rtc.log = RTC_Read();
+    REPORT.data.req.vcu.rtc.send = 0;
+
+    REPORT.data.req.vcu.speed = GPS.speed_kph;
+
+    REPORT.data.req.bms.pack[0].id = DB.bms.pack[0].id;
+    REPORT.data.req.bms.pack[0].voltage = DB.bms.pack[0].voltage;
+    REPORT.data.req.bms.pack[0].current = DB.bms.pack[0].current;
+
+    // Add more (if full frame)
+    if (frame == FR_FULL) {
+      REPORT.header.size += sizeof(REPORT.data.opt);
+      // set parameter
+      REPORT.data.opt.vcu.gps.latitude = (int32_t) (GPS.latitude * 10000000);
+      REPORT.data.opt.vcu.gps.longitude = (int32_t) (GPS.longitude * 10000000);
+      REPORT.data.opt.vcu.gps.hdop = (uint8_t) (GPS.dop_h * 10);
+      REPORT.data.opt.vcu.gps.heading = (uint8_t) (GPS.heading / 2);
+      REPORT.data.opt.vcu.odometer = DB.vcu.odometer;
+
+      REPORT.data.opt.vcu.bat_voltage = DB.vcu.bat_voltage / 18;
+      REPORT.data.opt.bms.pack[0].soc = DB.bms.pack[0].soc;
+      REPORT.data.opt.bms.pack[0].temperature = DB.bms.pack[0].id;
+    }
   }
 }
 

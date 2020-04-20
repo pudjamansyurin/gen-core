@@ -76,8 +76,8 @@ void Simcom_SetState(SIMCOM_STATE state) {
         p = SIM_RESULT_ERROR;
       } else {
         if (SIM.state >= SIM_STATE_CONFIGURED) {
-          SIM_SignalQuality(&(DB.vcu.signal));
-          if (DB.vcu.signal < 75) {
+          SIM_SignalQuality(&(DB.vcu.signal_percent));
+          if (DB.vcu.signal_percent < 75) {
             LOG_StrLn("Simcom:PendingBySignal");
             osDelay(5 * 1000);
             break;
@@ -725,7 +725,7 @@ static SIMCOM_RESULT Simcom_Iterate(char cmd[20], char contain[10], char resp[15
     }
 
     // other routines
-    SIM_SignalQuality(&(DB.vcu.signal));
+    SIM_SignalQuality(&(DB.vcu.signal_percent));
 
     // debug
     LOG_Str("Simcom:Iteration[");

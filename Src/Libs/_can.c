@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_can.h"
+#include "_reporter.h"
 
 /* External variables ----------------------------------------------------------*/
 extern canbus_t CB;
@@ -74,7 +75,7 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   CB.tx.data.u8[1] = iSeinLeft;
   CB.tx.data.u8[1] |= BSL(iSeinRight, 1);
   CB.tx.data.u8[1] |= BSL(db->hmi2.shutdown, 2);
-  CB.tx.data.u8[2] = db->vcu.signal;
+  CB.tx.data.u8[2] = db->vcu.signal_percent;
 
   // odometer
   CB.tx.data.u32[1] = db->vcu.odometer;
@@ -168,29 +169,29 @@ uint8_t CANT_VCU_Trip_Mode(uint32_t *trip) {
 
 /* ------------------------------------ READER ------------------------------------- */
 void CANR_BMS_Param1(db_t *db) {
-  db->bms.pack.voltage = CB.rx.data.u16[0] * 0.01;
-  db->bms.pack.current = (CB.rx.data.u16[1] * 0.01) + 50;
-  db->bms.pack.soc = CB.rx.data.u16[2];
-  db->bms.pack.temperature = CB.rx.data.u16[3];
+  db->bms.pack[0].voltage = CB.rx.data.u16[0] * 0.01;
+  db->bms.pack[0].current = (CB.rx.data.u16[1] * 0.01) + 50;
+  db->bms.pack[0].soc = CB.rx.data.u16[2];
+  db->bms.pack[0].temperature = CB.rx.data.u16[3];
 }
 
 void CANR_BMS_Param2(db_t *db) {
-  db->bms.pack.flag.dischargeOverCurrent = BBR(CB.rx.data.u8[6], 0);
-  db->bms.pack.flag.chargeOverCurrent = BBR(CB.rx.data.u8[6], 1);
-  db->bms.pack.flag.shortCircuit = BBR(CB.rx.data.u8[6], 2);
-  db->bms.pack.flag.dischargeOverTemperature = BBR(CB.rx.data.u8[6], 3);
-  db->bms.pack.flag.dischargeUnderTemperature = BBR(CB.rx.data.u8[6], 4);
-  db->bms.pack.flag.chargeOverTemperature = BBR(CB.rx.data.u8[6], 5);
-  db->bms.pack.flag.chargeUnderTemperature = BBR(CB.rx.data.u8[6], 6);
-  db->bms.pack.flag.underVoltage = BBR(CB.rx.data.u8[6], 7);
-  db->bms.pack.flag.overVoltage = BBR(CB.rx.data.u8[7], 0);
-  db->bms.pack.flag.overDischargeCapacity = BBR(CB.rx.data.u8[7], 1);
-  db->bms.pack.flag.unbalance = BBR(CB.rx.data.u8[7], 2);
-  db->bms.pack.flag.systemFailure = BBR(CB.rx.data.u8[7], 3);
+  Reporter_WriteEvent(REPORT_BMS_DISCHARGE_OVER_CURRENT, BBR(CB.rx.data.u8[6], 0));
+  Reporter_WriteEvent(REPORT_BMS_CHARGE_OVER_CURRENT, BBR(CB.rx.data.u8[6], 1));
+  Reporter_WriteEvent(REPORT_BMS_SHORT_CIRCUIT, BBR(CB.rx.data.u8[6], 2));
+  Reporter_WriteEvent(REPORT_BMS_DISCHARGE_OVER_TEMPERATURE, BBR(CB.rx.data.u8[6], 3));
+  Reporter_WriteEvent(REPORT_BMS_DISCHARGE_UNDER_TEMPERATURE, BBR(CB.rx.data.u8[6], 4));
+  Reporter_WriteEvent(REPORT_BMS_CHARGE_OVER_TEMPERATURE, BBR(CB.rx.data.u8[6], 5));
+  Reporter_WriteEvent(REPORT_BMS_CHARGE_UNDER_TEMPERATURE, BBR(CB.rx.data.u8[6], 6));
+  Reporter_WriteEvent(REPORT_BMS_UNDER_VOLTAGE, BBR(CB.rx.data.u8[6], 7));
+  Reporter_WriteEvent(REPORT_BMS_OVER_VOLTAGE, BBR(CB.rx.data.u8[7], 0));
+  Reporter_WriteEvent(REPORT_BMS_OVER_DISCHARGE_CAPACITY, BBR(CB.rx.data.u8[7], 1));
+  Reporter_WriteEvent(REPORT_BMS_UNBALANCE, BBR(CB.rx.data.u8[7], 2));
+  Reporter_WriteEvent(REPORT_BMS_SYSTEM_FAILURE, BBR(CB.rx.data.u8[7], 3));
 }
 
 void CANR_BMS_BatteryID(db_t *db) {
-  db->bms.pack.id = CB.rx.data.u64;
+  db->bms.pack[0].id = CB.rx.data.u64;
 }
 
 void CANR_MCU_Dummy(db_t *db) {
