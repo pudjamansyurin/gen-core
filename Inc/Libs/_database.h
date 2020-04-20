@@ -171,6 +171,22 @@ typedef struct {
       float current;
       float soc;
       float temperature;
+      struct {
+        uint8_t dischargeOverCurrent;
+        uint8_t chargeOverCurrent;
+        uint8_t shortCircuit;
+        uint8_t dischargeOverTemperature;
+        uint8_t dischargeUnderTemperature;
+        uint8_t chargeOverTemperature;
+        uint8_t chargeUnderTemperature;
+        uint8_t underVoltage;
+        uint8_t overVoltage;
+        uint8_t overDischargeCapacity;
+        uint8_t unbalance;
+        uint8_t systemFailure;
+      } flag;
+      uint8_t start;
+      uint8_t state;
     } pack;
   } bms;
 } db_t;

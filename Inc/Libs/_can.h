@@ -36,6 +36,7 @@ uint8_t CANT_VCU_RTC(timestamp_t *timestamp);
 uint8_t CANT_VCU_Select_Set(sw_runner_t *runner);
 uint8_t CANT_VCU_Trip_Mode(uint32_t *trip);
 void CANR_BMS_Param1(db_t *db);
+void CANR_BMS_Param2(db_t *db);
 void CANR_BMS_BatteryID(db_t *db);
 void CANR_MCU_Dummy(db_t *db);
 void CANR_HMI2(db_t *db);

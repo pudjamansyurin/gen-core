@@ -174,6 +174,21 @@ void CANR_BMS_Param1(db_t *db) {
   db->bms.pack.temperature = CB.rx.data.u16[3];
 }
 
+void CANR_BMS_Param2(db_t *db) {
+  db->bms.pack.flag.dischargeOverCurrent = BBR(CB.rx.data.u8[6], 0);
+  db->bms.pack.flag.chargeOverCurrent = BBR(CB.rx.data.u8[6], 1);
+  db->bms.pack.flag.shortCircuit = BBR(CB.rx.data.u8[6], 2);
+  db->bms.pack.flag.dischargeOverTemperature = BBR(CB.rx.data.u8[6], 3);
+  db->bms.pack.flag.dischargeUnderTemperature = BBR(CB.rx.data.u8[6], 4);
+  db->bms.pack.flag.chargeOverTemperature = BBR(CB.rx.data.u8[6], 5);
+  db->bms.pack.flag.chargeUnderTemperature = BBR(CB.rx.data.u8[6], 6);
+  db->bms.pack.flag.underVoltage = BBR(CB.rx.data.u8[6], 7);
+  db->bms.pack.flag.overVoltage = BBR(CB.rx.data.u8[7], 0);
+  db->bms.pack.flag.overDischargeCapacity = BBR(CB.rx.data.u8[7], 1);
+  db->bms.pack.flag.unbalance = BBR(CB.rx.data.u8[7], 2);
+  db->bms.pack.flag.systemFailure = BBR(CB.rx.data.u8[7], 3);
+}
+
 void CANR_BMS_BatteryID(db_t *db) {
   db->bms.pack.id = CB.rx.data.u64;
 }
