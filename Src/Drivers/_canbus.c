@@ -106,7 +106,7 @@ uint8_t CANBUS_Read(canbus_rx_t *rx) {
   HAL_StatusTypeDef status;
 
   /* Get RX message */
-  status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data);
+  status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
 
   // debugging
   if (status == HAL_OK) {

@@ -165,10 +165,13 @@ typedef struct {
   struct {
     uint8_t on;
     uint32_t interval;
-    float voltage;
-    float current;
-    float soc;
-    float temperature;
+    struct {
+      uint64_t id;
+      float voltage;
+      float current;
+      float soc;
+      float temperature;
+    } pack;
   } bms;
 } db_t;
 

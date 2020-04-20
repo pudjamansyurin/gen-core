@@ -60,31 +60,24 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   }
 
   // set message
-  CB.tx.data[0] = sw->list[SW_K_ABS].state;
+  CB.tx.data.u8[0] = sw->list[SW_K_ABS].state;
   // FIXME: handle me with real data
-  CB.tx.data[0] |= BSL(db->hmi1.status.mirroring, 1);
-  CB.tx.data[0] |= BSL(sw->list[SW_K_LAMP].state, 2);
-  CB.tx.data[0] |= BSL(1, 3);
-  CB.tx.data[0] |= BSL(iStatus.temperature, 4);
-  CB.tx.data[0] |= BSL(iStatus.finger, 5);
-  CB.tx.data[0] |= BSL(iStatus.keyless, 6);
-  CB.tx.data[0] |= BSL(db->hmi1.status.daylight, 7);
+  CB.tx.data.u8[0] |= BSL(db->hmi1.status.mirroring, 1);
+  CB.tx.data.u8[0] |= BSL(sw->list[SW_K_LAMP].state, 2);
+  CB.tx.data.u8[0] |= BSL(1, 3);
+  CB.tx.data.u8[0] |= BSL(iStatus.temperature, 4);
+  CB.tx.data.u8[0] |= BSL(iStatus.finger, 5);
+  CB.tx.data.u8[0] |= BSL(iStatus.keyless, 6);
+  CB.tx.data.u8[0] |= BSL(db->hmi1.status.daylight, 7);
 
   // sein value
-  CB.tx.data[1] = iSeinLeft;
-  CB.tx.data[1] |= BSL(iSeinRight, 1);
-
-  // HMI-2 Shutdown Request
-  CB.tx.data[1] |= BSL(db->hmi2.shutdown, 2);
-
-  // signal strength
-  CB.tx.data[2] = db->vcu.signal;
+  CB.tx.data.u8[1] = iSeinLeft;
+  CB.tx.data.u8[1] |= BSL(iSeinRight, 1);
+  CB.tx.data.u8[1] |= BSL(db->hmi2.shutdown, 2);
+  CB.tx.data.u8[2] = db->vcu.signal;
 
   // odometer
-  CB.tx.data[4] = BSR(db->vcu.odometer, 0);
-  CB.tx.data[5] = BSR(db->vcu.odometer, 8);
-  CB.tx.data[6] = BSR(db->vcu.odometer, 16);
-  CB.tx.data[7] = BSR(db->vcu.odometer, 24);
+  CB.tx.data.u32[1] = db->vcu.odometer;
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_VCU_SWITCH, 8);
@@ -94,13 +87,13 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
 
 uint8_t CANT_VCU_RTC(timestamp_t *timestamp) {
   // set message
-  CB.tx.data[0] = timestamp->time.Seconds;
-  CB.tx.data[1] = timestamp->time.Minutes;
-  CB.tx.data[2] = timestamp->time.Hours;
-  CB.tx.data[3] = timestamp->date.Date;
-  CB.tx.data[4] = timestamp->date.Month;
-  CB.tx.data[5] = timestamp->date.Year;
-  CB.tx.data[6] = timestamp->date.WeekDay;
+  CB.tx.data.u8[0] = timestamp->time.Seconds;
+  CB.tx.data.u8[1] = timestamp->time.Minutes;
+  CB.tx.data.u8[2] = timestamp->time.Hours;
+  CB.tx.data.u8[3] = timestamp->date.Date;
+  CB.tx.data.u8[4] = timestamp->date.Month;
+  CB.tx.data.u8[5] = timestamp->date.Year;
+  CB.tx.data.u8[6] = timestamp->date.WeekDay;
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_VCU_RTC, 7);
@@ -145,16 +138,16 @@ uint8_t CANT_VCU_Select_Set(sw_runner_t *runner) {
   }
 
   // set message
-  CB.tx.data[0] = runner->mode.sub.val[SW_M_DRIVE];
-  CB.tx.data[0] |= BSL(runner->mode.sub.val[SW_M_TRIP], 2);
-  CB.tx.data[0] |= BSL(runner->mode.sub.val[SW_M_REPORT], 3);
-  CB.tx.data[0] |= BSL(runner->mode.val, 4);
+  CB.tx.data.u8[0] = runner->mode.sub.val[SW_M_DRIVE];
+  CB.tx.data.u8[0] |= BSL(runner->mode.sub.val[SW_M_TRIP], 2);
+  CB.tx.data.u8[0] |= BSL(runner->mode.sub.val[SW_M_REPORT], 3);
+  CB.tx.data.u8[0] |= BSL(runner->mode.val, 4);
 
   // Send Show/Hide flag
-  CB.tx.data[0] |= BSL(iHide, 6);
+  CB.tx.data.u8[0] |= BSL(iHide, 6);
 
-  CB.tx.data[1] = runner->mode.sub.report[SW_M_REPORT_RANGE];
-  CB.tx.data[2] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
+  CB.tx.data.u8[1] = runner->mode.sub.report[SW_M_REPORT_RANGE];
+  CB.tx.data.u8[2] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_VCU_SELECT_SET, 3);
@@ -164,14 +157,8 @@ uint8_t CANT_VCU_Select_Set(sw_runner_t *runner) {
 
 uint8_t CANT_VCU_Trip_Mode(uint32_t *trip) {
   // set message
-  CB.tx.data[0] = BSR(trip[SW_M_TRIP_A], 0);
-  CB.tx.data[1] = BSR(trip[SW_M_TRIP_A], 8);
-  CB.tx.data[2] = BSR(trip[SW_M_TRIP_A], 16);
-  CB.tx.data[3] = BSR(trip[SW_M_TRIP_A], 24);
-  CB.tx.data[4] = BSR(trip[SW_M_TRIP_B], 0);
-  CB.tx.data[5] = BSR(trip[SW_M_TRIP_B], 8);
-  CB.tx.data[6] = BSR(trip[SW_M_TRIP_B], 16);
-  CB.tx.data[7] = BSR(trip[SW_M_TRIP_B], 24);
+  CB.tx.data.u32[0] = trip[SW_M_TRIP_A];
+  CB.tx.data.u32[1] = trip[SW_M_TRIP_B];
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_VCU_TRIP_MODE, 8);
@@ -181,17 +168,21 @@ uint8_t CANT_VCU_Trip_Mode(uint32_t *trip) {
 
 /* ------------------------------------ READER ------------------------------------- */
 void CANR_BMS_Param1(db_t *db) {
-  db->bms.voltage = (BSL(CB.rx.data[1], 8) | CB.rx.data[0]) * 0.01;
-  db->bms.current = ((BSL(CB.rx.data[3], 8) | CB.rx.data[2]) * 0.01) + 50;
-  db->bms.soc = BSL(CB.rx.data[5], 8) | CB.rx.data[4];
-  db->bms.temperature = BSL(CB.rx.data[7], 8) | CB.rx.data[6];
+  db->bms.pack.voltage = CB.rx.data.u16[0] * 0.01;
+  db->bms.pack.current = (CB.rx.data.u16[1] * 0.01) + 50;
+  db->bms.pack.soc = CB.rx.data.u16[2];
+  db->bms.pack.temperature = CB.rx.data.u16[3];
+}
+
+void CANR_BMS_BatteryID(db_t *db) {
+  db->bms.pack.id = CB.rx.data.u64;
 }
 
 void CANR_MCU_Dummy(db_t *db) {
   uint32_t DB_MCU_RPM;
 
   // read message
-  DB_MCU_RPM = BSL(CB.rx.data[3], 24) | BSL(CB.rx.data[2], 16) | BSL(CB.rx.data[1], 8) | CB.rx.data[0];
+  DB_MCU_RPM = CB.rx.data.s64;
 
   // convert RPM to Speed
   db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
@@ -202,6 +193,6 @@ void CANR_MCU_Dummy(db_t *db) {
 
 void CANR_HMI2(db_t *db) {
   // read message
-  db->hmi1.status.mirroring = BBR(CB.rx.data[0], 0);
+  db->hmi1.status.mirroring = BBR(CB.rx.data.u8[0], 0);
 }
 

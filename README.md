@@ -38,6 +38,7 @@
 - [x] Use hierarchy algorithm to handle simcom error 
 - [x] Use double buffering for ADC-DMA (HT & TC)
 - [ ] Fix duplicate variables
+- [ ] Sync variable name for HMI1 and VCU
 - [ ] Fix Odometer estimation based on GPS speed
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Simplify SIMCOM library

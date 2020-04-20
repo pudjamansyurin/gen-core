@@ -1816,6 +1816,9 @@ void StartCanRxTask(const void *argument)
         case CAND_BMS_PARAM_1:
           CANR_BMS_Param1(&DB);
           break;
+        case CAND_BMS_BATTERY_ID:
+          CANR_BMS_BatteryID(&DB);
+          break;
         case CAND_HMI2:
           CANR_HMI2(&DB);
           break;

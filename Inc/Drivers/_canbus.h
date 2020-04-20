@@ -11,14 +11,29 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 
+/* Exported union ------------------------------------------------------------*/
+typedef union {
+  uint8_t u8[8];
+  uint16_t u16[4];
+  uint32_t u32[2];
+  uint64_t u64;
+  int8_t s8[8];
+  int16_t s16[4];
+  int32_t s32[2];
+  int64_t s64;
+  char CHAR[8];
+  float FLOAT[2];
+  double DOUBLE;
+} CAN_DATA;
+
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
   CAN_TxHeaderTypeDef header;
-  uint8_t data[8];
+  CAN_DATA data;
 } canbus_tx_t;
 typedef struct {
   CAN_RxHeaderTypeDef header;
-  uint8_t data[8];
+  CAN_DATA data;
 } canbus_rx_t;
 typedef struct {
   canbus_tx_t tx;
