@@ -1418,11 +1418,11 @@ void StartCommandTask(const void *argument)
               break;
 
             case CMD_REPORT_ODOM:
-              DB_SetOdometer((uint32_t) hCommand->data.value);
+              EEPROM_Odometer(EE_CMD_W, (uint32_t) hCommand->data.value);
               break;
 
             case CMD_REPORT_UNITID:
-              Reporter_SetUnitID((uint32_t) hCommand->data.value);
+              EEPROM_UnitID(EE_CMD_W, (uint32_t) hCommand->data.value);
               break;
 
             default:
@@ -1715,16 +1715,16 @@ void StartReporterTask(const void *argument)
   if (EEPROM_Init()) {
     if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
       // reporter configuration
-      Reporter_SetUnitID(REPORT_UNITID);
-      DB_SetOdometer(0);
+      EEPROM_UnitID(EE_CMD_W, REPORT_UNITID);
+      EEPROM_Odometer(EE_CMD_W, 0);
       // simcom configuration
 
       // re-write backup register
       HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
     } else {
       // load from EEPROM
-      Reporter_ReadUnitID();
-      EEPROM_Odometer(EE_CMD_R, &(DB.vcu.odometer));
+      EEPROM_UnitID(EE_CMD_R, NULL);
+      EEPROM_Odometer(EE_CMD_R, NULL);
     }
   }
 

@@ -7,6 +7,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_eeprom.h"
+#include "_database.h"
+#include "_reporter.h"
+
+/* External variables ----------------------------------------------------------*/
+extern db_t DB;
+extern report_t REPORT;
+extern response_t RESPONSE;
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value);
@@ -42,12 +49,23 @@ uint8_t EEPROM_Init(void) {
   return 0;
 }
 
-uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t *value) {
-  return EE_32(VADDR_ODOMETER, cmd, value);
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
+  if (EE_32(VADDR_ODOMETER, cmd, &value)) {
+    DB.vcu.odometer = value;
+
+    return 1;
+  }
+  return 0;
 }
 
-uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t *value) {
-  return EE_32(VADDR_UNITID, cmd, value);
+uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
+  if (EE_32(VADDR_UNITID, cmd, &value)) {
+    REPORT.header.unit_id = value;
+    RESPONSE.header.unit_id = value;
+
+    return 1;
+  }
+  return 0;
 }
 
 /* Private functions implementation --------------------------------------------*/

@@ -188,7 +188,4 @@ typedef struct {
   } bms;
 } db_t;
 
-/* Public functions implementation --------------------------------------------*/
-void DB_SetOdometer(uint32_t odom);
-
 #endif /* DATABASE_H_ */

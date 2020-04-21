@@ -57,20 +57,6 @@ void Reporter_Init(void) {
   strcpy(RESPONSE.data.message, "");
 }
 
-void Reporter_SetUnitID(uint32_t unitId) {
-  REPORT.header.unit_id = unitId;
-  RESPONSE.header.unit_id = unitId;
-  EEPROM_UnitID(EE_CMD_W, &unitId);
-}
-
-void Reporter_ReadUnitID(void) {
-  uint32_t unitId;
-
-  EEPROM_UnitID(EE_CMD_R, &unitId);
-  REPORT.header.unit_id = unitId;
-  RESPONSE.header.unit_id = unitId;
-}
-
 void Reporter_SetEvents(uint64_t value) {
   REPORT.data.req.vcu.events_group = value;
 }

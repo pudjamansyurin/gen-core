@@ -24,7 +24,7 @@ typedef enum {
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EEPROM_Init(void);
-uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t *value);
-uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t *value);
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
+uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 
 #endif /* EEPROM_H_ */
