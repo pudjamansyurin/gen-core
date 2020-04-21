@@ -43,7 +43,6 @@ typedef struct __attribute__((packed)) {
       } rtc;
       uint8_t driver_id;
       uint64_t events_group;
-      uint8_t speed;
     } vcu;
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {
@@ -61,6 +60,7 @@ typedef struct __attribute__((packed)) {
         uint8_t hdop;
         uint8_t heading;
       } gps;
+      uint8_t speed;
       uint32_t odometer;
       uint8_t bat_voltage;
       struct __attribute__((packed)) {

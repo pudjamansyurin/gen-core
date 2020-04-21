@@ -169,7 +169,7 @@ uint8_t CANT_VCU_Trip_Mode(uint32_t *trip) {
 
 /* ------------------------------------ READER ------------------------------------- */
 void CANR_BMS_Param1(db_t *db) {
-  db->bms.pack[0].voltage = CB.rx.data.u16[0] * 0.01;
+  db->bms.pack[0].voltage = CB.rx.data.u16[0] * 0.001;
   db->bms.pack[0].current = (CB.rx.data.u16[1] * 0.01) + 50;
   db->bms.pack[0].soc = CB.rx.data.u16[2];
   db->bms.pack[0].temperature = CB.rx.data.u16[3];

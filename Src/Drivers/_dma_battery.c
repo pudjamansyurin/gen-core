@@ -15,7 +15,7 @@ extern db_t DB;
 extern sim_t SIM;
 
 /* Local constants -----------------------------------------------------------*/
-#define DMA_SZ                      200
+#define DMA_SZ                      250
 #define AVERAGE_SZ                  500U
 #define ADC_MAX_VALUE               4095    // 12 bit
 #define REF_MAX_VOLTAGE             3300    // mV

@@ -35,12 +35,12 @@ void Reporter_Init(void) {
   REPORT.data.req.vcu.rtc.log = 0;
   REPORT.data.req.vcu.driver_id = 1;
   REPORT.data.req.vcu.events_group = 0;
-  REPORT.data.req.vcu.speed = 1;
   // body optional
   REPORT.data.opt.vcu.gps.longitude = 0;
   REPORT.data.opt.vcu.gps.latitude = 0;
   REPORT.data.opt.vcu.gps.hdop = 0;
   REPORT.data.opt.vcu.gps.heading = 0;
+  REPORT.data.opt.vcu.speed = 1;
   REPORT.data.opt.vcu.odometer = 0;
   REPORT.data.opt.vcu.bat_voltage = 0;
   REPORT.data.opt.vcu.report.range = 0;
@@ -115,11 +115,9 @@ void Reporter_Capture(FRAME_TYPE frame) {
     REPORT.data.req.vcu.rtc.log = RTC_Read();
     REPORT.data.req.vcu.rtc.send = 0;
 
-    REPORT.data.req.vcu.speed = GPS.speed_kph;
-
     REPORT.data.req.bms.pack[0].id = DB.bms.pack[0].id;
-    REPORT.data.req.bms.pack[0].voltage = DB.bms.pack[0].voltage;
-    REPORT.data.req.bms.pack[0].current = DB.bms.pack[0].current;
+    REPORT.data.req.bms.pack[0].voltage = DB.bms.pack[0].voltage * 1000;
+    REPORT.data.req.bms.pack[0].current = (DB.bms.pack[0].current - 50) * 100;
 
     // Add more (if full frame)
     if (frame == FR_FULL) {
@@ -129,9 +127,11 @@ void Reporter_Capture(FRAME_TYPE frame) {
       REPORT.data.opt.vcu.gps.longitude = (int32_t) (GPS.longitude * 10000000);
       REPORT.data.opt.vcu.gps.hdop = (uint8_t) (GPS.dop_h * 10);
       REPORT.data.opt.vcu.gps.heading = (uint8_t) (GPS.heading / 2);
-      REPORT.data.opt.vcu.odometer = DB.vcu.odometer;
 
+      REPORT.data.opt.vcu.speed = GPS.speed_mps;
+      REPORT.data.opt.vcu.odometer = DB.vcu.odometer;
       REPORT.data.opt.vcu.bat_voltage = DB.vcu.bat_voltage / 18;
+
       REPORT.data.opt.bms.pack[0].soc = DB.bms.pack[0].soc;
       REPORT.data.opt.bms.pack[0].temperature = DB.bms.pack[0].id;
     }

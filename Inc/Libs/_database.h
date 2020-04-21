@@ -51,7 +51,7 @@
 
 #define REPORT_INTERVAL_SIMPLE                  5                       // in second
 #define REPORT_INTERVAL_FULL                    20                      // in second
-#define REPORT_INTERVAL_BMS_OFF                 60                      // in second
+#define REPORT_INTERVAL_IDLE                    6                      // in second
 #define REPORT_UNITID                           354313U
 
 #define GMT_TIME                                7                       // Asia/Jakarta
