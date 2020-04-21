@@ -77,7 +77,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
       } else {
         if (SIM.state >= SIM_STATE_CONFIGURED) {
           SIM_SignalQuality(&(DB.vcu.signal_percent));
-          if (DB.vcu.signal_percent < 75) {
+          if (DB.vcu.signal_percent < 50) {
             LOG_StrLn("Simcom:PendingBySignal");
             osDelay(5 * 1000);
             break;

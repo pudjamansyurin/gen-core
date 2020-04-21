@@ -65,7 +65,6 @@
 #define EVENT_AUDIO_BEEP_STOP                   BIT(2)
 #define EVENT_AUDIO_MUTE_ON                     BIT(3)
 #define EVENT_AUDIO_MUTE_OFF                    BIT(4)
-#define EVENT_AUDIO_VOLUME                      BIT(5)
 #define EVENT_FINGER_PLACED                     BIT(0)
 #define EVENT_CAN_RX_IT                         BIT(0)
 #define EVENT_KEYLESS_RX_IT                     BIT(0)
@@ -188,5 +187,8 @@ typedef struct {
     } pack[2];
   } bms;
 } db_t;
+
+/* Public functions implementation --------------------------------------------*/
+void DB_SetOdometer(uint32_t odom);
 
 #endif /* DATABASE_H_ */

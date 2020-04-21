@@ -175,7 +175,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  //  MX_CAN1_Init();
+  MX_CAN1_Init();
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   MX_UART4_Init();
@@ -189,7 +189,7 @@ int main(void)
   MX_CRC_Init();
   //  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-  //  CANBUS_Init();
+  CANBUS_Init();
   BAT_DMA_Init();
   /* USER CODE END 2 */
 
@@ -278,7 +278,7 @@ int main(void)
 
   /* definition and creation of CanRxTask */
   osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-  //  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
+  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
 
   /* definition and creation of SwitchTask */
   osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
@@ -290,7 +290,7 @@ int main(void)
 
   /* definition and creation of CanTxTask */
   osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-  //  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
+  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1353,11 +1353,11 @@ void StartGyroTask(const void *argument)
 void StartCommandTask(const void *argument)
 {
   /* USER CODE BEGIN StartCommandTask */
+  extern response_t RESPONSE;
   int p;
   osEvent evt;
   command_t *hCommand = NULL;
   response_t *hResponse = NULL;
-  extern response_t RESPONSE;
 
   /* Infinite loop */
   for (;;) {
@@ -1418,7 +1418,7 @@ void StartCommandTask(const void *argument)
               break;
 
             case CMD_REPORT_ODOM:
-              Reporter_SetOdometer((uint32_t) hCommand->data.value);
+              DB_SetOdometer((uint32_t) hCommand->data.value);
               break;
 
             case CMD_REPORT_UNITID:
@@ -1446,7 +1446,6 @@ void StartCommandTask(const void *argument)
 
             case CMD_AUDIO_VOL:
               DB.vcu.volume = hCommand->data.value;
-              xTaskNotify(AudioTaskHandle, EVENT_AUDIO_VOLUME, eSetBits);
               break;
 
             default:
@@ -1633,11 +1632,10 @@ void StartAudioTask(const void *argument)
       if (notif & EVENT_AUDIO_MUTE_OFF) {
         AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
       }
-      // Volume command
-      if (notif & EVENT_AUDIO_VOLUME) {
-        AUDIO_OUT_SetVolume(DB.vcu.volume);
-      }
     }
+
+    // update volume
+    AUDIO_OUT_SetVolume(DB.vcu.volume);
 
     // Report interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(500));
@@ -1702,7 +1700,7 @@ void StartReporterTask(const void *argument)
   osEvent evt;
   FRAME_TYPE frame;
   report_t *hReport = NULL;
-  gps_t *hGps = NULL;
+  //  gps_t *hGps = NULL;
 
   // reset report frame to default
   Reporter_Init();
@@ -1718,14 +1716,14 @@ void StartReporterTask(const void *argument)
     if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
       // reporter configuration
       Reporter_SetUnitID(REPORT_UNITID);
-      Reporter_SetOdometer(0);
+      DB_SetOdometer(0);
       // simcom configuration
 
       // re-write backup register
       HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
     } else {
       // load from EEPROM
-      EEPROM_UnitID(EE_CMD_R, &(REPORT.header.unit_id));
+      Reporter_ReadUnitID();
       EEPROM_Odometer(EE_CMD_R, &(DB.vcu.odometer));
     }
   }
@@ -1806,6 +1804,7 @@ void StartReporterTask(const void *argument)
 void StartCanRxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
+  extern canbus_t CB;
   uint32_t notif;
 
   /* Infinite loop */
@@ -1814,23 +1813,23 @@ void StartCanRxTask(const void *argument)
     // check if has new can message
     xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
 
+    // debugging
+    LOG_Str("\n[RX] ");
+    LOG_Hex32(CB.rx.header.StdId);
+    LOG_Str(" <= ");
+    if (CB.rx.header.RTR == CAN_RTR_DATA) {
+      LOG_BufHex(CB.rx.data.CHAR, sizeof(CB.rx.data.CHAR));
+    } else {
+      LOG_Str("RTR");
+    }
+    LOG_Enter();
+
     // proceed event
     if (notif & EVENT_CAN_RX_IT) {
-      // handle message
+      // handle STD message
       switch (CANBUS_ReadID()) {
         case CAND_MCU_DUMMY:
           CANR_MCU_Dummy(&DB);
-          // update audio volume
-          xTaskNotify(AudioTaskHandle, EVENT_AUDIO_VOLUME, eSetBits);
-          break;
-        case CAND_BMS_PARAM_1:
-          CANR_BMS_Param1(&DB);
-          break;
-        case CAND_BMS_PARAM_2:
-          CANR_BMS_Param2(&DB);
-          break;
-        case CAND_BMS_BATTERY_ID:
-          CANR_BMS_BatteryID(&DB);
           break;
         case CAND_HMI2:
           CANR_HMI2(&DB);
@@ -1838,6 +1837,12 @@ void StartCanRxTask(const void *argument)
         case CAND_HMI1_LEFT:
           break;
         case CAND_HMI1_RIGHT:
+          break;
+        case CAND_BMS_PARAM_1:
+          CANR_BMS_Param1(&DB);
+          break;
+        case CAND_BMS_PARAM_2:
+          CANR_BMS_Param2(&DB);
           break;
         default:
 
@@ -2055,8 +2060,9 @@ void StartCanTxTask(const void *argument)
     // Send CAN data
     CANT_VCU_Switch(&DB, &SW);
     CANT_VCU_RTC(&(DB.vcu.rtc.timestamp));
-    CANT_VCU_Select_Set(&(SW.runner));
-    CANT_VCU_Trip_Mode(&(SW.runner.mode.sub.trip[0]));
+    CANT_VCU_SelectSet(&(SW.runner));
+    CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
+    CANT_BMS_StateSetting(&DB);
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(250));

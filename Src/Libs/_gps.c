@@ -64,6 +64,6 @@ uint8_t GPS_Capture(void) {
 void GPS_CalculateOdometer(void) {
   // dummy odometer
   if (GPS.speed_mps > 1) {
-    Reporter_SetOdometer(DB.vcu.odometer + (GPS.speed_mps * (GPS_INTERVAL_MS / 1000)));
+    DB_SetOdometer(DB.vcu.odometer + (GPS.speed_mps * (GPS_INTERVAL_MS / 1000)));
   }
 }

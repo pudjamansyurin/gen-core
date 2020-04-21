@@ -58,14 +58,17 @@ void Reporter_Init(void) {
 }
 
 void Reporter_SetUnitID(uint32_t unitId) {
-  RESPONSE.header.unit_id = unitId;
   REPORT.header.unit_id = unitId;
+  RESPONSE.header.unit_id = unitId;
   EEPROM_UnitID(EE_CMD_W, &unitId);
 }
 
-void Reporter_SetOdometer(uint32_t odom) {
-  DB.vcu.odometer = odom;
-  EEPROM_Odometer(EE_CMD_W, &odom);
+void Reporter_ReadUnitID(void) {
+  uint32_t unitId;
+
+  EEPROM_UnitID(EE_CMD_R, &unitId);
+  REPORT.header.unit_id = unitId;
+  RESPONSE.header.unit_id = unitId;
 }
 
 void Reporter_SetEvents(uint64_t value) {

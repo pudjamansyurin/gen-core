@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_database.h"
+#include "_eeprom.h"
 
 /* Public variables -----------------------------------------------------------*/
 db_t DB = {
@@ -43,3 +44,8 @@ db_t DB = {
     }
 };
 
+/* Public functions implementation --------------------------------------------*/
+void DB_SetOdometer(uint32_t odom) {
+  DB.vcu.odometer = odom;
+  EEPROM_Odometer(EE_CMD_W, &odom);
+}

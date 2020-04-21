@@ -102,7 +102,7 @@ uint8_t CANT_VCU_RTC(timestamp_t *timestamp) {
   return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CANT_VCU_Select_Set(sw_runner_t *runner) {
+uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
   static TickType_t tick, tickPeriod;
   static uint8_t iHide = 0;
   static int8_t iName = -1, iValue = -1;
@@ -156,13 +156,24 @@ uint8_t CANT_VCU_Select_Set(sw_runner_t *runner) {
   return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CANT_VCU_Trip_Mode(uint32_t *trip) {
+uint8_t CANT_VCU_TripMode(uint32_t *trip) {
   // set message
   CB.tx.data.u32[0] = trip[SW_M_TRIP_A];
   CB.tx.data.u32[1] = trip[SW_M_TRIP_B];
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_VCU_TRIP_MODE, 8);
+  // send message
+  return CANBUS_Write(&(CB.tx));
+}
+
+uint8_t CANT_BMS_StateSetting(db_t *db) {
+  // set message
+  CB.tx.data.u8[0] = db->bms.pack[0].start;
+  CB.tx.data.u8[0] |= BSL(db->bms.pack[0].state, 1);
+
+  // set default header
+  CANBUS_Header(&(CB.tx.header), CAND_BMS_STATE_SETTING, 1);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
@@ -199,10 +210,8 @@ void CANR_MCU_Dummy(db_t *db) {
 
   // read message
   DB_MCU_RPM = CB.rx.data.s64;
-
   // convert RPM to Speed
   db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
-
   // convert Speed to Volume
   db->vcu.volume = db->vcu.speed * 100 / MCU_SPEED_MAX;
 }

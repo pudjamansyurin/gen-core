@@ -119,7 +119,7 @@ typedef struct __attribute__((packed)) {
 /* Public functions prototype ------------------------------------------------*/
 void Reporter_Init(void);
 void Reporter_SetUnitID(uint32_t unitId);
-void Reporter_SetOdometer(uint32_t odom);
+void Reporter_ReadUnitID(void);
 void Reporter_SetEvents(uint64_t value);
 void Reporter_WriteEvent(uint64_t event_id, uint8_t value);
 void Reporter_Capture(FRAME_TYPE frame);

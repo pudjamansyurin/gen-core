@@ -82,7 +82,7 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
   /* Start the Transmission process */
   status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), (uint8_t*) &(tx->data), &TxMailbox);
 
-  // debugging
+  //  // debugging
   //  if (status == HAL_OK) {
   //    LOG_Str("\n[TX] ");
   //    LOG_Hex32(tx->header.StdId);
@@ -108,24 +108,14 @@ uint8_t CANBUS_Read(canbus_rx_t *rx) {
   /* Get RX message */
   status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
 
-  // debugging
-  if (status == HAL_OK) {
-    LOG_Str("\n[RX] ");
-    LOG_Hex32(rx->header.StdId);
-    LOG_Str(" <= ");
-    if (rx->header.RTR == CAN_RTR_DATA) {
-      LOG_BufHex((char*) &(rx->data), sizeof(rx->data));
-    } else {
-      LOG_Str("RTR");
-    }
-    LOG_Enter();
-  }
-
   return (status == HAL_OK);
 }
 
 uint32_t CANBUS_ReadID(void) {
-  return CB.rx.header.StdId;
+  if (CB.rx.header.IDE == CAN_ID_STD) {
+    return CB.rx.header.StdId;
+  }
+  return CB.rx.header.ExtId;
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
