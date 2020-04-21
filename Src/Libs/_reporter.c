@@ -17,7 +17,7 @@ report_t REPORT;
 response_t RESPONSE;
 
 /* Public functions implementation --------------------------------------------*/
-void Reporter_Init(void) {
+void RPT_Init(void) {
   // set default data
   LOG_StrLn("Reporter:Init");
   // =============== REPORT ==============
@@ -57,11 +57,11 @@ void Reporter_Init(void) {
   strcpy(RESPONSE.data.message, "");
 }
 
-void Reporter_SetEvents(uint64_t value) {
+void RPT_SetEvents(uint64_t value) {
   REPORT.data.req.vcu.events_group = value;
 }
 
-void Reporter_WriteEvent(uint64_t event_id, uint8_t value) {
+void RPT_SetEvent(uint64_t event_id, uint8_t value) {
   if (value & 1) {
     BV(REPORT.data.req.vcu.events_group, _BitPosition(event_id));
   } else {
@@ -69,11 +69,11 @@ void Reporter_WriteEvent(uint64_t event_id, uint8_t value) {
   }
 }
 
-uint8_t Reporter_ReadEvent(uint64_t event_id) {
+uint8_t RPT_ReadEvent(uint64_t event_id) {
   return BSR((REPORT.data.req.vcu.events_group & event_id), _BitPosition(event_id));
 }
 
-void Reporter_Capture(FRAME_TYPE frame) {
+void RPT_Capture(FRAME_TYPE frame) {
   if (frame == FR_RESPONSE) {
     //Reconstruct the header
     RESPONSE.header.seq_id++;

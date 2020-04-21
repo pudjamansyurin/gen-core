@@ -246,7 +246,7 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+//  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
@@ -1326,16 +1326,16 @@ void StartGyroTask(const void *argument)
     mems_decision = GYRO_Decision(&mems_calibration, 25);
 
     // Check accelerometer, happens when impact detected
-    Reporter_WriteEvent(REPORT_BIKE_CRASHED, mems_decision.crash);
+    RPT_SetEvent(RPT_BIKE_CRASHED, mems_decision.crash);
 
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
       xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
-      Reporter_WriteEvent(REPORT_BIKE_FALLING, 1);
+      RPT_SetEvent(RPT_BIKE_FALLING, 1);
       _LedDisco(1000);
     } else {
       xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
-      Reporter_WriteEvent(REPORT_BIKE_FALLING, 0);
+      RPT_SetEvent(RPT_BIKE_FALLING, 0);
     }
     // Report interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(100));
@@ -1486,7 +1486,7 @@ void StartCommandTask(const void *argument)
       osMailFree(CommandMailHandle, hCommand);
 
       // Get current snapshot
-      Reporter_Capture(FR_RESPONSE);
+      RPT_Capture(FR_RESPONSE);
 
       // Allocate memory
       hResponse = osMailAlloc(ResponseMailHandle, osWaitForever);
@@ -1703,19 +1703,19 @@ void StartReporterTask(const void *argument)
   //  gps_t *hGps = NULL;
 
   // reset report frame to default
-  Reporter_Init();
+  RPT_Init();
 
   // Init things before reporter capture
   // get current state
-  DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-  Reporter_WriteEvent(REPORT_POWER_OFF, !DB.bms.on);
+  DB.vcu.independent = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
+  RPT_SetEvent(RPT_POWER_OFF, !DB.vcu.independent);
 
   // FIXME: create master thread
   // ONE-TIME configurations:
   if (EEPROM_Init()) {
     if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
       // reporter configuration
-      EEPROM_UnitID(EE_CMD_W, REPORT_UNITID);
+      EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
       EEPROM_Odometer(EE_CMD_W, 0);
       // simcom configuration
 
@@ -1739,15 +1739,15 @@ void StartReporterTask(const void *argument)
     //    if (evt.status == osEventMail) {
     //      hGps = evt.value.p;
     //      // set GPS data
-    //      Reporter_SetGPS(hGps);
+    //      RPT_SetGPS(hGps);
     //      // Release back
     //      osMailFree(GpsMailHandle, hGps);
     //    }
 
     // decide full/simple frame time
-    if (DB.bms.on) {
+    if (DB.vcu.independent) {
       // BMS plugged
-      if ((lastWake - lastFull) >= pdMS_TO_TICKS(REPORT_INTERVAL_FULL*1000)) {
+      if ((lastWake - lastFull) >= pdMS_TO_TICKS(RPT_INTERVAL_FULL*1000)) {
         // capture full frame wake time
         lastFull = lastWake;
         // full frame
@@ -1756,15 +1756,15 @@ void StartReporterTask(const void *argument)
         // simple frame
         frame = FR_SIMPLE;
       }
-      DB.bms.interval = REPORT_INTERVAL_SIMPLE;
+      DB.vcu.interval = RPT_INTERVAL_SIMPLE;
     } else {
       // BMS un-plugged
       frame = FR_FULL;
-      DB.bms.interval = REPORT_INTERVAL_IDLE;
+      DB.vcu.interval = RPT_INTERVAL_INDEPENDENT;
     }
 
     // Get current snapshot
-    Reporter_Capture(frame);
+    RPT_Capture(frame);
 
     // Get log space
     do {
@@ -1785,11 +1785,11 @@ void StartReporterTask(const void *argument)
     // Put report to log
     osMailPut(ReportMailHandle, hReport);
     // reset all events group
-    Reporter_WriteEvent(REPORT_NETWORK_RESTART, 0);
-    //    Reporter_SetEvents(0);
+    RPT_SetEvent(RPT_NETWORK_RESTART, 0);
+    //    RPT_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval * 1000));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.vcu.interval * 1000));
   }
   /* USER CODE END StartReporterTask */
 }
@@ -2011,8 +2011,8 @@ void StartGeneralTask(const void *argument)
       // BMS Power IRQ
       if (notif & EVENT_GENERAL_BMS_IRQ) {
         // get current state
-        DB.bms.on = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-        Reporter_WriteEvent(REPORT_POWER_OFF, !DB.bms.on);
+        DB.vcu.independent = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
+        RPT_SetEvent(RPT_POWER_OFF, !DB.vcu.independent);
       }
       // KNOB IRQ
       if (notif & EVENT_GENERAL_KNOB_IRQ) {
@@ -2062,7 +2062,7 @@ void StartCanTxTask(const void *argument)
     CANT_VCU_RTC(&(DB.vcu.rtc.timestamp));
     CANT_VCU_SelectSet(&(SW.runner));
     CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
-    CANT_BMS_StateSetting(&DB);
+//    CANT_BMS_StateSetting(&DB);
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(250));

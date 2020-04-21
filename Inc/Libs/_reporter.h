@@ -117,10 +117,10 @@ typedef struct __attribute__((packed)) {
 } ack_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void Reporter_Init(void);
-void Reporter_SetEvents(uint64_t value);
-void Reporter_WriteEvent(uint64_t event_id, uint8_t value);
-void Reporter_Capture(FRAME_TYPE frame);
-uint8_t Reporter_ReadEvent(uint64_t event_id);
+void RPT_Init(void);
+void RPT_SetEvents(uint64_t value);
+void RPT_SetEvent(uint64_t event_id, uint8_t value);
+void RPT_Capture(FRAME_TYPE frame);
+uint8_t RPT_ReadEvent(uint64_t event_id);
 
 #endif /* REPORTER_H_ */

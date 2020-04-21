@@ -49,10 +49,10 @@
 #define FINGER_CONFIDENCE_MIN                   10
 #define FINGER_SCAN_TIMEOUT                     20                      // in second
 
-#define REPORT_INTERVAL_SIMPLE                  5                       // in second
-#define REPORT_INTERVAL_FULL                    20                      // in second
-#define REPORT_INTERVAL_IDLE                    6                      // in second
-#define REPORT_UNITID                           354313U
+#define RPT_INTERVAL_SIMPLE                  5                       // in second
+#define RPT_INTERVAL_FULL                    20                      // in second
+#define RPT_INTERVAL_INDEPENDENT             6                      // in second
+#define RPT_UNITID                           354313U
 
 #define GMT_TIME                                7                       // Asia/Jakarta
 
@@ -78,23 +78,23 @@
 #define KEYLESS_MSG_SEAT                        BIT(2)
 
 // Events group (Frame Report)
-#define REPORT_NETWORK_RESTART                  BIT(0)
-#define REPORT_BIKE_FALLING                     BIT(1)
-#define REPORT_BIKE_CRASHED                     BIT(2)
-#define REPORT_KEYLESS_MISSING                  BIT(3)
-#define REPORT_POWER_OFF                        BIT(4)
-#define REPORT_BMS_DISCHARGE_OVER_CURRENT       BIT(30)
-#define REPORT_BMS_CHARGE_OVER_CURRENT          BIT(31)
-#define REPORT_BMS_SHORT_CIRCUIT                BIT(32)
-#define REPORT_BMS_DISCHARGE_OVER_TEMPERATURE   BIT(33)
-#define REPORT_BMS_DISCHARGE_UNDER_TEMPERATURE  BIT(34)
-#define REPORT_BMS_CHARGE_OVER_TEMPERATURE      BIT(35)
-#define REPORT_BMS_CHARGE_UNDER_TEMPERATURE     BIT(36)
-#define REPORT_BMS_UNDER_VOLTAGE                BIT(37)
-#define REPORT_BMS_OVER_VOLTAGE                 BIT(38)
-#define REPORT_BMS_OVER_DISCHARGE_CAPACITY      BIT(39)
-#define REPORT_BMS_UNBALANCE                    BIT(40)
-#define REPORT_BMS_SYSTEM_FAILURE               BIT(41)
+#define RPT_NETWORK_RESTART                  BIT(0)
+#define RPT_BIKE_FALLING                     BIT(1)
+#define RPT_BIKE_CRASHED                     BIT(2)
+#define RPT_KEYLESS_MISSING                  BIT(3)
+#define RPT_POWER_OFF                        BIT(4)
+#define RPT_BMS_DISCHARGE_OVER_CURRENT       BIT(30)
+#define RPT_BMS_CHARGE_OVER_CURRENT          BIT(31)
+#define RPT_BMS_SHORT_CIRCUIT                BIT(32)
+#define RPT_BMS_DISCHARGE_OVER_TEMPERATURE   BIT(33)
+#define RPT_BMS_DISCHARGE_UNDER_TEMPERATURE  BIT(34)
+#define RPT_BMS_CHARGE_OVER_TEMPERATURE      BIT(35)
+#define RPT_BMS_CHARGE_UNDER_TEMPERATURE     BIT(36)
+#define RPT_BMS_UNDER_VOLTAGE                BIT(37)
+#define RPT_BMS_OVER_VOLTAGE                 BIT(38)
+#define RPT_BMS_OVER_DISCHARGE_CAPACITY      BIT(39)
+#define RPT_BMS_UNBALANCE                    BIT(40)
+#define RPT_BMS_SYSTEM_FAILURE               BIT(41)
 
 // Command Code List
 #define CMD_CODE_GEN                            0
@@ -160,6 +160,8 @@ typedef struct {
 // Node struct
 typedef struct {
   struct {
+    uint8_t independent;
+    uint32_t interval;
     uint8_t volume;
     uint16_t bat_voltage;
     uint8_t signal_percent;
@@ -174,16 +176,14 @@ typedef struct {
     uint8_t shutdown;
   } hmi2;
   struct {
-    uint8_t on;
-    uint32_t interval;
+    uint8_t start;
+    uint8_t state;
     struct {
       uint64_t id;
       float voltage;
       float current;
       float soc;
       float temperature;
-      uint8_t start;
-      uint8_t state;
     } pack[2];
   } bms;
 } db_t;

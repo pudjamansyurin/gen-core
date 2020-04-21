@@ -11,6 +11,8 @@
 /* Public variables -----------------------------------------------------------*/
 db_t DB = {
     .vcu = {
+        .independent = 1,
+        .interval = RPT_INTERVAL_SIMPLE,
         .volume = 0,
         .bat_voltage = 0,
         .signal_percent = 0,
@@ -37,8 +39,5 @@ db_t DB = {
     .hmi2 = {
         .shutdown = 0
     },
-    .bms = {
-        .on = 1,
-        .interval = REPORT_INTERVAL_SIMPLE
-    }
+    .bms = { 0 }
 };

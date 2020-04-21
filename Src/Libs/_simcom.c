@@ -672,7 +672,7 @@ static SIMCOM_RESULT Simcom_Ready(void) {
   uint32_t tick;
 
   // save event
-  Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
+  RPT_SetEvent(RPT_NETWORK_RESTART, 1);
 
   // wait until 1s response
   tick = osKernelSysTick();
@@ -776,7 +776,7 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
           SIM.state = SIM_STATE_READY;
           LOG_StrLn("Simcom:Restarted");
           // save event
-          Reporter_WriteEvent(REPORT_NETWORK_RESTART, 1);
+          RPT_SetEvent(RPT_NETWORK_RESTART, 1);
         }
         // exception for timeout
         if ((osKernelSysTick() - tick) >= timeout_tick) {

@@ -169,8 +169,8 @@ uint8_t CANT_VCU_TripMode(uint32_t *trip) {
 
 uint8_t CANT_BMS_StateSetting(db_t *db) {
   // set message
-  CB.tx.data.u8[0] = db->bms.pack[0].start;
-  CB.tx.data.u8[0] |= BSL(db->bms.pack[0].state, 1);
+  CB.tx.data.u8[0] = db->bms.start;
+  CB.tx.data.u8[0] |= BSL(db->bms.state, 1);
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_BMS_STATE_SETTING, 1);
@@ -187,18 +187,18 @@ void CANR_BMS_Param1(db_t *db) {
 }
 
 void CANR_BMS_Param2(db_t *db) {
-  Reporter_WriteEvent(REPORT_BMS_DISCHARGE_OVER_CURRENT, BBR(CB.rx.data.u8[6], 0));
-  Reporter_WriteEvent(REPORT_BMS_CHARGE_OVER_CURRENT, BBR(CB.rx.data.u8[6], 1));
-  Reporter_WriteEvent(REPORT_BMS_SHORT_CIRCUIT, BBR(CB.rx.data.u8[6], 2));
-  Reporter_WriteEvent(REPORT_BMS_DISCHARGE_OVER_TEMPERATURE, BBR(CB.rx.data.u8[6], 3));
-  Reporter_WriteEvent(REPORT_BMS_DISCHARGE_UNDER_TEMPERATURE, BBR(CB.rx.data.u8[6], 4));
-  Reporter_WriteEvent(REPORT_BMS_CHARGE_OVER_TEMPERATURE, BBR(CB.rx.data.u8[6], 5));
-  Reporter_WriteEvent(REPORT_BMS_CHARGE_UNDER_TEMPERATURE, BBR(CB.rx.data.u8[6], 6));
-  Reporter_WriteEvent(REPORT_BMS_UNDER_VOLTAGE, BBR(CB.rx.data.u8[6], 7));
-  Reporter_WriteEvent(REPORT_BMS_OVER_VOLTAGE, BBR(CB.rx.data.u8[7], 0));
-  Reporter_WriteEvent(REPORT_BMS_OVER_DISCHARGE_CAPACITY, BBR(CB.rx.data.u8[7], 1));
-  Reporter_WriteEvent(REPORT_BMS_UNBALANCE, BBR(CB.rx.data.u8[7], 2));
-  Reporter_WriteEvent(REPORT_BMS_SYSTEM_FAILURE, BBR(CB.rx.data.u8[7], 3));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_CURRENT, BBR(CB.rx.data.u8[6], 0));
+  RPT_SetEvent(RPT_BMS_CHARGE_OVER_CURRENT, BBR(CB.rx.data.u8[6], 1));
+  RPT_SetEvent(RPT_BMS_SHORT_CIRCUIT, BBR(CB.rx.data.u8[6], 2));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_TEMPERATURE, BBR(CB.rx.data.u8[6], 3));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_UNDER_TEMPERATURE, BBR(CB.rx.data.u8[6], 4));
+  RPT_SetEvent(RPT_BMS_CHARGE_OVER_TEMPERATURE, BBR(CB.rx.data.u8[6], 5));
+  RPT_SetEvent(RPT_BMS_CHARGE_UNDER_TEMPERATURE, BBR(CB.rx.data.u8[6], 6));
+  RPT_SetEvent(RPT_BMS_UNDER_VOLTAGE, BBR(CB.rx.data.u8[6], 7));
+  RPT_SetEvent(RPT_BMS_OVER_VOLTAGE, BBR(CB.rx.data.u8[7], 0));
+  RPT_SetEvent(RPT_BMS_OVER_DISCHARGE_CAPACITY, BBR(CB.rx.data.u8[7], 1));
+  RPT_SetEvent(RPT_BMS_UNBALANCE, BBR(CB.rx.data.u8[7], 2));
+  RPT_SetEvent(RPT_BMS_SYSTEM_FAILURE, BBR(CB.rx.data.u8[7], 3));
 }
 
 void CANR_BMS_BatteryID(db_t *db) {
