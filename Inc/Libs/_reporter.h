@@ -46,7 +46,7 @@ typedef struct __attribute__((packed)) {
     } vcu;
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {
-        uint64_t id;
+        uint32_t id;
         uint16_t voltage;
         uint16_t current;
       } pack[2];

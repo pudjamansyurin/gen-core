@@ -23,7 +23,7 @@
 
 #define CAND_BMS_PARAM_1                                0x0B0
 #define CAND_BMS_PARAM_2                                0x0B1
-#define CAND_BMS_STATE_SETTING                          0x1B2
+#define CAND_BMS_SETTING                                0x1B2
 
 #define CAND_MCU_DUMMY									0x7A0
 

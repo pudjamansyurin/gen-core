@@ -173,7 +173,7 @@ uint8_t CANT_BMS_Setting(uint8_t start, BMS_STATE state) {
   CB.tx.data.u8[0] |= _L(state, 1);
 
   // set default header
-  CANBUS_Header(&(CB.tx.header), CAND_BMS_STATE_SETTING, 1);
+  CANBUS_Header(&(CB.tx.header), CAND_BMS_SETTING, 1);
   // send message
   return CANBUS_Write(&(CB.tx));
 }

@@ -247,7 +247,7 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  //  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
@@ -1482,7 +1482,7 @@ void StartCommandTask(const void *argument)
         case CMD_CODE_BMS:
           switch (hCommand->data.sub_code) {
             case CMD_BMS_ON:
-              DB.bms.on = (uint8_t) hCommand->data.value;
+              DB.bms.run = (uint8_t) hCommand->data.value;
               break;
 
             default:
@@ -1759,7 +1759,7 @@ void StartReporterTask(const void *argument)
     //    }
 
     // decide full/simple frame time
-    if (DB.vcu.independent) {
+    if (!DB.vcu.independent) {
       // BMS plugged
       if ((lastWake - lastFull) >= pdMS_TO_TICKS(RPT_INTERVAL_FULL*1000)) {
         // capture full frame wake time
@@ -2078,20 +2078,20 @@ void StartCanTxTask(const void *argument)
     CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
 
     // Control BMS power
-    if (DB.bms.on) {
+    if (DB.bms.run) {
       if (!DB_BMS_CheckRun(1) && !DB_BMS_CheckState(BMS_STATE_DISCHARGE)) {
         CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
       } else {
         DB.bms.started = 1;
       }
     } else {
-      if (!DB_BMS_CheckRun(0) && !DB_BMS_CheckState(BMS_STATE_IDLE)) {
+      if (!DB_BMS_CheckRun(0) || !DB_BMS_CheckState(BMS_STATE_IDLE)) {
         CANT_BMS_Setting(0, BMS_STATE_IDLE);
       } else {
         // completely off
         DB.bms.started = 0;
-        DB_BMS_ResetIndexes();
       }
+      DB_BMS_ResetIndexes();
     }
     // Handle merged BMS parameter
     DB.bms.flags = DB.bms.pack[0].flag | DB.bms.pack[1].flag;

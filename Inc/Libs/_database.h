@@ -191,7 +191,7 @@ typedef struct {
     uint8_t shutdown;
   } hmi2;
   struct {
-    uint8_t on;
+    uint8_t run;
     uint8_t started;
     uint16_t flags;
     struct {
