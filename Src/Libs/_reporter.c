@@ -70,7 +70,7 @@ void RPT_SetEvent(uint64_t event_id, uint8_t value) {
 }
 
 uint8_t RPT_ReadEvent(uint64_t event_id) {
-  return BSR((REPORT.data.req.vcu.events_group & event_id), _BitPosition(event_id));
+  return _R8((REPORT.data.req.vcu.events_group & event_id), _BitPosition(event_id));
 }
 
 void RPT_Capture(FRAME_TYPE frame) {
@@ -122,7 +122,7 @@ void RPT_Capture(FRAME_TYPE frame) {
       REPORT.data.opt.vcu.bat_voltage = DB.vcu.bat_voltage / 18;
 
       REPORT.data.opt.bms.pack[0].soc = DB.bms.pack[0].soc;
-      REPORT.data.opt.bms.pack[0].temperature = DB.bms.pack[0].id;
+      REPORT.data.opt.bms.pack[0].temperature = DB.bms.pack[0].id * 10;
     }
   }
 }

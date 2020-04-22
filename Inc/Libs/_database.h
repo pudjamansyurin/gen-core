@@ -17,10 +17,11 @@
 #define BV(var, x)                              (var |= (1 << x))
 #define BC(var, x)                              (var &= ~(1 << x))
 #define BT(var, x)                              (var ^= (1 << x))
-#define BSL(var, x)                             (var << x)
-#define BSR(var, x)                             ((var >> x) & 0xFF)
-#define BBR(var, x)                             ((var >> x) & 0x01)
-#define BBR2(var, x)                            ((var >> x) & 0x03)
+#define _L(var, x)                              (var << x)
+#define _R(var, x)                              (var >> x)
+#define _R1(var, x)                             ((var >> x) & 0x01)
+#define _R2(var, x)                             ((var >> x) & 0x03)
+#define _R8(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
 #define RTC_ONE_TIME_RESET                      3
@@ -49,10 +50,10 @@
 #define FINGER_CONFIDENCE_MIN                   10
 #define FINGER_SCAN_TIMEOUT                     20                      // in second
 
-#define RPT_INTERVAL_SIMPLE                  5                       // in second
-#define RPT_INTERVAL_FULL                    20                      // in second
-#define RPT_INTERVAL_INDEPENDENT             6                      // in second
-#define RPT_UNITID                           354313U
+#define RPT_INTERVAL_SIMPLE                     5                       // in second
+#define RPT_INTERVAL_FULL                       20                      // in second
+#define RPT_INTERVAL_INDEPENDENT                6                      // in second
+#define RPT_UNITID                              354313U
 
 #define GMT_TIME                                7                       // Asia/Jakarta
 
@@ -82,7 +83,7 @@
 #define RPT_BIKE_FALLING                     BIT(1)
 #define RPT_BIKE_CRASHED                     BIT(2)
 #define RPT_KEYLESS_MISSING                  BIT(3)
-#define RPT_POWER_OFF                        BIT(4)
+#define RPT_INDEPENDENT                      BIT(4)
 #define RPT_BMS_DISCHARGE_OVER_CURRENT       BIT(30)
 #define RPT_BMS_CHARGE_OVER_CURRENT          BIT(31)
 #define RPT_BMS_SHORT_CIRCUIT                BIT(32)
@@ -132,6 +133,14 @@
 #define VCU_ODOMETER_MAX                        99999
 #define HMI_DRIVE_MODE_MAX                      3
 
+/* Exported enum ----------------------------------------------------------------*/
+typedef enum {
+  BMS_STATE_IDLE = 0,
+  BMS_STATE_DISCHARGE = 1,
+  BMS_STATE_CHARGE = 2,
+  BMS_STATE_FULL = 3
+} BMS_STATE;
+
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
   RTC_TimeTypeDef time;
@@ -177,13 +186,18 @@ typedef struct {
   } hmi2;
   struct {
     uint8_t start;
-    uint8_t state;
+    BMS_STATE state;
     struct {
       uint64_t id;
       float voltage;
       float current;
       float soc;
       float temperature;
+      struct {
+        uint8_t charge;
+        uint8_t discharge;
+        uint8_t idle;
+      } state;
     } pack[2];
   } bms;
 } db_t;

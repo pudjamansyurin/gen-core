@@ -85,7 +85,11 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
   //  // debugging
   //  if (status == HAL_OK) {
   //    LOG_Str("\n[TX] ");
-  //    LOG_Hex32(tx->header.StdId);
+  //    if (tx->header.IDE == CAN_ID_STD) {
+  //      LOG_Hex32(tx->header.StdId);
+  //    } else {
+  //      LOG_Hex32(tx->header.ExtId);
+  //    }
   //    LOG_Str(" => ");
   //    if (tx->header.RTR == CAN_RTR_DATA) {
   //      LOG_BufHex((char*) &(tx->data), sizeof(tx->data));
@@ -115,7 +119,7 @@ uint32_t CANBUS_ReadID(void) {
   if (CB.rx.header.IDE == CAN_ID_STD) {
     return CB.rx.header.StdId;
   }
-  return CB.rx.header.ExtId;
+  return _R(CB.rx.header.ExtId, 20);
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {

@@ -63,18 +63,18 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   // set message
   CB.tx.data.u8[0] = sw->list[SW_K_ABS].state;
   // FIXME: handle me with real data
-  CB.tx.data.u8[0] |= BSL(db->hmi1.status.mirroring, 1);
-  CB.tx.data.u8[0] |= BSL(sw->list[SW_K_LAMP].state, 2);
-  CB.tx.data.u8[0] |= BSL(1, 3);
-  CB.tx.data.u8[0] |= BSL(iStatus.temperature, 4);
-  CB.tx.data.u8[0] |= BSL(iStatus.finger, 5);
-  CB.tx.data.u8[0] |= BSL(iStatus.keyless, 6);
-  CB.tx.data.u8[0] |= BSL(db->hmi1.status.daylight, 7);
+  CB.tx.data.u8[0] |= _L(db->hmi1.status.mirroring, 1);
+  CB.tx.data.u8[0] |= _L(sw->list[SW_K_LAMP].state, 2);
+  CB.tx.data.u8[0] |= _L(1, 3);
+  CB.tx.data.u8[0] |= _L(iStatus.temperature, 4);
+  CB.tx.data.u8[0] |= _L(iStatus.finger, 5);
+  CB.tx.data.u8[0] |= _L(iStatus.keyless, 6);
+  CB.tx.data.u8[0] |= _L(db->hmi1.status.daylight, 7);
 
   // sein value
   CB.tx.data.u8[1] = iSeinLeft;
-  CB.tx.data.u8[1] |= BSL(iSeinRight, 1);
-  CB.tx.data.u8[1] |= BSL(db->hmi2.shutdown, 2);
+  CB.tx.data.u8[1] |= _L(iSeinRight, 1);
+  CB.tx.data.u8[1] |= _L(db->hmi2.shutdown, 2);
   CB.tx.data.u8[2] = db->vcu.signal_percent;
 
   // odometer
@@ -140,12 +140,12 @@ uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
 
   // set message
   CB.tx.data.u8[0] = runner->mode.sub.val[SW_M_DRIVE];
-  CB.tx.data.u8[0] |= BSL(runner->mode.sub.val[SW_M_TRIP], 2);
-  CB.tx.data.u8[0] |= BSL(runner->mode.sub.val[SW_M_REPORT], 3);
-  CB.tx.data.u8[0] |= BSL(runner->mode.val, 4);
+  CB.tx.data.u8[0] |= _L(runner->mode.sub.val[SW_M_TRIP], 2);
+  CB.tx.data.u8[0] |= _L(runner->mode.sub.val[SW_M_REPORT], 3);
+  CB.tx.data.u8[0] |= _L(runner->mode.val, 4);
 
   // Send Show/Hide flag
-  CB.tx.data.u8[0] |= BSL(iHide, 6);
+  CB.tx.data.u8[0] |= _L(iHide, 6);
 
   CB.tx.data.u8[1] = runner->mode.sub.report[SW_M_REPORT_RANGE];
   CB.tx.data.u8[2] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
@@ -167,10 +167,10 @@ uint8_t CANT_VCU_TripMode(uint32_t *trip) {
   return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CANT_BMS_StateSetting(db_t *db) {
+uint8_t CANT_BMS_StateSetting(uint8_t start, BMS_STATE state) {
   // set message
-  CB.tx.data.u8[0] = db->bms.start;
-  CB.tx.data.u8[0] |= BSL(db->bms.state, 1);
+  CB.tx.data.u8[0] = start;
+  CB.tx.data.u8[0] |= _L(state, 1);
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_BMS_STATE_SETTING, 1);
@@ -183,41 +183,48 @@ void CANR_BMS_Param1(db_t *db) {
   db->bms.pack[0].voltage = CB.rx.data.u16[0] * 0.001;
   db->bms.pack[0].current = (CB.rx.data.u16[1] * 0.01) + 50;
   db->bms.pack[0].soc = CB.rx.data.u16[2];
-  db->bms.pack[0].temperature = CB.rx.data.u16[3];
+  db->bms.pack[0].temperature = CB.rx.data.u16[3] * 0.1;
+  // read the id
+  db->bms.pack[0].id = CB.rx.header.ExtId & 0xFFFFF;
 }
 
 void CANR_BMS_Param2(db_t *db) {
-  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_CURRENT, BBR(CB.rx.data.u8[6], 0));
-  RPT_SetEvent(RPT_BMS_CHARGE_OVER_CURRENT, BBR(CB.rx.data.u8[6], 1));
-  RPT_SetEvent(RPT_BMS_SHORT_CIRCUIT, BBR(CB.rx.data.u8[6], 2));
-  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_TEMPERATURE, BBR(CB.rx.data.u8[6], 3));
-  RPT_SetEvent(RPT_BMS_DISCHARGE_UNDER_TEMPERATURE, BBR(CB.rx.data.u8[6], 4));
-  RPT_SetEvent(RPT_BMS_CHARGE_OVER_TEMPERATURE, BBR(CB.rx.data.u8[6], 5));
-  RPT_SetEvent(RPT_BMS_CHARGE_UNDER_TEMPERATURE, BBR(CB.rx.data.u8[6], 6));
-  RPT_SetEvent(RPT_BMS_UNDER_VOLTAGE, BBR(CB.rx.data.u8[6], 7));
-  RPT_SetEvent(RPT_BMS_OVER_VOLTAGE, BBR(CB.rx.data.u8[7], 0));
-  RPT_SetEvent(RPT_BMS_OVER_DISCHARGE_CAPACITY, BBR(CB.rx.data.u8[7], 1));
-  RPT_SetEvent(RPT_BMS_UNBALANCE, BBR(CB.rx.data.u8[7], 2));
-  RPT_SetEvent(RPT_BMS_SYSTEM_FAILURE, BBR(CB.rx.data.u8[7], 3));
-}
+  RPT_SetEvent(RPT_BMS_SHORT_CIRCUIT, _R1(CB.rx.data.u8[6], 0));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_CURRENT, _R1(CB.rx.data.u8[6], 1));
+  RPT_SetEvent(RPT_BMS_CHARGE_OVER_CURRENT, _R1(CB.rx.data.u8[6], 2));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_TEMPERATURE, _R1(CB.rx.data.u8[6], 3));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_UNDER_TEMPERATURE, _R1(CB.rx.data.u8[6], 4));
+  RPT_SetEvent(RPT_BMS_CHARGE_OVER_TEMPERATURE, _R1(CB.rx.data.u8[6], 5));
+  RPT_SetEvent(RPT_BMS_CHARGE_UNDER_TEMPERATURE, _R1(CB.rx.data.u8[6], 6));
+  RPT_SetEvent(RPT_BMS_UNBALANCE, _R1(CB.rx.data.u8[6], 7));
+  RPT_SetEvent(RPT_BMS_UNDER_VOLTAGE, _R1(CB.rx.data.u8[7], 0));
+  RPT_SetEvent(RPT_BMS_OVER_VOLTAGE, _R1(CB.rx.data.u8[7], 1));
+  RPT_SetEvent(RPT_BMS_OVER_DISCHARGE_CAPACITY, _R1(CB.rx.data.u8[7], 2));
+  RPT_SetEvent(RPT_BMS_SYSTEM_FAILURE, _R1(CB.rx.data.u8[7], 3));
 
-void CANR_BMS_BatteryID(db_t *db) {
-  db->bms.pack[0].id = CB.rx.data.u64;
+  // read state
+  db->bms.pack[0].state.charge = _R1(CB.rx.data.u8[7], 4);
+  db->bms.pack[0].state.discharge = _R1(CB.rx.data.u8[7], 5);
+  db->bms.pack[0].state.idle = _R1(CB.rx.data.u8[7], 6);
+
+  // save state
+  db->bms.state = _L(db->bms.pack[0].state.charge, 1) | db->bms.pack[0].state.discharge;
+  db->bms.start = 1;
 }
 
 void CANR_MCU_Dummy(db_t *db) {
   uint32_t DB_MCU_RPM;
 
-  // read message
+// read message
   DB_MCU_RPM = CB.rx.data.s64;
-  // convert RPM to Speed
+// convert RPM to Speed
   db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
-  // convert Speed to Volume
+// convert Speed to Volume
   db->vcu.volume = db->vcu.speed * 100 / MCU_SPEED_MAX;
 }
 
 void CANR_HMI2(db_t *db) {
-  // read message
-  db->hmi1.status.mirroring = BBR(CB.rx.data.u8[0], 0);
+// read message
+  db->hmi1.status.mirroring = _R1(CB.rx.data.u8[0], 0);
 }
 

@@ -230,6 +230,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   osMailQDef(GpsMail, 1, gps_t);
+
   GpsMailHandle = osMailCreate(osMailQ(GpsMail), NULL);
 
   osMailQDef(CommandMail, 1, command_t);
@@ -246,7 +247,7 @@ int main(void)
   /* Create the thread(s) */
   /* definition and creation of IotTask */
   osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-//  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
+  //  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
 
   /* definition and creation of GyroTask */
   osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
@@ -1707,8 +1708,8 @@ void StartReporterTask(const void *argument)
 
   // Init things before reporter capture
   // get current state
-  DB.vcu.independent = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-  RPT_SetEvent(RPT_POWER_OFF, !DB.vcu.independent);
+  DB.vcu.independent = !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
+  RPT_SetEvent(RPT_INDEPENDENT, DB.vcu.independent);
 
   // FIXME: create master thread
   // ONE-TIME configurations:
@@ -1813,16 +1814,16 @@ void StartCanRxTask(const void *argument)
     // check if has new can message
     xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
 
-    // debugging
-    LOG_Str("\n[RX] ");
-    LOG_Hex32(CB.rx.header.StdId);
-    LOG_Str(" <= ");
-    if (CB.rx.header.RTR == CAN_RTR_DATA) {
-      LOG_BufHex(CB.rx.data.CHAR, sizeof(CB.rx.data.CHAR));
-    } else {
-      LOG_Str("RTR");
-    }
-    LOG_Enter();
+    //    // debugging
+    //    LOG_Str("\n[RX] ");
+    //    LOG_Hex32(CANBUS_ReadID());
+    //    LOG_Str(" <= ");
+    //    if (CB.rx.header.RTR == CAN_RTR_DATA) {
+    //      LOG_BufHex(CB.rx.data.CHAR, sizeof(CB.rx.data.CHAR));
+    //    } else {
+    //      LOG_Str("RTR");
+    //    }
+    //    LOG_Enter();
 
     // proceed event
     if (notif & EVENT_CAN_RX_IT) {
@@ -2011,8 +2012,8 @@ void StartGeneralTask(const void *argument)
       // BMS Power IRQ
       if (notif & EVENT_GENERAL_BMS_IRQ) {
         // get current state
-        DB.vcu.independent = HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-        RPT_SetEvent(RPT_POWER_OFF, !DB.vcu.independent);
+        DB.vcu.independent = !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
+        RPT_SetEvent(RPT_INDEPENDENT, DB.vcu.independent);
       }
       // KNOB IRQ
       if (notif & EVENT_GENERAL_KNOB_IRQ) {
@@ -2062,7 +2063,16 @@ void StartCanTxTask(const void *argument)
     CANT_VCU_RTC(&(DB.vcu.rtc.timestamp));
     CANT_VCU_SelectSet(&(SW.runner));
     CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
-//    CANT_BMS_StateSetting(&DB);
+
+    // Turn ON BMS
+    if (!DB.bms.start) {
+      CANT_BMS_StateSetting(1, BMS_STATE_IDLE);
+    } else {
+      // already turned on, set state
+      if (DB.bms.state != BMS_STATE_DISCHARGE) {
+        CANT_BMS_StateSetting(1, BMS_STATE_DISCHARGE);
+      }
+    }
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(250));
