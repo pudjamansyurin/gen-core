@@ -121,8 +121,8 @@ void RPT_Capture(FRAME_TYPE frame) {
     // BMS data
     for (uint8_t i = 0; i < BMS_COUNT; i++) {
       REPORT.data.req.bms.pack[i].id = DB.bms.pack[i].id;
-      REPORT.data.req.bms.pack[i].voltage = DB.bms.pack[i].voltage * 1000;
-      REPORT.data.req.bms.pack[i].current = (DB.bms.pack[i].current - 50) * 100;
+      REPORT.data.req.bms.pack[i].voltage = DB.bms.pack[i].voltage * 100;
+      REPORT.data.req.bms.pack[i].current = (DB.bms.pack[i].current + 50) * 100;
     }
 
     // Add more (if full frame)
@@ -141,7 +141,7 @@ void RPT_Capture(FRAME_TYPE frame) {
       // BMS data
       for (uint8_t i = 0; i < BMS_COUNT; i++) {
         REPORT.data.opt.bms.pack[i].soc = DB.bms.pack[i].soc;
-        REPORT.data.opt.bms.pack[i].temperature = DB.bms.pack[i].temperature * 10;
+        REPORT.data.opt.bms.pack[i].temperature = DB.bms.pack[i].temperature + 40;
       }
     }
   }

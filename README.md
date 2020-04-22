@@ -39,8 +39,9 @@
 - [x] Use double buffering for ADC-DMA (HT & TC)
 - [ ] Fix duplicate variables
 - [ ] Sync variable name for HMI1 and VCU
-- [ ] Fix Odometer estimation based on GPS speed
+- [x] Fix Odometer estimation based on GPS speed
 - [ ] Make routine to check SIMCOM internet package
+- [ ] Handle TCP Closed backend, it should not auto reset
 - [ ] Simplify SIMCOM library
 - [ ] Calibrate the ADC of Backup Battery Monitor
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
@@ -53,8 +54,6 @@
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Implement this UBX library:
   - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
-- [ ] Street View Locations and Point-of-View (POV)
-  - https://developers.google.com/maps/documentation/javascript/streetview?hl=id
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 

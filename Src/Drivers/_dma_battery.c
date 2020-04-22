@@ -61,8 +61,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
   // calculate the moving average
   temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
   // change to battery value
-  DB.vcu.bat_voltage = temp;
-//  DB.vcu.bat_voltage = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
+  DB.vcu.bat_voltage = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
 }
 
 /* Private functions implementation ---------------------------------------------*/
