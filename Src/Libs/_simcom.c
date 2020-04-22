@@ -54,7 +54,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   SIMCOM_RESULT p;
-  uint8_t step = 1;
+  //  uint8_t step = 1;
   static uint8_t init = 1;
 
   do {
@@ -394,14 +394,14 @@ void Simcom_SetState(SIMCOM_STATE state) {
 
     // delay on failure
     if (p != SIM_RESULT_OK) {
-      //      if (step > 3) {
+      //      if (step++ > 3) {
       //        step = 1;
       //        LOG_StrLn("Simcom:Delayed");
       //        osDelay(10 * 1000);
+      //      } else {
+      //        osDelay(1000);
       //      }
-
       osDelay(1000);
-      //      step++;
     }
 
     init = 0;
@@ -530,50 +530,6 @@ SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header) {
   return p;
 }
 
-SIMCOM_RESULT SIM_BatteryCharge(void) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
-
-  SIMCOM_RESULT p = SIM_RESULT_ERROR;
-  uint8_t len = 0, cnt;
-  char *str, *prefix = "+CBC: ", *cmd = "AT+CBC\r";
-
-  if (SIM.state >= SIM_STATE_READY) {
-    // get local timestamp (from base station)
-    if (Simcom_Cmd(cmd, 500, 1) == SIM_RESULT_OK) {
-      // get pointer reference
-      str = strstr(SIMCOM_UART_RX, prefix);
-
-      //      if (str != NULL) {
-      //        str += strlen(prefix);
-      //        // get date part
-      //        timestamp->date.Year = _ParseNumber(&str[0], &cnt);
-      //        len += cnt + 1;
-      //        timestamp->date.Month = _ParseNumber(&str[len], &cnt);
-      //        len += cnt + 1;
-      //        timestamp->date.Date = _ParseNumber(&str[len], &cnt);
-      //        // get time part
-      //        len += cnt + 1;
-      //        timestamp->time.Hours = _ParseNumber(&str[len], &cnt);
-      //        len += cnt + 1;
-      //        timestamp->time.Minutes = _ParseNumber(&str[len], &cnt);
-      //        len += cnt + 1;
-      //        timestamp->time.Seconds = _ParseNumber(&str[len], NULL);
-      //
-      //        // check is carrier timestamp valid
-      //        if (timestamp->date.Year >= VCU_BUILD_YEAR) {
-      //          // set weekday to default
-      //          timestamp->date.WeekDay = RTC_WEEKDAY_MONDAY;
-      //
-      //          p = SIM_RESULT_OK;
-      //        }
-      //      }
-    }
-  }
-
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
-  return p;
-
-}
 SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 

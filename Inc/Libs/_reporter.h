@@ -118,6 +118,7 @@ typedef struct __attribute__((packed)) {
 
 /* Public functions prototype ------------------------------------------------*/
 void RPT_Init(void);
+void RPT_BMS_Events(uint16_t flag);
 void RPT_SetEvents(uint64_t value);
 void RPT_SetEvent(uint64_t event_id, uint8_t value);
 void RPT_Capture(FRAME_TYPE frame);

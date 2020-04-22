@@ -41,3 +41,53 @@ db_t DB = {
     },
     .bms = { 0 }
 };
+
+/* Public functions implementation --------------------------------------------*/
+void DB_Init(void) {
+  DB_BMS_ResetIndexes();
+}
+
+uint8_t DB_BMS_GetIndex(uint32_t id) {
+  uint8_t i;
+
+  // find index (if already exist)
+  for (i = 0; i < BMS_COUNT; i++) {
+    if (DB.bms.pack[i].id == id) {
+      return i;
+    }
+  }
+
+  // finx index (if not exist)
+  for (i = 0; i < BMS_COUNT; i++) {
+    if (DB.bms.pack[i].id == BMS_NULL_INDEX) {
+      return i;
+    }
+  }
+
+  // force replace first index (if already full)
+  return 0;
+}
+
+uint8_t DB_BMS_CheckRun(uint8_t state) {
+  return (DB.bms.pack[0].started == state) && (DB.bms.pack[1].started == state);
+}
+
+uint8_t DB_BMS_CheckState(BMS_STATE state) {
+  return (DB.bms.pack[0].state == state) && (DB.bms.pack[1].state == state);
+}
+
+void DB_BMS_ResetIndexes(void) {
+  uint8_t i;
+
+  // find index (if already exist)
+  for (i = 0; i < BMS_COUNT; i++) {
+    DB.bms.pack[i].id = BMS_NULL_INDEX;
+    DB.bms.pack[i].voltage = 0;
+    DB.bms.pack[i].current = 0;
+    DB.bms.pack[i].soc = 0;
+    DB.bms.pack[i].temperature = 0;
+    DB.bms.pack[i].state = BMS_STATE_IDLE;
+    DB.bms.pack[i].started = 0;
+  }
+}
+

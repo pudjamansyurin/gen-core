@@ -167,7 +167,7 @@ uint8_t CANT_VCU_TripMode(uint32_t *trip) {
   return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CANT_BMS_StateSetting(uint8_t start, BMS_STATE state) {
+uint8_t CANT_BMS_Setting(uint8_t start, BMS_STATE state) {
   // set message
   CB.tx.data.u8[0] = start;
   CB.tx.data.u8[0] |= _L(state, 1);
@@ -180,51 +180,42 @@ uint8_t CANT_BMS_StateSetting(uint8_t start, BMS_STATE state) {
 
 /* ------------------------------------ READER ------------------------------------- */
 void CANR_BMS_Param1(db_t *db) {
-  db->bms.pack[0].voltage = CB.rx.data.u16[0] * 0.001;
-  db->bms.pack[0].current = (CB.rx.data.u16[1] * 0.01) + 50;
-  db->bms.pack[0].soc = CB.rx.data.u16[2];
-  db->bms.pack[0].temperature = CB.rx.data.u16[3] * 0.1;
+  uint8_t index = DB_BMS_GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
+
+  // read the content
+  db->bms.pack[index].voltage = CB.rx.data.u16[0] * 0.001;
+  db->bms.pack[index].current = (CB.rx.data.u16[1] * 0.01) + 50;
+  db->bms.pack[index].soc = CB.rx.data.u16[2];
+  db->bms.pack[index].temperature = CB.rx.data.u16[3] * 0.1;
+
   // read the id
-  db->bms.pack[0].id = CB.rx.header.ExtId & 0xFFFFF;
+  db->bms.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
+  db->bms.pack[index].started = 1;
 }
 
 void CANR_BMS_Param2(db_t *db) {
-  RPT_SetEvent(RPT_BMS_SHORT_CIRCUIT, _R1(CB.rx.data.u8[6], 0));
-  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_CURRENT, _R1(CB.rx.data.u8[6], 1));
-  RPT_SetEvent(RPT_BMS_CHARGE_OVER_CURRENT, _R1(CB.rx.data.u8[6], 2));
-  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_TEMPERATURE, _R1(CB.rx.data.u8[6], 3));
-  RPT_SetEvent(RPT_BMS_DISCHARGE_UNDER_TEMPERATURE, _R1(CB.rx.data.u8[6], 4));
-  RPT_SetEvent(RPT_BMS_CHARGE_OVER_TEMPERATURE, _R1(CB.rx.data.u8[6], 5));
-  RPT_SetEvent(RPT_BMS_CHARGE_UNDER_TEMPERATURE, _R1(CB.rx.data.u8[6], 6));
-  RPT_SetEvent(RPT_BMS_UNBALANCE, _R1(CB.rx.data.u8[6], 7));
-  RPT_SetEvent(RPT_BMS_UNDER_VOLTAGE, _R1(CB.rx.data.u8[7], 0));
-  RPT_SetEvent(RPT_BMS_OVER_VOLTAGE, _R1(CB.rx.data.u8[7], 1));
-  RPT_SetEvent(RPT_BMS_OVER_DISCHARGE_CAPACITY, _R1(CB.rx.data.u8[7], 2));
-  RPT_SetEvent(RPT_BMS_SYSTEM_FAILURE, _R1(CB.rx.data.u8[7], 3));
+  uint8_t index = DB_BMS_GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
 
-  // read state
-  db->bms.pack[0].state.charge = _R1(CB.rx.data.u8[7], 4);
-  db->bms.pack[0].state.discharge = _R1(CB.rx.data.u8[7], 5);
-  db->bms.pack[0].state.idle = _R1(CB.rx.data.u8[7], 6);
+  // save flag
+  db->bms.pack[index].flag = CB.rx.data.u16[3];
 
   // save state
-  db->bms.state = _L(db->bms.pack[0].state.charge, 1) | db->bms.pack[0].state.discharge;
-  db->bms.start = 1;
+  db->bms.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
 }
 
 void CANR_MCU_Dummy(db_t *db) {
   uint32_t DB_MCU_RPM;
 
-// read message
+  // read message
   DB_MCU_RPM = CB.rx.data.s64;
-// convert RPM to Speed
+  // convert RPM to Speed
   db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
-// convert Speed to Volume
+  // convert Speed to Volume
   db->vcu.volume = db->vcu.speed * 100 / MCU_SPEED_MAX;
 }
 
 void CANR_HMI2(db_t *db) {
-// read message
+  // read message
   db->hmi1.status.mirroring = _R1(CB.rx.data.u8[0], 0);
 }
 

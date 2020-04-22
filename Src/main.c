@@ -1400,18 +1400,6 @@ void StartCommandTask(const void *argument)
           }
           break;
 
-        case CMD_CODE_HMI2:
-          switch (hCommand->data.sub_code) {
-            case CMD_HMI2_SHUTDOWN:
-              DB.hmi2.shutdown = (uint8_t) hCommand->data.value;
-              break;
-
-            default:
-              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
-              break;
-          }
-          break;
-
         case CMD_CODE_REPORT:
           switch (hCommand->data.sub_code) {
             case CMD_REPORT_RTC:
@@ -1476,6 +1464,30 @@ void StartCommandTask(const void *argument)
           // handle response from finger-print module
           if (p != FINGERPRINT_OK) {
             RESPONSE.data.code = RESPONSE_STATUS_ERROR;
+          }
+          break;
+
+        case CMD_CODE_HMI2:
+          switch (hCommand->data.sub_code) {
+            case CMD_HMI2_SHUTDOWN:
+              DB.hmi2.shutdown = (uint8_t) hCommand->data.value;
+              break;
+
+            default:
+              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+              break;
+          }
+          break;
+
+        case CMD_CODE_BMS:
+          switch (hCommand->data.sub_code) {
+            case CMD_BMS_ON:
+              DB.bms.on = (uint8_t) hCommand->data.value;
+              break;
+
+            default:
+              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+              break;
           }
           break;
 
@@ -1704,6 +1716,7 @@ void StartReporterTask(const void *argument)
   //  gps_t *hGps = NULL;
 
   // reset report frame to default
+  DB_Init();
   RPT_Init();
 
   // Init things before reporter capture
@@ -1724,8 +1737,8 @@ void StartReporterTask(const void *argument)
       HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
     } else {
       // load from EEPROM
-      EEPROM_UnitID(EE_CMD_R, NULL);
-      EEPROM_Odometer(EE_CMD_R, NULL);
+      EEPROM_UnitID(EE_CMD_R, EE_NULL);
+      EEPROM_Odometer(EE_CMD_R, EE_NULL);
     }
   }
 
@@ -1805,7 +1818,7 @@ void StartReporterTask(const void *argument)
 void StartCanRxTask(const void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
-  extern canbus_t CB;
+  //  extern canbus_t CB;
   uint32_t notif;
 
   /* Infinite loop */
@@ -2064,15 +2077,25 @@ void StartCanTxTask(const void *argument)
     CANT_VCU_SelectSet(&(SW.runner));
     CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
 
-    // Turn ON BMS
-    if (!DB.bms.start) {
-      CANT_BMS_StateSetting(1, BMS_STATE_IDLE);
+    // Control BMS power
+    if (DB.bms.on) {
+      if (!DB_BMS_CheckRun(1) && !DB_BMS_CheckState(BMS_STATE_DISCHARGE)) {
+        CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
+      } else {
+        DB.bms.started = 1;
+      }
     } else {
-      // already turned on, set state
-      if (DB.bms.state != BMS_STATE_DISCHARGE) {
-        CANT_BMS_StateSetting(1, BMS_STATE_DISCHARGE);
+      if (!DB_BMS_CheckRun(0) && !DB_BMS_CheckState(BMS_STATE_IDLE)) {
+        CANT_BMS_Setting(0, BMS_STATE_IDLE);
+      } else {
+        // completely off
+        DB.bms.started = 0;
+        DB_BMS_ResetIndexes();
       }
     }
+    // Handle merged BMS parameter
+    DB.bms.flags = DB.bms.pack[0].flag | DB.bms.pack[1].flag;
+    RPT_BMS_Events(DB.bms.flags);
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(250));

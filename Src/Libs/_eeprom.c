@@ -10,7 +10,7 @@
 #include "_database.h"
 #include "_reporter.h"
 
-/* External variables ----------------------------------------------------------*/
+/* External variables ---------------------------------------------------------*/
 extern db_t DB;
 extern report_t REPORT;
 extern response_t RESPONSE;

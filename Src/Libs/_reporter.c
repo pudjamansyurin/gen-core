@@ -73,6 +73,21 @@ uint8_t RPT_ReadEvent(uint64_t event_id) {
   return _R8((REPORT.data.req.vcu.events_group & event_id), _BitPosition(event_id));
 }
 
+void RPT_BMS_Events(uint16_t flag) {
+  RPT_SetEvent(RPT_BMS_SHORT_CIRCUIT, _R1(flag, 0));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_CURRENT, _R1(flag, 1));
+  RPT_SetEvent(RPT_BMS_CHARGE_OVER_CURRENT, _R1(flag, 2));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_OVER_TEMPERATURE, _R1(flag, 3));
+  RPT_SetEvent(RPT_BMS_DISCHARGE_UNDER_TEMPERATURE, _R1(flag, 4));
+  RPT_SetEvent(RPT_BMS_CHARGE_OVER_TEMPERATURE, _R1(flag, 5));
+  RPT_SetEvent(RPT_BMS_CHARGE_UNDER_TEMPERATURE, _R1(flag, 6));
+  RPT_SetEvent(RPT_BMS_UNBALANCE, _R1(flag, 7));
+  RPT_SetEvent(RPT_BMS_UNDER_VOLTAGE, _R1(flag, 8));
+  RPT_SetEvent(RPT_BMS_OVER_VOLTAGE, _R1(flag, 9));
+  RPT_SetEvent(RPT_BMS_OVER_DISCHARGE_CAPACITY, _R1(flag, 10));
+  RPT_SetEvent(RPT_BMS_SYSTEM_FAILURE, _R1(flag, 11));
+}
+
 void RPT_Capture(FRAME_TYPE frame) {
   if (frame == FR_RESPONSE) {
     //Reconstruct the header

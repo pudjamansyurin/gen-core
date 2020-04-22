@@ -103,6 +103,7 @@
 #define CMD_CODE_AUDIO                          2
 #define CMD_CODE_FINGER                         3
 #define CMD_CODE_HMI2                           4
+#define CMD_CODE_BMS                            5
 
 // Command Sub-Code List
 #define CMD_GEN_INFO                            0
@@ -122,12 +123,17 @@
 
 #define CMD_HMI2_SHUTDOWN                       0
 
+#define CMD_BMS_ON                              0
+
 // Response Status List
 #define RESPONSE_STATUS_ERROR                   0
 #define RESPONSE_STATUS_OK                      1
 #define RESPONSE_STATUS_INVALID                 2
 
 // Others Parameters
+#define BMS_COUNT                               2
+#define BMS_NULL_INDEX                          0xFFFFFFFF
+#define BMS_ID_MASK                             0xFFFFF
 #define MCU_SPEED_MAX                           200
 #define MCU_RPM_MAX                             99999
 #define VCU_ODOMETER_MAX                        99999
@@ -185,21 +191,27 @@ typedef struct {
     uint8_t shutdown;
   } hmi2;
   struct {
-    uint8_t start;
-    BMS_STATE state;
+    uint8_t on;
+    uint8_t started;
+    uint16_t flags;
     struct {
-      uint64_t id;
+      uint32_t id;
       float voltage;
       float current;
       float soc;
       float temperature;
-      struct {
-        uint8_t charge;
-        uint8_t discharge;
-        uint8_t idle;
-      } state;
+      uint16_t flag;
+      BMS_STATE state;
+      uint8_t started;
     } pack[2];
   } bms;
 } db_t;
+
+/* Public functions implementation --------------------------------------------*/
+void DB_Init(void);
+uint8_t DB_BMS_GetIndex(uint32_t id);
+uint8_t DB_BMS_CheckRun(uint8_t state);
+uint8_t DB_BMS_CheckState(BMS_STATE state);
+void DB_BMS_ResetIndexes(void);
 
 #endif /* DATABASE_H_ */

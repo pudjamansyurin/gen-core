@@ -16,6 +16,8 @@
 #define VADDR_ODOMETER              0x000
 #define VADDR_UNITID                VADDR_ODOMETER + sizeof(uint32_t)
 
+#define EE_NULL                     0
+
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
   EE_CMD_R = 0,

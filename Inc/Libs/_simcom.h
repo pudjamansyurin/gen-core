@@ -78,7 +78,6 @@ SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
 SIMCOM_RESULT Simcom_ProcessCommand(command_t *command);
 SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header);
 
-SIMCOM_RESULT SIM_BatteryCharge(void);
 SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent);
 SIMCOM_RESULT SIM_Clock(timestamp_t *timestamp);
 
