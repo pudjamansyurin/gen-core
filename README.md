@@ -37,8 +37,9 @@
 - [x] Handle DTR pin for SIM5300e (sleep mode) 
 - [x] Use hierarchy algorithm to handle simcom error 
 - [x] Use double buffering for ADC-DMA (HT & TC)
+- [ ] Fix moving average divider before full
 - [ ] Fix duplicate variables
-- [ ] Sync variable name for HMI1 and VCU
+- [ ] Sync variable name for HMI-1 and VCU
 - [x] Fix Odometer estimation based on GPS speed
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Handle TCP Closed backend, it should not auto reset
@@ -52,6 +53,7 @@
 - [ ] Scale down "BMS Voltage", and set warning on 20% value.
 - [ ] RTOS: add master thread
 - [ ] RTOS: give timeout for any osWaitForever
+- [ ] Handle NO Driver ID when vehicle OFF
 - [ ] Implement this UBX library:
   - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
 
@@ -110,6 +112,9 @@
 - [ ] Change R23 value to 30k
 - [ ] Change C30, C31, C70, C71 value to 20pf
 - [ ] Change Q3, Q5, Q6, Q9, Q13 to TRANSISTOR
+- [ ] Add buzzer & the GPIO pin
+- [ ] Add microphone to ~~SIMCOM pin~~ VCU
+- [ ] Handle "different signal" trace properly (CAN, I2S, MIC_N&P)
 - [ ] The Power Trace should be wider to fix voltage drop
   - [ ] Trace between B+ to SIMCOM's VBAT at least 60mil
 - [ ] CAN Module:

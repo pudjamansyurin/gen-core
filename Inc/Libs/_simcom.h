@@ -23,6 +23,8 @@
 #define SIMCOM_RSP_IPD                  "+IPD,"
 #define SIMCOM_CMD_BOOT 				"AT\r"
 
+#define SIMCOM_UPLOAD_RETRY             3
+
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
   SIM_RESULT_NACK = -4,
@@ -49,7 +51,6 @@ typedef enum {
 typedef struct {
   SIMCOM_STATE state;
   uint8_t uploading;
-  uint8_t sleep;
   struct {
     char CIPSTART[200];
     char CSTT[75];
@@ -73,7 +74,7 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Sleep(uint8_t state);
 void Simcom_SetState(SIMCOM_STATE state);
-SIMCOM_RESULT Simcom_Upload(char *message, uint16_t length);
+SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry);
 SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
 SIMCOM_RESULT Simcom_ProcessCommand(command_t *command);
 SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header);

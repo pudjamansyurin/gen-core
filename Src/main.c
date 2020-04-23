@@ -1103,7 +1103,6 @@ void StartIotTask(const void *argument)
 {
   /* USER CODE BEGIN 5 */
   osEvent evt;
-  command_t *hCommand = NULL;
   report_t *hReport = NULL;
   response_t *hResponse = NULL;
   uint8_t size, retry;
@@ -1122,10 +1121,10 @@ void StartIotTask(const void *argument)
   for (;;) {
     _DebugTask("IoT");
     // Set default
-    p = SIM_RESULT_ACK;
+    p = SIM_RESULT_OK;
 
     // response frame
-    if (p == SIM_RESULT_ACK) {
+    if (p == SIM_RESULT_OK) {
       // check report log
       if (hResponse == NULL) {
         evt = osMailGet(ResponseMailHandle, 0);
@@ -1142,58 +1141,24 @@ void StartIotTask(const void *argument)
         do {
           // Send to server
           Simcom_SetState(SIM_STATE_SERVER_ON);
-          p = Simcom_Upload((char*) hResponse, size + hResponse->header.size);
+          p = Simcom_Upload(hResponse, size + hResponse->header.size, &retry);
 
-          // handle SIMCOM result
-          if (p == SIM_RESULT_ACK) {
-            // validate ACK
-            if (Simcom_ProcessACK(&(hResponse->header))) {
-              // Release back
-              osMailFree(ResponseMailHandle, hResponse);
-              hResponse = NULL;
+          // Release back
+          if (p == SIM_RESULT_OK) {
+            osMailFree(ResponseMailHandle, hResponse);
+            hResponse = NULL;
 
-            } else {
-              p = SIM_RESULT_NACK;
-            }
-          } else {
-            // handle comm. failure
-            if (SIM.state == SIM_STATE_SERVER_ON) {
-              if (p != SIM_RESULT_NACK) {
-                // handle failure
-                switch (retry++) {
-                  case 1:
-                    // try closing the IP
-                    SIM.state = SIM_STATE_INTERNET_ON;
-                    Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
-
-                    break;
-                  case 2:
-                    // try closing the PDP
-                    SIM.state = SIM_STATE_PDP_ON;
-                    Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
-
-                    break;
-                  case 3:
-                    // try reset the module
-                    SIM.state = SIM_STATE_DOWN;
-                    retry = 1;
-
-                    break;
-                  default:
-                    break;
-                }
-              }
-            }
+            break;
           }
 
           // delay
           osDelay(500);
-        } while ((p == SIM_RESULT_NACK || p == SIM_RESULT_TIMEOUT) && hResponse);
+        } while (p != SIM_RESULT_OK && retry <= SIMCOM_UPLOAD_RETRY);
       }
     }
 
     // report frame
-    if (p == SIM_RESULT_ACK) {
+    if (p == SIM_RESULT_OK) {
       // check report log
       if (hReport == NULL) {
         evt = osMailGet(ReportMailHandle, 0);
@@ -1214,66 +1179,22 @@ void StartIotTask(const void *argument)
           hReport->header.crc = CRC_Calculate8(
               (uint8_t*) &(hReport->header.size),
               hReport->header.size + sizeof(hReport->header.size), 1);
+
           // Send to server
           Simcom_SetState(SIM_STATE_SERVER_ON);
-          p = Simcom_Upload((char*) hReport, size + hReport->header.size);
+          p = Simcom_Upload(hReport, size + hReport->header.size, &retry);
 
-          // handle SIMCOM result
-          if (p == SIM_RESULT_ACK) {
-            // validate ACK
-            if (Simcom_ProcessACK(&(hReport->header))) {
-              // Release back
-              osMailFree(ReportMailHandle, hReport);
-              hReport = NULL;
+          // Release back
+          if (p == SIM_RESULT_OK) {
+            osMailFree(ReportMailHandle, hReport);
+            hReport = NULL;
 
-              // handle COMMAND (if any)
-              // Allocate memory
-              hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
-              // handle command (if any)
-              if (Simcom_ProcessCommand(hCommand)) {
-                osMailPut(CommandMailHandle, hCommand);
-              } else {
-                osMailFree(CommandMailHandle, hCommand);
-              }
-
-              break;
-            } else {
-              p = SIM_RESULT_NACK;
-            }
-          } else {
-            // handle comm. failure
-            if (SIM.state == SIM_STATE_SERVER_ON) {
-              if (p != SIM_RESULT_NACK) {
-                // handle failure
-                switch (retry++) {
-                  case 1:
-                    // try closing the IP
-                    SIM.state = SIM_STATE_INTERNET_ON;
-                    Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
-
-                    break;
-                  case 2:
-                    // try closing the PDP
-                    SIM.state = SIM_STATE_PDP_ON;
-                    Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
-
-                    break;
-                  case 3:
-                    // try reset the module
-                    SIM.state = SIM_STATE_DOWN;
-                    retry = 1;
-
-                    break;
-                  default:
-                    break;
-                }
-              }
-            }
+            break;
           }
 
           // delay
           osDelay(500);
-        } while ((p == SIM_RESULT_NACK || p == SIM_RESULT_TIMEOUT) && hReport);
+        } while (p != SIM_RESULT_OK && retry <= SIMCOM_UPLOAD_RETRY);
       }
     }
 
@@ -2082,19 +2003,20 @@ void StartCanTxTask(const void *argument)
       if (!DB_BMS_CheckRun(1) && !DB_BMS_CheckState(BMS_STATE_DISCHARGE)) {
         CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
       } else {
+        // completely ON
         DB.bms.started = 1;
       }
     } else {
       if (!DB_BMS_CheckRun(0) || !DB_BMS_CheckState(BMS_STATE_IDLE)) {
         CANT_BMS_Setting(0, BMS_STATE_IDLE);
       } else {
-        // completely off
+        // completely OFF
         DB.bms.started = 0;
       }
       DB_BMS_ResetIndexes();
     }
     // Handle merged BMS parameter
-    DB.bms.flags = DB.bms.pack[0].flag | DB.bms.pack[1].flag;
+    DB_BMS_MergeFlags();
     RPT_BMS_Events(DB.bms.flags);
 
     // Periodic interval

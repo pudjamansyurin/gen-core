@@ -32,7 +32,7 @@
 
 //#define NET_SERVER_PORT                         5044
 #define NET_SERVER_IP                           "pujakusumae-31974.portmap.io"
-#define NET_SERVER_PORT                         31974
+#define NET_SERVER_PORT                         31975
 //#define NET_SERVER_IP                           "0.tcp.ngrok.io"
 //#define NET_SERVER_PORT                         18123
 #define NET_APN                                 "3gprs"                 // "telkomsel"
@@ -52,7 +52,7 @@
 
 #define RPT_INTERVAL_SIMPLE                     5                       // in second
 #define RPT_INTERVAL_FULL                       20                      // in second
-#define RPT_INTERVAL_INDEPENDENT                60                      // in second
+#define RPT_INTERVAL_INDEPENDENT                6                       // in second
 #define RPT_UNITID                              354313U
 
 #define GMT_TIME                                7                       // Asia/Jakarta
@@ -176,7 +176,7 @@ typedef struct {
 typedef struct {
   struct {
     uint8_t independent;
-    uint32_t interval;
+    uint8_t interval;
     uint8_t volume;
     uint16_t bat_voltage;
     uint8_t signal_percent;
@@ -203,7 +203,7 @@ typedef struct {
       uint16_t flag;
       BMS_STATE state;
       uint8_t started;
-    } pack[2];
+    } pack[BMS_COUNT];
   } bms;
 } db_t;
 
@@ -212,6 +212,7 @@ void DB_Init(void);
 uint8_t DB_BMS_GetIndex(uint32_t id);
 uint8_t DB_BMS_CheckRun(uint8_t state);
 uint8_t DB_BMS_CheckState(BMS_STATE state);
+void DB_BMS_MergeFlags(void);
 void DB_BMS_ResetIndexes(void);
 
 #endif /* DATABASE_H_ */

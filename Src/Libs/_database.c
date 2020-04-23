@@ -69,18 +69,36 @@ uint8_t DB_BMS_GetIndex(uint32_t id) {
 }
 
 uint8_t DB_BMS_CheckRun(uint8_t state) {
-  return (DB.bms.pack[0].started == state) && (DB.bms.pack[1].started == state);
+  for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    if (DB.bms.pack[i].started != state) {
+      return 0;
+    }
+  }
+  return 1;
 }
 
 uint8_t DB_BMS_CheckState(BMS_STATE state) {
-  return (DB.bms.pack[0].state == state) && (DB.bms.pack[1].state == state);
+  for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    if (DB.bms.pack[i].state != state) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+void DB_BMS_MergeFlags(void) {
+  uint16_t flags = 0;
+
+  for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    flags |= DB.bms.pack[i].flag;
+  }
+
+  DB.bms.flags = flags;
 }
 
 void DB_BMS_ResetIndexes(void) {
-  uint8_t i;
-
   // find index (if already exist)
-  for (i = 0; i < BMS_COUNT; i++) {
+  for (uint8_t i = 0; i < BMS_COUNT; i++) {
     DB.bms.pack[i].id = BMS_NULL_INDEX;
     DB.bms.pack[i].voltage = 0;
     DB.bms.pack[i].current = 0;

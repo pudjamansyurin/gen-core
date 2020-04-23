@@ -42,8 +42,7 @@ static SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res
 void Simcom_Sleep(uint8_t state) {
   HAL_GPIO_WritePin(INT_NET_DTR_GPIO_Port, INT_NET_DTR_Pin, state);
   osDelay(50);
-  // save it
-  SIM.sleep = state;
+
   // debug
   //  LOG_Str("Simcom:Sleep = ");
   //  LOG_Int(state);
@@ -362,30 +361,32 @@ void Simcom_SetState(SIMCOM_STATE state) {
 
         break;
       case SIM_STATE_INTERNET_ON:
-        // ============ SOCKET CONFIGURAITON
-        //        // Check IP Status
-        //        if (p == SIM_RESULT_OK) {
-        //          Simcom_Command("AT+CIPSTATUS\r", 500, 1, SIMCOM_RSP_NONE);
-        //        }
+        // ============ SOCKET CONFIGURATION
         // Establish connection with server
         if (p == SIM_RESULT_OK) {
           p = Simcom_Command(SIM.cmd.CIPSTART, 20000, 1, "CONNECT");
           // check either connection ok / error
           if (p == SIM_RESULT_OK) {
-            p = Simcom_Response("CONNECT OK");
+            p = Simcom_Response("CONNECT OK") ||
+                Simcom_Response("ALREADY CONNECT") ||
+                Simcom_Response("STATE: TCP CLOSED");
           }
         }
+
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
           SIM.state++;
         } else {
-          // Close IP
-          Simcom_Cmd("AT+CIPCLOSE\r", 1000, 1);
-
           if (SIM.state == SIM_STATE_INTERNET_ON) {
+            // Close IP
+            Simcom_Cmd("AT+CIPCLOSE\r", 1000, 1);
+
             SIM.state--;
           }
         }
+
+        break;
+      case SIM_STATE_SERVER_ON:
 
         break;
       default:
@@ -397,7 +398,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
       //      if (step++ > 3) {
       //        step = 1;
       //        LOG_StrLn("Simcom:Delayed");
-      //        osDelay(10 * 1000);
+      //        osDelay(DB.vcu.interval * 1000);
       //      } else {
       //        osDelay(1000);
       //      }
@@ -410,15 +411,17 @@ void Simcom_SetState(SIMCOM_STATE state) {
   osRecursiveMutexRelease(SimcomRecMutexHandle);
 }
 
-SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
+SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
   osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint32_t tick;
   char str[20];
+  command_t *hCommand = NULL;
+  report_header_t *hHeader = NULL;
 
   // combine the size
-  sprintf(str, "AT+CIPSEND=%d\r", payload_length);
+  sprintf(str, "AT+CIPSEND=%d\r", size);
 
   if (SIM.state >= SIM_STATE_SERVER_ON) {
     // wake-up the SIMCOM
@@ -429,7 +432,7 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
     p = Simcom_Command(str, 5000, 1, SIMCOM_RSP_SEND);
     if (p == SIM_RESULT_OK) {
       // send the payload
-      p = Simcom_SendIndirect(payload, payload_length, 1, 30000, SIMCOM_RSP_SENT, 1);
+      p = Simcom_SendIndirect((char*) payload, size, 1, 30000, SIMCOM_RSP_SENT, 1);
       // wait for ACK/NACK
       if (p == SIM_RESULT_OK) {
         // set timeout guard
@@ -455,6 +458,63 @@ SIMCOM_RESULT Simcom_Upload(char *payload, uint16_t payload_length) {
           p = SIM_RESULT_NACK;
         } else {
           p = SIM_RESULT_TIMEOUT;
+        }
+      }
+    }
+
+    // handle SIMCOM result
+    if (p == SIM_RESULT_ACK) {
+      // validate ACK
+      hHeader = (report_header_t*) payload;
+      if (Simcom_ProcessACK(hHeader)) {
+        p = SIM_RESULT_OK;
+
+        // handle COMMAND (if any)
+        // Allocate memory
+        hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
+        // handle command (if any)
+        if (Simcom_ProcessCommand(hCommand)) {
+          osMailPut(CommandMailHandle, hCommand);
+        } else {
+          osMailFree(CommandMailHandle, hCommand);
+        }
+
+      } else {
+        p = SIM_RESULT_NACK;
+      }
+    } else {
+      // handle communication failure
+      if (SIM.state == SIM_STATE_SERVER_ON) {
+        if (p != SIM_RESULT_NACK) {
+          // handle failure properly
+          switch ((*retry)++) {
+            case 1:
+              SIM.state = SIM_STATE_INTERNET_ON;
+
+              // Check IP Status
+              if (Simcom_Command("AT+CIPSTATUS\r", 500, 1, "STATE: TCP CLOSED")) {
+                // exit the loop
+                *retry = SIMCOM_UPLOAD_RETRY + 1;
+              } else {
+                // try closing the IP
+                Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
+              }
+
+              break;
+            case 2:
+              // try closing the PDP
+              SIM.state = SIM_STATE_PDP_ON;
+              Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+
+              break;
+            case 3:
+              // try reset the module
+              SIM.state = SIM_STATE_DOWN;
+
+              break;
+            default:
+              break;
+          }
         }
       }
     }
@@ -719,25 +779,26 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
       // set flag for timeout & error
       p = Simcom_Response(res);
 
-      // check & check
-      // exception for no response
-      if (strlen(SIMCOM_UART_RX) == 0) {
-        p = SIM_RESULT_NO_RESPONSE;
-        SIM.state = SIM_STATE_DOWN;
-        LOG_StrLn("Simcom:NoResponse");
-      } else {
-        // exception for auto reboot module
-        if (Simcom_Response(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {
-          p = SIM_RESULT_RESTARTED;
-          SIM.state = SIM_STATE_READY;
-          LOG_StrLn("Simcom:Restarted");
-          // save event
-          RPT_SetEvent(RPT_NETWORK_RESTART, 1);
-        }
-        // exception for timeout
-        if ((osKernelSysTick() - tick) >= timeout_tick) {
-          p = SIM_RESULT_TIMEOUT;
-          LOG_StrLn("Simcom:Timeout");
+      if (p != SIM_RESULT_OK) {
+        // exception for no response
+        if (strlen(SIMCOM_UART_RX) == 0) {
+          p = SIM_RESULT_NO_RESPONSE;
+          SIM.state = SIM_STATE_DOWN;
+          LOG_StrLn("Simcom:NoResponse");
+        } else {
+          // exception for auto reboot module
+          if (Simcom_Response(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {
+            p = SIM_RESULT_RESTARTED;
+            SIM.state = SIM_STATE_READY;
+            LOG_StrLn("Simcom:Restarted");
+            // save event
+            RPT_SetEvent(RPT_NETWORK_RESTART, 1);
+          }
+          // exception for timeout
+          if ((osKernelSysTick() - tick) >= timeout_tick) {
+            p = SIM_RESULT_TIMEOUT;
+            LOG_StrLn("Simcom:Timeout");
+          }
         }
       }
 
@@ -816,7 +877,7 @@ static void Simcom_ClearBuffer(void) {
 }
 
 static SIMCOM_RESULT Simcom_Response(char *str) {
-  if (strstr(SIMCOM_UART_RX, str) != NULL) {
+  if (strstr(SIMCOM_UART_RX, str)) {
     return SIM_RESULT_OK;
   }
   return SIM_RESULT_ERROR;
