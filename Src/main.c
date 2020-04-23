@@ -269,7 +269,7 @@ int main(void)
 
   /* definition and creation of KeylessTask */
   osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
-  //  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
+  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
 
   /* definition and creation of ReporterTask */
   osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
@@ -1056,10 +1056,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
           &xHigherPriorityTaskWoken);
     }
 
-    //    // handle NRF24 IRQ
-    //    if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
-    //      KEYLESS_IrqHandler();
-    //    }
+    // handle NRF24 IRQ
+    if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
+      KEYLESS_IrqHandler();
+    }
     //
     //    // handle Finger-print IRQ
     //    if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
@@ -1607,7 +1607,7 @@ void StartKeylessTask(const void *argument)
       LOG_Enter();
 
       // just fun indicator
-      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
+      //      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
       for (int i = 0; i < ((msg + 1) * 2); i++) {
         _LedToggle();
         osDelay(50);

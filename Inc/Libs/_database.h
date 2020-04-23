@@ -52,7 +52,8 @@
 
 #define RPT_INTERVAL_SIMPLE                     5                       // in second
 #define RPT_INTERVAL_FULL                       20                      // in second
-#define RPT_INTERVAL_INDEPENDENT                60/3                       // in second
+#define RPT_INTERVAL_INDEPENDENT                10U
+// in second
 #define RPT_UNITID                              354313U
 
 #define GMT_TIME                                7                       // Asia/Jakarta
@@ -177,7 +178,7 @@ typedef struct {
   struct {
     uint32_t unit_id;
     uint8_t independent;
-    uint8_t interval;
+    uint16_t interval;
     uint8_t volume;
     uint16_t bat_voltage;
     uint8_t signal_percent;

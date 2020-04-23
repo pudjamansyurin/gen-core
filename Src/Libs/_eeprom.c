@@ -50,8 +50,11 @@ uint8_t EEPROM_Init(void) {
 }
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
-  if (DB.vcu.odometer == value) {
-    return 1;
+  // check if new value is same with old value
+  if (EE_CMD_W) {
+    if (DB.vcu.odometer == value) {
+      return 1;
+    }
   }
   // only update when value is different
   if (EE_32(VADDR_ODOMETER, cmd, &value)) {
@@ -63,8 +66,11 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
-  if (DB.vcu.unit_id == value) {
-    return 1;
+  // check if new value is same with old value
+  if (EE_CMD_W) {
+    if (DB.vcu.unit_id == value) {
+      return 1;
+    }
   }
   // only update when value is different
   if (EE_32(VADDR_UNITID, cmd, &value)) {
