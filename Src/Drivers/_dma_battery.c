@@ -31,7 +31,6 @@ static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value);
 /* Public functions implementation ---------------------------------------------*/
 void BAT_DMA_Init(void) {
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*) DMA_BUFFER, DMA_SZ);
-  HAL_Delay(1000);
 }
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
@@ -66,10 +65,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 
 /* Private functions implementation ---------------------------------------------*/
 static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
-  static uint32_t Sum = 0, pos = 0;
+  static uint32_t sum = 0, pos = 0;
+  static uint16_t length = 0;
 
   //Subtract the oldest number from the prev sum, add the new number
-  Sum = Sum - pBuffer[pos] + value;
+  sum = sum - pBuffer[pos] + value;
   //Assign the nextNum to the position in the array
   pBuffer[pos] = value;
   //Increment position
@@ -77,6 +77,10 @@ static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
   if (pos >= len) {
     pos = 0;
   }
+  // calculate filled array
+  if (length < len) {
+    length++;
+  }
   //return the average
-  return Sum / len;
+  return sum / length;
 }

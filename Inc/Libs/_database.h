@@ -32,7 +32,7 @@
 
 //#define NET_SERVER_PORT                         5044
 #define NET_SERVER_IP                           "pujakusumae-31974.portmap.io"
-#define NET_SERVER_PORT                         31975
+#define NET_SERVER_PORT                         31974
 //#define NET_SERVER_IP                           "0.tcp.ngrok.io"
 //#define NET_SERVER_PORT                         18123
 #define NET_APN                                 "3gprs"                 // "telkomsel"

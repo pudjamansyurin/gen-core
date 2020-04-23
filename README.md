@@ -37,14 +37,14 @@
 - [x] Handle DTR pin for SIM5300e (sleep mode) 
 - [x] Use hierarchy algorithm to handle simcom error 
 - [x] Use double buffering for ADC-DMA (HT & TC)
-- [ ] Fix moving average divider before full
+- [x] Fix moving average divider before full
 - [ ] Fix duplicate variables
 - [ ] Sync variable name for HMI-1 and VCU
 - [x] Fix Odometer estimation based on GPS speed
 - [ ] Make routine to check SIMCOM internet package
-- [ ] Handle TCP Closed backend, it should not auto reset
+- [x] Handle TCP Closed backend, it should not auto reset
 - [ ] Simplify SIMCOM library
-- [ ] Calibrate the ADC of Backup Battery Monitor
+- [x] Calibrate the ADC of Backup Battery Monitor
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [ ] SIM5300e SSL communication 
 - [ ] Handle migration from STM32F407VG to STM32F423VH 
