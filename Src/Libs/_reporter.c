@@ -40,13 +40,13 @@ void RPT_Init(void) {
   REPORT.data.opt.vcu.gps.latitude = 0;
   REPORT.data.opt.vcu.gps.hdop = 0;
   REPORT.data.opt.vcu.gps.heading = 0;
-  REPORT.data.opt.vcu.speed = 1;
+  REPORT.data.opt.vcu.speed = 0;
   REPORT.data.opt.vcu.odometer = 0;
   REPORT.data.opt.vcu.bat_voltage = 0;
-  REPORT.data.opt.vcu.report.range = 0;
-  REPORT.data.opt.vcu.report.battery = 99;
-  REPORT.data.opt.vcu.trip.a = 0x01234567;
-  REPORT.data.opt.vcu.trip.b = 0x89A;
+  REPORT.data.opt.vcu.report.range = 99;
+  REPORT.data.opt.vcu.report.battery = 88;
+  REPORT.data.opt.vcu.trip.a = 77;
+  REPORT.data.opt.vcu.trip.b = 66;
 
   // =============== RESPONSE ==============
   // header response (copy from report)
@@ -92,6 +92,7 @@ void RPT_Capture(FRAME_TYPE frame) {
   if (frame == FR_RESPONSE) {
     //Reconstruct the header
     RESPONSE.header.seq_id++;
+    RESPONSE.header.unit_id = DB.vcu.unit_id;
     RESPONSE.header.frame_id = FR_RESPONSE;
     RESPONSE.header.size = sizeof(RESPONSE.header.frame_id) +
         sizeof(RESPONSE.header.unit_id) +
@@ -105,6 +106,7 @@ void RPT_Capture(FRAME_TYPE frame) {
   } else {
     // Reconstruct the header
     REPORT.header.seq_id++;
+    REPORT.header.unit_id = DB.vcu.unit_id;
     REPORT.header.frame_id = frame;
     REPORT.header.size = sizeof(REPORT.header.frame_id) +
         sizeof(REPORT.header.unit_id) +

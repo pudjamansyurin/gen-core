@@ -24,7 +24,7 @@
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-#define RTC_ONE_TIME_RESET                      3
+#define RTC_ONE_TIME_RESET                      4
 
 #define VCU_FIRMWARE_VERSION                    "0.7"
 #define VCU_VENDOR                              "GEN Indonesia"
@@ -52,7 +52,7 @@
 
 #define RPT_INTERVAL_SIMPLE                     5                       // in second
 #define RPT_INTERVAL_FULL                       20                      // in second
-#define RPT_INTERVAL_INDEPENDENT                6                       // in second
+#define RPT_INTERVAL_INDEPENDENT                60/3                       // in second
 #define RPT_UNITID                              354313U
 
 #define GMT_TIME                                7                       // Asia/Jakarta
@@ -175,6 +175,7 @@ typedef struct {
 // Node struct
 typedef struct {
   struct {
+    uint32_t unit_id;
     uint8_t independent;
     uint8_t interval;
     uint8_t volume;
