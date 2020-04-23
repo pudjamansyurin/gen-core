@@ -14,9 +14,9 @@
 
 /* Exported macro functions --------------------------------------------------*/
 #define BIT(x)                                  (1ULL << x)
-#define BV(var, x)                              (var |= (1 << x))
-#define BC(var, x)                              (var &= ~(1 << x))
-#define BT(var, x)                              (var ^= (1 << x))
+#define BV(var, x)                              (var |= (1ULL << x))
+#define BC(var, x)                              (var &= ~(1ULL << x))
+#define BT(var, x)                              (var ^= (1ULL << x))
 #define _L(var, x)                              (var << x)
 #define _R(var, x)                              (var >> x)
 #define _R1(var, x)                             ((var >> x) & 0x01)

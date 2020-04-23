@@ -106,6 +106,7 @@ void DB_BMS_ResetIndexes(void) {
     DB.bms.pack[i].temperature = 0;
     DB.bms.pack[i].state = BMS_STATE_IDLE;
     DB.bms.pack[i].started = 0;
+    DB.bms.pack[i].flag = 0;
   }
 }
 
