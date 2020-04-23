@@ -186,7 +186,7 @@ void CANR_BMS_Param1(db_t *db) {
   db->bms.pack[index].voltage = CB.rx.data.u16[0] * 0.01;
   db->bms.pack[index].current = (CB.rx.data.u16[1] * 0.01) - 50;
   db->bms.pack[index].soc = CB.rx.data.u16[2];
-  db->bms.pack[index].temperature = CB.rx.data.u16[3] - 40;
+  db->bms.pack[index].temperature = (CB.rx.data.u16[3] * 0.1) - 40;
 
   // read the id
   db->bms.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;

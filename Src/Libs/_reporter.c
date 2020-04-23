@@ -141,7 +141,7 @@ void RPT_Capture(FRAME_TYPE frame) {
       // BMS data
       for (uint8_t i = 0; i < BMS_COUNT; i++) {
         REPORT.data.opt.bms.pack[i].soc = DB.bms.pack[i].soc;
-        REPORT.data.opt.bms.pack[i].temperature = DB.bms.pack[i].temperature + 40;
+        REPORT.data.opt.bms.pack[i].temperature = (DB.bms.pack[i].temperature + 40) * 10;
       }
     }
   }

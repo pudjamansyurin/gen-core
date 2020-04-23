@@ -229,10 +229,8 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-  osMailQDef(GpsMail, 1, gps_t);
-
-  GpsMailHandle = osMailCreate(osMailQ(GpsMail), NULL);
-
+  //  osMailQDef(GpsMail, 1, gps_t);
+  //  GpsMailHandle = osMailCreate(osMailQ(GpsMail), NULL);
   osMailQDef(CommandMail, 1, command_t);
   CommandMailHandle = osMailCreate(osMailQ(CommandMail), NULL);
 
