@@ -1696,23 +1696,23 @@ void StartReporterTask(const void *argument)
       DB.vcu.interval = RPT_INTERVAL_INDEPENDENT;
     }
 
-    // Get current snapshot
-    RPT_Capture(frame);
-
     // Get log space
     do {
       // Allocate memory
       hReport = osMailAlloc(ReportMailHandle, osWaitForever);
       // Handle full log
       if (hReport == NULL) {
-        // get first log
+        // get oldest log
         evt = osMailGet(ReportMailHandle, 0);
         if (evt.status == osEventMail) {
-          // remove it
+          // remove oldest log
           osMailFree(ReportMailHandle, evt.value.p);
         }
       }
     } while (hReport == NULL);
+
+    // Get current snapshot
+    RPT_Capture(frame);
     // Copy snapshot of current report
     *hReport = REPORT;
     // Put report to log

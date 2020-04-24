@@ -24,7 +24,7 @@
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-#define RTC_ONE_TIME_RESET                      4
+#define RTC_ONE_TIME_RESET                      5
 
 #define VCU_FIRMWARE_VERSION                    "0.7"
 #define VCU_VENDOR                              "GEN Indonesia"
