@@ -63,7 +63,7 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value) {
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
   // check if new value is same with old value
-  if (EE_CMD_W) {
+  if (cmd == EE_CMD_W) {
     if (DB.vcu.odometer == value) {
       return 1;
     }
@@ -79,7 +79,7 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
   // check if new value is same with old value
-  if (EE_CMD_W) {
+  if (cmd == EE_CMD_W) {
     if (DB.vcu.unit_id == value) {
       return 1;
     }
