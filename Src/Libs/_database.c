@@ -44,7 +44,17 @@ db_t DB = {
 
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void) {
-  DB_BMS_ResetIndexes();
+  for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    DB_BMS_ResetIndex(i);
+  }
+}
+
+void DB_BMS_CheckIndex(void) {
+  for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    if ((osKernelSysTick() - DB.bms.pack[i].tick) > pdMS_TO_TICKS(1000)) {
+      DB_BMS_ResetIndex(i);
+    }
+  }
 }
 
 uint8_t DB_BMS_GetIndex(uint32_t id) {
@@ -96,17 +106,15 @@ void DB_BMS_MergeFlags(void) {
   DB.bms.flags = flags;
 }
 
-void DB_BMS_ResetIndexes(void) {
-  // find index (if already exist)
-  for (uint8_t i = 0; i < BMS_COUNT; i++) {
-    DB.bms.pack[i].id = BMS_NULL_INDEX;
-    DB.bms.pack[i].voltage = 0;
-    DB.bms.pack[i].current = 0;
-    DB.bms.pack[i].soc = 0;
-    DB.bms.pack[i].temperature = 0;
-    DB.bms.pack[i].state = BMS_STATE_IDLE;
-    DB.bms.pack[i].started = 0;
-    DB.bms.pack[i].flag = 0;
-  }
+void DB_BMS_ResetIndex(uint8_t i) {
+  DB.bms.pack[i].id = BMS_NULL_INDEX;
+  DB.bms.pack[i].voltage = 0;
+  DB.bms.pack[i].current = 0;
+  DB.bms.pack[i].soc = 0;
+  DB.bms.pack[i].temperature = 0;
+  DB.bms.pack[i].state = BMS_STATE_IDLE;
+  DB.bms.pack[i].started = 0;
+  DB.bms.pack[i].flag = 0;
+  DB.bms.pack[i].tick = 0;
 }
 

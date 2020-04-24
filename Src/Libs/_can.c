@@ -191,6 +191,7 @@ void CANR_BMS_Param1(db_t *db) {
   // read the id
   db->bms.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
   db->bms.pack[index].started = 1;
+  db->bms.pack[index].tick = osKernelSysTick();
 }
 
 void CANR_BMS_Param2(db_t *db) {

@@ -2014,14 +2014,19 @@ void StartCanTxTask(const void *argument)
         // completely OFF
         DB.bms.started = 0;
       }
-      DB_BMS_ResetIndexes();
+      // reset all BMS buffer
+      for (uint8_t i = 0; i < BMS_COUNT; i++) {
+        DB_BMS_ResetIndex(i);
+      }
     }
+    // Handle BMS un-plugged suddenly
+    DB_BMS_CheckIndex();
     // Handle merged BMS parameter
     DB_BMS_MergeFlags();
     RPT_BMS_Events(DB.bms.flags);
 
     // Periodic interval
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(250));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(500));
   }
   /* USER CODE END StartCanTxTask */
 }

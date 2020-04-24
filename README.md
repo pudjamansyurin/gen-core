@@ -41,6 +41,7 @@
 - [x] Fix Odometer estimation based on GPS speed
 - [x] Handle TCP Closed backend, it should not auto reset
 - [x] Calibrate the ADC of Backup Battery Monitor
+- [x] Flush BMS data when timeout
 - [ ] Fix duplicate variables
 - [ ] Sync variable name for HMI-1 and VCU
 - [ ] Make routine to check SIMCOM internet package

@@ -206,16 +206,18 @@ typedef struct {
       uint16_t flag;
       BMS_STATE state;
       uint8_t started;
+      uint32_t tick;
     } pack[BMS_COUNT];
   } bms;
 } db_t;
 
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void);
+void DB_BMS_CheckIndex(void);
 uint8_t DB_BMS_GetIndex(uint32_t id);
 uint8_t DB_BMS_CheckRun(uint8_t state);
 uint8_t DB_BMS_CheckState(BMS_STATE state);
 void DB_BMS_MergeFlags(void);
-void DB_BMS_ResetIndexes(void);
+void DB_BMS_ResetIndex(uint8_t i);
 
 #endif /* DATABASE_H_ */
