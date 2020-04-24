@@ -49,6 +49,18 @@ uint8_t EEPROM_Init(void) {
   return 0;
 }
 
+uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value) {
+  uint32_t tmp = value;
+
+  if (EE_32(VADDR_ODOMETER, cmd, &tmp)) {
+    if (cmd == EE_CMD_R) {
+      return value != tmp;
+    }
+    return 1;
+  }
+  return 0;
+}
+
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
   // check if new value is same with old value
   if (EE_CMD_W) {

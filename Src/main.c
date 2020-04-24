@@ -673,7 +673,7 @@ static void MX_RTC_Init(void)
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
-  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
+  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_RESET) {
     /* USER CODE END Check_RTC_BKUP */
 
     /** Initialize RTC and set the Time and Date
@@ -697,6 +697,7 @@ static void MX_RTC_Init(void)
       Error_Handler();
     }
     /* USER CODE BEGIN RTC_Init 2 */
+    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_RESET);
   }
 
   /* USER CODE END RTC_Init 2 */
@@ -1103,18 +1104,20 @@ void StartIotTask(const void *argument)
   osEvent evt;
   report_t *hReport = NULL;
   response_t *hResponse = NULL;
-  uint8_t size, retry;
+  uint8_t retry;
   timestamp_t timestamp;
   SIMCOM_RESULT p;
+
+  // calculate size
+  const uint8_t size = sizeof(hReport->header.prefix) +
+      sizeof(hReport->header.crc) +
+      sizeof(hReport->header.size);
 
   // Start simcom module
   SIMCOM_DMA_Init();
   Simcom_SetState(SIM_STATE_CONFIGURED);
 
   /* Infinite loop */
-  size = sizeof(hReport->header.prefix) +
-      sizeof(hReport->header.crc) +
-      sizeof(hReport->header.size);
 
   for (;;) {
     _DebugTask("IoT");
@@ -1646,14 +1649,14 @@ void StartReporterTask(const void *argument)
   // FIXME: create master thread
   // ONE-TIME configurations:
   if (EEPROM_Init()) {
-    if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) != RTC_ONE_TIME_RESET) {
+    if (EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
       // reporter configuration
       EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
       EEPROM_Odometer(EE_CMD_W, 0);
       // simcom configuration
 
-      // re-write backup register
-      HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_ONE_TIME_RESET);
+      // re-write eeprom
+      EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
     } else {
       // load from EEPROM
       EEPROM_UnitID(EE_CMD_R, EE_NULL);

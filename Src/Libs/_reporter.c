@@ -112,14 +112,10 @@ void RPT_Capture(FRAME_TYPE frame) {
         sizeof(REPORT.header.unit_id) +
         sizeof(REPORT.header.seq_id) +
         sizeof(REPORT.data.req);
-    // CRC will be recalculated when sending the payload
-    // (because RTC_Send_Datetime will be changed later)
-    REPORT.header.crc = 0;
 
     // Reconstruct the body
     // set parameter
     REPORT.data.req.vcu.rtc.log = RTC_Read();
-    REPORT.data.req.vcu.rtc.send = 0;
     // BMS data
     for (uint8_t i = 0; i < BMS_COUNT; i++) {
       REPORT.data.req.bms.pack[i].id = DB.bms.pack[i].id;
