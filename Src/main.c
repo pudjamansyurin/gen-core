@@ -1249,16 +1249,16 @@ void StartGyroTask(const void *argument)
     mems_decision = GYRO_Decision(&mems_calibration, 25);
 
     // Check accelerometer, happens when impact detected
-    RPT_SetEvent(RPT_BIKE_CRASHED, mems_decision.crash);
+    RPT_SetEvent(RPT_VCU_BIKE_CRASHED, mems_decision.crash);
 
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
       xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
-      RPT_SetEvent(RPT_BIKE_FALLING, 1);
+      RPT_SetEvent(RPT_VCU_BIKE_FALLING, 1);
       _LedDisco(1000);
     } else {
       xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
-      RPT_SetEvent(RPT_BIKE_FALLING, 0);
+      RPT_SetEvent(RPT_VCU_BIKE_FALLING, 0);
     }
     // Report interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(100));
@@ -1644,7 +1644,7 @@ void StartReporterTask(const void *argument)
   // Init things before reporter capture
   // get current state
   DB.vcu.independent = !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-  RPT_SetEvent(RPT_INDEPENDENT, DB.vcu.independent);
+  RPT_SetEvent(RPT_VCU_INDEPENDENT, DB.vcu.independent);
 
   // FIXME: create master thread
   // ONE-TIME configurations:
@@ -1721,7 +1721,7 @@ void StartReporterTask(const void *argument)
     // Put report to log
     osMailPut(ReportMailHandle, hReport);
     // reset all events group
-    RPT_SetEvent(RPT_NETWORK_RESTART, 0);
+    RPT_SetEvent(RPT_VCU_NETWORK_RESTART, 0);
     //    RPT_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
@@ -1948,7 +1948,7 @@ void StartGeneralTask(const void *argument)
       if (notif & EVENT_GENERAL_BMS_IRQ) {
         // get current state
         DB.vcu.independent = !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-        RPT_SetEvent(RPT_INDEPENDENT, DB.vcu.independent);
+        RPT_SetEvent(RPT_VCU_INDEPENDENT, DB.vcu.independent);
       }
       // KNOB IRQ
       if (notif & EVENT_GENERAL_KNOB_IRQ) {
