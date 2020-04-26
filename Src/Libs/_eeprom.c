@@ -16,7 +16,7 @@ extern report_t REPORT;
 extern response_t RESPONSE;
 
 /* Private functions prototype ------------------------------------------------*/
-static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value);
+static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32_t *ptr);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(void) {
@@ -50,53 +50,50 @@ uint8_t EEPROM_Init(void) {
 }
 
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value) {
-  uint32_t tmp = value;
+  uint8_t ret;
+  uint32_t tmp = value, temp;
 
-  if (EE_32(VADDR_ODOMETER, cmd, &tmp)) {
+  ret = EE_32(VADDR_RESET, cmd, &value, &temp);
+
+  if (ret) {
     if (cmd == EE_CMD_R) {
-      return value != tmp;
+      return tmp != temp;
     }
-    return 1;
   }
-  return 0;
+
+  return ret;
 }
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
-  // check if new value is same with old value
-  if (cmd == EE_CMD_W) {
-    if (DB.vcu.odometer == value) {
-      return 1;
-    }
-  }
-  // only update when value is different
-  if (EE_32(VADDR_ODOMETER, cmd, &value)) {
-    DB.vcu.odometer = value;
-
-    return 1;
-  }
-  return 0;
+  return EE_32(VADDR_ODOMETER, cmd, &value, &(DB.vcu.odometer));
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
-  // check if new value is same with old value
-  if (cmd == EE_CMD_W) {
-    if (DB.vcu.unit_id == value) {
-      return 1;
-    }
-  }
-  // only update when value is different
-  if (EE_32(VADDR_UNITID, cmd, &value)) {
-    DB.vcu.unit_id = value;
-
-    return 1;
-  }
-  return 0;
+  return EE_32(VADDR_UNITID, cmd, &value, &(DB.vcu.unit_id));
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value) {
+static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32_t *ptr) {
+  uint8_t ret = 0;
+
+// check if new value is same with old value
   if (cmd == EE_CMD_W) {
-    return EEPROM24XX_Save(vaddr, value, sizeof(uint32_t));
+    if (*ptr == *value) {
+      return 1;
+    }
   }
-  return EEPROM24XX_Load(vaddr, value, sizeof(uint32_t));
+
+// only update when value is different
+  if (cmd == EE_CMD_W) {
+    ret = EEPROM24XX_Save(vaddr, value, sizeof(uint32_t));
+  } else {
+    ret = EEPROM24XX_Load(vaddr, value, sizeof(uint32_t));
+  }
+
+// if eeprom success, apply value
+  if (ret) {
+    *ptr = *value;
+  }
+
+  return ret;
 }

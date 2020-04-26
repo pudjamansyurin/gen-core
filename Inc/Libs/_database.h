@@ -196,7 +196,6 @@ typedef struct {
   struct {
     uint8_t run;
     uint8_t started;
-    uint16_t flags;
     struct {
       uint32_t id;
       float voltage;
@@ -219,5 +218,6 @@ uint8_t DB_BMS_CheckRun(uint8_t state);
 uint8_t DB_BMS_CheckState(BMS_STATE state);
 void DB_BMS_MergeFlags(void);
 void DB_BMS_ResetIndex(uint8_t i);
+void DB_VCU_CheckIndependent(void);
 
 #endif /* DATABASE_H_ */

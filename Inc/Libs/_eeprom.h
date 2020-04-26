@@ -13,7 +13,8 @@
 #include "_eeprom24xx.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define VADDR_ODOMETER              0x000
+#define VADDR_RESET                 0x00000000
+#define VADDR_ODOMETER              VADDR_RESET + sizeof(uint32_t)
 #define VADDR_UNITID                VADDR_ODOMETER + sizeof(uint32_t)
 
 #define EE_NULL                     0

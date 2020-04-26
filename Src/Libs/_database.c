@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_database.h"
+#include "_reporter.h"
 
 /* Public variables -----------------------------------------------------------*/
 db_t DB = {
@@ -102,8 +103,8 @@ void DB_BMS_MergeFlags(void) {
   for (uint8_t i = 0; i < BMS_COUNT; i++) {
     flags |= DB.bms.pack[i].flag;
   }
-
-  DB.bms.flags = flags;
+  // apply to events
+  RPT_BMS_Events(flags);
 }
 
 void DB_BMS_ResetIndex(uint8_t i) {
@@ -118,3 +119,8 @@ void DB_BMS_ResetIndex(uint8_t i) {
   DB.bms.pack[i].tick = 0;
 }
 
+void DB_VCU_CheckIndependent(void) {
+  DB.vcu.independent = !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
+  DB.vcu.interval = DB.vcu.independent ? RPT_INTERVAL_INDEPENDENT : RPT_INTERVAL_SIMPLE;
+  RPT_SetEvent(RPT_VCU_INDEPENDENT, DB.vcu.independent);
+}

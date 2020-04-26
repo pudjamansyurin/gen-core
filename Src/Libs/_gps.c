@@ -42,7 +42,7 @@ void GPS_Init(void) {
       osDelay(10);
     }
   };
-  _LedWrite(1);
+  _LedWrite(0);
 
   nmea_init(&nmea);
 }

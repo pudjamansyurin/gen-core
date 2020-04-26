@@ -1643,8 +1643,7 @@ void StartReporterTask(const void *argument)
 
   // Init things before reporter capture
   // get current state
-  DB.vcu.independent = !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-  RPT_SetEvent(RPT_VCU_INDEPENDENT, DB.vcu.independent);
+  DB_VCU_CheckIndependent();
 
   // FIXME: create master thread
   // ONE-TIME configurations:
@@ -1692,11 +1691,9 @@ void StartReporterTask(const void *argument)
         // simple frame
         frame = FR_SIMPLE;
       }
-      DB.vcu.interval = RPT_INTERVAL_SIMPLE;
     } else {
       // BMS un-plugged
       frame = FR_FULL;
-      DB.vcu.interval = RPT_INTERVAL_INDEPENDENT;
     }
 
     // Get log space
@@ -1947,8 +1944,7 @@ void StartGeneralTask(const void *argument)
       // BMS Power IRQ
       if (notif & EVENT_GENERAL_BMS_IRQ) {
         // get current state
-        DB.vcu.independent = !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
-        RPT_SetEvent(RPT_VCU_INDEPENDENT, DB.vcu.independent);
+        DB_VCU_CheckIndependent();
       }
       // KNOB IRQ
       if (notif & EVENT_GENERAL_KNOB_IRQ) {
@@ -2014,16 +2010,11 @@ void StartCanTxTask(const void *argument)
         // completely OFF
         DB.bms.started = 0;
       }
-      // reset all BMS buffer
-      for (uint8_t i = 0; i < BMS_COUNT; i++) {
-        DB_BMS_ResetIndex(i);
-      }
     }
     // Handle BMS un-plugged suddenly
     DB_BMS_CheckIndex();
     // Handle merged BMS parameter
     DB_BMS_MergeFlags();
-    RPT_BMS_Events(DB.bms.flags);
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(500));
