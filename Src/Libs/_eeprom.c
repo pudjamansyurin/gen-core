@@ -76,23 +76,23 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
 static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32_t *ptr) {
   uint8_t ret = 0;
 
-// check if new value is same with old value
+  // check if new value is same with old value
   if (cmd == EE_CMD_W) {
     if (*ptr == *value) {
       return 1;
+    } else {
+      *ptr = *value;
     }
-  }
 
-// only update when value is different
-  if (cmd == EE_CMD_W) {
+    // only update when value is different
     ret = EEPROM24XX_Save(vaddr, value, sizeof(uint32_t));
   } else {
     ret = EEPROM24XX_Load(vaddr, value, sizeof(uint32_t));
-  }
 
-// if eeprom success, apply value
-  if (ret) {
-    *ptr = *value;
+    // restore the value
+    if (ret) {
+      *ptr = *value;
+    }
   }
 
   return ret;

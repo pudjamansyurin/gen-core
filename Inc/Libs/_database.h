@@ -24,7 +24,7 @@
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-#define EEPROM_RESET                            6U
+#define EEPROM_RESET                            8U
 #define RTC_RESET                               1U
 
 #define VCU_FIRMWARE_VERSION                    "0.7"

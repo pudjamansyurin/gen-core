@@ -403,7 +403,7 @@ static void MX_ADC1_Init(void)
    */
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
       {
     Error_Handler();
@@ -1474,7 +1474,7 @@ void StartGpsTask(const void *argument)
 
     GPS_Capture();
     // Dummy odometer (based on GPS)
-    GPS_CalculateOdometer();
+//    GPS_CalculateOdometer();
 
     // debug
     //    LOG_StrLn("GPS:Buffer = ");
@@ -1647,25 +1647,24 @@ void StartReporterTask(const void *argument)
 
   // FIXME: create master thread
   // ONE-TIME configurations:
-  if (EEPROM_Init()) {
-    if (EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
-      // reporter configuration
-      EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
-      EEPROM_Odometer(EE_CMD_W, 0);
-      // simcom configuration
+  if (EEPROM_Init() && !EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
+    // load from EEPROM
+    EEPROM_UnitID(EE_CMD_R, EE_NULL);
+    EEPROM_Odometer(EE_CMD_R, EE_NULL);
+  } else {
+    // reporter configuration
+    EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
+    EEPROM_Odometer(EE_CMD_W, 0);
+    // simcom configuration
 
-      // re-write eeprom
-      EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
-    } else {
-      // load from EEPROM
-      EEPROM_UnitID(EE_CMD_R, EE_NULL);
-      EEPROM_Odometer(EE_CMD_R, EE_NULL);
-    }
+    // re-write eeprom
+    EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
   }
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
-  for (;;) {
+  for (;;
+      ) {
     _DebugTask("Reporter");
 
     //    // get processed GPS data
@@ -1722,7 +1721,8 @@ void StartReporterTask(const void *argument)
     //    RPT_SetEvents(0);
 
     // Report interval in second (based on lowest interval, the simple frame)
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.vcu.interval * 1000));
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.vcu.interval * 1000)
+        );
   }
   /* USER CODE END StartReporterTask */
 }
