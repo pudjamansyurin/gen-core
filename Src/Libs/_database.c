@@ -23,6 +23,8 @@ void DB_Init(void) {
   DB.vcu.speed = 0;
   DB.vcu.odometer = 0;
   DB.vcu.events = 0;
+  DB.vcu.seq_id.report = 0;
+  DB.vcu.seq_id.response = 0;
 
   // reset HMI1 data
   DB.hmi1.status.mirroring = 0;

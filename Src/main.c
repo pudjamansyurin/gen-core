@@ -181,11 +181,6 @@ osMessageQueueId_t ReportQueueHandle;
 const osMessageQueueAttr_t ReportQueue_attributes = {
     .name = "ReportQueue"
 };
-/* Definitions for GpsQueue */
-osMessageQueueId_t GpsQueueHandle;
-const osMessageQueueAttr_t GpsQueue_attributes = {
-    .name = "GpsQueue"
-};
 /* Definitions for AudioMutex */
 osMutexId_t AudioMutexHandle;
 const osMutexAttr_t AudioMutex_attributes = {
@@ -302,7 +297,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_CRC_Init();
-  //  MX_IWDG_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   CANBUS_Init();
   BAT_DMA_Init();
@@ -350,10 +345,7 @@ int main(void)
   ResponseQueueHandle = osMessageQueueNew(1, sizeof(response_t), &ResponseQueue_attributes);
 
   /* creation of ReportQueue */
-  ReportQueueHandle = osMessageQueueNew(10, sizeof(report_t), &ReportQueue_attributes);
-
-  /* creation of GpsQueue */
-  GpsQueueHandle = osMessageQueueNew(1, sizeof(gps_t), &GpsQueue_attributes);
+  ReportQueueHandle = osMessageQueueNew(100, sizeof(report_t), &ReportQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -363,28 +355,40 @@ int main(void)
   /* Create the thread(s) */
   /* creation of ManagerTask */
   ManagerTaskHandle = osThreadNew(StartManagerTask, NULL, &ManagerTask_attributes);
+
   /* creation of IotTask */
   IotTaskHandle = osThreadNew(StartIotTask, NULL, &IotTask_attributes);
+
   /* creation of ReporterTask */
   ReporterTaskHandle = osThreadNew(StartReporterTask, NULL, &ReporterTask_attributes);
+
   /* creation of CommandTask */
   CommandTaskHandle = osThreadNew(StartCommandTask, NULL, &CommandTask_attributes);
+
   /* creation of GpsTask */
   GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
-  /* creation of GyroTask */
-  //  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
-  /* creation of KeylessTask */
-  KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
-  /* creation of FingerTask */
-  //  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
-  /* creation of AudioTask */
-  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
-  /* creation of SwitchTask */
-  SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
+
+//  /* creation of GyroTask */
+//  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
+//
+//  /* creation of KeylessTask */
+//  KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
+//
+//  /* creation of FingerTask */
+//  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
+//
+//  /* creation of AudioTask */
+//  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
+//
+//  /* creation of SwitchTask */
+//  SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
+
   /* creation of CanRxTask */
   CanRxTaskHandle = osThreadNew(StartCanRxTask, NULL, &CanRxTask_attributes);
+
   /* creation of CanTxTask */
   CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -1206,10 +1210,14 @@ void StartManagerTask(void *argument)
     // load from EEPROM
     EEPROM_UnitID(EE_CMD_R, EE_NULL);
     EEPROM_Odometer(EE_CMD_R, EE_NULL);
+    EEPROM_ReportSeqID(EE_CMD_R, EE_NULL);
+    EEPROM_ResponseSeqID(EE_CMD_R, EE_NULL);
   } else {
     // reporter configuration
     EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
     EEPROM_Odometer(EE_CMD_W, 0);
+    EEPROM_ReportSeqID(EE_CMD_W, 0);
+    EEPROM_ResponseSeqID(EE_CMD_W, 0);
     // simcom configuration
 
     // re-write eeprom
@@ -1247,15 +1255,12 @@ void StartManagerTask(void *argument)
     _DummyGenerator(&DB, &SW);
 
     // Feed the dog
-    //    HAL_IWDG_Refresh(&hiwdg);
+    HAL_IWDG_Refresh(&hiwdg);
 
     // Battery Monitor
     LOG_Str("Battery:Voltage = ");
     LOG_Int(DB.vcu.bat_voltage);
     LOG_StrLn(" mV");
-
-    // Toggling LED
-    //    _LedToggle();
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(1000));
@@ -1403,6 +1408,7 @@ void StartReporterTask(void *argument)
   TickType_t lastWake, lastFull = 0;
   osStatus_t status;
   FRAME_TYPE frame;
+
   // Initialize
   Report_Init(FR_SIMPLE, &report);
 
@@ -1621,9 +1627,7 @@ void StartCommandTask(void *argument)
 void StartGpsTask(void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
-  //  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
   TickType_t lastWake;
-  //  gps_t *hGps = NULL;
 
   // Start GPS module
   UBLOX_DMA_Init();
@@ -1633,21 +1637,6 @@ void StartGpsTask(void *argument)
   lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("GPS");
-
-    // FIXME: remove me if not used
-    //    // Allocate memory
-    //    hGps = osMailAlloc(GpsMailHandle, osWaitForever);
-    //
-    //    // get GPS info
-    //    if (hGps != NULL) {
-    //      if (GPS_Process(hGps)) {
-    //        osMailPut(GpsMailHandle, hGps);
-    //        _LedWrite(0);
-    //      } else {
-    //        osMailFree(GpsMailHandle, hGps);
-    //        _LedWrite(1);
-    //      }
-    //    }
 
     GPS_Capture();
     // Dummy odometer (based on GPS)
@@ -1660,7 +1649,6 @@ void StartGpsTask(void *argument)
 
     // Report interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(GPS_INTERVAL_MS));
-    //    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.bms.interval * 1000));
   }
   /* USER CODE END StartGpsTask */
 }
@@ -2023,12 +2011,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

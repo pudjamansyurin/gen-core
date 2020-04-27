@@ -44,6 +44,7 @@
 - [x] Flush BMS data when timeout
 - [x] Migrate Firmware RTOSv1 to RTOSv2
 - [x] RTOS: add master thread
+- [ ] Change Notify() to RTOSv2 API
 - [ ] Fix duplicate variables
 - [ ] Sync variable name for HMI-1 and VCU
 - [ ] Make routine to check SIMCOM internet package

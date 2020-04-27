@@ -51,8 +51,9 @@ void Response_Init(response_t *response) {
 }
 
 void Report_Capture(FRAME_TYPE frame, report_t *report) {
+  EEPROM_ReportSeqID(EE_CMD_W, DB.vcu.seq_id.report + 1);
   // Reconstruct the header
-  report->header.seq_id++;
+  report->header.seq_id = DB.vcu.seq_id.report;
   report->header.unit_id = DB.vcu.unit_id;
   report->header.frame_id = frame;
   report->header.size = sizeof(report->header.frame_id) +
@@ -92,8 +93,9 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 }
 
 void Response_Capture(response_t *response) {
+  EEPROM_ResponseSeqID(EE_CMD_W, DB.vcu.seq_id.response + 1);
   //Reconstruct the header
-  response->header.seq_id++;
+  response->header.seq_id = DB.vcu.seq_id.response;
   response->header.unit_id = DB.vcu.unit_id;
   response->header.frame_id = FR_RESPONSE;
   response->header.size = sizeof(response->header.frame_id) +

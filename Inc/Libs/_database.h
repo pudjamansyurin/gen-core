@@ -24,7 +24,7 @@
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-#define EEPROM_RESET                            8U
+#define EEPROM_RESET                            9U
 #define RTC_RESET                               1U
 
 #define VCU_FIRMWARE_VERSION                    "0.7"
@@ -53,7 +53,7 @@
 
 #define RPT_INTERVAL_SIMPLE                     5                       // in second
 #define RPT_INTERVAL_FULL                       20                      // in second
-#define RPT_INTERVAL_INDEPENDENT                10U
+#define RPT_INTERVAL_INDEPENDENT                60U
 // in second
 #define RPT_UNITID                              354313U
 
@@ -187,6 +187,10 @@ typedef struct {
     uint32_t odometer;
     rtc_t rtc;
     uint64_t events;
+    struct {
+      uint16_t report;
+      uint16_t response;
+    } seq_id;
   } vcu;
   struct {
     status_t status;
