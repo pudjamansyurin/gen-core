@@ -19,39 +19,39 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   static status_t iStatus;
 
   // indicator manipulator
-  if ((osKernelSysTick() - tick) >= pdMS_TO_TICKS(500)) {
+  if ((osKernelGetTickCount() - tick) >= pdMS_TO_TICKS(500)) {
     // finger
     if (db->hmi1.status.finger) {
-      tick = osKernelSysTick();
+      tick = osKernelGetTickCount();
       iStatus.finger = !iStatus.finger;
     }
     // keyless
     if (db->hmi1.status.keyless) {
-      tick = osKernelSysTick();
+      tick = osKernelGetTickCount();
       iStatus.keyless = !iStatus.keyless;
     }
     // temperature
     if (db->hmi1.status.temperature) {
-      tick = osKernelSysTick();
+      tick = osKernelGetTickCount();
       iStatus.temperature = !iStatus.temperature;
     }
   }
 
   // sein manipulator
-  if ((osKernelSysTick() - tickSein) >= pdMS_TO_TICKS(500)) {
+  if ((osKernelGetTickCount() - tickSein) >= pdMS_TO_TICKS(500)) {
     if (sw->list[SW_K_SEIN_LEFT].state && sw->list[SW_K_SEIN_RIGHT].state) {
       // hazard
-      tickSein = osKernelSysTick();
+      tickSein = osKernelGetTickCount();
       iSeinLeft = !iSeinLeft;
       iSeinRight = iSeinLeft;
     } else if (sw->list[SW_K_SEIN_LEFT].state) {
       // left sein
-      tickSein = osKernelSysTick();
+      tickSein = osKernelGetTickCount();
       iSeinLeft = !iSeinLeft;
       iSeinRight = 0;
     } else if (sw->list[SW_K_SEIN_RIGHT].state) {
       // right sein
-      tickSein = osKernelSysTick();
+      tickSein = osKernelGetTickCount();
       iSeinLeft = 0;
       iSeinRight = !iSeinRight;
     } else {
@@ -113,14 +113,14 @@ uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
     if (iName != runner->mode.val) {
       iName = runner->mode.val;
       // reset period tick
-      tickPeriod = osKernelSysTick();
+      tickPeriod = osKernelGetTickCount();
     } else if (iValue != runner->mode.sub.val[runner->mode.val]) {
       iValue = runner->mode.sub.val[runner->mode.val];
       // reset period tick
-      tickPeriod = osKernelSysTick();
+      tickPeriod = osKernelGetTickCount();
     }
 
-    if ((osKernelSysTick() - tickPeriod) >= pdMS_TO_TICKS(5000) ||
+    if ((osKernelGetTickCount() - tickPeriod) >= pdMS_TO_TICKS(5000) ||
         (runner->mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R)) {
       // stop listening
       runner->listening = 0;
@@ -129,8 +129,8 @@ uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
       iValue = -1;
     } else {
       // blink
-      if ((osKernelSysTick() - tick) >= pdMS_TO_TICKS(250)) {
-        tick = osKernelSysTick();
+      if ((osKernelGetTickCount() - tick) >= pdMS_TO_TICKS(250)) {
+        tick = osKernelGetTickCount();
         iHide = !iHide;
       }
     }
@@ -191,7 +191,7 @@ void CANR_BMS_Param1(db_t *db) {
   // read the id
   db->bms.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
   db->bms.pack[index].started = 1;
-  db->bms.pack[index].tick = osKernelSysTick();
+  db->bms.pack[index].tick = osKernelGetTickCount();
 }
 
 void CANR_BMS_Param2(db_t *db) {

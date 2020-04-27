@@ -9,8 +9,8 @@
 
 /* External variables ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
-extern osMutexId SimcomRecMutexHandle;
-extern osMailQId CommandMailHandle;
+extern osMutexId_t SimcomRecMutexHandle;
+extern osMessageQueueId_t CommandQueueHandle;
 extern db_t DB;
 
 /* Public variables ----------------------------------------------------------*/
@@ -34,9 +34,11 @@ static SIMCOM_RESULT Simcom_Iterate(char cmd[20], char contain[10], char resp[15
 static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, char *res);
 static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
 static SIMCOM_RESULT Simcom_Response(char *str);
+static SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res);
 static void Simcom_Prepare(void);
 static void Simcom_ClearBuffer(void);
-static SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res);
+static void lock(void);
+static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 void Simcom_Sleep(uint8_t state) {
@@ -50,7 +52,7 @@ void Simcom_Sleep(uint8_t state) {
 }
 
 void Simcom_SetState(SIMCOM_STATE state) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+  lock();
 
   SIMCOM_RESULT p;
   //  uint8_t step = 1;
@@ -408,16 +410,16 @@ void Simcom_SetState(SIMCOM_STATE state) {
     init = 0;
   } while (SIM.state < state);
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  unlock();
 }
 
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+  lock();
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint32_t tick;
   char str[20];
-  command_t *hCommand = NULL;
+  command_t hCommand;
   report_header_t *hHeader = NULL;
 
   // combine the size
@@ -436,12 +438,12 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
       // wait for ACK/NACK
       if (p == SIM_RESULT_OK) {
         // set timeout guard
-        tick = osKernelSysTick();
+        tick = osKernelGetTickCount();
         // wait ACK for payload
         while (SIM.state >= SIM_STATE_SERVER_ON) {
           if (Simcom_Response(PREFIX_ACK) ||
               Simcom_Response(PREFIX_NACK) ||
-              (osKernelSysTick() - tick) >= pdMS_TO_TICKS(30000)) {
+              (osKernelGetTickCount() - tick) >= pdMS_TO_TICKS(30000)) {
             break;
           }
           osDelay(10);
@@ -469,14 +471,9 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
       if (Simcom_ProcessACK(hHeader)) {
         p = SIM_RESULT_OK;
 
-        // handle COMMAND (if any)
-        // Allocate memory
-        hCommand = osMailAlloc(CommandMailHandle, osWaitForever);
         // handle command (if any)
-        if (Simcom_ProcessCommand(hCommand)) {
-          osMailPut(CommandMailHandle, hCommand);
-        } else {
-          osMailFree(CommandMailHandle, hCommand);
+        if (Simcom_ProcessCommand(&hCommand)) {
+          osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
         }
 
       } else {
@@ -524,7 +521,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
     SIM.uploading = 0;
   }
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  unlock();
   return p;
 }
 
@@ -533,7 +530,7 @@ SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n) {
 }
 
 SIMCOM_RESULT Simcom_ProcessCommand(command_t *command) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+  lock();
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint32_t crcValue;
@@ -561,12 +558,12 @@ SIMCOM_RESULT Simcom_ProcessCommand(command_t *command) {
     }
   }
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  unlock();
   return p;
 }
 
 SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+  lock();
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   ack_t ack;
@@ -586,12 +583,12 @@ SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header) {
     }
   }
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  unlock();
   return p;
 }
 
 SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+  lock();
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint8_t i, cnt;
@@ -635,12 +632,12 @@ SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent) {
     }
   }
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  unlock();
   return p;
 }
 
 SIMCOM_RESULT SIM_Clock(timestamp_t *timestamp) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+  lock();
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint8_t len = 0, cnt;
@@ -679,7 +676,7 @@ SIMCOM_RESULT SIM_Clock(timestamp_t *timestamp) {
     }
   }
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  unlock();
   return p;
 }
 
@@ -688,13 +685,13 @@ static SIMCOM_RESULT Simcom_Ready(void) {
   uint32_t tick;
 
   // save event
-  RPT_SetEvent(RPT_VCU_NETWORK_RESTART, 1);
+  DB_SetEvent(EV_VCU_NETWORK_RESTART, 1);
 
   // wait until 1s response
-  tick = osKernelSysTick();
+  tick = osKernelGetTickCount();
   while (SIM.state == SIM_STATE_DOWN) {
     if (Simcom_Response(SIMCOM_RSP_READY) ||
-        (osKernelSysTick() - tick) >= NET_BOOT_TIMEOUT) {
+        (osKernelGetTickCount() - tick) >= NET_BOOT_TIMEOUT) {
       break;
     }
     osDelay(1);
@@ -757,7 +754,7 @@ static SIMCOM_RESULT Simcom_Iterate(char cmd[20], char contain[10], char resp[15
 }
 
 static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, char *res) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+  lock();
 
   SIMCOM_RESULT p;
   uint32_t tick, timeout_tick = 0;
@@ -768,13 +765,13 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
   // convert time to tick
   timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME_MS);
   // set timeout guard
-  tick = osKernelSysTick();
+  tick = osKernelGetTickCount();
   // wait response from SIMCOM
   while (1) {
     if (Simcom_Response(res) ||
         Simcom_Response(SIMCOM_RSP_ERROR) ||
         Simcom_Response(SIMCOM_RSP_READY) ||
-        (osKernelSysTick() - tick) >= timeout_tick) {
+        (osKernelGetTickCount() - tick) >= timeout_tick) {
 
       // set flag for timeout & error
       p = Simcom_Response(res);
@@ -792,10 +789,10 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
             SIM.state = SIM_STATE_READY;
             LOG_StrLn("Simcom:Restarted");
             // save event
-            RPT_SetEvent(RPT_VCU_NETWORK_RESTART, 1);
+            DB_SetEvent(EV_VCU_NETWORK_RESTART, 1);
           }
           // exception for timeout
-          if ((osKernelSysTick() - tick) >= timeout_tick) {
+          if ((osKernelGetTickCount() - tick) >= timeout_tick) {
             p = SIM_RESULT_TIMEOUT;
             LOG_StrLn("Simcom:Timeout");
           }
@@ -808,13 +805,13 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
     osDelay(10);
   }
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  unlock();
   return p;
 }
 
 static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_payload, uint32_t ms, char *res,
     uint8_t n) {
-  osRecursiveMutexWait(SimcomRecMutexHandle, osWaitForever);
+  lock();
 
   SIMCOM_RESULT p;
   uint8_t seq;
@@ -852,28 +849,8 @@ static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_pa
 
   } while (seq-- && p == SIM_RESULT_ERROR);
 
-  osRecursiveMutexRelease(SimcomRecMutexHandle);
+  unlock();
   return p;
-}
-
-static void Simcom_Prepare(void) {
-  SIM.state = SIM_STATE_DOWN;
-  // prepare command sequence
-  sprintf(SIM.cmd.CSTT,
-      "AT+CSTT=\"%s\",\"%s\",\"%s\"\r",
-      NET_APN, NET_APN_USERNAME, NET_APN_PASSWORD);
-  sprintf(SIM.cmd.CIPSTART,
-      "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r",
-      NET_SERVER_IP, NET_SERVER_PORT);
-}
-
-static void Simcom_ClearBuffer(void) {
-  // debugging
-  //  LOG_StrLn("\n=================== START ===================");
-  //  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-  //  LOG_StrLn("\n==================== END ====================");
-  // reset rx buffer
-  SIMCOM_Reset_Buffer();
 }
 
 static SIMCOM_RESULT Simcom_Response(char *str) {
@@ -904,3 +881,30 @@ static SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res
   return p;
 }
 
+static void Simcom_Prepare(void) {
+  SIM.state = SIM_STATE_DOWN;
+  // prepare command sequence
+  sprintf(SIM.cmd.CSTT,
+      "AT+CSTT=\"%s\",\"%s\",\"%s\"\r",
+      NET_APN, NET_APN_USERNAME, NET_APN_PASSWORD);
+  sprintf(SIM.cmd.CIPSTART,
+      "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r",
+      NET_SERVER_IP, NET_SERVER_PORT);
+}
+
+static void Simcom_ClearBuffer(void) {
+  // debugging
+  //  LOG_StrLn("\n=================== START ===================");
+  //  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+  //  LOG_StrLn("\n==================== END ====================");
+  // reset rx buffer
+  SIMCOM_Reset_Buffer();
+}
+
+static void lock(void) {
+  osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
+  osMutexRelease(SimcomRecMutexHandle);
+}

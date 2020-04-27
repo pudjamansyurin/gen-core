@@ -7,18 +7,23 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_log.h"
+#include "_utils.h"
 
 /* External variables ----------------------------------------------------------*/
-extern osMutexId LogMutexHandle;
+extern osMutexId_t LogMutexHandle;
+
+/* Private functions implementation --------------------------------------------*/
+static void lock(void);
+static void unlock(void);
 
 /* Public functions implementation ---------------------------------------------*/
 void LOG_Char(char ch) {
   uint32_t tick;
-  tick = osKernelSysTick();
+  tick = osKernelGetTickCount();
   // wait if busy
   while (1) {
     if (ITM->PORT[0].u32 != 0 ||
-        osKernelSysTick() - tick >= pdMS_TO_TICKS(10)) {
+        osKernelGetTickCount() - tick >= pdMS_TO_TICKS(10)) {
       break;
     }
     osDelay(1);
@@ -28,13 +33,13 @@ void LOG_Char(char ch) {
 }
 
 void LOG_Enter(void) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
   LOG_Char('\n');
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_Int(int32_t num) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   char str[10]; // 10 chars max for INT32_MAX
   int i = 0;
@@ -48,11 +53,11 @@ void LOG_Int(int32_t num) {
   for (i--; i >= 0; i--)
     LOG_Char(str[i]);
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_Int0(int32_t num) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   char str[10]; // 10 chars max for INT32_MAX
   int i = 0;
@@ -68,71 +73,71 @@ void LOG_Int0(int32_t num) {
   for (i--; i >= 0; i--)
     LOG_Char(str[i]);
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_Hex8(uint8_t num) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   LOG_Char(HEX_CHARS[(num >> 4) % 0x10]);
   LOG_Char(HEX_CHARS[(num & 0x0f) % 0x10]);
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_Hex16(uint16_t num) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   uint8_t i;
   for (i = 12; i > 0; i -= 4)
     LOG_Char(HEX_CHARS[(num >> i) % 0x10]);
   LOG_Char(HEX_CHARS[(num & 0x0f) % 0x10]);
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_Hex32(uint32_t num) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   uint8_t i;
   for (i = 28; i > 0; i -= 4)
     LOG_Char(HEX_CHARS[(num >> i) % 0x10]);
   LOG_Char(HEX_CHARS[(num & 0x0f) % 0x10]);
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_Str(char *str) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   while (*str != '\0')
     LOG_Char(*str++);
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_StrLn(char *str) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   while (*str != '\0')
     LOG_Char(*str++);
   LOG_Char('\n');
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_Buf(char *buf, uint16_t bufsize) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   uint16_t i;
   for (i = 0; i < bufsize; i++)
     LOG_Char(*buf++);
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_BufPrintable(char *buf, uint16_t bufsize, char subst) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   uint16_t i;
   char ch;
@@ -141,11 +146,11 @@ void LOG_BufPrintable(char *buf, uint16_t bufsize, char subst) {
     LOG_Char(ch > 32 ? ch : subst);
   }
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_BufHex(char *buf, uint16_t bufsize) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   uint16_t i;
   char ch;
@@ -155,11 +160,11 @@ void LOG_BufHex(char *buf, uint16_t bufsize) {
     LOG_Char(HEX_CHARS[(ch & 0x0f) % 0x10]);
   }
 
-  osMutexRelease(LogMutexHandle);
+  unlock();
 }
 
 void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char subst) {
-  osMutexWait(LogMutexHandle, osWaitForever);
+  lock();
 
   uint16_t i = 0, len, pos;
   char buffer[column_width];
@@ -193,5 +198,13 @@ void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char sub
     i += len;
   }
 
+  unlock();
+}
+
+static void lock(void) {
+  osMutexAcquire(LogMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
   osMutexRelease(LogMutexHandle);
 }

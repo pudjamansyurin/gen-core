@@ -82,6 +82,12 @@ typedef struct {
   uint8_t data[64];         ///< The raw buffer for packet payload
 } packet_t;
 
+typedef struct {
+  uint16_t id;
+  uint16_t confidence;
+  uint16_t templateCount;
+} finger_t;
+
 /* Public functions prototype ------------------------------------------------*/
 void FZ3387_SET_POWER(uint8_t state);
 void FZ3387_SERIAL_WRITE(uint8_t c);

@@ -10,43 +10,56 @@
 #include "_database.h"
 #include "_reporter.h"
 
-/* External variables ---------------------------------------------------------*/
+/* External variabless -------------------------------------------------------*/
+extern osMutexId_t EepromMutexHandle;
 extern db_t DB;
 extern report_t REPORT;
 extern response_t RESPONSE;
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32_t *ptr);
+static void lock(void);
+static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(void) {
   uint8_t retry = 5;
+  uint8_t ret = 0;
 
+  lock();
   LOG_StrLn("EEPROM:Init");
   // check main eeprom
   EEPROM24XX_SetDevice(EEPROM24_MAIN);
   do {
     if (EEPROM24XX_IsConnected()) {
       LOG_StrLn("EEPROM:Main");
-      return 1;
+      ret = 1;
+      break;
     }
     osDelay(50);
   } while (retry--);
 
   // check backup eeprom
-  retry = 5;
-  EEPROM24XX_SetDevice(EEPROM24_BACKUP);
-  do {
-    if (EEPROM24XX_IsConnected()) {
-      LOG_StrLn("EEPROM:Backup");
-      return 1;
-    }
-    osDelay(50);
-  } while (retry--);
+  if (!ret) {
+    retry = 5;
+    EEPROM24XX_SetDevice(EEPROM24_BACKUP);
+    do {
+      if (EEPROM24XX_IsConnected()) {
+        LOG_StrLn("EEPROM:Backup");
+        ret = 1;
+        break;
+      }
+      osDelay(50);
+    } while (retry--);
+  }
 
   // all failed
-  LOG_StrLn("EEPROM:Error");
-  return 0;
+  if (!ret) {
+    LOG_StrLn("EEPROM:Error");
+  }
+
+  unlock();
+  return ret;
 }
 
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value) {
@@ -76,6 +89,8 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
 static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32_t *ptr) {
   uint8_t ret = 0;
 
+  lock();
+
   // check if new value is same with old value
   if (cmd == EE_CMD_W) {
     if (*ptr == *value) {
@@ -95,5 +110,14 @@ static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32
     }
   }
 
+  unlock();
   return ret;
+}
+
+static void lock(void) {
+  osMutexAcquire(EepromMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
+  osMutexRelease(EepromMutexHandle);
 }

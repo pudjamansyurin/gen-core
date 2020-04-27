@@ -27,9 +27,7 @@ extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
 
 /* Public variables -----------------------------------------------------------*/
 packet_t packet;
-uint16_t fingerID;
-uint16_t fingerConfidence;
-uint16_t fingerTemplateCount;
+finger_t finger;
 
 /* Public functions implementation ---------------------------------------------*/
 void FZ3387_SET_POWER(uint8_t state) {
@@ -238,16 +236,16 @@ uint8_t FZ3387_fingerFastSearch(void) {
   };
   // high speed search of slot #1 starting at page 0x0000 and page #0x00A3
   FZ3387_SEND_CMD_PACKET(data, sizeof(data));
-  fingerID = 0xFFFF;
-  fingerConfidence = 0xFFFF;
+  finger.id = 0xFFFF;
+  finger.confidence = 0xFFFF;
 
-  fingerID = packet.data[1];
-  fingerID <<= 8;
-  fingerID |= packet.data[2];
+  finger.id = packet.data[1];
+  finger.id <<= 8;
+  finger.id |= packet.data[2];
 
-  fingerConfidence = packet.data[3];
-  fingerConfidence <<= 8;
-  fingerConfidence |= packet.data[4];
+  finger.confidence = packet.data[3];
+  finger.confidence <<= 8;
+  finger.confidence |= packet.data[4];
 
   return packet.data[0];
 }
@@ -265,9 +263,9 @@ uint8_t FZ3387_getTemplateCount(void) {
   };
   FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 
-  fingerTemplateCount = packet.data[1];
-  fingerTemplateCount <<= 8;
-  fingerTemplateCount |= packet.data[2];
+  finger.templateCount = packet.data[1];
+  finger.templateCount <<= 8;
+  finger.templateCount |= packet.data[2];
 
   return packet.data[0];
 }

@@ -9,12 +9,16 @@
 #include "_canbus.h"
 
 /* External variables ---------------------------------------------------------*/
-extern osThreadId CanRxTaskHandle;
-extern osMutexId CanTxMutexHandle;
+extern osThreadId_t CanRxTaskHandle;
+extern osMutexId_t CanTxMutexHandle;
 extern CAN_HandleTypeDef hcan1;
 
 /* Public variables -----------------------------------------------------------*/
 canbus_t CB;
+
+/* Private functions implementation --------------------------------------------*/
+static void lock(void);
+static void unlock(void);
 
 /* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(void) {
@@ -72,7 +76,7 @@ uint8_t CANBUS_Filter(void) {
  wite a message to CAN peripheral and transmit it
  *----------------------------------------------------------------------------*/
 uint8_t CANBUS_Write(canbus_tx_t *tx) {
-  osMutexWait(CanTxMutexHandle, osWaitForever);
+  lock();
 
   uint32_t TxMailbox;
   HAL_StatusTypeDef status;
@@ -99,7 +103,7 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
   //    LOG_Enter();
   //  }
 
-  osMutexRelease(CanTxMutexHandle);
+  unlock();
   return (status == HAL_OK);
 }
 
@@ -111,6 +115,19 @@ uint8_t CANBUS_Read(canbus_rx_t *rx) {
 
   /* Get RX message */
   status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
+
+//  // debugging
+//  if (status == HAL_OK) {
+//    LOG_Str("\n[RX] ");
+//    LOG_Hex32(CANBUS_ReadID());
+//    LOG_Str(" <= ");
+//    if (CB.rx.header.RTR == CAN_RTR_DATA) {
+//      LOG_BufHex(CB.rx.data.CHAR, sizeof(CB.rx.data.CHAR));
+//    } else {
+//      LOG_Str("RTR");
+//    }
+//    LOG_Enter();
+//  }
 
   return (status == HAL_OK);
 }
@@ -128,10 +145,18 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
   // read rx fifo
   if (CANBUS_Read(&(CB.rx))) {
     // signal only when RTOS started
-    if (osKernelRunning()) {
+    if (osKernelGetState() == osKernelRunning) {
       xTaskNotifyFromISR(CanRxTaskHandle, EVENT_CAN_RX_IT, eSetBits, &xHigherPriorityTaskWoken);
     }
   }
 
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
+
+static void lock(void) {
+  osMutexAcquire(CanTxMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
+  osMutexRelease(CanTxMutexHandle);
 }

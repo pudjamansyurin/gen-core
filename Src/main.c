@@ -82,28 +82,143 @@ DMA_HandleTypeDef hdma_uart4_rx;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart2_rx;
 
-osThreadId IotTaskHandle;
-osThreadId GyroTaskHandle;
-osThreadId CommandTaskHandle;
-osThreadId GpsTaskHandle;
-osThreadId FingerTaskHandle;
-osThreadId AudioTaskHandle;
-osThreadId KeylessTaskHandle;
-osThreadId ReporterTaskHandle;
-osThreadId CanRxTaskHandle;
-osThreadId SwitchTaskHandle;
-osThreadId GeneralTaskHandle;
-osThreadId CanTxTaskHandle;
-osMutexId BeepMutexHandle;
-osMutexId LogMutexHandle;
-osMutexId CanTxMutexHandle;
-osMutexId SimcomRecMutexHandle;
-osMutexId FingerRecMutexHandle;
+/* Definitions for ManagerTask */
+osThreadId_t ManagerTaskHandle;
+const osThreadAttr_t ManagerTask_attributes = {
+    .name = "ManagerTask",
+    .priority = (osPriority_t) osPriorityRealtime7,
+    .stack_size = 128 * 4
+};
+/* Definitions for IotTask */
+osThreadId_t IotTaskHandle;
+const osThreadAttr_t IotTask_attributes = {
+    .name = "IotTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 256 * 4
+};
+/* Definitions for ReporterTask */
+osThreadId_t ReporterTaskHandle;
+const osThreadAttr_t ReporterTask_attributes = {
+    .name = "ReporterTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 512 * 4
+};
+/* Definitions for CommandTask */
+osThreadId_t CommandTaskHandle;
+const osThreadAttr_t CommandTask_attributes = {
+    .name = "CommandTask",
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 256 * 4
+};
+/* Definitions for GpsTask */
+osThreadId_t GpsTaskHandle;
+const osThreadAttr_t GpsTask_attributes = {
+    .name = "GpsTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 256 * 4
+};
+/* Definitions for GyroTask */
+osThreadId_t GyroTaskHandle;
+const osThreadAttr_t GyroTask_attributes = {
+    .name = "GyroTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 256 * 4
+};
+/* Definitions for KeylessTask */
+osThreadId_t KeylessTaskHandle;
+const osThreadAttr_t KeylessTask_attributes = {
+    .name = "KeylessTask",
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 256 * 4
+};
+/* Definitions for FingerTask */
+osThreadId_t FingerTaskHandle;
+const osThreadAttr_t FingerTask_attributes = {
+    .name = "FingerTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 256 * 4
+};
+/* Definitions for AudioTask */
+osThreadId_t AudioTaskHandle;
+const osThreadAttr_t AudioTask_attributes = {
+    .name = "AudioTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 128 * 4
+};
+/* Definitions for SwitchTask */
+osThreadId_t SwitchTaskHandle;
+const osThreadAttr_t SwitchTask_attributes = {
+    .name = "SwitchTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 128 * 4
+};
+/* Definitions for CanRxTask */
+osThreadId_t CanRxTaskHandle;
+const osThreadAttr_t CanRxTask_attributes = {
+    .name = "CanRxTask",
+    .priority = (osPriority_t) osPriorityRealtime,
+    .stack_size = 128 * 4
+};
+/* Definitions for CanTxTask */
+osThreadId_t CanTxTaskHandle;
+const osThreadAttr_t CanTxTask_attributes = {
+    .name = "CanTxTask",
+    .priority = (osPriority_t) osPriorityHigh,
+    .stack_size = 128 * 4
+};
+/* Definitions for CommandQueue */
+osMessageQueueId_t CommandQueueHandle;
+const osMessageQueueAttr_t CommandQueue_attributes = {
+    .name = "CommandQueue"
+};
+/* Definitions for ResponseQueue */
+osMessageQueueId_t ResponseQueueHandle;
+const osMessageQueueAttr_t ResponseQueue_attributes = {
+    .name = "ResponseQueue"
+};
+/* Definitions for ReportQueue */
+osMessageQueueId_t ReportQueueHandle;
+const osMessageQueueAttr_t ReportQueue_attributes = {
+    .name = "ReportQueue"
+};
+/* Definitions for GpsQueue */
+osMessageQueueId_t GpsQueueHandle;
+const osMessageQueueAttr_t GpsQueue_attributes = {
+    .name = "GpsQueue"
+};
+/* Definitions for AudioMutex */
+osMutexId_t AudioMutexHandle;
+const osMutexAttr_t AudioMutex_attributes = {
+    .name = "AudioMutex"
+};
+/* Definitions for LogMutex */
+osMutexId_t LogMutexHandle;
+const osMutexAttr_t LogMutex_attributes = {
+    .name = "LogMutex"
+};
+/* Definitions for CanTxMutex */
+osMutexId_t CanTxMutexHandle;
+const osMutexAttr_t CanTxMutex_attributes = {
+    .name = "CanTxMutex"
+};
+/* Definitions for EepromMutex */
+osMutexId_t EepromMutexHandle;
+const osMutexAttr_t EepromMutex_attributes = {
+    .name = "EepromMutex"
+};
+/* Definitions for SimcomRecMutex */
+osMutexId_t SimcomRecMutexHandle;
+const osMutexAttr_t SimcomRecMutex_attributes = {
+    .name = "SimcomRecMutex",
+    .attr_bits = osMutexRecursive,
+};
+/* Definitions for FingerRecMutex */
+osMutexId_t FingerRecMutexHandle;
+const osMutexAttr_t FingerRecMutex_attributes = {
+    .name = "FingerRecMutex",
+    .attr_bits = osMutexRecursive,
+};
 /* USER CODE BEGIN PV */
-osMailQId GpsMailHandle;
-osMailQId CommandMailHandle;
-osMailQId ReportMailHandle;
-osMailQId ResponseMailHandle;
 extern db_t DB;
 extern sw_t SW;
 extern sim_t SIM;
@@ -126,18 +241,18 @@ static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CRC_Init(void);
 static void MX_IWDG_Init(void);
-void StartIotTask(const void *argument);
-void StartGyroTask(const void *argument);
-void StartCommandTask(const void *argument);
-void StartGpsTask(const void *argument);
-void StartFingerTask(const void *argument);
-void StartAudioTask(const void *argument);
-void StartKeylessTask(const void *argument);
-void StartReporterTask(const void *argument);
-void StartCanRxTask(const void *argument);
-void StartSwitchTask(const void *argument);
-void StartGeneralTask(const void *argument);
-void StartCanTxTask(const void *argument);
+void StartManagerTask(void *argument);
+void StartIotTask(void *argument);
+void StartReporterTask(void *argument);
+void StartCommandTask(void *argument);
+void StartGpsTask(void *argument);
+void StartGyroTask(void *argument);
+void StartKeylessTask(void *argument);
+void StartFingerTask(void *argument);
+void StartAudioTask(void *argument);
+void StartSwitchTask(void *argument);
+void StartCanRxTask(void *argument);
+void StartCanTxTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -193,27 +308,27 @@ int main(void)
   BAT_DMA_Init();
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
   /* Create the mutex(es) */
-  /* definition and creation of BeepMutex */
-  osMutexDef(BeepMutex);
-  BeepMutexHandle = osMutexCreate(osMutex(BeepMutex));
+  /* creation of AudioMutex */
+  AudioMutexHandle = osMutexNew(&AudioMutex_attributes);
 
-  /* definition and creation of LogMutex */
-  osMutexDef(LogMutex);
-  LogMutexHandle = osMutexCreate(osMutex(LogMutex));
+  /* creation of LogMutex */
+  LogMutexHandle = osMutexNew(&LogMutex_attributes);
 
-  /* definition and creation of CanTxMutex */
-  osMutexDef(CanTxMutex);
-  CanTxMutexHandle = osMutexCreate(osMutex(CanTxMutex));
+  /* creation of CanTxMutex */
+  CanTxMutexHandle = osMutexNew(&CanTxMutex_attributes);
+
+  /* creation of EepromMutex */
+  EepromMutexHandle = osMutexNew(&EepromMutex_attributes);
 
   /* Create the recursive mutex(es) */
-  /* definition and creation of SimcomRecMutex */
-  osMutexDef(SimcomRecMutex);
-  SimcomRecMutexHandle = osRecursiveMutexCreate(osMutex(SimcomRecMutex));
+  /* creation of SimcomRecMutex */
+  SimcomRecMutexHandle = osMutexNew(&SimcomRecMutex_attributes);
 
-  /* definition and creation of FingerRecMutex */
-  osMutexDef(FingerRecMutex);
-  FingerRecMutexHandle = osRecursiveMutexCreate(osMutex(FingerRecMutex));
+  /* creation of FingerRecMutex */
+  FingerRecMutexHandle = osMutexNew(&FingerRecMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -227,70 +342,49 @@ int main(void)
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
+  /* Create the queue(s) */
+  /* creation of CommandQueue */
+  CommandQueueHandle = osMessageQueueNew(1, sizeof(command_t), &CommandQueue_attributes);
+
+  /* creation of ResponseQueue */
+  ResponseQueueHandle = osMessageQueueNew(1, sizeof(response_t), &ResponseQueue_attributes);
+
+  /* creation of ReportQueue */
+  ReportQueueHandle = osMessageQueueNew(10, sizeof(report_t), &ReportQueue_attributes);
+
+  /* creation of GpsQueue */
+  GpsQueueHandle = osMessageQueueNew(1, sizeof(gps_t), &GpsQueue_attributes);
+
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-  //  osMailQDef(GpsMail, 1, gps_t);
-  //  GpsMailHandle = osMailCreate(osMailQ(GpsMail), NULL);
-  osMailQDef(CommandMail, 1, command_t);
-  CommandMailHandle = osMailCreate(osMailQ(CommandMail), NULL);
-
-  osMailQDef(ResponseMail, 1, response_t);
-  ResponseMailHandle = osMailCreate(osMailQ(ResponseMail), NULL);
-
-  osMailQDef(ReportMail, 100, report_t);
-  ReportMailHandle = osMailCreate(osMailQ(ReportMail), NULL);
 
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of IotTask */
-  osThreadDef(IotTask, StartIotTask, osPriorityNormal, 0, 256);
-  IotTaskHandle = osThreadCreate(osThread(IotTask), NULL);
-
-  /* definition and creation of GyroTask */
-  osThreadDef(GyroTask, StartGyroTask, osPriorityNormal, 0, 256);
-  //  GyroTaskHandle = osThreadCreate(osThread(GyroTask), NULL);
-
-  /* definition and creation of CommandTask */
-  osThreadDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 256);
-  CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
-
-  /* definition and creation of GpsTask */
-  osThreadDef(GpsTask, StartGpsTask, osPriorityNormal, 0, 256);
-  GpsTaskHandle = osThreadCreate(osThread(GpsTask), NULL);
-
-  /* definition and creation of FingerTask */
-  osThreadDef(FingerTask, StartFingerTask, osPriorityNormal, 0, 256);
-  //  FingerTaskHandle = osThreadCreate(osThread(FingerTask), NULL);
-
-  /* definition and creation of AudioTask */
-  osThreadDef(AudioTask, StartAudioTask, osPriorityNormal, 0, 128);
-  //  AudioTaskHandle = osThreadCreate(osThread(AudioTask), NULL);
-
-  /* definition and creation of KeylessTask */
-  osThreadDef(KeylessTask, StartKeylessTask, osPriorityAboveNormal, 0, 256);
-  KeylessTaskHandle = osThreadCreate(osThread(KeylessTask), NULL);
-
-  /* definition and creation of ReporterTask */
-  osThreadDef(ReporterTask, StartReporterTask, osPriorityNormal, 0, 512);
-  ReporterTaskHandle = osThreadCreate(osThread(ReporterTask), NULL);
-
-  /* definition and creation of CanRxTask */
-  osThreadDef(CanRxTask, StartCanRxTask, osPriorityRealtime, 0, 128);
-  CanRxTaskHandle = osThreadCreate(osThread(CanRxTask), NULL);
-
-  /* definition and creation of SwitchTask */
-  osThreadDef(SwitchTask, StartSwitchTask, osPriorityNormal, 0, 128);
-  //  SwitchTaskHandle = osThreadCreate(osThread(SwitchTask), NULL);
-
-  /* definition and creation of GeneralTask */
-  osThreadDef(GeneralTask, StartGeneralTask, osPriorityNormal, 0, 128);
-  GeneralTaskHandle = osThreadCreate(osThread(GeneralTask), NULL);
-
-  /* definition and creation of CanTxTask */
-  osThreadDef(CanTxTask, StartCanTxTask, osPriorityHigh, 0, 128);
-  CanTxTaskHandle = osThreadCreate(osThread(CanTxTask), NULL);
-
+  /* creation of ManagerTask */
+  ManagerTaskHandle = osThreadNew(StartManagerTask, NULL, &ManagerTask_attributes);
+  /* creation of IotTask */
+  IotTaskHandle = osThreadNew(StartIotTask, NULL, &IotTask_attributes);
+  /* creation of ReporterTask */
+  ReporterTaskHandle = osThreadNew(StartReporterTask, NULL, &ReporterTask_attributes);
+  /* creation of CommandTask */
+  CommandTaskHandle = osThreadNew(StartCommandTask, NULL, &CommandTask_attributes);
+  /* creation of GpsTask */
+  GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
+  /* creation of GyroTask */
+  //  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
+  /* creation of KeylessTask */
+  KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
+  /* creation of FingerTask */
+  //  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
+  /* creation of AudioTask */
+  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
+  /* creation of SwitchTask */
+  SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
+  /* creation of CanRxTask */
+  CanRxTaskHandle = osThreadNew(StartCanRxTask, NULL, &CanRxTask_attributes);
+  /* creation of CanTxTask */
+  CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -403,7 +497,7 @@ static void MX_ADC1_Init(void)
    */
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
       {
     Error_Handler();
@@ -1039,7 +1133,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   uint32_t event;
 
-  if (osKernelRunning()) {
+  if (osKernelGetState() == osKernelRunning) {
     if (GPIO_Pin == EXT_BMS_IRQ_Pin || GPIO_Pin == EXT_KNOB_IRQ_Pin) {
       // handle BMS_IRQ (is 5v exist?)
       if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
@@ -1051,7 +1145,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
       }
       // send notification
       xTaskNotifyFromISR(
-          GeneralTaskHandle,
+          ManagerTaskHandle,
           event,
           eSetBits,
           &xHigherPriorityTaskWoken);
@@ -1091,6 +1185,84 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 /* USER CODE END 4 */
 
+/* USER CODE BEGIN Header_StartManagerTask */
+/**
+ * @brief  Function implementing the ManagerTask thread.
+ * @param  argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartManagerTask */
+void StartManagerTask(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  TickType_t lastWake;
+  uint32_t notif;
+
+  // NOTE: This task get executed first!
+  DB_Init();
+
+  // Load EEPROM data
+  if (EEPROM_Init() && !EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
+    // load from EEPROM
+    EEPROM_UnitID(EE_CMD_R, EE_NULL);
+    EEPROM_Odometer(EE_CMD_R, EE_NULL);
+  } else {
+    // reporter configuration
+    EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
+    EEPROM_Odometer(EE_CMD_W, 0);
+    // simcom configuration
+
+    // re-write eeprom
+    EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
+  }
+
+  // Check GPIOs state
+  DB_VCU_CheckIndependent();
+  // Read all EXTI state
+  HBAR_ReadStates();
+  HBAR_CheckReverse();
+
+  /* Infinite loop */
+  lastWake = xTaskGetTickCount();
+  for (;;) {
+    _DebugTask("Manager");
+
+    // do this if events occurred
+    if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
+      // handle bounce effect
+      osDelay(50);
+      // BMS Power IRQ
+      if (notif & EVENT_GENERAL_BMS_IRQ) {
+        // get current state
+        DB_VCU_CheckIndependent();
+      }
+      // KNOB IRQ
+      if (notif & EVENT_GENERAL_KNOB_IRQ) {
+        // get current state
+        DB.hmi2.shutdown = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+      }
+    }
+
+    // Dummy data generator
+    _DummyGenerator(&DB, &SW);
+
+    // Feed the dog
+    //    HAL_IWDG_Refresh(&hiwdg);
+
+    // Battery Monitor
+    LOG_Str("Battery:Voltage = ");
+    LOG_Int(DB.vcu.bat_voltage);
+    LOG_StrLn(" mV");
+
+    // Toggling LED
+    //    _LedToggle();
+
+    // Periodic interval
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(1000));
+  }
+  /* USER CODE END 5 */
+}
+
 /* USER CODE BEGIN Header_StartIotTask */
 /**
  * @brief  Function implementing the iotTask thread.
@@ -1098,20 +1270,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * @retval None
  */
 /* USER CODE END Header_StartIotTask */
-void StartIotTask(const void *argument)
+void StartIotTask(void *argument)
 {
-  /* USER CODE BEGIN 5 */
-  osEvent evt;
-  report_t *hReport = NULL;
-  response_t *hResponse = NULL;
-  uint8_t retry;
+  /* USER CODE BEGIN StartIotTask */
+  osStatus_t status = osOK;
+  report_t report;
+  response_t response;
+  uint8_t retry, pendingReport = 0, pendingResponse = 0;
   timestamp_t timestamp;
   SIMCOM_RESULT p;
 
   // calculate size
-  const uint8_t size = sizeof(hReport->header.prefix) +
-      sizeof(hReport->header.crc) +
-      sizeof(hReport->header.size);
+  const uint8_t size = sizeof(report.header.prefix) +
+      sizeof(report.header.crc) +
+      sizeof(report.header.size);
 
   // Start simcom module
   SIMCOM_DMA_Init();
@@ -1127,27 +1299,25 @@ void StartIotTask(const void *argument)
     // response frame
     if (p == SIM_RESULT_OK) {
       // check report log
-      if (hResponse == NULL) {
-        evt = osMailGet(ResponseMailHandle, 0);
+      if (!pendingResponse) {
+        status = osMessageQueueGet(ResponseQueueHandle, &response, NULL, 0U);
         // check is mail ready
-        if (evt.status == osEventMail) {
-          // copy the pointer
-          hResponse = evt.value.p;
+        if (status == osOK) {
+          pendingResponse = 1;
         }
       }
 
       // check is mail ready
-      if (hResponse) {
+      if (pendingResponse) {
         retry = 1;
         do {
           // Send to server
           Simcom_SetState(SIM_STATE_SERVER_ON);
-          p = Simcom_Upload(hResponse, size + hResponse->header.size, &retry);
+          p = Simcom_Upload(&response, size + response.header.size, &retry);
 
           // Release back
           if (p == SIM_RESULT_OK) {
-            osMailFree(ResponseMailHandle, hResponse);
-            hResponse = NULL;
+            pendingResponse = 0;
 
             break;
           }
@@ -1161,34 +1331,32 @@ void StartIotTask(const void *argument)
     // report frame
     if (p == SIM_RESULT_OK) {
       // check report log
-      if (hReport == NULL) {
-        evt = osMailGet(ReportMailHandle, 0);
+      if (!pendingReport) {
+        status = osMessageQueueGet(ReportQueueHandle, &report, NULL, 0);
         // check is mail ready
-        if (evt.status == osEventMail) {
-          // copy the pointer
-          hReport = evt.value.p;
+        if (status == osOK) {
+          pendingReport = 1;
         }
       }
 
       // check is report ready
-      if (hReport) {
+      if (pendingReport) {
         retry = 1;
         do {
           // get current sending date-time
-          hReport->data.req.vcu.rtc.send = RTC_Read();
+          report.data.req.vcu.rtc.send = RTC_Read();
           // recalculate the CRC
-          hReport->header.crc = CRC_Calculate8(
-              (uint8_t*) &(hReport->header.size),
-              hReport->header.size + sizeof(hReport->header.size), 1);
+          report.header.crc = CRC_Calculate8(
+              (uint8_t*) &(report.header.size),
+              report.header.size + sizeof(report.header.size), 1);
 
           // Send to server
           Simcom_SetState(SIM_STATE_SERVER_ON);
-          p = Simcom_Upload(hReport, size + hReport->header.size, &retry);
+          p = Simcom_Upload(&report, size + report.header.size, &retry);
 
           // Release back
           if (p == SIM_RESULT_OK) {
-            osMailFree(ReportMailHandle, hReport);
-            hReport = NULL;
+            pendingReport = 0;
 
             break;
           }
@@ -1218,52 +1386,67 @@ void StartIotTask(const void *argument)
     // scan ADC while simcom at rest
     osDelay(1000);
   }
-  /* USER CODE END 5 */
+  /* USER CODE END StartIotTask */
 }
 
-/* USER CODE BEGIN Header_StartGyroTask */
+/* USER CODE BEGIN Header_StartReporterTask */
 /**
- * @brief Function implementing the gyroTask thread.
+ * @brief Function implementing the ReporterTask thread.
  * @param argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartGyroTask */
-void StartGyroTask(const void *argument)
+/* USER CODE END Header_StartReporterTask */
+void StartReporterTask(void *argument)
 {
-  /* USER CODE BEGIN StartGyroTask */
-  TickType_t lastWake;
-  mems_t mems_calibration;
-  mems_decision_t mems_decision;
-
-  /* MPU6050 Initialization*/
-  GYRO_Init();
-  // Set calibrator
-  mems_calibration = GYRO_Average(NULL, 500);
-  LOG_StrLn("Gyro:Calibrated");
+  /* USER CODE BEGIN StartReporterTask */
+  report_t report, tmp;
+  TickType_t lastWake, lastFull = 0;
+  osStatus_t status;
+  FRAME_TYPE frame;
+  // Initialize
+  Report_Init(FR_SIMPLE, &report);
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
   for (;;) {
-    _DebugTask("Gyro");
-    // Read all accelerometer, gyroscope (average)
-    mems_decision = GYRO_Decision(&mems_calibration, 25);
+    _DebugTask("Reporter");
 
-    // Check accelerometer, happens when impact detected
-    RPT_SetEvent(RPT_VCU_BIKE_CRASHED, mems_decision.crash);
-
-    // Check gyroscope, happens when fall detected
-    if (mems_decision.fall) {
-      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
-      RPT_SetEvent(RPT_VCU_BIKE_FALLING, 1);
-      _LedDisco(1000);
+    // decide full/simple frame time
+    if (!DB.vcu.independent) {
+      // BMS plugged
+      if ((lastWake - lastFull) >= pdMS_TO_TICKS(RPT_INTERVAL_FULL*1000)) {
+        // capture full frame wake time
+        lastFull = lastWake;
+        // full frame
+        frame = FR_FULL;
+      } else {
+        // simple frame
+        frame = FR_SIMPLE;
+      }
     } else {
-      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
-      RPT_SetEvent(RPT_VCU_BIKE_FALLING, 0);
+      // BMS un-plugged
+      frame = FR_FULL;
     }
-    // Report interval
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(100));
+
+    // Get current snapshot
+    Report_Capture(frame, &report);
+
+    do {
+      // Put report to log
+      status = osMessageQueuePut(ReportQueueHandle, &report, 0U, 0U);
+      // already full, remove oldest
+      if (status == osErrorResource) {
+        osMessageQueueGet(ReportQueueHandle, &tmp, NULL, 0U);
+      }
+    } while (status != osOK);
+
+    // reset some events group
+    DB_SetEvent(EV_VCU_NETWORK_RESTART, 0);
+
+    // Report interval in second (based on lowest interval, the simple frame)
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.vcu.interval * 1000));
   }
-  /* USER CODE END StartGyroTask */
+  /* USER CODE END StartReporterTask */
 }
 
 /* USER CODE BEGIN Header_StartCommandTask */
@@ -1273,77 +1456,77 @@ void StartGyroTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCommandTask */
-void StartCommandTask(const void *argument)
+void StartCommandTask(void *argument)
 {
   /* USER CODE BEGIN StartCommandTask */
-  extern response_t RESPONSE;
+  response_t response;
+  osStatus_t status;
+  command_t command;
   int p;
-  osEvent evt;
-  command_t *hCommand = NULL;
-  response_t *hResponse = NULL;
+
+  // Initialize
+  Response_Init(&response);
 
   /* Infinite loop */
   for (;;) {
     _DebugTask("Command");
     // get command in queue
-    evt = osMailGet(CommandMailHandle, osWaitForever);
+    status = osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever);
 
-    if (evt.status == osEventMail) {
-      hCommand = evt.value.p;
-
+    if (status == osOK) {
       // debug
       LOG_Str("\nCommand:Payload [");
-      LOG_Int(hCommand->data.code);
+      LOG_Int(command.data.code);
       LOG_Str("-");
-      LOG_Int(hCommand->data.sub_code);
+      LOG_Int(command.data.sub_code);
       LOG_Str("] = ");
-      LOG_BufHex((char*) &(hCommand->data.value), sizeof(hCommand->data.value));
+      LOG_BufHex((char*) &(command.data.value), sizeof(command.data.value));
       LOG_Enter();
 
       // default command response
-      RESPONSE.data.code = RESPONSE_STATUS_OK;
-      strcpy(RESPONSE.data.message, "");
+      response.data.code = RESPONSE_STATUS_OK;
+      strcpy(response.data.message, "");
 
       // handle the command
-      switch (hCommand->data.code) {
+      switch (command.data.code) {
         case CMD_CODE_GEN:
-          switch (hCommand->data.sub_code) {
+          switch (command.data.sub_code) {
             case CMD_GEN_INFO:
-              sprintf(RESPONSE.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
+              sprintf(response.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
               break;
 
             case CMD_GEN_LED:
-              _LedWrite((uint8_t) hCommand->data.value);
+              _LedWrite((uint8_t) command.data.value);
               break;
 
             default:
-              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+              response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
 
         case CMD_CODE_REPORT:
-          switch (hCommand->data.sub_code) {
+          switch (command.data.sub_code) {
             case CMD_REPORT_RTC:
-              RTC_Write(hCommand->data.value, &(DB.vcu.rtc));
+              RTC_Write(command.data.value, &(DB.vcu.rtc));
               break;
 
             case CMD_REPORT_ODOM:
-              EEPROM_Odometer(EE_CMD_W, (uint32_t) hCommand->data.value);
+              EEPROM_Odometer(EE_CMD_W, (uint32_t) command.data.value);
               break;
 
             case CMD_REPORT_UNITID:
-              EEPROM_UnitID(EE_CMD_W, (uint32_t) hCommand->data.value);
+              EEPROM_UnitID(EE_CMD_W, (uint32_t) command.data.value);
               break;
 
             default:
-              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+              response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
 
         case CMD_CODE_AUDIO:
-          switch (hCommand->data.sub_code) {
+          switch (command.data.sub_code) {
             case CMD_AUDIO_BEEP:
               xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP, eSetBits);
               break;
@@ -1351,28 +1534,28 @@ void StartCommandTask(const void *argument)
             case CMD_AUDIO_MUTE:
               xTaskNotify(
                   AudioTaskHandle,
-                  (uint8_t) hCommand->data.value ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF,
+                  (uint8_t) command.data.value ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF,
                   eSetBits);
               break;
 
             case CMD_AUDIO_VOL:
-              DB.vcu.volume = hCommand->data.value;
+              DB.vcu.volume = command.data.value;
               break;
 
             default:
-              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+              response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
 
         case CMD_CODE_FINGER:
-          switch (hCommand->data.sub_code) {
+          switch (command.data.sub_code) {
             case CMD_FINGER_ADD:
-              p = Finger_Enroll((uint8_t) hCommand->data.value);
+              p = Finger_Enroll((uint8_t) command.data.value);
               break;
 
             case CMD_FINGER_DEL:
-              p = Finger_DeleteID((uint8_t) hCommand->data.value);
+              p = Finger_DeleteID((uint8_t) command.data.value);
               break;
 
             case CMD_FINGER_RST:
@@ -1380,55 +1563,49 @@ void StartCommandTask(const void *argument)
               break;
 
             default:
-              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+              response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           // handle response from finger-print module
           if (p != FINGERPRINT_OK) {
-            RESPONSE.data.code = RESPONSE_STATUS_ERROR;
+            response.data.code = RESPONSE_STATUS_ERROR;
           }
           break;
 
         case CMD_CODE_HMI2:
-          switch (hCommand->data.sub_code) {
+          switch (command.data.sub_code) {
             case CMD_HMI2_SHUTDOWN:
-              DB.hmi2.shutdown = (uint8_t) hCommand->data.value;
+              DB.hmi2.shutdown = (uint8_t) command.data.value;
               break;
 
             default:
-              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+              response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
 
         case CMD_CODE_BMS:
-          switch (hCommand->data.sub_code) {
+          switch (command.data.sub_code) {
             case CMD_BMS_ON:
-              DB.bms.run = (uint8_t) hCommand->data.value;
+              DB.bms.run = (uint8_t) command.data.value;
               break;
 
             default:
-              RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+              response.data.code = RESPONSE_STATUS_INVALID;
               break;
           }
           break;
 
         default:
-          RESPONSE.data.code = RESPONSE_STATUS_INVALID;
+          response.data.code = RESPONSE_STATUS_INVALID;
           break;
       }
-      // release back
-      osMailFree(CommandMailHandle, hCommand);
 
       // Get current snapshot
-      RPT_Capture(FR_RESPONSE);
+      Response_Capture(&response);
 
-      // Allocate memory
-      hResponse = osMailAlloc(ResponseMailHandle, osWaitForever);
-      // Copy snapshot of current report
-      *hResponse = RESPONSE;
-      // Put report to log
-      osMailPut(ResponseMailHandle, hResponse);
+      // Send to Queue
+      osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
     }
   }
   /* USER CODE END StartCommandTask */
@@ -1441,7 +1618,7 @@ void StartCommandTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGpsTask */
-void StartGpsTask(const void *argument)
+void StartGpsTask(void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   //  extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
@@ -1474,7 +1651,7 @@ void StartGpsTask(const void *argument)
 
     GPS_Capture();
     // Dummy odometer (based on GPS)
-//    GPS_CalculateOdometer();
+    //    GPS_CalculateOdometer();
 
     // debug
     //    LOG_StrLn("GPS:Buffer = ");
@@ -1488,6 +1665,93 @@ void StartGpsTask(const void *argument)
   /* USER CODE END StartGpsTask */
 }
 
+/* USER CODE BEGIN Header_StartGyroTask */
+/**
+ * @brief Function implementing the gyroTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartGyroTask */
+void StartGyroTask(void *argument)
+{
+  /* USER CODE BEGIN StartGyroTask */
+  TickType_t lastWake;
+  mems_t mems_calibration;
+  mems_decision_t mems_decision;
+
+  /* MPU6050 Initialization*/
+  GYRO_Init();
+  // Set calibrator
+  mems_calibration = GYRO_Average(NULL, 500);
+  LOG_StrLn("Gyro:Calibrated");
+
+  /* Infinite loop */
+  lastWake = xTaskGetTickCount();
+  for (;;) {
+    _DebugTask("Gyro");
+    // Read all accelerometer, gyroscope (average)
+    mems_decision = GYRO_Decision(&mems_calibration, 25);
+
+    // Check accelerometer, happens when impact detected
+    DB_SetEvent(EV_VCU_BIKE_CRASHED, mems_decision.crash);
+
+    // Check gyroscope, happens when fall detected
+    if (mems_decision.fall) {
+      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
+      DB_SetEvent(EV_VCU_BIKE_FALLING, 1);
+      _LedDisco(1000);
+    } else {
+      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
+      DB_SetEvent(EV_VCU_BIKE_FALLING, 0);
+    }
+    // Report interval
+    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(100));
+  }
+  /* USER CODE END StartGyroTask */
+}
+
+/* USER CODE BEGIN Header_StartKeylessTask */
+/**
+ * @brief Function implementing the KeylessTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartKeylessTask */
+void StartKeylessTask(void *argument)
+{
+  /* USER CODE BEGIN StartKeylessTask */
+  uint8_t msg;
+  uint32_t notif;
+
+  // initialization
+  KEYLESS_Init();
+
+  /* Infinite loop */
+  for (;;) {
+    _DebugTask("Keyless");
+    // check if has new can message
+    xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
+
+    // proceed event
+    if (notif & EVENT_KEYLESS_RX_IT) {
+      msg = KEYLESS_ReadPayload();
+
+      // indicator
+      LOG_Str("NRF received packet, msg = ");
+      LOG_Hex8(msg);
+      LOG_Enter();
+
+      // just fun indicator
+      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
+      for (int i = 0; i < ((msg + 1) * 2); i++) {
+        _LedToggle();
+        osDelay(50);
+      }
+    }
+  }
+  /* USER CODE END StartKeylessTask */
+}
+
 /* USER CODE BEGIN Header_StartFingerTask */
 /**
  * @brief Function implementing the FingerTask thread.
@@ -1495,7 +1759,7 @@ void StartGpsTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartFingerTask */
-void StartFingerTask(const void *argument)
+void StartFingerTask(void *argument)
 {
   /* USER CODE BEGIN StartFingerTask */
   uint32_t notif;
@@ -1530,7 +1794,7 @@ void StartFingerTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartAudioTask */
-void StartAudioTask(const void *argument)
+void StartAudioTask(void *argument)
 {
   /* USER CODE BEGIN StartAudioTask */
   TickType_t lastWake;
@@ -1578,153 +1842,50 @@ void StartAudioTask(const void *argument)
   /* USER CODE END StartAudioTask */
 }
 
-/* USER CODE BEGIN Header_StartKeylessTask */
+/* USER CODE BEGIN Header_StartSwitchTask */
 /**
- * @brief Function implementing the KeylessTask thread.
+ * @brief Function implementing the SwitchTask thread.
  * @param argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartKeylessTask */
-void StartKeylessTask(const void *argument)
+/* USER CODE END Header_StartSwitchTask */
+void StartSwitchTask(void *argument)
 {
-  /* USER CODE BEGIN StartKeylessTask */
-  uint8_t msg;
+  /* USER CODE BEGIN StartSwitchTask */
   uint32_t notif;
-
-  // initialization
-  KEYLESS_Init();
 
   /* Infinite loop */
   for (;;) {
-    _DebugTask("Keyless");
-    // check if has new can message
+    _DebugTask("Switch");
+
+    xTaskNotifyStateClear(NULL);
     xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
+    // handle bounce effect
+    osDelay(50);
 
-    // proceed event
-    if (notif & EVENT_KEYLESS_RX_IT) {
-      msg = KEYLESS_ReadPayload();
-
-      // indicator
-      LOG_Str("NRF received packet, msg = ");
-      LOG_Hex8(msg);
-      LOG_Enter();
-
-      // just fun indicator
-      //      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
-      for (int i = 0; i < ((msg + 1) * 2); i++) {
-        _LedToggle();
-        osDelay(50);
-      }
-    }
-  }
-  /* USER CODE END StartKeylessTask */
-}
-
-/* USER CODE BEGIN Header_StartReporterTask */
-/**
- * @brief Function implementing the ReporterTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartReporterTask */
-void StartReporterTask(const void *argument)
-{
-  /* USER CODE BEGIN StartReporterTask */
-  extern report_t REPORT;
-  TickType_t lastWake, lastFull = 0;
-  osEvent evt;
-  FRAME_TYPE frame;
-  report_t *hReport = NULL;
-  //  gps_t *hGps = NULL;
-
-  // reset report frame to default
-  DB_Init();
-  RPT_Init();
-
-  // Init things before reporter capture
-  // get current state
-  DB_VCU_CheckIndependent();
-
-  // FIXME: create master thread
-  // ONE-TIME configurations:
-  if (EEPROM_Init() && !EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
-    // load from EEPROM
-    EEPROM_UnitID(EE_CMD_R, EE_NULL);
-    EEPROM_Odometer(EE_CMD_R, EE_NULL);
-  } else {
-    // reporter configuration
-    EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
-    EEPROM_Odometer(EE_CMD_W, 0);
-    // simcom configuration
-
-    // re-write eeprom
-    EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
-  }
-
-  /* Infinite loop */
-  lastWake = xTaskGetTickCount();
-  for (;;
-      ) {
-    _DebugTask("Reporter");
-
-    //    // get processed GPS data
-    //    evt = osMailGet(GpsMailHandle, 0);
-    //    // break-down RAW NMEA data from GPS module
-    //    if (evt.status == osEventMail) {
-    //      hGps = evt.value.p;
-    //      // set GPS data
-    //      RPT_SetGPS(hGps);
-    //      // Release back
-    //      osMailFree(GpsMailHandle, hGps);
-    //    }
-
-    // decide full/simple frame time
-    if (!DB.vcu.independent) {
-      // BMS plugged
-      if ((lastWake - lastFull) >= pdMS_TO_TICKS(RPT_INTERVAL_FULL*1000)) {
-        // capture full frame wake time
-        lastFull = lastWake;
-        // full frame
-        frame = FR_FULL;
-      } else {
-        // simple frame
-        frame = FR_SIMPLE;
-      }
-    } else {
-      // BMS un-plugged
-      frame = FR_FULL;
-    }
-
-    // Get log space
-    do {
-      // Allocate memory
-      hReport = osMailAlloc(ReportMailHandle, osWaitForever);
-      // Handle full log
-      if (hReport == NULL) {
-        // get oldest log
-        evt = osMailGet(ReportMailHandle, 0);
-        if (evt.status == osEventMail) {
-          // remove oldest log
-          osMailFree(ReportMailHandle, evt.value.p);
+    // Read all (to handle multiple switch change at the same time)
+    HBAR_ReadStates();
+    // handle select & set: timer
+    HBAR_CheckSelectSet();
+    // Only handle Select & Set when in non-reverse
+    if (!SW.list[SW_K_REVERSE].state) {
+      // restore previous Mode
+      HBAR_RestoreMode();
+      // handle Select & Set
+      if (SW.list[SW_K_SELECT].state || SW.list[SW_K_SET].state) {
+        if (SW.list[SW_K_SELECT].state) {
+          // handle select key
+          HBAR_DoSelect();
+        } else if (SW.list[SW_K_SET].state) {
+          // handle set key
+          HBAR_DoSet();
         }
       }
-    } while (hReport == NULL);
-
-    // Get current snapshot
-    RPT_Capture(frame);
-    // Copy snapshot of current report
-    *hReport = REPORT;
-    // Put report to log
-    osMailPut(ReportMailHandle, hReport);
-    // reset all events group
-    RPT_SetEvent(RPT_VCU_NETWORK_RESTART, 0);
-    //    RPT_SetEvents(0);
-
-    // Report interval in second (based on lowest interval, the simple frame)
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.vcu.interval * 1000)
-        );
+    } else {
+      HBAR_CheckReverse();
+    }
   }
-  /* USER CODE END StartReporterTask */
+  /* USER CODE END StartSwitchTask */
 }
 
 /* USER CODE BEGIN Header_StartCanRxTask */
@@ -1734,10 +1895,9 @@ void StartReporterTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanRxTask */
-void StartCanRxTask(const void *argument)
+void StartCanRxTask(void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
-  //  extern canbus_t CB;
   uint32_t notif;
 
   /* Infinite loop */
@@ -1745,17 +1905,6 @@ void StartCanRxTask(const void *argument)
     _DebugTask("CanRx");
     // check if has new can message
     xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
-
-    //    // debugging
-    //    LOG_Str("\n[RX] ");
-    //    LOG_Hex32(CANBUS_ReadID());
-    //    LOG_Str(" <= ");
-    //    if (CB.rx.header.RTR == CAN_RTR_DATA) {
-    //      LOG_BufHex(CB.rx.data.CHAR, sizeof(CB.rx.data.CHAR));
-    //    } else {
-    //      LOG_Str("RTR");
-    //    }
-    //    LOG_Enter();
 
     // proceed event
     if (notif & EVENT_CAN_RX_IT) {
@@ -1786,193 +1935,6 @@ void StartCanRxTask(const void *argument)
   /* USER CODE END StartCanRxTask */
 }
 
-/* USER CODE BEGIN Header_StartSwitchTask */
-/**
- * @brief Function implementing the SwitchTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartSwitchTask */
-void StartSwitchTask(const void *argument)
-{
-  /* USER CODE BEGIN StartSwitchTask */
-  uint8_t i, iModeDrive;
-  uint32_t notif;
-
-  // Read all EXTI state
-  HBAR_ReadStates();
-
-  // Handle Reverse mode on init
-  if (SW.list[SW_K_REVERSE].state) {
-    // save previous Drive Mode state
-    if (SW.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
-      iModeDrive = SW.runner.mode.sub.val[SW_M_DRIVE];
-    }
-    // force state
-    SW.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
-    // hazard on
-    SW.list[SW_K_SEIN_LEFT].state = 1;
-    SW.list[SW_K_SEIN_RIGHT].state = 1;
-  }
-
-  /* Infinite loop */
-  for (;;) {
-    _DebugTask("Switch");
-
-    xTaskNotifyStateClear(NULL);
-    xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
-    // handle bounce effect
-    osDelay(50);
-
-    // Read all (to handle multiple switch change at the same time)
-    HBAR_ReadStates();
-
-    // handle select & set: timer
-    for (i = 0; i < SW_TOTAL_LIST; i++) {
-      if (i == SW_K_SELECT || i == SW_K_SET) {
-        // reset SET timer
-        SW.timer[i].time = 0;
-
-        // next job
-        if (SW.list[i].state) {
-          if (i == SW_K_SELECT || (i == SW_K_SET && SW.runner.listening)) {
-            // start timer if not running
-            if (!SW.timer[i].running) {
-              // set flag
-              SW.timer[i].running = 1;
-              // start timer for SET
-              SW.timer[i].start = osKernelSysTick();
-            }
-          }
-          // reverse it
-          SW.list[i].state = 0;
-        } else {
-          // stop timer if running
-          if (SW.timer[i].running) {
-            // set flag
-            SW.timer[i].running = 0;
-            // stop SET
-            SW.timer[i].time = (uint8_t) ((osKernelSysTick()
-                - SW.timer[i].start) / pdMS_TO_TICKS(1000));
-            // reverse it
-            SW.list[i].state = 1;
-          }
-        }
-      }
-    }
-
-    // Only handle Select & Set when in non-reverse mode
-    if (SW.list[SW_K_REVERSE].state) {
-      // save previous Drive Mode state
-      if (SW.runner.mode.sub.val[SW_M_DRIVE] != SW_M_DRIVE_R) {
-        iModeDrive = SW.runner.mode.sub.val[SW_M_DRIVE];
-      }
-      // force state
-      SW.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
-      // hazard on
-      SW.list[SW_K_SEIN_LEFT].state = 1;
-      SW.list[SW_K_SEIN_RIGHT].state = 1;
-    } else {
-      // restore previous Drive Mode
-      if (SW.runner.mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R) {
-        SW.runner.mode.sub.val[SW_M_DRIVE] = iModeDrive;
-      }
-
-      // handle Select & Set
-      if (SW.list[SW_K_SELECT].state || SW.list[SW_K_SET].state) {
-        // handle select key
-        if (SW.list[SW_K_SELECT].state) {
-          if (SW.runner.listening) {
-            // change mode position
-            if (SW.runner.mode.val == SW_M_MAX) {
-              SW.runner.mode.val = 0;
-            } else {
-              SW.runner.mode.val++;
-            }
-          }
-          // Listening on option
-          SW.runner.listening = 1;
-
-        } else if (SW.list[SW_K_SET].state) {
-          // handle set key
-          if (SW.runner.listening
-              || (SW.timer[SW_K_SET].time >= 3 && SW.runner.mode.val == SW_M_TRIP)) {
-            // handle reset only if push more than n sec, and in trip mode
-            if (!SW.runner.listening) {
-              // reset value
-              SW.runner.mode.sub.trip[SW.runner.mode.sub.val[SW.runner.mode.val]] = 0;
-            } else {
-              // if less than n sec
-              if (SW.runner.mode.sub.val[SW.runner.mode.val]
-                  == SW.runner.mode.sub.max[SW.runner.mode.val]) {
-                SW.runner.mode.sub.val[SW.runner.mode.val] = 0;
-              } else {
-                SW.runner.mode.sub.val[SW.runner.mode.val]++;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  /* USER CODE END StartSwitchTask */
-}
-
-/* USER CODE BEGIN Header_StartGeneralTask */
-/**
- * @brief Function implementing the GeneralTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartGeneralTask */
-void StartGeneralTask(const void *argument)
-{
-  /* USER CODE BEGIN StartGeneralTask */
-  TickType_t lastWake;
-  uint32_t notif;
-
-  /* Infinite loop */
-  lastWake = xTaskGetTickCount();
-
-  for (;;) {
-    _DebugTask("General");
-
-    // do this if events occurred
-    if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
-      // handle bounce effect
-      osDelay(50);
-      // BMS Power IRQ
-      if (notif & EVENT_GENERAL_BMS_IRQ) {
-        // get current state
-        DB_VCU_CheckIndependent();
-      }
-      // KNOB IRQ
-      if (notif & EVENT_GENERAL_KNOB_IRQ) {
-        // get current state
-        DB.hmi2.shutdown = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
-      }
-    }
-
-    // Dummy data generator
-    _DummyGenerator(&DB, &SW);
-
-    // Feed the dog
-    //    HAL_IWDG_Refresh(&hiwdg);
-
-    // Battery Monitor
-    LOG_Str("Battery:Voltage = ");
-    LOG_Int(DB.vcu.bat_voltage);
-    LOG_StrLn(" mV");
-
-    // Toggling LED
-    //    _LedToggle();
-
-    // Periodic interval
-    vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(1000));
-  }
-  /* USER CODE END StartGeneralTask */
-}
-
 /* USER CODE BEGIN Header_StartCanTxTask */
 /**
  * @brief Function implementing the CanTxTask thread.
@@ -1980,7 +1942,7 @@ void StartGeneralTask(const void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanTxTask */
-void StartCanTxTask(const void *argument)
+void StartCanTxTask(void *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
   TickType_t lastWake;

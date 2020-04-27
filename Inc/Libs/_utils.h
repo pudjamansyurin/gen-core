@@ -9,14 +9,8 @@
 #define UTILS_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
-#include <math.h>
-#include "main.h"
-#include "cmsis_os.h"
-#include "_log.h"
 #include "_database.h"
+#include "_log.h"
 #include "_handlebar.h"
 
 /* Exported constants --------------------------------------------------------*/

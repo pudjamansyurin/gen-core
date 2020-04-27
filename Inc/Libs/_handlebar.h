@@ -10,7 +10,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Exported constants --------------------------------------------------------*/
 // EXTI list
@@ -83,5 +82,10 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void HBAR_ReadStates(void);
+void HBAR_RestoreMode(void);
+void HBAR_CheckReverse(void);
+void HBAR_CheckSelectSet(void);
+void HBAR_DoSelect(void);
+void HBAR_DoSet(void);
 
 #endif /* LIBS__HANDLEBAR_H_ */

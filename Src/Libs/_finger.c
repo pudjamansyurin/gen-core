@@ -9,19 +9,19 @@
 #include "_finger.h"
 
 /* External variables ---------------------------------------------------------*/
-extern uint16_t fingerID, fingerConfidence;
-extern osMutexId FingerRecMutexHandle;
+extern finger_t finger;
+extern osMutexId_t FingerRecMutexHandle;
 
 /* Public functions implementation --------------------------------------------*/
 void Finger_On(void) {
-  osRecursiveMutexWait(FingerRecMutexHandle, osWaitForever);
+  osMutexAcquire(FingerRecMutexHandle, osWaitForever);
   FZ3387_SET_POWER(0);
 }
 
 void Finger_Off(void) {
   FZ3387_SET_POWER(1);
   osDelay(50);
-  osRecursiveMutexRelease(FingerRecMutexHandle);
+  osMutexRelease(FingerRecMutexHandle);
 }
 
 void Finger_Init(void) {
@@ -57,10 +57,10 @@ uint8_t Finger_Enroll(uint8_t id) {
   LOG_Enter();
 
   // set timeout guard
-  tick = osKernelSysTick();
+  tick = osKernelGetTickCount();
   while (p != FINGERPRINT_OK && !error) {
     // handle timeout
-    if ((osKernelSysTick() - tick) > timeout_tick) {
+    if ((osKernelGetTickCount() - tick) > timeout_tick) {
       error = 1;
     }
     // send command
@@ -124,10 +124,10 @@ uint8_t Finger_Enroll(uint8_t id) {
     LOG_StrLn("Place same finger again");
     p = -1;
     // set timeout guard
-    tick = osKernelSysTick();
+    tick = osKernelGetTickCount();
     while (p != FINGERPRINT_OK && !error) {
       // handle timeout
-      if ((osKernelSysTick() - tick) > timeout_tick) {
+      if ((osKernelGetTickCount() - tick) > timeout_tick) {
         error = 1;
       }
       // send command
@@ -351,13 +351,13 @@ int8_t Finger_Auth(void) {
   if (!error) {
     // found a match!
     LOG_Str("\nFound ID #");
-    LOG_Int(fingerID);
+    LOG_Int(finger.id);
     LOG_Str(" with confidence of ");
-    LOG_Int(fingerConfidence);
+    LOG_Int(finger.confidence);
     LOG_Enter();
 
-    if (fingerConfidence > FINGER_CONFIDENCE_MIN) {
-      return fingerID;
+    if (finger.confidence > FINGER_CONFIDENCE_MIN) {
+      return finger.id;
     }
   }
 
@@ -384,13 +384,13 @@ int8_t Finger_AuthFast(void) {
   if (p == FINGERPRINT_OK) {
     // found a match!
     LOG_Str("\nFound ID #");
-    LOG_Int(fingerID);
+    LOG_Int(finger.id);
     LOG_Str(" with confidence of ");
-    LOG_Int(fingerConfidence);
+    LOG_Int(finger.confidence);
     LOG_Enter();
 
-    if (fingerConfidence > FINGER_CONFIDENCE_MIN) {
-      return fingerID;
+    if (finger.confidence > FINGER_CONFIDENCE_MIN) {
+      return finger.id;
     }
   }
 

@@ -42,6 +42,8 @@
 - [x] Handle TCP Closed backend, it should not auto reset
 - [x] Calibrate the ADC of Backup Battery Monitor
 - [x] Flush BMS data when timeout
+- [x] Migrate Firmware RTOSv1 to RTOSv2
+- [x] RTOS: add master thread
 - [ ] Fix duplicate variables
 - [ ] Sync variable name for HMI-1 and VCU
 - [ ] Make routine to check SIMCOM internet package
@@ -52,7 +54,6 @@
   - [ ] Use AES features in new STM32F423VH 
 - [ ] Lock all global variable to minimize RTOS problem. 
 - [ ] Scale down "BMS Voltage", and set warning on 20% value.
-- [ ] RTOS: add master thread
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Handle NO Driver ID when vehicle OFF
 - [ ] Implement this UBX library:

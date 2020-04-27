@@ -41,7 +41,7 @@
 #define AUDIO_BUFFER_SIZE             4096
 
 /* External variabless -------------------------------------------------------*/
-extern osMutexId BeepMutexHandle;
+extern osMutexId_t AudioMutexHandle;
 extern AUDIO_DrvTypeDef cs43l22_drv;
 extern I2S_HandleTypeDef hi2s3;
 extern uint32_t AUDIO_SAMPLE_FREQ;
@@ -62,6 +62,8 @@ static const uint32_t I2SPLLR[7] = { 5, 2, 4, 2, 2, 3, 2 };
 static uint8_t I2S3_Init(uint32_t AudioFreq);
 static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
+static void lock(void);
+static void unlock(void);
 
 /* Public functions implementation ---------------------------------------------*/
 void AUDIO_Init(void) {
@@ -101,7 +103,8 @@ void AUDIO_Play(void) {
 }
 
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
-  osRecursiveMutexWait(BeepMutexHandle, osWaitForever);
+  lock();
+
   pAudioDrv->SetBeep(AUDIO_I2C_ADDRESS, Frequency, 0, 0);
   pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_ON);
 
@@ -111,15 +114,16 @@ void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
     // than stop
     pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
   }
-  osRecursiveMutexRelease(BeepMutexHandle);
+
+  unlock();
 }
 
 void AUDIO_BeepStop(void) {
-  osRecursiveMutexWait(BeepMutexHandle, osWaitForever);
+  lock();
 
   pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
 
-  osRecursiveMutexRelease(BeepMutexHandle);
+  unlock();
 }
 
 /**
@@ -484,4 +488,11 @@ static uint8_t I2S3_Init(uint32_t AudioFreq) {
   }
 }
 
+static void lock(void) {
+  osMutexAcquire(AudioMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
+  osMutexRelease(AudioMutexHandle);
+}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

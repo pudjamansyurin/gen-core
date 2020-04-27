@@ -10,7 +10,7 @@
 
 /* External variables ----------------------------------------------------------*/
 extern nrf24l01 nrf;
-extern osThreadId KeylessTaskHandle;
+extern osThreadId_t KeylessTaskHandle;
 
 /* Private variables ----------------------------------------------------------*/
 static nrf24l01_config config;
@@ -40,7 +40,7 @@ uint8_t KEYLESS_ReadPayload(void) {
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-  if (osKernelRunning()) {
+  if (osKernelGetState() == osKernelRunning) {
     xTaskNotifyFromISR(
         KeylessTaskHandle,
         EVENT_KEYLESS_RX_IT,

@@ -81,23 +81,23 @@
 #define KEYLESS_MSG_SEAT                        BIT(2)
 
 // Events group (Frame Report)
-#define RPT_VCU_NETWORK_RESTART                 BIT(0)
-#define RPT_VCU_BIKE_FALLING                    BIT(1)
-#define RPT_VCU_BIKE_CRASHED                    BIT(2)
-#define RPT_VCU_KEYLESS_MISSING                 BIT(3)
-#define RPT_VCU_INDEPENDENT                     BIT(4)
-#define RPT_BMS_DISCHARGE_OVER_CURRENT          BIT(30)
-#define RPT_BMS_CHARGE_OVER_CURRENT             BIT(31)
-#define RPT_BMS_SHORT_CIRCUIT                   BIT(32)
-#define RPT_BMS_DISCHARGE_OVER_TEMPERATURE      BIT(33)
-#define RPT_BMS_DISCHARGE_UNDER_TEMPERATURE     BIT(34)
-#define RPT_BMS_CHARGE_OVER_TEMPERATURE         BIT(35)
-#define RPT_BMS_CHARGE_UNDER_TEMPERATURE        BIT(36)
-#define RPT_BMS_UNDER_VOLTAGE                   BIT(37)
-#define RPT_BMS_OVER_VOLTAGE                    BIT(38)
-#define RPT_BMS_OVER_DISCHARGE_CAPACITY         BIT(39)
-#define RPT_BMS_UNBALANCE                       BIT(40)
-#define RPT_BMS_SYSTEM_FAILURE                  BIT(41)
+#define EV_VCU_NETWORK_RESTART                 BIT(0)
+#define EV_VCU_BIKE_FALLING                    BIT(1)
+#define EV_VCU_BIKE_CRASHED                    BIT(2)
+#define EV_VCU_KEYLESS_MISSING                 BIT(3)
+#define EV_VCU_INDEPENDENT                     BIT(4)
+#define EV_BMS_DISCHARGE_OVER_CURRENT          BIT(30)
+#define EV_BMS_CHARGE_OVER_CURRENT             BIT(31)
+#define EV_BMS_SHORT_CIRCUIT                   BIT(32)
+#define EV_BMS_DISCHARGE_OVER_TEMPERATURE      BIT(33)
+#define EV_BMS_DISCHARGE_UNDER_TEMPERATURE     BIT(34)
+#define EV_BMS_CHARGE_OVER_TEMPERATURE         BIT(35)
+#define EV_BMS_CHARGE_UNDER_TEMPERATURE        BIT(36)
+#define EV_BMS_UNDER_VOLTAGE                   BIT(37)
+#define EV_BMS_OVER_VOLTAGE                    BIT(38)
+#define EV_BMS_OVER_DISCHARGE_CAPACITY         BIT(39)
+#define EV_BMS_UNBALANCE                       BIT(40)
+#define EV_BMS_SYSTEM_FAILURE                  BIT(41)
 
 // Command Code List
 #define CMD_CODE_GEN                            0
@@ -186,6 +186,7 @@ typedef struct {
     uint8_t speed;
     uint32_t odometer;
     rtc_t rtc;
+    uint64_t events;
   } vcu;
   struct {
     status_t status;
@@ -219,5 +220,9 @@ uint8_t DB_BMS_CheckState(BMS_STATE state);
 void DB_BMS_MergeFlags(void);
 void DB_BMS_ResetIndex(uint8_t i);
 void DB_VCU_CheckIndependent(void);
+void DB_SetEvent(uint64_t event_id, uint8_t value);
+void DB_BMS_Events(uint16_t flag);
+//void DB_SetEvents(uint64_t value);
+//uint8_t DB_ReadEvent(uint64_t event_id);
 
 #endif /* DATABASE_H_ */

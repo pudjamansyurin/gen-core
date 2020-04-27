@@ -10,8 +10,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
-#include <string.h>
 
 /* Exported constants --------------------------------------------------------*/
 #define HEX_CHARS                                "0123456789ABCDEF"
