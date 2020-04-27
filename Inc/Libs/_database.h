@@ -217,7 +217,7 @@ typedef struct {
 
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void);
-void DB_BMS_CheckIndex(void);
+void DB_BMS_RefreshIndex(void);
 uint8_t DB_BMS_GetIndex(uint32_t id);
 uint8_t DB_BMS_CheckRun(uint8_t state);
 uint8_t DB_BMS_CheckState(BMS_STATE state);

@@ -38,7 +38,7 @@
 #include "_audio.h"
 
 /* Private constants ---------------------------------------------------------*/
-#define AUDIO_BUFFER_SIZE             4096
+#define AUDIO_BUFFER_SIZE                                           4096
 
 /* External variabless -------------------------------------------------------*/
 extern osMutexId_t AudioMutexHandle;

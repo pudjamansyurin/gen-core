@@ -43,7 +43,7 @@ void DB_Init(void) {
   }
 }
 
-void DB_BMS_CheckIndex(void) {
+void DB_BMS_RefreshIndex(void) {
   for (uint8_t i = 0; i < BMS_COUNT; i++) {
     if ((osKernelGetTickCount() - DB.bms.pack[i].tick) > pdMS_TO_TICKS(500)) {
       DB_BMS_ResetIndex(i);

@@ -62,9 +62,9 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
 
   // set message
   CB.tx.data.u8[0] = sw->list[SW_K_ABS].state;
-  // FIXME: handle me with real data
   CB.tx.data.u8[0] |= _L(db->hmi1.status.mirroring, 1);
   CB.tx.data.u8[0] |= _L(sw->list[SW_K_LAMP].state, 2);
+  // FIXME: handle me with real data
   CB.tx.data.u8[0] |= _L(1, 3);
   CB.tx.data.u8[0] |= _L(iStatus.temperature, 4);
   CB.tx.data.u8[0] |= _L(iStatus.finger, 5);

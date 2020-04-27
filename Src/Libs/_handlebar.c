@@ -100,6 +100,8 @@ void HBAR_ReadStates(void) {
   for (i = 0; i < SW_TOTAL_LIST; i++) {
     SW.list[i].state = HAL_GPIO_ReadPin(SW.list[i].port, SW.list[i].pin);
   }
+  // check is reverse mode active
+  HBAR_CheckReverse();
 }
 
 void HBAR_RestoreMode(void) {
@@ -170,8 +172,7 @@ void HBAR_DoSelect(void) {
 }
 
 void HBAR_DoSet(void) {
-  if (SW.runner.listening
-      || (SW.timer[SW_K_SET].time >= 3 && SW.runner.mode.val == SW_M_TRIP)) {
+  if (SW.runner.listening || (SW.timer[SW_K_SET].time >= 3 && SW.runner.mode.val == SW_M_TRIP)) {
     // handle reset only if push more than n sec, and in trip mode
     if (!SW.runner.listening) {
       // reset value

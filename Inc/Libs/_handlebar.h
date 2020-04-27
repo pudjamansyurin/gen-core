@@ -64,7 +64,6 @@ typedef struct {
   } mode;
 } sw_runner_t;
 
-// FIXME: SW need to be separated
 typedef struct {
   struct {
     char event[20];

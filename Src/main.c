@@ -368,20 +368,20 @@ int main(void)
   /* creation of GpsTask */
   GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
 
-//  /* creation of GyroTask */
-//  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
-//
-//  /* creation of KeylessTask */
-//  KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
-//
-//  /* creation of FingerTask */
-//  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
-//
-//  /* creation of AudioTask */
-//  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
-//
-//  /* creation of SwitchTask */
-//  SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
+  //  /* creation of GyroTask */
+  //  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
+  //
+  //  /* creation of KeylessTask */
+  //  KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
+  //
+  //  /* creation of FingerTask */
+  //  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
+  //
+  //  /* creation of AudioTask */
+  //  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
+  //
+  //  /* creation of SwitchTask */
+  //  SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
 
   /* creation of CanRxTask */
   CanRxTaskHandle = osThreadNew(StartCanRxTask, NULL, &CanRxTask_attributes);
@@ -399,7 +399,6 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  // FIXME use tickless idle feature for low power mode
   while (1) {
     /* USER CODE END WHILE */
 
@@ -1226,16 +1225,14 @@ void StartManagerTask(void *argument)
 
   // Check GPIOs state
   DB_VCU_CheckIndependent();
-  // Read all EXTI state
   HBAR_ReadStates();
-  HBAR_CheckReverse();
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("Manager");
 
-    // do this if events occurred
+    // Handle GPIO interrupt
     if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
       // handle bounce effect
       osDelay(50);
@@ -1279,11 +1276,11 @@ void StartIotTask(void *argument)
 {
   /* USER CODE BEGIN StartIotTask */
   osStatus_t status = osOK;
+  SIMCOM_RESULT p;
   report_t report;
   response_t response;
-  uint8_t retry, pendingReport = 0, pendingResponse = 0;
   timestamp_t timestamp;
-  SIMCOM_RESULT p;
+  uint8_t retry, pendingReport = 0, pendingResponse = 0;
 
   // calculate size
   const uint8_t size = sizeof(report.header.prefix) +
@@ -1301,7 +1298,7 @@ void StartIotTask(void *argument)
     // Set default
     p = SIM_RESULT_OK;
 
-    // response frame
+    // RESPONSE frame
     if (p == SIM_RESULT_OK) {
       // check report log
       if (!pendingResponse) {
@@ -1333,7 +1330,7 @@ void StartIotTask(void *argument)
       }
     }
 
-    // report frame
+    // REPORT frame
     if (p == SIM_RESULT_OK) {
       // check report log
       if (!pendingReport) {
@@ -1404,8 +1401,8 @@ void StartIotTask(void *argument)
 void StartReporterTask(void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
-  report_t report, tmp;
   TickType_t lastWake, lastFull = 0;
+  report_t report, tmp;
   osStatus_t status;
   FRAME_TYPE frame;
 
@@ -1609,7 +1606,6 @@ void StartCommandTask(void *argument)
 
       // Get current snapshot
       Response_Capture(&response);
-
       // Send to Queue
       osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
     }
@@ -1640,7 +1636,7 @@ void StartGpsTask(void *argument)
 
     GPS_Capture();
     // Dummy odometer (based on GPS)
-    //    GPS_CalculateOdometer();
+    GPS_CalculateOdometer();
 
     // debug
     //    LOG_StrLn("GPS:Buffer = ");
@@ -1768,9 +1764,9 @@ void StartFingerTask(void *argument)
         // indicator when finger is registered
         _LedWrite(1);
         osDelay(1000);
+        _LedWrite(0);
       }
     }
-    _LedWrite(0);
   }
   /* USER CODE END StartFingerTask */
 }
@@ -1869,8 +1865,6 @@ void StartSwitchTask(void *argument)
           HBAR_DoSet();
         }
       }
-    } else {
-      HBAR_CheckReverse();
     }
   }
   /* USER CODE END StartSwitchTask */
@@ -1962,7 +1956,7 @@ void StartCanTxTask(void *argument)
       }
     }
     // Handle BMS un-plugged suddenly
-    DB_BMS_CheckIndex();
+    DB_BMS_RefreshIndex();
     // Handle merged BMS parameter
     DB_BMS_MergeFlags();
 
@@ -2011,12 +2005,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */

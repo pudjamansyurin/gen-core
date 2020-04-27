@@ -96,7 +96,7 @@ mems_decision_t GYRO_Decision(mems_t *calibrator, uint16_t sample) {
   mems_decision.fall = (abs(mems.gyroscope.z) > GYROSCOPE_LIMIT);
 
   // for debugging
-  //  //   calculated data
+  //   calculated data
   //  LOG_Str("IMU:Accel[");
   //  LOG_Int(g_force * 100 / ACCELEROMETER_LIMIT);
   //  LOG_Str(" %] = ");
@@ -112,7 +112,7 @@ mems_decision_t GYRO_Decision(mems_t *calibrator, uint16_t sample) {
   //  LOG_Int(GYROSCOPE_LIMIT);
   //  LOG_Enter();
 
-  //// raw data
+  // raw data
   //  char str[100];
   //  sprintf(str,
   //      "Accelerometer\n- X:%ld\n- Y:%ld\n- Z:%ld\n"

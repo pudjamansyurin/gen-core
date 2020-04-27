@@ -80,8 +80,8 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
     report->data.opt.vcu.gps.hdop = (uint8_t) (GPS.dop_h * 10);
     report->data.opt.vcu.gps.heading = (uint8_t) (GPS.heading / 2);
 
-    report->data.opt.vcu.speed = GPS.speed_mps;
-    report->data.opt.vcu.odometer = DB.vcu.odometer;
+    report->data.opt.vcu.speed = GPS.speed_kph;
+    report->data.opt.vcu.odometer = DB.vcu.odometer / 1000;
     report->data.opt.vcu.bat_voltage = DB.vcu.bat_voltage / 18;
 
     // BMS data
