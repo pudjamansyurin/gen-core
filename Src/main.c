@@ -351,7 +351,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-
   GlobalEventHandle = osEventFlagsNew(NULL);
   /* USER CODE END RTOS_QUEUES */
 
@@ -1230,9 +1229,10 @@ void StartManagerTask(void *argument)
   DB_VCU_CheckBMSPresence();
   DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
-  /* Infinite loop */
+  // Release other threads
   osEventFlagsSet(GlobalEventHandle, EVENT_READY);
 
+  /* Infinite loop */
   lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("Manager");

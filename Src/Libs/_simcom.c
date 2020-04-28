@@ -67,6 +67,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
       p = Simcom_Power();
     } else {
       if (SIM.state == SIM_STATE_DOWN) {
+        DB.vcu.signal_percent = 0;
         LOG_StrLn("Simcom:Down");
         p = SIM_RESULT_ERROR;
       } else {
