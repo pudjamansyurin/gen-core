@@ -593,7 +593,7 @@ SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent) {
         LOG_Buf(signal.rssi.list.name, strlen(signal.rssi.list.name));
         LOG_Str(", ");
         LOG_Int(*percent);
-        LOG_Enter();
+        LOG_StrLn("%");
 
         p = SIM_RESULT_OK;
       }

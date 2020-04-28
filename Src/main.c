@@ -1294,43 +1294,10 @@ void StartIotTask(void *argument)
   Simcom_SetState(SIM_STATE_CONFIGURED);
 
   /* Infinite loop */
-
   for (;;) {
     _DebugTask("IoT");
     // Set default
     p = SIM_RESULT_OK;
-
-    // RESPONSE frame
-    if (p == SIM_RESULT_OK) {
-      // check report log
-      if (!pendingResponse) {
-        status = osMessageQueueGet(ResponseQueueHandle, &response, NULL, 0U);
-        // check is mail ready
-        if (status == osOK) {
-          pendingResponse = 1;
-        }
-      }
-
-      // check is mail ready
-      if (pendingResponse) {
-        retry = 1;
-        do {
-          // Send to server
-          Simcom_SetState(SIM_STATE_SERVER_ON);
-          p = Simcom_Upload(&response, size + response.header.size, &retry);
-
-          // Release back
-          if (p == SIM_RESULT_OK) {
-            pendingResponse = 0;
-
-            break;
-          }
-
-          // delay
-          osDelay(500);
-        } while (p != SIM_RESULT_OK && retry <= SIMCOM_UPLOAD_RETRY);
-      }
-    }
 
     // REPORT frame
     if (p == SIM_RESULT_OK) {
@@ -1360,7 +1327,42 @@ void StartIotTask(void *argument)
 
           // Release back
           if (p == SIM_RESULT_OK) {
+            EEPROM_ReportSeqID(EE_CMD_W, report.header.seq_id);
             pendingReport = 0;
+
+            break;
+          }
+
+          // delay
+          osDelay(500);
+        } while (p != SIM_RESULT_OK && retry <= SIMCOM_UPLOAD_RETRY);
+      }
+    }
+
+    // RESPONSE frame
+    if (p == SIM_RESULT_OK) {
+      // check report log
+      if (!pendingResponse) {
+        status = osMessageQueueGet(ResponseQueueHandle, &response, NULL, 0U);
+        // check is mail ready
+        if (status == osOK) {
+          pendingResponse = 1;
+        }
+      }
+
+      // check is mail ready
+      if (pendingResponse) {
+        retry = 1;
+        do {
+          // Send to server
+          Simcom_SetState(SIM_STATE_SERVER_ON);
+          p = Simcom_Upload(&response, size + response.header.size, &retry);
+
+          // Release back
+          if (p == SIM_RESULT_OK) {
+            // save sequentialID
+            EEPROM_ResponseSeqID(EE_CMD_W, response.header.seq_id);
+            pendingResponse = 0;
 
             break;
           }
