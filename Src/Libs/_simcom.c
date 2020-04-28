@@ -455,7 +455,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
               // Check IP Status
               if (Simcom_Command("AT+CIPSTATUS\r", 500, 1, "STATE: TCP CLOSED")) {
                 // exit the loop
-                *retry = SIMCOM_UPLOAD_RETRY + 1;
+                *retry = SIMCOM_MAX_UPLOAD_RETRY + 1;
               } else {
                 // try closing the IP
                 Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);

@@ -23,7 +23,7 @@
 #define SIMCOM_RSP_IPD                  "+IPD,"
 #define SIMCOM_CMD_BOOT 				"AT\r"
 
-#define SIMCOM_UPLOAD_RETRY             3
+#define SIMCOM_MAX_UPLOAD_RETRY         3
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {

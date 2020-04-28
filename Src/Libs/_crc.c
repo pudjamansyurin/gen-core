@@ -19,7 +19,7 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
-  uint32_t cnt, remaining = 0;
+  uint32_t cnt, result, remaining = 0;
 
   lock();
 
@@ -57,14 +57,16 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
     /* Set new value */
     hcrc.Instance->DR = remaining;
   }
+  result = hcrc.Instance->DR;
 
   unlock();
-
   /* Return data */
-  return hcrc.Instance->DR;
+  return result;
 }
 
 uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count, uint8_t reset) {
+  uint32_t result;
+
   lock();
 
   /* Reset CRC data register if necessary */
@@ -78,10 +80,11 @@ uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count, uint8_t reset) {
     /* Set new value */
     hcrc.Instance->DR = *arr++;
   }
+  result = hcrc.Instance->DR;
 
   unlock();
   /* Return data */
-  return hcrc.Instance->DR;
+  return result;
 }
 
 /* Private functions implementation --------------------------------------------*/
