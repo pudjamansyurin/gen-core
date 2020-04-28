@@ -19,11 +19,13 @@ static void unlock(void);
 /* Public functions implementation ---------------------------------------------*/
 void LOG_Char(char ch) {
   uint32_t tick;
+
   tick = osKernelGetTickCount();
   // wait if busy
   while (1) {
-    if (ITM->PORT[0].u32 != 0 ||
-        osKernelGetTickCount() - tick >= pdMS_TO_TICKS(10)) {
+    if (ITM->PORT[0].u32 != 0
+        || osKernelGetTickCount() - tick >= pdMS_TO_TICKS(10)
+    ) {
       break;
     }
     osDelay(1);
@@ -119,8 +121,9 @@ void LOG_Str(char *str) {
 void LOG_StrLn(char *str) {
   lock();
 
-  while (*str != '\0')
+  while (*str != '\0') {
     LOG_Char(*str++);
+  }
   LOG_Char('\n');
 
   unlock();

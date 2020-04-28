@@ -72,7 +72,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
       } else {
         if (SIM.state >= SIM_STATE_CONFIGURED) {
           SIM_SignalQuality(&(DB.vcu.signal_percent));
-          if (DB.vcu.signal_percent < 40) {
+          if (DB.vcu.signal_percent < 20) {
             LOG_StrLn("Simcom:PendingBySignal");
             osDelay(5 * 1000);
             break;
@@ -591,6 +591,8 @@ SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent) {
         // debugging
         LOG_Str("\nSimcom:RSSI = ");
         LOG_Buf(signal.rssi.list.name, strlen(signal.rssi.list.name));
+        LOG_Str(", ");
+        LOG_Int(*percent);
         LOG_Enter();
 
         p = SIM_RESULT_OK;

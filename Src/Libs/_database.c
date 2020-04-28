@@ -148,7 +148,7 @@ void DB_BMS_MergeData(void) {
       device++;
     }
   }
-  DB.bms.soc = soc / device;
+  DB.bms.soc = device ? (soc / device) : soc;
 }
 
 void DB_BMS_ResetIndex(uint8_t i) {

@@ -87,7 +87,7 @@ osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
     .name = "ManagerTask",
     .priority = (osPriority_t) osPriorityRealtime7,
-    .stack_size = 128 * 4
+    .stack_size = 256 * 4
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
@@ -115,7 +115,7 @@ osThreadId_t GpsTaskHandle;
 const osThreadAttr_t GpsTask_attributes = {
     .name = "GpsTask",
     .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 256 * 4
+    .stack_size = 128 * 4
 };
 /* Definitions for GyroTask */
 osThreadId_t GyroTaskHandle;
@@ -164,7 +164,7 @@ osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
     .name = "CanTxTask",
     .priority = (osPriority_t) osPriorityHigh,
-    .stack_size = 128 * 4
+    .stack_size = 256 * 4
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
@@ -368,29 +368,29 @@ int main(void)
   /* creation of GpsTask */
   GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
 
-  //  /* creation of GyroTask */
-  //  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
-  //
-  //  /* creation of KeylessTask */
-  //  KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
-  //
-  //  /* creation of FingerTask */
-  //  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
-  //
-  //  /* creation of AudioTask */
-  //  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
-  //
-  //  /* creation of SwitchTask */
-  //  SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
+//  /* creation of GyroTask */
+//  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
+//
+//  /* creation of KeylessTask */
+//  KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
+//
+//  /* creation of FingerTask */
+//  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
+//
+//  /* creation of AudioTask */
+//  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
+//
+//  /* creation of SwitchTask */
+//  SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
 
   /* creation of CanRxTask */
   CanRxTaskHandle = osThreadNew(StartCanRxTask, NULL, &CanRxTask_attributes);
 
   /* creation of CanTxTask */
   CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  HAL_Delay(1000);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -500,7 +500,7 @@ static void MX_ADC1_Init(void)
    */
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
       {
     Error_Handler();
@@ -1202,6 +1202,7 @@ void StartManagerTask(void *argument)
   uint32_t notif;
 
   // NOTE: This task get executed first!
+  //  osKernelLock();
   DB_Init();
 
   // Load EEPROM data
@@ -1228,6 +1229,7 @@ void StartManagerTask(void *argument)
   DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
   /* Infinite loop */
+  //  osKernelUnlock();
   lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("Manager");
@@ -1997,12 +1999,12 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
