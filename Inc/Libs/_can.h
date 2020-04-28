@@ -29,6 +29,7 @@
 
 #define CAND_HMI1_LEFT                                  0x7C0
 #define CAND_HMI1_RIGHT                                 0x7C1
+
 #define CAND_HMI2                                       0x7D0
 
 /* Public functions prototype ------------------------------------------------*/

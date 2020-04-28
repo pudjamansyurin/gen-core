@@ -16,7 +16,7 @@ extern CAN_HandleTypeDef hcan1;
 /* Public variables -----------------------------------------------------------*/
 canbus_t CB;
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions declaration ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
@@ -80,6 +80,7 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
 
   uint32_t TxMailbox;
   HAL_StatusTypeDef status;
+
   // check tx mailbox is ready
   while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0)
     ;
@@ -146,13 +147,14 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
   if (CANBUS_Read(&(CB.rx))) {
     // signal only when RTOS started
     if (osKernelGetState() == osKernelRunning) {
-      xTaskNotifyFromISR(CanRxTaskHandle, EVENT_CAN_RX_IT, eSetBits, &xHigherPriorityTaskWoken);
+      xTaskNotifyFromISR(CanRxTaskHandle, EVT_CAN_RX_IT, eSetBits, &xHigherPriorityTaskWoken);
     }
   }
 
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
+/* Private functions implementation --------------------------------------------*/
 static void lock(void) {
   osMutexAcquire(CanTxMutexHandle, osWaitForever);
 }

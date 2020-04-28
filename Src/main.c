@@ -214,6 +214,8 @@ const osMutexAttr_t FingerRecMutex_attributes = {
     .attr_bits = osMutexRecursive,
 };
 /* USER CODE BEGIN PV */
+osEventFlagsId_t GlobalEventHandle;
+
 extern db_t DB;
 extern sw_t SW;
 extern sim_t SIM;
@@ -350,6 +352,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
 
+  GlobalEventHandle = osEventFlagsNew(NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -1140,11 +1143,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == EXT_BMS_IRQ_Pin || GPIO_Pin == EXT_KNOB_IRQ_Pin) {
       // handle BMS_IRQ (is 5v exist?)
       if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
-        event = EVENT_GENERAL_BMS_IRQ;
+        event = EVT_MANAGER_BMS_IRQ;
       }
       // handle KNOB IRQ (Power control for HMI1 & HMI2)
       if (GPIO_Pin == EXT_KNOB_IRQ_Pin) {
-        event = EVENT_GENERAL_KNOB_IRQ;
+        event = EVT_MANAGER_KNOB_IRQ;
       }
       // send notification
       xTaskNotifyFromISR(
@@ -1163,7 +1166,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     //    if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
     //      xTaskNotifyFromISR(
     //          FingerTaskHandle,
-    //          EVENT_FINGER_PLACED,
+    //          EVT_FINGER_PLACED,
     //          eSetBits,
     //          &xHigherPriorityTaskWoken);
     //    }
@@ -1202,7 +1205,6 @@ void StartManagerTask(void *argument)
   uint32_t notif;
 
   // NOTE: This task get executed first!
-  //  osKernelLock();
   DB_Init();
 
   // Load EEPROM data
@@ -1229,7 +1231,8 @@ void StartManagerTask(void *argument)
   DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
   /* Infinite loop */
-  //  osKernelUnlock();
+  osEventFlagsSet(GlobalEventHandle, EVENT_READY);
+
   lastWake = xTaskGetTickCount();
   for (;;) {
     _DebugTask("Manager");
@@ -1239,12 +1242,12 @@ void StartManagerTask(void *argument)
       // handle bounce effect
       osDelay(50);
       // BMS Power IRQ
-      if (notif & EVENT_GENERAL_BMS_IRQ) {
+      if (notif & EVT_MANAGER_BMS_IRQ) {
         // get current state
         DB_VCU_CheckBMSPresence();
       }
       // KNOB IRQ
-      if (notif & EVENT_GENERAL_KNOB_IRQ) {
+      if (notif & EVT_MANAGER_KNOB_IRQ) {
         // get current state
         DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
       }
@@ -1283,11 +1286,12 @@ void StartIotTask(void *argument)
   response_t response;
   timestamp_t timestamp;
   uint8_t retry, pendingReport = 0, pendingResponse = 0;
-
-  // calculate size
   const uint8_t size = sizeof(report.header.prefix) +
       sizeof(report.header.crc) +
       sizeof(report.header.size);
+
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Start simcom module
   SIMCOM_DMA_Init();
@@ -1407,6 +1411,9 @@ void StartReporterTask(void *argument)
   osStatus_t status;
   FRAME_TYPE frame;
 
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+
   // Initialize
   Report_Init(FR_SIMPLE, &report);
 
@@ -1467,6 +1474,9 @@ void StartCommandTask(void *argument)
   osStatus_t status;
   command_t command;
   int p;
+
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
   Response_Init(&response);
@@ -1536,13 +1546,13 @@ void StartCommandTask(void *argument)
         case CMD_CODE_AUDIO:
           switch (command.data.sub_code) {
             case CMD_AUDIO_BEEP:
-              xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP, eSetBits);
+              xTaskNotify(AudioTaskHandle, EVT_AUDIO_BEEP, eSetBits);
               break;
 
             case CMD_AUDIO_MUTE:
               xTaskNotify(
                   AudioTaskHandle,
-                  (uint8_t) command.data.value ? EVENT_AUDIO_MUTE_ON : EVENT_AUDIO_MUTE_OFF,
+                  (uint8_t) command.data.value ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF,
                   eSetBits);
               break;
 
@@ -1606,7 +1616,10 @@ void StartGpsTask(void *argument)
   /* USER CODE BEGIN StartGpsTask */
   TickType_t lastWake;
 
-  // Start GPS module
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+
+  // Initialize
   UBLOX_DMA_Init();
   GPS_Init();
 
@@ -1644,8 +1657,12 @@ void StartGyroTask(void *argument)
   mems_t mems_calibration;
   mems_decision_t mems_decision;
 
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+
   /* MPU6050 Initialization*/
   GYRO_Init();
+
   // Set calibrator
   mems_calibration = GYRO_Average(NULL, 500);
   LOG_StrLn("Gyro:Calibrated");
@@ -1662,11 +1679,11 @@ void StartGyroTask(void *argument)
 
     // Check gyroscope, happens when fall detected
     if (mems_decision.fall) {
-      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_START, eSetBits);
+      xTaskNotify(AudioTaskHandle, EVT_AUDIO_BEEP_START, eSetBits);
       DB_SetEvent(EV_VCU_BIKE_FALLING, 1);
       _LedDisco(1000);
     } else {
-      xTaskNotify(AudioTaskHandle, EVENT_AUDIO_BEEP_STOP, eSetBits);
+      xTaskNotify(AudioTaskHandle, EVT_AUDIO_BEEP_STOP, eSetBits);
       DB_SetEvent(EV_VCU_BIKE_FALLING, 0);
     }
     // Report interval
@@ -1688,6 +1705,9 @@ void StartKeylessTask(void *argument)
   uint8_t msg;
   uint32_t notif;
 
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+
   // initialization
   KEYLESS_Init();
 
@@ -1698,7 +1718,7 @@ void StartKeylessTask(void *argument)
     xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
 
     // proceed event
-    if (notif & EVENT_KEYLESS_RX_IT) {
+    if (notif & EVT_KEYLESS_RX_IT) {
       msg = KEYLESS_ReadPayload();
 
       // indicator
@@ -1729,6 +1749,9 @@ void StartFingerTask(void *argument)
   /* USER CODE BEGIN StartFingerTask */
   uint32_t notif;
 
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+
   // Initialization
   FINGER_DMA_Init();
   Finger_Init();
@@ -1740,7 +1763,7 @@ void StartFingerTask(void *argument)
     xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &notif, portMAX_DELAY);
 
     // proceed event
-    if (notif & EVENT_FINGER_PLACED) {
+    if (notif & EVT_FINGER_PLACED) {
       if (Finger_AuthFast() > 0) {
         // indicator when finger is registered
         _LedWrite(1);
@@ -1765,6 +1788,9 @@ void StartAudioTask(void *argument)
   TickType_t lastWake;
   uint32_t notif;
 
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+
   /* Initialize Wave player (Codec, DMA, I2C) */
   AUDIO_Init();
   // Play wave loop forever, handover to DMA, so CPU is free
@@ -1777,23 +1803,23 @@ void StartAudioTask(void *argument)
     // do this if events occurred
     if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
       // Beep command
-      if (notif & EVENT_AUDIO_BEEP) {
+      if (notif & EVT_AUDIO_BEEP) {
         // Beep
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
         osDelay(250);
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
       }
       // Long-Beep Command
-      if (notif & EVENT_AUDIO_BEEP_START) {
+      if (notif & EVT_AUDIO_BEEP_START) {
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
-      } else if (notif & EVENT_AUDIO_BEEP_STOP) {
+      } else if (notif & EVT_AUDIO_BEEP_STOP) {
         AUDIO_BeepStop();
       }
       // Mute command
-      if (notif & EVENT_AUDIO_MUTE_ON) {
+      if (notif & EVT_AUDIO_MUTE_ON) {
         AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
       }
-      if (notif & EVENT_AUDIO_MUTE_OFF) {
+      if (notif & EVT_AUDIO_MUTE_OFF) {
         AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
       }
     }
@@ -1818,6 +1844,9 @@ void StartSwitchTask(void *argument)
 {
   /* USER CODE BEGIN StartSwitchTask */
   uint32_t notif;
+
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
   HBAR_ReadStates();
@@ -1866,6 +1895,9 @@ void StartCanRxTask(void *argument)
   /* USER CODE BEGIN StartCanRxTask */
   uint32_t notif;
 
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+
   /* Infinite loop */
   for (;;) {
     _DebugTask("CanRx");
@@ -1873,7 +1905,7 @@ void StartCanRxTask(void *argument)
     xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
 
     // proceed event
-    if (notif & EVENT_CAN_RX_IT) {
+    if (notif & EVT_CAN_RX_IT) {
       // handle STD message
       switch (CANBUS_ReadID()) {
         //        FIXME: handle with real data
@@ -1915,6 +1947,9 @@ void StartCanTxTask(void *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
   TickType_t lastWake;
+
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();

@@ -59,28 +59,12 @@
 
 #define GMT_TIME                                7                       // Asia/Jakarta
 
-// Event List (RTOS Tasks)
-//#define EVENT_REPORTER_CRASH                    BIT(0)
-//#define EVENT_REPORTER_FALL                     BIT(1)
-//#define EVENT_REPORTER_FALL_FIXED               BIT(2)
-#define EVENT_AUDIO_BEEP                        BIT(0)
-#define EVENT_AUDIO_BEEP_START                  BIT(1)
-#define EVENT_AUDIO_BEEP_STOP                   BIT(2)
-#define EVENT_AUDIO_MUTE_ON                     BIT(3)
-#define EVENT_AUDIO_MUTE_OFF                    BIT(4)
-#define EVENT_FINGER_PLACED                     BIT(0)
-#define EVENT_CAN_RX_IT                         BIT(0)
-#define EVENT_KEYLESS_RX_IT                     BIT(0)
-
-#define EVENT_GENERAL_BMS_IRQ                   BIT(0)
-#define EVENT_GENERAL_KNOB_IRQ                  BIT(1)
-
 // Payload list (Keyless)
 #define KEYLESS_MSG_BROADCAST                   BIT(0)
 #define KEYLESS_MSG_FINDER                      BIT(1)
 #define KEYLESS_MSG_SEAT                        BIT(2)
 
-// Events group (Frame Report)
+// Events group (for Frame Report)
 #define EV_VCU_NETWORK_RESTART                 BIT(0)
 #define EV_VCU_BIKE_FALLING                    BIT(1)
 #define EV_VCU_BIKE_CRASHED                    BIT(2)
@@ -98,6 +82,24 @@
 #define EV_BMS_OVER_DISCHARGE_CAPACITY         BIT(39)
 #define EV_BMS_UNBALANCE                       BIT(40)
 #define EV_BMS_SYSTEM_FAILURE                  BIT(41)
+
+// Events (for Individual Thread)
+//#define EVT_REPORTER_CRASH                    BIT(0)
+//#define EVT_REPORTER_FALL                     BIT(1)
+//#define EVT_REPORTER_FALL_FIXED               BIT(2)
+#define EVT_AUDIO_BEEP                        BIT(0)
+#define EVT_AUDIO_BEEP_START                  BIT(1)
+#define EVT_AUDIO_BEEP_STOP                   BIT(2)
+#define EVT_AUDIO_MUTE_ON                     BIT(3)
+#define EVT_AUDIO_MUTE_OFF                    BIT(4)
+#define EVT_FINGER_PLACED                     BIT(0)
+#define EVT_CAN_RX_IT                         BIT(0)
+#define EVT_KEYLESS_RX_IT                     BIT(0)
+#define EVT_MANAGER_BMS_IRQ                   BIT(0)
+#define EVT_MANAGER_KNOB_IRQ                  BIT(1)
+
+// Events group (for All Threads)
+#define EVENT_READY                             BIT(0)
 
 // Command Code List
 #define CMD_CODE_GEN                            0

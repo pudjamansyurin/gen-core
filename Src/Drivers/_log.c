@@ -12,7 +12,7 @@
 /* External variables ----------------------------------------------------------*/
 extern osMutexId_t LogMutexHandle;
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions declarations ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
@@ -204,6 +204,7 @@ void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char sub
   unlock();
 }
 
+/* Private functions implementations ----------------------------------------------*/
 static void lock(void) {
   osMutexAcquire(LogMutexHandle, osWaitForever);
 }

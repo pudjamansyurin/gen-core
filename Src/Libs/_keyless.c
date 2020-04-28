@@ -43,7 +43,7 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
   if (osKernelGetState() == osKernelRunning) {
     xTaskNotifyFromISR(
         KeylessTaskHandle,
-        EVENT_KEYLESS_RX_IT,
+        EVT_KEYLESS_RX_IT,
         eSetBits,
         &xHigherPriorityTaskWoken);
   }
