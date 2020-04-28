@@ -104,12 +104,11 @@
 #define CMD_CODE_REPORT                         1
 #define CMD_CODE_AUDIO                          2
 #define CMD_CODE_FINGER                         3
-#define CMD_CODE_HMI2                           4
-#define CMD_CODE_BMS                            5
 
 // Command Sub-Code List
 #define CMD_GEN_INFO                            0
 #define CMD_GEN_LED                             1
+#define CMD_GEN_KNOB                            2
 
 #define CMD_REPORT_RTC                          0
 #define CMD_REPORT_ODOM                         1
@@ -122,10 +121,6 @@
 #define CMD_FINGER_ADD                          0
 #define CMD_FINGER_DEL                          1
 #define CMD_FINGER_RST                          2
-
-#define CMD_HMI2_SHUTDOWN                       0
-
-#define CMD_BMS_ON                              0
 
 // Response Status List
 #define RESPONSE_STATUS_ERROR                   0
@@ -149,6 +144,12 @@ typedef enum {
   BMS_STATE_FULL = 3
 } BMS_STATE;
 
+typedef enum {
+  HMI1_DEV_LEFT = 0,
+  HMI1_DEV_RIGHT = 1,
+  HMI1_DEV_MAX = 1
+} HMI1_DEVICE;
+
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
   RTC_TimeTypeDef time;
@@ -162,9 +163,9 @@ typedef struct {
 
 //FIXME active disabled GPIO input
 typedef struct {
-  //	uint8_t abs;
+//	uint8_t abs;
   uint8_t mirroring;
-  //  uint8_t lamp;
+//  uint8_t lamp;
   uint8_t warning;
   uint8_t temperature;
   uint8_t finger;
@@ -177,6 +178,7 @@ typedef struct {
 // Node struct
 typedef struct {
   struct {
+    uint8_t knob;
     uint32_t unit_id;
     uint8_t independent;
     uint16_t interval;
@@ -184,7 +186,7 @@ typedef struct {
     uint16_t bat_voltage;
     uint8_t signal_percent;
     uint8_t speed;
-    uint32_t odometer;
+    uint32_t odometer_mps;
     rtc_t rtc;
     uint64_t events;
     struct {
@@ -193,14 +195,20 @@ typedef struct {
     } seq_id;
   } vcu;
   struct {
+    uint8_t started;
     status_t status;
+    struct {
+      uint8_t started;
+      uint32_t tick;
+    } device[2];
   } hmi1;
   struct {
-    uint8_t shutdown;
+    uint8_t started;
+    uint32_t tick;
   } hmi2;
   struct {
-    uint8_t run;
     uint8_t started;
+    uint8_t soc;
     struct {
       uint32_t id;
       float voltage;
@@ -217,15 +225,17 @@ typedef struct {
 
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void);
+void DB_SetEvent(uint64_t event_id, uint8_t value);
+void DB_BMS_Events(uint16_t flag);
+void DB_HMI1_RefreshIndex(void);
 void DB_BMS_RefreshIndex(void);
 uint8_t DB_BMS_GetIndex(uint32_t id);
 uint8_t DB_BMS_CheckRun(uint8_t state);
 uint8_t DB_BMS_CheckState(BMS_STATE state);
-void DB_BMS_MergeFlags(void);
+void DB_BMS_MergeData(void);
 void DB_BMS_ResetIndex(uint8_t i);
-void DB_VCU_CheckIndependent(void);
-void DB_SetEvent(uint64_t event_id, uint8_t value);
-void DB_BMS_Events(uint16_t flag);
+void DB_VCU_CheckKnob(void);
+void DB_VCU_CheckBMSPresence(void);
 //void DB_SetEvents(uint64_t value);
 //uint8_t DB_ReadEvent(uint64_t event_id);
 

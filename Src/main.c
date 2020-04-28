@@ -1224,8 +1224,8 @@ void StartManagerTask(void *argument)
   }
 
   // Check GPIOs state
-  DB_VCU_CheckIndependent();
-  HBAR_ReadStates();
+  DB_VCU_CheckBMSPresence();
+  DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
   /* Infinite loop */
   lastWake = xTaskGetTickCount();
@@ -1239,12 +1239,12 @@ void StartManagerTask(void *argument)
       // BMS Power IRQ
       if (notif & EVENT_GENERAL_BMS_IRQ) {
         // get current state
-        DB_VCU_CheckIndependent();
+        DB_VCU_CheckBMSPresence();
       }
       // KNOB IRQ
       if (notif & EVENT_GENERAL_KNOB_IRQ) {
         // get current state
-        DB.hmi2.shutdown = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+        DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
       }
     }
 
@@ -1373,17 +1373,14 @@ void StartIotTask(void *argument)
     Simcom_SetState(SIM_STATE_READY);
     // Retrieve network signal quality
     SIM_SignalQuality(&(DB.vcu.signal_percent));
-    // Retrieve RTC time
-    RTC_ReadRaw(&(DB.vcu.rtc.timestamp));
     // Check calibration by cellular network
-    if (_TimeNeedCalibration(DB.vcu.rtc)) {
+    if (_TimeNeedCalibration(&DB)) {
       // get carrier timestamp
       if (SIM_Clock(&timestamp)) {
         // calibrate the RTC
         RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
       }
     }
-    // ============ End of SIMCOM Related Routines ===============
 
     // scan ADC while simcom at rest
     osDelay(1000);
@@ -1502,6 +1499,10 @@ void StartCommandTask(void *argument)
               _LedWrite((uint8_t) command.data.value);
               break;
 
+            case CMD_GEN_KNOB:
+              DB.vcu.knob = (uint8_t) command.data.value;
+              break;
+
             default:
               response.data.code = RESPONSE_STATUS_INVALID;
               break;
@@ -1572,30 +1573,6 @@ void StartCommandTask(void *argument)
           // handle response from finger-print module
           if (p != FINGERPRINT_OK) {
             response.data.code = RESPONSE_STATUS_ERROR;
-          }
-          break;
-
-        case CMD_CODE_HMI2:
-          switch (command.data.sub_code) {
-            case CMD_HMI2_SHUTDOWN:
-              DB.hmi2.shutdown = (uint8_t) command.data.value;
-              break;
-
-            default:
-              response.data.code = RESPONSE_STATUS_INVALID;
-              break;
-          }
-          break;
-
-        case CMD_CODE_BMS:
-          switch (command.data.sub_code) {
-            case CMD_BMS_ON:
-              DB.bms.run = (uint8_t) command.data.value;
-              break;
-
-            default:
-              response.data.code = RESPONSE_STATUS_INVALID;
-              break;
           }
           break;
 
@@ -1838,6 +1815,9 @@ void StartSwitchTask(void *argument)
   /* USER CODE BEGIN StartSwitchTask */
   uint32_t notif;
 
+  // Initialize
+  HBAR_ReadStates();
+
   /* Infinite loop */
   for (;;) {
     _DebugTask("Switch");
@@ -1892,16 +1872,18 @@ void StartCanRxTask(void *argument)
     if (notif & EVENT_CAN_RX_IT) {
       // handle STD message
       switch (CANBUS_ReadID()) {
-//        FIXME: handle with real data
-//        case CAND_MCU_DUMMY:
-//          CANR_MCU_Dummy(&DB);
-//          break;
+        //        FIXME: handle with real data
+        //        case CAND_MCU_DUMMY:
+        //          CANR_MCU_Dummy(&DB);
+        //          break;
         case CAND_HMI2:
           CANR_HMI2(&DB);
           break;
         case CAND_HMI1_LEFT:
+          CANR_HMI1_LEFT(&DB);
           break;
         case CAND_HMI1_RIGHT:
+          CANR_HMI1_RIGHT(&DB);
           break;
         case CAND_BMS_PARAM_1:
           CANR_BMS_Param1(&DB);
@@ -1941,7 +1923,7 @@ void StartCanTxTask(void *argument)
     CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
 
     // Control BMS power
-    if (DB.bms.run) {
+    if (DB.vcu.knob) {
       if (!DB_BMS_CheckRun(1) && !DB_BMS_CheckState(BMS_STATE_DISCHARGE)) {
         CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
       } else {
@@ -1954,12 +1936,21 @@ void StartCanTxTask(void *argument)
       } else {
         // completely OFF
         DB.bms.started = 0;
+        DB.bms.soc = 0;
       }
     }
-    // Handle BMS un-plugged suddenly
+
+    // update BMS data
     DB_BMS_RefreshIndex();
-    // Handle merged BMS parameter
-    DB_BMS_MergeFlags();
+    DB_BMS_MergeData();
+
+    // update HMI1 data
+    DB_HMI1_RefreshIndex();
+
+    // update HMI2 data
+    if ((osKernelGetTickCount() - DB.hmi2.tick) > pdMS_TO_TICKS(1000)) {
+      DB.hmi2.started = 0;
+    }
 
     // Periodic interval
     vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(500));

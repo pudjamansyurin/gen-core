@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
+#include "_rtc.h"
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t _LedRead(void) {
@@ -94,10 +95,14 @@ uint8_t _TimeCheckDaylight(timestamp_t timestamp) {
   return (timestamp.time.Hours >= 5 && timestamp.time.Hours <= 16);
 }
 
-uint8_t _TimeNeedCalibration(rtc_t rtc) {
-  return (rtc.calibration.Year != rtc.timestamp.date.Year ||
-      rtc.calibration.Month != rtc.timestamp.date.Month ||
-      rtc.calibration.Date != rtc.timestamp.date.Date);
+uint8_t _TimeNeedCalibration(db_t *db) {
+  // Retrieve RTC time
+  RTC_ReadRaw(&(db->vcu.rtc.timestamp));
+
+  // Compare
+  return (db->vcu.rtc.calibration.Year != db->vcu.rtc.timestamp.date.Year ||
+      db->vcu.rtc.calibration.Month != db->vcu.rtc.timestamp.date.Month ||
+      db->vcu.rtc.calibration.Date != db->vcu.rtc.timestamp.date.Date);
 }
 
 int8_t _BitPosition(uint64_t event_id) {

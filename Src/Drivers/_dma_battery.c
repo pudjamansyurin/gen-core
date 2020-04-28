@@ -17,9 +17,9 @@ extern sim_t SIM;
 /* Local constants -----------------------------------------------------------*/
 #define DMA_SZ                      50U
 #define AVERAGE_SZ                  1000U
-#define ADC_MAX_VALUE               4095U    // 12 bit
-#define REF_MAX_VOLTAGE             3300U    // mV
-#define BAT_MAX_VOLTAGE             4250U    // mV
+#define ADC_MAX_VALUE               4095.0f    // 12 bit
+#define REF_MAX_VOLTAGE             3300.0f   // mV
+#define BAT_MAX_VOLTAGE             4250.0f    // mV
 
 /* Private variables ----------------------------------------------------------*/
 static uint16_t DMA_BUFFER[DMA_SZ];

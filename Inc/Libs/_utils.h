@@ -25,7 +25,7 @@ void _LedDisco(uint16_t ms);
 void _Error(char msg[50]);
 void _DebugTask(char name[20]);
 void _DummyGenerator(db_t *db, sw_t *sw);
-uint8_t _TimeNeedCalibration(rtc_t rtc);
+uint8_t _TimeNeedCalibration(db_t *db);
 uint8_t _TimeCheckDaylight(timestamp_t timestamp);
 int8_t _BitPosition(uint64_t event_id);
 int32_t _ParseNumber(const char *ptr, uint8_t *cnt);

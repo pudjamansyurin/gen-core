@@ -87,7 +87,8 @@ uint8_t EEPROM_ResponseSeqID(EEPROM_COMMAND cmd, uint16_t value) {
 }
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
-  return EE_32(VADDR_ODOMETER, cmd, &value, &(DB.vcu.odometer));
+  // FIXME: only update eeprom for 1km/hr increment
+  return EE_32(VADDR_ODOMETER, cmd, &value, &(DB.vcu.odometer_mps));
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {

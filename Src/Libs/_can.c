@@ -74,11 +74,12 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   // sein value
   CB.tx.data.u8[1] = iSeinLeft;
   CB.tx.data.u8[1] |= _L(iSeinRight, 1);
-  CB.tx.data.u8[1] |= _L(db->hmi2.shutdown, 2);
+  CB.tx.data.u8[1] |= _L(!db->vcu.knob, 2);
   CB.tx.data.u8[2] = db->vcu.signal_percent;
+  CB.tx.data.u8[3] = db->bms.soc;
 
   // odometer
-  CB.tx.data.u32[1] = db->vcu.odometer / 1000;
+  CB.tx.data.u32[1] = db->vcu.odometer_mps / 1000;
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_VCU_SWITCH, 8);
@@ -219,5 +220,21 @@ void CANR_MCU_Dummy(db_t *db) {
 void CANR_HMI2(db_t *db) {
   // read message
   db->hmi1.status.mirroring = _R1(CB.rx.data.u8[0], 0);
+
+  // save state
+  db->hmi2.started = 1;
+  db->hmi2.tick = osKernelGetTickCount();
+}
+
+void CANR_HMI1_LEFT(db_t *db) {
+  // save state
+  db->hmi1.device[HMI1_DEV_LEFT].started = 1;
+  db->hmi1.device[HMI1_DEV_LEFT].tick = osKernelGetTickCount();
+}
+
+void CANR_HMI1_RIGHT(db_t *db) {
+  // save state
+  db->hmi1.device[HMI1_DEV_RIGHT].started = 1;
+  db->hmi1.device[HMI1_DEV_RIGHT].tick = osKernelGetTickCount();
 }
 

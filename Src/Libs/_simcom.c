@@ -19,11 +19,11 @@ sim_t SIM;
 /* Private variables ----------------------------------------------------------*/
 // see: http://wiki.teltonika-networks.com/view/Mobile_Signal_Strength_Recommendations
 static const rssi_t rssiList[5] = {
-    { .name = "Excellent", .min = 22, .percent = 100 },
-    { .name = "Good", .min = 14, .percent = 75 },
-    { .name = "Fair", .min = 7, .percent = 50 },
-    { .name = "Poor", .min = 2, .percent = 25 },
-    { .name = "NoSignal", .min = 0, .percent = 0 }
+    { .name = "Excellent", .min = 22 },
+    { .name = "Good", .min = 14 },
+    { .name = "Fair", .min = 7 },
+    { .name = "Poor", .min = 2 },
+    { .name = "NoSignal", .min = 0 }
 };
 
 /* Private functions prototype -----------------------------------------------*/
@@ -55,15 +55,9 @@ void Simcom_SetState(SIMCOM_STATE state) {
   lock();
 
   SIMCOM_RESULT p;
-  //  uint8_t step = 1;
   static uint8_t init = 1;
 
   do {
-    // debug
-    //    LOG_Str("Simcom:State = ");
-    //    LOG_Int(SIM.state);
-    //    LOG_Enter();
-
     // only executed at power up
     if (init) {
       LOG_StrLn("Simcom:Init");
@@ -78,7 +72,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
       } else {
         if (SIM.state >= SIM_STATE_CONFIGURED) {
           SIM_SignalQuality(&(DB.vcu.signal_percent));
-          if (DB.vcu.signal_percent < 50) {
+          if (DB.vcu.signal_percent < 40) {
             LOG_StrLn("Simcom:PendingBySignal");
             osDelay(5 * 1000);
             break;
@@ -103,10 +97,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
         // upgrade simcom state
         if (p == SIM_RESULT_OK) {
           SIM.state++;
-          // skip configuration (not working)
-          //          if (!init) {
-          //            SIM.state++;
-          //          }
         }
 
         break;
@@ -129,8 +119,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CMEE=2\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CMEE=2\r", 500, 1);
         }
         // Use pin DTR as sleep control
         if (p == SIM_RESULT_OK) {
@@ -141,8 +129,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CSCLK=1\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CSCLK=1\r", 500, 1);
         }
         // Enable time reporting
         if (p == SIM_RESULT_OK) {
@@ -153,8 +139,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CLTS=1\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CLTS=1\r", 500, 1);
         }
         // Show “+IPD” header
         if (p == SIM_RESULT_OK) {
@@ -165,8 +149,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CIPHEAD=1\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CIPHEAD=1\r", 500, 1);
         }
         // Hide “RECV FROM” header
         if (p == SIM_RESULT_OK) {
@@ -177,8 +159,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CIPSRIP=0\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CIPSRIP=0\r", 500, 1);
         }
         // =========== NETWORK CONFIGURATION
         // Check SIM Card
@@ -194,8 +174,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CSACT=0,0\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CSACT=0,0\r", 500, 1);
         }
         // Set signal Generation 2G(13)/3G(14)/AUTO(2)
         if (p == SIM_RESULT_OK) {
@@ -206,8 +184,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CNMP=2,14\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CNMP=2,14\r", 10000, 1);
         }
         // Save configuration to FLASH (not working)
         //        if (p == SIM_RESULT_OK) {
@@ -231,8 +207,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CREG=0\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CREG=0\r", 500, 1);
         }
         // wait until attached
         if (p == SIM_RESULT_OK) {
@@ -255,8 +229,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CGREG=0\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CGREG=0\r", 500, 1);
         }
         // wait until attached
         if (p == SIM_RESULT_OK) {
@@ -283,8 +255,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
               p = Simcom_Cmd("AT+CGATT=1\r", 500, 1);
             }
           }
-
-          //          p = Simcom_Cmd("AT+CGATT=1\r", 500, 1);
         }
         // wait until attached
         if (p == SIM_RESULT_OK) {
@@ -397,13 +367,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
 
     // delay on failure
     if (p != SIM_RESULT_OK) {
-      //      if (step++ > 3) {
-      //        step = 1;
-      //        LOG_StrLn("Simcom:Delayed");
-      //        osDelay(DB.vcu.interval * 1000);
-      //      } else {
-      //        osDelay(1000);
-      //      }
       osDelay(1000);
     }
 
@@ -592,6 +555,7 @@ SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent) {
 
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint8_t i, cnt;
+  float dBm;
   char *str, *prefix = "+CSQ: ", *cmd = "AT+CSQ\r";
   signal_t signal;
 
@@ -619,8 +583,10 @@ SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent) {
           }
         }
 
-        // set
-        *percent = signal.rssi.list.percent;
+        // scale RSSI to dBm
+        dBm = (signal.rssi.value * 63.0 / 31.0) - 115.0;
+        // scale dBm to percentage
+        *percent = (dBm + 115.0) * 100.0 / 63.0;
 
         // debugging
         LOG_Str("\nSimcom:RSSI = ");
