@@ -29,9 +29,9 @@ void Report_Init(FRAME_TYPE frame, report_t *report) {
   report->data.req.vcu.driver_id = 1;
   // body optional
   report->data.opt.vcu.report.range = 99;
-  report->data.opt.vcu.report.battery = 88;
-  report->data.opt.vcu.trip.a = 77;
-  report->data.opt.vcu.trip.b = 66;
+  report->data.opt.vcu.report.efficiency = 88;
+  report->data.opt.vcu.trip.a = 0;
+  report->data.opt.vcu.trip.b = 0;
 }
 
 void Response_Init(response_t *response) {

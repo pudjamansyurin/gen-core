@@ -67,4 +67,8 @@ void GPS_CalculateOdometer(void) {
   if (GPS.speed_mps > 5) {
     EEPROM_Odometer(EE_CMD_W, DB.vcu.odometer + (GPS.speed_mps * (GPS_INTERVAL_MS / 1000)));
   }
+  // FIXME: use real data
+  // update data
+  DB.vcu.speed = GPS.speed_kph;
+  DB.vcu.volume = DB.vcu.speed * 100 / MCU_SPEED_MAX;
 }

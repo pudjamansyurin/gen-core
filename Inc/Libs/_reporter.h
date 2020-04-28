@@ -65,7 +65,7 @@ typedef struct __attribute__((packed)) {
       uint8_t bat_voltage;
       struct __attribute__((packed)) {
         uint8_t range;
-        uint8_t battery;
+        uint8_t efficiency;
       } report;
       struct __attribute__((packed)) {
         uint32_t a;

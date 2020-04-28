@@ -44,6 +44,7 @@
 - [x] Flush BMS data when timeout
 - [x] Migrate Firmware RTOSv1 to RTOSv2
 - [x] RTOS: add master thread
+- [ ] Use Trip A & B
 - [ ] Change Notify() to RTOSv2 API
 - [ ] Fix duplicate variables
 - [ ] Sync variable name for HMI-1 and VCU

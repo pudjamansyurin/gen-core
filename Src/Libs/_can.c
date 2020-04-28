@@ -78,7 +78,7 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   CB.tx.data.u8[2] = db->vcu.signal_percent;
 
   // odometer
-  CB.tx.data.u32[1] = db->vcu.odometer;
+  CB.tx.data.u32[1] = db->vcu.odometer / 1000;
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_VCU_SWITCH, 8);
@@ -205,6 +205,7 @@ void CANR_BMS_Param2(db_t *db) {
 }
 
 void CANR_MCU_Dummy(db_t *db) {
+  //  FIXME: handle with real data, disable from GPS_CalculateOdometer()
   uint32_t DB_MCU_RPM;
 
   // read message

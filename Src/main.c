@@ -1892,9 +1892,10 @@ void StartCanRxTask(void *argument)
     if (notif & EVENT_CAN_RX_IT) {
       // handle STD message
       switch (CANBUS_ReadID()) {
-        case CAND_MCU_DUMMY:
-          CANR_MCU_Dummy(&DB);
-          break;
+//        FIXME: handle with real data
+//        case CAND_MCU_DUMMY:
+//          CANR_MCU_Dummy(&DB);
+//          break;
         case CAND_HMI2:
           CANR_HMI2(&DB);
           break;
