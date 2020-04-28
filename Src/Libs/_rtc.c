@@ -10,6 +10,11 @@
 
 /* External variables ----------------------------------------------------------*/
 extern RTC_HandleTypeDef hrtc;
+extern osMutexId_t RTCMutexHandle;
+
+/* Private functions declaration ----------------------------------------------*/
+static void lock(void);
+static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 timestamp_t RTC_Decode(uint64_t dateTime) {
@@ -80,8 +85,10 @@ uint64_t RTC_Read(void) {
 
 void RTC_ReadRaw(timestamp_t *timestamp) {
   // get the RTC
+  lock();
   HAL_RTC_GetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
   HAL_RTC_GetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
+  unlock();
 }
 
 void RTC_Write(uint64_t dateTime, rtc_t *rtc) {
@@ -100,12 +107,23 @@ void RTC_WriteRaw(timestamp_t *timestamp, rtc_t *rtc) {
   timestamp->time.StoreOperation = RTC_STOREOPERATION_RESET;
 
   // set the RTC
+  lock();
   HAL_RTC_SetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
   HAL_RTC_SetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
+  unlock();
 
   // save calibration date
   // source from server is always considered as valid
   rtc->calibration = timestamp->date;
   // update time
   rtc->timestamp = *timestamp;
+}
+
+/* Private functions implementation --------------------------------------------*/
+static void lock(void) {
+  osMutexAcquire(RTCMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
+  osMutexRelease(RTCMutexHandle);
 }

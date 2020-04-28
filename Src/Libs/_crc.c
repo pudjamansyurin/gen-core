@@ -11,10 +11,17 @@
 
 /* External variables ----------------------------------------------------------*/
 extern CRC_HandleTypeDef hcrc;
+extern osMutexId_t CRCMutexHandle;
+
+/* Private functions declaration ----------------------------------------------*/
+static void lock(void);
+static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
   uint32_t cnt, remaining = 0;
+
+  lock();
 
   /* Reset CRC data register if necessary */
   if (reset) {
@@ -51,11 +58,15 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t reset) {
     hcrc.Instance->DR = remaining;
   }
 
+  unlock();
+
   /* Return data */
   return hcrc.Instance->DR;
 }
 
 uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count, uint8_t reset) {
+  lock();
+
   /* Reset CRC data register if necessary */
   if (reset) {
     /* Reset generator */
@@ -68,6 +79,16 @@ uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count, uint8_t reset) {
     hcrc.Instance->DR = *arr++;
   }
 
+  unlock();
   /* Return data */
   return hcrc.Instance->DR;
+}
+
+/* Private functions implementation --------------------------------------------*/
+static void lock(void) {
+  osMutexAcquire(CRCMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
+  osMutexRelease(CRCMutexHandle);
 }
