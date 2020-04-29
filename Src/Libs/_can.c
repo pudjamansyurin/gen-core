@@ -14,30 +14,10 @@ extern canbus_t CB;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
-  static TickType_t tick, tickSein;
+  static TickType_t tickSein;
   static uint8_t iSeinLeft = 0, iSeinRight = 0;
-  static status_t iStatus;
 
-  // indicator manipulator
-  if ((osKernelGetTickCount() - tick) >= pdMS_TO_TICKS(500)) {
-    // finger
-    if (db->hmi1.status.finger) {
-      tick = osKernelGetTickCount();
-      iStatus.finger = !iStatus.finger;
-    }
-    // keyless
-    if (db->hmi1.status.keyless) {
-      tick = osKernelGetTickCount();
-      iStatus.keyless = !iStatus.keyless;
-    }
-    // temperature
-    if (db->hmi1.status.temperature) {
-      tick = osKernelGetTickCount();
-      iStatus.temperature = !iStatus.temperature;
-    }
-  }
-
-  // sein manipulator
+  // SEIN manipulator
   if ((osKernelGetTickCount() - tickSein) >= pdMS_TO_TICKS(500)) {
     if (sw->list[SW_K_SEIN_LEFT].state && sw->list[SW_K_SEIN_RIGHT].state) {
       // hazard
@@ -64,11 +44,10 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   CB.tx.data.u8[0] = sw->list[SW_K_ABS].state;
   CB.tx.data.u8[0] |= _L(db->hmi1.status.mirroring, 1);
   CB.tx.data.u8[0] |= _L(sw->list[SW_K_LAMP].state, 2);
-  // FIXME: handle me with real data
-  CB.tx.data.u8[0] |= _L(1, 3);
-  CB.tx.data.u8[0] |= _L(iStatus.temperature, 4);
-  CB.tx.data.u8[0] |= _L(iStatus.finger, 5);
-  CB.tx.data.u8[0] |= _L(iStatus.keyless, 6);
+  CB.tx.data.u8[0] |= _L(db->hmi1.status.warning, 3);
+  CB.tx.data.u8[0] |= _L(db->hmi1.status.overheat, 4);
+  CB.tx.data.u8[0] |= _L(db->hmi1.status.finger, 5);
+  CB.tx.data.u8[0] |= _L(db->hmi1.status.keyless, 6);
   CB.tx.data.u8[0] |= _L(db->hmi1.status.daylight, 7);
 
   // sein value
@@ -103,12 +82,12 @@ uint8_t CANT_VCU_RTC(timestamp_t *timestamp) {
   return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
+uint8_t CANT_VCU_SelectSet(db_t *db, sw_runner_t *runner) {
   static TickType_t tick, tickPeriod;
   static uint8_t iHide = 0;
   static int8_t iName = -1, iValue = -1;
 
-  // Mode Show/Hide Manipulator
+  // MODE Show/Hide Manipulator
   if (runner->listening) {
     // if mode same
     if (iName != runner->mode.val) {
@@ -149,10 +128,12 @@ uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
   CB.tx.data.u8[0] |= _L(iHide, 6);
 
   CB.tx.data.u8[1] = runner->mode.sub.report[SW_M_REPORT_RANGE];
-  CB.tx.data.u8[2] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
+  CB.tx.data.u8[2] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];
+
+  CB.tx.data.u8[3] = db->vcu.speed;
 
   // set default header
-  CANBUS_Header(&(CB.tx.header), CAND_VCU_SELECT_SET, 3);
+  CANBUS_Header(&(CB.tx.header), CAND_VCU_SELECT_SET, 4);
   // send message
   return CANBUS_Write(&(CB.tx));
 }
@@ -205,17 +186,17 @@ void CANR_BMS_Param2(db_t *db) {
   db->bms.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
 }
 
-void CANR_MCU_Dummy(db_t *db) {
-  //  FIXME: handle with real data, disable from GPS_CalculateOdometer()
-  uint32_t DB_MCU_RPM;
-
-  // read message
-  DB_MCU_RPM = CB.rx.data.s64;
-  // convert RPM to Speed
-  db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
-  // convert Speed to Volume
-  db->vcu.volume = db->vcu.speed * 100 / MCU_SPEED_MAX;
-}
+//void CANR_MCU_Dummy(db_t *db) {
+//  //  FIXME: handle with real data, disable from GPS_CalculateOdometer()
+//  uint32_t DB_MCU_RPM;
+//
+//  // read message
+//  DB_MCU_RPM = CB.rx.data.s64;
+//  // convert RPM to Speed
+//  db->vcu.speed = DB_MCU_RPM * MCU_SPEED_MAX / MCU_RPM_MAX;
+//  // convert Speed to Volume
+//  db->vcu.volume = db->vcu.speed * 100 / MCU_SPEED_MAX;
+//}
 
 void CANR_HMI2(db_t *db) {
   // read message

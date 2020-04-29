@@ -1273,6 +1273,9 @@ void StartManagerTask(void *argument)
     // Dummy data generator
     _DummyGenerator(&DB, &SW);
 
+    // Control HMI brightness by daylight
+    DB.hmi1.status.daylight = _TimeCheckDaylight(DB.vcu.rtc.timestamp);
+
     // Feed the dog
     HAL_IWDG_Refresh(&hiwdg);
 
@@ -1749,23 +1752,33 @@ void StartKeylessTask(void *argument)
   for (;;) {
     _DebugTask("Keyless");
     // check if has new can message
-    xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
+    if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, pdMS_TO_TICKS(100)) == pdTRUE) {
+      // proceed event
+      if (notif & EVT_KEYLESS_RX_IT) {
+        msg = KEYLESS_ReadPayload();
 
-    // proceed event
-    if (notif & EVT_KEYLESS_RX_IT) {
-      msg = KEYLESS_ReadPayload();
+        // record heartbeat
+        DB.vcu.tick.keyless = osKernelGetTickCount();
 
-      // indicator
-      LOG_Str("NRF received packet, msg = ");
-      LOG_Hex8(msg);
-      LOG_Enter();
+        // indicator
+        LOG_Str("NRF received packet, msg = ");
+        LOG_Hex8(msg);
+        LOG_Enter();
 
-      // just fun indicator
-      AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
-      for (int i = 0; i < ((msg + 1) * 2); i++) {
-        _LedToggle();
-        osDelay(50);
+        // just fun indicator
+        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
+        for (int i = 0; i < ((msg + 1) * 2); i++) {
+          _LedToggle();
+          osDelay(50);
+        }
       }
+    }
+
+    // update heartbeat
+    if ((osKernelGetTickCount() - DB.vcu.tick.keyless) < pdMS_TO_TICKS(5000)) {
+      DB.hmi1.status.keyless = 1;
+    } else {
+      DB.hmi1.status.keyless = 0;
     }
   }
   /* USER CODE END StartKeylessTask */
@@ -1794,15 +1807,15 @@ void StartFingerTask(void *argument)
   for (;;) {
     _DebugTask("Finger");
     // check if user put finger
-    xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &notif, portMAX_DELAY);
-
-    // proceed event
-    if (notif & EVT_FINGER_PLACED) {
-      if (Finger_AuthFast() > 0) {
-        // indicator when finger is registered
-        _LedWrite(1);
-        osDelay(1000);
-        _LedWrite(0);
+    if (xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &notif, pdMS_TO_TICKS(100)) == pdTRUE) {
+      // proceed event
+      if (notif & EVT_FINGER_PLACED) {
+        if (Finger_AuthFast() > 0) {
+          // indicator when finger is registered
+          _LedWrite(1);
+          osDelay(1000);
+          _LedWrite(0);
+        }
       }
     }
   }
@@ -1992,7 +2005,7 @@ void StartCanTxTask(void *argument)
     // Send CAN data
     CANT_VCU_Switch(&DB, &SW);
     CANT_VCU_RTC(&(DB.vcu.rtc.timestamp));
-    CANT_VCU_SelectSet(&(SW.runner));
+    CANT_VCU_SelectSet(&DB, &(SW.runner));
     CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
 
     // Control BMS power

@@ -35,7 +35,7 @@
 /* Public functions prototype ------------------------------------------------*/
 uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw);
 uint8_t CANT_VCU_RTC(timestamp_t *timestamp);
-uint8_t CANT_VCU_SelectSet(sw_runner_t *runner);
+uint8_t CANT_VCU_SelectSet(db_t *db, sw_runner_t *runner);
 uint8_t CANT_VCU_TripMode(uint32_t *trip);
 uint8_t CANT_BMS_Setting(uint8_t start, BMS_STATE state);
 void CANR_BMS_Param1(db_t *db);

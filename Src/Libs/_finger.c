@@ -9,6 +9,7 @@
 #include "_finger.h"
 
 /* External variables ---------------------------------------------------------*/
+extern db_t DB;
 extern finger_t finger;
 extern osMutexId_t FingerRecMutexHandle;
 
@@ -63,9 +64,11 @@ uint8_t Finger_Enroll(uint8_t id) {
     if ((osKernelGetTickCount() - tick) > timeout_tick) {
       error = 1;
     }
+
     // send command
-    _LedToggle();
+    DB.hmi1.status.finger = !DB.hmi1.status.finger;
     p = FZ3387_getImage();
+
     // check response
     switch (p) {
       case FINGERPRINT_OK:
@@ -116,7 +119,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
   if (!error) {
     //	 Wait for put your finger up
-    _LedWrite(0);
+    DB.hmi1.status.finger = 0;
     LOG_StrLn("Remove finger");
     osDelay(2000);
 
@@ -130,9 +133,11 @@ uint8_t Finger_Enroll(uint8_t id) {
       if ((osKernelGetTickCount() - tick) > timeout_tick) {
         error = 1;
       }
+
       // send command
-      _LedToggle();
+      DB.hmi1.status.finger = !DB.hmi1.status.finger;
       p = FZ3387_getImage();
+
       // handle response
       switch (p) {
         case FINGERPRINT_OK:
@@ -183,7 +188,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
   if (!error) {
     //	 Wait for put your finger up
-    _LedWrite(0);
+    DB.hmi1.status.finger = 0;
     LOG_StrLn("Remove finger");
     osDelay(2000);
     //	Create Register model
@@ -227,6 +232,7 @@ uint8_t Finger_Enroll(uint8_t id) {
     }
   }
 
+  DB.hmi1.status.finger = 0;
   Finger_Off();
   return p;
 }

@@ -81,6 +81,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
     report->data.opt.vcu.speed = GPS.speed_kph;
     report->data.opt.vcu.odometer = DB.vcu.odometer_mps / 1000;
+    report->data.opt.vcu.signal_percent = DB.vcu.signal_percent;
     report->data.opt.vcu.bat_voltage = DB.vcu.bat_voltage / 18;
 
     // BMS data

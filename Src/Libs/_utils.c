@@ -57,8 +57,6 @@ void _DebugTask(char name[20]) {
 }
 
 void _DummyGenerator(db_t *db, sw_t *sw) {
-  // Control HMI brightness by daylight
-  db->hmi1.status.daylight = _TimeCheckDaylight(db->vcu.rtc.timestamp);
   //  // Dummy algorithm
   //  db->vcu.odometer = (db->vcu.odometer >= VCU_ODOMETER_MAX ? 0 : (db->vcu.odometer + 1));
 
@@ -69,10 +67,11 @@ void _DummyGenerator(db_t *db, sw_t *sw) {
     sw->runner.mode.sub.report[SW_M_REPORT_RANGE]--;
   }
 
-  if (sw->runner.mode.sub.report[SW_M_REPORT_AVERAGE] >= 255) {
-    sw->runner.mode.sub.report[SW_M_REPORT_AVERAGE] = 0;
+  // Dummy Report Efficiency
+  if (sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY] >= 255) {
+    sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY] = 0;
   } else {
-    sw->runner.mode.sub.report[SW_M_REPORT_AVERAGE]++;
+    sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY]++;
   }
 
   // Dummy Report Trip

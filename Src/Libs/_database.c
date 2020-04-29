@@ -24,6 +24,8 @@ void DB_Init(void) {
   DB.vcu.speed = 0;
   DB.vcu.odometer_mps = 0;
   DB.vcu.events = 0;
+  DB.vcu.tick.keyless = 0;
+//  DB.vcu.tick.finger = 0;
   DB.vcu.seq_id.report = 0;
   DB.vcu.seq_id.response = 0;
 
@@ -31,7 +33,7 @@ void DB_Init(void) {
   DB.hmi1.started = 0;
   DB.hmi1.status.mirroring = 0;
   DB.hmi1.status.warning = 0;
-  DB.hmi1.status.temperature = 0;
+  DB.hmi1.status.overheat = 0;
   DB.hmi1.status.finger = 0;
   DB.hmi1.status.keyless = 0;
   DB.hmi1.status.daylight = 0;
@@ -60,6 +62,10 @@ void DB_SetEvent(uint64_t event_id, uint8_t value) {
   }
 }
 
+uint8_t DB_ReadEvent(uint64_t event_id) {
+  return (DB.vcu.events & event_id) == event_id;
+}
+
 void DB_BMS_Events(uint16_t flag) {
   DB_SetEvent(EV_BMS_SHORT_CIRCUIT, _R1(flag, 0));
   DB_SetEvent(EV_BMS_DISCHARGE_OVER_CURRENT, _R1(flag, 1));
@@ -73,6 +79,20 @@ void DB_BMS_Events(uint16_t flag) {
   DB_SetEvent(EV_BMS_OVER_VOLTAGE, _R1(flag, 9));
   DB_SetEvent(EV_BMS_OVER_DISCHARGE_CAPACITY, _R1(flag, 10));
   DB_SetEvent(EV_BMS_SYSTEM_FAILURE, _R1(flag, 11));
+
+  // check event as CAN data
+  DB.hmi1.status.overheat = DB_ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
+      DB_ReadEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE) ||
+      DB_ReadEvent(EV_BMS_CHARGE_OVER_TEMPERATURE) ||
+      DB_ReadEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE);
+  DB.hmi1.status.warning = DB_ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
+      DB_ReadEvent(EV_BMS_DISCHARGE_OVER_CURRENT) ||
+      DB_ReadEvent(EV_BMS_CHARGE_OVER_CURRENT) ||
+      DB_ReadEvent(EV_BMS_UNBALANCE) ||
+      DB_ReadEvent(EV_BMS_UNDER_VOLTAGE) ||
+      DB_ReadEvent(EV_BMS_OVER_VOLTAGE) ||
+      DB_ReadEvent(EV_BMS_OVER_DISCHARGE_CAPACITY) ||
+      DB_ReadEvent(EV_BMS_SYSTEM_FAILURE);
 }
 
 void DB_HMI1_RefreshIndex(void) {
@@ -94,21 +114,21 @@ void DB_BMS_RefreshIndex(void) {
 uint8_t DB_BMS_GetIndex(uint32_t id) {
   uint8_t i;
 
-  // find index (if already exist)
+// find index (if already exist)
   for (i = 0; i < BMS_COUNT; i++) {
     if (DB.bms.pack[i].id == id) {
       return i;
     }
   }
 
-  // finx index (if not exist)
+// finx index (if not exist)
   for (i = 0; i < BMS_COUNT; i++) {
     if (DB.bms.pack[i].id == BMS_NULL_INDEX) {
       return i;
     }
   }
 
-  // force replace first index (if already full)
+// force replace first index (if already full)
   return 0;
 }
 
@@ -134,14 +154,14 @@ void DB_BMS_MergeData(void) {
   uint16_t flags = 0;
   uint8_t soc = 0, device = 0;
 
-  // Merge flags (OR-ed)
+// Merge flags (OR-ed)
   for (uint8_t i = 0; i < BMS_COUNT; i++) {
     flags |= DB.bms.pack[i].flag;
   }
-  // apply to events
+// apply to events
   DB_BMS_Events(flags);
 
-  // Average SOC
+// Average SOC
   for (uint8_t i = 0; i < BMS_COUNT; i++) {
     if (DB.bms.pack[i].started == 1) {
       soc += DB.bms.pack[i].soc;

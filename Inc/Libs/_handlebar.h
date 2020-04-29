@@ -46,7 +46,7 @@ typedef enum {
 
 typedef enum {
   SW_M_REPORT_RANGE = 0,
-  SW_M_REPORT_AVERAGE = 1,
+  SW_M_REPORT_EFFICIENCY = 1,
   SW_M_REPORT_MAX = 1
 } SW_MODE_REPORT;
 

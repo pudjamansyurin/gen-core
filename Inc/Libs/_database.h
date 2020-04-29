@@ -169,7 +169,7 @@ typedef struct {
   uint8_t mirroring;
 //  uint8_t lamp;
   uint8_t warning;
-  uint8_t temperature;
+  uint8_t overheat;
   uint8_t finger;
   uint8_t keyless;
   uint8_t daylight;
@@ -191,6 +191,10 @@ typedef struct {
     uint32_t odometer_mps;
     rtc_t rtc;
     uint64_t events;
+    struct {
+      uint32_t keyless;
+//      uint32_t finger;
+    } tick;
     struct {
       uint16_t report;
       uint16_t response;
@@ -228,6 +232,7 @@ typedef struct {
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void);
 void DB_SetEvent(uint64_t event_id, uint8_t value);
+uint8_t DB_ReadEvent(uint64_t event_id);
 void DB_BMS_Events(uint16_t flag);
 void DB_HMI1_RefreshIndex(void);
 void DB_BMS_RefreshIndex(void);
