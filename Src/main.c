@@ -1273,7 +1273,7 @@ void StartManagerTask(void *argument)
     // Dummy data generator
     _DummyGenerator(&DB, &SW);
 
-    // Control HMI brightness by daylight
+    // Check is Daylight
     DB.hmi1.status.daylight = _TimeCheckDaylight(DB.vcu.rtc.timestamp);
 
     // Feed the dog

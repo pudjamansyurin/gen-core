@@ -44,10 +44,11 @@
 - [x] Flush BMS data when timeout
 - [x] Migrate Firmware RTOSv1 to RTOSv2
 - [x] RTOS: add master thread
-- [ ] Use Trip A & B
+- [x] Use Trip A & B
+- [x] Sync variable name for HMI-1 and VCU
+- [x] ~~Scale down "BMS Voltage", and set warning on 20% value.~~
 - [ ] Change Notify() to RTOSv2 API
 - [ ] Fix duplicate variables
-- [ ] Sync variable name for HMI-1 and VCU
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Simplify SIMCOM library
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
@@ -55,7 +56,6 @@
 - [ ] Handle migration from STM32F407VG to STM32F423VH 
   - [ ] Use AES features in new STM32F423VH 
 - [ ] Lock all global variable to minimize RTOS problem. 
-- [ ] Scale down "BMS Voltage", and set warning on 20% value.
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Handle NO Driver ID when vehicle OFF
 - [ ] Implement this UBX library:

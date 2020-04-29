@@ -12,6 +12,7 @@
 /* External variables ---------------------------------------------------------*/
 extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
 extern db_t DB;
+extern sw_t SW;
 
 /* Public variables -----------------------------------------------------------*/
 gps_t GPS;
@@ -63,10 +64,35 @@ uint8_t GPS_Capture(void) {
 }
 
 void GPS_CalculateOdometer(void) {
+  static uint16_t odometer_mps = 0;
+
   // dummy odometer
   if (GPS.speed_mps > 5) {
-    EEPROM_Odometer(EE_CMD_W, DB.vcu.odometer_mps + (GPS.speed_mps * (GPS_INTERVAL_MS / 1000)));
+    odometer_mps += (GPS.speed_mps * GPS_INTERVAL_MS) / 1000;
   }
+  // check if already > 1km
+  if (odometer_mps >= 1000) {
+    odometer_mps = 0;
+
+    // save the km version
+    EEPROM_Odometer(EE_CMD_W, DB.vcu.odometer + 1);
+
+    // Accumulate Report Trip
+    if (SW.runner.mode.sub.val[SW.runner.mode.val] == SW_M_TRIP_A) {
+      if (SW.runner.mode.sub.trip[SW_M_TRIP_A] >= VCU_ODOMETER_MAX) {
+        SW.runner.mode.sub.trip[SW_M_TRIP_A] = 0;
+      } else {
+        SW.runner.mode.sub.trip[SW_M_TRIP_A]++;
+      }
+    } else {
+      if (SW.runner.mode.sub.trip[SW_M_TRIP_B] >= VCU_ODOMETER_MAX) {
+        SW.runner.mode.sub.trip[SW_M_TRIP_B] = 0;
+      } else {
+        SW.runner.mode.sub.trip[SW_M_TRIP_B]++;
+      }
+    }
+  }
+
   // FIXME: use real data
   // update data
   DB.vcu.speed = GPS.speed_kph;

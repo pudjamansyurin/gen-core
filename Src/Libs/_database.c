@@ -22,7 +22,7 @@ void DB_Init(void) {
   DB.vcu.bat_voltage = 0;
   DB.vcu.signal_percent = 0;
   DB.vcu.speed = 0;
-  DB.vcu.odometer_mps = 0;
+  DB.vcu.odometer = 0;
   DB.vcu.events = 0;
   DB.vcu.tick.keyless = 0;
 //  DB.vcu.tick.finger = 0;

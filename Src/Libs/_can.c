@@ -58,7 +58,7 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
   CB.tx.data.u8[3] = db->bms.soc;
 
   // odometer
-  CB.tx.data.u32[1] = db->vcu.odometer_mps / 1000;
+  CB.tx.data.u32[1] = db->vcu.odometer;
 
   // set default header
   CANBUS_Header(&(CB.tx.header), CAND_VCU_SWITCH, 8);

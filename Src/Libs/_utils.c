@@ -66,7 +66,6 @@ void _DummyGenerator(db_t *db, sw_t *sw) {
   } else {
     sw->runner.mode.sub.report[SW_M_REPORT_RANGE]--;
   }
-
   // Dummy Report Efficiency
   if (sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY] >= 255) {
     sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY] = 0;
@@ -74,20 +73,6 @@ void _DummyGenerator(db_t *db, sw_t *sw) {
     sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY]++;
   }
 
-  // Dummy Report Trip
-  if (sw->runner.mode.sub.val[sw->runner.mode.val] == SW_M_TRIP_A) {
-    if (sw->runner.mode.sub.trip[SW_M_TRIP_A] >= VCU_ODOMETER_MAX) {
-      sw->runner.mode.sub.trip[SW_M_TRIP_A] = 0;
-    } else {
-      sw->runner.mode.sub.trip[SW_M_TRIP_A]++;
-    }
-  } else {
-    if (sw->runner.mode.sub.trip[SW_M_TRIP_B] >= VCU_ODOMETER_MAX) {
-      sw->runner.mode.sub.trip[SW_M_TRIP_B] = 0;
-    } else {
-      sw->runner.mode.sub.trip[SW_M_TRIP_B]++;
-    }
-  }
 }
 
 uint8_t _TimeCheckDaylight(timestamp_t timestamp) {

@@ -188,7 +188,7 @@ typedef struct {
     uint16_t bat_voltage;
     uint8_t signal_percent;
     uint8_t speed;
-    uint32_t odometer_mps;
+    uint32_t odometer;
     rtc_t rtc;
     uint64_t events;
     struct {
