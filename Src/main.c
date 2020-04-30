@@ -1731,11 +1731,9 @@ void StartKeylessTask(void *argument)
 	for (;;) {
 		_DebugTask("Keyless");
 
-		// check if has new can message
-		osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny | osFlagsNoClear, pdMS_TO_TICKS(100));
-		notif = osThreadFlagsGet();
-		if (notif) {
-			osThreadFlagsClear(notif);
+		{
+			// check if has new can message
+			notif = osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny, pdMS_TO_TICKS(100));
 
 			// proceed event
 			if (notif & EVT_KEYLESS_RX_IT) {
@@ -1792,11 +1790,9 @@ void StartFingerTask(void *argument)
 	for (;;) {
 		_DebugTask("Finger");
 
-		// check if user put finger
-		osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny | osFlagsNoClear, pdMS_TO_TICKS(100));
-		notif = osThreadFlagsGet();
-		if (notif) {
-			osThreadFlagsClear(notif);
+		{
+			// check if user put finger
+			notif = osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny, pdMS_TO_TICKS(100));
 
 			// proceed event
 			if (notif & EVT_FINGER_PLACED) {
@@ -1837,6 +1833,7 @@ void StartAudioTask(void *argument)
 	lastWake = xTaskGetTickCount();
 	for (;;) {
 		_DebugTask("Audio");
+
 		// do this if events occurred
 		notif = osThreadFlagsGet();
 		if (notif) {
@@ -1897,8 +1894,8 @@ void StartSwitchTask(void *argument)
 		_DebugTask("Switch");
 
 		// wait until GPIO changes
-		osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
-		notif = osThreadFlagsGet();
+		notif = osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny, osWaitForever);
+
 		if (notif & EVT_SWITCH_TRIGGERED) {
 			// handle bounce effect
 			osDelay(50);
@@ -1948,38 +1945,34 @@ void StartCanRxTask(void *argument)
 		_DebugTask("CanRx");
 
 		// check if has new can message
-		osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
-		notif = osThreadFlagsGet();
-		if (notif) {
-			osThreadFlagsClear(notif);
+		notif = osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny, osWaitForever);
 
-			// proceed event
-			if (notif & EVT_CAN_RX_IT) {
-				// handle STD message
-				switch (CANBUS_ReadID()) {
-					//        FIXME: handle with real data
-					//        case CAND_MCU_DUMMY:
-					//          CANR_MCU_Dummy(&DB);
-					//          break;
-					case CAND_HMI2:
-						CANR_HMI2(&DB);
-						break;
-					case CAND_HMI1_LEFT:
-						CANR_HMI1_LEFT(&DB);
-						break;
-					case CAND_HMI1_RIGHT:
-						CANR_HMI1_RIGHT(&DB);
-						break;
-					case CAND_BMS_PARAM_1:
-						CANR_BMS_Param1(&DB);
-						break;
-					case CAND_BMS_PARAM_2:
-						CANR_BMS_Param2(&DB);
-						break;
-					default:
+		// proceed event
+		if (notif & EVT_CAN_RX_IT) {
+			// handle STD message
+			switch (CANBUS_ReadID()) {
+				//        FIXME: handle with real data
+				//        case CAND_MCU_DUMMY:
+				//          CANR_MCU_Dummy(&DB);
+				//          break;
+				case CAND_HMI2:
+					CANR_HMI2(&DB);
+					break;
+				case CAND_HMI1_LEFT:
+					CANR_HMI1_LEFT(&DB);
+					break;
+				case CAND_HMI1_RIGHT:
+					CANR_HMI1_RIGHT(&DB);
+					break;
+				case CAND_BMS_PARAM_1:
+					CANR_BMS_Param1(&DB);
+					break;
+				case CAND_BMS_PARAM_2:
+					CANR_BMS_Param2(&DB);
+					break;
+				default:
 
-						break;
-				}
+					break;
 			}
 		}
 	}
