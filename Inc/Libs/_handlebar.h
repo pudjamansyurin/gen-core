@@ -86,5 +86,6 @@ void HBAR_CheckReverse(void);
 void HBAR_CheckSelectSet(void);
 void HBAR_RunSelect(void);
 void HBAR_RunSet(void);
+void HBAR_AccumulateSubTrip(void);
 
 #endif /* LIBS__HANDLEBAR_H_ */

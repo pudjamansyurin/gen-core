@@ -1282,20 +1282,19 @@ void StartManagerTask(void *argument)
 void StartIotTask(void *argument)
 {
 	/* USER CODE BEGIN StartIotTask */
-	osStatus_t status = osOK;
+	osStatus_t status;
 	SIMCOM_RESULT p;
 	report_t report;
 	response_t response;
 	timestamp_t timestamp;
 	uint8_t retry, nack;
-	const uint8_t size = sizeof(report.header.prefix) +
-			sizeof(report.header.crc) +
-			sizeof(report.header.size);
-
 	uint8_t pending[2] = { 0 };
 	osMessageQueueId_t *pQueue;
 	header_t *pHeader;
 	void *pPayload;
+	const uint8_t size = sizeof(report.header.prefix) +
+			sizeof(report.header.crc) +
+			sizeof(report.header.size);
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
@@ -1308,6 +1307,7 @@ void StartIotTask(void *argument)
 	for (;;) {
 		_DebugTask("IoT");
 
+		// Upload Report & Response Payload
 		for (uint8_t type = 0; type < PAYLOAD_MAX; type++) {
 			// decide the payload
 			if (type == PAYLOAD_REPORT) {

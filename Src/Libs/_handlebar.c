@@ -94,12 +94,11 @@ static uint8_t mode;
 
 /* Public functions implementation --------------------------------------------*/
 void HBAR_ReadStates(void) {
-	uint8_t i;
-
 	// Read all EXTI state
-	for (i = 0; i < SW_TOTAL_LIST; i++) {
+	for (uint8_t i = 0; i < SW_TOTAL_LIST; i++) {
 		SW.list[i].state = HAL_GPIO_ReadPin(SW.list[i].port, SW.list[i].pin);
 	}
+
 	// check is reverse mode active
 	HBAR_CheckReverse();
 }
@@ -149,7 +148,7 @@ void HBAR_CheckSelectSet(void) {
 					// set flag
 					SW.timer[i].running = 0;
 					// stop SET
-					SW.timer[i].time = (uint8_t) ((osKernelGetTickCount() - SW.timer[i].start) / pdMS_TO_TICKS(1000));
+					SW.timer[i].time = (osKernelGetTickCount() - SW.timer[i].start) / pdMS_TO_TICKS(1000);
 					// reverse it
 					SW.list[i].state = 1;
 				}
@@ -172,19 +171,31 @@ void HBAR_RunSelect(void) {
 }
 
 void HBAR_RunSet(void) {
-	if (SW.runner.listening || (SW.timer[SW_K_SET].time >= 3 && SW.runner.mode.val == SW_M_TRIP)) {
+	SW_MODE sMode = SW.runner.mode.val;
+
+	if (SW.runner.listening ||
+			(SW.timer[SW_K_SET].time >= 3 && sMode == SW_M_TRIP)) {
 		// handle reset only if push more than n sec, and in trip mode
 		if (!SW.runner.listening) {
 			// reset value
-			SW.runner.mode.sub.trip[SW.runner.mode.sub.val[SW.runner.mode.val]] = 0;
+			SW.runner.mode.sub.trip[SW.runner.mode.sub.val[sMode]] = 0;
 		} else {
 			// if less than n sec
-			if (SW.runner.mode.sub.val[SW.runner.mode.val]
-					== SW.runner.mode.sub.max[SW.runner.mode.val]) {
-				SW.runner.mode.sub.val[SW.runner.mode.val] = 0;
+			if (SW.runner.mode.sub.val[sMode] == SW.runner.mode.sub.max[sMode]) {
+				SW.runner.mode.sub.val[sMode] = 0;
 			} else {
-				SW.runner.mode.sub.val[SW.runner.mode.val]++;
+				SW.runner.mode.sub.val[sMode]++;
 			}
 		}
+	}
+}
+
+void HBAR_AccumulateSubTrip(void) {
+	SW_MODE_TRIP mTrip = SW.runner.mode.sub.val[SW_M_TRIP];
+
+	if (SW.runner.mode.sub.trip[mTrip] >= VCU_ODOMETER_MAX) {
+		SW.runner.mode.sub.trip[mTrip] = 0;
+	} else {
+		SW.runner.mode.sub.trip[mTrip]++;
 	}
 }
