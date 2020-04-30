@@ -49,7 +49,7 @@
 - [x] ~~Scale down "BMS Voltage", and set warning on 20% value.~~
 - [ ] Fix CRC not valid problem between VCU and Server
 - [ ] Change Notify() to RTOSv2 API
-- [ ] Fix duplicate variables
+- [ ] ~~Fix duplicate variables~~
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Simplify SIMCOM library
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 

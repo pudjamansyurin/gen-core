@@ -97,6 +97,7 @@
 #define EVT_KEYLESS_RX_IT                     BIT(0)
 #define EVT_MANAGER_BMS_IRQ                   BIT(0)
 #define EVT_MANAGER_KNOB_IRQ                  BIT(1)
+#define EVT_SWITCH_TRIGGERED									BIT(0)
 
 // Events group (for All Threads)
 #define EVENT_READY                             BIT(0)
@@ -140,93 +141,93 @@
 
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {
-  BMS_STATE_IDLE = 0,
-  BMS_STATE_DISCHARGE = 1,
-  BMS_STATE_CHARGE = 2,
-  BMS_STATE_FULL = 3
+	BMS_STATE_IDLE = 0,
+	BMS_STATE_DISCHARGE = 1,
+	BMS_STATE_CHARGE = 2,
+	BMS_STATE_FULL = 3
 } BMS_STATE;
 
 typedef enum {
-  HMI1_DEV_LEFT = 0,
-  HMI1_DEV_RIGHT = 1,
-  HMI1_DEV_MAX = 1
+	HMI1_DEV_LEFT = 0,
+	HMI1_DEV_RIGHT = 1,
+	HMI1_DEV_MAX = 1
 } HMI1_DEVICE;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
-  RTC_TimeTypeDef time;
-  RTC_DateTypeDef date;
+	RTC_TimeTypeDef time;
+	RTC_DateTypeDef date;
 } timestamp_t;
 
 typedef struct {
-  timestamp_t timestamp;
-  RTC_DateTypeDef calibration;
+	timestamp_t timestamp;
+	RTC_DateTypeDef calibration;
 } rtc_t;
 
 //FIXME active disabled GPIO input
 typedef struct {
-  //	uint8_t abs;
-  uint8_t mirroring;
-  //  uint8_t lamp;
-  uint8_t warning;
-  uint8_t overheat;
-  uint8_t finger;
-  uint8_t keyless;
-  uint8_t daylight;
+	//	uint8_t abs;
+	uint8_t mirroring;
+	//  uint8_t lamp;
+	uint8_t warning;
+	uint8_t overheat;
+	uint8_t finger;
+	uint8_t keyless;
+	uint8_t daylight;
 //	uint8_t sein_left;
 //	uint8_t sein_right;
 } status_t;
 
 // Node struct
 typedef struct {
-  struct {
-    uint8_t knob;
-    uint32_t unit_id;
-    uint8_t independent;
-    uint16_t interval;
-    uint8_t volume;
-    uint16_t bat_voltage;
-    uint8_t signal_percent;
-    uint8_t speed;
-    uint32_t odometer;
-    rtc_t rtc;
-    uint64_t events;
-    struct {
-      uint32_t keyless;
-    //      uint32_t finger;
-    } tick;
-    struct {
-      uint16_t report;
-      uint16_t response;
-    } seq_id;
-  } vcu;
-  struct {
-    uint8_t started;
-    status_t status;
-    struct {
-      uint8_t started;
-      uint32_t tick;
-    } device[2];
-  } hmi1;
-  struct {
-    uint8_t started;
-    uint32_t tick;
-  } hmi2;
-  struct {
-    uint8_t started;
-    uint8_t soc;
-    struct {
-      uint32_t id;
-      float voltage;
-      float current;
-      float soc;
-      float temperature;
-      uint16_t flag;
-      BMS_STATE state;
-      uint8_t started;
-      uint32_t tick;
-    } pack[BMS_COUNT];
-  } bms;
+	struct {
+		uint8_t knob;
+		uint32_t unit_id;
+		uint8_t independent;
+		uint16_t interval;
+		uint8_t volume;
+		uint16_t bat_voltage;
+		uint8_t signal_percent;
+		uint8_t speed;
+		uint32_t odometer;
+		rtc_t rtc;
+		uint64_t events;
+		struct {
+			uint32_t keyless;
+		//      uint32_t finger;
+		} tick;
+		struct {
+			uint16_t report;
+			uint16_t response;
+		} seq_id;
+	} vcu;
+	struct {
+		uint8_t started;
+		status_t status;
+		struct {
+			uint8_t started;
+			uint32_t tick;
+		} device[2];
+	} hmi1;
+	struct {
+		uint8_t started;
+		uint32_t tick;
+	} hmi2;
+	struct {
+		uint8_t started;
+		uint8_t soc;
+		struct {
+			uint32_t id;
+			float voltage;
+			float current;
+			float soc;
+			float temperature;
+			uint16_t flag;
+			BMS_STATE state;
+			uint8_t started;
+			uint32_t tick;
+		} pack[BMS_COUNT];
+	} bms;
 } db_t;
 
 /* Public functions implementation --------------------------------------------*/

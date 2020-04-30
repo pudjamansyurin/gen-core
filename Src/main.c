@@ -1152,57 +1152,34 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	uint32_t event;
 
 	if (osKernelGetState() == osKernelRunning) {
-		if (GPIO_Pin == EXT_BMS_IRQ_Pin || GPIO_Pin == EXT_KNOB_IRQ_Pin) {
-			// handle BMS_IRQ (is 5v exist?)
-			if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
-				event = EVT_MANAGER_BMS_IRQ;
-			}
-			// handle KNOB IRQ (Power control for HMI1 & HMI2)
-			if (GPIO_Pin == EXT_KNOB_IRQ_Pin) {
-				event = EVT_MANAGER_KNOB_IRQ;
-			}
-			// send notification
-			xTaskNotifyFromISR(
-					ManagerTaskHandle,
-					event,
-					eSetBits,
-					&xHigherPriorityTaskWoken);
+		// handle BMS_IRQ (is 5v exist?)
+		if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
+			osThreadFlagsSet(ManagerTaskHandle, EVT_MANAGER_BMS_IRQ);
 		}
-
+		// handle KNOB IRQ (Power control for HMI1 & HMI2)
+		if (GPIO_Pin == EXT_KNOB_IRQ_Pin) {
+			osThreadFlagsSet(ManagerTaskHandle, EVT_MANAGER_KNOB_IRQ);
+		}
+		//		// handle Finger IRQ
+		//		if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
+		//			osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
+		//		}
 		// handle NRF24 IRQ
 		if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
 			KEYLESS_IrqHandler();
 		}
 
-		//    // handle Finger-print IRQ
-		//    if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
-		//      xTaskNotifyFromISR(
-		//          FingerTaskHandle,
-		//          EVT_FINGER_PLACED,
-		//          eSetBits,
-		//          &xHigherPriorityTaskWoken);
-		//    }
-
 		// handle Switches EXTI
-		uint8_t i;
-		for (i = 0; i < SW_TOTAL_LIST; i++) {
+		for (uint8_t i = 0; i < SW_TOTAL_LIST; i++) {
 			if (GPIO_Pin == SW.list[i].pin) {
-				xTaskNotifyFromISR(
-						SwitchTaskHandle,
-						(uint32_t ) GPIO_Pin,
-						eSetBits,
-						&xHigherPriorityTaskWoken);
+				osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_TRIGGERED);
 
 				break;
 			}
 		}
 	}
-
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 /* USER CODE END 4 */
@@ -1255,9 +1232,12 @@ void StartManagerTask(void *argument)
 		_DebugTask("Manager");
 
 		// Handle GPIO interrupt
-		if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
+		notif = osThreadFlagsGet();
+		if (notif) {
 			// handle bounce effect
 			osDelay(50);
+			osThreadFlagsClear(notif);
+
 			// BMS Power IRQ
 			if (notif & EVT_MANAGER_BMS_IRQ) {
 				// get current state
@@ -1583,14 +1563,13 @@ void StartCommandTask(void *argument)
 				case CMD_CODE_AUDIO:
 					switch (command.data.sub_code) {
 						case CMD_AUDIO_BEEP:
-							xTaskNotify(AudioTaskHandle, EVT_AUDIO_BEEP, eSetBits);
+							osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
 							break;
 
 						case CMD_AUDIO_MUTE:
-							xTaskNotify(
+							osThreadFlagsSet(
 									AudioTaskHandle,
-									(uint8_t) command.data.value ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF,
-									eSetBits);
+									(uint8_t) command.data.value ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF);
 							break;
 
 						case CMD_AUDIO_VOL:
@@ -1716,11 +1695,11 @@ void StartGyroTask(void *argument)
 
 		// Check gyroscope, happens when fall detected
 		if (mems_decision.fall) {
-			xTaskNotify(AudioTaskHandle, EVT_AUDIO_BEEP_START, eSetBits);
+			osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
 			DB_SetEvent(EV_VCU_BIKE_FALLING, 1);
 			_LedDisco(1000);
 		} else {
-			xTaskNotify(AudioTaskHandle, EVT_AUDIO_BEEP_STOP, eSetBits);
+			osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
 			DB_SetEvent(EV_VCU_BIKE_FALLING, 0);
 		}
 		// Report interval
@@ -1751,8 +1730,13 @@ void StartKeylessTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		_DebugTask("Keyless");
+
 		// check if has new can message
-		if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, pdMS_TO_TICKS(100)) == pdTRUE) {
+		osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny | osFlagsNoClear, pdMS_TO_TICKS(100));
+		notif = osThreadFlagsGet();
+		if (notif) {
+			osThreadFlagsClear(notif);
+
 			// proceed event
 			if (notif & EVT_KEYLESS_RX_IT) {
 				msg = KEYLESS_ReadPayload();
@@ -1807,8 +1791,13 @@ void StartFingerTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		_DebugTask("Finger");
+
 		// check if user put finger
-		if (xTaskNotifyWait(ULONG_MAX, ULONG_MAX, &notif, pdMS_TO_TICKS(100)) == pdTRUE) {
+		osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny | osFlagsNoClear, pdMS_TO_TICKS(100));
+		notif = osThreadFlagsGet();
+		if (notif) {
+			osThreadFlagsClear(notif);
+
 			// proceed event
 			if (notif & EVT_FINGER_PLACED) {
 				if (Finger_AuthFast() > 0) {
@@ -1849,7 +1838,10 @@ void StartAudioTask(void *argument)
 	for (;;) {
 		_DebugTask("Audio");
 		// do this if events occurred
-		if (xTaskNotifyWait(0x00, ULONG_MAX, &notif, 0) == pdTRUE) {
+		notif = osThreadFlagsGet();
+		if (notif) {
+			osThreadFlagsClear(notif);
+
 			// Beep command
 			if (notif & EVT_AUDIO_BEEP) {
 				// Beep
@@ -1904,27 +1896,31 @@ void StartSwitchTask(void *argument)
 	for (;;) {
 		_DebugTask("Switch");
 
-		xTaskNotifyStateClear(NULL);
-		xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
-		// handle bounce effect
-		osDelay(50);
+		// wait until GPIO changes
+		osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+		notif = osThreadFlagsGet();
+		if (notif & EVT_SWITCH_TRIGGERED) {
+			// handle bounce effect
+			osDelay(50);
+			osThreadFlagsClear(ULONG_MAX);
 
-		// Read all (to handle multiple switch change at the same time)
-		HBAR_ReadStates();
-		// handle select & set: timer
-		HBAR_CheckSelectSet();
-		// Only handle Select & Set when in non-reverse
-		if (!SW.list[SW_K_REVERSE].state) {
-			// restore previous Mode
-			HBAR_RestoreMode();
-			// handle Select & Set
-			if (SW.list[SW_K_SELECT].state || SW.list[SW_K_SET].state) {
-				if (SW.list[SW_K_SELECT].state) {
-					// handle select key
-					HBAR_DoSelect();
-				} else if (SW.list[SW_K_SET].state) {
-					// handle set key
-					HBAR_DoSet();
+			// Read all (to handle multiple switch change at the same time)
+			HBAR_ReadStates();
+			// handle select & set: timer
+			HBAR_CheckSelectSet();
+			// Only handle Select & Set when in non-reverse
+			if (!SW.list[SW_K_REVERSE].state) {
+				// restore previous Mode
+				HBAR_RestoreMode();
+				// handle Select & Set
+				if (SW.list[SW_K_SELECT].state || SW.list[SW_K_SET].state) {
+					if (SW.list[SW_K_SELECT].state) {
+						// handle select key
+						HBAR_DoSelect();
+					} else if (SW.list[SW_K_SET].state) {
+						// handle set key
+						HBAR_DoSet();
+					}
 				}
 			}
 		}
@@ -1950,35 +1946,40 @@ void StartCanRxTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		_DebugTask("CanRx");
+
 		// check if has new can message
-		xTaskNotifyWait(0x00, ULONG_MAX, &notif, portMAX_DELAY);
+		osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+		notif = osThreadFlagsGet();
+		if (notif) {
+			osThreadFlagsClear(notif);
 
-		// proceed event
-		if (notif & EVT_CAN_RX_IT) {
-			// handle STD message
-			switch (CANBUS_ReadID()) {
-				//        FIXME: handle with real data
-				//        case CAND_MCU_DUMMY:
-				//          CANR_MCU_Dummy(&DB);
-				//          break;
-				case CAND_HMI2:
-					CANR_HMI2(&DB);
-					break;
-				case CAND_HMI1_LEFT:
-					CANR_HMI1_LEFT(&DB);
-					break;
-				case CAND_HMI1_RIGHT:
-					CANR_HMI1_RIGHT(&DB);
-					break;
-				case CAND_BMS_PARAM_1:
-					CANR_BMS_Param1(&DB);
-					break;
-				case CAND_BMS_PARAM_2:
-					CANR_BMS_Param2(&DB);
-					break;
-				default:
+			// proceed event
+			if (notif & EVT_CAN_RX_IT) {
+				// handle STD message
+				switch (CANBUS_ReadID()) {
+					//        FIXME: handle with real data
+					//        case CAND_MCU_DUMMY:
+					//          CANR_MCU_Dummy(&DB);
+					//          break;
+					case CAND_HMI2:
+						CANR_HMI2(&DB);
+						break;
+					case CAND_HMI1_LEFT:
+						CANR_HMI1_LEFT(&DB);
+						break;
+					case CAND_HMI1_RIGHT:
+						CANR_HMI1_RIGHT(&DB);
+						break;
+					case CAND_BMS_PARAM_1:
+						CANR_BMS_Param1(&DB);
+						break;
+					case CAND_BMS_PARAM_2:
+						CANR_BMS_Param2(&DB);
+						break;
+					default:
 
-					break;
+						break;
+				}
 			}
 		}
 	}
@@ -2096,10 +2097,10 @@ void Error_Handler(void)
  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* USER CODE BEGIN 6 */
+	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
