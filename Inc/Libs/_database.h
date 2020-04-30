@@ -153,6 +153,12 @@ typedef enum {
 	HMI1_DEV_MAX = 1
 } HMI1_DEVICE;
 
+typedef enum {
+	PAYLOAD_RESPONSE = 0,
+	PAYLOAD_REPORT = 1,
+	PAYLOAD_MAX = 1,
+} PAYLOAD_TYPE;
+
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
 	RTC_TimeTypeDef time;

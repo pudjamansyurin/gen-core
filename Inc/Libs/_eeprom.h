@@ -23,15 +23,14 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-  EE_CMD_R = 0,
-  EE_CMD_W = 1
+	EE_CMD_R = 0,
+	EE_CMD_W = 1
 } EEPROM_COMMAND;
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EEPROM_Init(void);
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value);
-uint8_t EEPROM_ReportSeqID(EEPROM_COMMAND cmd, uint16_t value);
-uint8_t EEPROM_ResponseSeqID(EEPROM_COMMAND cmd, uint16_t value);
+uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 

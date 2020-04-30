@@ -1205,14 +1205,16 @@ void StartManagerTask(void *argument)
 		// load from EEPROM
 		EEPROM_UnitID(EE_CMD_R, EE_NULL);
 		EEPROM_Odometer(EE_CMD_R, EE_NULL);
-		EEPROM_ReportSeqID(EE_CMD_R, EE_NULL);
-		EEPROM_ResponseSeqID(EE_CMD_R, EE_NULL);
+		for (uint8_t type = 0; type < PAYLOAD_MAX; type++) {
+			EEPROM_SequentialID(EE_CMD_R, EE_NULL, type);
+		}
 	} else {
 		// reporter configuration
 		EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
 		EEPROM_Odometer(EE_CMD_W, 0);
-		EEPROM_ReportSeqID(EE_CMD_W, 0);
-		EEPROM_ResponseSeqID(EE_CMD_W, 0);
+		for (uint8_t type = 0; type < PAYLOAD_MAX; type++) {
+			EEPROM_SequentialID(EE_CMD_W, 0, type);
+		}
 		// simcom configuration
 
 		// re-write eeprom
@@ -1285,13 +1287,18 @@ void StartIotTask(void *argument)
 	report_t report;
 	response_t response;
 	timestamp_t timestamp;
-	uint8_t retry, nack, pendingReport = 0, pendingResponse = 0;
+	uint8_t retry, nack;
 	const uint8_t size = sizeof(report.header.prefix) +
 			sizeof(report.header.crc) +
 			sizeof(report.header.size);
 
+	uint8_t pending[2] = { 0 };
+	osMessageQueueId_t *pQueue;
+	header_t *pHeader;
+	void *pPayload;
+
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	// Start simcom module
 	SIMCOM_DMA_Init();
@@ -1301,33 +1308,40 @@ void StartIotTask(void *argument)
 	for (;;) {
 		_DebugTask("IoT");
 
-		// REPORT frame
-		{
+		for (uint8_t type = 0; type < PAYLOAD_MAX; type++) {
+			// decide the payload
+			if (type == PAYLOAD_REPORT) {
+				pQueue = &ReportQueueHandle;
+				pPayload = &report;
+			} else {
+				pQueue = &ResponseQueueHandle;
+				pPayload = &response;
+			}
+			pHeader = (header_t*) pPayload;
+
 			// check report log
-			if (!pendingReport) {
-				status = osMessageQueueGet(ReportQueueHandle, &report, NULL, 0);
+			if (!pending[type]) {
+				status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
 				// check is mail ready
 				if (status == osOK) {
-					pendingReport = 1;
+					pending[type] = 1;
 				}
 			}
 
-			// check is report ready
-			if (pendingReport) {
+			// check is payload ready
+			if (pending[type]) {
 				retry = 1;
 				nack = 1;
 
 				do {
-					// get current sending date-time
-					report.data.req.vcu.rtc.send = RTC_Read();
-					// recalculate the CRC
-					report.header.crc = CRC_Calculate8(
-							(uint8_t*) &(report.header.size),
-							report.header.size + sizeof(report.header.size), 1);
+					if (type == PAYLOAD_REPORT) {
+						// Re-calculate CRC & Sending Time
+						Report_ReCalculate((report_t*) pPayload);
+					}
 
 					// Send to server
 					Simcom_SetState(SIM_STATE_SERVER_ON);
-					p = Simcom_Upload(&report, size + report.header.size, &retry);
+					p = Simcom_Upload(pPayload, size + pHeader->size, &retry);
 
 					// Handle looping NACK
 					if (p == SIM_RESULT_NACK) {
@@ -1339,51 +1353,8 @@ void StartIotTask(void *argument)
 
 					// Release back
 					if (p == SIM_RESULT_OK) {
-						EEPROM_ReportSeqID(EE_CMD_W, report.header.seq_id);
-						pendingReport = 0;
-
-						break;
-					}
-
-					// delay
-					osDelay(500);
-				} while (p != SIM_RESULT_OK && retry <= SIMCOM_MAX_UPLOAD_RETRY);
-			}
-		}
-
-		// RESPONSE frame
-		{
-			// check report log
-			if (!pendingResponse) {
-				status = osMessageQueueGet(ResponseQueueHandle, &response, NULL, 0U);
-				// check is mail ready
-				if (status == osOK) {
-					pendingResponse = 1;
-				}
-			}
-
-			// check is mail ready
-			if (pendingResponse) {
-				retry = 1;
-
-				do {
-					// Send to server
-					Simcom_SetState(SIM_STATE_SERVER_ON);
-					p = Simcom_Upload(&response, size + response.header.size, &retry);
-
-					// Handle looping NACK
-					if (p == SIM_RESULT_NACK) {
-						if (nack++ >= SIMCOM_MAX_UPLOAD_RETRY) {
-							// Probably  CRC not valid, cancel but force as success
-							p = SIM_RESULT_OK;
-						}
-					}
-
-					// Release back
-					if (p == SIM_RESULT_OK) {
-						// save sequentialID
-						EEPROM_ResponseSeqID(EE_CMD_W, response.header.seq_id);
-						pendingResponse = 0;
+						EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
+						pending[type] = 0;
 
 						break;
 					}
@@ -1429,7 +1400,7 @@ void StartReporterTask(void *argument)
 	FRAME_TYPE frame;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	// Initialize
 	Report_Init(FR_SIMPLE, &report);
@@ -1493,7 +1464,7 @@ void StartCommandTask(void *argument)
 	int p;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	// Initialize
 	Response_Init(&response);
@@ -1633,7 +1604,7 @@ void StartGpsTask(void *argument)
 	TickType_t lastWake;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	// Initialize
 	UBLOX_DMA_Init();
@@ -1645,7 +1616,7 @@ void StartGpsTask(void *argument)
 		_DebugTask("GPS");
 
 		GPS_Capture();
-		// Dummy odometer (based on GPS)
+		// FIXME: Dummy odometer (based on GPS)
 		GPS_CalculateOdometer();
 
 		// debug
@@ -1674,7 +1645,7 @@ void StartGyroTask(void *argument)
 	mems_decision_t mems_decision;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	/* MPU6050 Initialization*/
 	GYRO_Init();
@@ -1722,7 +1693,7 @@ void StartKeylessTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	// initialization
 	KEYLESS_Init();
@@ -1780,7 +1751,7 @@ void StartFingerTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	// Initialization
 	FINGER_DMA_Init();
@@ -1822,7 +1793,7 @@ void StartAudioTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	AUDIO_Init();
@@ -1884,7 +1855,7 @@ void StartSwitchTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	// Initialize
 	HBAR_ReadStates();
@@ -1910,14 +1881,12 @@ void StartSwitchTask(void *argument)
 				// restore previous Mode
 				HBAR_RestoreMode();
 				// handle Select & Set
-				if (SW.list[SW_K_SELECT].state || SW.list[SW_K_SET].state) {
-					if (SW.list[SW_K_SELECT].state) {
-						// handle select key
-						HBAR_DoSelect();
-					} else if (SW.list[SW_K_SET].state) {
-						// handle set key
-						HBAR_DoSet();
-					}
+				if (SW.list[SW_K_SELECT].state) {
+					// handle select key
+					HBAR_RunSelect();
+				} else if (SW.list[SW_K_SET].state) {
+					// handle set key
+					HBAR_RunSet();
 				}
 			}
 		}
@@ -1938,7 +1907,7 @@ void StartCanRxTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
 	for (;;) {
@@ -1992,7 +1961,7 @@ void StartCanTxTask(void *argument)
 	TickType_t lastWake;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
 	lastWake = xTaskGetTickCount();

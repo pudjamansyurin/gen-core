@@ -186,10 +186,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
 						}
 					}
 				}
-				// Save configuration to FLASH (not working)
-				//        if (p == SIM_RESULT_OK) {
-				//          p = Simcom_Cmd("AT&W\r", 500, 1);
-				//        }
 
 				// upgrade simcom state
 				if (p == SIM_RESULT_OK) {
@@ -327,10 +323,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					if (SIM.state == SIM_STATE_PDP_ON) {
 						// Close PDP
 						p = Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
-
-						if (p == SIM_RESULT_OK) {
-							SIM.state--;
-						}
+						SIM.state--;
 					}
 				}
 
@@ -355,10 +348,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					if (SIM.state == SIM_STATE_INTERNET_ON) {
 						// Close IP
 						p = Simcom_Cmd("AT+CIPCLOSE\r", 1000, 1);
-
-						if (p == SIM_RESULT_OK) {
-							SIM.state--;
-						}
+						SIM.state--;
 					}
 				}
 
@@ -388,7 +378,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
 	uint32_t tick;
 	char str[20];
 	command_t hCommand;
-	report_header_t *hHeader = NULL;
+	header_t *hHeader = NULL;
 
 	// combine the size
 	sprintf(str, "AT+CIPSEND=%d\r", size);
@@ -435,7 +425,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
 		// handle SIMCOM result
 		if (p == SIM_RESULT_ACK) {
 			// validate ACK
-			hHeader = (report_header_t*) payload;
+			hHeader = (header_t*) payload;
 			if (Simcom_ProcessACK(hHeader)) {
 				p = SIM_RESULT_OK;
 
@@ -530,7 +520,7 @@ SIMCOM_RESULT Simcom_ProcessCommand(command_t *command) {
 	return p;
 }
 
-SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header) {
+SIMCOM_RESULT Simcom_ProcessACK(header_t *header) {
 	lock();
 
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
@@ -544,8 +534,8 @@ SIMCOM_RESULT Simcom_ProcessACK(report_header_t *report_header) {
 			ack = *(ack_t*) str;
 
 			// validate the value
-			if (report_header->frame_id == ack.frame_id &&
-					report_header->seq_id == ack.seq_id) {
+			if (header->frame_id == ack.frame_id &&
+					header->seq_id == ack.seq_id) {
 				p = SIM_RESULT_OK;
 			}
 		}
