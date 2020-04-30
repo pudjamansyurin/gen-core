@@ -47,6 +47,7 @@
 - [x] Use Trip A & B
 - [x] Sync variable name for HMI-1 and VCU
 - [x] ~~Scale down "BMS Voltage", and set warning on 20% value.~~
+- [ ] Fix CRC not valid problem between VCU and Server
 - [ ] Change Notify() to RTOSv2 API
 - [ ] Fix duplicate variables
 - [ ] Make routine to check SIMCOM internet package

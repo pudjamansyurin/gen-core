@@ -25,7 +25,7 @@ void DB_Init(void) {
   DB.vcu.odometer = 0;
   DB.vcu.events = 0;
   DB.vcu.tick.keyless = 0;
-//  DB.vcu.tick.finger = 0;
+  //  DB.vcu.tick.finger = 0;
   DB.vcu.seq_id.report = 0;
   DB.vcu.seq_id.response = 0;
 
@@ -114,21 +114,21 @@ void DB_BMS_RefreshIndex(void) {
 uint8_t DB_BMS_GetIndex(uint32_t id) {
   uint8_t i;
 
-// find index (if already exist)
+  // find index (if already exist)
   for (i = 0; i < BMS_COUNT; i++) {
     if (DB.bms.pack[i].id == id) {
       return i;
     }
   }
 
-// finx index (if not exist)
+  // finx index (if not exist)
   for (i = 0; i < BMS_COUNT; i++) {
     if (DB.bms.pack[i].id == BMS_NULL_INDEX) {
       return i;
     }
   }
 
-// force replace first index (if already full)
+  // force replace first index (if already full)
   return 0;
 }
 
@@ -154,14 +154,13 @@ void DB_BMS_MergeData(void) {
   uint16_t flags = 0;
   uint8_t soc = 0, device = 0;
 
-// Merge flags (OR-ed)
+  // Merge flags (OR-ed)
   for (uint8_t i = 0; i < BMS_COUNT; i++) {
     flags |= DB.bms.pack[i].flag;
   }
-// apply to events
   DB_BMS_Events(flags);
 
-// Average SOC
+  // Average SOC
   for (uint8_t i = 0; i < BMS_COUNT; i++) {
     if (DB.bms.pack[i].started == 1) {
       soc += DB.bms.pack[i].soc;

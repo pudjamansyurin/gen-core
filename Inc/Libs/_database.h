@@ -165,9 +165,9 @@ typedef struct {
 
 //FIXME active disabled GPIO input
 typedef struct {
-//	uint8_t abs;
+  //	uint8_t abs;
   uint8_t mirroring;
-//  uint8_t lamp;
+  //  uint8_t lamp;
   uint8_t warning;
   uint8_t overheat;
   uint8_t finger;
@@ -193,7 +193,7 @@ typedef struct {
     uint64_t events;
     struct {
       uint32_t keyless;
-//      uint32_t finger;
+    //      uint32_t finger;
     } tick;
     struct {
       uint16_t report;
