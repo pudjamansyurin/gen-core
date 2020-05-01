@@ -132,12 +132,11 @@
 
 // Others Parameters
 #define BMS_COUNT                               2
-#define BMS_NULL_INDEX                          0xFFFFFFFF
+#define BMS_ID_NONE 	                          0xFFFFFFFF
 #define BMS_ID_MASK                             0xFFFFF
-#define MCU_SPEED_MAX                           200
-#define MCU_RPM_MAX                             99999
-#define VCU_ODOMETER_MAX                        99999
-#define HMI_DRIVE_MODE_MAX                      3
+#define MCU_SPEED_MAX                           255U
+#define MCU_RPM_MAX                             99999U
+#define VCU_ODOMETER_MAX                        99999U
 
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {

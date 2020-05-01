@@ -118,6 +118,10 @@ uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE typ
 }
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
+	// reset on overflow
+	if (value > VCU_ODOMETER_MAX) {
+		value = 0;
+	}
 	// FIXME: only update eeprom for 1km/hr increment
 	return EE_32(VADDR_ODOMETER, cmd, &value, &(DB.vcu.odometer));
 }
