@@ -386,17 +386,17 @@ int main(void)
 	/* creation of GpsTask */
 	GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
 
-	//  /* creation of GyroTask */
-	//  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
-	//
+	/* creation of GyroTask */
+	GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
+
 	/* creation of KeylessTask */
 	KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
 
-	//  /* creation of FingerTask */
-	//  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
-	//
-	//  /* creation of AudioTask */
-	//  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
+	/* creation of FingerTask */
+	FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
+
+	/* creation of AudioTask */
+	AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
 
 	/* creation of SwitchTask */
 	SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
@@ -1196,6 +1196,9 @@ void StartManagerTask(void *argument)
 	/* USER CODE BEGIN 5 */
 	TickType_t lastWake;
 	uint32_t notif;
+	uint8_t threadsCount = 12;
+	osThreadId_t threads[threadsCount];
+	char threadName[20];
 
 	// NOTE: This task get executed first!
 	DB_Init();
@@ -1207,7 +1210,12 @@ void StartManagerTask(void *argument)
 	DB_VCU_CheckBMSPresence();
 	DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
-	// Release other threads
+	// Threads management:
+	osThreadSuspend(GyroTaskHandle);
+	osThreadSuspend(AudioTaskHandle);
+	osThreadSuspend(FingerTaskHandle);
+	osThreadEnumerate(threads, threadsCount);
+	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
 
 	/* Infinite loop */
@@ -1247,6 +1255,20 @@ void StartManagerTask(void *argument)
 		LOG_Str("Battery:Voltage = ");
 		LOG_Int(DB.vcu.bat_voltage);
 		LOG_StrLn(" mV");
+
+		// Threads Monitor
+		LOG_StrLn("============ STACK MONITOR ============");
+		for (uint8_t i = 0; i < threadsCount; i++) {
+			if (threads[i] != NULL) {
+				// Calculate Stack Space
+				strcpy(threadName, osThreadGetName(threads[i]));
+				LOG_Buf(threadName, strlen(threadName));
+				LOG_Str(" : ");
+				LOG_Int(osThreadGetStackSpace(threads[i]));
+				LOG_StrLn(" Byte");
+			}
+		}
+		LOG_StrLn("=======================================");
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(1000));
@@ -2036,18 +2058,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
