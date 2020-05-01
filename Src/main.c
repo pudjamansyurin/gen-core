@@ -87,84 +87,84 @@ osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
   .name = "ManagerTask",
   .priority = (osPriority_t) osPriorityRealtime7,
-  .stack_size = 192 * 4
+  .stack_size = 288 * 4
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
 const osThreadAttr_t IotTask_attributes = {
   .name = "IotTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+  .stack_size = 352 * 4
 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
 const osThreadAttr_t ReporterTask_attributes = {
   .name = "ReporterTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+  .stack_size = 352 * 4
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
 const osThreadAttr_t CommandTask_attributes = {
   .name = "CommandTask",
   .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 128 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for GpsTask */
 osThreadId_t GpsTaskHandle;
 const osThreadAttr_t GpsTask_attributes = {
   .name = "GpsTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 160 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for GyroTask */
 osThreadId_t GyroTaskHandle;
 const osThreadAttr_t GyroTask_attributes = {
   .name = "GyroTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 224 * 4
 };
 /* Definitions for KeylessTask */
 osThreadId_t KeylessTaskHandle;
 const osThreadAttr_t KeylessTask_attributes = {
   .name = "KeylessTask",
   .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 160 * 4
+  .stack_size = 256 * 4
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
 const osThreadAttr_t FingerTask_attributes = {
   .name = "FingerTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 224 * 4
 };
 /* Definitions for AudioTask */
 osThreadId_t AudioTaskHandle;
 const osThreadAttr_t AudioTask_attributes = {
   .name = "AudioTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 224 * 4
 };
 /* Definitions for SwitchTask */
 osThreadId_t SwitchTaskHandle;
 const osThreadAttr_t SwitchTask_attributes = {
   .name = "SwitchTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 224 * 4
 };
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
 const osThreadAttr_t CanRxTask_attributes = {
   .name = "CanRxTask",
   .priority = (osPriority_t) osPriorityRealtime,
-  .stack_size = 128 * 4
+  .stack_size = 224 * 4
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
   .name = "CanTxTask",
   .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 128 * 4
+  .stack_size = 224 * 4
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
