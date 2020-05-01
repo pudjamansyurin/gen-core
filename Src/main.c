@@ -1200,26 +1200,8 @@ void StartManagerTask(void *argument)
 	// NOTE: This task get executed first!
 	DB_Init();
 
-	// Load EEPROM data
-	if (EEPROM_Init() && !EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
-		// load from EEPROM
-		EEPROM_UnitID(EE_CMD_R, EE_NULL);
-		EEPROM_Odometer(EE_CMD_R, EE_NULL);
-		for (uint8_t type = 0; type < PAYLOAD_MAX; type++) {
-			EEPROM_SequentialID(EE_CMD_R, EE_NULL, type);
-		}
-	} else {
-		// reporter configuration
-		EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
-		EEPROM_Odometer(EE_CMD_W, 0);
-		for (uint8_t type = 0; type < PAYLOAD_MAX; type++) {
-			EEPROM_SequentialID(EE_CMD_W, 0, type);
-		}
-		// simcom configuration
-
-		// re-write eeprom
-		EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
-	}
+	// EEPROM: Initializaiton & Load
+	EEPROM_ResetOrLoad();
 
 	// Check GPIOs state
 	DB_VCU_CheckBMSPresence();
@@ -1229,9 +1211,9 @@ void StartManagerTask(void *argument)
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
 
 	/* Infinite loop */
-	lastWake = xTaskGetTickCount();
 	for (;;) {
 		_DebugTask("Manager");
+		lastWake = osKernelGetTickCount();
 
 		// Handle GPIO interrupt
 		notif = osThreadFlagsGet();
@@ -1267,7 +1249,7 @@ void StartManagerTask(void *argument)
 		LOG_StrLn(" mV");
 
 		// Periodic interval
-		vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(1000));
+		osDelayUntil(lastWake + pdMS_TO_TICKS(1000));
 	}
 	/* USER CODE END 5 */
 }
@@ -1406,9 +1388,9 @@ void StartReporterTask(void *argument)
 	Report_Init(FR_SIMPLE, &report);
 
 	/* Infinite loop */
-	lastWake = xTaskGetTickCount();
 	for (;;) {
 		_DebugTask("Reporter");
+		lastWake = osKernelGetTickCount();
 
 		// decide full/simple frame time
 		if (!DB.vcu.independent) {
@@ -1442,8 +1424,8 @@ void StartReporterTask(void *argument)
 		// reset some events group
 		DB_SetEvent(EV_VCU_NETWORK_RESTART, 0);
 
-		// Report interval in second (based on lowest interval, the simple frame)
-		vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(DB.vcu.interval * 1000));
+		// Report interval
+		osDelayUntil(lastWake + pdMS_TO_TICKS(DB.vcu.interval * 1000));
 	}
 	/* USER CODE END StartReporterTask */
 }
@@ -1611,9 +1593,9 @@ void StartGpsTask(void *argument)
 	GPS_Init();
 
 	/* Infinite loop */
-	lastWake = xTaskGetTickCount();
 	for (;;) {
 		_DebugTask("GPS");
+		lastWake = osKernelGetTickCount();
 
 		GPS_Capture();
 		// FIXME: Dummy odometer (based on GPS)
@@ -1624,8 +1606,8 @@ void StartGpsTask(void *argument)
 		//    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
 		//    LOG_Enter();
 
-		// Report interval
-		vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(GPS_INTERVAL_MS));
+		// Periodic interval
+		osDelayUntil(lastWake + pdMS_TO_TICKS(GPS_INTERVAL_MS));
 	}
 	/* USER CODE END StartGpsTask */
 }
@@ -1655,9 +1637,10 @@ void StartGyroTask(void *argument)
 	LOG_StrLn("Gyro:Calibrated");
 
 	/* Infinite loop */
-	lastWake = xTaskGetTickCount();
 	for (;;) {
 		_DebugTask("Gyro");
+		lastWake = osKernelGetTickCount();
+
 		// Read all accelerometer, gyroscope (average)
 		mems_decision = GYRO_Decision(&mems_calibration, 25);
 
@@ -1673,8 +1656,9 @@ void StartGyroTask(void *argument)
 			osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
 			DB_SetEvent(EV_VCU_BIKE_FALLING, 0);
 		}
-		// Report interval
-		vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(100));
+
+		// Periodic interval
+		osDelayUntil(lastWake + pdMS_TO_TICKS(100));
 	}
 	/* USER CODE END StartGyroTask */
 }
@@ -1801,9 +1785,9 @@ void StartAudioTask(void *argument)
 	AUDIO_Play();
 
 	/* Infinite loop */
-	lastWake = xTaskGetTickCount();
 	for (;;) {
 		_DebugTask("Audio");
+		lastWake = osKernelGetTickCount();
 
 		// do this if events occurred
 		notif = osThreadFlagsGet();
@@ -1836,8 +1820,8 @@ void StartAudioTask(void *argument)
 		// update volume
 		AUDIO_OUT_SetVolume(DB.vcu.volume);
 
-		// Report interval
-		vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(500));
+		// Periodic interval
+		osDelayUntil(lastWake + pdMS_TO_TICKS(500));
 	}
 	/* USER CODE END StartAudioTask */
 }
@@ -1964,9 +1948,10 @@ void StartCanTxTask(void *argument)
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
-	lastWake = xTaskGetTickCount();
 	for (;;) {
 		_DebugTask("CanTx");
+		lastWake = osKernelGetTickCount();
+
 		// Send CAN data
 		CANT_VCU_Switch(&DB, &SW);
 		CANT_VCU_RTC(&(DB.vcu.rtc.timestamp));
@@ -2007,7 +1992,7 @@ void StartCanTxTask(void *argument)
 		}
 
 		// Periodic interval
-		vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(500));
+		osDelayUntil(lastWake + pdMS_TO_TICKS(500));
 	}
 	/* USER CODE END StartCanTxTask */
 }
