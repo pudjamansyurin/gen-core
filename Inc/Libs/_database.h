@@ -100,6 +100,7 @@
 #define EVT_SWITCH_TRIGGERED									BIT(0)
 
 // Events group (for All Threads)
+#define EVENT_MASK														0x7FFFFFFF
 #define EVENT_READY                             BIT(0)
 
 // Command Code List

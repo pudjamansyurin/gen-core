@@ -24,6 +24,7 @@ void _LedToggle(void);
 void _LedDisco(uint16_t ms);
 void _Error(char msg[50]);
 void _DebugTask(char name[20]);
+void _DebugStackSpace(osThreadId_t *threads, uint8_t count);
 void _DummyGenerator(db_t *db, sw_t *sw);
 uint8_t _TimeNeedCalibration(db_t *db);
 uint8_t _TimeCheckDaylight(timestamp_t timestamp);

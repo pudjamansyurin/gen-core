@@ -38,7 +38,5 @@ uint8_t KEYLESS_ReadPayload(void) {
 }
 
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
-	if (osKernelGetState() == osKernelRunning) {
-		osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RX_IT);
-	}
+	osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RX_IT);
 }

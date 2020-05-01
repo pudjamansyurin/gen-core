@@ -1152,7 +1152,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-
 	if (osKernelGetState() == osKernelRunning) {
 		// handle BMS_IRQ (is 5v exist?)
 		if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
@@ -1196,14 +1195,13 @@ void StartManagerTask(void *argument)
 	/* USER CODE BEGIN 5 */
 	TickType_t lastWake;
 	uint32_t notif;
-	uint8_t threadsCount = 12;
-	osThreadId_t threads[threadsCount];
-	char threadName[20];
+	uint8_t thCount = osThreadGetCount();
+	osThreadId_t threads[thCount];
 
 	// NOTE: This task get executed first!
 	DB_Init();
 
-	// EEPROM: Initializaiton & Load
+	// EEPROM: Initialization & Load
 	EEPROM_ResetOrLoad();
 
 	// Check GPIOs state
@@ -1214,9 +1212,12 @@ void StartManagerTask(void *argument)
 	osThreadSuspend(GyroTaskHandle);
 	osThreadSuspend(AudioTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
-	osThreadEnumerate(threads, threadsCount);
+
 	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
+
+	// Get list of active threads
+	osThreadEnumerate(threads, thCount);
 
 	/* Infinite loop */
 	for (;;) {
@@ -1256,19 +1257,10 @@ void StartManagerTask(void *argument)
 		LOG_Int(DB.vcu.bat_voltage);
 		LOG_StrLn(" mV");
 
-		// Threads Monitor
-		LOG_StrLn("============ STACK MONITOR ============");
-		for (uint8_t i = 0; i < threadsCount; i++) {
-			if (threads[i] != NULL) {
-				// Calculate Stack Space
-				strcpy(threadName, osThreadGetName(threads[i]));
-				LOG_Buf(threadName, strlen(threadName));
-				LOG_Str(" : ");
-				LOG_Int(osThreadGetStackSpace(threads[i]));
-				LOG_StrLn(" Byte");
-			}
+		// Thread's Stack Monitor
+		if (osKernelGetTickCount() % pdMS_TO_TICKS(10 * 1000) == 0) {
+			_DebugStackSpace(threads, thCount);
 		}
-		LOG_StrLn("=======================================");
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(1000));
@@ -1312,7 +1304,7 @@ void StartIotTask(void *argument)
 		_DebugTask("IoT");
 
 		// Upload Report & Response Payload
-		for (uint8_t type = 0; type < PAYLOAD_MAX; type++) {
+		for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
 			// decide the payload
 			if (type == PAYLOAD_REPORT) {
 				pQueue = &ReportQueueHandle;
@@ -1708,10 +1700,9 @@ void StartKeylessTask(void *argument)
 	for (;;) {
 		_DebugTask("Keyless");
 
+		// check if has new can message
+		notif = osThreadFlagsWait(EVENT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 		{
-			// check if has new can message
-			notif = osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny, pdMS_TO_TICKS(100));
-
 			// proceed event
 			if (notif & EVT_KEYLESS_RX_IT) {
 				msg = KEYLESS_ReadPayload();
@@ -1769,7 +1760,7 @@ void StartFingerTask(void *argument)
 
 		{
 			// check if user put finger
-			notif = osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny, pdMS_TO_TICKS(100));
+			notif = osThreadFlagsWait(EVENT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 
 			// proceed event
 			if (notif & EVT_FINGER_PLACED) {
@@ -1871,12 +1862,12 @@ void StartSwitchTask(void *argument)
 		_DebugTask("Switch");
 
 		// wait until GPIO changes
-		notif = osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny, osWaitForever);
+		notif = osThreadFlagsWait(EVENT_MASK, osFlagsWaitAny, osWaitForever);
 
 		if (notif & EVT_SWITCH_TRIGGERED) {
 			// handle bounce effect
 			osDelay(50);
-			osThreadFlagsClear(ULONG_MAX);
+			osThreadFlagsClear(EVENT_MASK);
 
 			// Read all (to handle multiple switch change at the same time)
 			HBAR_ReadStates();
@@ -1920,7 +1911,7 @@ void StartCanRxTask(void *argument)
 		_DebugTask("CanRx");
 
 		// check if has new can message
-		notif = osThreadFlagsWait(ULONG_MAX, osFlagsWaitAny, osWaitForever);
+		notif = osThreadFlagsWait(EVENT_MASK, osFlagsWaitAny, osWaitForever);
 
 		// proceed event
 		if (notif & EVT_CAN_RX_IT) {
@@ -2058,18 +2049,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
