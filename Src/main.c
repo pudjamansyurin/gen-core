@@ -1259,7 +1259,7 @@ void StartManagerTask(void *argument)
 		LOG_StrLn(" mV");
 
 		// Thread's Stack Monitor
-		if ((osKernelGetTickCount() - lastDebug) >= pdMS_TO_TICKS(30000)) {
+		if ((osKernelGetTickCount() - lastDebug) >= pdMS_TO_TICKS(10000)) {
 			_DebugStackSpace(threads, thCount);
 
 			lastDebug = osKernelGetTickCount();
