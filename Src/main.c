@@ -1193,7 +1193,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 void StartManagerTask(void *argument)
 {
 	/* USER CODE BEGIN 5 */
-	TickType_t lastWake;
+	TickType_t lastWake, lastDebug;
 	uint32_t notif;
 	uint8_t thCount = osThreadGetCount();
 	osThreadId_t threads[thCount];
@@ -1220,6 +1220,7 @@ void StartManagerTask(void *argument)
 	osThreadEnumerate(threads, thCount);
 
 	/* Infinite loop */
+	lastDebug = osKernelGetTickCount();
 	for (;;) {
 		_DebugTask("Manager");
 		lastWake = osKernelGetTickCount();
@@ -1258,8 +1259,10 @@ void StartManagerTask(void *argument)
 		LOG_StrLn(" mV");
 
 		// Thread's Stack Monitor
-		if (osKernelGetTickCount() % pdMS_TO_TICKS(10 * 1000) == 0) {
+		if ((osKernelGetTickCount() - lastDebug) >= pdMS_TO_TICKS(30000)) {
 			_DebugStackSpace(threads, thCount);
+
+			lastDebug = osKernelGetTickCount();
 		}
 
 		// Periodic interval
@@ -1701,7 +1704,7 @@ void StartKeylessTask(void *argument)
 		_DebugTask("Keyless");
 
 		// check if has new can message
-		notif = osThreadFlagsWait(EVENT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 		{
 			// proceed event
 			if (notif & EVT_KEYLESS_RX_IT) {
@@ -1760,7 +1763,7 @@ void StartFingerTask(void *argument)
 
 		{
 			// check if user put finger
-			notif = osThreadFlagsWait(EVENT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
+			notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 
 			// proceed event
 			if (notif & EVT_FINGER_PLACED) {
@@ -1862,12 +1865,12 @@ void StartSwitchTask(void *argument)
 		_DebugTask("Switch");
 
 		// wait until GPIO changes
-		notif = osThreadFlagsWait(EVENT_MASK, osFlagsWaitAny, osWaitForever);
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, osWaitForever);
 
 		if (notif & EVT_SWITCH_TRIGGERED) {
 			// handle bounce effect
 			osDelay(50);
-			osThreadFlagsClear(EVENT_MASK);
+			osThreadFlagsClear(EVT_MASK);
 
 			// Read all (to handle multiple switch change at the same time)
 			HBAR_ReadStates();
@@ -1911,7 +1914,7 @@ void StartCanRxTask(void *argument)
 		_DebugTask("CanRx");
 
 		// check if has new can message
-		notif = osThreadFlagsWait(EVENT_MASK, osFlagsWaitAny, osWaitForever);
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, osWaitForever);
 
 		// proceed event
 		if (notif & EVT_CAN_RX_IT) {

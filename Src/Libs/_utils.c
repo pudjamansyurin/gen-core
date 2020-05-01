@@ -57,47 +57,16 @@ void _DebugTask(char name[20]) {
 }
 
 void _DebugStackSpace(osThreadId_t *threads, uint8_t count) {
-	char thName[20], thStateString[15];
-	osThreadState_t thState;
+	char thName[15];
 
 	// Debug each thread's Stack Space
 	LOG_StrLn("============ STACK MONITOR ============");
 	for (uint8_t i = 0; i < count; i++) {
 		if (threads[i] != NULL) {
-			sprintf(thName, "%-19s", osThreadGetName(threads[i]));
-			thState = osThreadGetState(threads[i]);
-
-			switch (thState) {
-				case osThreadInactive:
-					sprintf(thStateString, "%-14s", "Inactive");
-					break;
-				case osThreadReady:
-					sprintf(thStateString, "%-14s", "Ready");
-					break;
-				case osThreadRunning:
-					sprintf(thStateString, "%-14s", "Running");
-					break;
-				case osThreadBlocked:
-					sprintf(thStateString, "%-14s", "Blocked");
-					break;
-				case osThreadTerminated:
-					sprintf(thStateString, "%-14s", "Terminated");
-					break;
-				case osThreadError:
-					sprintf(thStateString, "%-14s", "Error");
-					break;
-				case osThreadReserved:
-					sprintf(thStateString, "%-14s", "Reserved");
-					break;
-				default:
-					sprintf(thStateString, "%-14s", "Unknown");
-					break;
-			}
+			sprintf(thName, "%-14s", osThreadGetName(threads[i]));
 			// print
 			LOG_Buf(thName, strlen(thName));
-			LOG_Str(" (");
-			LOG_Buf(thStateString, strlen(thStateString));
-			LOG_Str(") : ");
+			LOG_Str(" : ");
 			LOG_Int(osThreadGetStackSpace(threads[i]));
 			LOG_StrLn(" Byte");
 		}
