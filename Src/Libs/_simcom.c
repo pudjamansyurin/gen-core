@@ -98,6 +98,8 @@ void Simcom_SetState(SIMCOM_STATE state) {
 				// upgrade simcom state
 				if (p == SIM_RESULT_OK) {
 					SIM.state++;
+				} else {
+					LOG_StrLn("Simcom:Error");
 				}
 
 				break;
