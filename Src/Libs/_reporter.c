@@ -11,6 +11,7 @@
 /* External variables ----------------------------------------------------------*/
 extern db_t DB;
 extern gps_t GPS;
+extern sw_t SW;
 
 /* Public functions implementation --------------------------------------------*/
 void Report_Init(FRAME_TYPE frame, report_t *report) {
@@ -20,18 +21,12 @@ void Report_Init(FRAME_TYPE frame, report_t *report) {
 	// header report
 	report->header.prefix[0] = PREFIX_REPORT[1];
 	report->header.prefix[1] = PREFIX_REPORT[0];
-	report->header.crc = 0;
-	report->header.size = 0;
-	report->header.frame_id = frame;
-	report->header.seq_id = DB.vcu.seq_id.report;
 	// (already set)
 	// body required
 	report->data.req.vcu.driver_id = 1;
 	// body optional
 	report->data.opt.vcu.report.range = 99;
 	report->data.opt.vcu.report.efficiency = 88;
-	report->data.opt.vcu.trip.a = 0;
-	report->data.opt.vcu.trip.b = 0;
 }
 
 void Response_Init(response_t *response) {
@@ -41,13 +36,6 @@ void Response_Init(response_t *response) {
 	// header report
 	response->header.prefix[0] = PREFIX_REPORT[1];
 	response->header.prefix[1] = PREFIX_REPORT[0];
-	response->header.crc = 0;
-	response->header.size = 0;
-	response->header.frame_id = FR_RESPONSE;
-	response->header.seq_id = DB.vcu.seq_id.response;
-	// body response
-	response->data.code = 1;
-	strcpy(response->data.message, "");
 }
 
 void Report_Capture(FRAME_TYPE frame, report_t *report) {
@@ -81,6 +69,9 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
 		report->data.opt.vcu.speed = GPS.speed_kph;
 		report->data.opt.vcu.odometer = DB.vcu.odometer;
+		report->data.opt.vcu.trip.a = SW.runner.mode.sub.trip[SW_M_TRIP_A];
+		report->data.opt.vcu.trip.b = SW.runner.mode.sub.trip[SW_M_TRIP_B];
+
 		report->data.opt.vcu.signal_percent = DB.vcu.signal_percent;
 		report->data.opt.vcu.bat_voltage = DB.vcu.bat_voltage / 18;
 
@@ -105,7 +96,6 @@ void Response_Capture(response_t *response) {
 	response->header.crc = CRC_Calculate8(
 			(uint8_t*) &(response->header.size),
 			response->header.size + sizeof(response->header.size));
-
 }
 
 void Report_ReCalculate(report_t *report) {
