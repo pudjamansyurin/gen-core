@@ -322,9 +322,10 @@ void Simcom_SetState(SIMCOM_STATE state) {
 				if (p == SIM_RESULT_OK) {
 					SIM.state++;
 				} else {
+					// Close PDP
+					p = Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+
 					if (SIM.state == SIM_STATE_PDP_ON) {
-						// Close PDP
-						p = Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
 						SIM.state--;
 					}
 				}
@@ -347,9 +348,10 @@ void Simcom_SetState(SIMCOM_STATE state) {
 				if (p == SIM_RESULT_OK) {
 					SIM.state++;
 				} else {
+					// Close IP
+					p = Simcom_Cmd("AT+CIPCLOSE\r", 1000, 1);
+
 					if (SIM.state == SIM_STATE_INTERNET_ON) {
-						// Close IP
-						p = Simcom_Cmd("AT+CIPCLOSE\r", 1000, 1);
 						SIM.state--;
 					}
 				}
