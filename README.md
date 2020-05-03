@@ -47,8 +47,8 @@
 - [x] Use Trip A & B
 - [x] Sync variable name for HMI-1 and VCU
 - [x] ~~Scale down "BMS Voltage", and set warning on 20% value.~~
-- [ ] Fix CRC not valid problem between VCU and Server
-- [ ] Change Notify() to RTOSv2 API
+- [x] Fix CRC not valid problem between VCU and Server
+- [x] Change Notify() to RTOSv2 API
 - [ ] ~~Fix duplicate variables~~
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Simplify SIMCOM library
@@ -185,20 +185,20 @@
 - http://www.summitdata.com/blog/parasitic-effects-rf-design/ 
 
 ## Sub-Modules Progress:
-| No | Sub Module                  | Chip           | ST-Peripheral  | Firmware(%)  | Hardware     | Note		  							|
+| No | Sub Module                  | Chip           | ST-Peripheral  | Firmware		| Hardware     | Note		  							|
 |:--:|-----------------------------|----------------|:--------------:|:------------:|:------------:|----------------------------------------|
-|  1 | IoT                         | SIM5300e       | USART1		 |      95      |   	✔	   | **Done**: See PCB Revision				|
-|  2 | GPS                         | Ublox NEO-6M   | USART2		 |      100     |   	✔ 	   | **Done**: Use long-cable antenna		|
-|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      100     |  		✔	   | **Done**: AD0 pin should be grounded	|
-|  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1			 |      75      |       ✔      | **Done**: Use semi module				|
-|  5 | Fingerprint                 | FZ3387         | UART4			 |      100     |   	✔	   | **Done**: Replace Q6 from NPN to PNP	|
-|  6 | RTC                         | ST-RTC		    | RTC			 |      100     |       ✔      | **Done**								|
-|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      100     |       ✔      | **Done**								|
-|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    100     |   	✔	   | **Done**: Connect pin 41 to GND		|
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      100     |       ✔      | **Done**								|
-| 10 | EEPROM                      | 24AA32A        | I2C2			 |      100     |       ✔      | **Done**								|
-| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      100     |       ✔      | **Done**								|
-| 12 | Data Validator	           | ST-CRC        	| CRC			 |      100     |       -      | **Done**: For backend frame			|
-| 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		100		| 		✔ 	   | **Done**: Need more accurate			|
-| 14 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0 		| 		-	   | Waitting: Server & pocket keyless		|
-| 15 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0 		| 		-      | Pending: Auxiliary						|
+|  1 | IoT                         | SIM5300e       | USART1		 |      95%     |   	✔	   | **Done**: See PCB Revision				|
+|  2 | GPS                         | Ublox NEO-6M   | USART2		 |      ✔     	|   	✔ 	   | **Done**: Use long-cable antenna		|
+|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3			 |      ✔     	|  		✔	   | **Done**: AD0 pin should be grounded	|
+|  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1			 |      75%     |       ✔      | **Done**: Use semi module				|
+|  5 | Fingerprint                 | FZ3387         | UART4			 |      ✔     	|   	✔	   | **Done**: Replace Q6 from NPN to PNP	|
+|  6 | RTC                         | ST-RTC		    | RTC			 |      ✔     	|       ✔      | **Done**								|
+|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -				 |      ✔     	|       ✔      | **Done**								|
+|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3   	 | 	    ✔     	|   	✔	   | **Done**: Connect pin 41 to GND		|
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1			 |      ✔     	|       ✔      | **Done**								|
+| 10 | EEPROM                      | 24AA32A        | I2C2			 |      ✔     	|       ✔      | **Done**								|
+| 11 | Handlebar/Switch            | ST-EXTI        | PE			 |      ✔     	|       ✔      | **Done**								|
+| 12 | Data Validator	           | ST-CRC        	| CRC			 |      ✔     	|       -      | **Done**								|
+| 13 | Backup Battery Monitor      | ST-ADC			| ADC1			 | 		✔		| 		✔ 	   | **Done** 								|
+| 14 | Encryption IoT & RF		   | ST-AES			| -  			 | 		0% 		| 		-	   | Waitting: Server & pocket keyless		|
+| 15 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 			 |      0% 		| 		-      | Pending: Auxiliary						|
