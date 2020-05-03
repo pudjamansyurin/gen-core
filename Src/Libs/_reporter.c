@@ -104,7 +104,7 @@ void Response_Capture(response_t *response) {
 			strlen(response->data.message);
 	response->header.crc = CRC_Calculate8(
 			(uint8_t*) &(response->header.size),
-			response->header.size + sizeof(response->header.size), 1);
+			response->header.size + sizeof(response->header.size));
 
 }
 
@@ -114,6 +114,6 @@ void Report_ReCalculate(report_t *report) {
 	// recalculate the CRC
 	report->header.crc = CRC_Calculate8(
 			(uint8_t*) &(report->header.size),
-			report->header.size + sizeof(report->header.size), 1);
+			report->header.size + sizeof(report->header.size));
 
 }

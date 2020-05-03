@@ -31,5 +31,6 @@ uint8_t _TimeCheckDaylight(timestamp_t timestamp);
 int8_t _BitPosition(uint64_t event_id);
 int32_t _ParseNumber(const char *ptr, uint8_t *cnt);
 float _ParseFloatNumber(const char *ptr, uint8_t *cnt);
+uint32_t _ByteSwap32(uint32_t x);
 
 #endif /* UTILS_H_ */

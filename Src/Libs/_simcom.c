@@ -510,7 +510,7 @@ SIMCOM_RESULT Simcom_ProcessCommand(command_t *command) {
 			if (command->header.size == sizeof(command->data)) {
 				// calculate the CRC
 				crcValue = CRC_Calculate8((uint8_t*) &(command->header.size),
-						sizeof(command->header.size) + sizeof(command->data), 1);
+						sizeof(command->header.size) + sizeof(command->data));
 
 				// check the CRC
 				if (command->header.crc == crcValue) {
