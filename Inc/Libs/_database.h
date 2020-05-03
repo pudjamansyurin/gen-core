@@ -137,6 +137,8 @@
 #define MCU_RPM_MAX                             99999U
 #define VCU_ODOMETER_MAX                        99999U
 
+#define FINGER_ID_NONE													0xFF
+
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {
 	BMS_STATE_IDLE = 0,
