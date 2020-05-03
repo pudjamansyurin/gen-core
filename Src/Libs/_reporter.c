@@ -23,7 +23,7 @@ void Report_Init(FRAME_TYPE frame, report_t *report) {
 	report->header.prefix[1] = PREFIX_REPORT[0];
 	// (already set)
 	// body required
-	report->data.req.vcu.driver_id = FINGER_ID_NONE;
+	report->data.req.vcu.driver_id = DRIVER_ID_NONE;
 	// body optional
 	report->data.opt.vcu.report.range = 99;
 	report->data.opt.vcu.report.efficiency = 88;
