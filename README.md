@@ -50,8 +50,8 @@
 - [x] Fix CRC not valid problem between VCU and Server
 - [x] Change Notify() to RTOSv2 API
 - [ ] ~~Fix duplicate variables~~
-- [ ] Move routines in CommandTask to its own Task
-  - [ ] Implement BinarySemaphore or ThreadFlags to handle that
+- [x] Move routines in CommandTask to its own Task
+  - [x] Implement BinarySemaphore or ThreadFlags to handle that
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Simplify SIMCOM library
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 

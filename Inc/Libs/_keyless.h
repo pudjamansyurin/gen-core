@@ -11,10 +11,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_nrf24l01.h"
 
-/* Exported struct --------------------------------------------------------------*/
+/* Exported define -----------------------------------------------------------*/
+#define NRF_DATA_LENGTH														8
+
+/* Exported struct -----------------------------------------------------------*/
 typedef struct {
-  uint8_t count;
-  uint8_t rx[8];
+	uint8_t rx[NRF_DATA_LENGTH];
 } payload_t;
 
 /* Public functions prototype ------------------------------------------------*/

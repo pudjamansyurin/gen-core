@@ -41,7 +41,6 @@ uint8_t CANT_BMS_Setting(uint8_t start, BMS_STATE state);
 void CANR_BMS_Param1(db_t *db);
 void CANR_BMS_Param2(db_t *db);
 void CANR_BMS_BatteryID(db_t *db);
-void CANR_MCU_Dummy(db_t *db);
 void CANR_HMI2(db_t *db);
 void CANR_HMI1_LEFT(db_t *db);
 void CANR_HMI1_RIGHT(db_t *db);

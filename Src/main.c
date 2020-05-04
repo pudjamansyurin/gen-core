@@ -181,6 +181,16 @@ osMessageQueueId_t ReportQueueHandle;
 const osMessageQueueAttr_t ReportQueue_attributes = {
 		.name = "ReportQueue"
 };
+/* Definitions for FingerIdQueue */
+osMessageQueueId_t FingerIdQueueHandle;
+const osMessageQueueAttr_t FingerIdQueue_attributes = {
+		.name = "FingerIdQueue"
+};
+/* Definitions for ResponseCodeQueue */
+osMessageQueueId_t ResponseCodeQueueHandle;
+const osMessageQueueAttr_t ResponseCodeQueue_attributes = {
+		.name = "ResponseCodeQueue"
+};
 /* Definitions for AudioMutex */
 osMutexId_t AudioMutexHandle;
 const osMutexAttr_t AudioMutex_attributes = {
@@ -364,6 +374,12 @@ int main(void)
 
 	/* creation of ReportQueue */
 	ReportQueueHandle = osMessageQueueNew(100, sizeof(report_t), &ReportQueue_attributes);
+
+	/* creation of FingerIdQueue */
+	FingerIdQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &FingerIdQueue_attributes);
+
+	/* creation of ResponseCodeQueue */
+	ResponseCodeQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &ResponseCodeQueue_attributes);
 
 	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
@@ -1161,15 +1177,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		if (GPIO_Pin == EXT_KNOB_IRQ_Pin) {
 			osThreadFlagsSet(ManagerTaskHandle, EVT_MANAGER_KNOB_IRQ);
 		}
-		//		// handle Finger IRQ
-		//		if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
-		//			osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
-		//		}
+		// handle Finger IRQ
+		if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
+			osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
+		}
 		// handle NRF24 IRQ
 		if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
 			KEYLESS_IrqHandler();
 		}
-
 		// handle Switches EXTI
 		for (uint8_t i = 0; i < SW_TOTAL_LIST; i++) {
 			if (GPIO_Pin == SW.list[i].pin) {
@@ -1200,8 +1215,6 @@ void StartManagerTask(void *argument)
 
 	// NOTE: This task get executed first!
 	DB_Init();
-
-	// EEPROM: Initialization & Load
 	EEPROM_ResetOrLoad();
 
 	// Check GPIOs state
@@ -1226,7 +1239,8 @@ void StartManagerTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		// Handle GPIO interrupt
-		notif = osThreadFlagsGet();
+
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 0);
 		if (notif) {
 			// handle bounce effect
 			osDelay(50);
@@ -1460,7 +1474,6 @@ void StartCommandTask(void *argument)
 	response_t response;
 	osStatus_t status;
 	command_t command;
-	int p;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
@@ -1513,7 +1526,7 @@ void StartCommandTask(void *argument)
 				case CMD_CODE_REPORT:
 					switch (command.data.sub_code) {
 						case CMD_REPORT_RTC:
-							RTC_Write(command.data.value, &(DB.vcu.rtc));
+							RTC_Write((uint64_t) command.data.value, &(DB.vcu.rtc));
 							break;
 
 						case CMD_REPORT_ODOM:
@@ -1537,13 +1550,16 @@ void StartCommandTask(void *argument)
 							break;
 
 						case CMD_AUDIO_MUTE:
-							osThreadFlagsSet(
-									AudioTaskHandle,
-									(uint8_t) command.data.value ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF);
+							if ((uint8_t) command.data.value) {
+								osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_ON);
+							} else {
+								osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_OFF);
+							}
+
 							break;
 
 						case CMD_AUDIO_VOL:
-							DB.vcu.volume = command.data.value;
+							DB.vcu.volume = (uint8_t) command.data.value;
 							break;
 
 						default:
@@ -1553,27 +1569,36 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_CODE_FINGER:
+					// put finger index to queue
+					osMessageQueuePut(FingerIdQueueHandle, &(command.data.value), 0U, 0U);
+
 					switch (command.data.sub_code) {
 						case CMD_FINGER_ADD:
-							p = Finger_Enroll((uint8_t) command.data.value);
+							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
 							break;
 
 						case CMD_FINGER_DEL:
-							p = Finger_DeleteID((uint8_t) command.data.value);
+							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_DEL);
 							break;
 
 						case CMD_FINGER_RST:
-							p = Finger_EmptyDatabase();
+							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
 							break;
 
 						default:
 							response.data.code = RESPONSE_STATUS_INVALID;
 							break;
 					}
-					// handle response from finger-print module
-					if (p != FINGERPRINT_OK) {
+
+					// wait response from FingerTask (30 seconds)
+					status = osMessageQueueGet(ResponseCodeQueueHandle,
+							&(response.data.code), NULL, pdMS_TO_TICKS(30000));
+
+					// handle timeout
+					if (status != osOK) {
 						response.data.code = RESPONSE_STATUS_ERROR;
 					}
+
 					break;
 
 				default:
@@ -1615,13 +1640,7 @@ void StartGpsTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		GPS_Capture();
-		// FIXME: Dummy odometer (based on GPS)
 		GPS_CalculateOdometer();
-
-		// debug
-		//    LOG_StrLn("GPS:Buffer = ");
-		//    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
-		//    LOG_Enter();
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(GPS_INTERVAL_MS));
@@ -1705,12 +1724,12 @@ void StartKeylessTask(void *argument)
 
 		// check if has new can message
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
-		{
+		if (notif) {
 			// proceed event
 			if (notif & EVT_KEYLESS_RX_IT) {
 				msg = KEYLESS_ReadPayload();
 
-				// record heartbeat
+				// record heart-beat
 				DB.vcu.tick.keyless = osKernelGetTickCount();
 
 				// indicator
@@ -1718,17 +1737,16 @@ void StartKeylessTask(void *argument)
 				LOG_Hex8(msg);
 				LOG_Enter();
 
-				// just fun indicator
-				// FIXME: AUDIO should be handled by AudioTask
-				//        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, (msg + 1) * 100);
-				for (int i = 0; i < ((msg + 1) * 2); i++) {
+				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
+				for (uint8_t i = 0; i < ((msg + 1) * 2); i++) {
 					_LedToggle();
-					osDelay(50);
+					osDelay(100);
 				}
+				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
 			}
 		}
 
-		// update heartbeat
+		// update heart-beat
 		if ((osKernelGetTickCount() - DB.vcu.tick.keyless) < pdMS_TO_TICKS(5000)) {
 			DB.hmi1.status.keyless = 1;
 		} else {
@@ -1749,6 +1767,8 @@ void StartFingerTask(void *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t notif;
+	uint8_t fingerId, responseCode;
+	int p;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
@@ -1761,18 +1781,40 @@ void StartFingerTask(void *argument)
 	for (;;) {
 		_DebugTask("Finger");
 
-		{
-			// check if user put finger
-			notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
-
-			// proceed event
+		// check if user put finger
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
+		// proceed event
+		if (notif) {
+			// Scan existing finger
 			if (notif & EVT_FINGER_PLACED) {
 				if (Finger_AuthFast() > 0) {
-					// indicator when finger is registered
+					// Finger is registered
 					_LedWrite(1);
 					osDelay(1000);
 					_LedWrite(0);
 				}
+			}
+
+			if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
+				// get fingerId value
+				osMessageQueueGet(FingerIdQueueHandle, &fingerId, NULL, 0U);
+
+				// Add new finger
+				if (notif & EVT_FINGER_ADD) {
+					p = Finger_Enroll(fingerId);
+				}
+				// Delete existing finger
+				if (notif & EVT_FINGER_DEL) {
+					p = Finger_DeleteID(fingerId);
+				}
+				// Reset all finger database
+				if (notif & EVT_FINGER_RST) {
+					p = Finger_EmptyDatabase();
+				}
+
+				// handle response
+				responseCode = (p == FINGERPRINT_OK) ? RESPONSE_STATUS_OK : RESPONSE_STATUS_ERROR;
+				osMessageQueuePut(ResponseCodeQueueHandle, &responseCode, 0U, 0U);
 			}
 		}
 	}
@@ -1797,7 +1839,7 @@ void StartAudioTask(void *argument)
 
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	AUDIO_Init();
-	// Play wave loop forever, handover to DMA, so CPU is free
+	// Play wave loop forever, hand-over to DMA, so CPU is free
 	AUDIO_Play();
 
 	/* Infinite loop */
@@ -1806,10 +1848,8 @@ void StartAudioTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		// do this if events occurred
-		notif = osThreadFlagsGet();
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 0);
 		if (notif) {
-			osThreadFlagsClear(notif);
-
 			// Beep command
 			if (notif & EVT_AUDIO_BEEP) {
 				// Beep
@@ -1865,28 +1905,29 @@ void StartSwitchTask(void *argument)
 		_DebugTask("Switch");
 
 		// wait until GPIO changes
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, osWaitForever);
-
-		if (notif & EVT_SWITCH_TRIGGERED) {
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+		if (notif) {
 			// handle bounce effect
 			osDelay(50);
 			osThreadFlagsClear(EVT_MASK);
 
-			// Read all (to handle multiple switch change at the same time)
-			HBAR_ReadStates();
-			// handle select & set: timer
-			HBAR_CheckSelectSet();
-			// Only handle Select & Set when in non-reverse
-			if (!SW.list[SW_K_REVERSE].state) {
-				// restore previous Mode
-				HBAR_RestoreMode();
-				// handle Select & Set
-				if (SW.list[SW_K_SELECT].state) {
-					// handle select key
-					HBAR_RunSelect();
-				} else if (SW.list[SW_K_SET].state) {
-					// handle set key
-					HBAR_RunSet();
+			if (notif & EVT_SWITCH_TRIGGERED) {
+				// Read all (to handle multiple switch change at the same time)
+				HBAR_ReadStates();
+				// handle select & set: timer
+				HBAR_CheckSelectSet();
+				// Only handle Select & Set when in non-reverse
+				if (!SW.list[SW_K_REVERSE].state) {
+					// restore previous Mode
+					HBAR_RestoreMode();
+					// handle Select & Set
+					if (SW.list[SW_K_SELECT].state) {
+						// handle select key
+						HBAR_RunSelect();
+					} else if (SW.list[SW_K_SET].state) {
+						// handle set key
+						HBAR_RunSet();
+					}
 				}
 			}
 		}
@@ -1920,10 +1961,6 @@ void StartCanRxTask(void *argument)
 		if (notif & EVT_CAN_RX_IT) {
 			// handle STD message
 			switch (CANBUS_ReadID()) {
-				//        FIXME: handle with real data
-				//        case CAND_MCU_DUMMY:
-				//          CANR_MCU_Dummy(&DB);
-				//          break;
 				case CAND_HMI2:
 					CANR_HMI2(&DB);
 					break;
@@ -1974,7 +2011,7 @@ void StartCanTxTask(void *argument)
 		CANT_VCU_SelectSet(&DB, &(SW.runner));
 		CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
 
-		// Control BMS power
+		// Control BMS state
 		if (DB.vcu.knob) {
 			if (!DB_BMS_CheckRun(1) && !DB_BMS_CheckState(BMS_STATE_DISCHARGE)) {
 				CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
@@ -1999,10 +2036,10 @@ void StartCanTxTask(void *argument)
 		DB_BMS_RefreshIndex();
 		DB_BMS_MergeData();
 
-		// update HMI1 data
+		// update HMI-1 data
 		DB_HMI1_RefreshIndex();
 
-		// update HMI2 data
+		// update HMI-2 data
 		if ((osKernelGetTickCount() - DB.hmi2.tick) > pdMS_TO_TICKS(1000)) {
 			DB.hmi2.started = 0;
 		}
