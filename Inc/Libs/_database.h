@@ -49,7 +49,7 @@
 #define PREFIX_NACK                             "@N"
 
 #define FINGER_CONFIDENCE_MIN                   10
-#define FINGER_SCAN_TIMEOUT                     20                      // in second
+#define FINGER_SCAN_TIMEOUT                     10                      // in second
 
 #define RPT_INTERVAL_SIMPLE                     5                       // in second
 #define RPT_INTERVAL_FULL                       20                      // in second

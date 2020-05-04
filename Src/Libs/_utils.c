@@ -68,7 +68,7 @@ void _DebugStackSpace(osThreadId_t *threads, uint8_t count) {
 			LOG_Buf(thName, strlen(thName));
 			LOG_Str(" : ");
 			LOG_Int(osThreadGetStackSpace(threads[i]));
-			LOG_StrLn(" Byte");
+			LOG_StrLn(" Words");
 		}
 	}
 	LOG_StrLn("=======================================");
