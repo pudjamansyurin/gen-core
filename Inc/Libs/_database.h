@@ -94,6 +94,8 @@
 #define EVT_FINGER_ADD												BIT(1)
 #define EVT_FINGER_DEL												BIT(2)
 #define EVT_FINGER_RST												BIT(3)
+#define EVT_COMMAND_ERROR											BIT(0)
+#define EVT_COMMAND_OK												BIT(1)
 #define EVT_CAN_RX_IT                         BIT(0)
 #define EVT_KEYLESS_RX_IT                     BIT(0)
 #define EVT_MANAGER_BMS_IRQ                   BIT(0)

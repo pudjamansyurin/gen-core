@@ -186,11 +186,6 @@ osMessageQueueId_t FingerIdQueueHandle;
 const osMessageQueueAttr_t FingerIdQueue_attributes = {
 		.name = "FingerIdQueue"
 };
-/* Definitions for ResponseCodeQueue */
-osMessageQueueId_t ResponseCodeQueueHandle;
-const osMessageQueueAttr_t ResponseCodeQueue_attributes = {
-		.name = "ResponseCodeQueue"
-};
 /* Definitions for AudioMutex */
 osMutexId_t AudioMutexHandle;
 const osMutexAttr_t AudioMutex_attributes = {
@@ -377,9 +372,6 @@ int main(void)
 
 	/* creation of FingerIdQueue */
 	FingerIdQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &FingerIdQueue_attributes);
-
-	/* creation of ResponseCodeQueue */
-	ResponseCodeQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &ResponseCodeQueue_attributes);
 
 	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
@@ -1472,8 +1464,9 @@ void StartCommandTask(void *argument)
 {
 	/* USER CODE BEGIN StartCommandTask */
 	response_t response;
-	osStatus_t status;
 	command_t command;
+	uint32_t notif;
+	osStatus_t status;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
@@ -1591,14 +1584,10 @@ void StartCommandTask(void *argument)
 					}
 
 					// wait response from FingerTask (30 seconds)
-					status = osMessageQueueGet(ResponseCodeQueueHandle,
-							&(response.data.code), NULL, pdMS_TO_TICKS(30000));
-
-					// handle timeout
-					if (status != osOK) {
+					notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
+					if (!(notif & EVT_COMMAND_OK)) {
 						response.data.code = RESPONSE_STATUS_ERROR;
 					}
-
 					break;
 
 				default:
@@ -1767,7 +1756,8 @@ void StartFingerTask(void *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t notif;
-	uint8_t fingerId, responseCode;
+	uint8_t fingerId;
+	osStatus_t status;
 	int p;
 
 	// wait until ManagerTask done
@@ -1797,24 +1787,29 @@ void StartFingerTask(void *argument)
 
 			if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
 				// get fingerId value
-				osMessageQueueGet(FingerIdQueueHandle, &fingerId, NULL, 0U);
+				status = osMessageQueueGet(FingerIdQueueHandle, &fingerId, NULL, 0U);
 
-				// Add new finger
-				if (notif & EVT_FINGER_ADD) {
-					p = Finger_Enroll(fingerId);
-				}
-				// Delete existing finger
-				if (notif & EVT_FINGER_DEL) {
-					p = Finger_DeleteID(fingerId);
-				}
-				// Reset all finger database
-				if (notif & EVT_FINGER_RST) {
-					p = Finger_EmptyDatabase();
-				}
+				if (status == osOK) {
+					// Add new finger
+					if (notif & EVT_FINGER_ADD) {
+						p = Finger_Enroll(fingerId);
+					}
+					// Delete existing finger
+					if (notif & EVT_FINGER_DEL) {
+						p = Finger_DeleteID(fingerId);
+					}
+					// Reset all finger database
+					if (notif & EVT_FINGER_RST) {
+						p = Finger_EmptyDatabase();
+					}
 
-				// handle response
-				responseCode = (p == FINGERPRINT_OK) ? RESPONSE_STATUS_OK : RESPONSE_STATUS_ERROR;
-				osMessageQueuePut(ResponseCodeQueueHandle, &responseCode, 0U, 0U);
+					// handle response
+					if (p == FINGERPRINT_OK) {
+						osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+					} else {
+						osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_ERROR);
+					}
+				}
 			}
 		}
 	}
