@@ -35,7 +35,6 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <limits.h>
 #include <math.h>
 /* USER CODE END Includes */
 

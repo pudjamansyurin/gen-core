@@ -230,7 +230,6 @@ const osMutexAttr_t FingerRecMutex_attributes = {
 };
 /* USER CODE BEGIN PV */
 osEventFlagsId_t GlobalEventHandle;
-
 extern db_t DB;
 extern sw_t SW;
 extern sim_t SIM;
@@ -1177,7 +1176,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		}
 	}
 }
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartManagerTask */
@@ -2064,11 +2062,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
-
 	_Error("Error Handler fired.");
-
-	while (1)
-		;
   /* USER CODE END Error_Handler_Debug */
 }
 

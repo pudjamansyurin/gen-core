@@ -42,11 +42,10 @@ void _LedDisco(uint16_t ms) {
 void _Error(char msg[50]) {
 	if (osKernelGetState() == osKernelRunning) {
 		LOG_StrLn(msg);
-	} else {
-		while (1) {
-			_LedToggle();
-			HAL_Delay(50);
-		}
+	}
+	while (1) {
+		_LedToggle();
+		HAL_Delay(50);
 	}
 }
 

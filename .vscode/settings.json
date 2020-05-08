@@ -1,9 +1,0 @@
-{
-  "files.associations": {
-    "_emulation.h": "c",
-    "_gyro.h": "c",
-    "_log.h": "c",
-    "_cs43l22.h": "c",
-    "_database.h": "c"
-  }
-}
