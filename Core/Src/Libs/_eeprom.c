@@ -138,15 +138,20 @@ static uint8_t EE_16(uint16_t vaddr, EEPROM_COMMAND cmd, uint16_t *value, uint16
 
 	// check if new value is same with old value
 	if (cmd == EE_CMD_W) {
-		// save the value
-		ret = EEPROM24XX_Save(vaddr, value, sizeof(uint16_t));
+		if (*ptr == *value) {
+			ret = 1;
+		} else {
+			*ptr = *value;
+			// only update when value is different
+			ret = EEPROM24XX_Save(vaddr, value, sizeof(uint16_t));
+		}
 	} else {
-		// load the value
 		ret = EEPROM24XX_Load(vaddr, value, sizeof(uint16_t));
-	}
-	// apply the value
-	if (ret) {
-		*ptr = *value;
+
+		// restore the value
+		if (ret) {
+			*ptr = *value;
+		}
 	}
 
 	unlock();
@@ -160,15 +165,20 @@ static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32
 
 	// check if new value is same with old value
 	if (cmd == EE_CMD_W) {
-		// save the value
-		ret = EEPROM24XX_Save(vaddr, value, sizeof(uint32_t));
+		if (*ptr == *value) {
+			ret = 1;
+		} else {
+			*ptr = *value;
+			// only update when value is different
+			ret = EEPROM24XX_Save(vaddr, value, sizeof(uint32_t));
+		}
 	} else {
-		// load the value
 		ret = EEPROM24XX_Load(vaddr, value, sizeof(uint32_t));
-	}
-	// apply the value
-	if (ret) {
-		*ptr = *value;
+
+		// restore the value
+		if (ret) {
+			*ptr = *value;
+		}
 	}
 
 	unlock();

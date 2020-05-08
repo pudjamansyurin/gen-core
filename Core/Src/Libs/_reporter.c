@@ -21,6 +21,7 @@ void Report_Init(FRAME_TYPE frame, report_t *report) {
 	// header report
 	report->header.prefix[0] = PREFIX_REPORT[1];
 	report->header.prefix[1] = PREFIX_REPORT[0];
+	report->header.seq_id = DB.vcu.seq_id.report;
 	// (already set)
 	// body required
 	report->data.req.vcu.driver_id = DRIVER_ID_NONE;
@@ -36,6 +37,7 @@ void Response_Init(response_t *response) {
 	// header report
 	response->header.prefix[0] = PREFIX_REPORT[1];
 	response->header.prefix[1] = PREFIX_REPORT[0];
+	response->header.seq_id = DB.vcu.seq_id.response;
 }
 
 void Report_Capture(FRAME_TYPE frame, report_t *report) {
