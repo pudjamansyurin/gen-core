@@ -50,7 +50,7 @@
 - [x] Fix CRC not valid problem between VCU and Server
 - [x] Change Notify() to RTOSv2 API
 - [ ] ~~Fix duplicate variables~~
-- [x] ~~use EVT_ERROR & EVENT_ERROR for ThreadFlag and EventFlag~~
+- [x] use EVT_ERROR & EVENT_ERROR for ThreadFlag and EventFlag
 - [x] Move routines in CommandTask to its own Task
   - [x] Implement BinarySemaphore or ThreadFlags to handle that
 - [ ] Make routine to check SIMCOM internet package
