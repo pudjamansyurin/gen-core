@@ -82,7 +82,6 @@
 
 // Events (for Individual Thread)
 #define EVT_MASK															0x7FFFFFFFUL
-#define EVT_ERROR															~EVT_MASK
 #define EVT_AUDIO_BEEP                        BIT(0)
 #define EVT_AUDIO_BEEP_START                  BIT(1)
 #define EVT_AUDIO_BEEP_STOP                   BIT(2)
@@ -102,7 +101,6 @@
 
 // Events group (for All Threads)
 #define EVENT_MASK															0xFFFFFFUL
-#define EVENT_ERROR															~EVENT_MASK
 #define EVENT_READY                             BIT(0)
 
 // Command Code List
@@ -254,6 +252,8 @@ void DB_BMS_MergeData(void);
 void DB_BMS_ResetIndex(uint8_t i);
 void DB_VCU_CheckKnob(void);
 void DB_VCU_CheckBMSPresence(void);
+uint8_t DB_ValidThreadFlag(uint32_t flag);
+uint8_t DB_ValidEventFlag(uint32_t flag);
 //void DB_SetEvents(uint64_t value);
 //uint8_t DB_ReadEvent(uint64_t event_id);
 

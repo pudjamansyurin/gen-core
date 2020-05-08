@@ -1279,9 +1279,8 @@ void StartManagerTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		// Handle GPIO interrupt
-
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 0);
-		if (notif) {
+		if (DB_ValidThreadFlag(notif)) {
 			// handle bounce effect
 			osDelay(50);
 			osThreadFlagsClear(notif);
@@ -1633,7 +1632,7 @@ void StartCommandTask(void *argument)
 
 					// wait response from FingerTask (30 seconds)
 					notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-					if (!(notif & EVT_COMMAND_OK)) {
+					if (!(DB_ValidThreadFlag(notif) && (notif & EVT_COMMAND_OK))) {
 						response.data.code = RESPONSE_STATUS_ERROR;
 					}
 					break;
@@ -1761,7 +1760,7 @@ void StartKeylessTask(void *argument)
 
 		// check if has new can message
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
-		if (notif) {
+		if (DB_ValidThreadFlag(notif)) {
 			// proceed event
 			if (notif & EVT_KEYLESS_RX_IT) {
 				msg = KEYLESS_ReadPayload();
@@ -1822,7 +1821,7 @@ void StartFingerTask(void *argument)
 		// check if user put finger
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 		// proceed event
-		if (notif) {
+		if (DB_ValidThreadFlag(notif)) {
 			// Scan existing finger
 			if (notif & EVT_FINGER_PLACED) {
 				if (Finger_AuthFast() > 0) {
@@ -1892,8 +1891,7 @@ void StartAudioTask(void *argument)
 
 		// do this if events occurred
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 0);
-		// FIXME: use EVT_ERROR & EVENT_ERROR
-		if (!(notif & EVT_ERROR)) {
+		if (DB_ValidThreadFlag(notif)) {
 			// Beep command
 			if (notif & EVT_AUDIO_BEEP) {
 				// Beep
@@ -1950,7 +1948,7 @@ void StartSwitchTask(void *argument)
 
 		// wait until GPIO changes
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
-		if (notif) {
+		if (DB_ValidThreadFlag(notif)) {
 			// handle bounce effect
 			osDelay(50);
 			osThreadFlagsClear(EVT_MASK);
@@ -2000,29 +1998,30 @@ void StartCanRxTask(void *argument)
 
 		// check if has new can message
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, osWaitForever);
+		if (DB_ValidThreadFlag(notif)) {
+			// proceed event
+			if (notif & EVT_CAN_RX_IT) {
+				// handle STD message
+				switch (CANBUS_ReadID()) {
+					case CAND_HMI2:
+						CANR_HMI2(&DB);
+						break;
+					case CAND_HMI1_LEFT:
+						CANR_HMI1_LEFT(&DB);
+						break;
+					case CAND_HMI1_RIGHT:
+						CANR_HMI1_RIGHT(&DB);
+						break;
+					case CAND_BMS_PARAM_1:
+						CANR_BMS_Param1(&DB);
+						break;
+					case CAND_BMS_PARAM_2:
+						CANR_BMS_Param2(&DB);
+						break;
+					default:
 
-		// proceed event
-		if (notif & EVT_CAN_RX_IT) {
-			// handle STD message
-			switch (CANBUS_ReadID()) {
-				case CAND_HMI2:
-					CANR_HMI2(&DB);
-					break;
-				case CAND_HMI1_LEFT:
-					CANR_HMI1_LEFT(&DB);
-					break;
-				case CAND_HMI1_RIGHT:
-					CANR_HMI1_RIGHT(&DB);
-					break;
-				case CAND_BMS_PARAM_1:
-					CANR_BMS_Param1(&DB);
-					break;
-				case CAND_BMS_PARAM_2:
-					CANR_BMS_Param2(&DB);
-					break;
-				default:
-
-					break;
+						break;
+				}
 			}
 		}
 	}
