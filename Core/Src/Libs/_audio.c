@@ -68,6 +68,7 @@ static void unlock(void);
 /* Public functions implementation ---------------------------------------------*/
 void AUDIO_Init(void) {
 	uint8_t ret;
+
 	do {
 		LOG_StrLn("Audio:Init");
 

@@ -50,6 +50,7 @@
 - [x] Fix CRC not valid problem between VCU and Server
 - [x] Change Notify() to RTOSv2 API
 - [ ] ~~Fix duplicate variables~~
+- [ ] use EVT_ERROR & EVENT_ERROR for ThreadFlag and EventFlag
 - [x] Move routines in CommandTask to its own Task
   - [x] Implement BinarySemaphore or ThreadFlags to handle that
 - [ ] Make routine to check SIMCOM internet package
@@ -199,7 +200,7 @@
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -			  | ✔   | ✔  | ✔    | **Done**								|
 |  8 | Artificial Audio            | CS43L22        | I2C1, I2S3  | ✔   | ✔	 |      | **Done**: Connect pin 41 to GND		|
 |  9 | CAN Transceiver             | SN65HVD230     | CAN1		  | ✔   | ✔  |      | **Done**								|
-| 10 | EEPROM                      | 24AA32A        | I2C2		  | ✔   | ✔  |      | **Done**								|
+| 10 | EEPROM                      | 24AA32A        | I2C2		  | ✔   | ✔  | ✔    | **Done**								|
 | 11 | Handlebar/Switch            | ST-EXTI        | PE		  | ✔   | ✔  |      | **Done**								|
 | 12 | Data Validator	           | ST-CRC        	| CRC		  | ✔   | -  | ✔    | **Done**								|
 | 13 | Backup Battery Monitor      | ST-ADC			| ADC1		  | ✔   | ✔  | ✔    | **Done** 								|

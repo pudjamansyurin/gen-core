@@ -81,7 +81,8 @@
 #define EV_BMS_SYSTEM_FAILURE                  BIT(41)
 
 // Events (for Individual Thread)
-#define EVT_MASK															0x7FFFFFFF
+#define EVT_MASK															0x7FFFFFFFUL
+#define EVT_ERROR															~EVT_MASK
 #define EVT_AUDIO_BEEP                        BIT(0)
 #define EVT_AUDIO_BEEP_START                  BIT(1)
 #define EVT_AUDIO_BEEP_STOP                   BIT(2)
@@ -100,7 +101,8 @@
 #define EVT_SWITCH_TRIGGERED									BIT(0)
 
 // Events group (for All Threads)
-#define EVENT_MASK															0xFFFFFF
+#define EVENT_MASK															0xFFFFFFUL
+#define EVENT_ERROR															~EVENT_MASK
 #define EVENT_READY                             BIT(0)
 
 // Command Code List

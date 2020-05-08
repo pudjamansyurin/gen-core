@@ -488,9 +488,9 @@ void SystemClock_Config(void)
 		Error_Handler();
 	}
 	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1 | RCC_PERIPHCLK_RTC;
-	PeriphClkInitStruct.PLLI2S.PLLI2SN = 50;
-	PeriphClkInitStruct.PLLI2S.PLLI2SM = 4;
-	PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
+	PeriphClkInitStruct.PLLI2S.PLLI2SN = 256;
+	PeriphClkInitStruct.PLLI2S.PLLI2SM = 8;
+	PeriphClkInitStruct.PLLI2S.PLLI2SR = 5;
 	PeriphClkInitStruct.PLLI2S.PLLI2SQ = 2;
 	PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
 	PeriphClkInitStruct.PLLI2SSelection = RCC_PLLI2SCLKSOURCE_PLLSRC;
@@ -1263,7 +1263,7 @@ void StartManagerTask(void *argument)
 
 	// Threads management:
 	osThreadSuspend(GyroTaskHandle);
-	osThreadSuspend(AudioTaskHandle);
+	//	osThreadSuspend(AudioTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
 
 	// Release threads
@@ -1892,7 +1892,8 @@ void StartAudioTask(void *argument)
 
 		// do this if events occurred
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 0);
-		if (notif) {
+		// FIXME: use EVT_ERROR & EVENT_ERROR
+		if (!(notif & EVT_ERROR)) {
 			// Beep command
 			if (notif & EVT_AUDIO_BEEP) {
 				// Beep
@@ -2137,7 +2138,7 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
