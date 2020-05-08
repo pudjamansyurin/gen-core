@@ -1632,7 +1632,7 @@ void StartCommandTask(void *argument)
 
 					// wait response from FingerTask (30 seconds)
 					notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-					if (!(DB_ValidThreadFlag(notif) && (notif & EVT_COMMAND_OK))) {
+					if (!DB_ValidThreadFlag(notif) || !(notif & EVT_COMMAND_OK)) {
 						response.data.code = RESPONSE_STATUS_ERROR;
 					}
 					break;
