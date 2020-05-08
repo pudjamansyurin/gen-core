@@ -53,11 +53,8 @@
 
 #define RPT_INTERVAL_SIMPLE                     5                       // in second
 #define RPT_INTERVAL_FULL                       20                      // in second
-#define RPT_INTERVAL_INDEPENDENT                60U
-// in second
+#define RPT_INTERVAL_INDEPENDENT                60U											// in second
 #define RPT_UNITID                              354313U
-
-#define GMT_TIME                                7                       // Asia/Jakarta
 
 // Payload list (Keyless)
 #define KEYLESS_MSG_BROADCAST                   BIT(0)
