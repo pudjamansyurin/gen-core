@@ -452,11 +452,11 @@ void SystemClock_Config(void)
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
 
-	/** Configure the main internal regulator output voltage 
+	/** Configure the main internal regulator output voltage
 	 */
 	__HAL_RCC_PWR_CLK_ENABLE();
 	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-	/** Initializes the CPU, AHB and APB busses clocks 
+	/** Initializes the CPU, AHB and APB busses clocks
 	 */
 	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
 			| RCC_OSCILLATORTYPE_LSE;
@@ -474,7 +474,7 @@ void SystemClock_Config(void)
 			{
 		Error_Handler();
 	}
-	/** Initializes the CPU, AHB and APB busses clocks 
+	/** Initializes the CPU, AHB and APB busses clocks
 	 */
 	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
 			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
@@ -518,7 +518,7 @@ static void MX_ADC1_Init(void)
 	/* USER CODE BEGIN ADC1_Init 1 */
 
 	/* USER CODE END ADC1_Init 1 */
-	/** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+	/** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
 	 */
 	hadc1.Instance = ADC1;
 	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
@@ -536,7 +536,7 @@ static void MX_ADC1_Init(void)
 			{
 		Error_Handler();
 	}
-	/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+	/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
 	 */
 	sConfig.Channel = ADC_CHANNEL_9;
 	sConfig.Rank = 1;
@@ -674,13 +674,13 @@ static void MX_I2C1_Init(void)
 			{
 		Error_Handler();
 	}
-	/** Configure Analogue filter 
+	/** Configure Analogue filter
 	 */
 	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
 			{
 		Error_Handler();
 	}
-	/** Configure Digital filter 
+	/** Configure Digital filter
 	 */
 	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
 			{
@@ -720,13 +720,13 @@ static void MX_I2C2_Init(void)
 			{
 		Error_Handler();
 	}
-	/** Configure Analogue filter 
+	/** Configure Analogue filter
 	 */
 	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
 			{
 		Error_Handler();
 	}
-	/** Configure Digital filter 
+	/** Configure Digital filter
 	 */
 	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
 			{
@@ -766,13 +766,13 @@ static void MX_I2C3_Init(void)
 			{
 		Error_Handler();
 	}
-	/** Configure Analogue filter 
+	/** Configure Analogue filter
 	 */
 	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
 			{
 		Error_Handler();
 	}
-	/** Configure Digital filter 
+	/** Configure Digital filter
 	 */
 	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
 			{
@@ -864,7 +864,7 @@ static void MX_RTC_Init(void)
 	/* USER CODE BEGIN RTC_Init 1 */
 
 	/* USER CODE END RTC_Init 1 */
-	/** Initialize RTC Only 
+	/** Initialize RTC Only
 	 */
 	hrtc.Instance = RTC;
 	hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
@@ -882,7 +882,7 @@ static void MX_RTC_Init(void)
 
 	/* USER CODE END Check_RTC_BKUP */
 
-	/** Initialize RTC and set the Time and Date 
+	/** Initialize RTC and set the Time and Date
 	 */
 	sTime.Hours = 0x0;
 	sTime.Minutes = 0x0;
@@ -1045,7 +1045,7 @@ static void MX_USART2_UART_Init(void)
 
 }
 
-/** 
+/**
  * Enable DMA controller clock
  */
 static void MX_DMA_Init(void)
@@ -1110,9 +1110,9 @@ static void MX_GPIO_Init(void)
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(INT_KEYLESS_CSN_GPIO_Port, INT_KEYLESS_CSN_Pin, GPIO_PIN_SET);
 
-	/*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HMI2_PHONE_Pin EXT_HBAR_REVERSE_Pin 
-	 EXT_ABS_STATUS_Pin EXT_KNOB_IRQ_Pin EXT_GPIO_IN1_Pin EXT_GPIO_IN2_Pin 
-	 EXT_GPIO_IN3_Pin EXT_GPIO_IN4_Pin EXT_HBAR_LAMP_Pin EXT_BMS_IRQ_Pin 
+	/*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HMI2_PHONE_Pin EXT_HBAR_REVERSE_Pin
+	 EXT_ABS_STATUS_Pin EXT_KNOB_IRQ_Pin EXT_GPIO_IN1_Pin EXT_GPIO_IN2_Pin
+	 EXT_GPIO_IN3_Pin EXT_GPIO_IN4_Pin EXT_HBAR_LAMP_Pin EXT_BMS_IRQ_Pin
 	 EXT_HBAR_SEIN_L_Pin EXT_HBAR_SEIN_R_Pin */
 	GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin | EXT_HBAR_SET_Pin | EXT_HMI2_PHONE_Pin | EXT_HBAR_REVERSE_Pin
 			| EXT_ABS_STATUS_Pin | EXT_KNOB_IRQ_Pin | EXT_GPIO_IN1_Pin | EXT_GPIO_IN2_Pin
@@ -1122,7 +1122,7 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin 
+	/*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin
 	 EXT_FINGER_PWR_Pin EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
 	GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
 			| EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
@@ -1131,7 +1131,7 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : EXT_SOLENOID_PWR_Pin INT_NET_RST_Pin INT_NET_DTR_Pin INT_GYRO_PWR_Pin 
+	/*Configure GPIO pins : EXT_SOLENOID_PWR_Pin INT_NET_RST_Pin INT_NET_DTR_Pin INT_GYRO_PWR_Pin
 	 INT_KEYLESS_PWR_Pin EXT_KEYLESS_ALARM_Pin */
 	GPIO_InitStruct.Pin = EXT_SOLENOID_PWR_Pin | INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin
 			| INT_KEYLESS_PWR_Pin | EXT_KEYLESS_ALARM_Pin;
@@ -1152,8 +1152,8 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(INT_KEYLESS_IRQ_GPIO_Port, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : EXT_GPIO_OUT1_Pin EXT_GPIO_OUT2_Pin EXT_GPIO_OUT3_Pin EXT_GPIO_OUT4_Pin 
-	 SYS_LED_Pin EXT_HMI2_SHUTDOWN_Pin EXT_HMI2_BRIGHTNESS_Pin EXT_BMS_WAKEUP_Pin 
+	/*Configure GPIO pins : EXT_GPIO_OUT1_Pin EXT_GPIO_OUT2_Pin EXT_GPIO_OUT3_Pin EXT_GPIO_OUT4_Pin
+	 SYS_LED_Pin EXT_HMI2_SHUTDOWN_Pin EXT_HMI2_BRIGHTNESS_Pin EXT_BMS_WAKEUP_Pin
 	 EXT_BMS_FAN_Pin EXT_REG_12V_Pin */
 	GPIO_InitStruct.Pin = EXT_GPIO_OUT1_Pin | EXT_GPIO_OUT2_Pin | EXT_GPIO_OUT3_Pin | EXT_GPIO_OUT4_Pin
 			| SYS_LED_Pin | EXT_HMI2_SHUTDOWN_Pin | EXT_HMI2_BRIGHTNESS_Pin | EXT_BMS_WAKEUP_Pin
@@ -1241,7 +1241,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 /* USER CODE BEGIN Header_StartManagerTask */
 /**
  * @brief  Function implementing the ManagerTask thread.
- * @param  argument: Not used 
+ * @param  argument: Not used
  * @retval None
  */
 /* USER CODE END Header_StartManagerTask */
@@ -2135,7 +2135,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
