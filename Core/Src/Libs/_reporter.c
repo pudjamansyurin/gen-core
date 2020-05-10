@@ -7,11 +7,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_reporter.h"
+#include "BMS.h"
 
 /* External variables ----------------------------------------------------------*/
 extern db_t DB;
 extern gps_t GPS;
 extern sw_t SW;
+extern bms_t BMS;
 
 /* Public functions implementation --------------------------------------------*/
 void Report_Init(FRAME_TYPE frame, report_t *report) {
@@ -55,9 +57,9 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 	report->data.req.vcu.rtc.log = RTC_Read();
 	// BMS data
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		report->data.req.bms.pack[i].id = DB.bms.pack[i].id;
-		report->data.req.bms.pack[i].voltage = DB.bms.pack[i].voltage * 100;
-		report->data.req.bms.pack[i].current = (DB.bms.pack[i].current + 50) * 100;
+		report->data.req.bms.pack[i].id = BMS.data.pack[i].id;
+		report->data.req.bms.pack[i].voltage = BMS.data.pack[i].voltage * 100;
+		report->data.req.bms.pack[i].current = (BMS.data.pack[i].current + 50) * 100;
 	}
 
 	// Add more (if full frame)
@@ -79,8 +81,8 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
 		// BMS data
 		for (uint8_t i = 0; i < BMS_COUNT; i++) {
-			report->data.opt.bms.pack[i].soc = DB.bms.pack[i].soc;
-			report->data.opt.bms.pack[i].temperature = (DB.bms.pack[i].temperature + 40) * 10;
+			report->data.opt.bms.pack[i].soc = BMS.data.pack[i].soc;
+			report->data.opt.bms.pack[i].temperature = (BMS.data.pack[i].temperature + 40) * 10;
 		}
 	}
 }

@@ -8,9 +8,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_can.h"
 #include "_reporter.h"
+#include "BMS.h"
 
 /* External variables ----------------------------------------------------------*/
 extern canbus_t CB;
+extern bms_t BMS;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
@@ -55,7 +57,7 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
 	CB.tx.data.u8[1] |= _L(iSeinRight, 1);
 	CB.tx.data.u8[1] |= _L(!db->vcu.knob, 2);
 	CB.tx.data.u8[2] = db->vcu.signal_percent;
-	CB.tx.data.u8[3] = db->bms.soc;
+	CB.tx.data.u8[3] = BMS.data.soc;
 
 	// odometer
 	CB.tx.data.u32[1] = db->vcu.odometer;
@@ -161,29 +163,29 @@ uint8_t CANT_BMS_Setting(uint8_t start, BMS_STATE state) {
 }
 
 /* ------------------------------------ READER ------------------------------------- */
-void CANR_BMS_Param1(db_t *db) {
-	uint8_t index = DB_BMS_GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
+void CANR_BMS_Param1(void) {
+	uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
 
 	// read the content
-	db->bms.pack[index].voltage = CB.rx.data.u16[0] * 0.01;
-	db->bms.pack[index].current = (CB.rx.data.u16[1] * 0.01) - 50;
-	db->bms.pack[index].soc = CB.rx.data.u16[2];
-	db->bms.pack[index].temperature = (CB.rx.data.u16[3] * 0.1) - 40;
+	BMS.data.pack[index].voltage = CB.rx.data.u16[0] * 0.01;
+	BMS.data.pack[index].current = (CB.rx.data.u16[1] * 0.01) - 50;
+	BMS.data.pack[index].soc = CB.rx.data.u16[2];
+	BMS.data.pack[index].temperature = (CB.rx.data.u16[3] * 0.1) - 40;
 
 	// read the id
-	db->bms.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
-	db->bms.pack[index].started = 1;
-	db->bms.pack[index].tick = osKernelGetTickCount();
+	BMS.data.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
+	BMS.data.pack[index].started = 1;
+	BMS.data.pack[index].tick = osKernelGetTickCount();
 }
 
-void CANR_BMS_Param2(db_t *db) {
-	uint8_t index = DB_BMS_GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
+void CANR_BMS_Param2(void) {
+	uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
 
 	// save flag
-	db->bms.pack[index].flag = CB.rx.data.u16[3];
+	BMS.data.pack[index].flag = CB.rx.data.u16[3];
 
 	// save state
-	db->bms.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
+	BMS.data.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
 }
 
 void CANR_HMI2(db_t *db) {

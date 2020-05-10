@@ -132,9 +132,6 @@
 #define RESPONSE_STATUS_INVALID                 2
 
 // Others Parameters
-#define BMS_COUNT                               2
-#define BMS_ID_NONE 	                          0xFFFFFFFF
-#define BMS_ID_MASK                             0xFFFFF
 #define MCU_SPEED_MAX                           255U
 #define MCU_RPM_MAX                             99999U
 #define VCU_ODOMETER_MAX                        99999U
@@ -142,13 +139,6 @@
 #define DRIVER_ID_NONE													0xFF
 
 /* Exported enum ----------------------------------------------------------------*/
-typedef enum {
-	BMS_STATE_IDLE = 0,
-	BMS_STATE_DISCHARGE = 1,
-	BMS_STATE_CHARGE = 2,
-	BMS_STATE_FULL = 3
-} BMS_STATE;
-
 typedef enum {
 	HMI1_DEV_LEFT = 0,
 	HMI1_DEV_RIGHT = 1,
@@ -221,35 +211,13 @@ typedef struct {
 		uint8_t started;
 		uint32_t tick;
 	} hmi2;
-	struct {
-		uint8_t started;
-		uint8_t soc;
-		struct {
-			uint32_t id;
-			float voltage;
-			float current;
-			float soc;
-			float temperature;
-			uint16_t flag;
-			BMS_STATE state;
-			uint8_t started;
-			uint32_t tick;
-		} pack[BMS_COUNT];
-	} bms;
 } db_t;
 
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void);
 void DB_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t DB_ReadEvent(uint64_t event_id);
-void DB_BMS_Events(uint16_t flag);
 void DB_HMI1_RefreshIndex(void);
-void DB_BMS_RefreshIndex(void);
-uint8_t DB_BMS_GetIndex(uint32_t id);
-uint8_t DB_BMS_CheckRun(uint8_t state);
-uint8_t DB_BMS_CheckState(BMS_STATE state);
-void DB_BMS_MergeData(void);
-void DB_BMS_ResetIndex(uint8_t i);
 void DB_VCU_CheckKnob(void);
 void DB_VCU_CheckBMSPresence(void);
 uint8_t DB_ValidThreadFlag(uint32_t flag);

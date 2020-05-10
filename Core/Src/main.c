@@ -237,6 +237,7 @@ osEventFlagsId_t GlobalEventHandle;
 extern db_t DB;
 extern sw_t SW;
 extern sim_t SIM;
+extern bms_t BMS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -2013,10 +2014,10 @@ void StartCanRxTask(void *argument)
 						CANR_HMI1_RIGHT(&DB);
 						break;
 					case CAND_BMS_PARAM_1:
-						CANR_BMS_Param1(&DB);
+						CANR_BMS_Param1();
 						break;
 					case CAND_BMS_PARAM_2:
-						CANR_BMS_Param2(&DB);
+						CANR_BMS_Param2();
 						break;
 					default:
 
@@ -2056,19 +2057,19 @@ void StartCanTxTask(void *argument)
 
 		// Control BMS state
 		if (DB.vcu.knob) {
-			if (!DB_BMS_CheckRun(1) && !DB_BMS_CheckState(BMS_STATE_DISCHARGE)) {
+			if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE)) {
 				CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
 			} else {
 				// completely ON
-				DB.bms.started = 1;
+				BMS.data.started = 1;
 			}
 		} else {
-			if (!DB_BMS_CheckRun(0) || !DB_BMS_CheckState(BMS_STATE_IDLE)) {
+			if (!BMS.CheckRun(0) || !BMS.CheckState(BMS_STATE_IDLE)) {
 				CANT_BMS_Setting(0, BMS_STATE_IDLE);
 			} else {
 				// completely OFF
-				DB.bms.started = 0;
-				DB.bms.soc = 0;
+				BMS.data.started = 0;
+				BMS.data.soc = 0;
 				// ohter parameter
 				DB.hmi1.status.overheat = 0;
 				DB.hmi1.status.warning = 1;
@@ -2076,8 +2077,8 @@ void StartCanTxTask(void *argument)
 		}
 
 		// update BMS data
-		DB_BMS_RefreshIndex();
-		DB_BMS_MergeData();
+		BMS.RefreshIndex();
+		BMS.MergeData();
 
 		// update HMI-1 data
 		DB_HMI1_RefreshIndex();
