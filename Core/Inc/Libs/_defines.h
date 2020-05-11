@@ -5,8 +5,8 @@
  *      Author: Puja
  */
 
-#ifndef DATABASE_H_
-#define DATABASE_H_
+#ifndef DEFINES_H_
+#define DEFINES_H_
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -62,42 +62,42 @@
 #define KEYLESS_MSG_SEAT                        BIT(2)
 
 // Events group (for Frame Report)
-#define EV_VCU_NETWORK_RESTART                 BIT(0)
-#define EV_VCU_BIKE_FALLING                    BIT(1)
-#define EV_VCU_BIKE_CRASHED                    BIT(2)
-#define EV_VCU_KEYLESS_MISSING                 BIT(3)
-#define EV_VCU_INDEPENDENT                     BIT(4)
-#define EV_BMS_DISCHARGE_OVER_CURRENT          BIT(30)
-#define EV_BMS_CHARGE_OVER_CURRENT             BIT(31)
-#define EV_BMS_SHORT_CIRCUIT                   BIT(32)
-#define EV_BMS_DISCHARGE_OVER_TEMPERATURE      BIT(33)
-#define EV_BMS_DISCHARGE_UNDER_TEMPERATURE     BIT(34)
-#define EV_BMS_CHARGE_OVER_TEMPERATURE         BIT(35)
-#define EV_BMS_CHARGE_UNDER_TEMPERATURE        BIT(36)
-#define EV_BMS_UNDER_VOLTAGE                   BIT(37)
-#define EV_BMS_OVER_VOLTAGE                    BIT(38)
-#define EV_BMS_OVER_DISCHARGE_CAPACITY         BIT(39)
-#define EV_BMS_UNBALANCE                       BIT(40)
-#define EV_BMS_SYSTEM_FAILURE                  BIT(41)
+#define EV_VCU_NETWORK_RESTART                 	BIT(0)
+#define EV_VCU_BIKE_FALLING                    	BIT(1)
+#define EV_VCU_BIKE_CRASHED                    	BIT(2)
+#define EV_VCU_KEYLESS_MISSING                 	BIT(3)
+#define EV_VCU_INDEPENDENT                     	BIT(4)
+#define EV_BMS_DISCHARGE_OVER_CURRENT          	BIT(30)
+#define EV_BMS_CHARGE_OVER_CURRENT             	BIT(31)
+#define EV_BMS_SHORT_CIRCUIT                   	BIT(32)
+#define EV_BMS_DISCHARGE_OVER_TEMPERATURE      	BIT(33)
+#define EV_BMS_DISCHARGE_UNDER_TEMPERATURE     	BIT(34)
+#define EV_BMS_CHARGE_OVER_TEMPERATURE         	BIT(35)
+#define EV_BMS_CHARGE_UNDER_TEMPERATURE        	BIT(36)
+#define EV_BMS_UNDER_VOLTAGE                   	BIT(37)
+#define EV_BMS_OVER_VOLTAGE                    	BIT(38)
+#define EV_BMS_OVER_DISCHARGE_CAPACITY         	BIT(39)
+#define EV_BMS_UNBALANCE                       	BIT(40)
+#define EV_BMS_SYSTEM_FAILURE                  	BIT(41)
 
 // Events (for Individual Thread)
-#define EVT_MASK															0x7FFFFFFFUL
-#define EVT_AUDIO_BEEP                        BIT(0)
-#define EVT_AUDIO_BEEP_START                  BIT(1)
-#define EVT_AUDIO_BEEP_STOP                   BIT(2)
-#define EVT_AUDIO_MUTE_ON                     BIT(3)
-#define EVT_AUDIO_MUTE_OFF                    BIT(4)
-#define EVT_FINGER_PLACED                     BIT(0)
-#define EVT_FINGER_ADD												BIT(1)
-#define EVT_FINGER_DEL												BIT(2)
-#define EVT_FINGER_RST												BIT(3)
-#define EVT_COMMAND_ERROR											BIT(0)
-#define EVT_COMMAND_OK												BIT(1)
-#define EVT_CAN_RX_IT                         BIT(0)
-#define EVT_KEYLESS_RX_IT                     BIT(0)
-#define EVT_MANAGER_BMS_IRQ                   BIT(0)
-#define EVT_MANAGER_KNOB_IRQ                  BIT(1)
-#define EVT_SWITCH_TRIGGERED									BIT(0)
+#define EVT_MASK																0x7FFFFFFFUL
+#define EVT_AUDIO_BEEP                        	BIT(0)
+#define EVT_AUDIO_BEEP_START                  	BIT(1)
+#define EVT_AUDIO_BEEP_STOP                   	BIT(2)
+#define EVT_AUDIO_MUTE_ON                     	BIT(3)
+#define EVT_AUDIO_MUTE_OFF                    	BIT(4)
+#define EVT_FINGER_PLACED                    	 	BIT(0)
+#define EVT_FINGER_ADD													BIT(1)
+#define EVT_FINGER_DEL													BIT(2)
+#define EVT_FINGER_RST													BIT(3)
+#define EVT_COMMAND_ERROR												BIT(0)
+#define EVT_COMMAND_OK													BIT(1)
+#define EVT_CAN_RX_IT                         	BIT(0)
+#define EVT_KEYLESS_RX_IT                     	BIT(0)
+#define EVT_MANAGER_BMS_IRQ                   	BIT(0)
+#define EVT_MANAGER_KNOB_IRQ                  	BIT(1)
+#define EVT_SWITCH_TRIGGERED										BIT(0)
 
 // Events group (for All Threads)
 #define EVENT_MASK															0xFFFFFFUL
@@ -132,16 +132,16 @@
 #define RESPONSE_STATUS_INVALID                 2
 
 // CAN Message Address
-#define CAND_VCU_SWITCH					 			    							0x000
-#define CAND_VCU_DATETIME				 												0x001
-#define CAND_VCU_SELECT_SET			 												0x002
-#define CAND_VCU_TRIP_MODE			 												0x003
-#define CAND_BMS_PARAM_1                                0x0B0
-#define CAND_BMS_PARAM_2                                0x0B1
-#define CAND_BMS_SETTING                                0x1B2
-#define CAND_HMI1_LEFT                                  0x7C0
-#define CAND_HMI1_RIGHT                                 0x7C1
-#define CAND_HMI2                                       0x7D0
+#define CAND_VCU_SWITCH					 			    			0x000
+#define CAND_VCU_DATETIME				 								0x001
+#define CAND_VCU_SELECT_SET			 								0x002
+#define CAND_VCU_TRIP_MODE			 								0x003
+#define CAND_BMS_PARAM_1                        0x0B0
+#define CAND_BMS_PARAM_2                        0x0B1
+#define CAND_BMS_SETTING                        0x1B2
+#define CAND_HMI1_LEFT                          0x7C0
+#define CAND_HMI1_RIGHT                         0x7C1
+#define CAND_HMI2                               0x7D0
 
 // Others Parameters
 #define MCU_SPEED_MAX                           255U
@@ -170,4 +170,4 @@ typedef struct {
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void);
 
-#endif /* DATABASE_H_ */
+#endif /* DEFINES_H_ */

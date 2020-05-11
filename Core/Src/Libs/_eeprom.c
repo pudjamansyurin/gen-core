@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "_defines.h"
 #include "_eeprom.h"
-#include "_database.h"
 #include "_reporter.h"
 #include "VCU.h"
 

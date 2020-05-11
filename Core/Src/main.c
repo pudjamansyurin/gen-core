@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "_database.h"
+#include "_defines.h"
 #include "_crc.h"
 #include "_canbus.h"
 #include "_simcom.h"
@@ -1262,8 +1262,11 @@ void StartManagerTask(void *argument)
 	uint8_t thCount = osThreadGetCount();
 	osThreadId_t threads[thCount];
 
-	// NOTE: This task get executed first!
-	DB_Init();
+	// Initialization, this task get executed first!
+	VCU.Init();
+	BMS.Init();
+	HMI1.Init();
+	HMI2.Init();
 	EEPROM_ResetOrLoad();
 
 	// Check GPIOs state
