@@ -88,7 +88,7 @@ typedef struct {
 void HBAR_ReadStates(void);
 void HBAR_RestoreMode(void);
 void HBAR_CheckReverse(void);
-void HBAR_CheckSelectSet(void);
+void HBAR_TimerSelectSet(void);
 void HBAR_RunSelect(void);
 void HBAR_RunSet(void);
 void HBAR_AccumulateSubTrip(void);

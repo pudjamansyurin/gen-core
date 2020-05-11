@@ -123,7 +123,7 @@ void HBAR_CheckReverse(void) {
 	}
 }
 
-void HBAR_CheckSelectSet(void) {
+void HBAR_TimerSelectSet(void) {
 	for (uint8_t i = 0; i < SW_TOTAL_LIST; i++) {
 		if (i == SW_K_SELECT || i == SW_K_SET) {
 			// reset SET timer

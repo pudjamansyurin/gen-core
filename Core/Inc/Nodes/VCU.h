@@ -51,7 +51,6 @@ typedef struct {
 	void (*Init)(void);
 	void (*SetEvent)(uint64_t, uint8_t);
 	uint8_t (*ReadEvent)(uint64_t);
-	void (*CheckKnob)(void);
 	void (*CheckMainPower)(void);
 } vcu_t;
 

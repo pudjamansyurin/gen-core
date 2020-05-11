@@ -1968,12 +1968,15 @@ void StartSwitchTask(void *argument)
 			if (notif & EVT_SWITCH_TRIGGERED) {
 				// Read all (to handle multiple switch change at the same time)
 				HBAR_ReadStates();
+
 				// handle select & set: timer
-				HBAR_CheckSelectSet();
+				HBAR_TimerSelectSet();
+
 				// Only handle Select & Set when in non-reverse
 				if (!SW.list[SW_K_REVERSE].state) {
 					// restore previous Mode
 					HBAR_RestoreMode();
+
 					// handle Select & Set
 					if (SW.list[SW_K_SELECT].state) {
 						// handle select key

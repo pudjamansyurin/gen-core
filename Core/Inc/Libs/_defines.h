@@ -167,7 +167,4 @@ typedef struct {
 	RTC_DateTypeDef calibration;
 } rtc_t;
 
-/* Public functions implementation --------------------------------------------*/
-void DB_Init(void);
-
 #endif /* DEFINES_H_ */
