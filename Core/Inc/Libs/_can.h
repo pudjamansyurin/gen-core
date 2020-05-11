@@ -36,7 +36,5 @@ uint8_t CANT_VCU_RTC(timestamp_t *timestamp);
 uint8_t CANT_VCU_SelectSet(sw_runner_t *runner);
 uint8_t CANT_VCU_TripMode(uint32_t *trip);
 void CANR_HMI2(void);
-void CANR_HMI1_LEFT(void);
-void CANR_HMI1_RIGHT(void);
 
 #endif /* CAN_H_ */

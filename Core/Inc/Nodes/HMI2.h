@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
@@ -20,9 +21,11 @@ typedef struct {
 typedef struct {
 	hmi2_data_t d;
 	void (*Init)(void);
+	void (*Refresh)(void);
 } hmi2_t;
 
 /* Public functions implementation --------------------------------------------*/
 void HMI2_Init(void);
+void HMI2_Refresh(void);
 
 #endif /* INC_NODES_HMI2_H_ */

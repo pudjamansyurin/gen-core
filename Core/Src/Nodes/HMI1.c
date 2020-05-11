@@ -11,6 +11,12 @@
 /* Public variables -----------------------------------------------------------*/
 hmi1_t HMI1 = {
 		.d = { 0 },
+		.can = {
+				.r = {
+						HMI1_CAN_RX_Left,
+						HMI1_CAN_RX_Right
+				},
+		},
 		HMI1_Init,
 		HMI1_RefreshIndex,
 };
@@ -37,4 +43,17 @@ void HMI1_RefreshIndex(void) {
 			HMI1.d.device[i].started = 0;
 		}
 	}
+}
+
+/* ====================================== CAN RX =================================== */
+void HMI1_CAN_RX_Left(void) {
+	// save state
+	HMI1.d.device[HMI1_DEV_LEFT].started = 1;
+	HMI1.d.device[HMI1_DEV_LEFT].tick = osKernelGetTickCount();
+}
+
+void HMI1_CAN_RX_Right(void) {
+	// save state
+	HMI1.d.device[HMI1_DEV_RIGHT].started = 1;
+	HMI1.d.device[HMI1_DEV_RIGHT].tick = osKernelGetTickCount();
 }

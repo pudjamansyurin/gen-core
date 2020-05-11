@@ -43,7 +43,15 @@ typedef struct {
 } hmi1_data_t;
 
 typedef struct {
+	struct {
+		void (*Left)(void);
+		void (*Right)(void);
+	} r;
+} hmi1_can_t;
+
+typedef struct {
 	hmi1_data_t d;
+	hmi1_can_t can;
 	void (*Init)(void);
 	void (*RefreshIndex)(void);
 } hmi1_t;
@@ -51,5 +59,7 @@ typedef struct {
 /* Public functions implementation --------------------------------------------*/
 void HMI1_Init(void);
 void HMI1_RefreshIndex(void);
+void HMI1_CAN_RX_Left(void);
+void HMI1_CAN_RX_Right(void);
 
 #endif /* INC_NODES_HMI1_H_ */

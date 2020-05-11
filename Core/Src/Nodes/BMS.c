@@ -90,6 +90,8 @@ void BMS_RefreshIndex(void) {
 			BMS_ResetIndex(i);
 		}
 	}
+	// update data
+	BMS_MergeData();
 }
 
 uint8_t BMS_GetIndex(uint32_t id) {

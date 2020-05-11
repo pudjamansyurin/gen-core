@@ -168,15 +168,3 @@ void CANR_HMI2(void) {
 	HMI2.d.tick = osKernelGetTickCount();
 }
 
-void CANR_HMI1_LEFT(void) {
-	// save state
-	HMI1.d.device[HMI1_DEV_LEFT].started = 1;
-	HMI1.d.device[HMI1_DEV_LEFT].tick = osKernelGetTickCount();
-}
-
-void CANR_HMI1_RIGHT(void) {
-	// save state
-	HMI1.d.device[HMI1_DEV_RIGHT].started = 1;
-	HMI1.d.device[HMI1_DEV_RIGHT].tick = osKernelGetTickCount();
-}
-

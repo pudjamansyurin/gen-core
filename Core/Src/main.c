@@ -2016,10 +2016,10 @@ void StartCanRxTask(void *argument)
 						CANR_HMI2();
 						break;
 					case CAND_HMI1_LEFT:
-						CANR_HMI1_LEFT();
+						HMI1.can.r.Left();
 						break;
 					case CAND_HMI1_RIGHT:
-						CANR_HMI1_RIGHT();
+						HMI1.can.r.Right();
 						break;
 					case CAND_BMS_PARAM_1:
 						BMS.can.r.Param1();
@@ -2063,19 +2063,15 @@ void StartCanTxTask(void *argument)
 		CANT_VCU_SelectSet(&(SW.runner));
 		CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
 
-		// Control BMS state
+		// BMS state
 		BMS.Power(VCU.d.knob);
-		// update BMS data
 		BMS.RefreshIndex();
-		BMS.MergeData();
 
-		// update HMI-1 data
+		// HMI-1 data
 		HMI1.RefreshIndex();
 
-		// update HMI-2 data
-		if ((osKernelGetTickCount() - HMI2.d.tick) > pdMS_TO_TICKS(1000)) {
-			HMI2.d.started = 0;
-		}
+		// HMI-2 data
+		HMI2.Refresh();
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(500));

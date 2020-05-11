@@ -19,6 +19,7 @@
 hmi2_t HMI2 = {
 		.d = { 0 },
 		HMI2_Init,
+		HMI2_Refresh
 };
 
 /* Public functions implementation --------------------------------------------*/
@@ -27,3 +28,8 @@ void HMI2_Init(void) {
 	HMI2.d.tick = 0;
 }
 
+void HMI2_Refresh(void) {
+	if ((osKernelGetTickCount() - HMI2.d.tick) > pdMS_TO_TICKS(1000)) {
+		HMI2.d.started = 0;
+	}
+}
