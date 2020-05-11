@@ -240,6 +240,7 @@ osEventFlagsId_t GlobalEventHandle;
 extern db_t DB;
 extern sw_t SW;
 extern sim_t SIM;
+
 extern bms_t BMS;
 extern hmi1_t HMI1;
 extern hmi2_t HMI2;
@@ -1281,12 +1282,12 @@ void StartManagerTask(void *argument)
 	/* Infinite loop */
 	lastDebug = osKernelGetTickCount();
 	for (;;) {
-		_DebugTask("Manager");
+		_RTOS_DebugTask("Manager");
 		lastWake = osKernelGetTickCount();
 
 		// Handle GPIO interrupt
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 0);
-		if (DB_ValidThreadFlag(notif)) {
+		if (_RTOS_ValidThreadFlag(notif)) {
 			// handle bounce effect
 			osDelay(50);
 			osThreadFlagsClear(notif);
@@ -1319,7 +1320,7 @@ void StartManagerTask(void *argument)
 
 		// Thread's Stack Monitor
 		if ((osKernelGetTickCount() - lastDebug) >= pdMS_TO_TICKS(10000)) {
-			_DebugStackSpace(threads, thCount);
+			_RTOS_DebugStack(threads, thCount);
 
 			lastDebug = osKernelGetTickCount();
 		}
@@ -1363,7 +1364,7 @@ void StartIotTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("IoT");
+		_RTOS_DebugTask("IoT");
 
 		// Upload Report & Response Payload
 		for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
@@ -1465,7 +1466,7 @@ void StartReporterTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("Reporter");
+		_RTOS_DebugTask("Reporter");
 		lastWake = osKernelGetTickCount();
 
 		// decide full/simple frame time
@@ -1529,7 +1530,7 @@ void StartCommandTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("Command");
+		_RTOS_DebugTask("Command");
 		// get command in queue
 		status = osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever);
 
@@ -1638,7 +1639,7 @@ void StartCommandTask(void *argument)
 
 					// wait response from FingerTask (30 seconds)
 					notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-					if (!DB_ValidThreadFlag(notif) || !(notif & EVT_COMMAND_OK)) {
+					if (!_RTOS_ValidThreadFlag(notif) || !(notif & EVT_COMMAND_OK)) {
 						response.data.code = RESPONSE_STATUS_ERROR;
 					}
 					break;
@@ -1678,7 +1679,7 @@ void StartGpsTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("GPS");
+		_RTOS_DebugTask("GPS");
 		lastWake = osKernelGetTickCount();
 
 		GPS_Capture();
@@ -1716,7 +1717,7 @@ void StartGyroTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("Gyro");
+		_RTOS_DebugTask("Gyro");
 		lastWake = osKernelGetTickCount();
 
 		// Read all accelerometer, gyroscope (average)
@@ -1762,11 +1763,11 @@ void StartKeylessTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("Keyless");
+		_RTOS_DebugTask("Keyless");
 
 		// check if has new can message
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
-		if (DB_ValidThreadFlag(notif)) {
+		if (_RTOS_ValidThreadFlag(notif)) {
 			// proceed event
 			if (notif & EVT_KEYLESS_RX_IT) {
 				msg = KEYLESS_ReadPayload();
@@ -1822,12 +1823,12 @@ void StartFingerTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("Finger");
+		_RTOS_DebugTask("Finger");
 
 		// check if user put finger
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 		// proceed event
-		if (DB_ValidThreadFlag(notif)) {
+		if (_RTOS_ValidThreadFlag(notif)) {
 			// Scan existing finger
 			if (notif & EVT_FINGER_PLACED) {
 				if (Finger_AuthFast() > 0) {
@@ -1892,12 +1893,12 @@ void StartAudioTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("Audio");
+		_RTOS_DebugTask("Audio");
 		lastWake = osKernelGetTickCount();
 
 		// do this if events occurred
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 0);
-		if (DB_ValidThreadFlag(notif)) {
+		if (_RTOS_ValidThreadFlag(notif)) {
 			// Beep command
 			if (notif & EVT_AUDIO_BEEP) {
 				// Beep
@@ -1950,11 +1951,11 @@ void StartSwitchTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("Switch");
+		_RTOS_DebugTask("Switch");
 
 		// wait until GPIO changes
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
-		if (DB_ValidThreadFlag(notif)) {
+		if (_RTOS_ValidThreadFlag(notif)) {
 			// handle bounce effect
 			osDelay(50);
 			osThreadFlagsClear(EVT_MASK);
@@ -2000,11 +2001,11 @@ void StartCanRxTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("CanRx");
+		_RTOS_DebugTask("CanRx");
 
 		// check if has new can message
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, osWaitForever);
-		if (DB_ValidThreadFlag(notif)) {
+		if (_RTOS_ValidThreadFlag(notif)) {
 			// proceed event
 			if (notif & EVT_CAN_RX_IT) {
 				// handle STD message
@@ -2051,7 +2052,7 @@ void StartCanTxTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_DebugTask("CanTx");
+		_RTOS_DebugTask("CanTx");
 		lastWake = osKernelGetTickCount();
 
 		// Send CAN data

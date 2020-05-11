@@ -186,8 +186,6 @@ void DB_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t DB_ReadEvent(uint64_t event_id);
 void DB_VCU_CheckKnob(void);
 void DB_VCU_CheckMainPower(void);
-uint8_t DB_ValidThreadFlag(uint32_t flag);
-uint8_t DB_ValidEventFlag(uint32_t flag);
 //void DB_SetEvents(uint64_t value);
 //uint8_t DB_ReadEvent(uint64_t event_id);
 

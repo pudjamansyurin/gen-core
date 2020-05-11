@@ -65,34 +65,6 @@ void DB_VCU_CheckMainPower(void) {
 	DB_SetEvent(EV_VCU_INDEPENDENT, DB.vcu.independent);
 }
 
-uint8_t DB_ValidThreadFlag(uint32_t flag) {
-	uint8_t ret = 1;
-
-	// check is empty
-	if (!flag) {
-		ret = 0;
-	} else if (flag & (~EVT_MASK)) {
-		// error
-		ret = 0;
-	}
-
-	return ret;
-}
-
-uint8_t DB_ValidEventFlag(uint32_t flag) {
-	uint8_t ret = 1;
-
-	// check is empty
-	if (!flag) {
-		ret = 0;
-	} else if (flag & (~EVENT_MASK)) {
-		// error
-		ret = 0;
-	}
-
-	return ret;
-}
-
 //void DB_SetEvents(uint64_t value) {
 //  DB.vcu.events = value;
 //}

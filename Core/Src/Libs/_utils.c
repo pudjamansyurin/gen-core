@@ -49,13 +49,13 @@ void _Error(char msg[50]) {
 	}
 }
 
-void _DebugTask(char name[20]) {
+void _RTOS_DebugTask(char name[20]) {
 	//  LOG_Str("Task:");
 	//  LOG_Buf(name, strlen(name));
 	//  LOG_Enter();
 }
 
-void _DebugStackSpace(osThreadId_t *threads, uint8_t count) {
+void _RTOS_DebugStack(osThreadId_t *threads, uint8_t count) {
 	char thName[15];
 
 	// Debug each thread's Stack Space
@@ -71,6 +71,34 @@ void _DebugStackSpace(osThreadId_t *threads, uint8_t count) {
 		}
 	}
 	LOG_StrLn("=======================================");
+}
+
+uint8_t _RTOS_ValidThreadFlag(uint32_t flag) {
+	uint8_t ret = 1;
+
+	// check is empty
+	if (!flag) {
+		ret = 0;
+	} else if (flag & (~EVT_MASK)) {
+		// error
+		ret = 0;
+	}
+
+	return ret;
+}
+
+uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
+	uint8_t ret = 1;
+
+	// check is empty
+	if (!flag) {
+		ret = 0;
+	} else if (flag & (~EVENT_MASK)) {
+		// error
+		ret = 0;
+	}
+
+	return ret;
 }
 
 void _DummyGenerator(db_t *db, sw_t *sw) {

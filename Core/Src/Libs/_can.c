@@ -42,7 +42,7 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
 			iSeinRight = !iSeinRight;
 		} else {
 			iSeinLeft = 0;
-			iSeinRight = iSeinLeft;
+			iSeinRight = 0;
 		}
 	}
 
