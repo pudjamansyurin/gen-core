@@ -131,6 +131,18 @@
 #define RESPONSE_STATUS_OK                      1
 #define RESPONSE_STATUS_INVALID                 2
 
+// CAN Message Address
+#define CAND_VCU_SWITCH					 			    							0x000
+#define CAND_VCU_DATETIME				 												0x001
+#define CAND_VCU_SELECT_SET			 												0x002
+#define CAND_VCU_TRIP_MODE			 												0x003
+#define CAND_BMS_PARAM_1                                0x0B0
+#define CAND_BMS_PARAM_2                                0x0B1
+#define CAND_BMS_SETTING                                0x1B2
+#define CAND_HMI1_LEFT                                  0x7C0
+#define CAND_HMI1_RIGHT                                 0x7C1
+#define CAND_HMI2                                       0x7D0
+
 // Others Parameters
 #define MCU_SPEED_MAX                           255U
 #define MCU_RPM_MAX                             99999U

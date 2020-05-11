@@ -26,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 #include "_database.h"
 #include "_crc.h"
+#include "_canbus.h"
 #include "_simcom.h"
 #include "_gyro.h"
 #include "_gps.h"
@@ -33,7 +34,6 @@
 #include "_audio.h"
 #include "_keyless.h"
 #include "_reporter.h"
-#include "_can.h"
 #include "_rtc.h"
 #include "_utils.h"
 #include "_handlebar.h"
@@ -2058,10 +2058,10 @@ void StartCanTxTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		// Send CAN data
-		CANT_VCU_Switch(&SW);
-		CANT_VCU_RTC(&(VCU.d.rtc.timestamp));
-		CANT_VCU_SelectSet(&(SW.runner));
-		CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
+		VCU.can.t.Switch(&SW);
+		VCU.can.t.Datetime(&(VCU.d.rtc.timestamp));
+		VCU.can.t.SelectSet(&(SW.runner));
+		VCU.can.t.TripMode(&(SW.runner.mode.sub.trip[0]));
 
 		// BMS state
 		BMS.Power(VCU.d.knob);

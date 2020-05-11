@@ -10,7 +10,6 @@
 #include "VCU.h"
 #include "HMI1.h"
 #include "_canbus.h"
-#include "_can.h"
 #include "_database.h"
 
 /* External variables ---------------------------------------------------------*/
