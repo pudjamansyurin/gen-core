@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_can.h"
 #include "_reporter.h"
+#include "_handlebar.h"
 #include "VCU.h"
 #include "BMS.h"
 #include "HMI1.h"
@@ -22,31 +23,7 @@ extern hmi2_t HMI2;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t CANT_VCU_Switch(sw_t *sw) {
-	static TickType_t tickSein;
-	static uint8_t iSeinLeft = 0, iSeinRight = 0;
-
-	// SEIN manipulator
-	if ((osKernelGetTickCount() - tickSein) >= pdMS_TO_TICKS(500)) {
-		if (sw->list[SW_K_SEIN_LEFT].state && sw->list[SW_K_SEIN_RIGHT].state) {
-			// hazard
-			tickSein = osKernelGetTickCount();
-			iSeinLeft = !iSeinLeft;
-			iSeinRight = iSeinLeft;
-		} else if (sw->list[SW_K_SEIN_LEFT].state) {
-			// left sein
-			tickSein = osKernelGetTickCount();
-			iSeinLeft = !iSeinLeft;
-			iSeinRight = 0;
-		} else if (sw->list[SW_K_SEIN_RIGHT].state) {
-			// right sein
-			tickSein = osKernelGetTickCount();
-			iSeinLeft = 0;
-			iSeinRight = !iSeinRight;
-		} else {
-			iSeinLeft = 0;
-			iSeinRight = 0;
-		}
-	}
+	sein_state_t sein = HBAR_SeinController(sw);
 
 	// set message
 	CB.tx.data.u8[0] = sw->list[SW_K_ABS].state;
@@ -59,8 +36,8 @@ uint8_t CANT_VCU_Switch(sw_t *sw) {
 	CB.tx.data.u8[0] |= _L(HMI1.d.status.daylight, 7);
 
 	// sein value
-	CB.tx.data.u8[1] = iSeinLeft;
-	CB.tx.data.u8[1] |= _L(iSeinRight, 1);
+	CB.tx.data.u8[1] = sein.left;
+	CB.tx.data.u8[1] |= _L(sein.right, 1);
 	CB.tx.data.u8[1] |= _L(!VCU.d.knob, 2);
 	CB.tx.data.u8[2] = VCU.d.signal_percent;
 	CB.tx.data.u8[3] = BMS.d.soc;
@@ -91,40 +68,7 @@ uint8_t CANT_VCU_RTC(timestamp_t *timestamp) {
 }
 
 uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
-	static TickType_t tick, tickPeriod;
-	static uint8_t iHide = 0;
-	static int8_t iName = -1, iValue = -1;
-
-	// MODE Show/Hide Manipulator
-	if (runner->listening) {
-		// if mode same
-		if (iName != runner->mode.val) {
-			iName = runner->mode.val;
-			// reset period tick
-			tickPeriod = osKernelGetTickCount();
-		} else if (iValue != runner->mode.sub.val[runner->mode.val]) {
-			iValue = runner->mode.sub.val[runner->mode.val];
-			// reset period tick
-			tickPeriod = osKernelGetTickCount();
-		}
-
-		if ((osKernelGetTickCount() - tickPeriod) >= pdMS_TO_TICKS(5000) ||
-				(runner->mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R)) {
-			// stop listening
-			runner->listening = 0;
-			iHide = 0;
-			iName = -1;
-			iValue = -1;
-		} else {
-			// blink
-			if ((osKernelGetTickCount() - tick) >= pdMS_TO_TICKS(250)) {
-				tick = osKernelGetTickCount();
-				iHide = !iHide;
-			}
-		}
-	} else {
-		iHide = 0;
-	}
+	uint8_t hide = HBAR_ModeController(runner);
 
 	// set message
 	CB.tx.data.u8[0] = runner->mode.sub.val[SW_M_DRIVE];
@@ -133,7 +77,7 @@ uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
 	CB.tx.data.u8[0] |= _L(runner->mode.val, 4);
 
 	// Send Show/Hide flag
-	CB.tx.data.u8[0] |= _L(iHide, 6);
+	CB.tx.data.u8[0] |= _L(hide, 6);
 
 	CB.tx.data.u8[1] = runner->mode.sub.report[SW_M_REPORT_RANGE];
 	CB.tx.data.u8[2] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];

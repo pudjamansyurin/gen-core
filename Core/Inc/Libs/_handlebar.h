@@ -52,6 +52,11 @@ typedef enum {
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
+	uint8_t left;
+	uint8_t right;
+} sein_state_t;
+
+typedef struct {
 	uint8_t listening;
 	struct {
 		SW_MODE val;
@@ -87,5 +92,8 @@ void HBAR_CheckSelectSet(void);
 void HBAR_RunSelect(void);
 void HBAR_RunSet(void);
 void HBAR_AccumulateSubTrip(void);
+
+sein_state_t HBAR_SeinController(sw_t *sw);
+uint8_t HBAR_ModeController(sw_runner_t *runner);
 
 #endif /* LIBS__HANDLEBAR_H_ */

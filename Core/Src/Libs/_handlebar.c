@@ -199,3 +199,74 @@ void HBAR_AccumulateSubTrip(void) {
 		SW.runner.mode.sub.trip[mTrip]++;
 	}
 }
+
+sein_state_t HBAR_SeinController(sw_t *sw) {
+	static TickType_t tickSein;
+	static sein_state_t sein = {
+			.left = 0,
+			.right = 0
+	};
+
+	if ((osKernelGetTickCount() - tickSein) >= pdMS_TO_TICKS(500)) {
+		if (sw->list[SW_K_SEIN_LEFT].state && sw->list[SW_K_SEIN_RIGHT].state) {
+			// hazard
+			tickSein = osKernelGetTickCount();
+			sein.left = !sein.left;
+			sein.right = sein.left;
+		} else if (sw->list[SW_K_SEIN_LEFT].state) {
+			// left sein
+			tickSein = osKernelGetTickCount();
+			sein.left = !sein.left;
+			sein.right = 0;
+		} else if (sw->list[SW_K_SEIN_RIGHT].state) {
+			// right sein
+			tickSein = osKernelGetTickCount();
+			sein.left = 0;
+			sein.right = !sein.right;
+		} else {
+			sein.left = 0;
+			sein.right = 0;
+		}
+	}
+
+	return sein;
+}
+
+uint8_t HBAR_ModeController(sw_runner_t *runner) {
+	static TickType_t tick, tickPeriod;
+	static uint8_t iHide = 0;
+	static int8_t iName = -1, iValue = -1;
+
+	// MODE Show/Hide Manipulator
+	if (runner->listening) {
+		// if mode same
+		if (iName != runner->mode.val) {
+			iName = runner->mode.val;
+			// reset period tick
+			tickPeriod = osKernelGetTickCount();
+		} else if (iValue != runner->mode.sub.val[runner->mode.val]) {
+			iValue = runner->mode.sub.val[runner->mode.val];
+			// reset period tick
+			tickPeriod = osKernelGetTickCount();
+		}
+
+		if ((osKernelGetTickCount() - tickPeriod) >= pdMS_TO_TICKS(5000) ||
+				(runner->mode.sub.val[SW_M_DRIVE] == SW_M_DRIVE_R)) {
+			// stop listening
+			runner->listening = 0;
+			iHide = 0;
+			iName = -1;
+			iValue = -1;
+		} else {
+			// blink
+			if ((osKernelGetTickCount() - tick) >= pdMS_TO_TICKS(250)) {
+				tick = osKernelGetTickCount();
+				iHide = !iHide;
+			}
+		}
+	} else {
+		iHide = 0;
+	}
+
+	return iHide;
+}
