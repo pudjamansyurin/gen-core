@@ -140,12 +140,6 @@
 
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {
-	HMI1_DEV_LEFT = 0,
-	HMI1_DEV_RIGHT = 1,
-	HMI1_DEV_MAX = 1
-} HMI1_DEVICE;
-
-typedef enum {
 	PAYLOAD_RESPONSE = 0,
 	PAYLOAD_REPORT = 1,
 	PAYLOAD_MAX = 1,
@@ -162,21 +156,6 @@ typedef struct {
 	RTC_DateTypeDef calibration;
 } rtc_t;
 
-//FIXME active disabled GPIO input
-typedef struct {
-	//	uint8_t abs;
-	uint8_t mirroring;
-	//  uint8_t lamp;
-	uint8_t warning;
-	uint8_t overheat;
-	uint8_t finger;
-	uint8_t keyless;
-	uint8_t daylight;
-//	uint8_t sein_left;
-//	uint8_t sein_right;
-} status_t;
-
-// Node struct
 typedef struct {
 	struct {
 		uint8_t knob;
@@ -199,27 +178,14 @@ typedef struct {
 			uint16_t response;
 		} seq_id;
 	} vcu;
-	struct {
-		uint8_t started;
-		status_t status;
-		struct {
-			uint8_t started;
-			uint32_t tick;
-		} device[2];
-	} hmi1;
-	struct {
-		uint8_t started;
-		uint32_t tick;
-	} hmi2;
 } db_t;
 
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void);
 void DB_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t DB_ReadEvent(uint64_t event_id);
-void DB_HMI1_RefreshIndex(void);
 void DB_VCU_CheckKnob(void);
-void DB_VCU_CheckBMSPresence(void);
+void DB_VCU_CheckMainPower(void);
 uint8_t DB_ValidThreadFlag(uint32_t flag);
 uint8_t DB_ValidEventFlag(uint32_t flag);
 //void DB_SetEvents(uint64_t value);

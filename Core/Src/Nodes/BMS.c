@@ -7,14 +7,15 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "BMS.h"
+#include "HMI1.h"
 #include "_database.h"
 
 /* External variables ---------------------------------------------------------*/
-extern db_t DB;
+extern hmi1_t HMI1;
 
 /* Public variables -----------------------------------------------------------*/
 bms_t BMS = {
-		.data = { 0 },
+		.d = { 0 },
 		BMS_Init,
 		BMS_ResetIndex,
 		BMS_RefreshIndex,
@@ -27,28 +28,28 @@ bms_t BMS = {
 
 /* Public functions implementation --------------------------------------------*/
 void BMS_Init(void) {
-	BMS.data.started = 0;
-	BMS.data.soc = 0;
+	BMS.d.started = 0;
+	BMS.d.soc = 0;
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
 		BMS_ResetIndex(i);
 	}
 }
 
 void BMS_ResetIndex(uint8_t i) {
-	BMS.data.pack[i].id = BMS_ID_NONE;
-	BMS.data.pack[i].voltage = 0;
-	BMS.data.pack[i].current = 0;
-	BMS.data.pack[i].soc = 0;
-	BMS.data.pack[i].temperature = 0;
-	BMS.data.pack[i].state = BMS_STATE_IDLE;
-	BMS.data.pack[i].started = 0;
-	BMS.data.pack[i].flag = 0;
-	BMS.data.pack[i].tick = 0;
+	BMS.d.pack[i].id = BMS_ID_NONE;
+	BMS.d.pack[i].voltage = 0;
+	BMS.d.pack[i].current = 0;
+	BMS.d.pack[i].soc = 0;
+	BMS.d.pack[i].temperature = 0;
+	BMS.d.pack[i].state = BMS_STATE_IDLE;
+	BMS.d.pack[i].started = 0;
+	BMS.d.pack[i].flag = 0;
+	BMS.d.pack[i].tick = 0;
 }
 
 void BMS_RefreshIndex(void) {
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		if ((osKernelGetTickCount() - BMS.data.pack[i].tick) > pdMS_TO_TICKS(500)) {
+		if ((osKernelGetTickCount() - BMS.d.pack[i].tick) > pdMS_TO_TICKS(500)) {
 			BMS_ResetIndex(i);
 		}
 	}
@@ -59,14 +60,14 @@ uint8_t BMS_GetIndex(uint32_t id) {
 
 	// find index (if already exist)
 	for (i = 0; i < BMS_COUNT; i++) {
-		if (BMS.data.pack[i].id == id) {
+		if (BMS.d.pack[i].id == id) {
 			return i;
 		}
 	}
 
 	// finx index (if not exist)
 	for (i = 0; i < BMS_COUNT; i++) {
-		if (BMS.data.pack[i].id == BMS_ID_NONE) {
+		if (BMS.d.pack[i].id == BMS_ID_NONE) {
 			return i;
 		}
 	}
@@ -90,11 +91,11 @@ void BMS_SetEvents(uint16_t flag) {
 	DB_SetEvent(EV_BMS_SYSTEM_FAILURE, _R1(flag, 11));
 
 	// check event as CAN data
-	DB.hmi1.status.overheat = DB_ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
+	HMI1.d.status.overheat = DB_ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
 			DB_ReadEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE) ||
 			DB_ReadEvent(EV_BMS_CHARGE_OVER_TEMPERATURE) ||
 			DB_ReadEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE);
-	DB.hmi1.status.warning = DB_ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
+	HMI1.d.status.warning = DB_ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
 			DB_ReadEvent(EV_BMS_DISCHARGE_OVER_CURRENT) ||
 			DB_ReadEvent(EV_BMS_CHARGE_OVER_CURRENT) ||
 			DB_ReadEvent(EV_BMS_UNBALANCE) ||
@@ -106,7 +107,7 @@ void BMS_SetEvents(uint16_t flag) {
 
 uint8_t BMS_CheckRun(uint8_t state) {
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		if (BMS.data.pack[i].started != state) {
+		if (BMS.d.pack[i].started != state) {
 			return 0;
 		}
 	}
@@ -115,7 +116,7 @@ uint8_t BMS_CheckRun(uint8_t state) {
 
 uint8_t BMS_CheckState(BMS_STATE state) {
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		if (BMS.data.pack[i].state != state) {
+		if (BMS.d.pack[i].state != state) {
 			return 0;
 		}
 	}
@@ -128,17 +129,17 @@ void BMS_MergeData(void) {
 
 	// Merge flags (OR-ed)
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		flags |= BMS.data.pack[i].flag;
+		flags |= BMS.d.pack[i].flag;
 	}
 	BMS_SetEvents(flags);
 
 	// Average SOC
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		if (BMS.data.pack[i].started == 1) {
-			soc += BMS.data.pack[i].soc;
+		if (BMS.d.pack[i].started == 1) {
+			soc += BMS.d.pack[i].soc;
 			device++;
 		}
 	}
-	BMS.data.soc = device ? (soc / device) : soc;
+	BMS.d.soc = device ? (soc / device) : soc;
 }
 

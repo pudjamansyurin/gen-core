@@ -8,6 +8,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_database.h"
 #include "_reporter.h"
+#include "BMS.h"
+#include "HMI1.h"
+#include "HMI2.h"
+
+/* External variables ---------------------------------------------------------*/
+extern bms_t BMS;
+extern hmi1_t HMI1;
+extern hmi2_t HMI2;
 
 /* Public variables -----------------------------------------------------------*/
 db_t DB;
@@ -30,24 +38,13 @@ void DB_Init(void) {
 	DB.vcu.seq_id.response = 0;
 
 	// reset HMI1 data
-	DB.hmi1.started = 0;
-	DB.hmi1.status.mirroring = 0;
-	DB.hmi1.status.warning = 0;
-	DB.hmi1.status.overheat = 0;
-	DB.hmi1.status.finger = 0;
-	DB.hmi1.status.keyless = 0;
-	DB.hmi1.status.daylight = 0;
-	for (uint8_t i = 0; i < HMI1_DEV_MAX; i++) {
-		DB.hmi1.device[i].started = 0;
-		DB.hmi1.device[i].tick = 0;
-	}
+	HMI1.Init();
 
 	// reset HMI2 data
-	DB.hmi2.started = 0;
-	DB.hmi2.tick = 0;
+	HMI2.Init();
 
 	// reset BMS data
-	BMS_Init();
+	BMS.Init();
 }
 
 void DB_SetEvent(uint64_t event_id, uint8_t value) {
@@ -62,15 +59,7 @@ uint8_t DB_ReadEvent(uint64_t event_id) {
 	return (DB.vcu.events & event_id) == event_id;
 }
 
-void DB_HMI1_RefreshIndex(void) {
-	for (uint8_t i = 0; i < HMI1_DEV_MAX; i++) {
-		if ((osKernelGetTickCount() - DB.hmi1.device[i].tick) > pdMS_TO_TICKS(1000)) {
-			DB.hmi1.device[i].started = 0;
-		}
-	}
-}
-
-void DB_VCU_CheckBMSPresence(void) {
+void DB_VCU_CheckMainPower(void) {
 	DB.vcu.independent = !HAL_GPIO_ReadPin(EXT_BMS_IRQ_GPIO_Port, EXT_BMS_IRQ_Pin);
 	DB.vcu.interval = DB.vcu.independent ? RPT_INTERVAL_INDEPENDENT : RPT_INTERVAL_SIMPLE;
 	DB_SetEvent(EV_VCU_INDEPENDENT, DB.vcu.independent);

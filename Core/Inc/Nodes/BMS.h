@@ -42,7 +42,7 @@ typedef struct {
 } bms_data_t;
 
 typedef struct {
-	bms_data_t data;
+	bms_data_t d;
 	void (*Init)(void);
 	void (*ResetIndex)(uint8_t);
 	void (*RefreshIndex)(void);

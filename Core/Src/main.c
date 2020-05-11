@@ -38,6 +38,9 @@
 #include "_utils.h"
 #include "_handlebar.h"
 #include "_dma_battery.h"
+#include "BMS.h"
+#include "HMI1.h"
+#include "HMI2.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -238,6 +241,8 @@ extern db_t DB;
 extern sw_t SW;
 extern sim_t SIM;
 extern bms_t BMS;
+extern hmi1_t HMI1;
+extern hmi2_t HMI2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1259,7 +1264,7 @@ void StartManagerTask(void *argument)
 	EEPROM_ResetOrLoad();
 
 	// Check GPIOs state
-	DB_VCU_CheckBMSPresence();
+	DB_VCU_CheckMainPower();
 	DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
 	// Threads management:
@@ -1289,7 +1294,7 @@ void StartManagerTask(void *argument)
 			// BMS Power IRQ
 			if (notif & EVT_MANAGER_BMS_IRQ) {
 				// get current state
-				DB_VCU_CheckBMSPresence();
+				DB_VCU_CheckMainPower();
 			}
 			// KNOB IRQ
 			if (notif & EVT_MANAGER_KNOB_IRQ) {
@@ -1302,7 +1307,7 @@ void StartManagerTask(void *argument)
 		_DummyGenerator(&DB, &SW);
 
 		// Check is Daylight
-		DB.hmi1.status.daylight = _TimeCheckDaylight(DB.vcu.rtc.timestamp);
+		HMI1.d.status.daylight = _TimeCheckDaylight(DB.vcu.rtc.timestamp);
 
 		// Feed the dog
 		HAL_IWDG_Refresh(&hiwdg);
@@ -1785,9 +1790,9 @@ void StartKeylessTask(void *argument)
 
 		// update heart-beat
 		if ((osKernelGetTickCount() - DB.vcu.tick.keyless) < pdMS_TO_TICKS(5000)) {
-			DB.hmi1.status.keyless = 1;
+			HMI1.d.status.keyless = 1;
 		} else {
-			DB.hmi1.status.keyless = 0;
+			HMI1.d.status.keyless = 0;
 		}
 	}
 	/* USER CODE END StartKeylessTask */
@@ -2008,10 +2013,10 @@ void StartCanRxTask(void *argument)
 						CANR_HMI2(&DB);
 						break;
 					case CAND_HMI1_LEFT:
-						CANR_HMI1_LEFT(&DB);
+						CANR_HMI1_LEFT();
 						break;
 					case CAND_HMI1_RIGHT:
-						CANR_HMI1_RIGHT(&DB);
+						CANR_HMI1_RIGHT();
 						break;
 					case CAND_BMS_PARAM_1:
 						CANR_BMS_Param1();
@@ -2061,18 +2066,18 @@ void StartCanTxTask(void *argument)
 				CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
 			} else {
 				// completely ON
-				BMS.data.started = 1;
+				BMS.d.started = 1;
 			}
 		} else {
 			if (!BMS.CheckRun(0) || !BMS.CheckState(BMS_STATE_IDLE)) {
 				CANT_BMS_Setting(0, BMS_STATE_IDLE);
 			} else {
 				// completely OFF
-				BMS.data.started = 0;
-				BMS.data.soc = 0;
+				BMS.d.started = 0;
+				BMS.d.soc = 0;
 				// ohter parameter
-				DB.hmi1.status.overheat = 0;
-				DB.hmi1.status.warning = 1;
+				HMI1.d.status.overheat = 0;
+				HMI1.d.status.warning = 1;
 			}
 		}
 
@@ -2081,11 +2086,11 @@ void StartCanTxTask(void *argument)
 		BMS.MergeData();
 
 		// update HMI-1 data
-		DB_HMI1_RefreshIndex();
+		HMI1.RefreshIndex();
 
 		// update HMI-2 data
-		if ((osKernelGetTickCount() - DB.hmi2.tick) > pdMS_TO_TICKS(1000)) {
-			DB.hmi2.started = 0;
+		if ((osKernelGetTickCount() - HMI2.d.tick) > pdMS_TO_TICKS(1000)) {
+			HMI2.d.started = 0;
 		}
 
 		// Periodic interval

@@ -43,7 +43,7 @@ void CANR_BMS_Param1(void);
 void CANR_BMS_Param2(void);
 void CANR_BMS_BatteryID(db_t *db);
 void CANR_HMI2(db_t *db);
-void CANR_HMI1_LEFT(db_t *db);
-void CANR_HMI1_RIGHT(db_t *db);
+void CANR_HMI1_LEFT(void);
+void CANR_HMI1_RIGHT(void);
 
 #endif /* CAN_H_ */

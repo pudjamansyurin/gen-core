@@ -9,10 +9,14 @@
 #include "_can.h"
 #include "_reporter.h"
 #include "BMS.h"
+#include "HMI1.h"
+#include "HMI2.h"
 
 /* External variables ----------------------------------------------------------*/
 extern canbus_t CB;
 extern bms_t BMS;
+extern hmi1_t HMI1;
+extern hmi2_t HMI2;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
@@ -44,20 +48,20 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
 
 	// set message
 	CB.tx.data.u8[0] = sw->list[SW_K_ABS].state;
-	CB.tx.data.u8[0] |= _L(db->hmi1.status.mirroring, 1);
+	CB.tx.data.u8[0] |= _L(HMI1.d.status.mirroring, 1);
 	CB.tx.data.u8[0] |= _L(sw->list[SW_K_LAMP].state, 2);
-	CB.tx.data.u8[0] |= _L(db->hmi1.status.warning, 3);
-	CB.tx.data.u8[0] |= _L(db->hmi1.status.overheat, 4);
-	CB.tx.data.u8[0] |= _L(db->hmi1.status.finger, 5);
-	CB.tx.data.u8[0] |= _L(db->hmi1.status.keyless, 6);
-	CB.tx.data.u8[0] |= _L(db->hmi1.status.daylight, 7);
+	CB.tx.data.u8[0] |= _L(HMI1.d.status.warning, 3);
+	CB.tx.data.u8[0] |= _L(HMI1.d.status.overheat, 4);
+	CB.tx.data.u8[0] |= _L(HMI1.d.status.finger, 5);
+	CB.tx.data.u8[0] |= _L(HMI1.d.status.keyless, 6);
+	CB.tx.data.u8[0] |= _L(HMI1.d.status.daylight, 7);
 
 	// sein value
 	CB.tx.data.u8[1] = iSeinLeft;
 	CB.tx.data.u8[1] |= _L(iSeinRight, 1);
 	CB.tx.data.u8[1] |= _L(!db->vcu.knob, 2);
 	CB.tx.data.u8[2] = db->vcu.signal_percent;
-	CB.tx.data.u8[3] = BMS.data.soc;
+	CB.tx.data.u8[3] = BMS.d.soc;
 
 	// odometer
 	CB.tx.data.u32[1] = db->vcu.odometer;
@@ -167,45 +171,45 @@ void CANR_BMS_Param1(void) {
 	uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
 
 	// read the content
-	BMS.data.pack[index].voltage = CB.rx.data.u16[0] * 0.01;
-	BMS.data.pack[index].current = (CB.rx.data.u16[1] * 0.01) - 50;
-	BMS.data.pack[index].soc = CB.rx.data.u16[2];
-	BMS.data.pack[index].temperature = (CB.rx.data.u16[3] * 0.1) - 40;
+	BMS.d.pack[index].voltage = CB.rx.data.u16[0] * 0.01;
+	BMS.d.pack[index].current = (CB.rx.data.u16[1] * 0.01) - 50;
+	BMS.d.pack[index].soc = CB.rx.data.u16[2];
+	BMS.d.pack[index].temperature = (CB.rx.data.u16[3] * 0.1) - 40;
 
 	// read the id
-	BMS.data.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
-	BMS.data.pack[index].started = 1;
-	BMS.data.pack[index].tick = osKernelGetTickCount();
+	BMS.d.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
+	BMS.d.pack[index].started = 1;
+	BMS.d.pack[index].tick = osKernelGetTickCount();
 }
 
 void CANR_BMS_Param2(void) {
 	uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
 
 	// save flag
-	BMS.data.pack[index].flag = CB.rx.data.u16[3];
+	BMS.d.pack[index].flag = CB.rx.data.u16[3];
 
 	// save state
-	BMS.data.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
+	BMS.d.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
 }
 
 void CANR_HMI2(db_t *db) {
 	// read message
-	db->hmi1.status.mirroring = _R1(CB.rx.data.u8[0], 0);
+	HMI1.d.status.mirroring = _R1(CB.rx.data.u8[0], 0);
 
 	// save state
-	db->hmi2.started = 1;
-	db->hmi2.tick = osKernelGetTickCount();
+	HMI2.d.started = 1;
+	HMI2.d.tick = osKernelGetTickCount();
 }
 
-void CANR_HMI1_LEFT(db_t *db) {
+void CANR_HMI1_LEFT(void) {
 	// save state
-	db->hmi1.device[HMI1_DEV_LEFT].started = 1;
-	db->hmi1.device[HMI1_DEV_LEFT].tick = osKernelGetTickCount();
+	HMI1.d.device[HMI1_DEV_LEFT].started = 1;
+	HMI1.d.device[HMI1_DEV_LEFT].tick = osKernelGetTickCount();
 }
 
-void CANR_HMI1_RIGHT(db_t *db) {
+void CANR_HMI1_RIGHT(void) {
 	// save state
-	db->hmi1.device[HMI1_DEV_RIGHT].started = 1;
-	db->hmi1.device[HMI1_DEV_RIGHT].tick = osKernelGetTickCount();
+	HMI1.d.device[HMI1_DEV_RIGHT].started = 1;
+	HMI1.d.device[HMI1_DEV_RIGHT].tick = osKernelGetTickCount();
 }
 

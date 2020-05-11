@@ -57,9 +57,9 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 	report->data.req.vcu.rtc.log = RTC_Read();
 	// BMS data
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		report->data.req.bms.pack[i].id = BMS.data.pack[i].id;
-		report->data.req.bms.pack[i].voltage = BMS.data.pack[i].voltage * 100;
-		report->data.req.bms.pack[i].current = (BMS.data.pack[i].current + 50) * 100;
+		report->data.req.bms.pack[i].id = BMS.d.pack[i].id;
+		report->data.req.bms.pack[i].voltage = BMS.d.pack[i].voltage * 100;
+		report->data.req.bms.pack[i].current = (BMS.d.pack[i].current + 50) * 100;
 	}
 
 	// Add more (if full frame)
@@ -81,8 +81,8 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
 		// BMS data
 		for (uint8_t i = 0; i < BMS_COUNT; i++) {
-			report->data.opt.bms.pack[i].soc = BMS.data.pack[i].soc;
-			report->data.opt.bms.pack[i].temperature = (BMS.data.pack[i].temperature + 40) * 10;
+			report->data.opt.bms.pack[i].soc = BMS.d.pack[i].soc;
+			report->data.opt.bms.pack[i].temperature = (BMS.d.pack[i].temperature + 40) * 10;
 		}
 	}
 }
