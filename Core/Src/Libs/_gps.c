@@ -9,10 +9,11 @@
 #include "_gps.h"
 #include "_reporter.h"
 #include "_handlebar.h"
+#include "VCU.h"
 
 /* External variables ---------------------------------------------------------*/
 extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
-extern db_t DB;
+extern vcu_t VCU;
 
 /* Public variables -----------------------------------------------------------*/
 gps_t GPS;
@@ -80,7 +81,7 @@ void GPS_CalculateOdometer(void) {
 		odometer_mps = 0;
 
 		// Accumulate Odometer (Save permanently)
-		EEPROM_Odometer(EE_CMD_W, DB.vcu.odometer + 1);
+		EEPROM_Odometer(EE_CMD_W, VCU.d.odometer + 1);
 
 		// Accumulate Sub-Trip (Reset on Start)
 		HBAR_AccumulateSubTrip();
@@ -88,6 +89,6 @@ void GPS_CalculateOdometer(void) {
 
 	// FIXME: use real data
 	// update data
-	DB.vcu.speed = GPS.speed_kph;
-	DB.vcu.volume = DB.vcu.speed * 100 / MCU_SPEED_MAX;
+	VCU.d.speed = GPS.speed_kph;
+	VCU.d.volume = VCU.d.speed * 100 / MCU_SPEED_MAX;
 }

@@ -8,18 +8,20 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_can.h"
 #include "_reporter.h"
+#include "VCU.h"
 #include "BMS.h"
 #include "HMI1.h"
 #include "HMI2.h"
 
 /* External variables ----------------------------------------------------------*/
 extern canbus_t CB;
+extern vcu_t VCU;
 extern bms_t BMS;
 extern hmi1_t HMI1;
 extern hmi2_t HMI2;
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
+uint8_t CANT_VCU_Switch(sw_t *sw) {
 	static TickType_t tickSein;
 	static uint8_t iSeinLeft = 0, iSeinRight = 0;
 
@@ -59,12 +61,12 @@ uint8_t CANT_VCU_Switch(db_t *db, sw_t *sw) {
 	// sein value
 	CB.tx.data.u8[1] = iSeinLeft;
 	CB.tx.data.u8[1] |= _L(iSeinRight, 1);
-	CB.tx.data.u8[1] |= _L(!db->vcu.knob, 2);
-	CB.tx.data.u8[2] = db->vcu.signal_percent;
+	CB.tx.data.u8[1] |= _L(!VCU.d.knob, 2);
+	CB.tx.data.u8[2] = VCU.d.signal_percent;
 	CB.tx.data.u8[3] = BMS.d.soc;
 
 	// odometer
-	CB.tx.data.u32[1] = db->vcu.odometer;
+	CB.tx.data.u32[1] = VCU.d.odometer;
 
 	// set default header
 	CANBUS_Header(&(CB.tx.header), CAND_VCU_SWITCH, 8);
@@ -88,7 +90,7 @@ uint8_t CANT_VCU_RTC(timestamp_t *timestamp) {
 	return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CANT_VCU_SelectSet(db_t *db, sw_runner_t *runner) {
+uint8_t CANT_VCU_SelectSet(sw_runner_t *runner) {
 	static TickType_t tick, tickPeriod;
 	static uint8_t iHide = 0;
 	static int8_t iName = -1, iValue = -1;
@@ -136,7 +138,7 @@ uint8_t CANT_VCU_SelectSet(db_t *db, sw_runner_t *runner) {
 	CB.tx.data.u8[1] = runner->mode.sub.report[SW_M_REPORT_RANGE];
 	CB.tx.data.u8[2] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];
 
-	CB.tx.data.u8[3] = db->vcu.speed;
+	CB.tx.data.u8[3] = VCU.d.speed;
 
 	// set default header
 	CANBUS_Header(&(CB.tx.header), CAND_VCU_SELECT_SET, 4);
@@ -192,7 +194,7 @@ void CANR_BMS_Param2(void) {
 	BMS.d.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
 }
 
-void CANR_HMI2(db_t *db) {
+void CANR_HMI2(void) {
 	// read message
 	HMI1.d.status.mirroring = _R1(CB.rx.data.u8[0], 0);
 

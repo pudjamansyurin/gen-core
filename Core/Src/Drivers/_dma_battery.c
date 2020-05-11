@@ -8,11 +8,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_dma_battery.h"
 #include "_simcom.h"
+#include "VCU.h"
 
 /* External variables ---------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
-extern db_t DB;
 extern sim_t SIM;
+extern vcu_t VCU;
 
 /* Local constants -----------------------------------------------------------*/
 #define DMA_SZ                      50U
@@ -62,7 +63,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	// calculate the moving average
 	temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
 	// change to battery value
-	DB.vcu.bat_voltage = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
+	VCU.d.bat_voltage = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
 }
 
 /* Private functions implementation ---------------------------------------------*/

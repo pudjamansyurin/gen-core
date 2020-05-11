@@ -7,13 +7,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_reporter.h"
+#include "VCU.h"
 #include "BMS.h"
 
 /* External variables ----------------------------------------------------------*/
-extern db_t DB;
+extern vcu_t VCU;
+extern bms_t BMS;
 extern gps_t GPS;
 extern sw_t SW;
-extern bms_t BMS;
 
 /* Public functions implementation --------------------------------------------*/
 void Report_Init(FRAME_TYPE frame, report_t *report) {
@@ -23,7 +24,7 @@ void Report_Init(FRAME_TYPE frame, report_t *report) {
 	// header report
 	report->header.prefix[0] = PREFIX_REPORT[1];
 	report->header.prefix[1] = PREFIX_REPORT[0];
-	report->header.seq_id = DB.vcu.seq_id.report;
+	report->header.seq_id = VCU.d.seq_id.report;
 	// (already set)
 	// body required
 	report->data.req.vcu.driver_id = DRIVER_ID_NONE;
@@ -39,13 +40,13 @@ void Response_Init(response_t *response) {
 	// header report
 	response->header.prefix[0] = PREFIX_REPORT[1];
 	response->header.prefix[1] = PREFIX_REPORT[0];
-	response->header.seq_id = DB.vcu.seq_id.response;
+	response->header.seq_id = VCU.d.seq_id.response;
 }
 
 void Report_Capture(FRAME_TYPE frame, report_t *report) {
 	// Reconstruct the header
 	report->header.seq_id++;
-	report->header.unit_id = DB.vcu.unit_id;
+	report->header.unit_id = VCU.d.unit_id;
 	report->header.frame_id = frame;
 	report->header.size = sizeof(report->header.frame_id) +
 			sizeof(report->header.unit_id) +
@@ -53,7 +54,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 			sizeof(report->data.req);
 
 	// Reconstruct the body
-	report->data.req.vcu.events_group = DB.vcu.events;
+	report->data.req.vcu.events_group = VCU.d.events;
 	report->data.req.vcu.rtc.log = RTC_Read();
 	// BMS data
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
@@ -72,12 +73,12 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 		report->data.opt.vcu.gps.heading = (uint8_t) (GPS.heading / 2);
 
 		report->data.opt.vcu.speed = GPS.speed_kph;
-		report->data.opt.vcu.odometer = DB.vcu.odometer;
+		report->data.opt.vcu.odometer = VCU.d.odometer;
 		report->data.opt.vcu.trip.a = SW.runner.mode.sub.trip[SW_M_TRIP_A];
 		report->data.opt.vcu.trip.b = SW.runner.mode.sub.trip[SW_M_TRIP_B];
 
-		report->data.opt.vcu.signal_percent = DB.vcu.signal_percent;
-		report->data.opt.vcu.bat_voltage = DB.vcu.bat_voltage / 18;
+		report->data.opt.vcu.signal_percent = VCU.d.signal_percent;
+		report->data.opt.vcu.bat_voltage = VCU.d.bat_voltage / 18;
 
 		// BMS data
 		for (uint8_t i = 0; i < BMS_COUNT; i++) {
@@ -90,7 +91,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 void Response_Capture(response_t *response) {
 	//Reconstruct the header
 	response->header.seq_id++;
-	response->header.unit_id = DB.vcu.unit_id;
+	response->header.unit_id = VCU.d.unit_id;
 	response->header.frame_id = FR_RESPONSE;
 	response->header.size = sizeof(response->header.frame_id) +
 			sizeof(response->header.unit_id) +

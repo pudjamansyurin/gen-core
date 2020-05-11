@@ -135,7 +135,6 @@
 #define MCU_SPEED_MAX                           255U
 #define MCU_RPM_MAX                             99999U
 #define VCU_ODOMETER_MAX                        99999U
-
 #define DRIVER_ID_NONE													0xFF
 
 /* Exported enum ----------------------------------------------------------------*/
@@ -156,37 +155,7 @@ typedef struct {
 	RTC_DateTypeDef calibration;
 } rtc_t;
 
-typedef struct {
-	struct {
-		uint8_t knob;
-		uint32_t unit_id;
-		uint8_t independent;
-		uint16_t interval;
-		uint8_t volume;
-		uint16_t bat_voltage;
-		uint8_t signal_percent;
-		uint8_t speed;
-		uint32_t odometer;
-		rtc_t rtc;
-		uint64_t events;
-		struct {
-			uint32_t keyless;
-		//      uint32_t finger;
-		} tick;
-		struct {
-			uint16_t report;
-			uint16_t response;
-		} seq_id;
-	} vcu;
-} db_t;
-
 /* Public functions implementation --------------------------------------------*/
 void DB_Init(void);
-void DB_SetEvent(uint64_t event_id, uint8_t value);
-uint8_t DB_ReadEvent(uint64_t event_id);
-void DB_VCU_CheckKnob(void);
-void DB_VCU_CheckMainPower(void);
-//void DB_SetEvents(uint64_t value);
-//uint8_t DB_ReadEvent(uint64_t event_id);
 
 #endif /* DATABASE_H_ */

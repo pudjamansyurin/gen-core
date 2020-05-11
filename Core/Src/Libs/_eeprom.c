@@ -9,12 +9,13 @@
 #include "_eeprom.h"
 #include "_database.h"
 #include "_reporter.h"
+#include "VCU.h"
 
 /* External variabless -------------------------------------------------------*/
 extern osMutexId_t EepromMutexHandle;
-extern db_t DB;
-extern report_t REPORT;
 extern response_t RESPONSE;
+extern report_t REPORT;
+extern vcu_t VCU;
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_16(uint16_t vaddr, EEPROM_COMMAND cmd, uint16_t *value, uint16_t *ptr);
@@ -107,10 +108,10 @@ uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE typ
 
 	// decide payload type
 	if (type == PAYLOAD_REPORT) {
-		pSeqId = &(DB.vcu.seq_id.report);
+		pSeqId = &(VCU.d.seq_id.report);
 		vaddr = VADDR_REPORT_SEQ_ID;
 	} else {
-		pSeqId = &(DB.vcu.seq_id.response);
+		pSeqId = &(VCU.d.seq_id.response);
 		vaddr = VADDR_RESPONSE_SEQ_ID;
 	}
 
@@ -123,11 +124,11 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
 		value = 0;
 	}
 	// FIXME: only update eeprom for 1km/hr increment
-	return EE_32(VADDR_ODOMETER, cmd, &value, &(DB.vcu.odometer));
+	return EE_32(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer));
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
-	return EE_32(VADDR_UNITID, cmd, &value, &(DB.vcu.unit_id));
+	return EE_32(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id));
 }
 
 /* Private functions implementation --------------------------------------------*/

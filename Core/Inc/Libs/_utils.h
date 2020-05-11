@@ -30,8 +30,8 @@ void _RTOS_DebugStack(osThreadId_t *threads, uint8_t count);
 uint8_t _RTOS_ValidThreadFlag(uint32_t flag);
 uint8_t _RTOS_ValidEventFlag(uint32_t flag);
 
-void _DummyGenerator(db_t *db, sw_t *sw);
-uint8_t _TimeNeedCalibration(db_t *db);
+void _DummyGenerator(sw_t *sw);
+uint8_t _TimeNeedCalibration(void);
 uint8_t _TimeCheckDaylight(timestamp_t timestamp);
 
 int8_t _BitPosition(uint64_t event_id);

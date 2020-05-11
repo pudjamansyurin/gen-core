@@ -7,10 +7,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_finger.h"
+#include "VCU.h"
 #include "HMI1.h"
 
 /* External variables ---------------------------------------------------------*/
-extern db_t DB;
+extern vcu_t VCU;
 extern hmi1_t HMI1;
 extern finger_t finger;
 extern osMutexId_t FingerRecMutexHandle;

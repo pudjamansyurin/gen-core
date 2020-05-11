@@ -38,6 +38,8 @@
 #include "_utils.h"
 #include "_handlebar.h"
 #include "_dma_battery.h"
+
+#include "VCU.h"
 #include "BMS.h"
 #include "HMI1.h"
 #include "HMI2.h"
@@ -237,10 +239,10 @@ const osMutexAttr_t FingerRecMutex_attributes = {
 };
 /* USER CODE BEGIN PV */
 osEventFlagsId_t GlobalEventHandle;
-extern db_t DB;
 extern sw_t SW;
 extern sim_t SIM;
 
+extern vcu_t VCU;
 extern bms_t BMS;
 extern hmi1_t HMI1;
 extern hmi2_t HMI2;
@@ -1265,8 +1267,8 @@ void StartManagerTask(void *argument)
 	EEPROM_ResetOrLoad();
 
 	// Check GPIOs state
-	DB_VCU_CheckMainPower();
-	DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+	VCU.CheckMainPower();
+	VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
 	// Threads management:
 	osThreadSuspend(GyroTaskHandle);
@@ -1295,27 +1297,27 @@ void StartManagerTask(void *argument)
 			// BMS Power IRQ
 			if (notif & EVT_MANAGER_BMS_IRQ) {
 				// get current state
-				DB_VCU_CheckMainPower();
+				VCU.CheckMainPower();
 			}
 			// KNOB IRQ
 			if (notif & EVT_MANAGER_KNOB_IRQ) {
 				// get current state
-				DB.vcu.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+				VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 			}
 		}
 
 		// Dummy data generator
-		_DummyGenerator(&DB, &SW);
+		_DummyGenerator(&SW);
 
 		// Check is Daylight
-		HMI1.d.status.daylight = _TimeCheckDaylight(DB.vcu.rtc.timestamp);
+		HMI1.d.status.daylight = _TimeCheckDaylight(VCU.d.rtc.timestamp);
 
 		// Feed the dog
 		HAL_IWDG_Refresh(&hiwdg);
 
 		// Battery Monitor
 		LOG_Str("Battery:Voltage = ");
-		LOG_Int(DB.vcu.bat_voltage);
+		LOG_Int(VCU.d.bat_voltage);
 		LOG_StrLn(" mV");
 
 		// Thread's Stack Monitor
@@ -1427,13 +1429,13 @@ void StartIotTask(void *argument)
 		// ================= SIMCOM Related Routines ================
 		Simcom_SetState(SIM_STATE_READY);
 		// Retrieve network signal quality
-		SIM_SignalQuality(&(DB.vcu.signal_percent));
+		SIM_SignalQuality(&(VCU.d.signal_percent));
 		// Check calibration by cellular network
-		if (_TimeNeedCalibration(&DB)) {
+		if (_TimeNeedCalibration()) {
 			// get carrier timestamp
 			if (SIM_Clock(&timestamp)) {
 				// calibrate the RTC
-				RTC_WriteRaw(&timestamp, &(DB.vcu.rtc));
+				RTC_WriteRaw(&timestamp, &(VCU.d.rtc));
 			}
 		}
 
@@ -1470,7 +1472,7 @@ void StartReporterTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		// decide full/simple frame time
-		if (!DB.vcu.independent) {
+		if (!VCU.d.independent) {
 			// BMS plugged
 			if ((lastWake - lastFull) >= pdMS_TO_TICKS(RPT_INTERVAL_FULL*1000)) {
 				// capture full frame wake time
@@ -1499,10 +1501,10 @@ void StartReporterTask(void *argument)
 		} while (status != osOK);
 
 		// reset some events group
-		DB_SetEvent(EV_VCU_NETWORK_RESTART, 0);
+		VCU.SetEvent(EV_VCU_NETWORK_RESTART, 0);
 
 		// Report interval
-		osDelayUntil(lastWake + pdMS_TO_TICKS(DB.vcu.interval * 1000));
+		osDelayUntil(lastWake + pdMS_TO_TICKS(VCU.d.interval * 1000));
 	}
 	/* USER CODE END StartReporterTask */
 }
@@ -1561,7 +1563,7 @@ void StartCommandTask(void *argument)
 							break;
 
 						case CMD_GEN_KNOB:
-							DB.vcu.knob = (uint8_t) command.data.value;
+							VCU.d.knob = (uint8_t) command.data.value;
 							break;
 
 						default:
@@ -1573,7 +1575,7 @@ void StartCommandTask(void *argument)
 				case CMD_CODE_REPORT:
 					switch (command.data.sub_code) {
 						case CMD_REPORT_RTC:
-							RTC_Write((uint64_t) command.data.value, &(DB.vcu.rtc));
+							RTC_Write((uint64_t) command.data.value, &(VCU.d.rtc));
 							break;
 
 						case CMD_REPORT_ODOM:
@@ -1606,7 +1608,7 @@ void StartCommandTask(void *argument)
 							break;
 
 						case CMD_AUDIO_VOL:
-							DB.vcu.volume = (uint8_t) command.data.value;
+							VCU.d.volume = (uint8_t) command.data.value;
 							break;
 
 						default:
@@ -1724,16 +1726,16 @@ void StartGyroTask(void *argument)
 		mems_decision = GYRO_Decision(&mems_calibration, 25);
 
 		// Check accelerometer, happens when impact detected
-		DB_SetEvent(EV_VCU_BIKE_CRASHED, mems_decision.crash);
+		VCU.SetEvent(EV_VCU_BIKE_CRASHED, mems_decision.crash);
 
 		// Check gyroscope, happens when fall detected
 		if (mems_decision.fall) {
 			osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-			DB_SetEvent(EV_VCU_BIKE_FALLING, 1);
+			VCU.SetEvent(EV_VCU_BIKE_FALLING, 1);
 			_LedDisco(1000);
 		} else {
 			osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
-			DB_SetEvent(EV_VCU_BIKE_FALLING, 0);
+			VCU.SetEvent(EV_VCU_BIKE_FALLING, 0);
 		}
 
 		// Periodic interval
@@ -1772,8 +1774,8 @@ void StartKeylessTask(void *argument)
 			if (notif & EVT_KEYLESS_RX_IT) {
 				msg = KEYLESS_ReadPayload();
 
-				// record heart-beat
-				DB.vcu.tick.keyless = osKernelGetTickCount();
+				// update heart-beat
+				VCU.d.tick.keyless = osKernelGetTickCount();
 
 				// indicator
 				LOG_Str("NRF received packet, msg = ");
@@ -1789,8 +1791,8 @@ void StartKeylessTask(void *argument)
 			}
 		}
 
-		// update heart-beat
-		if ((osKernelGetTickCount() - DB.vcu.tick.keyless) < pdMS_TO_TICKS(5000)) {
+		// update state
+		if ((osKernelGetTickCount() - VCU.d.tick.keyless) < pdMS_TO_TICKS(5000)) {
 			HMI1.d.status.keyless = 1;
 		} else {
 			HMI1.d.status.keyless = 0;
@@ -1923,7 +1925,7 @@ void StartAudioTask(void *argument)
 		}
 
 		// update volume
-		AUDIO_OUT_SetVolume(DB.vcu.volume);
+		AUDIO_OUT_SetVolume(VCU.d.volume);
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(500));
@@ -2011,7 +2013,7 @@ void StartCanRxTask(void *argument)
 				// handle STD message
 				switch (CANBUS_ReadID()) {
 					case CAND_HMI2:
-						CANR_HMI2(&DB);
+						CANR_HMI2();
 						break;
 					case CAND_HMI1_LEFT:
 						CANR_HMI1_LEFT();
@@ -2056,13 +2058,13 @@ void StartCanTxTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		// Send CAN data
-		CANT_VCU_Switch(&DB, &SW);
-		CANT_VCU_RTC(&(DB.vcu.rtc.timestamp));
-		CANT_VCU_SelectSet(&DB, &(SW.runner));
+		CANT_VCU_Switch(&SW);
+		CANT_VCU_RTC(&(VCU.d.rtc.timestamp));
+		CANT_VCU_SelectSet(&(SW.runner));
 		CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
 
 		// Control BMS state
-		if (DB.vcu.knob) {
+		if (VCU.d.knob) {
 			if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE)) {
 				CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
 			} else {

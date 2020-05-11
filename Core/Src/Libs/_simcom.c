@@ -6,12 +6,13 @@
  */
 /* Includes ------------------------------------------------------------------*/
 #include "_simcom.h"
+#include "VCU.h"
 
 /* External variables ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 extern osMutexId_t SimcomRecMutexHandle;
 extern osMessageQueueId_t CommandQueueHandle;
-extern db_t DB;
+extern vcu_t VCU;
 
 /* Public variables ----------------------------------------------------------*/
 sim_t SIM;
@@ -67,13 +68,13 @@ void Simcom_SetState(SIMCOM_STATE state) {
 			p = Simcom_Power();
 		} else {
 			if (SIM.state == SIM_STATE_DOWN) {
-				DB.vcu.signal_percent = 0;
+				VCU.d.signal_percent = 0;
 				LOG_StrLn("Simcom:Down");
 				p = SIM_RESULT_ERROR;
 			} else {
 				if (SIM.state >= SIM_STATE_CONFIGURED) {
-					SIM_SignalQuality(&(DB.vcu.signal_percent));
-					if (DB.vcu.signal_percent < 20) {
+					SIM_SignalQuality(&(VCU.d.signal_percent));
+					if (VCU.d.signal_percent < 20) {
 						LOG_StrLn("Simcom:PendingBySignal");
 						osDelay(5 * 1000);
 						break;
@@ -652,7 +653,7 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 	uint32_t tick;
 
 	// save event
-	DB_SetEvent(EV_VCU_NETWORK_RESTART, 1);
+	VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
 
 	// wait until 1s response
 	tick = osKernelGetTickCount();
@@ -705,7 +706,7 @@ static SIMCOM_RESULT Simcom_Iterate(char cmd[20], char contain[10], char resp[15
 		}
 
 		// other routines
-		SIM_SignalQuality(&(DB.vcu.signal_percent));
+		SIM_SignalQuality(&(VCU.d.signal_percent));
 
 		// debug
 		LOG_Str("Simcom:Iteration[");
@@ -756,7 +757,7 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
 						SIM.state = SIM_STATE_READY;
 						LOG_StrLn("Simcom:Restarted");
 						// save event
-						DB_SetEvent(EV_VCU_NETWORK_RESTART, 1);
+						VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
 					}
 					// exception for timeout
 					if ((osKernelGetTickCount() - tick) >= timeout_tick) {

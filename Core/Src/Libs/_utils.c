@@ -8,6 +8,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_utils.h"
 #include "_rtc.h"
+#include "VCU.h"
+
+/* External variables ----------------------------------------------------------*/
+extern vcu_t VCU;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t _LedRead(void) {
@@ -101,9 +105,9 @@ uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
 	return ret;
 }
 
-void _DummyGenerator(db_t *db, sw_t *sw) {
+void _DummyGenerator(sw_t *sw) {
 	//  // Dummy algorithm
-	//  db->vcu.odometer = (db->vcu.odometer >= VCU_ODOMETER_MAX ? 0 : (db->vcu.odometer + 1));
+	//  VCU.d.odometer = (VCU.d.odometer >= VCU_ODOMETER_MAX ? 0 : (VCU.d.odometer + 1));
 
 	// Dummy Report Range
 	if (!sw->runner.mode.sub.report[SW_M_REPORT_RANGE]) {
@@ -124,14 +128,14 @@ uint8_t _TimeCheckDaylight(timestamp_t timestamp) {
 	return (timestamp.time.Hours >= 5 && timestamp.time.Hours <= 16);
 }
 
-uint8_t _TimeNeedCalibration(db_t *db) {
+uint8_t _TimeNeedCalibration(void) {
 	// Retrieve RTC time
-	RTC_ReadRaw(&(db->vcu.rtc.timestamp));
+	RTC_ReadRaw(&(VCU.d.rtc.timestamp));
 
 	// Compare
-	return (db->vcu.rtc.calibration.Year != db->vcu.rtc.timestamp.date.Year ||
-			db->vcu.rtc.calibration.Month != db->vcu.rtc.timestamp.date.Month ||
-			db->vcu.rtc.calibration.Date != db->vcu.rtc.timestamp.date.Date);
+	return (VCU.d.rtc.calibration.Year != VCU.d.rtc.timestamp.date.Year ||
+			VCU.d.rtc.calibration.Month != VCU.d.rtc.timestamp.date.Month ||
+			VCU.d.rtc.calibration.Date != VCU.d.rtc.timestamp.date.Date);
 }
 
 int8_t _BitPosition(uint64_t event_id) {

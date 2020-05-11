@@ -7,10 +7,12 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "BMS.h"
+#include "VCU.h"
 #include "HMI1.h"
 #include "_database.h"
 
 /* External variables ---------------------------------------------------------*/
+extern vcu_t VCU;
 extern hmi1_t HMI1;
 
 /* Public variables -----------------------------------------------------------*/
@@ -77,32 +79,32 @@ uint8_t BMS_GetIndex(uint32_t id) {
 }
 
 void BMS_SetEvents(uint16_t flag) {
-	DB_SetEvent(EV_BMS_SHORT_CIRCUIT, _R1(flag, 0));
-	DB_SetEvent(EV_BMS_DISCHARGE_OVER_CURRENT, _R1(flag, 1));
-	DB_SetEvent(EV_BMS_CHARGE_OVER_CURRENT, _R1(flag, 2));
-	DB_SetEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE, _R1(flag, 3));
-	DB_SetEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE, _R1(flag, 4));
-	DB_SetEvent(EV_BMS_CHARGE_OVER_TEMPERATURE, _R1(flag, 5));
-	DB_SetEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE, _R1(flag, 6));
-	DB_SetEvent(EV_BMS_UNBALANCE, _R1(flag, 7));
-	DB_SetEvent(EV_BMS_UNDER_VOLTAGE, _R1(flag, 8));
-	DB_SetEvent(EV_BMS_OVER_VOLTAGE, _R1(flag, 9));
-	DB_SetEvent(EV_BMS_OVER_DISCHARGE_CAPACITY, _R1(flag, 10));
-	DB_SetEvent(EV_BMS_SYSTEM_FAILURE, _R1(flag, 11));
+	VCU.SetEvent(EV_BMS_SHORT_CIRCUIT, _R1(flag, 0));
+	VCU.SetEvent(EV_BMS_DISCHARGE_OVER_CURRENT, _R1(flag, 1));
+	VCU.SetEvent(EV_BMS_CHARGE_OVER_CURRENT, _R1(flag, 2));
+	VCU.SetEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE, _R1(flag, 3));
+	VCU.SetEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE, _R1(flag, 4));
+	VCU.SetEvent(EV_BMS_CHARGE_OVER_TEMPERATURE, _R1(flag, 5));
+	VCU.SetEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE, _R1(flag, 6));
+	VCU.SetEvent(EV_BMS_UNBALANCE, _R1(flag, 7));
+	VCU.SetEvent(EV_BMS_UNDER_VOLTAGE, _R1(flag, 8));
+	VCU.SetEvent(EV_BMS_OVER_VOLTAGE, _R1(flag, 9));
+	VCU.SetEvent(EV_BMS_OVER_DISCHARGE_CAPACITY, _R1(flag, 10));
+	VCU.SetEvent(EV_BMS_SYSTEM_FAILURE, _R1(flag, 11));
 
 	// check event as CAN data
-	HMI1.d.status.overheat = DB_ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
-			DB_ReadEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE) ||
-			DB_ReadEvent(EV_BMS_CHARGE_OVER_TEMPERATURE) ||
-			DB_ReadEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE);
-	HMI1.d.status.warning = DB_ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
-			DB_ReadEvent(EV_BMS_DISCHARGE_OVER_CURRENT) ||
-			DB_ReadEvent(EV_BMS_CHARGE_OVER_CURRENT) ||
-			DB_ReadEvent(EV_BMS_UNBALANCE) ||
-			DB_ReadEvent(EV_BMS_UNDER_VOLTAGE) ||
-			DB_ReadEvent(EV_BMS_OVER_VOLTAGE) ||
-			DB_ReadEvent(EV_BMS_OVER_DISCHARGE_CAPACITY) ||
-			DB_ReadEvent(EV_BMS_SYSTEM_FAILURE);
+	HMI1.d.status.overheat = VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
+			VCU.ReadEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE) ||
+			VCU.ReadEvent(EV_BMS_CHARGE_OVER_TEMPERATURE) ||
+			VCU.ReadEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE);
+	HMI1.d.status.warning = VCU.ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
+			VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_CURRENT) ||
+			VCU.ReadEvent(EV_BMS_CHARGE_OVER_CURRENT) ||
+			VCU.ReadEvent(EV_BMS_UNBALANCE) ||
+			VCU.ReadEvent(EV_BMS_UNDER_VOLTAGE) ||
+			VCU.ReadEvent(EV_BMS_OVER_VOLTAGE) ||
+			VCU.ReadEvent(EV_BMS_OVER_DISCHARGE_CAPACITY) ||
+			VCU.ReadEvent(EV_BMS_SYSTEM_FAILURE);
 }
 
 uint8_t BMS_CheckRun(uint8_t state) {
