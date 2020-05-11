@@ -117,8 +117,6 @@ uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
 }
 
 uint8_t VCU_CAN_TX_SelectSet(sw_runner_t *runner) {
-	uint8_t hide = HBAR_ModeController(runner);
-
 	// set message
 	CB.tx.data.u8[0] = runner->mode.sub.val[SW_M_DRIVE];
 	CB.tx.data.u8[0] |= _L(runner->mode.sub.val[SW_M_TRIP], 2);
@@ -126,7 +124,7 @@ uint8_t VCU_CAN_TX_SelectSet(sw_runner_t *runner) {
 	CB.tx.data.u8[0] |= _L(runner->mode.val, 4);
 
 	// Send Show/Hide flag
-	CB.tx.data.u8[0] |= _L(hide, 6);
+	CB.tx.data.u8[0] |= _L(HBAR_ModeController(runner), 6);
 
 	CB.tx.data.u8[1] = runner->mode.sub.report[SW_M_REPORT_RANGE];
 	CB.tx.data.u8[2] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];

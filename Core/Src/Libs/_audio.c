@@ -42,14 +42,12 @@
 
 /* External variabless -------------------------------------------------------*/
 extern osMutexId_t AudioMutexHandle;
-extern AUDIO_DrvTypeDef cs43l22_drv;
 extern I2S_HandleTypeDef hi2s3;
 extern uint32_t AUDIO_SAMPLE_FREQ;
 extern uint32_t AUDIO_SAMPLE_SIZE;
 extern uint16_t AUDIO_SAMPLE[];
 
 /* Private variables ---------------------------------------------------------*/
-static AUDIO_DrvTypeDef *pAudioDrv;
 static uint8_t AudioVolume = 100, AudioPlayDone = 0;
 static uint16_t AudioPlaySize;
 static uint32_t AudioRemSize;
@@ -102,14 +100,14 @@ void AUDIO_Play(void) {
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
 	lock();
 
-	pAudioDrv->SetBeep(AUDIO_I2C_ADDRESS, Frequency, 0, 0);
-	pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_ON);
+	cs43l22_SetBeep(AUDIO_I2C_ADDRESS, Frequency, 0, 0);
+	cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_ON);
 
 	if (TimeMS > 0) {
 		// delay with RTOS
 		osDelay(TimeMS);
 		// than stop
-		pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
+		cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
 	}
 
 	unlock();
@@ -118,7 +116,7 @@ void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
 void AUDIO_BeepStop(void) {
 	lock();
 
-	pAudioDrv->Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
+	cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
 
 	unlock();
 }
@@ -142,7 +140,7 @@ void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
  */
 uint8_t AUDIO_OUT_Pause(void) {
 	/* Call the Audio Codec Pause/Resume function */
-	if (pAudioDrv->Pause(AUDIO_I2C_ADDRESS) != 0) {
+	if (cs43l22_Pause(AUDIO_I2C_ADDRESS) != 0) {
 		return AUDIO_ERROR;
 	} else {
 		/* Call the Media layer pause function */
@@ -162,7 +160,7 @@ uint8_t AUDIO_OUT_Pause(void) {
  */
 uint8_t AUDIO_OUT_Resume(void) {
 	/* Call the Audio Codec Pause/Resume function */
-	if (pAudioDrv->Resume(AUDIO_I2C_ADDRESS) != 0) {
+	if (cs43l22_Resume(AUDIO_I2C_ADDRESS) != 0) {
 		return AUDIO_ERROR;
 	} else {
 		/* Call the Media layer resume function */
@@ -185,7 +183,7 @@ uint8_t AUDIO_OUT_Stop(uint32_t Option) {
 	HAL_I2S_DMAStop(&hi2s3);
 
 	/* Call Audio Codec Stop function */
-	if (pAudioDrv->Stop(AUDIO_I2C_ADDRESS, Option) != 0) {
+	if (cs43l22_Stop(AUDIO_I2C_ADDRESS, Option) != 0) {
 		return AUDIO_ERROR;
 	} else {
 		if (Option == CODEC_PDWN_HW) {
@@ -209,7 +207,7 @@ uint8_t AUDIO_OUT_Stop(uint32_t Option) {
  */
 uint8_t AUDIO_OUT_SetVolume(uint8_t Volume) {
 	/* Call the codec volume control function with converted volume value */
-	if (pAudioDrv->SetVolume(AUDIO_I2C_ADDRESS, Volume) != 0) {
+	if (cs43l22_SetVolume(AUDIO_I2C_ADDRESS, Volume) != 0) {
 		return AUDIO_ERROR;
 	} else {
 		/* Return AUDIO_OK when all operations are correctly done */
@@ -225,7 +223,7 @@ uint8_t AUDIO_OUT_SetVolume(uint8_t Volume) {
  */
 uint8_t AUDIO_OUT_SetMute(uint32_t Cmd) {
 	/* Call the Codec Mute function */
-	if (pAudioDrv->SetMute(AUDIO_I2C_ADDRESS, Cmd) != 0) {
+	if (cs43l22_SetMute(AUDIO_I2C_ADDRESS, Cmd) != 0) {
 		return AUDIO_ERROR;
 	} else {
 		/* Return AUDIO_OK when all operations are correctly done */
@@ -243,7 +241,7 @@ uint8_t AUDIO_OUT_SetMute(uint32_t Cmd) {
  */
 uint8_t AUDIO_OUT_SetOutputMode(uint8_t Output) {
 	/* Call the Codec output Device function */
-	if (pAudioDrv->SetOutputMode(AUDIO_I2C_ADDRESS, Output) != 0) {
+	if (cs43l22_SetOutputMode(AUDIO_I2C_ADDRESS, Output) != 0) {
 		return AUDIO_ERROR;
 	} else {
 		/* Return AUDIO_OK when all operations are correctly done */
@@ -425,17 +423,12 @@ static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Au
 
 	if (ret == AUDIO_OK) {
 		/* Retieve audio codec identifier */
-		if (((cs43l22_drv.ReadID(AUDIO_I2C_ADDRESS)) & CS43L22_ID_MASK) == CS43L22_ID) {
-			/* Initialize the audio driver structure */
-			pAudioDrv = &cs43l22_drv;
+		if (((cs43l22_ReadID(AUDIO_I2C_ADDRESS)) & CS43L22_ID_MASK) == CS43L22_ID) {
+			/* Initialize the audio */
+			cs43l22_Init(AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
 		} else {
 			ret = AUDIO_ERROR;
 		}
-
-	}
-
-	if (ret == AUDIO_OK) {
-		pAudioDrv->Init(AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
 	}
 
 	return ret;
@@ -449,7 +442,7 @@ static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Au
  */
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
 	/* Call the audio Codec Play function */
-	if (pAudioDrv->Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) {
+	if (cs43l22_Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) {
 		return AUDIO_ERROR;
 	} else {
 		/* Update the Media layer and enable it for play */

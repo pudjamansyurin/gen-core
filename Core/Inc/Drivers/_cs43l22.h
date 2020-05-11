@@ -211,27 +211,7 @@
  */
 #define CS43L22_CHIPID_ADDR    0x01
 
-/* Exported struct -------------------------------------------------------------*/
-/* Audio driver structure */
-typedef struct {
-  uint32_t (*Init)(uint16_t, uint16_t, uint8_t, uint32_t);
-  void (*DeInit)(void);
-  uint32_t (*ReadID)(uint16_t);
-  uint32_t (*Play)(uint16_t, uint16_t*, uint16_t);
-  uint32_t (*Pause)(uint16_t);
-  uint32_t (*Resume)(uint16_t);
-  uint32_t (*Stop)(uint16_t, uint32_t);
-  uint32_t (*SetFrequency)(uint16_t, uint32_t);
-  uint32_t (*SetVolume)(uint16_t, uint8_t);
-  uint32_t (*SetMute)(uint16_t, uint32_t);
-  uint32_t (*SetOutputMode)(uint16_t, uint8_t);
-  uint32_t (*Reset)(uint16_t);
-  uint32_t (*SetBeep)(uint16_t, uint8_t, uint8_t, uint8_t);
-  uint32_t (*Beep)(uint16_t, uint8_t, uint8_t);
-} AUDIO_DrvTypeDef;
-
 /* Public functions prototype ------------------------------------------------*/
-/* High Layer codec functions */
 uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
 void cs43l22_DeInit(void);
 uint32_t cs43l22_ReadID(uint16_t DeviceAddr);
