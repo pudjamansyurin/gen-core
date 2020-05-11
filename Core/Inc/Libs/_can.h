@@ -13,7 +13,6 @@
 #include "_handlebar.h"
 #include "_canbus.h"
 #include "_rtc.h"
-#include "BMS.h"
 
 /* Exported constants --------------------------------------------------------*/
 // CAN Message Address
@@ -26,8 +25,6 @@
 #define CAND_BMS_PARAM_2                                0x0B1
 #define CAND_BMS_SETTING                                0x1B2
 
-#define CAND_MCU_DUMMY																	0x7A0
-
 #define CAND_HMI1_LEFT                                  0x7C0
 #define CAND_HMI1_RIGHT                                 0x7C1
 
@@ -38,10 +35,6 @@ uint8_t CANT_VCU_Switch(sw_t *sw);
 uint8_t CANT_VCU_RTC(timestamp_t *timestamp);
 uint8_t CANT_VCU_SelectSet(sw_runner_t *runner);
 uint8_t CANT_VCU_TripMode(uint32_t *trip);
-uint8_t CANT_BMS_Setting(uint8_t start, BMS_STATE state);
-void CANR_BMS_Param1(void);
-void CANR_BMS_Param2(void);
-void CANR_BMS_BatteryID(void);
 void CANR_HMI2(void);
 void CANR_HMI1_LEFT(void);
 void CANR_HMI1_RIGHT(void);

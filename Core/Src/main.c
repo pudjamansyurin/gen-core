@@ -2022,10 +2022,10 @@ void StartCanRxTask(void *argument)
 						CANR_HMI1_RIGHT();
 						break;
 					case CAND_BMS_PARAM_1:
-						CANR_BMS_Param1();
+						BMS.can.r.Param1();
 						break;
 					case CAND_BMS_PARAM_2:
-						CANR_BMS_Param2();
+						BMS.can.r.Param2();
 						break;
 					default:
 
@@ -2064,26 +2064,7 @@ void StartCanTxTask(void *argument)
 		CANT_VCU_TripMode(&(SW.runner.mode.sub.trip[0]));
 
 		// Control BMS state
-		if (VCU.d.knob) {
-			if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE)) {
-				CANT_BMS_Setting(1, BMS_STATE_DISCHARGE);
-			} else {
-				// completely ON
-				BMS.d.started = 1;
-			}
-		} else {
-			if (!BMS.CheckRun(0) || !BMS.CheckState(BMS_STATE_IDLE)) {
-				CANT_BMS_Setting(0, BMS_STATE_IDLE);
-			} else {
-				// completely OFF
-				BMS.d.started = 0;
-				BMS.d.soc = 0;
-				// ohter parameter
-				HMI1.d.status.overheat = 0;
-				HMI1.d.status.warning = 1;
-			}
-		}
-
+		BMS.Power(VCU.d.knob);
 		// update BMS data
 		BMS.RefreshIndex();
 		BMS.MergeData();
@@ -2137,18 +2118,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

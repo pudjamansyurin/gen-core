@@ -42,8 +42,20 @@ typedef struct {
 } bms_data_t;
 
 typedef struct {
+	struct {
+		void (*Param1)(void);
+		void (*Param2)(void);
+	} r;
+	struct {
+		uint8_t (*Setting)(uint8_t, BMS_STATE);
+	} t;
+} bms_can_t;
+
+typedef struct {
 	bms_data_t d;
+	bms_can_t can;
 	void (*Init)(void);
+	void (*Power)(uint8_t);
 	void (*ResetIndex)(uint8_t);
 	void (*RefreshIndex)(void);
 	uint8_t (*GetIndex)(uint32_t);
@@ -55,6 +67,7 @@ typedef struct {
 
 /* Public functions implementation --------------------------------------------*/
 void BMS_Init(void);
+void BMS_Power(uint8_t on);
 void BMS_ResetIndex(uint8_t i);
 void BMS_RefreshIndex(void);
 uint8_t BMS_GetIndex(uint32_t id);
@@ -62,5 +75,9 @@ void BMS_SetEvents(uint16_t flag);
 uint8_t BMS_CheckRun(uint8_t state);
 uint8_t BMS_CheckState(BMS_STATE state);
 void BMS_MergeData(void);
+
+void BMS_CAN_RX_Param1(void);
+void BMS_CAN_RX_Param2(void);
+uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state);
 
 #endif /* INC_NODES_BMS_H_ */

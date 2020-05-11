@@ -157,42 +157,7 @@ uint8_t CANT_VCU_TripMode(uint32_t *trip) {
 	return CANBUS_Write(&(CB.tx));
 }
 
-uint8_t CANT_BMS_Setting(uint8_t start, BMS_STATE state) {
-	// set message
-	CB.tx.data.u8[0] = start;
-	CB.tx.data.u8[0] |= _L(state, 1);
-
-	// set default header
-	CANBUS_Header(&(CB.tx.header), CAND_BMS_SETTING, 1);
-	// send message
-	return CANBUS_Write(&(CB.tx));
-}
-
 /* ------------------------------------ READER ------------------------------------- */
-void CANR_BMS_Param1(void) {
-	uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
-
-	// read the content
-	BMS.d.pack[index].voltage = CB.rx.data.u16[0] * 0.01;
-	BMS.d.pack[index].current = (CB.rx.data.u16[1] * 0.01) - 50;
-	BMS.d.pack[index].soc = CB.rx.data.u16[2];
-	BMS.d.pack[index].temperature = (CB.rx.data.u16[3] * 0.1) - 40;
-
-	// read the id
-	BMS.d.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
-	BMS.d.pack[index].started = 1;
-	BMS.d.pack[index].tick = osKernelGetTickCount();
-}
-
-void CANR_BMS_Param2(void) {
-	uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
-
-	// save flag
-	BMS.d.pack[index].flag = CB.rx.data.u16[3];
-
-	// save state
-	BMS.d.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
-}
 
 void CANR_HMI2(void) {
 	// read message

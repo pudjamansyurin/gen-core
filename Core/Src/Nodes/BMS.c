@@ -9,16 +9,29 @@
 #include "BMS.h"
 #include "VCU.h"
 #include "HMI1.h"
+#include "_canbus.h"
+#include "_can.h"
 #include "_database.h"
 
 /* External variables ---------------------------------------------------------*/
+extern canbus_t CB;
 extern vcu_t VCU;
 extern hmi1_t HMI1;
 
 /* Public variables -----------------------------------------------------------*/
 bms_t BMS = {
 		.d = { 0 },
+		.can = {
+				.r = {
+						BMS_CAN_RX_Param1,
+						BMS_CAN_RX_Param2
+				},
+				.t = {
+						BMS_CAN_TX_Setting
+				}
+		},
 		BMS_Init,
+		BMS_Power,
 		BMS_ResetIndex,
 		BMS_RefreshIndex,
 		BMS_GetIndex,
@@ -34,6 +47,28 @@ void BMS_Init(void) {
 	BMS.d.soc = 0;
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
 		BMS_ResetIndex(i);
+	}
+}
+
+void BMS_Power(uint8_t on) {
+	if (on) {
+		if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE)) {
+			BMS_CAN_TX_Setting(1, BMS_STATE_DISCHARGE);
+		} else {
+			// completely ON
+			BMS.d.started = 1;
+		}
+	} else {
+		if (!BMS.CheckRun(0) || !BMS.CheckState(BMS_STATE_IDLE)) {
+			BMS_CAN_TX_Setting(0, BMS_STATE_IDLE);
+		} else {
+			// completely OFF
+			BMS.d.started = 0;
+			BMS.d.soc = 0;
+			// ohter parameter
+			HMI1.d.status.overheat = 0;
+			HMI1.d.status.warning = 1;
+		}
 	}
 }
 
@@ -143,5 +178,43 @@ void BMS_MergeData(void) {
 		}
 	}
 	BMS.d.soc = device ? (soc / device) : soc;
+}
+
+/* ====================================== CAN RX =================================== */
+void BMS_CAN_RX_Param1(void) {
+	uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
+
+	// read the content
+	BMS.d.pack[index].voltage = CB.rx.data.u16[0] * 0.01;
+	BMS.d.pack[index].current = (CB.rx.data.u16[1] * 0.01) - 50;
+	BMS.d.pack[index].soc = CB.rx.data.u16[2];
+	BMS.d.pack[index].temperature = (CB.rx.data.u16[3] * 0.1) - 40;
+
+	// read the id
+	BMS.d.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
+	BMS.d.pack[index].started = 1;
+	BMS.d.pack[index].tick = osKernelGetTickCount();
+}
+
+void BMS_CAN_RX_Param2(void) {
+	uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
+
+	// save flag
+	BMS.d.pack[index].flag = CB.rx.data.u16[3];
+
+	// save state
+	BMS.d.pack[index].state = _L(_R1(CB.rx.data.u8[7], 4), 1) | _R1(CB.rx.data.u8[7], 5);
+}
+
+/* ====================================== CAN TX =================================== */
+uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
+	// set message
+	CB.tx.data.u8[0] = start;
+	CB.tx.data.u8[0] |= _L(state, 1);
+
+	// set default header
+	CANBUS_Header(&(CB.tx.header), CAND_BMS_SETTING, 1);
+	// send message
+	return CANBUS_Write(&(CB.tx));
 }
 
