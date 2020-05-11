@@ -13,8 +13,8 @@ hmi1_t HMI1 = {
 		.d = { 0 },
 		.can = {
 				.r = {
-						HMI1_CAN_RX_Left,
-						HMI1_CAN_RX_Right
+						HMI1_CAN_RX_LeftState,
+						HMI1_CAN_RX_RightState
 				},
 		},
 		HMI1_Init,
@@ -46,13 +46,13 @@ void HMI1_RefreshIndex(void) {
 }
 
 /* ====================================== CAN RX =================================== */
-void HMI1_CAN_RX_Left(void) {
+void HMI1_CAN_RX_LeftState(void) {
 	// save state
 	HMI1.d.device[HMI1_DEV_LEFT].started = 1;
 	HMI1.d.device[HMI1_DEV_LEFT].tick = osKernelGetTickCount();
 }
 
-void HMI1_CAN_RX_Right(void) {
+void HMI1_CAN_RX_RightState(void) {
 	// save state
 	HMI1.d.device[HMI1_DEV_RIGHT].started = 1;
 	HMI1.d.device[HMI1_DEV_RIGHT].tick = osKernelGetTickCount();

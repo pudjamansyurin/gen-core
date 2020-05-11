@@ -157,14 +157,3 @@ uint8_t CANT_VCU_TripMode(uint32_t *trip) {
 	return CANBUS_Write(&(CB.tx));
 }
 
-/* ------------------------------------ READER ------------------------------------- */
-
-void CANR_HMI2(void) {
-	// read message
-	HMI1.d.status.mirroring = _R1(CB.rx.data.u8[0], 0);
-
-	// save state
-	HMI2.d.started = 1;
-	HMI2.d.tick = osKernelGetTickCount();
-}
-

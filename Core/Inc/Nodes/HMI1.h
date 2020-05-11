@@ -21,21 +21,19 @@ typedef enum {
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
-	//	uint8_t abs;
-	uint8_t mirroring;
-	//  uint8_t lamp;
-	uint8_t warning;
-	uint8_t overheat;
-	uint8_t finger;
-	uint8_t keyless;
-	uint8_t daylight;
-//	uint8_t sein_left;
-//	uint8_t sein_right;
-} status_t;
-
-typedef struct {
 	uint8_t started;
-	status_t status;
+	struct {
+		//	uint8_t abs;
+		uint8_t mirroring;
+		//  uint8_t lamp;
+		uint8_t warning;
+		uint8_t overheat;
+		uint8_t finger;
+		uint8_t keyless;
+		uint8_t daylight;
+	//	uint8_t sein_left;
+	//	uint8_t sein_right;
+	} status;
 	struct {
 		uint8_t started;
 		uint32_t tick;
@@ -44,8 +42,8 @@ typedef struct {
 
 typedef struct {
 	struct {
-		void (*Left)(void);
-		void (*Right)(void);
+		void (*LeftState)(void);
+		void (*RightState)(void);
 	} r;
 } hmi1_can_t;
 
@@ -59,7 +57,7 @@ typedef struct {
 /* Public functions implementation --------------------------------------------*/
 void HMI1_Init(void);
 void HMI1_RefreshIndex(void);
-void HMI1_CAN_RX_Left(void);
-void HMI1_CAN_RX_Right(void);
+void HMI1_CAN_RX_LeftState(void);
+void HMI1_CAN_RX_RightState(void);
 
 #endif /* INC_NODES_HMI1_H_ */

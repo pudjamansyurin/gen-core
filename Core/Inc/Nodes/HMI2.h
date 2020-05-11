@@ -19,7 +19,14 @@ typedef struct {
 } hmi2_data_t;
 
 typedef struct {
+	struct {
+		void (*State)(void);
+	} r;
+} hmi2_can_t;
+
+typedef struct {
 	hmi2_data_t d;
+	hmi2_can_t can;
 	void (*Init)(void);
 	void (*Refresh)(void);
 } hmi2_t;
@@ -27,5 +34,6 @@ typedef struct {
 /* Public functions implementation --------------------------------------------*/
 void HMI2_Init(void);
 void HMI2_Refresh(void);
+void HMI2_CAN_RX_State(void);
 
 #endif /* INC_NODES_HMI2_H_ */

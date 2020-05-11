@@ -2013,13 +2013,13 @@ void StartCanRxTask(void *argument)
 				// handle STD message
 				switch (CANBUS_ReadID()) {
 					case CAND_HMI2:
-						CANR_HMI2();
+						HMI2.can.r.State();
 						break;
 					case CAND_HMI1_LEFT:
-						HMI1.can.r.Left();
+						HMI1.can.r.LeftState();
 						break;
 					case CAND_HMI1_RIGHT:
-						HMI1.can.r.Right();
+						HMI1.can.r.RightState();
 						break;
 					case CAND_BMS_PARAM_1:
 						BMS.can.r.Param1();
