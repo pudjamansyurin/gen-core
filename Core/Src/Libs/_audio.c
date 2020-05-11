@@ -78,10 +78,6 @@ void AUDIO_Init(void) {
 		HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 1);
 		osDelay(1000);
 
-		// wakeup the chip
-		//    HAL_GPIO_WritePin(INT_AUDIO_RST_GPIO_Port, INT_AUDIO_RST_Pin, 1);
-		//    osDelay(100);
-
 		/* Initialize Wave player (Codec, DMA, I2C) */
 		ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AudioVolume, AUDIO_SAMPLE_FREQ);
 

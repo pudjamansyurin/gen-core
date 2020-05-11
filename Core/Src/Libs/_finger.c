@@ -15,18 +15,11 @@ extern hmi1_t HMI1;
 extern finger_t finger;
 extern osMutexId_t FingerRecMutexHandle;
 
+/* Private functions ----------------------------------------------------------*/
+static void lock(void);
+static void unlock(void);
+
 /* Public functions implementation --------------------------------------------*/
-void Finger_On(void) {
-	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
-	FZ3387_SET_POWER(0);
-}
-
-void Finger_Off(void) {
-	FZ3387_SET_POWER(1);
-	osDelay(50);
-	osMutexRelease(FingerRecMutexHandle);
-}
-
 void Finger_Init(void) {
 	uint8_t verified = 0;
 
@@ -40,9 +33,9 @@ void Finger_Init(void) {
 		osDelay(500);
 
 		// verify password and check hardware
-		Finger_On();
+		lock();
 		verified = FZ3387_verifyPassword();
-		Finger_Off();
+		unlock();
 
 		osDelay(500);
 	} while (!verified);
@@ -53,7 +46,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 	const TickType_t timeout_tick = pdMS_TO_TICKS(FINGER_SCAN_TIMEOUT*1000);
 	int p = -1, error = 0;
 
-	Finger_On();
+	lock();
 	//	Take Image
 	LOG_Str("\nWaiting for valid finger to enroll as #");
 	LOG_Int(id);
@@ -235,16 +228,15 @@ uint8_t Finger_Enroll(uint8_t id) {
 	}
 
 	HMI1.d.status.finger = 0;
-	Finger_Off();
+	unlock();
 	return p;
 }
 
 uint8_t Finger_DeleteID(uint8_t id) {
-	uint8_t p = -1;
+	int8_t p = -1;
 
-	Finger_On();
+	lock();
 	p = FZ3387_deleteModel(id);
-	Finger_Off();
 
 	if (p == FINGERPRINT_OK) {
 		LOG_StrLn("Deleted!");
@@ -260,36 +252,34 @@ uint8_t Finger_DeleteID(uint8_t id) {
 		LOG_Enter();
 	}
 
+	unlock();
 	return p;
 }
 
 uint8_t Finger_EmptyDatabase(void) {
-	uint8_t p = -1;
+	int8_t p = -1;
 
-	Finger_On();
+	lock();
 	p = FZ3387_emptyDatabase();
-	Finger_Off();
+	unlock();
 
 	return p;
 }
 
 uint8_t Finger_SetPassword(uint32_t password) {
-	uint8_t p = -1;
+	int8_t p = -1;
 
-	Finger_On();
+	lock();
 	p = FZ3387_setPassword(password);
-	Finger_Off();
+	unlock();
 
-	if (p == FINGERPRINT_OK) {
-		return 1;
-	}
-	return 0;
+	return (p == FINGERPRINT_OK);
 }
 
 int8_t Finger_Auth(void) {
-	uint8_t p = -1, error = 1;
+	int8_t p = -1, id = -1, error = 1;
 
-	Finger_On();
+	lock();
 
 	p = FZ3387_getImage();
 	switch (p) {
@@ -354,8 +344,6 @@ int8_t Finger_Auth(void) {
 		}
 	}
 
-	Finger_Off();
-
 	if (!error) {
 		// found a match!
 		LOG_Str("\nFound ID #");
@@ -365,17 +353,18 @@ int8_t Finger_Auth(void) {
 		LOG_Enter();
 
 		if (finger.confidence > FINGER_CONFIDENCE_MIN) {
-			return finger.id;
+			id = finger.id;
 		}
 	}
 
-	return -1;
+	unlock();
+	return id;
 }
 
 int8_t Finger_AuthFast(void) {
-	uint8_t p = -1;
+	int8_t p = -1, id = -1;
 
-	Finger_On();
+	lock();
 
 	p = FZ3387_getImage();
 
@@ -387,8 +376,6 @@ int8_t Finger_AuthFast(void) {
 		p = FZ3387_fingerFastSearch();
 	}
 
-	Finger_Off();
-
 	if (p == FINGERPRINT_OK) {
 		// found a match!
 		LOG_Str("\nFound ID #");
@@ -398,10 +385,22 @@ int8_t Finger_AuthFast(void) {
 		LOG_Enter();
 
 		if (finger.confidence > FINGER_CONFIDENCE_MIN) {
-			return finger.id;
+			id = finger.id;
 		}
 	}
 
-	return -1;
+	unlock();
+	return id;
 }
 
+/* Private functions implementation --------------------------------------------*/
+static void lock(void) {
+	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
+	FZ3387_SET_POWER(0);
+}
+
+static void unlock(void) {
+	FZ3387_SET_POWER(1);
+	osDelay(50);
+	osMutexRelease(FingerRecMutexHandle);
+}

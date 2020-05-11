@@ -37,13 +37,9 @@ void DB_Init(void) {
 	DB.vcu.seq_id.report = 0;
 	DB.vcu.seq_id.response = 0;
 
-	// reset HMI1 data
+	// Others
 	HMI1.Init();
-
-	// reset HMI2 data
 	HMI2.Init();
-
-	// reset BMS data
 	BMS.Init();
 }
 
@@ -64,12 +60,4 @@ void DB_VCU_CheckMainPower(void) {
 	DB.vcu.interval = DB.vcu.independent ? RPT_INTERVAL_INDEPENDENT : RPT_INTERVAL_SIMPLE;
 	DB_SetEvent(EV_VCU_INDEPENDENT, DB.vcu.independent);
 }
-
-//void DB_SetEvents(uint64_t value) {
-//  DB.vcu.events = value;
-//}
-//
-//uint8_t DB_ReadEvent(uint64_t event_id) {
-//  return _R8((DB.vcu.events & event_id), _BitPosition(event_id));
-//}
 
