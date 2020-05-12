@@ -123,7 +123,9 @@
 - [ ] Change R67 value as R63
 - [ ] Change R23 value to 30k
 - [ ] Change C30, C31, C70, C71 value to 20pf
-- [ ] Change Q3, Q5, Q6, Q9, Q13 to TRANSISTOR
+- [ ] Change Q3, Q5, Q9, Q13, Q6 to TRANSISTOR PNP
+  - [ ] Increase the base resistor to 510 Ohm
+  - [ ] If Q3, Q5, Q9, Q13 still not works, change to RELAY
 - [ ] Add buzzer & the GPIO pin
 - [ ] Add microphone to ~~SIMCOM pin~~ VCU
 - [ ] Handle "different signal" trace properly (CAN, I2S, MIC_N&P)
