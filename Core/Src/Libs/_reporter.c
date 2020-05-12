@@ -98,22 +98,18 @@ void Response_Capture(response_t *response) {
 			sizeof(response->header.seq_id) +
 			sizeof(response->data.code) +
 			strlen(response->data.message);
-	response->header.crc = CRC_Calculate8(
-			(uint8_t*) &(response->header.size),
-			response->header.size + sizeof(response->header.size));
 }
 
-void Report_ReCalculate(report_t *report) {
+void Report_SetCRC(report_t *report) {
 	// get current sending date-time
 	report->data.req.vcu.rtc.send = RTC_Read();
 	// recalculate the CRC
 	report->header.crc = CRC_Calculate8(
 			(uint8_t*) &(report->header.size),
 			report->header.size + sizeof(report->header.size));
-
 }
 
-void Response_ReCalculate(response_t *response) {
+void Response_SetCRC(response_t *response) {
 	response->header.crc = CRC_Calculate8(
 			(uint8_t*) &(response->header.size),
 			response->header.size + sizeof(response->header.size));

@@ -1409,9 +1409,11 @@ void StartIotTask(void *argument)
 				nack = 1;
 
 				do {
+					// Re-calculate CRC
 					if (type == PAYLOAD_REPORT) {
-						// Re-calculate CRC & Sending Time
-						Report_ReCalculate((report_t*) pPayload);
+						Report_SetCRC((report_t*) pPayload);
+					} else {
+						Response_SetCRC((response_t*) pPayload);
 					}
 
 					// Send to server
@@ -1423,11 +1425,6 @@ void StartIotTask(void *argument)
 						if (nack++ >= SIMCOM_MAX_UPLOAD_RETRY) {
 							// Probably  CRC not valid, cancel but force as success
 							p = SIM_RESULT_OK;
-						} else {
-							// re-calculate CRC (only for RESPONSE)
-							if (type == PAYLOAD_RESPONSE) {
-								Response_ReCalculate((response_t*) pPayload);
-							}
 						}
 					}
 
