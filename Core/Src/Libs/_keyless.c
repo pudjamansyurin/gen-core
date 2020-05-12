@@ -31,7 +31,14 @@ void KEYLESS_Init(void) {
 }
 
 uint8_t KEYLESS_ReadPayload(void) {
-	return payload.rx[NRF_DATA_LENGTH - 1];
+	uint8_t msg = payload.rx[NRF_DATA_LENGTH - 1];
+
+	// handle garbage message
+	if (msg > MSG_KEYLESS_MAX) {
+		msg = 0;
+	}
+
+	return msg;
 }
 
 void KEYLESS_Debugger(void) {

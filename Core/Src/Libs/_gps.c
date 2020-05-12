@@ -26,14 +26,13 @@ void GPS_Init(void) {
 	uint32_t tick;
 
 	// mosfet control
+	_LedWrite(1);
 	do {
 		LOG_StrLn("GPS:Init");
 
 		HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
-		_LedWrite(1);
 		osDelay(500);
 		HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
-		_LedWrite(0);
 
 		// set timeout guard
 		tick = osKernelGetTickCount();
@@ -44,7 +43,6 @@ void GPS_Init(void) {
 			osDelay(10);
 		}
 	} while (strlen(UBLOX_UART_RX) <= 50);
-
 	_LedWrite(0);
 
 	nmea_init(&nmea);

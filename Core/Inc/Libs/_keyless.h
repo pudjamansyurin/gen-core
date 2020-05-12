@@ -14,6 +14,14 @@
 /* Exported define -----------------------------------------------------------*/
 #define NRF_DATA_LENGTH														8
 
+/* Exported enum -------------------------------------------------------------*/
+typedef enum {
+	MSG_KEYLESS_BROADCAST = 1,
+	MSG_KEYLESS_FINDER = 2,
+	MSG_KEYLESS_SEAT = 4,
+	MSG_KEYLESS_MAX = 4,
+} MSG_KEYLESS;
+
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
 	uint8_t rx[NRF_DATA_LENGTH];
