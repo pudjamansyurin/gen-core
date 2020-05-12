@@ -1257,10 +1257,29 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 void StartManagerTask(void *argument)
 {
 	/* USER CODE BEGIN 5 */
-	TickType_t lastWake, lastDebug;
+	TickType_t lastWake;
 	uint32_t notif;
-	uint8_t thCount = osThreadGetCount();
-	osThreadId_t threads[thCount];
+
+	//	/* Test AES */
+	//	char testIn[8] = { 0x01, 0x02, 0x03, 0x04, 0x0A, 0x0B, 0x0C, 0x0D };
+	//	char testEnc[8], testDec[8];
+	//
+	//	if (HAL_CRYP_Encrypt(&hcryp, (uint32_t*) testIn, 2, (uint32_t*) testEnc, 0xFFFFFFFF) != HAL_OK) {
+	//		LOG_StrLn("Encrypt ERROR");
+	//	}
+	//	if (HAL_CRYP_Decrypt(&hcryp, (uint32_t*) testEnc, 2, (uint32_t*) testDec, 0xFFFFFFFF) != HAL_OK) {
+	//		LOG_StrLn("Decrypt ERROR");
+	//	}
+	//
+	//	LOG_Str("In = ");
+	//	LOG_BufHex(testIn, sizeof(testIn));
+	//	LOG_Enter();
+	//	LOG_Str("Enc = ");
+	//	LOG_BufHex(testEnc, sizeof(testEnc));
+	//	LOG_Enter();
+	//	LOG_Str("Dec = ");
+	//	LOG_BufHex(testDec, sizeof(testDec));
+	//	LOG_Enter();
 
 	// Initialization, this task get executed first!
 	VCU.Init();
@@ -1274,20 +1293,23 @@ void StartManagerTask(void *argument)
 	VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
 	// Threads management:
-	osThreadSuspend(GyroTaskHandle);
-	//	osThreadSuspend(AudioTaskHandle);
+	//	osThreadSuspend(IotTaskHandle);
+	//	osThreadSuspend(ReporterTaskHandle);
+	//	osThreadSuspend(CommandTaskHandle);
+	//	osThreadSuspend(GpsTaskHandle);
+	//	osThreadSuspend(GyroTaskHandle);
+	//  osThreadSuspend(KeylessTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
+	//	osThreadSuspend(AudioTaskHandle);
+	//	osThreadSuspend(SwitchTaskHandle);
+	//	osThreadSuspend(CanRxTaskHandle);
+	//	osThreadSuspend(CanTxTaskHandle);
 
 	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
 
-	// Get list of active threads
-	osThreadEnumerate(threads, thCount);
-
 	/* Infinite loop */
-	lastDebug = osKernelGetTickCount();
 	for (;;) {
-		_RTOS_DebugTask("Manager");
 		lastWake = osKernelGetTickCount();
 
 		// Handle GPIO interrupt
@@ -1309,26 +1331,20 @@ void StartManagerTask(void *argument)
 			}
 		}
 
-		// Dummy data generator
-		_DummyGenerator(&SW);
-
 		// Check is Daylight
 		HMI1.d.status.daylight = _TimeCheckDaylight(VCU.d.rtc.timestamp);
+
+		// Dummy data generator
+		_DummyGenerator(&SW);
 
 		// Feed the dog
 		HAL_IWDG_Refresh(&hiwdg);
 
 		// Battery Monitor
-		LOG_Str("Battery:Voltage = ");
-		LOG_Int(VCU.d.bat_voltage);
-		LOG_StrLn(" mV");
+		BAT_Debugger();
 
 		// Thread's Stack Monitor
-		if ((osKernelGetTickCount() - lastDebug) >= pdMS_TO_TICKS(10000)) {
-			_RTOS_DebugStack(threads, thCount);
-
-			lastDebug = osKernelGetTickCount();
-		}
+		_RTOS_Debugger();
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(1000));
@@ -1361,7 +1377,7 @@ void StartIotTask(void *argument)
 			sizeof(report.header.size);
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Start simcom module
 	SIMCOM_DMA_Init();
@@ -1369,8 +1385,6 @@ void StartIotTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("IoT");
-
 		// Upload Report & Response Payload
 		for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
 			// decide the payload
@@ -1464,14 +1478,13 @@ void StartReporterTask(void *argument)
 	FRAME_TYPE frame;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initialize
 	Report_Init(FR_SIMPLE, &report);
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("Reporter");
 		lastWake = osKernelGetTickCount();
 
 		// decide full/simple frame time
@@ -1528,26 +1541,19 @@ void StartCommandTask(void *argument)
 	osStatus_t status;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initialize
 	Response_Init(&response);
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("Command");
 		// get command in queue
 		status = osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever);
 
 		if (status == osOK) {
 			// debug
-			LOG_Str("\nCommand:Payload [");
-			LOG_Int(command.data.code);
-			LOG_Str("-");
-			LOG_Int(command.data.sub_code);
-			LOG_Str("] = ");
-			LOG_BufHex((char*) &(command.data.value), sizeof(command.data.value));
-			LOG_Enter();
+			Command_Debugger(&command);
 
 			// default command response
 			response.data.code = RESPONSE_STATUS_OK;
@@ -1676,7 +1682,7 @@ void StartGpsTask(void *argument)
 	TickType_t lastWake;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initialize
 	UBLOX_DMA_Init();
@@ -1684,11 +1690,11 @@ void StartGpsTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("GPS");
 		lastWake = osKernelGetTickCount();
 
 		GPS_Capture();
 		GPS_CalculateOdometer();
+		//		GPS_Debugger();
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(GPS_INTERVAL_MS));
@@ -1707,32 +1713,27 @@ void StartGyroTask(void *argument)
 {
 	/* USER CODE BEGIN StartGyroTask */
 	TickType_t lastWake;
-	mems_t mems_calibration;
-	mems_decision_t mems_decision;
+	mems_decision_t decider;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* MPU6050 Initialization*/
 	GYRO_Init();
 
-	// Set calibrator
-	mems_calibration = GYRO_Average(NULL, 500);
-	LOG_StrLn("Gyro:Calibrated");
-
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("Gyro");
 		lastWake = osKernelGetTickCount();
 
 		// Read all accelerometer, gyroscope (average)
-		mems_decision = GYRO_Decision(&mems_calibration, 25);
+		decider = GYRO_Decision(25);
+		//		Gyro_Debugger(&decider);
 
 		// Check accelerometer, happens when impact detected
-		VCU.SetEvent(EV_VCU_BIKE_CRASHED, mems_decision.crash);
+		VCU.SetEvent(EV_VCU_BIKE_CRASHED, decider.crash.state);
 
 		// Check gyroscope, happens when fall detected
-		if (mems_decision.fall) {
+		if (decider.fall.state) {
 			osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, 1);
 			_LedDisco(1000);
@@ -1761,15 +1762,13 @@ void StartKeylessTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// initialization
 	KEYLESS_Init();
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("Keyless");
-
 		// check if has new can message
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 		if (_RTOS_ValidThreadFlag(notif)) {
@@ -1780,11 +1779,10 @@ void StartKeylessTask(void *argument)
 				// update heart-beat
 				VCU.d.tick.keyless = osKernelGetTickCount();
 
-				// indicator
-				LOG_Str("NRF received packet, msg = ");
-				LOG_Hex8(msg);
-				LOG_Enter();
+				// debug
+				KEYLESS_Debugger();
 
+				// indicator
 				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
 				for (uint8_t i = 0; i < ((msg + 1) * 2); i++) {
 					_LedToggle();
@@ -1820,7 +1818,7 @@ void StartFingerTask(void *argument)
 	int p;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initialization
 	FINGER_DMA_Init();
@@ -1828,8 +1826,6 @@ void StartFingerTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("Finger");
-
 		// check if user put finger
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 		// proceed event
@@ -1889,7 +1885,7 @@ void StartAudioTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	AUDIO_Init();
@@ -1898,7 +1894,6 @@ void StartAudioTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("Audio");
 		lastWake = osKernelGetTickCount();
 
 		// do this if events occurred
@@ -1949,15 +1944,13 @@ void StartSwitchTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initialize
 	HBAR_ReadStates();
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("Switch");
-
 		// wait until GPIO changes
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 		if (_RTOS_ValidThreadFlag(notif)) {
@@ -2005,15 +1998,15 @@ void StartCanRxTask(void *argument)
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("CanRx");
-
 		// check if has new can message
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, osWaitForever);
 		if (_RTOS_ValidThreadFlag(notif)) {
+			//			CANBUS_RxDebugger();
+
 			// proceed event
 			if (notif & EVT_CAN_RX_IT) {
 				// handle STD message
@@ -2056,11 +2049,10 @@ void StartCanTxTask(void *argument)
 	TickType_t lastWake;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
 	for (;;) {
-		_RTOS_DebugTask("CanTx");
 		lastWake = osKernelGetTickCount();
 
 		// Send CAN data

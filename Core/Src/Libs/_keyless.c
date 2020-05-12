@@ -26,12 +26,20 @@ void KEYLESS_Init(void) {
 	nrf_init(&nrf, &config);
 }
 
-void KEYLESS_IrqHandler(void) {
-	nrf_irq_handler(&nrf);
-}
-
 uint8_t KEYLESS_ReadPayload(void) {
 	return payload.rx[NRF_DATA_LENGTH - 1];
+}
+
+void KEYLESS_Debugger(void) {
+	uint8_t msg = KEYLESS_ReadPayload();
+
+	LOG_Str("NRF received packet, msg = ");
+	LOG_Hex8(msg);
+	LOG_Enter();
+}
+
+void KEYLESS_IrqHandler(void) {
+	nrf_irq_handler(&nrf);
 }
 
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {

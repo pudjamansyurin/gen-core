@@ -53,28 +53,39 @@ void _Error(char msg[50]) {
 	}
 }
 
-void _RTOS_DebugTask(char name[20]) {
-	//  LOG_Str("Task:");
-	//  LOG_Buf(name, strlen(name));
-	//  LOG_Enter();
-}
-
-void _RTOS_DebugStack(osThreadId_t *threads, uint8_t count) {
+void _RTOS_Debugger(void) {
+	static uint8_t init = 1, thCount;
+	static TickType_t lastDebug;
+	static osThreadId_t threads[20];
 	char thName[15];
 
-	// Debug each thread's Stack Space
-	LOG_StrLn("============ STACK MONITOR ============");
-	for (uint8_t i = 0; i < count; i++) {
-		if (threads[i] != NULL) {
-			sprintf(thName, "%-14s", osThreadGetName(threads[i]));
-			// print
-			LOG_Buf(thName, strlen(thName));
-			LOG_Str(" : ");
-			LOG_Int(osThreadGetStackSpace(threads[i]));
-			LOG_StrLn(" Words");
-		}
+	// Initialize
+	if (init) {
+		init = 0;
+		lastDebug = osKernelGetTickCount();
+
+		// Get list of active threads
+		thCount = osThreadGetCount();
+		osThreadEnumerate(threads, thCount);
 	}
-	LOG_StrLn("=======================================");
+
+	if ((osKernelGetTickCount() - lastDebug) >= pdMS_TO_TICKS(10000)) {
+		lastDebug = osKernelGetTickCount();
+
+		// Debug each thread's Stack Space
+		LOG_StrLn("============ STACK MONITOR ============");
+		for (uint8_t i = 0; i < thCount; i++) {
+			if (threads[i] != NULL) {
+				sprintf(thName, "%-14s", osThreadGetName(threads[i]));
+				// print
+				LOG_Buf(thName, strlen(thName));
+				LOG_Str(" : ");
+				LOG_Int(osThreadGetStackSpace(threads[i]));
+				LOG_StrLn(" Words");
+			}
+		}
+		LOG_StrLn("=======================================");
+	}
 }
 
 uint8_t _RTOS_ValidThreadFlag(uint32_t flag) {
@@ -106,22 +117,22 @@ uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
 }
 
 void _DummyGenerator(sw_t *sw) {
-	//  // Dummy algorithm
-	//  VCU.d.odometer = (VCU.d.odometer >= VCU_ODOMETER_MAX ? 0 : (VCU.d.odometer + 1));
+	uint8_t *pRange = &(sw->runner.mode.sub.report[SW_M_REPORT_RANGE]);
+	uint8_t *pEfficiency = &(sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY]);
 
 	// Dummy Report Range
-	if (!sw->runner.mode.sub.report[SW_M_REPORT_RANGE]) {
-		sw->runner.mode.sub.report[SW_M_REPORT_RANGE] = 255;
+	if (!(*pRange)) {
+		*pRange = 255;
 	} else {
-		sw->runner.mode.sub.report[SW_M_REPORT_RANGE]--;
-	}
-	// Dummy Report Efficiency
-	if (sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY] >= 255) {
-		sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY] = 0;
-	} else {
-		sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY]++;
+		(*pRange)--;
 	}
 
+	// Dummy Report Efficiency
+	if (*pEfficiency >= 255) {
+		*pEfficiency = 0;
+	} else {
+		(*pEfficiency)++;
+	}
 }
 
 uint8_t _TimeCheckDaylight(timestamp_t timestamp) {

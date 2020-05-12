@@ -13,6 +13,8 @@
 
 /* Public functions prototype ------------------------------------------------*/
 void BAT_DMA_Init(void);
+void BAT_Debugger(void);
+void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc);
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc);
 
 #endif /* DRIVERS__DMA_BATTERY_H_ */

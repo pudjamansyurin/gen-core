@@ -89,27 +89,30 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
 	/* Start the Transmission process */
 	status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), tx->data.u8, &TxMailbox);
 
-	//  // debugging
-	//  if (status == HAL_OK) {
-	//    LOG_Str("\n[TX] ");
-	//    if (tx->header.IDE == CAN_ID_STD) {
-	//      LOG_Hex32(tx->header.StdId);
-	//    } else {
-	//      LOG_Hex32(tx->header.ExtId);
-	//    }
-	//    LOG_Str(" => ");
-	//    if (tx->header.RTR == CAN_RTR_DATA) {
-	//      LOG_BufHex((char*) &(tx->data), sizeof(tx->data));
-	//    } else {
-	//      LOG_Str("RTR");
-	//    }
-	//    LOG_Enter();
-	//  }
+	if (status == HAL_OK) {
+//		CANBUS_TxDebugger();
+	}
 
 	unlock();
 	return (status == HAL_OK);
 }
 
+void CANBUS_TxDebugger(void) {
+	// debugging
+	LOG_Str("\n[TX] ");
+	if (CB.tx.header.IDE == CAN_ID_STD) {
+		LOG_Hex32(CB.tx.header.StdId);
+	} else {
+		LOG_Hex32(CB.tx.header.ExtId);
+	}
+	LOG_Str(" => ");
+	if (CB.tx.header.RTR == CAN_RTR_DATA) {
+		LOG_BufHex((char*) &(CB.tx.data), sizeof(CB.tx.data));
+	} else {
+		LOG_Str("RTR");
+	}
+	LOG_Enter();
+}
 /*----------------------------------------------------------------------------
  read a message from CAN peripheral and release it
  *----------------------------------------------------------------------------*/
@@ -119,20 +122,20 @@ uint8_t CANBUS_Read(canbus_rx_t *rx) {
 	/* Get RX message */
 	status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
 
-//  // debugging
-//  if (status == HAL_OK) {
-//    LOG_Str("\n[RX] ");
-//    LOG_Hex32(CANBUS_ReadID());
-//    LOG_Str(" <= ");
-//    if (CB.rx.header.RTR == CAN_RTR_DATA) {
-//      LOG_BufHex(CB.rx.data.CHAR, sizeof(CB.rx.data.CHAR));
-//    } else {
-//      LOG_Str("RTR");
-//    }
-//    LOG_Enter();
-//  }
-
 	return (status == HAL_OK);
+}
+
+void CANBUS_RxDebugger(void) {
+	// debugging
+	LOG_Str("\n[RX] ");
+	LOG_Hex32(CANBUS_ReadID());
+	LOG_Str(" <= ");
+	if (CB.rx.header.RTR == CAN_RTR_DATA) {
+		LOG_BufHex(CB.rx.data.CHAR, sizeof(CB.rx.data.CHAR));
+	} else {
+		LOG_Str("RTR");
+	}
+	LOG_Enter();
 }
 
 uint32_t CANBUS_ReadID(void) {

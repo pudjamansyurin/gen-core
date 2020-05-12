@@ -45,11 +45,6 @@ static void unlock(void);
 void Simcom_Sleep(uint8_t state) {
 	HAL_GPIO_WritePin(INT_NET_DTR_GPIO_Port, INT_NET_DTR_Pin, state);
 	osDelay(50);
-
-	// debug
-	//  LOG_Str("Simcom:Sleep = ");
-	//  LOG_Int(state);
-	//  LOG_Enter();
 }
 
 void Simcom_SetState(SIMCOM_STATE state) {
@@ -861,10 +856,6 @@ static void Simcom_Prepare(void) {
 }
 
 static void Simcom_ClearBuffer(void) {
-	// debugging
-	//  LOG_StrLn("\n=================== START ===================");
-	//  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-	//  LOG_StrLn("\n==================== END ====================");
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
 }

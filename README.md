@@ -53,10 +53,13 @@
 - [x] use EVT_ERROR & EVENT_ERROR for ThreadFlag and EventFlag
 - [x] Move routines in CommandTask to its own Task
   - [x] Implement BinarySemaphore or ThreadFlags to handle that
+- [x] Simplify Log Debug as a function
+- [ ] Build dedicated AT Command library for SIMCOM
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Simplify SIMCOM library
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
-- [ ] Re-calibrate I2S PLL Clock after migration to F423
+- [x] Re-calibrate I2S PLL Clock after migration to F423
+- [ ] Record RTOS high water mark stack space
 - [ ] SIM5300e SSL communication 
 - [x] Handle migration from STM32F407VG to STM32F423VH 
   - [ ] Use AES features in new STM32F423VH 
@@ -126,6 +129,7 @@
 - [ ] Handle "different signal" trace properly (CAN, I2S, MIC_N&P)
 - [ ] The Power Trace should be wider to fix voltage drop
   - [ ] Trace between B+ to SIMCOM's VBAT at least 60mil
+  - [ ] Also trace for HMI1 & HMI2 Power Control
 - [ ] CAN Module:
   - [ ] Give Resistor 120 Ohm between CAN_H and CAN_L (optional, just give the space)
   - [ ] Add MOSFET power control and the GPIO pins

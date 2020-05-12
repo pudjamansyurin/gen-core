@@ -112,3 +112,13 @@ void Report_ReCalculate(report_t *report) {
 			report->header.size + sizeof(report->header.size));
 
 }
+
+void Command_Debugger(command_t *cmd) {
+	LOG_Str("\nCommand:Payload [");
+	LOG_Int(cmd->data.code);
+	LOG_Str("-");
+	LOG_Int(cmd->data.sub_code);
+	LOG_Str("] = ");
+	LOG_BufHex((char*) &(cmd->data.value), sizeof(cmd->data.value));
+	LOG_Enter();
+}

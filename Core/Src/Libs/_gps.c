@@ -61,12 +61,14 @@ uint8_t GPS_Capture(void) {
 	GPS.speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
 	GPS.speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
 
-	// debug
-	//    LOG_StrLn("GPS:Buffer = ");
-	//    LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
-	//    LOG_Enter();
-
 	return nmea.fix > 0;
+}
+
+void GPS_Debugger(void) {
+	// debug
+	LOG_StrLn("GPS:Buffer = ");
+	LOG_Buf(UBLOX_UART_RX, strlen(UBLOX_UART_RX));
+	LOG_Enter();
 }
 
 void GPS_CalculateOdometer(void) {

@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_dma_battery.h"
 #include "_simcom.h"
+#include "_log.h"
 #include "VCU.h"
 
 /* External variables ---------------------------------------------------------*/
@@ -32,6 +33,12 @@ static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value);
 /* Public functions implementation ---------------------------------------------*/
 void BAT_DMA_Init(void) {
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) DMA_BUFFER, DMA_SZ);
+}
+
+void BAT_Debugger(void) {
+	LOG_Str("Battery:Voltage = ");
+	LOG_Int(VCU.d.bat_voltage);
+	LOG_StrLn(" mV");
 }
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {

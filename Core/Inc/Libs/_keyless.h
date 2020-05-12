@@ -21,7 +21,9 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void KEYLESS_Init(void);
-void KEYLESS_IrqHandler(void);
+void KEYLESS_Debugger(void);
 uint8_t KEYLESS_ReadPayload(void);
+void KEYLESS_IrqHandler(void);
+void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);
 
 #endif /* KEYLESS_H_ */
