@@ -40,7 +40,7 @@
 /* Private constants ---------------------------------------------------------*/
 #define AUDIO_BUFFER_SIZE                                           4096
 
-/* External variabless -------------------------------------------------------*/
+/* External variables --------------------------------------------------------*/
 extern osMutexId_t AudioMutexHandle;
 extern I2S_HandleTypeDef hi2s3;
 extern uint32_t AUDIO_SAMPLE_FREQ;

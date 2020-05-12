@@ -25,12 +25,13 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(void) {
-	uint8_t retry = 5;
-	uint8_t ret = 0;
+	const uint8_t MAX_RETRY = 5;
+	uint8_t retry, ret = 0;
 
 	lock();
 	LOG_StrLn("EEPROM:Init");
 	// check main eeprom
+	retry = MAX_RETRY;
 	EEPROM24XX_SetDevice(EEPROM24_MAIN);
 	do {
 		if (EEPROM24XX_IsConnected()) {
@@ -38,12 +39,12 @@ uint8_t EEPROM_Init(void) {
 			ret = 1;
 			break;
 		}
-		osDelay(50);
+		osDelay(500);
 	} while (retry--);
 
 	// check backup eeprom
 	if (!ret) {
-		retry = 5;
+		retry = MAX_RETRY;
 		EEPROM24XX_SetDevice(EEPROM24_BACKUP);
 		do {
 			if (EEPROM24XX_IsConnected()) {
@@ -51,7 +52,7 @@ uint8_t EEPROM_Init(void) {
 				ret = 1;
 				break;
 			}
-			osDelay(50);
+			osDelay(500);
 		} while (retry--);
 	}
 
@@ -139,15 +140,16 @@ static uint8_t EE_16(uint16_t vaddr, EEPROM_COMMAND cmd, uint16_t *value, uint16
 
 	// check if new value is same with old value
 	if (cmd == EE_CMD_W) {
+		*ptr = *value;
 		// save the value
 		ret = EEPROM24XX_Save(vaddr, value, sizeof(uint16_t));
 	} else {
 		// load the value
 		ret = EEPROM24XX_Load(vaddr, value, sizeof(uint16_t));
-	}
-	// apply the value
-	if (ret) {
-		*ptr = *value;
+		// apply the value
+		if (ret) {
+			*ptr = *value;
+		}
 	}
 
 	unlock();
@@ -161,15 +163,16 @@ static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32
 
 	// check if new value is same with old value
 	if (cmd == EE_CMD_W) {
+		*ptr = *value;
 		// save the value
 		ret = EEPROM24XX_Save(vaddr, value, sizeof(uint32_t));
 	} else {
 		// load the value
 		ret = EEPROM24XX_Load(vaddr, value, sizeof(uint32_t));
-	}
-	// apply the value
-	if (ret) {
-		*ptr = *value;
+		// apply the value
+		if (ret) {
+			*ptr = *value;
+		}
 	}
 
 	unlock();

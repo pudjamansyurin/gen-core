@@ -26,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 #include "_defines.h"
 #include "_crc.h"
+#include "_aes.h"
 #include "_canbus.h"
 #include "_simcom.h"
 #include "_gyro.h"
@@ -65,7 +66,7 @@ DMA_HandleTypeDef hdma_adc1;
 
 CRYP_HandleTypeDef hcryp;
 __ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {
-		0x00000000, 0x00000000, 0x00000000, 0x00000000 };
+		0x00010203, 0x40506070, 0x8809AA0B, 0xC0DDE0FF };
 
 CAN_HandleTypeDef hcan1;
 
@@ -576,11 +577,11 @@ static void MX_AES_Init(void)
 
 	/* USER CODE END AES_Init 1 */
 	hcryp.Instance = AES;
-	hcryp.Init.DataType = CRYP_DATATYPE_32B;
+	hcryp.Init.DataType = CRYP_DATATYPE_8B;
 	hcryp.Init.KeySize = CRYP_KEYSIZE_128B;
 	hcryp.Init.pKey = (uint32_t*) pKeyAES;
 	hcryp.Init.Algorithm = CRYP_AES_ECB;
-	hcryp.Init.DataWidthUnit = CRYP_DATAWIDTHUNIT_WORD;
+	hcryp.Init.DataWidthUnit = CRYP_DATAWIDTHUNIT_BYTE;
 	hcryp.Init.KeyIVConfigSkip = CRYP_KEYIVCONFIG_ALWAYS;
 	if (HAL_CRYP_Init(&hcryp) != HAL_OK)
 			{
@@ -1260,27 +1261,6 @@ void StartManagerTask(void *argument)
 	TickType_t lastWake;
 	uint32_t notif;
 
-	//	/* Test AES */
-	//	char testIn[8] = { 0x01, 0x02, 0x03, 0x04, 0x0A, 0x0B, 0x0C, 0x0D };
-	//	char testEnc[8], testDec[8];
-	//
-	//	if (HAL_CRYP_Encrypt(&hcryp, (uint32_t*) testIn, 2, (uint32_t*) testEnc, 0xFFFFFFFF) != HAL_OK) {
-	//		LOG_StrLn("Encrypt ERROR");
-	//	}
-	//	if (HAL_CRYP_Decrypt(&hcryp, (uint32_t*) testEnc, 2, (uint32_t*) testDec, 0xFFFFFFFF) != HAL_OK) {
-	//		LOG_StrLn("Decrypt ERROR");
-	//	}
-	//
-	//	LOG_Str("In = ");
-	//	LOG_BufHex(testIn, sizeof(testIn));
-	//	LOG_Enter();
-	//	LOG_Str("Enc = ");
-	//	LOG_BufHex(testEnc, sizeof(testEnc));
-	//	LOG_Enter();
-	//	LOG_Str("Dec = ");
-	//	LOG_BufHex(testDec, sizeof(testDec));
-	//	LOG_Enter();
-
 	// Initialization, this task get executed first!
 	VCU.Init();
 	BMS.Init();
@@ -1766,6 +1746,7 @@ void StartKeylessTask(void *argument)
 
 	// initialization
 	KEYLESS_Init();
+	//	AES_Tester();
 
 	/* Infinite loop */
 	for (;;) {
@@ -2108,18 +2089,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
