@@ -61,8 +61,11 @@
 - [x] Re-calibrate I2S PLL Clock after migration to F423
 - [x] Record RTOS high water mark stack space
 - [ ] SIM5300e SSL communication 
+- [ ] Check SYS_LED blinking continuously
+- [ ] Re-Calculate CRC for looped NACK in Response Frame
 - [x] Handle migration from STM32F407VG to STM32F423VH 
-  - [ ] Use AES features in new STM32F423VH 
+  - [x] Use AES features in new STM32F423VH 
+  - [ ] Use AES for NRF24LE1 communication
 - [ ] Lock all global variable to minimize RTOS problem. 
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Handle NO Driver ID when vehicle OFF
@@ -198,14 +201,14 @@
 | No | Sub Module                  | Chip           | ST-Periph.  | FW  | HW | F423 | Note		  							|
 |:--:|-----------------------------|----------------|:-----------:|:---:|:--:|:----:|---------------------------------------|
 |  1 | IoT                         | SIM5300e       | USART1	  | 95% | ✔  | ✔    | **Done**: See PCB Revision			|
-|  2 | GPS                         | Ublox NEO-6M   | USART2	  | ✔   | ✔  |      | **Done**: Use long-cable antenna		|
-|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3	      | ✔   | ✔	 |      | **Done**: AD0 pin should be grounded	|
+|  2 | GPS                         | Ublox NEO-6M   | USART2	  | ✔   | ✔  | ✔    | **Done**: Use long-cable antenna		|
+|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3	      | ✔   | ✔	 | ✔    | **Done**: AD0 pin should be grounded	|
 |  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1		  | 75% | ✔  | ✔    | **Done**: Use semi module				|
 |  5 | Fingerprint                 | FZ3387         | UART4		  | ✔   | ✔	 |      | **Done**: Replace Q6 from NPN to PNP	|
-|  6 | RTC                         | ST-RTC		    | RTC		  | ✔   | ✔  |      | **Done**								|
+|  6 | RTC                         | ST-RTC		    | RTC		  | ✔   | ✔  | ✔    | **Done**								|
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -			  | ✔   | ✔  | ✔    | **Done**								|
-|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3  | ✔   | ✔	 |      | **Done**: Connect pin 41 to GND		|
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1		  | ✔   | ✔  |      | **Done**								|
+|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3  | ✔   | ✔	 | ✔    | **Done**: Connect pin 41 to GND		|
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1		  | ✔   | ✔  | ✔    | **Done**								|
 | 10 | EEPROM                      | 24AA32A        | I2C2		  | ✔   | ✔  | ✔    | **Done**								|
 | 11 | Handlebar/Switch            | ST-EXTI        | PE		  | ✔   | ✔  |      | **Done**								|
 | 12 | Data Validator	           | ST-CRC        	| CRC		  | ✔   | -  | ✔    | **Done**								|
