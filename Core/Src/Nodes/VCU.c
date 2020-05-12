@@ -87,7 +87,6 @@ uint8_t VCU_CAN_TX_Switch(sw_t *sw) {
 	// sein value
 	CB.tx.data.u8[1] = sein.left;
 	CB.tx.data.u8[1] |= _L(sein.right, 1);
-	CB.tx.data.u8[1] |= _L(!VCU.d.knob, 2);
 	CB.tx.data.u8[2] = VCU.d.signal_percent;
 	CB.tx.data.u8[3] = BMS.d.soc;
 
@@ -109,9 +108,11 @@ uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
 	CB.tx.data.u8[4] = timestamp->date.Month;
 	CB.tx.data.u8[5] = timestamp->date.Year;
 	CB.tx.data.u8[6] = timestamp->date.WeekDay;
+	// HMI2 shutdown request
+	CB.tx.data.u8[7] = !VCU.d.knob;
 
 	// set default header
-	CANBUS_Header(&(CB.tx.header), CAND_VCU_DATETIME, 7);
+	CANBUS_Header(&(CB.tx.header), CAND_VCU_DATETIME, 8);
 	// send message
 	return CANBUS_Write(&(CB.tx));
 }

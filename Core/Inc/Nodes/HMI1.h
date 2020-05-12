@@ -52,11 +52,13 @@ typedef struct {
 	hmi1_can_t can;
 	void (*Init)(void);
 	void (*RefreshIndex)(void);
+	void (*Power)(uint8_t);
 } hmi1_t;
 
 /* Public functions implementation --------------------------------------------*/
 void HMI1_Init(void);
 void HMI1_RefreshIndex(void);
+void HMI1_Power(uint8_t state);
 void HMI1_CAN_RX_LeftState(void);
 void HMI1_CAN_RX_RightState(void);
 

@@ -7,10 +7,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_keyless.h"
+#include "VCU.h"
+#include "HMI1.h"
 
 /* External variables ----------------------------------------------------------*/
 extern nrf24l01 nrf;
 extern osThreadId_t KeylessTaskHandle;
+extern vcu_t VCU;
+extern hmi1_t HMI1;
 
 /* Private variables ----------------------------------------------------------*/
 static nrf24l01_config config;
@@ -36,6 +40,14 @@ void KEYLESS_Debugger(void) {
 	LOG_Str("NRF received packet, msg = ");
 	LOG_Hex8(msg);
 	LOG_Enter();
+}
+
+void KEYLESS_Refresh(void) {
+	if ((osKernelGetTickCount() - VCU.d.tick.keyless) < pdMS_TO_TICKS(5000)) {
+		HMI1.d.status.keyless = 1;
+	} else {
+		HMI1.d.status.keyless = 0;
+	}
 }
 
 void KEYLESS_IrqHandler(void) {

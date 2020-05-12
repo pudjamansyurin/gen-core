@@ -30,7 +30,7 @@ bms_t BMS = {
 				}
 		},
 		BMS_Init,
-		BMS_ControlViaCan,
+		BMS_PowerOverCan,
 		BMS_ResetIndex,
 		BMS_RefreshIndex,
 		BMS_GetIndex,
@@ -49,7 +49,7 @@ void BMS_Init(void) {
 	}
 }
 
-void BMS_ControlViaCan(uint8_t on) {
+void BMS_PowerOverCan(uint8_t on) {
 	if (on) {
 		if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE)) {
 			BMS_CAN_TX_Setting(1, BMS_STATE_DISCHARGE);
@@ -64,7 +64,8 @@ void BMS_ControlViaCan(uint8_t on) {
 			// completely OFF
 			BMS.d.started = 0;
 			BMS.d.soc = 0;
-			// ohter parameter
+
+			// other parameters
 			HMI1.d.status.overheat = 0;
 			HMI1.d.status.warning = 1;
 		}

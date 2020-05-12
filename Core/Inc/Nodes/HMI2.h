@@ -29,11 +29,13 @@ typedef struct {
 	hmi2_can_t can;
 	void (*Init)(void);
 	void (*Refresh)(void);
+	void (*PowerOverCan)(uint8_t);
 } hmi2_t;
 
 /* Public functions implementation --------------------------------------------*/
 void HMI2_Init(void);
 void HMI2_Refresh(void);
+void HMI2_PowerOverCan(uint8_t on);
 void HMI2_CAN_RX_State(void);
 
 #endif /* INC_NODES_HMI2_H_ */

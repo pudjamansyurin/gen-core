@@ -56,7 +56,7 @@ typedef struct {
 	bms_data_t d;
 	bms_can_t can;
 	void (*Init)(void);
-	void (*ControlViaCan)(uint8_t);
+	void (*PowerOverCan)(uint8_t);
 	void (*ResetIndex)(uint8_t);
 	void (*RefreshIndex)(void);
 	uint8_t (*GetIndex)(uint32_t);
@@ -68,7 +68,7 @@ typedef struct {
 
 /* Public functions implementation --------------------------------------------*/
 void BMS_Init(void);
-void BMS_ControlViaCan(uint8_t on);
+void BMS_PowerOverCan(uint8_t on);
 void BMS_ResetIndex(uint8_t i);
 void BMS_RefreshIndex(void);
 uint8_t BMS_GetIndex(uint32_t id);

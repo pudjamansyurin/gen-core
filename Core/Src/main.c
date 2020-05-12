@@ -1793,11 +1793,7 @@ void StartKeylessTask(void *argument)
 		}
 
 		// update state
-		if ((osKernelGetTickCount() - VCU.d.tick.keyless) < pdMS_TO_TICKS(5000)) {
-			HMI1.d.status.keyless = 1;
-		} else {
-			HMI1.d.status.keyless = 0;
-		}
+		KEYLESS_Refresh();
 	}
 	/* USER CODE END StartKeylessTask */
 }
@@ -2061,14 +2057,14 @@ void StartCanTxTask(void *argument)
 		VCU.can.t.SelectSet(&(SW.runner));
 		VCU.can.t.TripMode(&(SW.runner.mode.sub.trip[0]));
 
-		// BMS state
-		BMS.ControlViaCan(VCU.d.knob);
+		// Handle Knob Changes
+		BMS.PowerOverCan(VCU.d.knob);
+		HMI1.Power(VCU.d.knob);
+		HMI2.PowerOverCan(VCU.d.knob);
+
+		// Refresh state
 		BMS.RefreshIndex();
-
-		// HMI-1 data
 		HMI1.RefreshIndex();
-
-		// HMI-2 data
 		HMI2.Refresh();
 
 		// Periodic interval

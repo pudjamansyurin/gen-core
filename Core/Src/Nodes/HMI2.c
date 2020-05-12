@@ -30,7 +30,8 @@ hmi2_t HMI2 = {
 				},
 		},
 		HMI2_Init,
-		HMI2_Refresh
+		HMI2_Refresh,
+		HMI2_PowerOverCan
 };
 
 /* Public functions implementation --------------------------------------------*/
@@ -40,8 +41,29 @@ void HMI2_Init(void) {
 }
 
 void HMI2_Refresh(void) {
-	if ((osKernelGetTickCount() - HMI2.d.tick) > pdMS_TO_TICKS(1000)) {
+	if ((osKernelGetTickCount() - HMI2.d.tick) > pdMS_TO_TICKS(5000)) {
 		HMI2.d.started = 0;
+	}
+}
+
+void HMI2_PowerOverCan(uint8_t on) {
+	static TickType_t tick = 0;
+
+	if (on) {
+		HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
+
+		// handle timeout
+		if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(60000)) {
+			tick = osKernelGetTickCount();
+			// trigger OFF
+			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+			osDelay(1000);
+		}
+	} else {
+		// power down should be handled properly, wait until shutdown
+		if (!HMI2.d.started) {
+			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+		}
 	}
 }
 

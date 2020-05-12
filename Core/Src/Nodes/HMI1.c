@@ -19,6 +19,7 @@ hmi1_t HMI1 = {
 		},
 		HMI1_Init,
 		HMI1_RefreshIndex,
+		HMI1_Power
 };
 
 /* Public functions implementation --------------------------------------------*/
@@ -43,6 +44,10 @@ void HMI1_RefreshIndex(void) {
 			HMI1.d.device[i].started = 0;
 		}
 	}
+}
+
+void HMI1_Power(uint8_t state) {
+	HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, state);
 }
 
 /* ====================================== CAN RX =================================== */
