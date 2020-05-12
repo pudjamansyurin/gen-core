@@ -41,27 +41,39 @@ void HMI2_Init(void) {
 }
 
 void HMI2_Refresh(void) {
-	if ((osKernelGetTickCount() - HMI2.d.tick) > pdMS_TO_TICKS(5000)) {
+	if ((osKernelGetTickCount() - HMI2.d.tick) > pdMS_TO_TICKS(10000)) {
 		HMI2.d.started = 0;
 	}
 }
 
 void HMI2_PowerOverCan(uint8_t on) {
+	TickType_t timeout = pdMS_TO_TICKS(60000);
 	static TickType_t tick = 0;
 
 	if (on) {
-		HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
+		if (!HMI2.d.started) {
+			// handle timeout
+			if (osKernelGetTickCount() - tick > timeout) {
+				tick = osKernelGetTickCount();
 
-		// handle timeout
-		if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(60000)) {
-			tick = osKernelGetTickCount();
-			// trigger OFF
-			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
-			osDelay(1000);
+				HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+				osDelay(500);
+			}
+			// turn ON
+			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
+		} else {
+			// completely ON
 		}
 	} else {
-		// power down should be handled properly, wait until shutdown
-		if (!HMI2.d.started) {
+		if (HMI2.d.started) {
+			// handle timeout
+			if (osKernelGetTickCount() - tick > timeout) {
+				tick = osKernelGetTickCount();
+
+				HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+			}
+		} else {
+			// completely OFF
 			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
 		}
 	}
