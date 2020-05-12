@@ -59,7 +59,7 @@
 - [ ] Simplify SIMCOM library
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [x] Re-calibrate I2S PLL Clock after migration to F423
-- [ ] Record RTOS high water mark stack space
+- [x] Record RTOS high water mark stack space
 - [ ] SIM5300e SSL communication 
 - [x] Handle migration from STM32F407VG to STM32F423VH 
   - [ ] Use AES features in new STM32F423VH 

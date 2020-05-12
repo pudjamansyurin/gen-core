@@ -53,10 +53,12 @@ void _Error(char msg[50]) {
 	}
 }
 
-void _RTOS_Debugger(void) {
+void _RTOS_Debugger(uint32_t ms) {
 	static uint8_t init = 1, thCount;
 	static TickType_t lastDebug;
 	static osThreadId_t threads[20];
+	static uint32_t thLowestFreeStack[20];
+	uint32_t thFreeStack;
 	char thName[15];
 
 	// Initialize
@@ -67,24 +69,37 @@ void _RTOS_Debugger(void) {
 		// Get list of active threads
 		thCount = osThreadGetCount();
 		osThreadEnumerate(threads, thCount);
+
+		// Fill initial free stack
+		for (uint8_t i = 0; i < thCount; i++) {
+			if (threads[i] != NULL) {
+				thLowestFreeStack[i] = osThreadGetStackSpace(threads[i]);
+			}
+		}
 	}
 
-	if ((osKernelGetTickCount() - lastDebug) >= pdMS_TO_TICKS(10000)) {
+	if ((osKernelGetTickCount() - lastDebug) >= pdMS_TO_TICKS(ms)) {
 		lastDebug = osKernelGetTickCount();
 
 		// Debug each thread's Stack Space
-		LOG_StrLn("============ STACK MONITOR ============");
+		LOG_StrLn("============ LOWEST FREE STACK ============");
 		for (uint8_t i = 0; i < thCount; i++) {
 			if (threads[i] != NULL) {
-				sprintf(thName, "%-14s", osThreadGetName(threads[i]));
+				// check stack used
+				thFreeStack = osThreadGetStackSpace(threads[i]);
+				if (thFreeStack < thLowestFreeStack[i]) {
+					thLowestFreeStack[i] = thFreeStack;
+				}
+
 				// print
+				sprintf(thName, "%-14s", osThreadGetName(threads[i]));
 				LOG_Buf(thName, strlen(thName));
 				LOG_Str(" : ");
-				LOG_Int(osThreadGetStackSpace(threads[i]));
+				LOG_Int(thLowestFreeStack[i]);
 				LOG_StrLn(" Words");
 			}
 		}
-		LOG_StrLn("=======================================");
+		LOG_StrLn("===========================================");
 	}
 }
 

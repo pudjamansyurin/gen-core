@@ -30,7 +30,7 @@ bms_t BMS = {
 				}
 		},
 		BMS_Init,
-		BMS_Power,
+		BMS_ControlViaCan,
 		BMS_ResetIndex,
 		BMS_RefreshIndex,
 		BMS_GetIndex,
@@ -49,7 +49,7 @@ void BMS_Init(void) {
 	}
 }
 
-void BMS_Power(uint8_t on) {
+void BMS_ControlViaCan(uint8_t on) {
 	if (on) {
 		if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE)) {
 			BMS_CAN_TX_Setting(1, BMS_STATE_DISCHARGE);

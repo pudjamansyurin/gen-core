@@ -25,7 +25,7 @@ void _LedDisco(uint16_t ms);
 
 void _Error(char msg[50]);
 
-void _RTOS_Debugger(void);
+void _RTOS_Debugger(uint32_t ms);
 uint8_t _RTOS_ValidThreadFlag(uint32_t flag);
 uint8_t _RTOS_ValidEventFlag(uint32_t flag);
 
