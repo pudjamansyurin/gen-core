@@ -63,6 +63,7 @@ void HMI2_PowerOverCan(uint8_t on) {
 			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
 		} else {
 			// completely ON
+			tick = osKernelGetTickCount();
 		}
 	} else {
 		if (HMI2.d.started) {
@@ -74,6 +75,7 @@ void HMI2_PowerOverCan(uint8_t on) {
 			}
 		} else {
 			// completely OFF
+			tick = osKernelGetTickCount();
 			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
 		}
 	}
