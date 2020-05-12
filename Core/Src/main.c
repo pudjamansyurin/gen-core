@@ -1239,11 +1239,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (osKernelGetState() == osKernelRunning) {
 		// handle BMS_IRQ (is 5v exist?)
 		if (GPIO_Pin == EXT_BMS_IRQ_Pin) {
-			osThreadFlagsSet(ManagerTaskHandle, EVT_MANAGER_BMS_IRQ);
+			osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_BMS_IRQ);
 		}
 		// handle KNOB IRQ (Power control for HMI1 & HMI2)
 		if (GPIO_Pin == EXT_KNOB_IRQ_Pin) {
-			osThreadFlagsSet(ManagerTaskHandle, EVT_MANAGER_KNOB_IRQ);
+			osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_KNOB_IRQ);
 		}
 		// handle Finger IRQ
 		if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
@@ -1308,25 +1308,6 @@ void StartManagerTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		lastWake = osKernelGetTickCount();
-
-		// Handle GPIO interrupt
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 0);
-		if (_RTOS_ValidThreadFlag(notif)) {
-			// handle bounce effect
-			osDelay(50);
-			osThreadFlagsClear(notif);
-
-			// BMS Power IRQ
-			if (notif & EVT_MANAGER_BMS_IRQ) {
-				// get current state
-				VCU.CheckMainPower();
-			}
-			// KNOB IRQ
-			if (notif & EVT_MANAGER_KNOB_IRQ) {
-				// get current state
-				VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
-			}
-		}
 
 		// Check is Daylight
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
@@ -1490,7 +1471,7 @@ void StartReporterTask(void *argument)
 	for (;;) {
 		lastWake = osKernelGetTickCount();
 
-		// decide full/simple frame time
+		// Frame type decider
 		if (!VCU.d.independent) {
 			if (++frameDecider == RPT_INTERVAL_FULL_TIMES) {
 				frame = FR_FULL;
@@ -1551,7 +1532,6 @@ void StartCommandTask(void *argument)
 		status = osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever);
 
 		if (status == osOK) {
-			// debug
 			Command_Debugger(&command);
 
 			// default command response
@@ -1789,7 +1769,6 @@ void StartKeylessTask(void *argument)
 				// indicator
 				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
 				for (uint8_t i = 0; i < ((msg + 1) * 2); i++) {
-					_LedToggle();
 					osDelay(100);
 				}
 				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
@@ -1881,7 +1860,6 @@ void StartFingerTask(void *argument)
 void StartAudioTask(void *argument)
 {
 	/* USER CODE BEGIN StartAudioTask */
-	TickType_t lastWake;
 	uint32_t notif;
 
 	// wait until ManagerTask done
@@ -1894,10 +1872,8 @@ void StartAudioTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		lastWake = osKernelGetTickCount();
-
-		// do this if events occurred
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 0);
+		// wait with timeout
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
 		if (_RTOS_ValidThreadFlag(notif)) {
 			// Beep command
 			if (notif & EVT_AUDIO_BEEP) {
@@ -1924,9 +1900,6 @@ void StartAudioTask(void *argument)
 
 		// update volume
 		AUDIO_OUT_SetVolume(VCU.d.volume);
-
-		// Periodic interval
-		osDelayUntil(lastWake + pdMS_TO_TICKS(500));
 	}
 	/* USER CODE END StartAudioTask */
 }
@@ -1951,13 +1924,14 @@ void StartSwitchTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		// wait until GPIO changes
+		// wait forever
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
 		if (_RTOS_ValidThreadFlag(notif)) {
 			// handle bounce effect
 			osDelay(50);
 			osThreadFlagsClear(EVT_MASK);
 
+			// Hanlde switch EXTI interrupt
 			if (notif & EVT_SWITCH_TRIGGERED) {
 				// Read all (to handle multiple switch change at the same time)
 				HBAR_ReadStates();
@@ -1979,6 +1953,18 @@ void StartSwitchTask(void *argument)
 						HBAR_RunSet();
 					}
 				}
+			}
+
+			// Handle other EXTI interrupt
+			// BMS Power IRQ
+			if (notif & EVT_SWITCH_BMS_IRQ) {
+				// get current state
+				VCU.CheckMainPower();
+			}
+			// KNOB IRQ
+			if (notif & EVT_SWITCH_KNOB_IRQ) {
+				// get current state
+				VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 			}
 		}
 	}
@@ -2002,13 +1988,13 @@ void StartCanRxTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		// check if has new can message
+		// wait forever
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, osWaitForever);
 		if (_RTOS_ValidThreadFlag(notif)) {
-			//			CANBUS_RxDebugger();
-
 			// proceed event
 			if (notif & EVT_CAN_RX_IT) {
+				//			CANBUS_RxDebugger();
+
 				// handle STD message
 				switch (CANBUS_ReadID()) {
 					case CAND_HMI2:
@@ -2112,18 +2098,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

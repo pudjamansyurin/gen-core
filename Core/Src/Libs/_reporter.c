@@ -74,6 +74,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
 		report->data.opt.vcu.speed = GPS.speed_kph;
 		report->data.opt.vcu.odometer = VCU.d.odometer;
+
 		report->data.opt.vcu.trip.a = pSub->trip[SW_M_TRIP_A];
 		report->data.opt.vcu.trip.b = pSub->trip[SW_M_TRIP_B];
 		report->data.opt.vcu.report.range = pSub->report[SW_M_REPORT_RANGE];
