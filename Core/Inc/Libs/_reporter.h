@@ -123,5 +123,6 @@ void Response_Init(response_t *response);
 void Report_Capture(FRAME_TYPE frame, report_t *report);
 void Response_Capture(response_t *response);
 void Report_ReCalculate(report_t *report);
+void Response_ReCalculate(response_t *response);
 void Command_Debugger(command_t *cmd);
 #endif /* REPORTER_H_ */

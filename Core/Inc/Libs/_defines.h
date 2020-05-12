@@ -52,7 +52,7 @@
 #define FINGER_SCAN_TIMEOUT                     10                      // in second
 
 #define RPT_INTERVAL_SIMPLE                     5                       // in second
-#define RPT_INTERVAL_FULL                       20                      // in second
+#define RPT_INTERVAL_FULL_TIMES                 4												// n x simple
 #define RPT_INTERVAL_INDEPENDENT                60U											// in second
 #define RPT_UNITID                              354313U
 
@@ -117,6 +117,7 @@
 #define CMD_REPORT_RTC                          0
 #define CMD_REPORT_ODOM                         1
 #define CMD_REPORT_UNITID                       2
+#define CMD_REPORT_INTERVAL                     3
 
 #define CMD_AUDIO_BEEP                          0
 #define CMD_AUDIO_MUTE                          1

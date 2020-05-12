@@ -113,6 +113,12 @@ void Report_ReCalculate(report_t *report) {
 
 }
 
+void Response_ReCalculate(response_t *response) {
+	response->header.crc = CRC_Calculate8(
+			(uint8_t*) &(response->header.size),
+			response->header.size + sizeof(response->header.size));
+}
+
 void Command_Debugger(command_t *cmd) {
 	LOG_Str("\nCommand:Payload [");
 	LOG_Int(cmd->data.code);
