@@ -29,8 +29,6 @@ void Report_Init(FRAME_TYPE frame, report_t *report) {
 	// body required
 	report->data.req.vcu.driver_id = DRIVER_ID_NONE;
 	// body optional
-	report->data.opt.vcu.report.range = 99;
-	report->data.opt.vcu.report.efficiency = 88;
 }
 
 void Response_Init(response_t *response) {
@@ -44,6 +42,8 @@ void Response_Init(response_t *response) {
 }
 
 void Report_Capture(FRAME_TYPE frame, report_t *report) {
+	sw_sub_t *pSub = &(SW.runner.mode.sub);
+
 	// Reconstruct the header
 	report->header.seq_id++;
 	report->header.unit_id = VCU.d.unit_id;
@@ -74,8 +74,10 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
 		report->data.opt.vcu.speed = GPS.speed_kph;
 		report->data.opt.vcu.odometer = VCU.d.odometer;
-		report->data.opt.vcu.trip.a = SW.runner.mode.sub.trip[SW_M_TRIP_A];
-		report->data.opt.vcu.trip.b = SW.runner.mode.sub.trip[SW_M_TRIP_B];
+		report->data.opt.vcu.trip.a = pSub->trip[SW_M_TRIP_A];
+		report->data.opt.vcu.trip.b = pSub->trip[SW_M_TRIP_B];
+		report->data.opt.vcu.report.range = pSub->report[SW_M_REPORT_RANGE];
+		report->data.opt.vcu.report.efficiency = pSub->report[SW_M_REPORT_EFFICIENCY];
 
 		report->data.opt.vcu.signal_percent = VCU.d.signal_percent;
 		report->data.opt.vcu.bat_voltage = VCU.d.bat_voltage / 18;

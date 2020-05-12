@@ -57,15 +57,17 @@ typedef struct {
 } sein_state_t;
 
 typedef struct {
+	uint8_t val[SW_M_MAX + 1];
+	uint8_t max[SW_M_MAX + 1];
+	uint8_t report[SW_M_REPORT_MAX + 1];
+	uint32_t trip[SW_M_TRIP_MAX + 1];
+} sw_sub_t;
+
+typedef struct {
 	uint8_t listening;
 	struct {
 		SW_MODE val;
-		struct {
-			uint8_t val[SW_M_MAX + 1];
-			uint8_t max[SW_M_MAX + 1];
-			uint8_t report[SW_M_REPORT_MAX + 1];
-			uint32_t trip[SW_M_TRIP_MAX + 1];
-		} sub;
+		sw_sub_t sub;
 	} mode;
 } sw_runner_t;
 
