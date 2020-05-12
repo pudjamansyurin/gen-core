@@ -30,8 +30,6 @@ uint8_t _RTOS_ValidThreadFlag(uint32_t flag);
 uint8_t _RTOS_ValidEventFlag(uint32_t flag);
 
 void _DummyGenerator(sw_t *sw);
-uint8_t _TimeNeedCalibration(void);
-uint8_t _TimeCheckDaylight(timestamp_t timestamp);
 
 int8_t _BitPosition(uint64_t event_id);
 int32_t _ParseNumber(const char *ptr, uint8_t *cnt);

@@ -150,20 +150,6 @@ void _DummyGenerator(sw_t *sw) {
 	}
 }
 
-uint8_t _TimeCheckDaylight(timestamp_t timestamp) {
-	return (timestamp.time.Hours >= 5 && timestamp.time.Hours <= 16);
-}
-
-uint8_t _TimeNeedCalibration(void) {
-	// Retrieve RTC time
-	RTC_ReadRaw(&(VCU.d.rtc.timestamp));
-
-	// Compare
-	return (VCU.d.rtc.calibration.Year != VCU.d.rtc.timestamp.date.Year ||
-			VCU.d.rtc.calibration.Month != VCU.d.rtc.timestamp.date.Month ||
-			VCU.d.rtc.calibration.Date != VCU.d.rtc.timestamp.date.Date);
-}
-
 int8_t _BitPosition(uint64_t event_id) {
 	uint8_t pos = -1;
 

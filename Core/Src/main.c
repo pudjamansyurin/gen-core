@@ -1329,7 +1329,7 @@ void StartManagerTask(void *argument)
 		}
 
 		// Check is Daylight
-		HMI1.d.status.daylight = _TimeCheckDaylight(VCU.d.rtc.timestamp);
+		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
 
 		// Dummy data generator
 		_DummyGenerator(&SW);
@@ -1359,6 +1359,7 @@ void StartManagerTask(void *argument)
 void StartIotTask(void *argument)
 {
 	/* USER CODE BEGIN StartIotTask */
+	TickType_t lastWake;
 	osStatus_t status;
 	SIMCOM_RESULT p;
 	report_t report;
@@ -1382,6 +1383,8 @@ void StartIotTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
+		lastWake = osKernelGetTickCount();
+
 		// Upload Report & Response Payload
 		for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
 			// decide the payload
@@ -1447,7 +1450,7 @@ void StartIotTask(void *argument)
 		// Retrieve network signal quality
 		SIM_SignalQuality(&(VCU.d.signal_percent));
 		// Check calibration by cellular network
-		if (_TimeNeedCalibration()) {
+		if (RTC_NeedCalibration()) {
 			// get carrier timestamp
 			if (SIM_Clock(&timestamp)) {
 				// calibrate the RTC
@@ -1455,8 +1458,8 @@ void StartIotTask(void *argument)
 			}
 		}
 
-		// scan ADC while simcom at rest
-		osDelay(1000);
+		// Periodic interval
+		osDelayUntil(lastWake + pdMS_TO_TICKS(500));
 	}
 	/* USER CODE END StartIotTask */
 }
