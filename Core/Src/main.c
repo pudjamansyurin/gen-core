@@ -1347,7 +1347,6 @@ void StartIotTask(void *argument)
 	uint8_t retry, nack, pending[2] = { 0 };
 
 	SIMCOM_RESULT p;
-	timestamp_t timestamp;
 	at_csq_t signal;
 
 	osMessageQueueId_t *pQueue;
@@ -1430,18 +1429,11 @@ void StartIotTask(void *argument)
 
 		// ================= SIMCOM Related Routines ================
 		Simcom_SetState(SIM_STATE_READY);
-
 		if (AT_SignalQualityReport(&signal)) {
 			VCU.d.signal_percent = signal.percent;
 		}
-
 		if (RTC_NeedCalibration()) {
-			if (AT_Clock(ATR, &timestamp)) {
-				if (timestamp.date.Year >= VCU_BUILD_YEAR) {
-					// Calibrate time
-					RTC_WriteRaw(&timestamp, &(VCU.d.rtc));
-				}
-			}
+			RTC_Calibrate();
 		}
 
 		// Periodic interval

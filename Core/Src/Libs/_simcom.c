@@ -22,7 +22,7 @@ sim_t SIM;
 static SIMCOM_RESULT Simcom_Ready(void);
 static SIMCOM_RESULT Simcom_Power(void);
 static SIMCOM_RESULT Simcom_Reset(void);
-static SIMCOM_RESULT Simcom_IterationJob(uint8_t *iteration);
+static SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, char *res);
 static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
 static void Simcom_ClearBuffer(void);
@@ -54,32 +54,30 @@ void Simcom_SetState(SIMCOM_STATE state) {
 	SIMCOM_RESULT p;
 	static uint8_t init = 1;
 	uint8_t iteration;
-	at_csq_t signal;
 
 	do {
 		// only executed at power up
 		if (init) {
-			LOG_StrLn("Simcom:Init");
 			SIM.state = SIM_STATE_DOWN;
-			// simcom power control
+			LOG_StrLn("Simcom:Init");
+
 			p = Simcom_Power();
 		} else {
 			if (SIM.state == SIM_STATE_DOWN) {
 				VCU.d.signal_percent = 0;
 				LOG_StrLn("Simcom:Down");
+
 				p = SIM_RESULT_ERROR;
 			} else {
 				if (SIM.state >= SIM_STATE_CONFIGURED) {
-					// Check Signal Quality
-					if (AT_SignalQualityReport(&signal)) {
-						VCU.d.signal_percent = signal.percent;
-					}
+					Simcom_IdleJob(NULL);
 					if (VCU.d.signal_percent < 20) {
 						LOG_StrLn("Simcom:PendingBySignal");
 						osDelay(5 * 1000);
 						break;
 					}
 				}
+
 				p = SIM_RESULT_OK;
 			}
 		}
@@ -184,7 +182,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 							p = AT_NetworkRegistration(ATW, &param);
 
 							if (p) {
-								Simcom_IterationJob(&iteration);
+								Simcom_IdleJob(&iteration);
 								osDelay(NET_REPEAT_DELAY);
 							} else {
 								break;
@@ -215,7 +213,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 							p = AT_NetworkRegistrationStatus(ATW, &param);
 
 							if (p) {
-								Simcom_IterationJob(&iteration);
+								Simcom_IdleJob(&iteration);
 								osDelay(NET_REPEAT_DELAY);
 							} else {
 								break;
@@ -248,7 +246,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 							p = AT_GprsAttachment(ATW, &state);
 
 							if (p) {
-								Simcom_IterationJob(&iteration);
+								Simcom_IdleJob(&iteration);
 								osDelay(NET_REPEAT_DELAY);
 							} else {
 								break;
@@ -567,7 +565,8 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 	// wait until 1s response
 	tick = osKernelGetTickCount();
 	while (SIM.state == SIM_STATE_DOWN) {
-		if (Simcom_Response(SIMCOM_RSP_READY) ||
+		if (Simcom_Response(SIMCOM_RSP_OK) ||
+				Simcom_Response(SIMCOM_RSP_READY) ||
 				(osKernelGetTickCount() - tick) >= NET_BOOT_TIMEOUT) {
 			break;
 		}
@@ -600,14 +599,16 @@ static SIMCOM_RESULT Simcom_Reset(void) {
 	return Simcom_Ready();
 }
 
-static SIMCOM_RESULT Simcom_IterationJob(uint8_t *iteration) {
+static SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
 	SIMCOM_RESULT p;
 	at_csq_t signal;
 
 	// debug
-	LOG_Str("Simcom:Iteration = ");
-	LOG_Int((*iteration)++);
-	LOG_Enter();
+	if (iteration != NULL) {
+		LOG_Str("Simcom:Iteration = ");
+		LOG_Int((*iteration)++);
+		LOG_Enter();
+	}
 
 	// other routines
 	p = AT_SignalQualityReport(&signal);

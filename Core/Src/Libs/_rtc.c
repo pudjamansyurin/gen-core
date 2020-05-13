@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_rtc.h"
+#include "_at.h"
 #include "VCU.h"
 
 /* External variables ----------------------------------------------------------*/
@@ -134,6 +135,17 @@ uint8_t RTC_NeedCalibration(void) {
 	return (VCU.d.rtc.calibration.Year != VCU.d.rtc.timestamp.date.Year ||
 			VCU.d.rtc.calibration.Month != VCU.d.rtc.timestamp.date.Month ||
 			VCU.d.rtc.calibration.Date != VCU.d.rtc.timestamp.date.Date);
+}
+
+void RTC_Calibrate(void) {
+	timestamp_t timestamp;
+
+	if (AT_Clock(ATR, &timestamp)) {
+		if (timestamp.date.Year >= VCU_BUILD_YEAR) {
+			// Calibrate time
+			RTC_WriteRaw(&timestamp, &(VCU.d.rtc));
+		}
+	}
 }
 
 /* Private functions implementation --------------------------------------------*/
