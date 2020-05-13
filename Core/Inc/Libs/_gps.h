@@ -9,12 +9,13 @@
 #define GPS_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_nmea.h"
+#include "Libs/_utils.h"
+#include "Parser/_nmea.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define GPS_INTERVAL_MS                 2500
 
-/* Exported struct --------------------------------------------------------------*/
+/* Exported struct -----------------------------------------------------------*/
 typedef struct {
 	nmea_float_t dop_h;
 	nmea_float_t latitude;

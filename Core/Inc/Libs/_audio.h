@@ -39,7 +39,7 @@
 #define AUDIO_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_cs43l22.h"
+#include "Drivers/_cs43l22.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define AUDIO_I2C_ADDRESS               0x94

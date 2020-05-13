@@ -9,7 +9,7 @@
 #define INC_LIBS__AES_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "Libs/_utils.h"
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t AES_Encrypt(uint8_t *pSrc, uint8_t *pDst, uint16_t Sz);

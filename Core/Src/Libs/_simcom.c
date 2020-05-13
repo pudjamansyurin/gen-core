@@ -5,9 +5,11 @@
  *      Author: Puja
  */
 /* Includes ------------------------------------------------------------------*/
-#include "_simcom.h"
-#include "_at.h"
-#include "VCU.h"
+#include "Libs/_simcom.h"
+#include "DMA/_dma_simcom.h"
+#include "Drivers/_crc.h"
+#include "Nodes/VCU.h"
+#include "Parser/_at.h"
 
 /* External variables ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];

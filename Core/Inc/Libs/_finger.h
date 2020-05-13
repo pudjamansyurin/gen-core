@@ -9,7 +9,8 @@
 #define FINGER_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_fz3387.h"
+#include "Libs/_utils.h"
+#include "Drivers/_fz3387.h"
 
 /* Public functions prototype ------------------------------------------------*/
 void Finger_On(void);

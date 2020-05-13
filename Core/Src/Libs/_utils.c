@@ -6,12 +6,13 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_utils.h"
-#include "_rtc.h"
-#include "VCU.h"
+#include "Libs/_utils.h"
+#include "Libs/_handlebar.h"
+#include "Nodes/VCU.h"
 
 /* External variables ----------------------------------------------------------*/
 extern vcu_t VCU;
+extern sw_t SW;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t _LedRead(void) {
@@ -132,9 +133,9 @@ uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
 	return ret;
 }
 
-void _DummyGenerator(sw_t *sw) {
-	uint8_t *pRange = &(sw->runner.mode.sub.report[SW_M_REPORT_RANGE]);
-	uint8_t *pEfficiency = &(sw->runner.mode.sub.report[SW_M_REPORT_EFFICIENCY]);
+void _DummyGenerator(void) {
+	uint8_t *pRange = &(SW.runner.mode.sub.report[SW_M_REPORT_RANGE]);
+	uint8_t *pEfficiency = &(SW.runner.mode.sub.report[SW_M_REPORT_EFFICIENCY]);
 
 	// Dummy Report Range
 	if (!(*pRange)) {
@@ -162,87 +163,6 @@ int8_t _BitPosition(uint64_t event_id) {
 	}
 
 	return pos;
-}
-
-void _ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size) {
-	uint8_t i = 0;
-
-	// check for double quote start
-	if (*ptr == '"') {
-		ptr++;
-		i++;
-	}
-	// Parse text
-	while (*ptr != '"' && *ptr != '\r' && *ptr != '\n') {
-		*text = *ptr;
-
-		// increment
-		text++;
-		ptr++;
-		i++;
-		size--;
-
-		// handle overflow
-		if (size <= 1) {
-			break;
-		}
-	}
-	// end of parsing for : double-quote, tab, new-line
-	*text = '\0';
-	ptr++;
-	i++;
-	// Save number of characters used for number
-	if (cnt != NULL) {
-		*cnt = i;
-	}
-}
-
-int32_t _ParseNumber(const char *ptr, uint8_t *cnt) {
-	uint8_t minus = 0, i = 0;
-	int32_t sum = 0;
-
-	if (*ptr == '-') { /* Check for minus character */
-		minus = 1;
-		ptr++;
-		i++;
-	}
-	while (CHARISNUM(*ptr)) { /* Parse number */
-		sum = 10 * sum + CHARTONUM(*ptr);
-		ptr++;
-		i++;
-	}
-	if (cnt != NULL) { /* Save number of characters used for number */
-		*cnt = i;
-	}
-	if (minus) { /* Minus detected */
-		return 0 - sum;
-	}
-	return sum; /* Return number */
-}
-
-float _ParseFloatNumber(const char *ptr, uint8_t *cnt) {
-	uint8_t i = 0, j = 0;
-	float sum = 0.0f;
-
-	sum = (float) _ParseNumber(ptr, &i); /* Parse number */
-	j += i;
-	ptr += i;
-	if (*ptr == '.') { /* Check decimals */
-		float dec;
-		dec = (float) _ParseNumber(ptr + 1, &i);
-		dec /= (float) pow(10, i);
-		if (sum >= 0) {
-			sum += dec;
-		} else {
-			sum -= dec;
-		}
-		j += i + 1;
-	}
-
-	if (cnt != NULL) { /* Save number of characters used for number */
-		*cnt = j;
-	}
-	return sum; /* Return number */
 }
 
 uint32_t _ByteSwap32(uint32_t x) {

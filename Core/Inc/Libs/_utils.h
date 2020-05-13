@@ -10,8 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "_defines.h"
-#include "_log.h"
-#include "_handlebar.h"
+#include "Parser/_log.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
@@ -29,12 +28,9 @@ void _RTOS_Debugger(uint32_t ms);
 uint8_t _RTOS_ValidThreadFlag(uint32_t flag);
 uint8_t _RTOS_ValidEventFlag(uint32_t flag);
 
-void _DummyGenerator(sw_t *sw);
+void _DummyGenerator(void);
 
 int8_t _BitPosition(uint64_t event_id);
-void _ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size);
-int32_t _ParseNumber(const char *ptr, uint8_t *cnt);
-float _ParseFloatNumber(const char *ptr, uint8_t *cnt);
 uint32_t _ByteSwap32(uint32_t x);
 
 #endif /* UTILS_H_ */

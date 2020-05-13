@@ -6,21 +6,35 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_aes.h"
-#include "_log.h"
+#include "Drivers/_aes.h"
 
-/* External variables -------------------------------------------------------*/
+/* External variables --------------------------------------------------------*/
 extern CRYP_HandleTypeDef hcryp;
+extern osMutexId_t AesMutexHandle;
 
-/* Private variables ---------------------------------------------------------*/
+/* Private functions declaration ---------------------------------------------*/
+static void lock(void);
+static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t AES_Encrypt(uint8_t *pSrc, uint8_t *pDst, uint16_t Sz) {
-	return (HAL_CRYP_Encrypt(&hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+	uint8_t ret;
+
+	lock();
+	ret = (HAL_CRYP_Encrypt(&hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+	unlock();
+
+	return ret;
 }
 
 uint8_t AES_Decrypt(uint8_t *pSrc, uint8_t *pDst, uint16_t Sz) {
-	return (HAL_CRYP_Decrypt(&hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+	uint8_t ret;
+
+	lock();
+	ret = (HAL_CRYP_Decrypt(&hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+	unlock();
+
+	return ret;
 }
 
 void AES_Tester(void) {
@@ -44,4 +58,13 @@ void AES_Tester(void) {
 	if (memcmp(Plaintext, Decryptedtext, sizeof(Plaintext)) == 0) {
 		LOG_StrLn("AES:ItWorks!");
 	}
+}
+
+/* Private functions implementation --------------------------------------------*/
+static void lock(void) {
+	osMutexAcquire(AesMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
+	osMutexRelease(AesMutexHandle);
 }

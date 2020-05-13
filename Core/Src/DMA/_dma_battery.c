@@ -6,14 +6,11 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_dma_battery.h"
-#include "_simcom.h"
-#include "_log.h"
-#include "VCU.h"
+#include "DMA/_dma_battery.h"
+#include "Nodes/VCU.h"
 
 /* External variables ---------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
-extern sim_t SIM;
 extern vcu_t VCU;
 
 /* Local constants -----------------------------------------------------------*/

@@ -6,11 +6,10 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_defines.h"
-#include "BMS.h"
-#include "VCU.h"
-#include "HMI1.h"
-#include "_canbus.h"
+#include "Nodes/BMS.h"
+#include "Nodes/HMI1.h"
+#include "Nodes/VCU.h"
+#include "Drivers/_canbus.h"
 
 /* External variables ---------------------------------------------------------*/
 extern canbus_t CB;

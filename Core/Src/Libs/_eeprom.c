@@ -6,10 +6,10 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_defines.h"
-#include "_eeprom.h"
-#include "_reporter.h"
-#include "VCU.h"
+#include "Libs/_eeprom.h"
+#include "Drivers/_eeprom24xx.h"
+#include "Libs/_reporter.h"
+#include "Nodes/VCU.h"
 
 /* External variabless -------------------------------------------------------*/
 extern osMutexId_t EepromMutexHandle;

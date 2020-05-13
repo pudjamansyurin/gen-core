@@ -9,7 +9,7 @@
 #define GYRO_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_mpu6050.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define GYROSCOPE_LIMIT               (10000/10)

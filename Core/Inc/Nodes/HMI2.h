@@ -9,8 +9,7 @@
 #define INC_NODES_HMI2_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
-#include "cmsis_os.h"
+#include "Libs/_utils.h"
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {

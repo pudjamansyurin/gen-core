@@ -9,8 +9,7 @@
 #define EEPROM_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_utils.h"
-#include "_eeprom24xx.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define VADDR_RESET                 0x00000000

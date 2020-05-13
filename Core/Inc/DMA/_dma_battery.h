@@ -9,7 +9,7 @@
 #define DRIVERS__DMA_BATTERY_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_utils.h"
+#include "Libs/_utils.h"
 
 /* Public functions prototype ------------------------------------------------*/
 void BAT_DMA_Init(void);

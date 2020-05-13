@@ -6,13 +6,13 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_rtc.h"
-#include "_at.h"
-#include "VCU.h"
+#include "Drivers/_rtc.h"
+#include "Nodes/VCU.h"
+#include "Parser/_at.h"
 
 /* External variables ----------------------------------------------------------*/
 extern RTC_HandleTypeDef hrtc;
-extern osMutexId_t RTCMutexHandle;
+extern osMutexId_t RtcMutexHandle;
 extern vcu_t VCU;
 
 /* Private functions declaration ----------------------------------------------*/
@@ -150,9 +150,9 @@ void RTC_Calibrate(void) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-	osMutexAcquire(RTCMutexHandle, osWaitForever);
+	osMutexAcquire(RtcMutexHandle, osWaitForever);
 }
 
 static void unlock(void) {
-	osMutexRelease(RTCMutexHandle);
+	osMutexRelease(RtcMutexHandle);
 }

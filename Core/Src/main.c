@@ -25,26 +25,26 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "_defines.h"
-#include "_crc.h"
-#include "_aes.h"
-#include "_canbus.h"
-#include "_simcom.h"
-#include "_at.h"
-#include "_gyro.h"
-#include "_gps.h"
-#include "_finger.h"
-#include "_audio.h"
-#include "_keyless.h"
-#include "_reporter.h"
-#include "_rtc.h"
-#include "_utils.h"
-#include "_handlebar.h"
-#include "_dma_battery.h"
-
-#include "VCU.h"
-#include "BMS.h"
-#include "HMI1.h"
-#include "HMI2.h"
+#include "Parser/_at.h"
+#include "Libs/_simcom.h"
+#include "Libs/_eeprom.h"
+#include "Libs/_gyro.h"
+#include "Libs/_gps.h"
+#include "Libs/_finger.h"
+#include "Libs/_audio.h"
+#include "Libs/_keyless.h"
+#include "Libs/_reporter.h"
+#include "Libs/_handlebar.h"
+#include "Drivers/_canbus.h"
+#include "Drivers/_rtc.h"
+#include "DMA/_dma_battery.h"
+#include "DMA/_dma_simcom.h"
+#include "DMA/_dma_ublox.h"
+#include "DMA/_dma_finger.h"
+#include "Nodes/VCU.h"
+#include "Nodes/BMS.h"
+#include "Nodes/HMI1.h"
+#include "Nodes/HMI2.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -217,15 +217,20 @@ osMutexId_t EepromMutexHandle;
 const osMutexAttr_t EepromMutex_attributes = {
 		.name = "EepromMutex"
 };
-/* Definitions for RTCMutex */
-osMutexId_t RTCMutexHandle;
-const osMutexAttr_t RTCMutex_attributes = {
-		.name = "RTCMutex"
+/* Definitions for RtcMutex */
+osMutexId_t RtcMutexHandle;
+const osMutexAttr_t RtcMutex_attributes = {
+		.name = "RtcMutex"
 };
-/* Definitions for CRCMutex */
-osMutexId_t CRCMutexHandle;
-const osMutexAttr_t CRCMutex_attributes = {
-		.name = "CRCMutex"
+/* Definitions for CrcMutex */
+osMutexId_t CrcMutexHandle;
+const osMutexAttr_t CrcMutex_attributes = {
+		.name = "CrcMutex"
+};
+/* Definitions for AesMutex */
+osMutexId_t AesMutexHandle;
+const osMutexAttr_t AesMutex_attributes = {
+		.name = "AesMutex"
 };
 /* Definitions for SimcomRecMutex */
 osMutexId_t SimcomRecMutexHandle;
@@ -353,11 +358,14 @@ int main(void)
 	/* creation of EepromMutex */
 	EepromMutexHandle = osMutexNew(&EepromMutex_attributes);
 
-	/* creation of RTCMutex */
-	RTCMutexHandle = osMutexNew(&RTCMutex_attributes);
+	/* creation of RtcMutex */
+	RtcMutexHandle = osMutexNew(&RtcMutex_attributes);
 
-	/* creation of CRCMutex */
-	CRCMutexHandle = osMutexNew(&CRCMutex_attributes);
+	/* creation of CrcMutex */
+	CrcMutexHandle = osMutexNew(&CrcMutex_attributes);
+
+	/* creation of AesMutex */
+	AesMutexHandle = osMutexNew(&AesMutex_attributes);
 
 	/* Create the recursive mutex(es) */
 	/* creation of SimcomRecMutex */
@@ -1313,7 +1321,7 @@ void StartManagerTask(void *argument)
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
 
 		// Dummy data generator
-		_DummyGenerator(&SW);
+		_DummyGenerator();
 
 		// Feed the dog
 		HAL_IWDG_Refresh(&hiwdg);
@@ -2093,18 +2101,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

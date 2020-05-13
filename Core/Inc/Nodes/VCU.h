@@ -9,9 +9,8 @@
 #define INC_NODES_VCU_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
-#include "_defines.h"
-#include "_handlebar.h"
+#include "Libs/_utils.h"
+#include "Libs/_handlebar.h"
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {

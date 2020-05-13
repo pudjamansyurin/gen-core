@@ -38,7 +38,7 @@
 #define CS43L22_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_utils.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 /* Audio Reset Pin definition */

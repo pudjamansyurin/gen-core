@@ -9,7 +9,7 @@
 #define DMA_FINGER_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_utils.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define FINGER_UART_RX_SZ               256

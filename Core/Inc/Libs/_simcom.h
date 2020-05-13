@@ -9,19 +9,18 @@
 #define SIMCOM_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_dma_simcom.h"
+#include "Libs/_utils.h"
 #include "_reporter.h"
-#include "_crc.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define SIMCOM_RSP_NONE                 "\r\n"
-#define SIMCOM_RSP_SEND 				">"
-#define SIMCOM_RSP_SENT					"SEND OK\r"
-#define SIMCOM_RSP_OK 					"OK\r"
-#define SIMCOM_RSP_ERROR 				"ERROR"
-#define SIMCOM_RSP_READY 				"RDY"
+#define SIMCOM_RSP_SEND 								">"
+#define SIMCOM_RSP_SENT									"SEND OK\r"
+#define SIMCOM_RSP_OK 									"OK\r"
+#define SIMCOM_RSP_ERROR 								"ERROR"
+#define SIMCOM_RSP_READY 								"RDY"
 #define SIMCOM_RSP_IPD                  "+IPD,"
-#define SIMCOM_CMD_BOOT 				"AT\r"
+#define SIMCOM_CMD_BOOT 								"AT\r"
 
 #define SIMCOM_MAX_UPLOAD_RETRY         3
 

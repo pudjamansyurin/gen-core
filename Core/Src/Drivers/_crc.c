@@ -7,11 +7,11 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_crc.h"
+#include "Drivers/_crc.h"
 
 /* External variables ----------------------------------------------------------*/
 extern CRC_HandleTypeDef hcrc;
-extern osMutexId_t CRCMutexHandle;
+extern osMutexId_t CrcMutexHandle;
 
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
@@ -76,9 +76,9 @@ uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-	osMutexAcquire(CRCMutexHandle, osWaitForever);
+	osMutexAcquire(CrcMutexHandle, osWaitForever);
 }
 
 static void unlock(void) {
-	osMutexRelease(CRCMutexHandle);
+	osMutexRelease(CrcMutexHandle);
 }

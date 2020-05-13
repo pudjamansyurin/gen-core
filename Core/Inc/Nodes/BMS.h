@@ -9,15 +9,14 @@
 #define INC_NODES_BMS_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
-#include "cmsis_os.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define BMS_COUNT                               2
 #define BMS_ID_NONE 	                          0xFFFFFFFF
 #define BMS_ID_MASK                             0xFFFFF
 
-/* Exported enum ----------------------------------------------------------------*/
+/* Exported enum ---------------------------------------------------------------*/
 typedef enum {
 	BMS_STATE_IDLE = 0,
 	BMS_STATE_DISCHARGE = 1,

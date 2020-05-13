@@ -9,8 +9,7 @@
 #define INC_NODES_HMI1_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
-#include "cmsis_os.h"
+#include "Libs/_utils.h"
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {

@@ -6,13 +6,13 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_keyless.h"
-#include "VCU.h"
-#include "HMI1.h"
+#include "Libs/_keyless.h"
+#include "Nodes/VCU.h"
+#include "Nodes/HMI1.h"
 
 /* External variables ----------------------------------------------------------*/
-extern nrf24l01 nrf;
 extern osThreadId_t KeylessTaskHandle;
+extern nrf24l01 nrf;
 extern vcu_t VCU;
 extern hmi1_t HMI1;
 

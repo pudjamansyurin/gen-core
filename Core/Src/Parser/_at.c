@@ -6,7 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_at.h"
+#include "Parser/_at.h"
+#include "DMA/_dma_simcom.h"
 
 /* External variables ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
@@ -15,6 +16,9 @@ extern sim_t SIM;
 /* Private functions prototype -----------------------------------------------*/
 static SIMCOM_RESULT AT_CmdWrite(char *cmd, uint32_t ms, char *res);
 static SIMCOM_RESULT AT_CmdRead(char *cmd, char *prefix, char **str);
+static void AT_ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size);
+static int32_t AT_ParseNumber(const char *ptr, uint8_t *cnt);
+//static float AT_ParseFloat(const char *ptr, uint8_t *cnt);
 
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state) {
@@ -40,8 +44,8 @@ SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
 	// Read
 	p = AT_CmdRead("AT+CSQ\r", "+CSQ: ", &str);
 	if (p) {
-		signal->rssi = _ParseNumber(&str[0], &cnt);
-		signal->ber = _ParseNumber(&str[cnt + 1], NULL);
+		signal->rssi = AT_ParseNumber(&str[0], &cnt);
+		signal->ber = AT_ParseNumber(&str[cnt + 1], NULL);
 
 		// Formatting
 		{
@@ -74,7 +78,7 @@ SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param) {
 	// Read
 	p = AT_CmdRead("AT+CIFSR\r", SIMCOM_RSP_NONE, &str);
 	if (p) {
-		_ParseText(&str[0], NULL, param->address, sizeof(param->address));
+		AT_ParseText(&str[0], NULL, param->address, sizeof(param->address));
 	}
 	Simcom_Unlock();
 
@@ -114,9 +118,9 @@ SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
 	// Read
 	p = AT_CmdRead("AT+CSTT?\r", "+CSTT: ", &str);
 	if (p) {
-		_ParseText(&str[0], &cnt, tmp.apn, sizeof(tmp.apn));
-		_ParseText(&str[cnt + 1], &cnt, tmp.username, sizeof(tmp.username));
-		_ParseText(&str[cnt + 1], &cnt, tmp.password, sizeof(tmp.password));
+		AT_ParseText(&str[0], &cnt, tmp.apn, sizeof(tmp.apn));
+		AT_ParseText(&str[cnt + 1], &cnt, tmp.username, sizeof(tmp.username));
+		AT_ParseText(&str[cnt + 1], &cnt, tmp.password, sizeof(tmp.password));
 
 		// Write
 		if (mode == ATW) {
@@ -146,7 +150,7 @@ SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state) {
 	// Read
 	p = AT_CmdRead("AT+CIPRXGET?\r", "+CIPRXGET: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -175,7 +179,7 @@ SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state) {
 	// Read
 	p = AT_CmdRead("AT+CIPMUX?\r", "+CIPMUX: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -204,7 +208,7 @@ SIMCOM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state) {
 	// Read
 	p = AT_CmdRead("AT+CIPMODE?\r", "+CIPMODE: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -233,7 +237,7 @@ SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
 	// Read
 	p = AT_CmdRead("AT+CGATT?\r", "+CGATT: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -262,8 +266,8 @@ SIMCOM_RESULT AT_NetworkRegistrationStatus(AT_MODE mode, at_c_greg_t *param) {
 	// Read
 	p = AT_CmdRead("AT+CGREG?\r", "+CGREG: ", &str);
 	if (p) {
-		tmp.mode = _ParseNumber(&str[0], &cnt);
-		tmp.stat = _ParseNumber(&str[cnt + 1], &cnt);
+		tmp.mode = AT_ParseNumber(&str[0], &cnt);
+		tmp.stat = AT_ParseNumber(&str[cnt + 1], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -292,8 +296,8 @@ SIMCOM_RESULT AT_NetworkRegistration(AT_MODE mode, at_c_greg_t *param) {
 	// Read
 	p = AT_CmdRead("AT+CREG?\r", "+CREG: ", &str);
 	if (p) {
-		tmp.mode = _ParseNumber(&str[0], &cnt);
-		tmp.stat = _ParseNumber(&str[cnt + 1], &cnt);
+		tmp.mode = AT_ParseNumber(&str[0], &cnt);
+		tmp.stat = AT_ParseNumber(&str[cnt + 1], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -322,9 +326,9 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
 	// Read
 	p = AT_CmdRead("AT+CNMP?\r", "+CNMP: ", &str);
 	if (p) {
-		param->mode = _ParseNumber(&str[0], &cnt);
+		param->mode = AT_ParseNumber(&str[0], &cnt);
 		if (param->mode == CNMP_ACT_AUTO) {
-			param->preferred = _ParseNumber(&str[cnt + 1], &cnt);
+			param->preferred = AT_ParseNumber(&str[cnt + 1], &cnt);
 		}
 
 		// Write
@@ -359,10 +363,10 @@ SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param) {
 	// Read
 	p = AT_CmdRead("AT+CSACT?\r", "+CSACT: ", &str);
 	if (p) {
-		tmp.act = _ParseNumber(&str[0], &cnt);
-		_ParseText(&str[cnt + 1], &cnt, tmp.rac, sizeof(tmp.rac));
-		tmp.creg = _ParseNumber(&str[cnt + 1], &cnt);
-		tmp.cgreg = _ParseNumber(&str[cnt + 1], &cnt);
+		tmp.act = AT_ParseNumber(&str[0], &cnt);
+		AT_ParseText(&str[cnt + 1], &cnt, tmp.rac, sizeof(tmp.rac));
+		tmp.creg = AT_ParseNumber(&str[cnt + 1], &cnt);
+		tmp.cgreg = AT_ParseNumber(&str[cnt + 1], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -391,7 +395,7 @@ SIMCOM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state) {
 	// Read
 	p = AT_CmdRead("AT+CIPSRIP?\r", "+CIPSRIP: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -420,7 +424,7 @@ SIMCOM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state) {
 	// Read
 	p = AT_CmdRead("AT+CIPHEAD?\r", "+CIPHEAD: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -449,7 +453,7 @@ SIMCOM_RESULT AT_GetLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
 	// Read
 	p = AT_CmdRead("AT+CLTS?\r", "+CLTS: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -478,7 +482,7 @@ SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state) {
 	// Read
 	p = AT_CmdRead("AT+CSCLK?\r", "+CSCLK: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -508,7 +512,7 @@ SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state) {
 	// Read
 	p = AT_CmdRead("AT+CMEE?\r", "+CMEE: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -537,7 +541,7 @@ SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate) {
 	// Read
 	p = AT_CmdRead("AT+IPR?\r", "+IPR: ", &str);
 	if (p) {
-		tmp = _ParseNumber(&str[0], &cnt);
+		tmp = AT_ParseNumber(&str[0], &cnt);
 
 		// Write
 		if (mode == ATW) {
@@ -576,13 +580,13 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
 		// Read
 		p = AT_CmdRead("AT+CCLK?\r", "+CCLK: ", &str);
 		if (p) {
-			tm->date.Year = _ParseNumber(&str[1], &cnt);
-			tm->date.Month = _ParseNumber(&str[cnt + 1], &cnt);
-			tm->date.Date = _ParseNumber(&str[cnt + 1], &cnt);
-			tm->time.Hours = _ParseNumber(&str[cnt + 1], &cnt);
-			tm->time.Minutes = _ParseNumber(&str[cnt + 1], &cnt);
-			tm->time.Seconds = _ParseNumber(&str[cnt + 1], &cnt);
-			tm->tzQuarterHour = _ParseNumber(&str[cnt + 1], NULL);
+			tm->date.Year = AT_ParseNumber(&str[1], &cnt);
+			tm->date.Month = AT_ParseNumber(&str[cnt + 1], &cnt);
+			tm->date.Date = AT_ParseNumber(&str[cnt + 1], &cnt);
+			tm->time.Hours = AT_ParseNumber(&str[cnt + 1], &cnt);
+			tm->time.Minutes = AT_ParseNumber(&str[cnt + 1], &cnt);
+			tm->time.Seconds = AT_ParseNumber(&str[cnt + 1], &cnt);
+			tm->tzQuarterHour = AT_ParseNumber(&str[cnt + 1], NULL);
 
 			// Formatting
 			tm->date.WeekDay = RTC_WEEKDAY_MONDAY;
@@ -593,6 +597,7 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
 	return p;
 }
 
+/* Private functions implementation --------------------------------------------*/
 static SIMCOM_RESULT AT_CmdWrite(char *cmd, uint32_t ms, char *res) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
@@ -626,3 +631,84 @@ static SIMCOM_RESULT AT_CmdRead(char *cmd, char *prefix, char **str) {
 
 	return p;
 }
+
+static void AT_ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size) {
+	uint8_t i = 0;
+
+	// check for double quote start
+	if (*ptr == '"') {
+		ptr++;
+		i++;
+	}
+	// Parse text
+	while (*ptr != '"' && *ptr != '\r' && *ptr != '\n') {
+		*text = *ptr;
+
+		// increment
+		text++;
+		ptr++;
+		i++;
+		size--;
+
+		// handle overflow
+		if (size <= 1) {
+			break;
+		}
+	}
+	// end of parsing for : double-quote, tab, new-line
+	*text = '\0';
+	ptr++;
+	i++;
+	// Save number of characters used for number
+	if (cnt != NULL) {
+		*cnt = i;
+	}
+}
+
+static int32_t AT_ParseNumber(const char *ptr, uint8_t *cnt) {
+	uint8_t minus = 0, i = 0;
+	int32_t sum = 0;
+
+	if (*ptr == '-') { /* Check for minus character */
+		minus = 1;
+		ptr++;
+		i++;
+	}
+	while (CHARISNUM(*ptr)) { /* Parse number */
+		sum = 10 * sum + CHARTONUM(*ptr);
+		ptr++;
+		i++;
+	}
+	if (cnt != NULL) { /* Save number of characters used for number */
+		*cnt = i;
+	}
+	if (minus) { /* Minus detected */
+		return 0 - sum;
+	}
+	return sum; /* Return number */
+}
+
+//static float AT_ParseFloat(const char *ptr, uint8_t *cnt) {
+//	uint8_t i = 0, j = 0;
+//	float sum = 0.0f;
+//
+//	sum = (float) AT_ParseNumber(ptr, &i); /* Parse number */
+//	j += i;
+//	ptr += i;
+//	if (*ptr == '.') { /* Check decimals */
+//		float dec;
+//		dec = (float) AT_ParseNumber(ptr + 1, &i);
+//		dec /= (float) pow(10, i);
+//		if (sum >= 0) {
+//			sum += dec;
+//		} else {
+//			sum -= dec;
+//		}
+//		j += i + 1;
+//	}
+//
+//	if (cnt != NULL) { /* Save number of characters used for number */
+//		*cnt = j;
+//	}
+//	return sum; /* Return number */
+//}

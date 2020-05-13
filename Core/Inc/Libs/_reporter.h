@@ -9,11 +9,7 @@
 #define REPORTER_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_utils.h"
-#include "_eeprom.h"
-#include "_gps.h"
-#include "_rtc.h"
-#include "_crc.h"
+#include "Libs/_utils.h"
 
 /* Exported enum ---------------------------------------------------------------*/
 typedef enum {

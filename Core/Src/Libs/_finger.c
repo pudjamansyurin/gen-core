@@ -6,15 +6,15 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_finger.h"
-#include "VCU.h"
-#include "HMI1.h"
+#include "Libs/_finger.h"
+#include "Nodes/VCU.h"
+#include "Nodes/HMI1.h"
 
 /* External variables ---------------------------------------------------------*/
+extern osMutexId_t FingerRecMutexHandle;
 extern vcu_t VCU;
 extern hmi1_t HMI1;
 extern finger_t finger;
-extern osMutexId_t FingerRecMutexHandle;
 
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);

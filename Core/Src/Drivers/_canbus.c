@@ -6,7 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_canbus.h"
+#include "Drivers/_canbus.h"
 
 /* External variables ---------------------------------------------------------*/
 extern osThreadId_t CanRxTaskHandle;
@@ -84,7 +84,8 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
 	// check tx mailbox is ready
 	while (!HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)) {
 		osDelay(1);
-	};
+	}
+	;
 
 	/* Start the Transmission process */
 	status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), tx->data.u8, &TxMailbox);

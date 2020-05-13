@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_handlebar.h"
-#include "_utils.h"
+#include "Libs/_handlebar.h"
+#include "_defines.h"
 
 /* Public variables -----------------------------------------------------------*/
 sw_t SW = {

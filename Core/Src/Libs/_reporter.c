@@ -6,9 +6,13 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_reporter.h"
-#include "VCU.h"
-#include "BMS.h"
+#include "Libs/_reporter.h"
+#include "Nodes/VCU.h"
+#include "Nodes/BMS.h"
+#include "Drivers/_rtc.h"
+#include "Drivers/_crc.h"
+#include "Libs/_gps.h"
+#include "Libs/_handlebar.h"
 
 /* External variables ----------------------------------------------------------*/
 extern vcu_t VCU;

@@ -6,10 +6,10 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "_gps.h"
-#include "_reporter.h"
-#include "_handlebar.h"
-#include "VCU.h"
+#include "Libs/_gps.h"
+#include "Libs/_eeprom.h"
+#include "DMA/_dma_ublox.h"
+#include "Nodes/VCU.h"
 
 /* External variables ---------------------------------------------------------*/
 extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
