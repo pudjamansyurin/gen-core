@@ -144,6 +144,8 @@
   - [ ] Change audio jack connector
   - [ ] Give more space between each connector
   - [ ] Replace downloader connector with pin-header (3*2)
+  - [ ] Give GND pin for HMI1 & HMI2
+  - [ ] Put HMI1 & HMI2 side-by-side
 - [ ] EEPROM:
   - [ ] Change the footprint
 - [ ] Li-ion Charger:

@@ -6,7 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Parser/_log.h"
+#include "Drivers/_log.h"
 
 /* External variables ----------------------------------------------------------*/
 extern osMutexId_t LogMutexHandle;
@@ -24,7 +24,7 @@ void LOG_Char(char ch) {
 	while (1) {
 		if (ITM->PORT[0].u32 != 0
 				|| osKernelGetTickCount() - tick >= pdMS_TO_TICKS(10)
-						) {
+		) {
 			break;
 		}
 		osDelay(1);
