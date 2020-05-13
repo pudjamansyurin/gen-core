@@ -300,8 +300,8 @@ void Simcom_SetState(SIMCOM_STATE state) {
 				}
 				// Check IP Address
 				if (p) {
-					char ip[20];
-					p = AT_GetLocalIpAddress(ip);
+					at_cifsr_t param;
+					p = AT_GetLocalIpAddress(&param);
 				}
 
 				// upgrade simcom state

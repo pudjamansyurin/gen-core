@@ -164,7 +164,7 @@ int8_t _BitPosition(uint64_t event_id) {
 	return pos;
 }
 
-void _ParseText(const char *ptr, uint8_t *cnt, char *text) {
+void _ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size) {
 	uint8_t i = 0;
 
 	// check for double quote start
@@ -176,9 +176,16 @@ void _ParseText(const char *ptr, uint8_t *cnt, char *text) {
 	while (*ptr != '"' && *ptr != '\r' && *ptr != '\n') {
 		*text = *ptr;
 
+		// increment
 		text++;
 		ptr++;
 		i++;
+		size--;
+
+		// handle overflow
+		if (size <= 1) {
+			break;
+		}
 	}
 	// end of parsing for : double-quote, tab, new-line
 	*text = '\0';

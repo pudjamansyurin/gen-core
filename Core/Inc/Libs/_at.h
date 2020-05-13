@@ -130,10 +130,14 @@ typedef struct {
 	char password[20];
 } at_cstt_t;
 
+typedef struct {
+	char address[20];
+} at_cifsr_t;
+
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
 SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
-SIMCOM_RESULT AT_GetLocalIpAddress(char *ip);
+SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
 SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
 SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state);
