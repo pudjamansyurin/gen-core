@@ -90,6 +90,7 @@ void RTC_ReadRaw(timestamp_t *timestamp) {
 	lock();
 	HAL_RTC_GetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
+	timestamp->tzQuarterHour = 0;
 	unlock();
 }
 

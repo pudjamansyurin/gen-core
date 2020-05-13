@@ -164,6 +164,32 @@ int8_t _BitPosition(uint64_t event_id) {
 	return pos;
 }
 
+void _ParseText(const char *ptr, uint8_t *cnt, char *text) {
+	uint8_t i = 0;
+
+	// check for double quote start
+	if (*ptr == '"') {
+		ptr++;
+		i++;
+	}
+	// Parse text
+	while (*ptr != '"' && *ptr != '\r' && *ptr != '\n') {
+		*text = *ptr;
+
+		text++;
+		ptr++;
+		i++;
+	}
+	// end of parsing for : double-quote, tab, new-line
+	*text = '\0';
+	ptr++;
+	i++;
+	// Save number of characters used for number
+	if (cnt != NULL) {
+		*cnt = i;
+	}
+}
+
 int32_t _ParseNumber(const char *ptr, uint8_t *cnt) {
 	uint8_t minus = 0, i = 0;
 	int32_t sum = 0;

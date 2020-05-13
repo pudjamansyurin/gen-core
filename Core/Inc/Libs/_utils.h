@@ -32,6 +32,7 @@ uint8_t _RTOS_ValidEventFlag(uint32_t flag);
 void _DummyGenerator(sw_t *sw);
 
 int8_t _BitPosition(uint64_t event_id);
+void _ParseText(const char *ptr, uint8_t *cnt, char *text);
 int32_t _ParseNumber(const char *ptr, uint8_t *cnt);
 float _ParseFloatNumber(const char *ptr, uint8_t *cnt);
 uint32_t _ByteSwap32(uint32_t x);

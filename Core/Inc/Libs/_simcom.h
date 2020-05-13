@@ -51,35 +51,18 @@ typedef enum {
 typedef struct {
 	SIMCOM_STATE state;
 	uint8_t uploading;
-	struct {
-		char CIPSTART[200];
-		char CSTT[75];
-	} cmd;
 } sim_t;
-
-typedef struct {
-	char name[10];
-	uint8_t min;
-	uint8_t percent;
-} rssi_t;
-
-typedef struct {
-	struct {
-		rssi_t list;
-		uint8_t value;
-	} rssi;
-	uint8_t ber;
-} signal_t;
 
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Sleep(uint8_t state);
 void Simcom_SetState(SIMCOM_STATE state);
+SIMCOM_RESULT Simcom_Response(char *str);
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry);
 SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
+SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res);
 SIMCOM_RESULT Simcom_ProcessCommand(command_t *command);
 SIMCOM_RESULT Simcom_ProcessACK(header_t *header);
-
-SIMCOM_RESULT SIM_SignalQuality(uint8_t *percent);
-SIMCOM_RESULT SIM_Clock(timestamp_t *timestamp);
+void Simcom_Lock(void);
+void Simcom_Unlock(void);
 
 #endif /* SIMCOM_H_ */

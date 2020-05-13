@@ -29,6 +29,7 @@
 #include "_aes.h"
 #include "_canbus.h"
 #include "_simcom.h"
+#include "_at.h"
 #include "_gyro.h"
 #include "_gps.h"
 #include "_finger.h"
@@ -1276,7 +1277,6 @@ void StartManagerTask(void *argument)
 {
 	/* USER CODE BEGIN 5 */
 	TickType_t lastWake;
-	uint32_t notif;
 
 	// Initialization, this task get executed first!
 	VCU.Init();
@@ -1342,12 +1342,14 @@ void StartIotTask(void *argument)
 	/* USER CODE BEGIN StartIotTask */
 	TickType_t lastWake;
 	osStatus_t status;
-	SIMCOM_RESULT p;
 	report_t report;
 	response_t response;
+	uint8_t retry, nack, pending[2] = { 0 };
+
+	SIMCOM_RESULT p;
 	timestamp_t timestamp;
-	uint8_t retry, nack;
-	uint8_t pending[2] = { 0 };
+	at_csq_t signal;
+
 	osMessageQueueId_t *pQueue;
 	header_t *pHeader;
 	void *pPayload;
@@ -1428,14 +1430,17 @@ void StartIotTask(void *argument)
 
 		// ================= SIMCOM Related Routines ================
 		Simcom_SetState(SIM_STATE_READY);
-		// Retrieve network signal quality
-		SIM_SignalQuality(&(VCU.d.signal_percent));
-		// Check calibration by cellular network
+
+		if (AT_SignalQualityReport(&signal)) {
+			VCU.d.signal_percent = signal.percent;
+		}
+
 		if (RTC_NeedCalibration()) {
-			// get carrier timestamp
-			if (SIM_Clock(&timestamp)) {
-				// calibrate the RTC
-				RTC_WriteRaw(&timestamp, &(VCU.d.rtc));
+			if (AT_Clock(ATR, &timestamp)) {
+				if (timestamp.date.Year >= VCU_BUILD_YEAR) {
+					// Calibrate time
+					RTC_WriteRaw(&timestamp, &(VCU.d.rtc));
+				}
 			}
 		}
 
@@ -1768,9 +1773,7 @@ void StartKeylessTask(void *argument)
 
 				// indicator
 				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-				for (uint8_t i = 0; i < ((msg + 1) * 2); i++) {
-					osDelay(100);
-				}
+				osDelay(250 * msg);
 				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
 			}
 		}

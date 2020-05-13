@@ -8,7 +8,6 @@
 - [x] ~~Increase the baud-rate of all communication protocols~~ 
 - [x] Pass pointer of chars from Simcom_Response() to Simcom_Send() 
 - [x] De-structure "stm32f4_discovery_audio.c" and "stm32f4_discovery.c" 
-- [x] ~~Configure UBLOX if you order the IC separately, so build the library for it~~ 
 - [x] Handle AT Command of new SIM5300e 
 - [x] SIM5300e TCP communication 
 - [x] Add SIMCOM signal strength CAN and the display 
@@ -52,25 +51,26 @@
 - [x] ~~Fix duplicate variables~~
 - [x] use EVT_ERROR & EVENT_ERROR for ThreadFlag and EventFlag
 - [x] Move routines in CommandTask to its own Task
-  - [x] Implement BinarySemaphore or ThreadFlags to handle that
+  - [x] Implement ThreadFlags to handle that
 - [x] Simplify Log Debug as a function
-- [ ] Build dedicated AT Command library for SIMCOM
+- [x] Build dedicated AT Command library for SIMCOM
 - [ ] Make routine to check SIMCOM internet package
-- [ ] Simplify SIMCOM library
+- [x] Simplify SIMCOM library
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [x] Re-calibrate I2S PLL Clock after migration to F423
 - [x] Record RTOS high water mark stack space
 - [ ] SIM5300e SSL communication 
-- [ ] Check SYS_LED blinking continuously
-- [ ] Re-Calculate CRC for looped NACK in Response Frame
+- [x] Check SYS_LED blinking continuously
+- [x] Re-Calculate CRC for looped NACK in Response Frame
 - [x] Handle migration from STM32F407VG to STM32F423VH 
   - [x] Use AES features in new STM32F423VH 
   - [ ] Use AES for NRF24LE1 communication
 - [ ] Lock all global variable to minimize RTOS problem. 
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Handle NO Driver ID when vehicle OFF
-- [ ] Implement this UBX library:
-  - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
+- [ ] Configure UBLOX if you order the IC separately, so build the library for it
+  - [ ] Implement this UBX library:
+    - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
