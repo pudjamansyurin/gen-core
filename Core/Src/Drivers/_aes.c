@@ -22,15 +22,19 @@ static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
 void AES_Init(void) {
+	lock();
 	HAL_CRYP_GetConfig(&hcryp, &config);
 	config.pKey = pSecretAES;
 	HAL_CRYP_SetConfig(&hcryp, &config);
+	unlock();
 }
 
 void AES_UpdateKey(uint32_t secret[4]) {
+	lock();
 	for (uint8_t i = 0; i < 4; i++) {
 		pSecretAES[i] = secret[i];
 	}
+	unlock();
 }
 
 uint8_t AES_Encrypt(uint8_t *pSrc, uint8_t *pDst, uint16_t Sz) {
