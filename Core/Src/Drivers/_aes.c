@@ -12,11 +12,27 @@
 extern CRYP_HandleTypeDef hcryp;
 extern osMutexId_t AesMutexHandle;
 
+/* Private variable ----------------------------------------------------------*/
+static CRYP_ConfigTypeDef config;
+__ALIGN_BEGIN static uint32_t pSecretAES[4] __ALIGN_END;
+
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
+void AES_Init(void) {
+	HAL_CRYP_GetConfig(&hcryp, &config);
+	config.pKey = pSecretAES;
+	HAL_CRYP_SetConfig(&hcryp, &config);
+}
+
+void AES_UpdateKey(uint32_t secret[4]) {
+	for (uint8_t i = 0; i < 4; i++) {
+		pSecretAES[i] = secret[i];
+	}
+}
+
 uint8_t AES_Encrypt(uint8_t *pSrc, uint8_t *pDst, uint16_t Sz) {
 	uint8_t ret;
 

@@ -126,7 +126,9 @@
 - [ ] Change R67 value as R63
 - [ ] Change R23 value to 30k
 - [ ] Change C30, C31, C70, C71 value to 20pf
-- [ ] Change Q3, Q5, Q9, Q13, Q6 to TRANSISTOR PNP
+- [ ] Transistor Problem:
+  - [ ] Vbase should equal to Vemitter to turn it OFF
+  - [ ] Change Q3, Q5, Q9, Q13, Q6 to TRANSISTOR PNP
   - [ ] Increase the base resistor to 510 Ohm
   - [ ] If Q3, Q5, Q9, Q13 still not works, change to RELAY
 - [ ] Add buzzer & the GPIO pin
@@ -149,6 +151,7 @@
 - [ ] EEPROM:
   - [ ] Change the footprint
 - [ ] Li-ion Charger:
+  - [ ] **Charger is not working!!!!**
   - [ ] B+ only for: MCU, GPS, SIMCOM & EEPROM
   - [ ] Add solder jumper (connect to B+ or 5V) for other components not listed above
   - [ ] Add switch to disable the Li-ion battery

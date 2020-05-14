@@ -18,8 +18,7 @@ extern report_t REPORT;
 extern vcu_t VCU;
 
 /* Private functions prototype ------------------------------------------------*/
-static uint8_t EE_16(uint16_t vaddr, EEPROM_COMMAND cmd, uint16_t *value, uint16_t *ptr);
-static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32_t *ptr);
+static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
 static void lock(void);
 static void unlock(void);
 
@@ -69,7 +68,7 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value) {
 	uint8_t ret;
 	uint32_t tmp = value, temp;
 
-	ret = EE_32(VADDR_RESET, cmd, &value, &temp);
+	ret = EE_Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
 
 	if (ret) {
 		if (cmd == EE_CMD_R) {
@@ -95,7 +94,6 @@ void EEPROM_ResetOrLoad(void) {
 		for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
 			EEPROM_SequentialID(EE_CMD_W, 0, type);
 		}
-		// simcom configuration
 
 		// re-write eeprom
 		EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
@@ -116,7 +114,7 @@ uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE typ
 		vaddr = VADDR_RESPONSE_SEQ_ID;
 	}
 
-	return EE_16(vaddr, cmd, &value, pSeqId);
+	return EE_Command(vaddr, cmd, &value, pSeqId, sizeof(value));
 }
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
@@ -124,54 +122,30 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
 	if (value > VCU_ODOMETER_MAX) {
 		value = 0;
 	}
-	// FIXME: only update eeprom for 1km/hr increment
-	return EE_32(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer));
+	return EE_Command(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer), sizeof(value));
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
-	return EE_32(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id));
+	return EE_Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t EE_16(uint16_t vaddr, EEPROM_COMMAND cmd, uint16_t *value, uint16_t *ptr) {
+static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size) {
 	uint8_t ret = 0;
 
 	lock();
 
 	// check if new value is same with old value
 	if (cmd == EE_CMD_W) {
-		*ptr = *value;
+		memcpy(ptr, value, size);
 		// save the value
-		ret = EEPROM24XX_Save(vaddr, value, sizeof(uint16_t));
+		ret = EEPROM24XX_Save(vaddr, value, size);
 	} else {
 		// load the value
-		ret = EEPROM24XX_Load(vaddr, value, sizeof(uint16_t));
+		ret = EEPROM24XX_Load(vaddr, value, size);
 		// apply the value
 		if (ret) {
-			*ptr = *value;
-		}
-	}
-
-	unlock();
-	return ret;
-}
-
-static uint8_t EE_32(uint16_t vaddr, EEPROM_COMMAND cmd, uint32_t *value, uint32_t *ptr) {
-	uint8_t ret = 0;
-
-	lock();
-
-	// check if new value is same with old value
-	if (cmd == EE_CMD_W) {
-		*ptr = *value;
-		// save the value
-		ret = EEPROM24XX_Save(vaddr, value, sizeof(uint32_t));
-	} else {
-		// load the value
-		ret = EEPROM24XX_Load(vaddr, value, sizeof(uint32_t));
-		// apply the value
-		if (ret) {
-			*ptr = *value;
+			memcpy(ptr, value, size);
 		}
 	}
 

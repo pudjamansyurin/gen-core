@@ -37,6 +37,7 @@
 #include "Libs/_handlebar.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_rtc.h"
+#include "Drivers/_aes.h"
 #include "DMA/_dma_battery.h"
 #include "DMA/_dma_simcom.h"
 #include "DMA/_dma_ublox.h"
@@ -67,7 +68,7 @@ DMA_HandleTypeDef hdma_adc1;
 
 CRYP_HandleTypeDef hcryp;
 __ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {
-		0x00010203, 0x40506070, 0x8809AA0B, 0xC0DDE0FF };
+		0x00000000, 0x00000000, 0x00000000, 0x00000000 };
 
 CAN_HandleTypeDef hcan1;
 
@@ -81,6 +82,8 @@ I2S_HandleTypeDef hi2s3;
 DMA_HandleTypeDef hdma_spi3_tx;
 
 IWDG_HandleTypeDef hiwdg;
+
+RNG_HandleTypeDef hrng;
 
 RTC_HandleTypeDef hrtc;
 
@@ -273,6 +276,7 @@ static void MX_SPI1_Init(void);
 static void MX_UART4_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_RNG_Init(void);
 void StartManagerTask(void *argument);
 void StartIotTask(void *argument);
 void StartReporterTask(void *argument);
@@ -338,9 +342,11 @@ int main(void)
 	MX_UART4_Init();
 	MX_USART1_UART_Init();
 	MX_USART2_UART_Init();
+	MX_RNG_Init();
 	/* USER CODE BEGIN 2 */
 	CANBUS_Init();
 	BAT_DMA_Init();
+	AES_Init();
 	/* USER CODE END 2 */
 
 	/* Init scheduler */
@@ -487,7 +493,7 @@ void SystemClock_Config(void)
 	RCC_OscInitStruct.PLL.PLLM = 4;
 	RCC_OscInitStruct.PLL.PLLN = 100;
 	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-	RCC_OscInitStruct.PLL.PLLQ = 2;
+	RCC_OscInitStruct.PLL.PLLQ = 4;
 	RCC_OscInitStruct.PLL.PLLR = 2;
 	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
 			{
@@ -506,12 +512,14 @@ void SystemClock_Config(void)
 			{
 		Error_Handler();
 	}
-	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1 | RCC_PERIPHCLK_RTC;
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1 | RCC_PERIPHCLK_RTC
+			| RCC_PERIPHCLK_CLK48;
 	PeriphClkInitStruct.PLLI2S.PLLI2SN = 256;
 	PeriphClkInitStruct.PLLI2S.PLLI2SM = 8;
 	PeriphClkInitStruct.PLLI2S.PLLI2SR = 5;
 	PeriphClkInitStruct.PLLI2S.PLLI2SQ = 2;
 	PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+	PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLQ;
 	PeriphClkInitStruct.PLLI2SSelection = RCC_PLLI2SCLKSOURCE_PLLSRC;
 	PeriphClkInitStruct.I2sApb1ClockSelection = RCC_I2SAPB1CLKSOURCE_PLLI2S;
 	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
@@ -866,6 +874,32 @@ static void MX_IWDG_Init(void)
 }
 
 /**
+ * @brief RNG Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_RNG_Init(void)
+{
+
+	/* USER CODE BEGIN RNG_Init 0 */
+
+	/* USER CODE END RNG_Init 0 */
+
+	/* USER CODE BEGIN RNG_Init 1 */
+
+	/* USER CODE END RNG_Init 1 */
+	hrng.Instance = RNG;
+	if (HAL_RNG_Init(&hrng) != HAL_OK)
+			{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN RNG_Init 2 */
+
+	/* USER CODE END RNG_Init 2 */
+
+}
+
+/**
  * @brief RTC Initialization Function
  * @param None
  * @retval None
@@ -1176,6 +1210,12 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	HAL_GPIO_Init(INT_KEYLESS_IRQ_GPIO_Port, &GPIO_InitStruct);
 
+	/*Configure GPIO pins : PB12 PB13 */
+	GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_13;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 	/*Configure GPIO pins : INT_NET_RST_Pin INT_NET_DTR_Pin INT_GYRO_PWR_Pin INT_KEYLESS_PWR_Pin */
 	GPIO_InitStruct.Pin = INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -1197,6 +1237,24 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(EXT_GPIO_IN0_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : PD14 PD15 */
+	GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_15;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : PC6 PC8 */
+	GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_8;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : PA11 PA12 */
+	GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : INT_KEYLESS_CSN_Pin */
 	GPIO_InitStruct.Pin = INT_KEYLESS_CSN_Pin;
@@ -1297,13 +1355,20 @@ void StartManagerTask(void *argument)
 	VCU.CheckMainPower();
 	VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
-	// Threads management:
-	//	osThreadSuspend(IotTaskHandle);
-	//	osThreadSuspend(ReporterTaskHandle);
-	//	osThreadSuspend(CommandTaskHandle);
-	//	osThreadSuspend(GpsTaskHandle);
-	//	osThreadSuspend(GyroTaskHandle);
-	//  osThreadSuspend(KeylessTaskHandle);
+//	while (1) {
+//		HAL_GPIO_TogglePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin);
+//		HAL_IWDG_Refresh(&hiwdg);
+//		_LedToggle();
+//		osDelay(1000);
+//	}
+
+// Threads management:
+//	osThreadSuspend(IotTaskHandle);
+//	osThreadSuspend(ReporterTaskHandle);
+//	osThreadSuspend(CommandTaskHandle);
+//	osThreadSuspend(GpsTaskHandle);
+//	osThreadSuspend(GyroTaskHandle);
+//  osThreadSuspend(KeylessTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
 	//	osThreadSuspend(AudioTaskHandle);
 	//	osThreadSuspend(SwitchTaskHandle);
