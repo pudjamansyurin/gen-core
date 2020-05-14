@@ -173,7 +173,8 @@ void Simcom_SetState(SIMCOM_STATE state) {
 				// Network Registration Status
 				if (p) {
 					at_c_greg_t param = {
-							.mode = CREG_MODE_DISABLE
+							.mode = CREG_MODE_DISABLE,
+							.stat = CREG_STAT_REG_HOME
 					};
 					p = AT_NetworkRegistration(ATW, &param);
 
@@ -204,7 +205,8 @@ void Simcom_SetState(SIMCOM_STATE state) {
 				// GPRS Registration Status
 				if (p) {
 					at_c_greg_t param = {
-							.mode = CREG_MODE_DISABLE
+							.mode = CREG_MODE_DISABLE,
+							.stat = CREG_STAT_REG_HOME
 					};
 					p = AT_NetworkRegistrationStatus(ATW, &param);
 
