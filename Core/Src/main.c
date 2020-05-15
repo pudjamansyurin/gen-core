@@ -1449,7 +1449,6 @@ void StartIotTask(void *argument)
 
 	// Start simcom module
 	SIMCOM_DMA_Init();
-	Simcom_SetState(SIM_STATE_CONFIGURED);
 
 	/* Infinite loop */
 	for (;;) {
