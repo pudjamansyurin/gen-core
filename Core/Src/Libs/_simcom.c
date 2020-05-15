@@ -488,8 +488,8 @@ SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res) {
 		Simcom_Sleep(0);
 	}
 
-	// only handle command if BOOT_CMD or SIM_STATE_READY
-	if ((strstr(cmd, SIMCOM_CMD_BOOT) != NULL) || SIM.state >= SIM_STATE_READY) {
+	// only handle command if SIM_STATE_READY or BOOT_CMD 
+	if (SIM.state >= SIM_STATE_READY || (strcmp(cmd, SIMCOM_CMD_BOOT) == 0)) {
 		p = Simcom_SendIndirect(cmd, strlen(cmd), 0, ms, res, n);
 	}
 
@@ -578,8 +578,7 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 	}
 
 	// check
-	return Simcom_Command(SIMCOM_CMD_BOOT, 1000, 1, SIMCOM_RSP_READY);
-	//  return Simcom_Cmd(SIMCOM_CMD_BOOT, 1000, 1);
+	return Simcom_Cmd(SIMCOM_CMD_BOOT, 1000, 1);
 }
 
 static SIMCOM_RESULT Simcom_Power(void) {
@@ -644,7 +643,11 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
 				(osKernelGetTickCount() - tick) >= timeout_tick) {
 
 			// set flag for timeout & error
-			p = Simcom_Response(res);
+			if (strcmp(data, SIMCOM_CMD_BOOT) == 0) {
+				p = Simcom_Response(res) || Simcom_Response(SIMCOM_RSP_READY);
+			} else {
+				p = Simcom_Response(res);
+			}
 
 			if (p != SIM_RESULT_OK) {
 				// exception for no response
