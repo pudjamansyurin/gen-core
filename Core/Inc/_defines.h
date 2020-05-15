@@ -79,6 +79,7 @@
 
 // Events (for Individual Thread)
 #define EVT_MASK																0x7FFFFFFFUL
+#define EVT_IOT_DISCARD													BIT(0)
 #define EVT_AUDIO_BEEP                        	BIT(0)
 #define EVT_AUDIO_BEEP_START                  	BIT(1)
 #define EVT_AUDIO_BEEP_STOP                   	BIT(2)
