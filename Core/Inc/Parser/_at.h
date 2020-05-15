@@ -90,6 +90,19 @@ typedef enum {
 } AT_CSACT_ACT;
 
 typedef enum {
+	CIPSTAT_IP_INITIAL = 0,
+	CIPSTAT_IP_START = 1,
+	CIPSTAT_IP_CONFIG = 2,
+	CIPSTAT_IP_GPRSACT = 3,
+	CIPSTAT_IP_STATUS = 4,
+	CIPSTAT_CONNECTING = 5,
+	CIPSTAT_CONNECT_OK = 6,
+	CIPSTAT_CLOSING = 7,
+	CIPSTAT_CLOSED = 8,
+	CIPSTAT_PDP_DEACT = 9
+} AT_CIPSTATUS;
+
+typedef enum {
 	AT_DISABLE = 0,
 	AT_ENABLE = 1
 } AT_BOOL;
@@ -137,6 +150,7 @@ typedef struct {
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
 SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
+SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
 SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);

@@ -71,6 +71,21 @@ SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
 	return p;
 }
 
+SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state) {
+	SIMCOM_RESULT p = SIM_RESULT_ERROR;
+	char *str = NULL;
+
+	Simcom_Lock();
+	// Read
+	p = AT_CmdRead("AT+CIPSTATUS\r", "STATE :", &str);
+	if (p) {
+		*state = AT_ParseNumber(&str[0], NULL);
+	}
+	Simcom_Unlock();
+
+	return p;
+}
+
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 	char *str = NULL;
