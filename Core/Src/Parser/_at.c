@@ -566,7 +566,7 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
 	Simcom_Lock();
 	if (mode == ATW) {
 		// Write
-		sprintf(cmd, "AT+CCLK=\"%d/%d/%d,%d,%d,%d%d\"\r",
+		sprintf(cmd, "AT+CCLK=\"%d/%d/%d,%d:%d:%d%+d\"\r",
 				tm->date.Year,
 				tm->date.Month,
 				tm->date.Date,
@@ -586,7 +586,7 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
 			tm->time.Hours = AT_ParseNumber(&str[cnt + 1], &cnt);
 			tm->time.Minutes = AT_ParseNumber(&str[cnt + 1], &cnt);
 			tm->time.Seconds = AT_ParseNumber(&str[cnt + 1], &cnt);
-			tm->tzQuarterHour = AT_ParseNumber(&str[cnt + 1], NULL);
+			tm->tzQuarterHour = AT_ParseNumber(&str[cnt], NULL);
 
 			// Formatting
 			tm->date.WeekDay = RTC_WEEKDAY_MONDAY;
