@@ -54,18 +54,22 @@
   - [x] Implement ThreadFlags to handle that
 - [x] Simplify Log Debug as a function
 - [x] Build dedicated AT Command library for SIMCOM
-- [ ] Make routine to check SIMCOM internet package
 - [x] Simplify SIMCOM library
-- [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [x] Re-calibrate I2S PLL Clock after migration to F423
 - [x] Record RTOS high water mark stack space
-- [ ] SIM5300e SSL communication 
 - [x] Check SYS_LED blinking continuously
 - [x] Re-Calculate CRC for looped NACK in Response Frame
 - [x] Handle migration from STM32F407VG to STM32F423VH 
   - [x] Use AES features in new STM32F423VH 
   - [ ] Use AES for NRF24LE1 communication
+  - [ ] User RNG to generate random AES-KEY
+  - [ ] Use NRF-FLASH to store permanent AES-KEY
+  - [ ] Build communication handshake between NRF & VCU
+- [ ] Make routine to check SIMCOM internet package
+- [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
+- [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
 - [ ] Lock all global variable to minimize RTOS problem. 
+- [ ] 
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Handle NO Driver ID when vehicle OFF
 - [ ] Configure UBLOX if you order the IC separately, so build the library for it

@@ -47,7 +47,8 @@ void HMI1_RefreshIndex(void) {
 }
 
 void HMI1_Power(uint8_t state) {
-	HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, state);
+	// PNP transistor is Active Low
+	HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, !state);
 }
 
 /* ====================================== CAN RX =================================== */

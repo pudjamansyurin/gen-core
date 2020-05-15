@@ -50,17 +50,18 @@ void HMI2_PowerOverCan(uint8_t on) {
 	TickType_t timeout = pdMS_TO_TICKS(60000);
 	static TickType_t tick = 0;
 
+	// PNP transistor is Active Low
 	if (on) {
 		if (!HMI2.d.started) {
 			// handle timeout
 			if (osKernelGetTickCount() - tick > timeout) {
 				tick = osKernelGetTickCount();
 
-				HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+				HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
 				osDelay(500);
 			}
 			// turn ON
-			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
+			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
 		} else {
 			// completely ON
 			tick = osKernelGetTickCount();
@@ -71,12 +72,12 @@ void HMI2_PowerOverCan(uint8_t on) {
 			if (osKernelGetTickCount() - tick > timeout) {
 				tick = osKernelGetTickCount();
 
-				HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+				HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
 			}
 		} else {
 			// completely OFF
 			tick = osKernelGetTickCount();
-			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
 		}
 	}
 }
