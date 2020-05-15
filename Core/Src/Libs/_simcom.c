@@ -54,36 +54,49 @@ void Simcom_SetState(SIMCOM_STATE state) {
 	Simcom_Lock();
 
 	SIMCOM_RESULT p;
+	SIMCOM_STATE lastState;
 	static uint8_t init = 1;
-	uint8_t iteration;
+	const uint8_t maxDepth = 5;
+	uint8_t iteration, depth = maxDepth;
 
 	do {
 		// only executed at power up
 		if (init) {
+			init = 0;
 			SIM.state = SIM_STATE_DOWN;
+			lastState = SIM.state;
 			LOG_StrLn("Simcom:Init");
 
 			p = Simcom_Power();
 		} else {
-			if (SIM.state == SIM_STATE_DOWN) {
-				VCU.d.signal_percent = 0;
-				LOG_StrLn("Simcom:Down");
-
-				p = SIM_RESULT_ERROR;
-			} else {
-				if (SIM.state >= SIM_STATE_CONFIGURED) {
-					Simcom_IdleJob(NULL);
-					if (VCU.d.signal_percent < 20) {
-						LOG_StrLn("Simcom:PendingBySignal");
-						osDelay(5 * 1000);
-						break;
-					}
+			// Handle locked-loop
+			if (SIM.state < lastState) {
+				if (!depth--) {
+					depth = maxDepth;
+					SIM.state = SIM_STATE_DOWN;
+					LOG_StrLn("Simcom:LockedLoop");
 				}
+			}
+			lastState = SIM.state;
 
+			// Handle SIMCOM down
+			if (SIM.state == SIM_STATE_DOWN) {
+				p = SIM_RESULT_ERROR;
+
+				LOG_StrLn("Simcom:Down");
+				VCU.d.signal_percent = 0;
+			} else if (SIM.state > SIM_STATE_DOWN) {
 				p = SIM_RESULT_OK;
+
+				Simcom_IdleJob(NULL);
+				// Force exit loop
+				if (VCU.d.signal_percent < 15) {
+					LOG_StrLn("Simcom:SignalPoor");
+					osDelay(5000);
+					break;
+				}
 			}
 		}
-
 		// handle simcom states
 		switch (SIM.state) {
 			case SIM_STATE_DOWN:
@@ -358,7 +371,6 @@ void Simcom_SetState(SIMCOM_STATE state) {
 			osDelay(1000);
 		}
 
-		init = 0;
 	} while (SIM.state < state);
 
 	Simcom_Unlock();
@@ -373,7 +385,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
 	command_t hCommand;
 	header_t *hHeader = NULL;
 
-	// combine the size
+// combine the size
 	sprintf(str, "AT+CIPSEND=%d\r", size);
 
 	if (SIM.state >= SIM_STATE_SERVER_ON) {
@@ -483,17 +495,17 @@ SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n) {
 SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
-	// wake-up the SIMCOM
+// wake-up the SIMCOM
 	if (!SIM.uploading) {
 		Simcom_Sleep(0);
 	}
 
-	// only handle command if SIM_STATE_READY or BOOT_CMD 
+// only handle command if SIM_STATE_READY or BOOT_CMD
 	if (SIM.state >= SIM_STATE_READY || (strcmp(cmd, SIMCOM_CMD_BOOT) == 0)) {
 		p = Simcom_SendIndirect(cmd, strlen(cmd), 0, ms, res, n);
 	}
 
-	// sleep the SIMCOM
+// sleep the SIMCOM
 	if (!SIM.uploading) {
 		Simcom_Sleep(1);
 	}
@@ -563,10 +575,10 @@ SIMCOM_RESULT Simcom_ProcessACK(header_t *header) {
 static SIMCOM_RESULT Simcom_Ready(void) {
 	uint32_t tick;
 
-	// save event
+// save event
 	VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
 
-	// wait until 1s response
+// wait until 1s response
 	tick = osKernelGetTickCount();
 	while (SIM.state == SIM_STATE_DOWN) {
 		if (Simcom_Response(SIMCOM_RSP_OK) ||
@@ -577,28 +589,28 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 		osDelay(1);
 	}
 
-	// check
+// check
 	return Simcom_Cmd(SIMCOM_CMD_BOOT, 1000, 1);
 }
 
 static SIMCOM_RESULT Simcom_Power(void) {
 	LOG_StrLn("Simcom:Powered");
-	// power control
+// power control
 	HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
 	osDelay(3000);
 	HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
 	osDelay(5000);
-	// wait response
+// wait response
 	return Simcom_Ready();
 }
 
 static SIMCOM_RESULT Simcom_Reset(void) {
 	LOG_StrLn("Simcom:Reset");
-	// simcom reset pin
+// simcom reset pin
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
 	HAL_Delay(1);
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
-	// wait response
+// wait response
 	return Simcom_Ready();
 }
 
@@ -606,14 +618,14 @@ static SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
 	SIMCOM_RESULT p;
 	at_csq_t signal;
 
-	// debug
+// debug
 	if (iteration != NULL) {
 		LOG_Str("Simcom:Iteration = ");
 		LOG_Int((*iteration)++);
 		LOG_Enter();
 	}
 
-	// other routines
+// other routines
 	p = AT_SignalQualityReport(&signal);
 	if (p) {
 		VCU.d.signal_percent = signal.percent;
@@ -629,13 +641,13 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
 	uint32_t tick, timeout_tick = 0;
 
 	Simcom_ClearBuffer();
-	// transmit to serial (low-level)
+// transmit to serial (low-level)
 	SIMCOM_Transmit(data, len);
-	// convert time to tick
+// convert time to tick
 	timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME_MS);
-	// set timeout guard
+// set timeout guard
 	tick = osKernelGetTickCount();
-	// wait response from SIMCOM
+// wait response from SIMCOM
 	while (1) {
 		if (Simcom_Response(res) ||
 				Simcom_Response(SIMCOM_RSP_ERROR) ||
@@ -688,12 +700,12 @@ static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_pa
 
 	SIMCOM_RESULT p;
 	uint8_t seq;
-	// default response
+// default response
 	if (res == NULL) {
 		res = SIMCOM_RSP_OK;
 	}
 
-	// repeat command until desired response
+// repeat command until desired response
 	seq = n - 1;
 	do {
 		// before next iteration
@@ -727,6 +739,6 @@ static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_pa
 }
 
 static void Simcom_ClearBuffer(void) {
-	// reset rx buffer
+// reset rx buffer
 	SIMCOM_Reset_Buffer();
 }
