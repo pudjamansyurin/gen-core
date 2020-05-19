@@ -6,16 +6,13 @@
  */
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_nrf24l01.h"
+#include "Libs/_keyless.h"
 
 /* External variables ---------------------------------------------------------*/
 extern SPI_HandleTypeDef hspi1;
 
 /* Public variables -----------------------------------------------------------*/
 nrf24l01 nrf;
-
-/* Private variables ----------------------------------------------------------*/
-static const uint8_t tx_address[5] = { 0, 0, 0, 0, 1 };
-static const uint8_t rx_address[5] = { 0, 0, 0, 0, 2 };
 
 /* Private functions prototype ------------------------------------------------*/
 static void csn_set(nrf24l01 *dev);
@@ -30,18 +27,13 @@ void ce_reset(nrf24l01 *dev) {
 	HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_RESET);
 }
 
-NRF_RESULT nrf_set_config(nrf24l01_config *config, uint8_t *rx_data, uint8_t payload_length) {
+NRF_RESULT nrf_set_config(nrf24l01_config *config) {
 	config->data_rate = NRF_DATA_RATE_250KBPS;
 	config->tx_power = NRF_TX_PWR_0dBm;
 	config->crc_width = NRF_CRC_WIDTH_1B;
-	config->addr_width = NRF_ADDR_WIDTH_5;
 	config->retransmit_count = 15;   // maximum is 15 times
 	config->retransmit_delay = 0x0F; // 4000us, LSB:250us
 	config->rf_channel = 110;
-	config->rx_address = rx_address;
-	config->tx_address = tx_address;
-	config->payload_length = payload_length; // maximum is 32 bytes
-	config->rx_buffer = (uint8_t*) rx_data;
 
 	config->spi = &hspi1;
 	config->spi_timeout = 100; // milliseconds
@@ -677,6 +669,7 @@ NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
 	ce_set(dev);
 
 	while (dev->tx_busy == 1) {
+		osDelay(1);
 	} // wait for end of transmittion
 
 	return dev->tx_result;
@@ -691,12 +684,14 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
 	ce_set(dev);
 
 	while (dev->tx_busy == 1) {
+		osDelay(1);
 	} // wait for end of transmittion
 
 	return dev->tx_result;
 }
 
-const uint8_t* nrf_receive_packet(nrf24l01 *dev) {
+NRF_RESULT nrf_receive_packet(nrf24l01 *dev, uint8_t *data, uint16_t ms) {
+	NRF_RESULT ret = NRF_OK;
 
 	dev->rx_busy = 1;
 
@@ -704,10 +699,19 @@ const uint8_t* nrf_receive_packet(nrf24l01 *dev) {
 	nrf_rx_tx_control(dev, NRF_STATE_RX);
 	ce_set(dev);
 
+	// wait for reception
+	uint32_t tick = osKernelGetTickCount();
 	while (dev->rx_busy == 1) {
-	} // wait for reception
+		osDelay(1);
 
-	return dev->config.rx_buffer;
+		// handle timeout
+		if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(ms)) {
+			ret = NRF_ERROR;
+			break;
+		}
+	}
+
+	return ret;
 }
 
 NRF_RESULT nrf_push_packet(nrf24l01 *dev, const uint8_t *data) {

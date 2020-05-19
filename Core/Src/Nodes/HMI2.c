@@ -47,7 +47,7 @@ void HMI2_Refresh(void) {
 }
 
 void HMI2_PowerOverCan(uint8_t on) {
-	TickType_t timeout = pdMS_TO_TICKS(60000);
+	TickType_t timeout = pdMS_TO_TICKS(90000);
 	static TickType_t tick = 0;
 
 	// PNP transistor is Active Low

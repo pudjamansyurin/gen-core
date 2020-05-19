@@ -247,6 +247,12 @@ const osMutexAttr_t FingerRecMutex_attributes = {
 		.name = "FingerRecMutex",
 		.attr_bits = osMutexRecursive,
 };
+/* Definitions for KlessRecMutex */
+osMutexId_t KlessRecMutexHandle;
+const osMutexAttr_t KlessRecMutex_attributes = {
+		.name = "KlessRecMutex",
+		.attr_bits = osMutexRecursive,
+};
 /* USER CODE BEGIN PV */
 osEventFlagsId_t GlobalEventHandle;
 extern sw_t SW;
@@ -379,6 +385,9 @@ int main(void)
 
 	/* creation of FingerRecMutex */
 	FingerRecMutexHandle = osMutexNew(&FingerRecMutex_attributes);
+
+	/* creation of KlessRecMutex */
+	KlessRecMutexHandle = osMutexNew(&KlessRecMutex_attributes);
 
 	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
@@ -1184,20 +1193,20 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(EXT_HMI2_PHONE_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_PWR_Pin
-	 INT_AUDIO_PWR_Pin */
+	 EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
 	GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_PWR_Pin
-			| INT_AUDIO_PWR_Pin;
+			| EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : EXT_FINGER_TOUCH_PWR_Pin EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin */
-	GPIO_InitStruct.Pin = EXT_FINGER_TOUCH_PWR_Pin | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin;
+	/*Configure GPIO pin : EXT_FINGER_TOUCH_PWR_Pin */
+	GPIO_InitStruct.Pin = EXT_FINGER_TOUCH_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+	HAL_GPIO_Init(EXT_FINGER_TOUCH_PWR_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : EXT_SOLENOID_PWR_Pin EXT_KEYLESS_ALARM_Pin */
 	GPIO_InitStruct.Pin = EXT_SOLENOID_PWR_Pin | EXT_KEYLESS_ALARM_Pin;
@@ -1332,7 +1341,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		}
 		// handle NRF24 IRQ
 		if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
-			KEYLESS_IrqHandler();
+			KLESS_IrqHandler();
 		}
 		// handle Switches EXTI
 		for (uint8_t i = 0; i < SW_TOTAL_LIST; i++) {
@@ -1369,21 +1378,14 @@ void StartManagerTask(void *argument)
 	VCU.CheckMainPower();
 	VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
-//	while (1) {
-//		HAL_GPIO_TogglePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin);
-//		HAL_IWDG_Refresh(&hiwdg);
-//		_LedToggle();
-//		osDelay(1000);
-//	}
-
-// Threads management:
-//	osThreadSuspend(IotTaskHandle);
-//	osThreadSuspend(ReporterTaskHandle);
-//	osThreadSuspend(CommandTaskHandle);
-//	osThreadSuspend(GpsTaskHandle);
-//	osThreadSuspend(GyroTaskHandle);
-//  osThreadSuspend(KeylessTaskHandle);
-	osThreadSuspend(FingerTaskHandle);
+	// Threads management:
+	//	osThreadSuspend(IotTaskHandle);
+	//	osThreadSuspend(ReporterTaskHandle);
+	//	osThreadSuspend(CommandTaskHandle);
+	//	osThreadSuspend(GpsTaskHandle);
+	//	osThreadSuspend(GyroTaskHandle);
+	//  osThreadSuspend(KeylessTaskHandle);
+	//	osThreadSuspend(FingerTaskHandle);
 	//	osThreadSuspend(AudioTaskHandle);
 	//	osThreadSuspend(SwitchTaskHandle);
 	//	osThreadSuspend(CanRxTaskHandle);
@@ -1723,10 +1725,31 @@ void StartCommandTask(void *argument)
 							break;
 					}
 
-					// wait response from FingerTask (30 seconds)
-					notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-					if (!_RTOS_ValidThreadFlag(notif) || !(notif & EVT_COMMAND_OK)) {
-						response.data.code = RESPONSE_STATUS_ERROR;
+					// wait response until timeout (30 seconds)
+					if (response.data.code == RESPONSE_STATUS_OK) {
+						notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
+						if (!_RTOS_ValidThreadFlag(notif) || !(notif & EVT_COMMAND_OK)) {
+							response.data.code = RESPONSE_STATUS_ERROR;
+						}
+					}
+					break;
+
+				case CMD_CODE_KEYLESS:
+					switch (command.data.sub_code) {
+						case CMD_KEYLESS_PAIRING:
+							osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+
+							// wait response until timeout (30 seconds)
+							notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
+							if (!_RTOS_ValidThreadFlag(notif) || !(notif & EVT_COMMAND_OK)) {
+								response.data.code = RESPONSE_STATUS_ERROR;
+							}
+
+							break;
+
+						default:
+							response.data.code = RESPONSE_STATUS_INVALID;
+							break;
 					}
 					break;
 
@@ -1833,40 +1856,58 @@ void StartGyroTask(void *argument)
 void StartKeylessTask(void *argument)
 {
 	/* USER CODE BEGIN StartKeylessTask */
-	uint8_t msg;
 	uint32_t notif;
+	KLESS_CMD command;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// initialization
-	KEYLESS_Init();
+	KLESS_Init();
 	//	AES_Tester();
 
 	/* Infinite loop */
 	for (;;) {
 		// check if has new can message
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
+		// proceed event
 		if (_RTOS_ValidThreadFlag(notif)) {
-			// proceed event
+			// handle incomming payload
 			if (notif & EVT_KEYLESS_RX_IT) {
-				msg = KEYLESS_ReadPayload();
+				KLESS_Debugger();
 
-				// update heart-beat
-				VCU.d.tick.keyless = osKernelGetTickCount();
+				// process
+				if (KLESS_ValidateCommand(&command)) {
+					// update heart-beat
+					VCU.d.tick.keyless = osKernelGetTickCount();
 
-				// debug
-				KEYLESS_Debugger();
-
-				// indicator
-				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-				osDelay(250 * msg);
-				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
+					// indicator
+					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
+					osDelay(command * 250);
+					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
+					LOG_StrLn("NRF:Command = OK");
+				} else {
+					LOG_StrLn("NRF:Command = ERROR");
+				}
 			}
+
+			// handle pairing
+			if (notif & EVT_KEYLESS_PAIRING) {
+
+				// handle response
+				//				if (p == FINGERPRINT_OK) {
+				//					osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+				//				} else {
+				//				osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_ERROR);
+				//				}
+			}
+
+			// reset ThreadFlag
+			osThreadFlagsClear(EVT_MASK);
 		}
 
 		// update state
-		KEYLESS_Refresh();
+		KLESS_Refresh();
 	}
 	/* USER CODE END StartKeylessTask */
 }
@@ -1903,9 +1944,7 @@ void StartFingerTask(void *argument)
 			if (notif & EVT_FINGER_PLACED) {
 				if (Finger_AuthFast() > 0) {
 					// Finger is registered
-					_LedWrite(1);
-					osDelay(1000);
-					_LedWrite(0);
+					VCU.d.knob = !VCU.d.knob;
 				}
 			}
 
@@ -2021,7 +2060,7 @@ void StartSwitchTask(void *argument)
 			osDelay(50);
 			osThreadFlagsClear(EVT_MASK);
 
-			// Hanlde switch EXTI interrupt
+			// Handle switch EXTI interrupt
 			if (notif & EVT_SWITCH_TRIGGERED) {
 				// Read all (to handle multiple switch change at the same time)
 				HBAR_ReadStates();
@@ -2079,33 +2118,30 @@ void StartCanRxTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		// wait forever
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, osWaitForever);
+		notif = osThreadFlagsWait(EVT_CAN_RX_IT, osFlagsWaitAny, osWaitForever);
 		if (_RTOS_ValidThreadFlag(notif)) {
-			// proceed event
-			if (notif & EVT_CAN_RX_IT) {
-				//			CANBUS_RxDebugger();
+			//			CANBUS_RxDebugger();
 
-				// handle STD message
-				switch (CANBUS_ReadID()) {
-					case CAND_HMI2:
-						HMI2.can.r.State();
-						break;
-					case CAND_HMI1_LEFT:
-						HMI1.can.r.LeftState();
-						break;
-					case CAND_HMI1_RIGHT:
-						HMI1.can.r.RightState();
-						break;
-					case CAND_BMS_PARAM_1:
-						BMS.can.r.Param1();
-						break;
-					case CAND_BMS_PARAM_2:
-						BMS.can.r.Param2();
-						break;
-					default:
+			// handle STD message
+			switch (CANBUS_ReadID()) {
+				case CAND_HMI2:
+					HMI2.can.r.State();
+					break;
+				case CAND_HMI1_LEFT:
+					HMI1.can.r.LeftState();
+					break;
+				case CAND_HMI1_RIGHT:
+					HMI1.can.r.RightState();
+					break;
+				case CAND_BMS_PARAM_1:
+					BMS.can.r.Param1();
+					break;
+				case CAND_BMS_PARAM_2:
+					BMS.can.r.Param2();
+					break;
+				default:
 
-						break;
-				}
+					break;
 			}
 		}
 	}
@@ -2188,18 +2224,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

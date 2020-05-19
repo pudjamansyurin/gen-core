@@ -93,6 +93,7 @@
 #define EVT_COMMAND_OK													BIT(1)
 #define EVT_CAN_RX_IT                         	BIT(0)
 #define EVT_KEYLESS_RX_IT                     	BIT(0)
+#define EVT_KEYLESS_PAIRING											BIT(1)
 #define EVT_SWITCH_TRIGGERED										BIT(0)
 #define EVT_SWITCH_BMS_IRQ                   		BIT(1)
 #define EVT_SWITCH_KNOB_IRQ                  		BIT(2)
@@ -106,6 +107,7 @@
 #define CMD_CODE_REPORT                         1
 #define CMD_CODE_AUDIO                          2
 #define CMD_CODE_FINGER                         3
+#define CMD_CODE_KEYLESS												4
 
 // Command Sub-Code List
 #define CMD_GEN_INFO                            0
@@ -124,6 +126,8 @@
 #define CMD_FINGER_ADD                          0
 #define CMD_FINGER_DEL                          1
 #define CMD_FINGER_RST                          2
+
+#define CMD_KEYLESS_PAIRING											0
 
 // Response Status List
 #define RESPONSE_STATUS_ERROR                   0

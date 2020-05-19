@@ -127,7 +127,7 @@ typedef struct {
 void ce_set(nrf24l01 *dev);
 void ce_reset(nrf24l01 *dev);
 /* Initialization routine */
-NRF_RESULT nrf_set_config(nrf24l01_config *config, uint8_t *rx_data, uint8_t payload_length);
+NRF_RESULT nrf_set_config(nrf24l01_config *config);
 NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config);
 NRF_RESULT nrf_check(nrf24l01 *dev);
 /* EXTI Interrupt Handler
@@ -146,7 +146,7 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);
  * Blocks until the data has arrived, then returns a pointer to received data.
  * Please note, once nrf_packet_received_callback routine is overridden, this
  * one will stop working. */
-const uint8_t* nrf_receive_packet(nrf24l01 *dev);
+NRF_RESULT nrf_receive_packet(nrf24l01 *dev, uint8_t *data, uint16_t ms);
 /* Blocking Data Sending
  *
  * If the AA is enabled (default), this method will return:

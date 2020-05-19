@@ -136,7 +136,6 @@
   - [ ] Increase the base resistor to 510 Ohm
   - [ ] If Q3, Q5, Q9, Q13 still not works, change to RELAY
 - [ ] Add buzzer & the GPIO pin
-- [ ] Add microphone to ~~SIMCOM pin~~ VCU
 - [ ] Handle "different signal" trace properly (CAN, I2S, MIC_N&P)
 - [ ] The Power Trace should be wider to fix voltage drop
   - [ ] Trace between B+ to SIMCOM's VBAT at least 60mil
@@ -167,18 +166,18 @@
   - [ ] Separate Q4 GND and GYRO_GND (in schematic)
 - [ ] GPS:
   - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
-  - [ ] Give jumper for serial to MCU
-  - [ ] Give jumper for V_BCKP, it can use VDD / VCC
+  - [ ] Add solder jumper for TX pin between VCU & Ublox chip
+  - [ ] Connect V_BCKP to VCC (not VDD)
   - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
   - [ ] Configure the EEPROM address using u-center app
   - [ ] Fix eagle footprint problem, the un-shielded ground near every pins
   - [ ] Add recharge-able coin battery connector also for RTC
   - [ ] Increase C90 value to 100uF (tantalum)
-  - [ ] Add solder jumper for TX pin between VCU & Ublox chip
   - [ ] Use EXTINT pin to control Sleep mode
     - See section "9.3.2.7 EXTINT pin control" in "Receiver Description" datasheet
 - [ ] Fingerprint:
   - [ ] Change Q6 from NPN to PNP
+  - [ ] EXT_FINGER_TOUCH_PWR change Collector trace from B+ to Vdd
 - [ ] SIMCOM:
   - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
   - [ ] Remove R24 & R25, instead connect "LED_NET" directly to MOSFET's gate pin.
