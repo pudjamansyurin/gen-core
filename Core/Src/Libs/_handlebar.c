@@ -44,8 +44,8 @@ sw_t SW = {
 				},
 				{
 						.event = "ABS",
-						.pin = EXT_ABS_STATUS_Pin,
-						.port = EXT_ABS_STATUS_GPIO_Port,
+						.pin = EXT_ABS_IRQ_Pin,
+						.port = EXT_ABS_IRQ_GPIO_Port,
 						.state = 0
 				},
 				{

@@ -199,6 +199,7 @@
   - [ ] Increase C91 value to 100uF (tantalum)
   - [ ] Preserve on-board NRF chip
   - [ ] Add uFL connector for on-board chip like GPS & SIMCOM
+  - [ ] Change the on-board microstrip antenna to v2
   
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
