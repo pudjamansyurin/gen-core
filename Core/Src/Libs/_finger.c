@@ -28,9 +28,9 @@ void Finger_Init(void) {
 		LOG_StrLn("Finger:Init");
 
 		// mosfet control
-		HAL_GPIO_WritePin(EXT_FINGER_PWR_GPIO_Port, EXT_FINGER_PWR_Pin, 0);
+		HAL_GPIO_WritePin(EXT_FINGER_TOUCH_PWR_GPIO_Port, EXT_FINGER_TOUCH_PWR_Pin, 0);
 		osDelay(100);
-		HAL_GPIO_WritePin(EXT_FINGER_PWR_GPIO_Port, EXT_FINGER_PWR_Pin, 1);
+		HAL_GPIO_WritePin(EXT_FINGER_TOUCH_PWR_GPIO_Port, EXT_FINGER_TOUCH_PWR_Pin, 1);
 		osDelay(500);
 
 		// verify password and check hardware

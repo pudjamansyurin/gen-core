@@ -89,11 +89,18 @@ uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
 }
 
 uint8_t KLESS_CheckCommand(KLESS_CMD *cmd) {
-	uint8_t p, valid = 0, pBuf[NRF_DATA_LENGTH - 1];
+	uint8_t p, valid = 0, pBuf[NRF_DATA_LENGTH - 1] = { 0 };
+	uint8_t pBuffer[NRF_DATA_LENGTH - 1] = { 0 };
 	KLESS_CODE code;
 
 	lock();
-	// Read Payload
+//	pBuf[0] = KLESS_CMD_ALARM;
+//	AES_Encrypt(pBuf, pBuffer, NRF_DATA_LENGTH - 1);
+//	LOG_Str("NRF:VCU = ");
+//	LOG_BufHex((char*) pBuffer, sizeof(pBuffer));
+//	LOG_Enter();
+
+// Read Payload
 	p = KLESS_UsePayload(KLESS_R, &code, pBuf, 1);
 
 	// Check Code
@@ -118,7 +125,7 @@ uint8_t KLESS_CheckCommand(KLESS_CMD *cmd) {
 }
 
 uint8_t KLESS_CheckAES(void) {
-	uint8_t p, valid = 0, pBuf[NRF_DATA_LENGTH - 1];
+	uint8_t p, valid = 0, pBuf[NRF_DATA_LENGTH - 1] = { 0 };
 	KLESS_CODE code;
 
 	lock();
@@ -174,7 +181,7 @@ void KLESS_UseCode(KLESS_MODE mode, KLESS_CODE *code) {
 
 uint8_t KLESS_UsePayload(KLESS_MODE mode, KLESS_CODE *code, uint8_t *payload, uint8_t size) {
 	uint8_t ret = 0;
-	uint8_t pBuf[NRF_DATA_LENGTH - 1];
+	uint8_t pBuf[NRF_DATA_LENGTH - 1] = { 0 };
 
 	lock();
 	// Process Payload

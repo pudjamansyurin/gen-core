@@ -59,7 +59,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 	SIMCOM_RESULT p;
 	SIMCOM_STATE lastState;
 	static uint8_t init = 1;
-	const uint8_t maxDepth = 3;
+	const uint8_t maxDepth = 2;
 	uint8_t iteration, depth = maxDepth;
 
 	do {
