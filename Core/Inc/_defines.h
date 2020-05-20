@@ -48,6 +48,8 @@
 
 #define FINGER_CONFIDENCE_MIN                   10
 #define FINGER_SCAN_TIMEOUT                     10                      // in second
+#define FINGER_USER_MAX													5
+#define DRIVER_ID_NONE													0xFF
 
 #define RPT_INTERVAL_SIMPLE                     5                       // in second
 #define RPT_INTERVAL_FULL_TIMES                 4												// n x simple
@@ -151,7 +153,6 @@
 #define MCU_SPEED_MAX                           255U
 #define MCU_RPM_MAX                             99999U
 #define VCU_ODOMETER_MAX                        99999U
-#define DRIVER_ID_NONE													0xFF
 
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {

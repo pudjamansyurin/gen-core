@@ -16,6 +16,7 @@
 typedef struct {
 	uint8_t knob;
 	uint32_t unit_id;
+	uint8_t driver_id;
 	uint8_t independent;
 	uint16_t interval;
 	uint8_t volume;
@@ -27,7 +28,6 @@ typedef struct {
 	uint64_t events;
 	struct {
 		uint32_t keyless;
-	//      uint32_t finger;
 	} tick;
 	struct {
 		uint16_t report;

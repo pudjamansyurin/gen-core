@@ -61,7 +61,7 @@ void KLESS_Init(void) {
 void KLESS_Debugger(void) {
 	lock();
 	LOG_Str("NRF:Receive [");
-	LOG_Hex8(KLESS.payload.rx[NRF_DATA_LENGTH]);
+	LOG_Hex8(KLESS.payload.rx[NRF_DATA_LENGTH - 1]);
 	LOG_Str("] = ");
 	LOG_BufHex((char*) KLESS.payload.rx, NRF_DATA_LENGTH - 1);
 	LOG_Enter();
@@ -89,19 +89,13 @@ uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
 }
 
 uint8_t KLESS_CheckCommand(KLESS_CMD *cmd) {
-	uint8_t p, valid = 0, pBuf[NRF_DATA_LENGTH - 1] = { 0 };
-	uint8_t pBuffer[NRF_DATA_LENGTH - 1] = { 0 };
+	uint8_t p, valid = 0, payload[NRF_DATA_LENGTH - 1] = { 0 };
 	KLESS_CODE code;
 
 	lock();
-//	pBuf[0] = KLESS_CMD_ALARM;
-//	AES_Encrypt(pBuf, pBuffer, NRF_DATA_LENGTH - 1);
-//	LOG_Str("NRF:VCU = ");
-//	LOG_BufHex((char*) pBuffer, sizeof(pBuffer));
-//	LOG_Enter();
 
-// Read Payload
-	p = KLESS_UsePayload(KLESS_R, &code, pBuf, 1);
+	// Read Payload
+	p = KLESS_UsePayload(KLESS_R, &code, payload);
 
 	// Check Code
 	if (p) {
@@ -110,7 +104,7 @@ uint8_t KLESS_CheckCommand(KLESS_CMD *cmd) {
 
 	// Validate-1, Check Payload:Command
 	if (p) {
-		*cmd = pBuf[0];
+		*cmd = payload[0];
 
 		// Check Payload:Command
 		if (*cmd == KLESS_CMD_PING ||
@@ -125,22 +119,22 @@ uint8_t KLESS_CheckCommand(KLESS_CMD *cmd) {
 }
 
 uint8_t KLESS_CheckAES(void) {
-	uint8_t p, valid = 0, pBuf[NRF_DATA_LENGTH - 1] = { 0 };
+	uint8_t p, valid = 0, payload[NRF_DATA_LENGTH - 1] = { 0 };
 	KLESS_CODE code;
 
 	lock();
 	// Generate Payload
-	p = (HAL_RNG_GenerateRandomNumber(&hrng, (uint32_t*) pBuf) == HAL_OK);
+	p = (HAL_RNG_GenerateRandomNumber(&hrng, (uint32_t*) payload) == HAL_OK);
 
 	// Write Payload
 	if (p) {
 		code = KLESS_CODE_RANDOM;
-		p = (KLESS_UsePayload(KLESS_W, &code, pBuf, sizeof(uint32_t)));
+		p = (KLESS_UsePayload(KLESS_W, &code, payload));
 	}
 
 	// Send Payload
 	if (p) {
-		p = (nrf_send_packet_noack(&nrf, KLESS.payload.tx) == NRF_OK);
+		p = (nrf_send_packet(&nrf, KLESS.payload.tx) == NRF_OK);
 	}
 
 	// Receive Payload
@@ -150,7 +144,7 @@ uint8_t KLESS_CheckAES(void) {
 
 	// Read Payload
 	if (p) {
-		p = KLESS_UsePayload(KLESS_R, &code, pBuf, NRF_DATA_LENGTH - 1);
+		p = KLESS_UsePayload(KLESS_R, &code, payload);
 	}
 
 	// Check Code
@@ -160,7 +154,7 @@ uint8_t KLESS_CheckAES(void) {
 
 	// Validate, Check Payload
 	if (p) {
-		if (memcmp(pBuf, KLESS.payload.tx, NRF_DATA_LENGTH - 1) == 0) {
+		if (memcmp(payload, KLESS.payload.tx, NRF_DATA_LENGTH - 1) == 0) {
 			valid = 1;
 		}
 	}
@@ -172,31 +166,26 @@ uint8_t KLESS_CheckAES(void) {
 void KLESS_UseCode(KLESS_MODE mode, KLESS_CODE *code) {
 	lock();
 	if (mode == KLESS_R) {
-		*code = KLESS.payload.rx[NRF_DATA_LENGTH];
+		*code = KLESS.payload.rx[NRF_DATA_LENGTH - 1];
 	} else {
-		KLESS.payload.tx[NRF_DATA_LENGTH] = *code;
+		KLESS.payload.tx[NRF_DATA_LENGTH - 1] = *code;
 	}
 	unlock();
 }
 
-uint8_t KLESS_UsePayload(KLESS_MODE mode, KLESS_CODE *code, uint8_t *payload, uint8_t size) {
+uint8_t KLESS_UsePayload(KLESS_MODE mode, KLESS_CODE *code, uint8_t *payload) {
 	uint8_t ret = 0;
-	uint8_t pBuf[NRF_DATA_LENGTH - 1] = { 0 };
 
 	lock();
 	// Process Payload
 	if (mode == KLESS_R) {
 		// Decrypt
-		if (AES_Decrypt(KLESS.payload.rx, pBuf, NRF_DATA_LENGTH - 1)) {
-			// Read
-			memcpy(payload, pBuf, size);
+		if (AES_Decrypt(payload, KLESS.payload.rx, NRF_DATA_LENGTH - 1)) {
 			ret = 1;
 		}
 	} else {
-		// Write
-		memcpy(pBuf, payload, size);
 		// Encrypt
-		if (AES_Encrypt(pBuf, KLESS.payload.tx, NRF_DATA_LENGTH - 1)) {
+		if (AES_Encrypt(KLESS.payload.tx, payload, NRF_DATA_LENGTH - 1)) {
 			ret = 1;
 		}
 	}
@@ -208,6 +197,16 @@ uint8_t KLESS_UsePayload(KLESS_MODE mode, KLESS_CODE *code, uint8_t *payload, ui
 	unlock();
 
 	return ret;
+}
+
+uint8_t KLESS_SendDummy(void) {
+	uint8_t p, payload[NRF_DATA_LENGTH] = { 0 };
+
+	payload[0] = 1;
+	p = nrf_send_packet(&nrf, payload);
+	osDelay(500);
+
+	return (p == NRF_OK);
 }
 
 void KLESS_Refresh(void) {

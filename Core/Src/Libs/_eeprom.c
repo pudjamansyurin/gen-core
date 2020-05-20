@@ -38,7 +38,7 @@ uint8_t EEPROM_Init(void) {
 			ret = 1;
 			break;
 		}
-		osDelay(500);
+		osDelay(50);
 	} while (retry--);
 
 	// check backup eeprom
@@ -51,7 +51,7 @@ uint8_t EEPROM_Init(void) {
 				ret = 1;
 				break;
 			}
-			osDelay(500);
+			osDelay(50);
 		} while (retry--);
 	}
 

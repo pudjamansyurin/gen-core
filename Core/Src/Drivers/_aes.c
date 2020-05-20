@@ -38,7 +38,7 @@ void AES_UpdateKey(uint32_t *key) {
 	unlock();
 }
 
-uint8_t AES_Encrypt(uint8_t *pSrc, uint8_t *pDst, uint16_t Sz) {
+uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
 	uint8_t ret;
 
 	lock();
@@ -48,7 +48,7 @@ uint8_t AES_Encrypt(uint8_t *pSrc, uint8_t *pDst, uint16_t Sz) {
 	return ret;
 }
 
-uint8_t AES_Decrypt(uint8_t *pSrc, uint8_t *pDst, uint16_t Sz) {
+uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
 	uint8_t ret;
 
 	lock();
@@ -68,10 +68,10 @@ void AES_Tester(void) {
 	uint8_t Decryptedtext[sizeof(Plaintext)] = { 0 };
 
 	// Encrypt & Decrypt
-	if (AES_Encrypt(Plaintext, Encryptedtext, sizeof(Plaintext))) {
+	if (AES_Encrypt(Encryptedtext, Plaintext, sizeof(Plaintext))) {
 		LOG_StrLn("AES:EncryptOK");
 	}
-	if (AES_Decrypt(Encryptedtext, Decryptedtext, sizeof(Encryptedtext))) {
+	if (AES_Decrypt(Decryptedtext, Encryptedtext, sizeof(Encryptedtext))) {
 		LOG_StrLn("AES:DecryptOK");
 	}
 

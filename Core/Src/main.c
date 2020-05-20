@@ -197,10 +197,10 @@ osMessageQueueId_t ReportQueueHandle;
 const osMessageQueueAttr_t ReportQueue_attributes = {
 		.name = "ReportQueue"
 };
-/* Definitions for FingerIdQueue */
-osMessageQueueId_t FingerIdQueueHandle;
-const osMessageQueueAttr_t FingerIdQueue_attributes = {
-		.name = "FingerIdQueue"
+/* Definitions for DriverQueue */
+osMessageQueueId_t DriverQueueHandle;
+const osMessageQueueAttr_t DriverQueue_attributes = {
+		.name = "DriverQueue"
 };
 /* Definitions for AudioMutex */
 osMutexId_t AudioMutexHandle;
@@ -415,8 +415,8 @@ int main(void)
 	/* creation of ReportQueue */
 	ReportQueueHandle = osMessageQueueNew(100, sizeof(report_t), &ReportQueue_attributes);
 
-	/* creation of FingerIdQueue */
-	FingerIdQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &FingerIdQueue_attributes);
+	/* creation of DriverQueue */
+	DriverQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &DriverQueue_attributes);
 
 	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
@@ -1425,7 +1425,7 @@ void StartManagerTask(void *argument)
 	//	osThreadSuspend(CommandTaskHandle);
 	//	osThreadSuspend(GpsTaskHandle);
 	//	osThreadSuspend(GyroTaskHandle);
-	//  osThreadSuspend(KeylessTaskHandle);
+	//	  osThreadSuspend(KeylessTaskHandle);
 	//	osThreadSuspend(FingerTaskHandle);
 	//	osThreadSuspend(AudioTaskHandle);
 	//	osThreadSuspend(SwitchTaskHandle);
@@ -1439,20 +1439,20 @@ void StartManagerTask(void *argument)
 	for (;;) {
 		lastWake = osKernelGetTickCount();
 
-		// Check is Daylight
-		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
+		// Feed the dog
+		HAL_IWDG_Refresh(&hiwdg);
 
 		// Dummy data generator
 		_DummyGenerator();
-
-		// Feed the dog
-		HAL_IWDG_Refresh(&hiwdg);
 
 		// Battery Monitor
 		BAT_Debugger();
 
 		// Thread's Stack Monitor
 		_RTOS_Debugger(10000);
+
+		// Check is Daylight
+		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(1000));
@@ -1654,6 +1654,7 @@ void StartCommandTask(void *argument)
 	command_t command;
 	osStatus_t status;
 	uint32_t notif;
+	uint8_t driver;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -1746,11 +1747,17 @@ void StartCommandTask(void *argument)
 
 				case CMD_CODE_FINGER:
 					// put finger index to queue
-					osMessageQueuePut(FingerIdQueueHandle, &(command.data.value), 0U, 0U);
+					driver = command.data.value;
+					osMessageQueuePut(DriverQueueHandle, &driver, 0U, 0U);
 
 					switch (command.data.sub_code) {
 						case CMD_FINGER_ADD:
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
+							// do not handle if drivers is full
+							if (driver < FINGER_USER_MAX) {
+								osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
+							} else {
+								response.data.code = RESPONSE_STATUS_ERROR;
+							}
 							break;
 
 						case CMD_FINGER_DEL:
@@ -1962,6 +1969,13 @@ void StartKeylessTask(void *argument)
 
 		// update state
 		KLESS_Refresh();
+
+		//		// for testing
+		//		if (KLESS_SendDummy()) {
+		//			LOG_StrLn("NRF:Send = OK");
+		//		} else {
+		//			LOG_StrLn("NRF:Send = ERROR");
+		//		}
 	}
 	/* USER CODE END StartKeylessTask */
 }
@@ -1977,9 +1991,9 @@ void StartFingerTask(void *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t notif;
-	uint8_t fingerId;
+	uint8_t driver;
 	osStatus_t status;
-	int p;
+	int8_t p, id;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -1996,24 +2010,35 @@ void StartFingerTask(void *argument)
 		if (_RTOS_ValidThreadFlag(notif)) {
 			// Scan existing finger
 			if (notif & EVT_FINGER_PLACED) {
-				if (Finger_AuthFast() > 0) {
+				id = Finger_AuthFast();
+				if (id >= 0) {
 					// Finger is registered
 					VCU.d.knob = !VCU.d.knob;
+
+					// Finger Heart-Beat
+					if (!VCU.d.knob) {
+						id = DRIVER_ID_NONE;
+					}
+					VCU.d.driver_id = id;
+
+					// Handle bounce effect
+					osDelay(5000);
+					osThreadFlagsClear(EVT_FINGER_PLACED);
 				}
 			}
 
 			if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
-				// get fingerId value
-				status = osMessageQueueGet(FingerIdQueueHandle, &fingerId, NULL, 0U);
+				// get driver value
+				status = osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U);
 
 				if (status == osOK) {
 					// Add new finger
 					if (notif & EVT_FINGER_ADD) {
-						p = Finger_Enroll(fingerId);
+						p = Finger_Enroll(driver);
 					}
 					// Delete existing finger
 					if (notif & EVT_FINGER_DEL) {
-						p = Finger_DeleteID(fingerId);
+						p = Finger_DeleteID(driver);
 					}
 					// Reset all finger database
 					if (notif & EVT_FINGER_RST) {
@@ -2029,7 +2054,6 @@ void StartFingerTask(void *argument)
 				}
 			}
 
-			osThreadFlagsClear(EVT_FINGER_PLACED);
 		}
 	}
 	/* USER CODE END StartFingerTask */
@@ -2280,18 +2304,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

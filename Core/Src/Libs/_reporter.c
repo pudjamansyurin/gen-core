@@ -31,7 +31,6 @@ void Report_Init(FRAME_TYPE frame, report_t *report) {
 	report->header.seq_id = VCU.d.seq_id.report;
 	// (already set)
 	// body required
-	report->data.req.vcu.driver_id = DRIVER_ID_NONE;
 	// body optional
 }
 
@@ -58,6 +57,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 			sizeof(report->data.req);
 
 	// Reconstruct the body
+	report->data.req.vcu.driver_id = VCU.d.driver_id;
 	report->data.req.vcu.events_group = VCU.d.events;
 	report->data.req.vcu.rtc.log = RTC_Read();
 	// BMS data

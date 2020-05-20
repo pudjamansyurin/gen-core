@@ -79,9 +79,7 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
 
 	// openWritingPipe
 	nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
-	//	nrf_set_rx_payload_width_p1(dev, dev->config.payload_length);
 	nrf_set_rx_address_p0(dev, dev->config.rx_address);
-	//	nrf_set_rx_address_p1(dev, dev->config.rx_address);
 	// openReadingPipe
 	nrf_set_tx_address(dev, dev->config.tx_address);
 	// set interrupt
@@ -102,15 +100,17 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
 	// retransmission
 	nrf_set_retransmittion_count(dev, dev->config.retransmit_count);
 	nrf_set_retransmittion_delay(dev, dev->config.retransmit_delay);
-	// enable data pipe
-	nrf_set_rx_pipes(dev, 0x01); // only pipe1
+	// enable data pipe0
+	nrf_set_rx_pipes(dev, 0x01);
 	// auto ack (Enhanced ShockBurst)
-	nrf_enable_auto_ack(dev, 0x00); // disable on all pipe
+	nrf_enable_auto_ack(dev, 0x00);
+	//	nrf_disable_auto_ack(dev);
 	// clear interrupt
 	nrf_clear_interrupts(dev);
 	// set as PRX
 	nrf_rx_tx_control(dev, NRF_STATE_RX);
-	// clear RX FIFO
+	// clear FIFO
+	//	nrf_flush_tx(dev);
 	nrf_flush_rx(dev);
 	// exit standby mode, now become RX MODE
 	ce_set(dev);
@@ -202,9 +202,11 @@ void nrf_irq_handler(nrf24l01 *dev) {
 		ce_reset(dev);
 		nrf_write_register(dev, NRF_STATUS, &status);
 		nrf_read_register(dev, NRF_FIFO_STATUS, &fifo_status);
+
 		if ((fifo_status & 1) == 0) {
 			uint8_t *rx_buffer = dev->config.rx_buffer;
 			nrf_read_rx_payload(dev, rx_buffer);
+
 			status |= 1 << 6;
 			nrf_write_register(dev, NRF_STATUS, &status);
 			// nrf_flush_rx(dev);
@@ -476,6 +478,13 @@ NRF_RESULT nrf_set_rx_pipes(nrf24l01 *dev, uint8_t pipes) {
 	return NRF_OK;
 }
 
+NRF_RESULT nrf_disable_auto_ack(nrf24l01 *dev) {
+	if (nrf_write_register(dev, NRF_EN_AA, 0x00) != NRF_OK) {
+		return NRF_ERROR;
+	}
+	return NRF_OK;
+}
+
 NRF_RESULT nrf_enable_auto_ack(nrf24l01 *dev, uint8_t pipe) {
 	uint8_t reg = 0;
 	if (nrf_read_register(dev, NRF_EN_AA, &reg) != NRF_OK) {
@@ -684,7 +693,7 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
 	ce_set(dev);
 
 	while (dev->tx_busy == 1) {
-		osDelay(1);
+		//		osDelay(1);
 	} // wait for end of transmittion
 
 	return dev->tx_result;

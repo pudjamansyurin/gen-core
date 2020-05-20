@@ -191,6 +191,7 @@ NRF_RESULT nrf_set_address_width(nrf24l01 *dev, NRF_ADDR_WIDTH width);
 /* EN_RXADDR */
 NRF_RESULT nrf_set_rx_pipes(nrf24l01 *dev, uint8_t pipes);
 /* EN_AA */
+NRF_RESULT nrf_disable_auto_ack(nrf24l01 *dev);
 NRF_RESULT nrf_enable_auto_ack(nrf24l01 *dev, uint8_t pipe);
 // TODO disable AA?
 

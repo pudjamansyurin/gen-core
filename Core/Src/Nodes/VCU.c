@@ -39,6 +39,7 @@ void VCU_Init(void) {
 	VCU.d.knob = 0;
 	VCU.d.independent = 1;
 	VCU.d.interval = RPT_INTERVAL_SIMPLE;
+	VCU.d.driver_id = DRIVER_ID_NONE;
 	VCU.d.volume = 0;
 	VCU.d.bat_voltage = 0;
 	VCU.d.signal_percent = 0;
