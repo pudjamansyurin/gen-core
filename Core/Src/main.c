@@ -1769,8 +1769,10 @@ void StartCommandTask(void *argument)
 					// wait response until timeout (30 seconds)
 					if (response.data.code == RESPONSE_STATUS_OK) {
 						notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-						if (!_RTOS_ValidThreadFlag(notif) || !(notif & EVT_COMMAND_OK)) {
-							response.data.code = RESPONSE_STATUS_ERROR;
+						if (_RTOS_ValidThreadFlag(notif)) {
+							if (notif & EVT_COMMAND_ERROR) {
+								response.data.code = RESPONSE_STATUS_ERROR;
+							}
 						}
 					}
 					break;
@@ -1782,8 +1784,10 @@ void StartCommandTask(void *argument)
 
 							// wait response until timeout (30 seconds)
 							notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-							if (!_RTOS_ValidThreadFlag(notif) || !(notif & EVT_COMMAND_OK)) {
-								response.data.code = RESPONSE_STATUS_ERROR;
+							if (_RTOS_ValidThreadFlag(notif)) {
+								if (notif & EVT_COMMAND_ERROR) {
+									response.data.code = RESPONSE_STATUS_ERROR;
+								}
 							}
 
 							break;
@@ -2024,6 +2028,8 @@ void StartFingerTask(void *argument)
 					}
 				}
 			}
+
+			osThreadFlagsClear(EVT_FINGER_PLACED);
 		}
 	}
 	/* USER CODE END StartFingerTask */

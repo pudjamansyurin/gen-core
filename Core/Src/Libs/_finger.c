@@ -62,6 +62,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 		}
 
 		// send command
+		_LedToggle();
 		HMI1.d.status.finger = !HMI1.d.status.finger;
 		p = FZ3387_getImage();
 
@@ -115,6 +116,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
 	if (!error) {
 		//	 Wait for put your finger up
+		_LedWrite(0);
 		HMI1.d.status.finger = 0;
 		LOG_StrLn("Remove finger");
 		osDelay(2000);
@@ -131,6 +133,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 			}
 
 			// send command
+			_LedToggle();
 			HMI1.d.status.finger = !HMI1.d.status.finger;
 			p = FZ3387_getImage();
 
@@ -184,6 +187,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
 	if (!error) {
 		//	 Wait for put your finger up
+		_LedWrite(0);
 		HMI1.d.status.finger = 0;
 		LOG_StrLn("Remove finger");
 		osDelay(2000);
@@ -228,6 +232,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 		}
 	}
 
+	_LedWrite(0);
 	HMI1.d.status.finger = 0;
 	unlock();
 	return p;
@@ -397,11 +402,11 @@ int8_t Finger_AuthFast(void) {
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
 	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
-	FZ3387_SET_POWER(0);
+	FZ3387_SET_POWER(1);
 }
 
 static void unlock(void) {
-	FZ3387_SET_POWER(1);
+	FZ3387_SET_POWER(0);
 	osDelay(50);
 	osMutexRelease(FingerRecMutexHandle);
 }

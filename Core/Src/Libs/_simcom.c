@@ -88,14 +88,17 @@ void Simcom_SetState(SIMCOM_STATE state) {
 
 				LOG_StrLn("Simcom:Down");
 				VCU.d.signal_percent = 0;
-			} else if (SIM.state > SIM_STATE_DOWN) {
+			} else {
 				p = SIM_RESULT_OK;
+
 				Simcom_IdleJob(NULL);
-				// Force exit loop
-				if (VCU.d.signal_percent < 15) {
-					LOG_StrLn("Simcom:SignalPoor");
-					osDelay(5000);
-					break;
+				if (SIM.state >= SIM_STATE_INTERNET_ON) {
+					// Force exit loop
+					if (VCU.d.signal_percent < 15) {
+						LOG_StrLn("Simcom:SignalPoor");
+						//					osDelay(5000);
+						break;
+					}
 				}
 			}
 		}
@@ -118,6 +121,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					LOG_StrLn("Simcom:Error");
 				}
 
+				osDelay(500);
 				break;
 			case SIM_STATE_READY:
 				// =========== BASIC CONFIGURATION
@@ -174,6 +178,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					SIM.state++;
 				}
 
+				osDelay(500);
 				break;
 			case SIM_STATE_CONFIGURED:
 				// =========== NETWORK ATTACH
@@ -219,6 +224,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					SIM.state++;
 				}
 
+				osDelay(500);
 				break;
 			case SIM_STATE_NETWORK_ON:
 				// =========== GPRS ATTACH
@@ -260,6 +266,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					}
 				}
 
+				osDelay(500);
 				break;
 			case SIM_STATE_GPRS_ON:
 				// =========== PDP CONFIGURATION
@@ -315,6 +322,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					}
 				}
 
+				osDelay(500);
 				break;
 			case SIM_STATE_PDP_ON:
 				// =========== PDP ATTACH
@@ -350,6 +358,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					}
 				}
 
+				osDelay(500);
 				break;
 			case SIM_STATE_INTERNET_ON:
 				// ============ SOCKET CONFIGURATION
@@ -375,6 +384,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 					}
 				}
 
+				osDelay(500);
 				break;
 			case SIM_STATE_SERVER_ON:
 
@@ -600,7 +610,7 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 	tick = osKernelGetTickCount();
 	while (SIM.state == SIM_STATE_DOWN) {
 		if (Simcom_Response(SIMCOM_RSP_READY) ||
-				Simcom_Response(SIMCOM_RSP_OK) ||
+				//				Simcom_Response(SIMCOM_RSP_OK) ||
 				(osKernelGetTickCount() - tick) >= NET_BOOT_TIMEOUT) {
 			break;
 		}
@@ -608,7 +618,7 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 	}
 
 	// check
-	return Simcom_Cmd(SIMCOM_CMD_BOOT, 1000, 1);
+	return Simcom_Command(SIMCOM_CMD_BOOT, 1000, 1, SIMCOM_RSP_READY);
 }
 
 static SIMCOM_RESULT Simcom_Power(void) {
@@ -674,11 +684,11 @@ static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, ch
 				(osKernelGetTickCount() - tick) >= timeout_tick) {
 
 			// set flag for timeout & error
-			if (strcmp(data, SIMCOM_CMD_BOOT) == 0) {
-				p = Simcom_Response(res) || Simcom_Response(SIMCOM_RSP_READY);
-			} else {
-				p = Simcom_Response(res);
-			}
+			//			if (strcmp(data, SIMCOM_CMD_BOOT) == 0) {
+			//			p = Simcom_Response(res) || Simcom_Response(SIMCOM_RSP_READY);
+			//			} else {
+			p = Simcom_Response(res);
+			//			}
 
 			if (p != SIM_RESULT_OK) {
 				// exception for no response
