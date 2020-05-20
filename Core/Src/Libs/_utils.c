@@ -46,6 +46,7 @@ void _LedDisco(uint16_t ms) {
 }
 
 void _BuzzerWrite(uint8_t state) {
+	// note: https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
 	if (state) {
 		HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
 	} else {

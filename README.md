@@ -174,7 +174,6 @@
   - [ ] Add solder jumper for TX pin between VCU & Ublox chip
   - [ ] Connect V_BCKP to VCC (not VDD)
   - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
-  - [ ] Configure the EEPROM address using u-center app
   - [ ] Fix eagle footprint problem, the un-shielded ground near every pins
   - [ ] Add recharge-able coin battery
    - [ ] Use diode & resistor to limit current
@@ -189,9 +188,9 @@
   - [ ] Remove R24 & R25, instead connect "LED_NET" directly to MOSFET's gate pin.
   - [ ] Add MOSFET between INT_NET_RST (VCU) and RESET (SIMCOM).
   - [ ] Re-swap the USIM_VDD and USIM_DATA pin.
-  - [ ] Give serial solder connector like GPS (for debugging)
+  - [ ] Change USIM holder to bigger size.
   - [ ] Change LTC output from 3.8v to 4.2v
-    - [ ] or Remove the LTC,
+    - [ ] Give solder jumper to connect LTC or B+ (directly)
     - [ ] then add MOSFET/PNP power control (used RUN pin) between B+ and VBAT
   - [ ] Increase C42 value to 1000uF (tantalum)
   - [ ] Move SIMcard related components closer to the SIMcard-holder
