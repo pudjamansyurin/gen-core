@@ -28,23 +28,6 @@ void _LedToggle(void) {
 	HAL_GPIO_TogglePin(SYS_LED_GPIO_Port, SYS_LED_Pin);
 }
 
-void _LedDisco(uint16_t ms) {
-	uint8_t i = 20, temp;
-	uint16_t delay = ms / i;
-
-	// preserve previous state
-	temp = _LedRead();
-
-	// run the disco
-	while (i--) {
-		_LedWrite(i % 2);
-		osDelay(delay);
-	}
-
-	// restore previous state
-	_LedWrite(temp);
-}
-
 void _BuzzerWrite(uint8_t state) {
 	// note: https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
 	if (state) {

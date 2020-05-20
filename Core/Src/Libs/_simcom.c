@@ -200,8 +200,13 @@ void Simcom_SetState(SIMCOM_STATE state) {
 							p = AT_NetworkRegistration(ATW, &param);
 
 							if (p) {
-								Simcom_IdleJob(&iteration);
-								osDelay(NET_REPEAT_DELAY);
+								if (iteration < NET_REPEAT_MAX) {
+									Simcom_IdleJob(&iteration);
+									osDelay(NET_REPEAT_DELAY);
+								} else {
+									p = SIM_RESULT_ERROR;
+									break;
+								}
 							} else {
 								break;
 							}
@@ -232,8 +237,13 @@ void Simcom_SetState(SIMCOM_STATE state) {
 							p = AT_NetworkRegistrationStatus(ATW, &param);
 
 							if (p) {
-								Simcom_IdleJob(&iteration);
-								osDelay(NET_REPEAT_DELAY);
+								if (iteration < NET_REPEAT_MAX) {
+									Simcom_IdleJob(&iteration);
+									osDelay(NET_REPEAT_DELAY);
+								} else {
+									p = SIM_RESULT_ERROR;
+									break;
+								}
 							} else {
 								break;
 							}
@@ -265,8 +275,13 @@ void Simcom_SetState(SIMCOM_STATE state) {
 							p = AT_GprsAttachment(ATW, &state);
 
 							if (p) {
-								Simcom_IdleJob(&iteration);
-								osDelay(NET_REPEAT_DELAY);
+								if (iteration < NET_REPEAT_MAX) {
+									Simcom_IdleJob(&iteration);
+									osDelay(NET_REPEAT_DELAY);
+								} else {
+									p = SIM_RESULT_ERROR;
+									break;
+								}
 							} else {
 								break;
 							}
@@ -315,7 +330,7 @@ void Simcom_SetState(SIMCOM_STATE state) {
 				// =========== IP ATTACH
 				// Bring Up IP Connection
 				if (p) {
-					p = Simcom_Cmd("AT+CIICR\r", 20000, 3);
+					p = Simcom_Cmd("AT+CIICR\r", 20000, 2);
 				}
 				// Check IP Address
 				if (p) {
@@ -584,8 +599,8 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 	// wait until 1s response
 	tick = osKernelGetTickCount();
 	while (SIM.state == SIM_STATE_DOWN) {
-		if (Simcom_Response(SIMCOM_RSP_OK) ||
-				Simcom_Response(SIMCOM_RSP_READY) ||
+		if (Simcom_Response(SIMCOM_RSP_READY) ||
+				Simcom_Response(SIMCOM_RSP_OK) ||
 				(osKernelGetTickCount() - tick) >= NET_BOOT_TIMEOUT) {
 			break;
 		}

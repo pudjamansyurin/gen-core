@@ -137,7 +137,6 @@
   - [ ] Increase the base resistor to 510 Ohm
 - [ ] VCU-core:
   - [ ] Add buzzer & the GPIO pin
-    - [ ] Use PWM pin
   - [ ] Add recharge-able coin battery for RTC
    - [ ] VBAT should use this
    - [ ] Use diode & resistor to limit current
@@ -200,11 +199,11 @@
   - [ ] VL & VP pin should use its own 3v3 regulator (so add it), 
   - [ ] and it must be controlled also using MOSFET or GPIO pin (directly)
 - [ ] Keyless:
-  - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
   - [ ] Increase C91 value to 100uF (tantalum)
   - [ ] Preserve on-board NRF chip
   - [ ] Add uFL connector for on-board chip like GPS & SIMCOM
   - [ ] Change the on-board microstrip antenna to v2
+  - [ ] Add Solder-Jumper (for next optimization) to switch between uFL or microstrip
   
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 

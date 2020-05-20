@@ -37,8 +37,9 @@
 //#define NET_SERVER_IP                           "0.tcp.ngrok.io"
 //#define NET_SERVER_PORT                         18698
 #define NET_BOOT_TIMEOUT                        7000                    // in ms
-#define NET_REPEAT_DELAY                        5000                    // in ms
 #define NET_EXTRA_TIME_MS                       1000                    // in ms
+#define NET_REPEAT_DELAY                        5000                    // in ms
+#define NET_REPEAT_MAX													2
 
 #define PREFIX_REPORT                           "@R"
 #define PREFIX_COMMAND                          "@C"
