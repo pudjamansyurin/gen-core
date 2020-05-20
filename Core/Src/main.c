@@ -1875,10 +1875,11 @@ void StartGyroTask(void *argument)
 		if (decider.fall.state) {
 			osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, 1);
-			_LedDisco(1000);
+			_LedToggle();
 		} else {
 			osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, 0);
+			_LedWrite(0);
 		}
 
 		// Periodic interval

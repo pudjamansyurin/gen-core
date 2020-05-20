@@ -10,7 +10,8 @@
 #include "Libs/_handlebar.h"
 #include "Nodes/VCU.h"
 
-/* External variables ----------------------------------------------------------*/
+/* External variables ---------------------------------------------------------*/
+extern TIM_HandleTypeDef htim10;
 extern vcu_t VCU;
 extern sw_t SW;
 
@@ -42,6 +43,14 @@ void _LedDisco(uint16_t ms) {
 
 	// restore previous state
 	_LedWrite(temp);
+}
+
+void _BuzzerWrite(uint8_t state) {
+	if (state) {
+		HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
+	} else {
+		HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
+	}
 }
 
 void _Error(char msg[50]) {

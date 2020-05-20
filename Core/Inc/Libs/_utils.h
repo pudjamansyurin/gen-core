@@ -21,6 +21,7 @@ uint8_t _LedRead(void);
 void _LedWrite(uint8_t state);
 void _LedToggle(void);
 void _LedDisco(uint16_t ms);
+void _BuzzerWrite(uint8_t state);
 
 void _Error(char msg[50]);
 

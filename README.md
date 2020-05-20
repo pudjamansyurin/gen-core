@@ -130,6 +130,7 @@
 - [ ] Change R67 value as R63
 - [ ] Change R23 value to 30k
 - [ ] Change C30, C31, C70, C71 value to 20pf
+- [ ] Change Led Color to RED (not GREEN)
 - [ ] Transistor Problem:
   - [ ] Vbase should equal to Vemitter to turn it OFF
   - [ ] Change Q3, Q5, Q9, Q13, Q6 to TRANSISTOR PNP
@@ -140,6 +141,7 @@
   - [ ] Add recharge-able coin battery for RTC
    - [ ] Use diode & resistor to limit current
   - [ ] Handle "different signal" trace properly (CAN, I2S, MIC_N&P)
+  - [ ] Add 1 more SYS_LED
 - [ ] The Power Trace should be wider to fix voltage drop
   - [ ] Trace between B+ to SIMCOM's VBAT at least 60mil
   - [ ] Also trace for HMI1 & HMI2 Power Control
