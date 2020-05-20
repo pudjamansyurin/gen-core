@@ -139,9 +139,9 @@
   - [ ] Add buzzer & the GPIO pin
     - [ ] Use PWM pin
   - [ ] Add recharge-able coin battery for RTC
+   - [ ] VBAT should use this
    - [ ] Use diode & resistor to limit current
-  - [ ] Handle "different signal" trace properly (CAN, I2S, MIC_N&P)
-  - [ ] Add 1 more SYS_LED
+  - [ ] Handle "different signal" trace properly (CAN, MIC_N&P)
 - [ ] The Power Trace should be wider to fix voltage drop
   - [ ] Trace between B+ to SIMCOM's VBAT at least 60mil
   - [ ] Also trace for HMI1 & HMI2 Power Control
