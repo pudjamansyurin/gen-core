@@ -134,9 +134,12 @@
   - [ ] Vbase should equal to Vemitter to turn it OFF
   - [ ] Change Q3, Q5, Q9, Q13, Q6 to TRANSISTOR PNP
   - [ ] Increase the base resistor to 510 Ohm
-  - [ ] If Q3, Q5, Q9, Q13 still not works, change to RELAY
-- [ ] Add buzzer & the GPIO pin
-- [ ] Handle "different signal" trace properly (CAN, I2S, MIC_N&P)
+- [ ] VCU-core:
+  - [ ] Add buzzer & the GPIO pin
+    - [ ] Use PWM pin
+  - [ ] Add recharge-able coin battery for RTC
+   - [ ] Use diode & resistor to limit current
+  - [ ] Handle "different signal" trace properly (CAN, I2S, MIC_N&P)
 - [ ] The Power Trace should be wider to fix voltage drop
   - [ ] Trace between B+ to SIMCOM's VBAT at least 60mil
   - [ ] Also trace for HMI1 & HMI2 Power Control
@@ -171,7 +174,8 @@
   - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
   - [ ] Configure the EEPROM address using u-center app
   - [ ] Fix eagle footprint problem, the un-shielded ground near every pins
-  - [ ] Add recharge-able coin battery connector also for RTC
+  - [ ] Add recharge-able coin battery
+   - [ ] Use diode & resistor to limit current
   - [ ] Increase C90 value to 100uF (tantalum)
   - [ ] Use EXTINT pin to control Sleep mode
     - See section "9.3.2.7 EXTINT pin control" in "Receiver Description" datasheet

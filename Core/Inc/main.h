@@ -53,6 +53,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -150,8 +152,8 @@ void Error_Handler(void);
 #define INT_GPS_SLEEP_GPIO_Port GPIOC
 #define INT_AUDIO_MCLK_Pin GPIO_PIN_7
 #define INT_AUDIO_MCLK_GPIO_Port GPIOC
-#define INT_BUZZER_PWR_Pin GPIO_PIN_8
-#define INT_BUZZER_PWR_GPIO_Port GPIOC
+#define EXT_HORN_PWR_Pin GPIO_PIN_8
+#define EXT_HORN_PWR_GPIO_Port GPIOC
 #define INT_GYRO_SDA_Pin GPIO_PIN_9
 #define INT_GYRO_SDA_GPIO_Port GPIOC
 #define INT_GYRO_SCL_Pin GPIO_PIN_8
@@ -194,8 +196,8 @@ void Error_Handler(void);
 #define INT_AUDIO_SCL_GPIO_Port GPIOB
 #define INT_AUDIO_SDA_Pin GPIO_PIN_7
 #define INT_AUDIO_SDA_GPIO_Port GPIOB
-#define EXT_HORN_PWR_Pin GPIO_PIN_8
-#define EXT_HORN_PWR_GPIO_Port GPIOB
+#define INT_BUZZER_PWM_Pin GPIO_PIN_8
+#define INT_BUZZER_PWM_GPIO_Port GPIOB
 #define INT_EEPROM_SDA_Pin GPIO_PIN_9
 #define INT_EEPROM_SDA_GPIO_Port GPIOB
 #define EXT_HBAR_SEIN_L_Pin GPIO_PIN_0
