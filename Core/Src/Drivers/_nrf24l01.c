@@ -31,7 +31,7 @@ NRF_RESULT nrf_set_config(nrf24l01_config *config) {
 	config->data_rate = NRF_DATA_RATE_250KBPS;
 	config->tx_power = NRF_TX_PWR_0dBm;
 	config->crc_width = NRF_CRC_WIDTH_1B;
-	config->retransmit_count = 15;   // maximum is 15 times
+	config->retransmit_count = 0x0F;   // maximum is 15 times
 	config->retransmit_delay = 0x0F; // 4000us, LSB:250us
 	config->rf_channel = 110;
 
@@ -104,7 +104,7 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
 	nrf_set_rx_pipes(dev, 0x01);
 	// auto ack (Enhanced ShockBurst)
 	nrf_enable_auto_ack(dev, 0x00);
-	//	nrf_disable_auto_ack(dev);
+//	nrf_disable_auto_ack(dev);
 	// clear interrupt
 	nrf_clear_interrupts(dev);
 	// set as PRX

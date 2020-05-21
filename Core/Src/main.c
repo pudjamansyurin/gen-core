@@ -1205,10 +1205,10 @@ static void MX_GPIO_Init(void)
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
-			| INT_GPS_SLEEP_Pin | EXT_HORN_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
+			| EXT_HMI1_PWR_Pin | INT_GPS_SLEEP_Pin | EXT_HORN_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, EXT_FINGER_PWR_Pin | EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOC, EXT_FINGER_PWR_Pin | EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, GPIO_PIN_SET);
@@ -1242,20 +1242,20 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin
-	 EXT_HMI1_PWR_Pin EXT_HMI2_PWR_Pin INT_AUDIO_PWR_Pin */
+	 EXT_HMI1_PWR_Pin INT_AUDIO_PWR_Pin */
 	GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
-			| EXT_HMI1_PWR_Pin | EXT_HMI2_PWR_Pin | INT_AUDIO_PWR_Pin;
+			| EXT_HMI1_PWR_Pin | INT_AUDIO_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : EXT_FINGER_PWR_Pin */
-	GPIO_InitStruct.Pin = EXT_FINGER_PWR_Pin;
+	/*Configure GPIO pins : EXT_FINGER_PWR_Pin EXT_HMI2_PWR_Pin */
+	GPIO_InitStruct.Pin = EXT_FINGER_PWR_Pin | EXT_HMI2_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(EXT_FINGER_PWR_GPIO_Port, &GPIO_InitStruct);
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : PB0 PB12 PB13 */
 	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_12 | GPIO_PIN_13;
@@ -1425,7 +1425,7 @@ void StartManagerTask(void *argument)
 	//	osThreadSuspend(CommandTaskHandle);
 	//	osThreadSuspend(GpsTaskHandle);
 	//	osThreadSuspend(GyroTaskHandle);
-	//	  osThreadSuspend(KeylessTaskHandle);
+	////	osThreadSuspend(KeylessTaskHandle);
 	//	osThreadSuspend(FingerTaskHandle);
 	//	osThreadSuspend(AudioTaskHandle);
 	//	osThreadSuspend(SwitchTaskHandle);
@@ -1970,7 +1970,7 @@ void StartKeylessTask(void *argument)
 		// update state
 		KLESS_Refresh();
 
-		//		// for testing
+		// for testing
 		//		if (KLESS_SendDummy()) {
 		//			LOG_StrLn("NRF:Send = OK");
 		//		} else {
@@ -2255,8 +2255,8 @@ void StartCanTxTask(void *argument)
 
 		// Handle Knob Changes
 		BMS.PowerOverCan(VCU.d.knob);
-		HMI1.Power(!VCU.d.knob);
-		HMI2.PowerOverCan(!VCU.d.knob);
+		HMI1.Power(VCU.d.knob);
+		HMI2.PowerOverCan(VCU.d.knob);
 
 		// Refresh state
 		BMS.RefreshIndex();

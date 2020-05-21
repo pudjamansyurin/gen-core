@@ -34,7 +34,7 @@ typedef struct {
 /* Public functions implementation --------------------------------------------*/
 void HMI2_Init(void);
 void HMI2_Refresh(void);
-void HMI2_PowerOverCan(uint8_t on);
+void HMI2_PowerOverCan(uint8_t state);
 void HMI2_CAN_RX_State(void);
 
 #endif /* INC_NODES_HMI2_H_ */
