@@ -13,6 +13,7 @@
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
+	uint8_t power;
 	uint8_t started;
 	uint32_t tick;
 } hmi2_data_t;
@@ -37,4 +38,6 @@ void HMI2_Refresh(void);
 void HMI2_PowerOverCan(uint8_t state);
 void HMI2_CAN_RX_State(void);
 
+/* ====================================== THREAD =================================== */
+void StartHmi2PowerTask(void *argument);
 #endif /* INC_NODES_HMI2_H_ */

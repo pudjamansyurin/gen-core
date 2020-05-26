@@ -49,83 +49,56 @@ void HMI2_Refresh(void) {
 
 void HMI2_PowerOverCan(uint8_t state) {
 	// past to thread handler
+	HMI2.d.power = state;
 	osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
+//	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !state);
+}
 
-	//	uint8_t lastCommand = 1, lastState = 0;
-	//	TickType_t tick = 0, timeout;
+/* ====================================== THREAD =================================== */
+void StartHmi2PowerTask(void *argument) {
+	TickType_t tick;
+	uint32_t notif;
+	uint8_t activeHigh = 0;
 
-	//	if (HMI2.d.started != state) {
-	//		// decide timeout
-	//		timeout = pdMS_TO_TICKS((state ? 30 : 90) * 1000);
-	//
-	//		if (lastCommand != state) {
-	//			lastCommand = state;
-	//			tick = osKernelGetTickCount();
-	//		}
-	//
-	//		// handle power ON/OFF properly using timeout
-	//		if (osKernelGetTickCount() - tick > timeout) {
-	//			HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !state);
-	//		}
-	//	}
+	/* Infinite loop */
+	for (;;) {
+		// wait forever until triggered
+		notif = osThreadFlagsWait(EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever);
+		if (_RTOS_ValidThreadFlag(notif)) {
+			// Handle power control
+			if (HMI2.d.power) {
+				while (!HMI2.d.started) {
+					// turn ON
+					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !activeHigh);
+					osDelay(100);
+					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, activeHigh);
 
-	//	static TickType_t timeoutOn = pdMS_TO_TICKS(90 * 1000);
-	//	static TickType_t timeoutOff = pdMS_TO_TICKS(30 * 1000);
-	//	static TickType_t tickOn = 0, tickOff = 0;
-	//	static uint8_t initOn = 1, initOff = 1;
-	//	static uint8_t lastState = 1;
-	//
-	//	// PNP transistor is Active Low
-	//	if (on) {
-	//		if (initOn) {
-	//			tickOn = osKernelGetTickCount();
-	//			initOn = 0;
-	//			initOff = 1;
-	//		}
-	//
-	//		if (!HMI2.d.started) {
-	//			// handle timeout
-	//			if (osKernelGetTickCount() - tickOn > timeoutOn) {
-	//				tickOn = osKernelGetTickCount();
-	//				// wait until safe to restart
-	//				HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
-	//				osDelay(500);
-	//			}
-	//			// turn ON
-	//			if (lastState == 0) {
-	//				if (osKernelGetTickCount() - tickOff > timeoutOff) {
-	//					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
-	//				}
-	//			}
-	//		} else {
-	//			// completely ON
-	//			lastState = 1;
-	//		}
-	//	} else {
-	//		if (initOff) {
-	//			tickOff = osKernelGetTickCount();
-	//			initOff = 0;
-	//			initOn = 1;
-	//		}
-	//
-	//		if (HMI2.d.started) {
-	//			// handle timeout
-	//			if (osKernelGetTickCount() - tickOff > timeoutOff) {
-	//				tickOff = osKernelGetTickCount();
-	//				// wait until safe to shutdown
-	//				HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
-	//			}
-	//		} else {
-	//			// completely OFF
-	//			// turn OFF
-	//			if (lastState == 1) {
-	//				if (osKernelGetTickCount() - tickOn > timeoutOn) {
-	//					lastState = 0;
-	//					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
-	//				}
-	//			}
-	//		}
-	//	}
+					// wait until turned ON
+					tick = osKernelGetTickCount();
+					while (osKernelGetTickCount() - tick < pdMS_TO_TICKS(90 * 1000)) {
+						// already ON
+						if (HMI2.d.started) {
+							break;
+						}
+					}
+				}
+			} else {
+				while (HMI2.d.started) {
+					// wait until turned OFF by CAN
+					tick = osKernelGetTickCount();
+					while (osKernelGetTickCount() - tick < pdMS_TO_TICKS(30 * 1000)) {
+						// already OFF
+						if (!HMI2.d.started) {
+							break;
+						}
+					}
+
+					// force turn OFF
+					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !activeHigh);
+				}
+			}
+		}
+	}
 }
 
 /* ====================================== CAN RX =================================== */
