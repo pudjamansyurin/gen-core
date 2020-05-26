@@ -66,6 +66,7 @@
   - [x] User RNG to generate random AES-KEY
   - [ ] Use NRF-FLASH to store permanent AES-KEY
   - [ ] Build communication handshake between NRF & VCU
+- [ ] Handle add new fingerprint error when use different finger for confirmation.
 - [ ] E-Scooter Diagram:
   - [ ] HMI.Primary Fingerprint indicator blink when Scanning
   - [ ] Try to add more than 5 fingerprint user
