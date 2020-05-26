@@ -66,10 +66,32 @@
   - [x] User RNG to generate random AES-KEY
   - [ ] Use NRF-FLASH to store permanent AES-KEY
   - [ ] Build communication handshake between NRF & VCU
+- [ ] E-Scooter Diagram:
+  - [ ] HMI.Primary Fingerprint indicator blink when Scanning
+  - [ ] Try to add more than 5 fingerprint user
+  - [ ] Handle keyless lost when knob ON
+    - [ ] HMI.Primary Keyless blink
+    - [ ] Send event group to Server
+  - [ ] Handle "Unauthorized Battery Removal" when no BMS CAN data more than 2 minutes
+  - [ ] Keyless.BEEP turn on Horn & Sein Lamp (toggle the HORN_PWR)
+  - [ ] Handle Starter Button (use INPUT0)
+  - [ ] Handle BMS.Fan when BMS temperature is overheat	
+  - [ ] Handle SOLENOID_PWR by Keyless.Seat
+  - [ ] VCU Lost Mode / Independent (NO BMS more thant 2 minutes)
+    - [ ] Sleep every 1 hour, just wakeup to Send Data
+    - [ ] When wakeup, only turn ON: VCU, GPS & SIMCOM
+  - [ ] Handle Gyroscope crash & fall to switched OFF BMS & MCU
+  - [x] ~~MCU Power control with GPIO ?~~
+    - [x] Controlled by BMS_WAKEUP (by 63V power)
+  - [x] SteerLock & Kickstand use GPIO of KNOB_IRQ
+  - [ ] MCU related
+    - [ ] Handle sound volume based on MCU RPM
+    - [ ] Drive mode handle MCU related parameters
+    - [ ] HMI.Primary 'warning' & 'overheat' based on MCU
 - [ ] Make routine to check SIMCOM internet package
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
-- [ ] ~~Lock all global variable to minimize RTOS problem.~~ 
+- [x] ~~Lock all global variable to minimize RTOS problem.~~ 
 - [ ] RTOS: give timeout for any osWaitForever
 - [ ] Configure UBLOX if you order the IC separately, so build the library for it
   - [ ] Implement this UBX library:
