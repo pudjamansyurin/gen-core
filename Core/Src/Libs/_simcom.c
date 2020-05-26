@@ -108,7 +108,8 @@ void Simcom_SetState(SIMCOM_STATE state) {
 				// reset buffer
 				SIMCOM_Reset_Buffer();
 				if (p != SIM_RESULT_OK) {
-					p = Simcom_Reset();
+					p = Simcom_Power();
+					// p = Simcom_Reset();
 					// force reboot
 					//      if (p != SIM_RESULT_OK) {
 					//        p = Simcom_Power();
@@ -625,9 +626,13 @@ static SIMCOM_RESULT Simcom_Power(void) {
 	LOG_StrLn("Simcom:Powered");
 	// power control
 	HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-	osDelay(3000);
+	osDelay(100);
 	HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
-	osDelay(5000);
+	osDelay(100);
+	// simcom reset pin
+	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
+	HAL_Delay(1);
+	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 	// wait response
 	return Simcom_Ready();
 }

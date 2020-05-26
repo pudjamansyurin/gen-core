@@ -182,6 +182,13 @@ const osThreadAttr_t CanTxTask_attributes = {
 		.priority = (osPriority_t) osPriorityHigh,
 		.stack_size = 224 * 4
 };
+/* Definitions for Hmi2PowerTask */
+osThreadId_t Hmi2PowerTaskHandle;
+const osThreadAttr_t Hmi2PowerTask_attributes = {
+		.name = "Hmi2PowerTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 128 * 4
+};
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
 const osMessageQueueAttr_t CommandQueue_attributes = {
@@ -298,6 +305,7 @@ void StartAudioTask(void *argument);
 void StartSwitchTask(void *argument);
 void StartCanRxTask(void *argument);
 void StartCanTxTask(void *argument);
+void StartHmi2PowerTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -459,6 +467,9 @@ int main(void)
 
 	/* creation of CanTxTask */
 	CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
+
+	/* creation of Hmi2PowerTask */
+	Hmi2PowerTaskHandle = osThreadNew(StartHmi2PowerTask, NULL, &Hmi2PowerTask_attributes);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -1425,12 +1436,13 @@ void StartManagerTask(void *argument)
 	//	osThreadSuspend(CommandTaskHandle);
 	//	osThreadSuspend(GpsTaskHandle);
 	//	osThreadSuspend(GyroTaskHandle);
-	////	osThreadSuspend(KeylessTaskHandle);
+	//	osThreadSuspend(KeylessTaskHandle);
 	//	osThreadSuspend(FingerTaskHandle);
 	//	osThreadSuspend(AudioTaskHandle);
 	//	osThreadSuspend(SwitchTaskHandle);
 	//	osThreadSuspend(CanRxTaskHandle);
 	//	osThreadSuspend(CanTxTaskHandle);
+	//	osThreadSuspend(Hmi2PowerTaskHandle);
 
 	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
@@ -2267,6 +2279,61 @@ void StartCanTxTask(void *argument)
 		osDelayUntil(lastWake + pdMS_TO_TICKS(500));
 	}
 	/* USER CODE END StartCanTxTask */
+}
+
+/* USER CODE BEGIN Header_StartHmi2PowerTask */
+/**
+ * @brief Function implementing the Hmi2PowerTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartHmi2PowerTask */
+void StartHmi2PowerTask(void *argument)
+{
+	/* USER CODE BEGIN StartHmi2PowerTask */
+	TickType_t tick;
+	uint32_t notif;
+
+	/* Infinite loop */
+	for (;;) {
+		// wait forever until triggered
+		notif = osThreadFlagsWait(EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever);
+		if (_RTOS_ValidThreadFlag(notif)) {
+			// Handle power control
+			if (VCU.d.knob) {
+				while (!HMI2.d.started) {
+					// turn ON
+					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+					osDelay(100);
+					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 1);
+
+					// wait until turned ON
+					tick = osKernelGetTickCount();
+					while (osKernelGetTickCount() - tick < pdMS_TO_TICKS(90 * 1000)) {
+						// already ON
+						if (HMI2.d.started) {
+							break;
+						}
+					}
+				}
+			} else {
+				while (HMI2.d.started) {
+					// wait until turned OFF by CAN
+					tick = osKernelGetTickCount();
+					while (osKernelGetTickCount() - tick < pdMS_TO_TICKS(30 * 1000)) {
+						// already OFF
+						if (!HMI2.d.started) {
+							break;
+						}
+					}
+
+					// force turn OFF
+					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, 0);
+				}
+			}
+		}
+	}
+	/* USER CODE END StartHmi2PowerTask */
 }
 
 /**
