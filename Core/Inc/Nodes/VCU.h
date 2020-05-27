@@ -37,10 +37,10 @@ typedef struct {
 
 typedef struct {
 	struct {
-		uint8_t (*Switch)(sw_t*);
+		uint8_t (*SwitchModeControl)(sw_t*);
 		uint8_t (*Datetime)(timestamp_t*);
-		uint8_t (*SelectSet)(sw_runner_t*);
-		uint8_t (*TripMode)(uint32_t*);
+		uint8_t (*MixedData)(sw_runner_t*);
+		uint8_t (*SubTripData)(uint32_t*);
 	} t;
 } vcu_can_t;
 
@@ -59,9 +59,9 @@ void VCU_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t VCU_ReadEvent(uint64_t event_id);
 void VCU_CheckMainPower(void);
 
-uint8_t VCU_CAN_TX_Switch(sw_t *sw);
+uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw);
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp);
-uint8_t VCU_CAN_TX_SelectSet(sw_runner_t *runner);
-uint8_t VCU_CAN_TX_TripMode(uint32_t *trip);
+uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner);
+uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip);
 
 #endif /* INC_NODES_VCU_H_ */

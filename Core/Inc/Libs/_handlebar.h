@@ -65,6 +65,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t listening;
+	uint8_t hazard;
 	struct {
 		SW_MODE val;
 		sw_sub_t sub;

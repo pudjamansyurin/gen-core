@@ -69,6 +69,7 @@ sw_t SW = {
 		},
 		.runner = {
 				.listening = 0,
+				.hazard = 0,
 				.mode = {
 						.val = SW_M_DRIVE,
 						.sub = {
@@ -117,10 +118,10 @@ void HBAR_CheckReverse(void) {
 		}
 		// force state
 		SW.runner.mode.sub.val[SW_M_DRIVE] = SW_M_DRIVE_R;
-		// hazard on
-		SW.list[SW_K_SEIN_LEFT].state = 1;
-		SW.list[SW_K_SEIN_RIGHT].state = 1;
 	}
+
+	// set hazard
+	SW.runner.hazard = SW.list[SW_K_REVERSE].state;
 }
 
 void HBAR_TimerSelectSet(void) {
@@ -208,11 +209,11 @@ sein_state_t HBAR_SeinController(sw_t *sw) {
 	};
 
 	if ((osKernelGetTickCount() - tickSein) >= pdMS_TO_TICKS(500)) {
-		if (sw->list[SW_K_SEIN_LEFT].state && sw->list[SW_K_SEIN_RIGHT].state) {
+		if (sw->runner.hazard) {
 			// hazard
 			tickSein = osKernelGetTickCount();
 			sein.left = !sein.left;
-			sein.right = sein.left;
+			sein.right = !sein.right;
 		} else if (sw->list[SW_K_SEIN_LEFT].state) {
 			// left sein
 			tickSein = osKernelGetTickCount();
@@ -244,6 +245,7 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
 			iName = runner->mode.val;
 			// reset period tick
 			tickPeriod = osKernelGetTickCount();
+
 		} else if (iValue != runner->mode.sub.val[runner->mode.val]) {
 			iValue = runner->mode.sub.val[runner->mode.val];
 			// reset period tick
