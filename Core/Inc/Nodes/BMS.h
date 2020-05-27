@@ -28,6 +28,8 @@ typedef enum {
 typedef struct {
 	uint8_t started;
 	uint8_t soc;
+	uint8_t overheat;
+	uint8_t warning;
 	struct {
 		uint32_t id;
 		float voltage;

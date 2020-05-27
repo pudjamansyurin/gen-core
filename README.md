@@ -80,8 +80,8 @@
   - [ ] Handle Starter Button
   - [ ] Handle BMS.Fan when BMS temperature is overheat	
   - [?] Handle SOLENOID_PWR by Keyless.Seat
-  - [ ] VCU Lost Mode / Independent (NO BMS more thant 2 minutes)
-    - [ ] Send event "Unauthorized Battery Removal" 
+  - [?] VCU Lost Mode / Independent (NO BMS more thant 2 minutes)
+    - [?] Send event "Unauthorized Battery Removal" 
     - [ ] Sleep every 1 hour, just wakeup to Send Data
     - [ ] When wakeup, only turn ON: VCU, GPS & SIMCOM
   - [ ] Handle Gyroscope crash & fall to switched OFF BMS & MCU

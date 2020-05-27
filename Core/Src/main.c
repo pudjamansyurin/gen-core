@@ -1463,8 +1463,10 @@ void StartManagerTask(void *argument)
 		// Thread's Stack Monitor
 		_RTOS_Debugger(10000);
 
-		// Check is Daylight
+		// Other stuffs
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
+		HMI1.d.status.warning = BMS.d.warning;
+		HMI1.d.status.overheat = BMS.d.overheat;
 
 		// Periodic interval
 		osDelayUntil(lastWake + pdMS_TO_TICKS(1000));

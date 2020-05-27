@@ -73,7 +73,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 		} else {
 			// Handle locked-loop
 			if (SIM.state < lastState) {
-				if (!depth--) {
+				if (!--depth) {
 					depth = maxDepth;
 					SIM.state = SIM_STATE_DOWN;
 					LOG_StrLn("Simcom:LockedLoop");

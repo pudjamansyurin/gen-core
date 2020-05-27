@@ -43,6 +43,9 @@ bms_t BMS = {
 void BMS_Init(void) {
 	BMS.d.started = 0;
 	BMS.d.soc = 0;
+	BMS.d.overheat = 0;
+	BMS.d.warning = 0;
+	// set each BMS
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
 		BMS_ResetIndex(i);
 	}
@@ -65,8 +68,8 @@ void BMS_PowerOverCan(uint8_t on) {
 			BMS.d.soc = 0;
 
 			// other parameters
-			HMI1.d.status.overheat = 0;
-			HMI1.d.status.warning = 1;
+			BMS.d.overheat = 0;
+			BMS.d.warning = 1;
 		}
 	}
 }
@@ -115,6 +118,7 @@ uint8_t BMS_GetIndex(uint32_t id) {
 }
 
 void BMS_SetEvents(uint16_t flag) {
+	// Set events
 	VCU.SetEvent(EV_BMS_SHORT_CIRCUIT, _R1(flag, 0));
 	VCU.SetEvent(EV_BMS_DISCHARGE_OVER_CURRENT, _R1(flag, 1));
 	VCU.SetEvent(EV_BMS_CHARGE_OVER_CURRENT, _R1(flag, 2));
@@ -128,12 +132,12 @@ void BMS_SetEvents(uint16_t flag) {
 	VCU.SetEvent(EV_BMS_OVER_DISCHARGE_CAPACITY, _R1(flag, 10));
 	VCU.SetEvent(EV_BMS_SYSTEM_FAILURE, _R1(flag, 11));
 
-	// check event as CAN data
-	HMI1.d.status.overheat = VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
+	// Parse event for indicator
+	BMS.d.overheat = VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
 			VCU.ReadEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE) ||
 			VCU.ReadEvent(EV_BMS_CHARGE_OVER_TEMPERATURE) ||
 			VCU.ReadEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE);
-	HMI1.d.status.warning = VCU.ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
+	BMS.d.warning = VCU.ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
 			VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_CURRENT) ||
 			VCU.ReadEvent(EV_BMS_CHARGE_OVER_CURRENT) ||
 			VCU.ReadEvent(EV_BMS_UNBALANCE) ||
@@ -141,6 +145,9 @@ void BMS_SetEvents(uint16_t flag) {
 			VCU.ReadEvent(EV_BMS_OVER_VOLTAGE) ||
 			VCU.ReadEvent(EV_BMS_OVER_DISCHARGE_CAPACITY) ||
 			VCU.ReadEvent(EV_BMS_SYSTEM_FAILURE);
+
+	// Handle overheat
+	HAL_GPIO_WritePin(EXT_BMS_FAN_PWR_GPIO_Port, EXT_BMS_FAN_PWR_Pin, BMS.d.overheat);
 }
 
 uint8_t BMS_CheckRun(uint8_t state) {

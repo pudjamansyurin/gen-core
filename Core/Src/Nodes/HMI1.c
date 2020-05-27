@@ -32,6 +32,7 @@ void HMI1_Init(void) {
 	HMI1.d.status.finger = 0;
 	HMI1.d.status.keyless = 0;
 	HMI1.d.status.daylight = 0;
+	// each HMIs
 	for (uint8_t i = 0; i < HMI1_DEV_MAX; i++) {
 		HMI1.d.device[i].started = 0;
 		HMI1.d.device[i].tick = 0;
