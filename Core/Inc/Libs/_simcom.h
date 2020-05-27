@@ -54,7 +54,7 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Sleep(uint8_t state);
-void Simcom_SetState(SIMCOM_STATE state);
+uint8_t Simcom_SetState(SIMCOM_STATE state);
 SIMCOM_RESULT Simcom_Response(char *str);
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry);
 SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);

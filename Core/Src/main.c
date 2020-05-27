@@ -1510,80 +1510,83 @@ void StartIotTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		// Upload Report & Response Payload
-		for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
-			// decide the payload
-			if (type == PAYLOAD_REPORT) {
-				pQueue = &ReportQueueHandle;
-				pPayload = &report;
-			} else {
-				pQueue = &ResponseQueueHandle;
-				pPayload = &response;
-			}
-			pHeader = (header_t*) pPayload;
-
-			// check report log
-			if (!pending[type]) {
-				status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
-				// check is mail ready
-				if (status == osOK) {
-					pending[type] = 1;
+		if (Simcom_SetState(SIM_STATE_SERVER_ON)) {
+			// Iterate between REPORT & RESPONSE
+			for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
+				// decide the payload
+				if (type == PAYLOAD_REPORT) {
+					pQueue = &ReportQueueHandle;
+					pPayload = &report;
+				} else {
+					pQueue = &ResponseQueueHandle;
+					pPayload = &response;
 				}
-			}
+				pHeader = (header_t*) pPayload;
 
-			// check is payload ready
-			if (pending[type]) {
-				retry = 1;
-				nack = 1;
-
-				do {
-					// Re-calculate CRC
-					if (type == PAYLOAD_REPORT) {
-						Report_SetCRC((report_t*) pPayload);
-					} else {
-						Response_SetCRC((response_t*) pPayload);
+				// check report log
+				if (!pending[type]) {
+					status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
+					// check is mail ready
+					if (status == osOK) {
+						pending[type] = 1;
 					}
+				}
 
-					// Send to server
-					Simcom_SetState(SIM_STATE_SERVER_ON);
-					p = Simcom_Upload(pPayload, size + pHeader->size, &retry);
+				// check is payload ready
+				if (pending[type]) {
+					retry = 1;
+					nack = 1;
 
-					// Handle looping NACK
-					if (p == SIM_RESULT_NACK) {
-						if (nack++ >= SIMCOM_MAX_UPLOAD_RETRY) {
-							// Probably  CRC not valid, cancel but force as success
-							p = SIM_RESULT_OK;
+					do {
+						// Re-calculate CRC
+						if (type == PAYLOAD_REPORT) {
+							Report_SetCRC((report_t*) pPayload);
+						} else {
+							Response_SetCRC((response_t*) pPayload);
 						}
-					}
 
-					// Release back
-					if (p == SIM_RESULT_OK) {
-						EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
+						// Send to server
+						p = Simcom_Upload(pPayload, size + pHeader->size, &retry);
+
+						// Handle looping NACK
+						if (p == SIM_RESULT_NACK) {
+							if (nack++ >= SIMCOM_MAX_UPLOAD_RETRY) {
+								// Probably  CRC not valid, cancel but force as success
+								p = SIM_RESULT_OK;
+							}
+						}
+
+						// Release back
+						if (p == SIM_RESULT_OK) {
+							EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
+							pending[type] = 0;
+
+							break;
+						}
+
+						// delay
+						osDelay(500);
+					} while (p != SIM_RESULT_OK && retry <= SIMCOM_MAX_UPLOAD_RETRY);
+				}
+
+				// Handle Full Buffer
+				if (type == PAYLOAD_REPORT) {
+					notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny, 0);
+					if (_RTOS_ValidThreadFlag(notif)) {
 						pending[type] = 0;
-
-						break;
 					}
-
-					// delay
-					osDelay(500);
-				} while (p != SIM_RESULT_OK && retry <= SIMCOM_MAX_UPLOAD_RETRY);
-			}
-
-			// Handle Full Buffer
-			if (type == PAYLOAD_REPORT) {
-				notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny, 0);
-				if (_RTOS_ValidThreadFlag(notif)) {
-					pending[type] = 0;
 				}
 			}
 		}
 
 		// ================= SIMCOM Related Routines ================
-		Simcom_SetState(SIM_STATE_READY);
-		if (AT_SignalQualityReport(&signal)) {
-			VCU.d.signal_percent = signal.percent;
-		}
-		if (RTC_NeedCalibration()) {
-			RTC_Calibrate();
+		if (Simcom_SetState(SIM_STATE_READY)) {
+			if (AT_SignalQualityReport(&signal)) {
+				VCU.d.signal_percent = signal.percent;
+			}
+			if (RTC_NeedCalibration()) {
+				RTC_Calibrate();
+			}
 		}
 
 		// Periodic interval

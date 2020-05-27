@@ -53,15 +53,14 @@ SIMCOM_RESULT Simcom_Response(char *str) {
 	return SIM_RESULT_ERROR;
 }
 
-void Simcom_SetState(SIMCOM_STATE state) {
-	Simcom_Lock();
-
+uint8_t Simcom_SetState(SIMCOM_STATE state) {
 	SIMCOM_RESULT p;
 	SIMCOM_STATE lastState;
 	static uint8_t init = 1;
 	const uint8_t maxDepth = 2;
 	uint8_t iteration, depth = maxDepth;
 
+	Simcom_Lock();
 	do {
 		// only executed at power up
 		if (init) {
@@ -400,13 +399,12 @@ void Simcom_SetState(SIMCOM_STATE state) {
 		}
 
 	} while (SIM.state < state);
-
 	Simcom_Unlock();
+
+	return SIM.state >= state;
 }
 
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
-	Simcom_Lock();
-
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 	uint32_t tick;
 	char str[20];
@@ -416,6 +414,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
 	// combine the size
 	sprintf(str, "AT+CIPSEND=%d\r", size);
 
+	Simcom_Lock();
 	if (SIM.state >= SIM_STATE_SERVER_ON) {
 		// wake-up the SIMCOM
 		Simcom_Sleep(0);
@@ -543,12 +542,11 @@ SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res) {
 }
 
 SIMCOM_RESULT Simcom_ProcessCommand(command_t *command) {
-	Simcom_Lock();
-
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 	uint32_t crcValue;
 	char *str = NULL;
 
+	Simcom_Lock();
 	if (Simcom_Response(SIMCOM_RSP_IPD)) {
 		str = strstr(SIMCOM_UART_RX, PREFIX_ACK);
 		// get pointer reference
@@ -570,8 +568,8 @@ SIMCOM_RESULT Simcom_ProcessCommand(command_t *command) {
 			}
 		}
 	}
-
 	Simcom_Unlock();
+
 	return p;
 }
 
@@ -773,6 +771,8 @@ static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_pa
 }
 
 static void Simcom_ClearBuffer(void) {
+	// handle things on every request
+
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();
 }
