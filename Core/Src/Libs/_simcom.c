@@ -776,10 +776,10 @@ static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_pa
 
 static void Simcom_ClearBuffer(void) {
 	// handle things on every request
-	LOG_StrLn("============ SIMCOM DEBUG ============");
-	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-	LOG_Enter();
-	LOG_StrLn("======================================");
+	//	LOG_StrLn("============ SIMCOM DEBUG ============");
+	//	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+	//	LOG_Enter();
+	//	LOG_StrLn("======================================");
 
 	// reset rx buffer
 	SIMCOM_Reset_Buffer();

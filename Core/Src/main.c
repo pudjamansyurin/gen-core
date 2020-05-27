@@ -1431,12 +1431,12 @@ void StartManagerTask(void *argument)
 	VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
 	// Threads management:
-	//		osThreadSuspend(IotTaskHandle);
-	//	osThreadSuspend(ReporterTaskHandle);
-	//	osThreadSuspend(CommandTaskHandle);
+	osThreadSuspend(IotTaskHandle);
+	osThreadSuspend(ReporterTaskHandle);
+	osThreadSuspend(CommandTaskHandle);
 	osThreadSuspend(GpsTaskHandle);
 	osThreadSuspend(GyroTaskHandle);
-	osThreadSuspend(KeylessTaskHandle);
+	//	osThreadSuspend(KeylessTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
 	osThreadSuspend(AudioTaskHandle);
 	osThreadSuspend(SwitchTaskHandle);
