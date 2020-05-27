@@ -95,7 +95,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 				p = SIM_RESULT_OK;
 
 				Simcom_IdleJob(NULL);
-				if (SIM.state >= SIM_STATE_INTERNET_ON) {
+				if (SIM.state >= SIM_STATE_GPRS_ON) {
 					// Force exit loop
 					if (VCU.d.signal < 15) {
 						LOG_StrLn("Simcom:SignalPoor");

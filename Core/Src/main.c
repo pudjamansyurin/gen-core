@@ -1457,11 +1457,11 @@ void StartManagerTask(void *argument)
 		// Dummy data generator
 		_DummyGenerator();
 
-		// Battery Monitor
-		BAT_Debugger();
-
 		// Thread's Stack Monitor
 		_RTOS_Debugger(10000);
+
+		// Battery Monitor
+		BAT_Debugger();
 
 		// Other stuffs
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);

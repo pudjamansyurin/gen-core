@@ -78,7 +78,7 @@
     - [ ] Send event group to Server
   - [?] Keyless.BEEP turn on Horn & Sein Lamp (toggle the HORN_PWR)
   - [ ] Handle Starter Button
-  - [ ] Handle BMS.Fan when BMS temperature is overheat	
+  - [?] Handle BMS.Fan when BMS temperature is overheat	
   - [?] Handle SOLENOID_PWR by Keyless.Seat
   - [?] VCU Lost Mode / Independent (NO BMS more thant 2 minutes)
     - [?] Send event "Unauthorized Battery Removal" 
