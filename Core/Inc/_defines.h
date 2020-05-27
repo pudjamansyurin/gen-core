@@ -30,30 +30,28 @@
 #define VCU_FIRMWARE_VERSION                    "0.7"
 #define VCU_VENDOR                              "GEN Indonesia"
 #define VCU_BUILD_YEAR                          20U
+#define VCU_ACTIVATE_LOST_MODE									2U											 // in minutes
 
-//#define NET_SERVER_PORT                         5044
-//#define NET_SERVER_IP                           "pujakusumae-31974.portmap.io"
-//#define NET_SERVER_PORT                         31974
-//#define NET_SERVER_IP                           "0.tcp.ngrok.io"
-//#define NET_SERVER_PORT                         18698
-#define NET_BOOT_TIMEOUT                        7000                    // in ms
-#define NET_EXTRA_TIME_MS                       1000                    // in ms
-#define NET_REPEAT_DELAY                        5000                    // in ms
-#define NET_REPEAT_MAX													2
+#define NET_BOOT_TIMEOUT                        7000U                    // in ms
+#define NET_EXTRA_TIME_MS                       1000U                    // in ms
+#define NET_REPEAT_DELAY                        5000U                    // in ms
+#define NET_REPEAT_MAX													2U
 
 #define PREFIX_REPORT                           "@R"
 #define PREFIX_COMMAND                          "@C"
 #define PREFIX_ACK                              "@A"
 #define PREFIX_NACK                             "@N"
 
-#define FINGER_CONFIDENCE_MIN                   10
-#define FINGER_SCAN_TIMEOUT                     10                      // in second
-#define FINGER_USER_MAX													5
+#define FINGER_CONFIDENCE_MIN                   10U
+#define FINGER_SCAN_TIMEOUT                     10U                      // in second
+#define FINGER_USER_MAX													5U
+
 #define DRIVER_ID_NONE													0xFF
 
-#define RPT_INTERVAL_SIMPLE                     5                       // in second
-#define RPT_INTERVAL_FULL_TIMES                 4												// n x simple
-#define RPT_INTERVAL_INDEPENDENT                60U											// in second
+#define RPT_INTERVAL_FULL_AT_SIMPLE          		4U											// n x INTERVAL_SIMPLE
+#define RPT_INTERVAL_SIMPLE                     5U                      // in second
+#define RPT_INTERVAL_INDEPENDENT                20U											// in second
+#define RPT_INTERVAL_LOST				                60U											// in second
 #define RPT_UNITID                              354313U
 
 // Payload list (Keyless)
@@ -67,6 +65,7 @@
 #define EV_VCU_BIKE_CRASHED                    	BIT(2)
 #define EV_VCU_KEYLESS_MISSING                 	BIT(3)
 #define EV_VCU_INDEPENDENT                     	BIT(4)
+#define EV_VCU_UNAUTHORIZE_REMOVAL  		       	BIT(5)
 #define EV_BMS_DISCHARGE_OVER_CURRENT          	BIT(30)
 #define EV_BMS_CHARGE_OVER_CURRENT             	BIT(31)
 #define EV_BMS_SHORT_CIRCUIT                   	BIT(32)

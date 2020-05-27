@@ -57,7 +57,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 	SIMCOM_RESULT p;
 	SIMCOM_STATE lastState;
 	static uint8_t init = 1;
-	const uint8_t maxDepth = 2;
+	const uint8_t maxDepth = 3;
 	uint8_t iteration, depth = maxDepth;
 
 	Simcom_Lock();
@@ -73,10 +73,14 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 		} else {
 			// Handle locked-loop
 			if (SIM.state < lastState) {
-				if (!--depth) {
+				if (!depth--) {
 					depth = maxDepth;
 					SIM.state = SIM_STATE_DOWN;
 					LOG_StrLn("Simcom:LockedLoop");
+				} else {
+					LOG_Str("Simcom:StateDecrease N = ");
+					LOG_Int(depth);
+					LOG_Enter();
 				}
 			}
 			lastState = SIM.state;
@@ -86,14 +90,14 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 				p = SIM_RESULT_ERROR;
 
 				LOG_StrLn("Simcom:Down");
-				VCU.d.signal_percent = 0;
+				VCU.d.signal = 0;
 			} else {
 				p = SIM_RESULT_OK;
 
 				Simcom_IdleJob(NULL);
 				if (SIM.state >= SIM_STATE_INTERNET_ON) {
 					// Force exit loop
-					if (VCU.d.signal_percent < 15) {
+					if (VCU.d.signal < 15) {
 						LOG_StrLn("Simcom:SignalPoor");
 						//					osDelay(5000);
 						break;
@@ -659,7 +663,7 @@ static SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
 	// other routines
 	p = AT_SignalQualityReport(&signal);
 	if (p) {
-		VCU.d.signal_percent = signal.percent;
+		VCU.d.signal = signal.percent;
 	}
 	AT_ConnectionStatusSingle(&ipStatus);
 

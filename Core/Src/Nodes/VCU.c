@@ -36,18 +36,22 @@ vcu_t VCU = {
 /* Public functions implementation --------------------------------------------*/
 void VCU_Init(void) {
 	// reset VCU data
-	VCU.d.knob = 0;
-	VCU.d.independent = 1;
+	VCU.d.state.starter = 0;
+	VCU.d.state.knob = 0;
+	VCU.d.state.independent = 1;
+
 	VCU.d.interval = RPT_INTERVAL_SIMPLE;
 	VCU.d.driver_id = DRIVER_ID_NONE;
 	VCU.d.volume = 0;
-	VCU.d.bat_voltage = 0;
-	VCU.d.signal_percent = 0;
+	VCU.d.backup_voltage = 0;
+	VCU.d.signal = 0;
 	VCU.d.speed = 0;
 	VCU.d.odometer = 0;
 	VCU.d.events = 0;
+
 	VCU.d.tick.keyless = 0;
 	//  VCU.d.tick.finger = 0;
+
 	VCU.d.seq_id.report = 0;
 	VCU.d.seq_id.response = 0;
 }
@@ -65,9 +69,36 @@ uint8_t VCU_ReadEvent(uint64_t event_id) {
 }
 
 void VCU_CheckMainPower(void) {
-	VCU.d.independent = !HAL_GPIO_ReadPin(EXT_REG_5V_IRQ_GPIO_Port, EXT_REG_5V_IRQ_Pin);
-	VCU.d.interval = VCU.d.independent ? RPT_INTERVAL_INDEPENDENT : RPT_INTERVAL_SIMPLE;
-	VCU.SetEvent(EV_VCU_INDEPENDENT, VCU.d.independent);
+	TickType_t tick;
+	static int8_t lastState = -1;
+	uint8_t currentState;
+
+	// read state
+	currentState = HAL_GPIO_ReadPin(EXT_REG_5V_IRQ_GPIO_Port, EXT_REG_5V_IRQ_Pin);
+	// handle only when changed
+	if (lastState != currentState) {
+		lastState = currentState;
+		// update tick
+		tick = osKernelGetTickCount();
+	}
+
+	// set things
+	VCU.d.state.independent = !currentState;
+	VCU.SetEvent(EV_VCU_INDEPENDENT, 0);
+	VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
+
+	// handle when REG_5V is OFF
+	if (!currentState) {
+		VCU.SetEvent(EV_VCU_INDEPENDENT, 1);
+		if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(VCU_ACTIVATE_LOST_MODE * 60 * 1000)) {
+			VCU.d.interval = RPT_INTERVAL_LOST;
+			VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
+		} else {
+			VCU.d.interval = RPT_INTERVAL_INDEPENDENT;
+		}
+	} else {
+		VCU.d.interval = RPT_INTERVAL_SIMPLE;
+	}
 }
 
 /* ====================================== CAN TX =================================== */
@@ -114,7 +145,7 @@ uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
 	CB.tx.data.u8[5] = timestamp->date.Year;
 	CB.tx.data.u8[6] = timestamp->date.WeekDay;
 	// HMI2 shutdown request
-	CB.tx.data.u8[7] = !VCU.d.knob;
+	CB.tx.data.u8[7] = !VCU.d.state.knob;
 
 	// set default header
 	CANBUS_Header(&(CB.tx.header), CAND_VCU_DATETIME, 8);
@@ -124,7 +155,7 @@ uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
 
 uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
 	// set message
-	CB.tx.data.u8[0] = VCU.d.signal_percent;
+	CB.tx.data.u8[0] = VCU.d.signal;
 	CB.tx.data.u8[1] = BMS.d.soc;
 	CB.tx.data.u8[2] = runner->mode.sub.report[SW_M_REPORT_RANGE];
 	CB.tx.data.u8[3] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];

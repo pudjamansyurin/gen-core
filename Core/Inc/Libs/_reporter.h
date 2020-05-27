@@ -58,8 +58,8 @@ typedef struct __attribute__((packed)) {
 			} gps;
 			uint8_t speed;
 			uint32_t odometer;
-			uint8_t signal_percent;
-			uint8_t bat_voltage;
+			uint8_t signal;
+			uint8_t backup_voltage;
 			struct __attribute__((packed)) {
 				uint8_t range;
 				uint8_t efficiency;

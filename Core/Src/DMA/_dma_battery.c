@@ -34,7 +34,7 @@ void BAT_DMA_Init(void) {
 
 void BAT_Debugger(void) {
 	LOG_Str("Battery:Voltage = ");
-	LOG_Int(VCU.d.bat_voltage);
+	LOG_Int(VCU.d.backup_voltage);
 	LOG_StrLn(" mV");
 }
 
@@ -67,7 +67,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	// calculate the moving average
 	temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
 	// change to battery value
-	VCU.d.bat_voltage = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
+	VCU.d.backup_voltage = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
 }
 
 /* Private functions implementation ---------------------------------------------*/

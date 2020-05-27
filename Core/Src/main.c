@@ -1428,7 +1428,7 @@ void StartManagerTask(void *argument)
 
 	// Check GPIOs state
 	VCU.CheckMainPower();
-	VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+	VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
 	// Threads management:
 	//	osThreadSuspend(IotTaskHandle);
@@ -1582,7 +1582,7 @@ void StartIotTask(void *argument)
 		// ================= SIMCOM Related Routines ================
 		if (Simcom_SetState(SIM_STATE_READY)) {
 			if (AT_SignalQualityReport(&signal)) {
-				VCU.d.signal_percent = signal.percent;
+				VCU.d.signal = signal.percent;
 			}
 			if (RTC_NeedCalibration()) {
 				RTC_Calibrate();
@@ -1622,8 +1622,8 @@ void StartReporterTask(void *argument)
 		lastWake = osKernelGetTickCount();
 
 		// Frame type decider
-		if (!VCU.d.independent) {
-			if (++frameDecider == RPT_INTERVAL_FULL_TIMES) {
+		if (!VCU.d.state.independent) {
+			if (++frameDecider == RPT_INTERVAL_FULL_AT_SIMPLE) {
 				frame = FR_FULL;
 				frameDecider = 0;
 			} else {
@@ -1702,7 +1702,7 @@ void StartCommandTask(void *argument)
 							break;
 
 						case CMD_GEN_KNOB:
-							VCU.d.knob = (uint8_t) command.data.value;
+							VCU.d.state.knob = (uint8_t) command.data.value;
 							break;
 
 						default:
@@ -2051,10 +2051,10 @@ void StartFingerTask(void *argument)
 				id = Finger_AuthFast();
 				if (id >= 0) {
 					// Finger is registered
-					VCU.d.knob = !VCU.d.knob;
+					VCU.d.state.knob = !VCU.d.state.knob;
 
 					// Finger Heart-Beat
-					if (!VCU.d.knob) {
+					if (!VCU.d.state.knob) {
 						id = DRIVER_ID_NONE;
 					}
 					VCU.d.driver_id = id;
@@ -2207,7 +2207,7 @@ void StartSwitchTask(void *argument)
 			// KNOB IRQ
 			if (notif & EVT_SWITCH_KNOB_IRQ) {
 				// get current state
-				VCU.d.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+				VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 			}
 		}
 	}
@@ -2302,9 +2302,9 @@ void StartCanTxTask(void *argument)
 		}
 
 		// Handle Knob Changes
-		BMS.PowerOverCan(VCU.d.knob);
-		HMI1.Power(VCU.d.knob);
-		HMI2.PowerOverCan(VCU.d.knob);
+		BMS.PowerOverCan(VCU.d.state.knob);
+		HMI1.Power(VCU.d.state.knob);
+		HMI2.PowerOverCan(VCU.d.state.knob);
 
 		// Refresh state
 		BMS.RefreshIndex();

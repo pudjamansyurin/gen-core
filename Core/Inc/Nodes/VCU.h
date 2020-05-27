@@ -14,18 +14,21 @@
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
-	uint8_t knob;
 	uint32_t unit_id;
 	uint8_t driver_id;
-	uint8_t independent;
 	uint16_t interval;
 	uint8_t volume;
-	uint16_t bat_voltage;
-	uint8_t signal_percent;
+	uint16_t backup_voltage;
+	uint8_t signal;
 	uint8_t speed;
 	uint32_t odometer;
 	rtc_t rtc;
 	uint64_t events;
+	struct {
+		uint8_t starter;
+		uint8_t knob;
+		uint8_t independent;
+	} state;
 	struct {
 		uint32_t keyless;
 	} tick;

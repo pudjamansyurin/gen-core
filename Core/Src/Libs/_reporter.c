@@ -84,8 +84,8 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 		report->data.opt.vcu.report.range = pSub->report[SW_M_REPORT_RANGE];
 		report->data.opt.vcu.report.efficiency = pSub->report[SW_M_REPORT_EFFICIENCY];
 
-		report->data.opt.vcu.signal_percent = VCU.d.signal_percent;
-		report->data.opt.vcu.bat_voltage = VCU.d.bat_voltage / 18;
+		report->data.opt.vcu.signal = VCU.d.signal;
+		report->data.opt.vcu.backup_voltage = VCU.d.backup_voltage / 18;
 
 		// BMS data
 		for (uint8_t i = 0; i < BMS_COUNT; i++) {
