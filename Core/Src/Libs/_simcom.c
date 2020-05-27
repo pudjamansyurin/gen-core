@@ -99,7 +99,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 					// Force exit loop
 					if (VCU.d.signal < 15) {
 						LOG_StrLn("Simcom:SignalPoor");
-						//					osDelay(5000);
+						osDelay(1000);
 						break;
 					}
 				}
@@ -231,7 +231,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 				osDelay(500);
 				break;
 			case SIM_STATE_NETWORK_ON:
-				// =========== GPRS ATTACH
+				// =========== GPRS ATTACH				
 				// GPRS Registration Status
 				if (p) {
 					at_c_greg_t param = {
