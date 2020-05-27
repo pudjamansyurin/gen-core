@@ -1431,18 +1431,18 @@ void StartManagerTask(void *argument)
 	VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
 	// Threads management:
-	//	osThreadSuspend(IotTaskHandle);
-	//	osThreadSuspend(ReporterTaskHandle);
-	//	osThreadSuspend(CommandTaskHandle);
-	//	osThreadSuspend(GpsTaskHandle);
-	//	osThreadSuspend(GyroTaskHandle);
-	//	osThreadSuspend(KeylessTaskHandle);
-	//	osThreadSuspend(FingerTaskHandle);
-	//	osThreadSuspend(AudioTaskHandle);
-	//	osThreadSuspend(SwitchTaskHandle);
-	//	osThreadSuspend(CanRxTaskHandle);
-	//	osThreadSuspend(CanTxTaskHandle);
-	//	osThreadSuspend(Hmi2PowerTaskHandle);
+	//		osThreadSuspend(IotTaskHandle);
+	osThreadSuspend(ReporterTaskHandle);
+	osThreadSuspend(CommandTaskHandle);
+	osThreadSuspend(GpsTaskHandle);
+	osThreadSuspend(GyroTaskHandle);
+	osThreadSuspend(KeylessTaskHandle);
+	osThreadSuspend(FingerTaskHandle);
+	osThreadSuspend(AudioTaskHandle);
+	osThreadSuspend(SwitchTaskHandle);
+	osThreadSuspend(CanRxTaskHandle);
+	osThreadSuspend(CanTxTaskHandle);
+	osThreadSuspend(Hmi2PowerTaskHandle);
 
 	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
@@ -1461,7 +1461,7 @@ void StartManagerTask(void *argument)
 		_RTOS_Debugger(10000);
 
 		// Battery Monitor
-		BAT_Debugger();
+		//		BAT_Debugger();
 
 		// Other stuffs
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
