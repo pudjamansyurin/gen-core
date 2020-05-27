@@ -1432,8 +1432,8 @@ void StartManagerTask(void *argument)
 
 	// Threads management:
 	//		osThreadSuspend(IotTaskHandle);
-	osThreadSuspend(ReporterTaskHandle);
-	osThreadSuspend(CommandTaskHandle);
+	//	osThreadSuspend(ReporterTaskHandle);
+	//	osThreadSuspend(CommandTaskHandle);
 	osThreadSuspend(GpsTaskHandle);
 	osThreadSuspend(GyroTaskHandle);
 	osThreadSuspend(KeylessTaskHandle);

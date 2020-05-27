@@ -257,7 +257,7 @@ SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
 		if (mode == ATW) {
 			if (tmp != *state) {
 				sprintf(cmd, "AT+CGATT=%d\r", *state);
-				p = AT_CmdWrite(cmd, 500, NULL);
+				p = AT_CmdWrite(cmd, 10000, NULL);
 			}
 		} else {
 			*state = tmp;
