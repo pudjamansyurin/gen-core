@@ -1839,6 +1839,7 @@ void StartKeylessTask(void *argument) {
     /* USER CODE BEGIN StartKeylessTask */
     uint32_t notif;
     KLESS_CMD command;
+    uint8_t pairing = 0;
 
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -1864,6 +1865,11 @@ void StartKeylessTask(void *argument) {
                             // update heart-beat
                             VCU.d.tick.keyless = osKernelGetTickCount();
 
+                            // handle pairing response, after get PING ack
+                            if (pairing) {
+                                pairing = 0;
+                                osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+                            }
                             break;
                         case KLESS_CMD_ALARM:
                             // toggle the hazard
@@ -1903,10 +1909,8 @@ void StartKeylessTask(void *argument) {
 
             // handle pairing
             if (notif & EVT_KEYLESS_PAIRING) {
+                pairing = 1;
                 KLESS_Pairing();
-
-                // handle response
-                //				osThreadFlagsSet(CommandTaskHandle, p ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
             }
 
             // reset ThreadFlag
