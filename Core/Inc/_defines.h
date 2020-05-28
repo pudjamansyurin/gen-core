@@ -13,7 +13,7 @@
 #include "cmsis_os.h"
 
 /* Exported macro functions --------------------------------------------------*/
-#define BIT(x)                                     	(1ULL << x)
+#define BIT(x)                                        (1ULL << x)
 #define BV(var, x  )                            	(var |= (1ULL << x))
 #define BC(var, x)                                 	(var &= ~(1ULL << x))
 #define BT(var, x)                              	(var ^= (1ULL << x))
@@ -158,19 +158,19 @@
 
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {
-	PAYLOAD_RESPONSE = 0, PAYLOAD_REPORT = 1, PAYLOAD_MAX = 1,
+    PAYLOAD_RESPONSE = 0, PAYLOAD_REPORT = 1, PAYLOAD_MAX = 1,
 } PAYLOAD_TYPE;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
-	RTC_TimeTypeDef time;
-	RTC_DateTypeDef date;
-	int8_t tzQuarterHour;
+    RTC_TimeTypeDef time;
+    RTC_DateTypeDef date;
+    int8_t tzQuarterHour;
 } timestamp_t;
 
 typedef struct {
-	timestamp_t timestamp;
-	RTC_DateTypeDef calibration;
+    timestamp_t timestamp;
+    RTC_DateTypeDef calibration;
 } rtc_t;
 
 #endif /* DEFINES_H_ */
