@@ -43,6 +43,9 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 void KLESS_Init(void) {
+    // use VCU_ID as address
+    memcpy(KLESS.tx.address, &(VCU.d.unit_id), sizeof(uint32_t));
+    memcpy(KLESS.rx.address, &(VCU.d.unit_id), sizeof(uint32_t));
     // set configuration
     KLESS.config.tx_address = (uint8_t*) KLESS.tx.address;
     KLESS.config.rx_address = (uint8_t*) KLESS.rx.address;
@@ -105,7 +108,6 @@ void KLESS_GenerateAesKey(uint32_t *payload) {
 uint8_t KLESS_Pairing(void) {
     const uint8_t tx_address[NRF_ADDR_LENGTH] = { 0xAB, 0x00, 0x00, 0x00, 0x00 };
     const uint8_t rx_address[NRF_ADDR_LENGTH] = { 0xCD, 0x00, 0x00, 0x00, 0x00 };
-    const uint8_t payload_length = NRF_DATA_LENGTH + NRF_ADDR_LENGTH;
     uint8_t payload[NRF_DATA_LENGTH + NRF_ADDR_LENGTH] = { 0 };
     NRF_RESULT p;
 
@@ -119,7 +121,7 @@ uint8_t KLESS_Pairing(void) {
     ce_reset(&nrf);
     nrf_set_tx_address(&nrf, (uint8_t*) tx_address);
     nrf_set_rx_address_p0(&nrf, (uint8_t*) rx_address);
-    nrf_set_rx_payload_width_p0(&nrf, payload_length);
+    nrf_set_rx_payload_width_p0(&nrf, NRF_DATA_LENGTH + NRF_ADDR_LENGTH);
     ce_set(&nrf);
     // Send Payload
     p = nrf_send_packet(&nrf, payload);
