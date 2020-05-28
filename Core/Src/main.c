@@ -67,8 +67,8 @@ ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
 CRYP_HandleTypeDef hcryp;
-__ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {
-		0x00000000, 0x00000000, 0x00000000, 0x00000000 };
+__ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = { 0x00000000,
+		0x00000000, 0x00000000, 0x00000000 };
 
 CAN_HandleTypeDef hcan1;
 
@@ -100,168 +100,104 @@ DMA_HandleTypeDef hdma_usart2_rx;
 
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
-const osThreadAttr_t ManagerTask_attributes = {
-		.name = "ManagerTask",
-		.priority = (osPriority_t) osPriorityRealtime7,
-		.stack_size = 288 * 4
-};
+const osThreadAttr_t ManagerTask_attributes = { .name = "ManagerTask",
+		.priority = (osPriority_t) osPriorityRealtime7, .stack_size = 288 * 4 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
-const osThreadAttr_t IotTask_attributes = {
-		.name = "IotTask",
-		.priority = (osPriority_t) osPriorityNormal,
-		.stack_size = 352 * 4
-};
+const osThreadAttr_t IotTask_attributes = { .name = "IotTask", .priority =
+		(osPriority_t) osPriorityNormal, .stack_size = 352 * 4 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
-const osThreadAttr_t ReporterTask_attributes = {
-		.name = "ReporterTask",
-		.priority = (osPriority_t) osPriorityNormal,
-		.stack_size = 352 * 4
-};
+const osThreadAttr_t ReporterTask_attributes = { .name = "ReporterTask",
+		.priority = (osPriority_t) osPriorityNormal, .stack_size = 352 * 4 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
-const osThreadAttr_t CommandTask_attributes = {
-		.name = "CommandTask",
-		.priority = (osPriority_t) osPriorityAboveNormal,
-		.stack_size = 256 * 4
-};
+const osThreadAttr_t CommandTask_attributes =
+		{ .name = "CommandTask", .priority =
+				(osPriority_t) osPriorityAboveNormal, .stack_size = 256 * 4 };
 /* Definitions for GpsTask */
 osThreadId_t GpsTaskHandle;
-const osThreadAttr_t GpsTask_attributes = {
-		.name = "GpsTask",
-		.priority = (osPriority_t) osPriorityNormal,
-		.stack_size = 256 * 4
-};
+const osThreadAttr_t GpsTask_attributes = { .name = "GpsTask", .priority =
+		(osPriority_t) osPriorityNormal, .stack_size = 256 * 4 };
 /* Definitions for GyroTask */
 osThreadId_t GyroTaskHandle;
-const osThreadAttr_t GyroTask_attributes = {
-		.name = "GyroTask",
-		.priority = (osPriority_t) osPriorityNormal,
-		.stack_size = 224 * 4
-};
+const osThreadAttr_t GyroTask_attributes = { .name = "GyroTask", .priority =
+		(osPriority_t) osPriorityNormal, .stack_size = 224 * 4 };
 /* Definitions for KeylessTask */
 osThreadId_t KeylessTaskHandle;
-const osThreadAttr_t KeylessTask_attributes = {
-		.name = "KeylessTask",
-		.priority = (osPriority_t) osPriorityAboveNormal,
-		.stack_size = 256 * 4
-};
+const osThreadAttr_t KeylessTask_attributes =
+		{ .name = "KeylessTask", .priority =
+				(osPriority_t) osPriorityAboveNormal, .stack_size = 256 * 4 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
-const osThreadAttr_t FingerTask_attributes = {
-		.name = "FingerTask",
-		.priority = (osPriority_t) osPriorityNormal,
-		.stack_size = 224 * 4
-};
+const osThreadAttr_t FingerTask_attributes = { .name = "FingerTask", .priority =
+		(osPriority_t) osPriorityNormal, .stack_size = 224 * 4 };
 /* Definitions for AudioTask */
 osThreadId_t AudioTaskHandle;
-const osThreadAttr_t AudioTask_attributes = {
-		.name = "AudioTask",
-		.priority = (osPriority_t) osPriorityNormal,
-		.stack_size = 224 * 4
-};
+const osThreadAttr_t AudioTask_attributes = { .name = "AudioTask", .priority =
+		(osPriority_t) osPriorityNormal, .stack_size = 224 * 4 };
 /* Definitions for SwitchTask */
 osThreadId_t SwitchTaskHandle;
-const osThreadAttr_t SwitchTask_attributes = {
-		.name = "SwitchTask",
-		.priority = (osPriority_t) osPriorityNormal,
-		.stack_size = 224 * 4
-};
+const osThreadAttr_t SwitchTask_attributes = { .name = "SwitchTask", .priority =
+		(osPriority_t) osPriorityNormal, .stack_size = 224 * 4 };
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
-const osThreadAttr_t CanRxTask_attributes = {
-		.name = "CanRxTask",
-		.priority = (osPriority_t) osPriorityRealtime,
-		.stack_size = 224 * 4
-};
+const osThreadAttr_t CanRxTask_attributes = { .name = "CanRxTask", .priority =
+		(osPriority_t) osPriorityRealtime, .stack_size = 224 * 4 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
-const osThreadAttr_t CanTxTask_attributes = {
-		.name = "CanTxTask",
-		.priority = (osPriority_t) osPriorityHigh,
-		.stack_size = 224 * 4
-};
+const osThreadAttr_t CanTxTask_attributes = { .name = "CanTxTask", .priority =
+		(osPriority_t) osPriorityHigh, .stack_size = 224 * 4 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
-const osThreadAttr_t Hmi2PowerTask_attributes = {
-		.name = "Hmi2PowerTask",
-		.priority = (osPriority_t) osPriorityNormal,
-		.stack_size = 128 * 4
-};
+const osThreadAttr_t Hmi2PowerTask_attributes = { .name = "Hmi2PowerTask",
+		.priority = (osPriority_t) osPriorityNormal, .stack_size = 128 * 4 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
-const osMessageQueueAttr_t CommandQueue_attributes = {
-		.name = "CommandQueue"
-};
+const osMessageQueueAttr_t CommandQueue_attributes = { .name = "CommandQueue" };
 /* Definitions for ResponseQueue */
 osMessageQueueId_t ResponseQueueHandle;
-const osMessageQueueAttr_t ResponseQueue_attributes = {
-		.name = "ResponseQueue"
-};
+const osMessageQueueAttr_t ResponseQueue_attributes =
+		{ .name = "ResponseQueue" };
 /* Definitions for ReportQueue */
 osMessageQueueId_t ReportQueueHandle;
-const osMessageQueueAttr_t ReportQueue_attributes = {
-		.name = "ReportQueue"
-};
+const osMessageQueueAttr_t ReportQueue_attributes = { .name = "ReportQueue" };
 /* Definitions for DriverQueue */
 osMessageQueueId_t DriverQueueHandle;
-const osMessageQueueAttr_t DriverQueue_attributes = {
-		.name = "DriverQueue"
-};
+const osMessageQueueAttr_t DriverQueue_attributes = { .name = "DriverQueue" };
 /* Definitions for AudioMutex */
 osMutexId_t AudioMutexHandle;
-const osMutexAttr_t AudioMutex_attributes = {
-		.name = "AudioMutex"
-};
+const osMutexAttr_t AudioMutex_attributes = { .name = "AudioMutex" };
 /* Definitions for LogMutex */
 osMutexId_t LogMutexHandle;
-const osMutexAttr_t LogMutex_attributes = {
-		.name = "LogMutex"
-};
+const osMutexAttr_t LogMutex_attributes = { .name = "LogMutex" };
 /* Definitions for CanTxMutex */
 osMutexId_t CanTxMutexHandle;
-const osMutexAttr_t CanTxMutex_attributes = {
-		.name = "CanTxMutex"
-};
+const osMutexAttr_t CanTxMutex_attributes = { .name = "CanTxMutex" };
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
-const osMutexAttr_t EepromMutex_attributes = {
-		.name = "EepromMutex"
-};
+const osMutexAttr_t EepromMutex_attributes = { .name = "EepromMutex" };
 /* Definitions for RtcMutex */
 osMutexId_t RtcMutexHandle;
-const osMutexAttr_t RtcMutex_attributes = {
-		.name = "RtcMutex"
-};
+const osMutexAttr_t RtcMutex_attributes = { .name = "RtcMutex" };
 /* Definitions for CrcMutex */
 osMutexId_t CrcMutexHandle;
-const osMutexAttr_t CrcMutex_attributes = {
-		.name = "CrcMutex"
-};
+const osMutexAttr_t CrcMutex_attributes = { .name = "CrcMutex" };
 /* Definitions for AesMutex */
 osMutexId_t AesMutexHandle;
-const osMutexAttr_t AesMutex_attributes = {
-		.name = "AesMutex"
-};
+const osMutexAttr_t AesMutex_attributes = { .name = "AesMutex" };
 /* Definitions for SimcomRecMutex */
 osMutexId_t SimcomRecMutexHandle;
-const osMutexAttr_t SimcomRecMutex_attributes = {
-		.name = "SimcomRecMutex",
-		.attr_bits = osMutexRecursive,
-};
+const osMutexAttr_t SimcomRecMutex_attributes = { .name = "SimcomRecMutex",
+		.attr_bits = osMutexRecursive, };
 /* Definitions for FingerRecMutex */
 osMutexId_t FingerRecMutexHandle;
-const osMutexAttr_t FingerRecMutex_attributes = {
-		.name = "FingerRecMutex",
-		.attr_bits = osMutexRecursive,
-};
+const osMutexAttr_t FingerRecMutex_attributes = { .name = "FingerRecMutex",
+		.attr_bits = osMutexRecursive, };
 /* Definitions for KlessRecMutex */
 osMutexId_t KlessRecMutexHandle;
-const osMutexAttr_t KlessRecMutex_attributes = {
-		.name = "KlessRecMutex",
-		.attr_bits = osMutexRecursive,
-};
+const osMutexAttr_t KlessRecMutex_attributes = { .name = "KlessRecMutex",
+		.attr_bits = osMutexRecursive, };
 /* USER CODE BEGIN PV */
 osEventFlagsId_t GlobalEventHandle;
 extern sw_t SW;
@@ -320,8 +256,7 @@ void StartHmi2PowerTask(void *argument);
  * @brief  The application entry point.
  * @retval int
  */
-int main(void)
-{
+int main(void) {
 	/* USER CODE BEGIN 1 */
 
 	/* USER CODE END 1 */
@@ -415,16 +350,20 @@ int main(void)
 
 	/* Create the queue(s) */
 	/* creation of CommandQueue */
-	CommandQueueHandle = osMessageQueueNew(1, sizeof(command_t), &CommandQueue_attributes);
+	CommandQueueHandle = osMessageQueueNew(1, sizeof(command_t),
+			&CommandQueue_attributes);
 
 	/* creation of ResponseQueue */
-	ResponseQueueHandle = osMessageQueueNew(1, sizeof(response_t), &ResponseQueue_attributes);
+	ResponseQueueHandle = osMessageQueueNew(1, sizeof(response_t),
+			&ResponseQueue_attributes);
 
 	/* creation of ReportQueue */
-	ReportQueueHandle = osMessageQueueNew(100, sizeof(report_t), &ReportQueue_attributes);
+	ReportQueueHandle = osMessageQueueNew(100, sizeof(report_t),
+			&ReportQueue_attributes);
 
 	/* creation of DriverQueue */
-	DriverQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &DriverQueue_attributes);
+	DriverQueueHandle = osMessageQueueNew(1, sizeof(uint8_t),
+			&DriverQueue_attributes);
 
 	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
@@ -433,16 +372,19 @@ int main(void)
 
 	/* Create the thread(s) */
 	/* creation of ManagerTask */
-	ManagerTaskHandle = osThreadNew(StartManagerTask, NULL, &ManagerTask_attributes);
+	ManagerTaskHandle = osThreadNew(StartManagerTask, NULL,
+			&ManagerTask_attributes);
 
 	/* creation of IotTask */
 	IotTaskHandle = osThreadNew(StartIotTask, NULL, &IotTask_attributes);
 
 	/* creation of ReporterTask */
-	ReporterTaskHandle = osThreadNew(StartReporterTask, NULL, &ReporterTask_attributes);
+	ReporterTaskHandle = osThreadNew(StartReporterTask, NULL,
+			&ReporterTask_attributes);
 
 	/* creation of CommandTask */
-	CommandTaskHandle = osThreadNew(StartCommandTask, NULL, &CommandTask_attributes);
+	CommandTaskHandle = osThreadNew(StartCommandTask, NULL,
+			&CommandTask_attributes);
 
 	/* creation of GpsTask */
 	GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
@@ -451,16 +393,19 @@ int main(void)
 	GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
 
 	/* creation of KeylessTask */
-	KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
+	KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL,
+			&KeylessTask_attributes);
 
 	/* creation of FingerTask */
-	FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
+	FingerTaskHandle = osThreadNew(StartFingerTask, NULL,
+			&FingerTask_attributes);
 
 	/* creation of AudioTask */
 	AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
 
 	/* creation of SwitchTask */
-	SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL, &SwitchTask_attributes);
+	SwitchTaskHandle = osThreadNew(StartSwitchTask, NULL,
+			&SwitchTask_attributes);
 
 	/* creation of CanRxTask */
 	CanRxTaskHandle = osThreadNew(StartCanRxTask, NULL, &CanRxTask_attributes);
@@ -469,7 +414,8 @@ int main(void)
 	CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
 
 	/* creation of Hmi2PowerTask */
-	Hmi2PowerTaskHandle = osThreadNew(StartHmi2PowerTask, NULL, &Hmi2PowerTask_attributes);
+	Hmi2PowerTaskHandle = osThreadNew(StartHmi2PowerTask, NULL,
+			&Hmi2PowerTask_attributes);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -482,8 +428,7 @@ int main(void)
 	/* We should never get here as control is now taken by the scheduler */
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	while (1)
-	{
+	while (1) {
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -495,8 +440,7 @@ int main(void)
  * @brief System Clock Configuration
  * @retval None
  */
-void SystemClock_Config(void)
-{
+void SystemClock_Config(void) {
 	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
@@ -507,8 +451,8 @@ void SystemClock_Config(void)
 	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 	/** Initializes the CPU, AHB and APB busses clocks
 	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
-			| RCC_OSCILLATORTYPE_LSE;
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI
+			| RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
 	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
 	RCC_OscInitStruct.LSEState = RCC_LSE_ON;
 	RCC_OscInitStruct.LSIState = RCC_LSI_ON;
@@ -519,8 +463,7 @@ void SystemClock_Config(void)
 	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
 	RCC_OscInitStruct.PLL.PLLQ = 4;
 	RCC_OscInitStruct.PLL.PLLR = 2;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-			{
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
 		Error_Handler();
 	}
 	/** Initializes the CPU, AHB and APB busses clocks
@@ -532,12 +475,11 @@ void SystemClock_Config(void)
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
-			{
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
 		Error_Handler();
 	}
-	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1 | RCC_PERIPHCLK_RTC
-			| RCC_PERIPHCLK_CLK48;
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1
+			| RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_CLK48;
 	PeriphClkInitStruct.PLLI2S.PLLI2SN = 256;
 	PeriphClkInitStruct.PLLI2S.PLLI2SM = 8;
 	PeriphClkInitStruct.PLLI2S.PLLI2SR = 5;
@@ -546,8 +488,7 @@ void SystemClock_Config(void)
 	PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLQ;
 	PeriphClkInitStruct.PLLI2SSelection = RCC_PLLI2SCLKSOURCE_PLLSRC;
 	PeriphClkInitStruct.I2sApb1ClockSelection = RCC_I2SAPB1CLKSOURCE_PLLI2S;
-	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-			{
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
 		Error_Handler();
 	}
 }
@@ -557,8 +498,7 @@ void SystemClock_Config(void)
  * @param None
  * @retval None
  */
-static void MX_ADC1_Init(void)
-{
+static void MX_ADC1_Init(void) {
 
 	/* USER CODE BEGIN ADC1_Init 0 */
 
@@ -583,8 +523,7 @@ static void MX_ADC1_Init(void)
 	hadc1.Init.NbrOfConversion = 1;
 	hadc1.Init.DMAContinuousRequests = ENABLE;
 	hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
-	if (HAL_ADC_Init(&hadc1) != HAL_OK)
-			{
+	if (HAL_ADC_Init(&hadc1) != HAL_OK) {
 		Error_Handler();
 	}
 	/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
@@ -592,8 +531,7 @@ static void MX_ADC1_Init(void)
 	sConfig.Channel = ADC_CHANNEL_9;
 	sConfig.Rank = 1;
 	sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
-	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-			{
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN ADC1_Init 2 */
@@ -607,8 +545,7 @@ static void MX_ADC1_Init(void)
  * @param None
  * @retval None
  */
-static void MX_AES_Init(void)
-{
+static void MX_AES_Init(void) {
 
 	/* USER CODE BEGIN AES_Init 0 */
 
@@ -624,8 +561,7 @@ static void MX_AES_Init(void)
 	hcryp.Init.Algorithm = CRYP_AES_ECB;
 	hcryp.Init.DataWidthUnit = CRYP_DATAWIDTHUNIT_BYTE;
 	hcryp.Init.KeyIVConfigSkip = CRYP_KEYIVCONFIG_ALWAYS;
-	if (HAL_CRYP_Init(&hcryp) != HAL_OK)
-			{
+	if (HAL_CRYP_Init(&hcryp) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN AES_Init 2 */
@@ -639,8 +575,7 @@ static void MX_AES_Init(void)
  * @param None
  * @retval None
  */
-static void MX_CAN1_Init(void)
-{
+static void MX_CAN1_Init(void) {
 
 	/* USER CODE BEGIN CAN1_Init 0 */
 
@@ -661,8 +596,7 @@ static void MX_CAN1_Init(void)
 	hcan1.Init.AutoRetransmission = DISABLE;
 	hcan1.Init.ReceiveFifoLocked = DISABLE;
 	hcan1.Init.TransmitFifoPriority = DISABLE;
-	if (HAL_CAN_Init(&hcan1) != HAL_OK)
-			{
+	if (HAL_CAN_Init(&hcan1) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN CAN1_Init 2 */
@@ -676,8 +610,7 @@ static void MX_CAN1_Init(void)
  * @param None
  * @retval None
  */
-static void MX_CRC_Init(void)
-{
+static void MX_CRC_Init(void) {
 
 	/* USER CODE BEGIN CRC_Init 0 */
 
@@ -687,8 +620,7 @@ static void MX_CRC_Init(void)
 
 	/* USER CODE END CRC_Init 1 */
 	hcrc.Instance = CRC;
-	if (HAL_CRC_Init(&hcrc) != HAL_OK)
-			{
+	if (HAL_CRC_Init(&hcrc) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN CRC_Init 2 */
@@ -702,8 +634,7 @@ static void MX_CRC_Init(void)
  * @param None
  * @retval None
  */
-static void MX_I2C1_Init(void)
-{
+static void MX_I2C1_Init(void) {
 
 	/* USER CODE BEGIN I2C1_Init 0 */
 
@@ -721,20 +652,18 @@ static void MX_I2C1_Init(void)
 	hi2c1.Init.OwnAddress2 = 0;
 	hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
 	hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-	if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-			{
+	if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
 		Error_Handler();
 	}
 	/** Configure Analogue filter
 	 */
-	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-			{
+	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE)
+			!= HAL_OK) {
 		Error_Handler();
 	}
 	/** Configure Digital filter
 	 */
-	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-			{
+	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN I2C1_Init 2 */
@@ -748,8 +677,7 @@ static void MX_I2C1_Init(void)
  * @param None
  * @retval None
  */
-static void MX_I2C2_Init(void)
-{
+static void MX_I2C2_Init(void) {
 
 	/* USER CODE BEGIN I2C2_Init 0 */
 
@@ -767,20 +695,18 @@ static void MX_I2C2_Init(void)
 	hi2c2.Init.OwnAddress2 = 0;
 	hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
 	hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-	if (HAL_I2C_Init(&hi2c2) != HAL_OK)
-			{
+	if (HAL_I2C_Init(&hi2c2) != HAL_OK) {
 		Error_Handler();
 	}
 	/** Configure Analogue filter
 	 */
-	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-			{
+	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE)
+			!= HAL_OK) {
 		Error_Handler();
 	}
 	/** Configure Digital filter
 	 */
-	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
-			{
+	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN I2C2_Init 2 */
@@ -794,8 +720,7 @@ static void MX_I2C2_Init(void)
  * @param None
  * @retval None
  */
-static void MX_I2C3_Init(void)
-{
+static void MX_I2C3_Init(void) {
 
 	/* USER CODE BEGIN I2C3_Init 0 */
 
@@ -813,20 +738,18 @@ static void MX_I2C3_Init(void)
 	hi2c3.Init.OwnAddress2 = 0;
 	hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
 	hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-	if (HAL_I2C_Init(&hi2c3) != HAL_OK)
-			{
+	if (HAL_I2C_Init(&hi2c3) != HAL_OK) {
 		Error_Handler();
 	}
 	/** Configure Analogue filter
 	 */
-	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-			{
+	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE)
+			!= HAL_OK) {
 		Error_Handler();
 	}
 	/** Configure Digital filter
 	 */
-	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
-			{
+	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN I2C3_Init 2 */
@@ -840,8 +763,7 @@ static void MX_I2C3_Init(void)
  * @param None
  * @retval None
  */
-static void MX_I2S3_Init(void)
-{
+static void MX_I2S3_Init(void) {
 
 	/* USER CODE BEGIN I2S3_Init 0 */
 
@@ -859,8 +781,7 @@ static void MX_I2S3_Init(void)
 	hi2s3.Init.CPOL = I2S_CPOL_LOW;
 	hi2s3.Init.ClockSource = I2S_CLOCK_PLL;
 	hi2s3.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
-	if (HAL_I2S_Init(&hi2s3) != HAL_OK)
-			{
+	if (HAL_I2S_Init(&hi2s3) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN I2S3_Init 2 */
@@ -874,8 +795,7 @@ static void MX_I2S3_Init(void)
  * @param None
  * @retval None
  */
-static void MX_IWDG_Init(void)
-{
+static void MX_IWDG_Init(void) {
 
 	/* USER CODE BEGIN IWDG_Init 0 */
 
@@ -887,8 +807,7 @@ static void MX_IWDG_Init(void)
 	hiwdg.Instance = IWDG;
 	hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
 	hiwdg.Init.Reload = 4095;
-	if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-			{
+	if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN IWDG_Init 2 */
@@ -902,8 +821,7 @@ static void MX_IWDG_Init(void)
  * @param None
  * @retval None
  */
-static void MX_RNG_Init(void)
-{
+static void MX_RNG_Init(void) {
 
 	/* USER CODE BEGIN RNG_Init 0 */
 
@@ -913,8 +831,7 @@ static void MX_RNG_Init(void)
 
 	/* USER CODE END RNG_Init 1 */
 	hrng.Instance = RNG;
-	if (HAL_RNG_Init(&hrng) != HAL_OK)
-			{
+	if (HAL_RNG_Init(&hrng) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN RNG_Init 2 */
@@ -928,8 +845,7 @@ static void MX_RNG_Init(void)
  * @param None
  * @retval None
  */
-static void MX_RTC_Init(void)
-{
+static void MX_RTC_Init(void) {
 
 	/* USER CODE BEGIN RTC_Init 0 */
 
@@ -950,8 +866,7 @@ static void MX_RTC_Init(void)
 	hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
 	hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
 	hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-	if (HAL_RTC_Init(&hrtc) != HAL_OK)
-			{
+	if (HAL_RTC_Init(&hrtc) != HAL_OK) {
 		Error_Handler();
 	}
 
@@ -966,8 +881,7 @@ static void MX_RTC_Init(void)
 	sTime.Seconds = 0x0;
 	sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 	sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-	if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-			{
+	if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK) {
 		Error_Handler();
 	}
 	sDate.WeekDay = RTC_WEEKDAY_WEDNESDAY;
@@ -975,8 +889,7 @@ static void MX_RTC_Init(void)
 	sDate.Date = 0x1;
 	sDate.Year = 0x20;
 
-	if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-			{
+	if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN RTC_Init 2 */
@@ -990,8 +903,7 @@ static void MX_RTC_Init(void)
  * @param None
  * @retval None
  */
-static void MX_SPI1_Init(void)
-{
+static void MX_SPI1_Init(void) {
 
 	/* USER CODE BEGIN SPI1_Init 0 */
 
@@ -1013,8 +925,7 @@ static void MX_SPI1_Init(void)
 	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 	hspi1.Init.CRCPolynomial = 10;
-	if (HAL_SPI_Init(&hspi1) != HAL_OK)
-			{
+	if (HAL_SPI_Init(&hspi1) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN SPI1_Init 2 */
@@ -1028,8 +939,7 @@ static void MX_SPI1_Init(void)
  * @param None
  * @retval None
  */
-static void MX_TIM10_Init(void)
-{
+static void MX_TIM10_Init(void) {
 
 	/* USER CODE BEGIN TIM10_Init 0 */
 
@@ -1046,20 +956,18 @@ static void MX_TIM10_Init(void)
 	htim10.Init.Period = 36630 - 1;
 	htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-	if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
-			{
+	if (HAL_TIM_Base_Init(&htim10) != HAL_OK) {
 		Error_Handler();
 	}
-	if (HAL_TIM_PWM_Init(&htim10) != HAL_OK)
-			{
+	if (HAL_TIM_PWM_Init(&htim10) != HAL_OK) {
 		Error_Handler();
 	}
 	sConfigOC.OCMode = TIM_OCMODE_PWM2;
 	sConfigOC.Pulse = 36630 / 2;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-	if (HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-			{
+	if (HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1)
+			!= HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN TIM10_Init 2 */
@@ -1074,8 +982,7 @@ static void MX_TIM10_Init(void)
  * @param None
  * @retval None
  */
-static void MX_UART4_Init(void)
-{
+static void MX_UART4_Init(void) {
 
 	/* USER CODE BEGIN UART4_Init 0 */
 
@@ -1092,8 +999,7 @@ static void MX_UART4_Init(void)
 	huart4.Init.Mode = UART_MODE_TX_RX;
 	huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	huart4.Init.OverSampling = UART_OVERSAMPLING_16;
-	if (HAL_UART_Init(&huart4) != HAL_OK)
-			{
+	if (HAL_UART_Init(&huart4) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN UART4_Init 2 */
@@ -1107,8 +1013,7 @@ static void MX_UART4_Init(void)
  * @param None
  * @retval None
  */
-static void MX_USART1_UART_Init(void)
-{
+static void MX_USART1_UART_Init(void) {
 
 	/* USER CODE BEGIN USART1_Init 0 */
 
@@ -1125,8 +1030,7 @@ static void MX_USART1_UART_Init(void)
 	huart1.Init.Mode = UART_MODE_TX_RX;
 	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-	if (HAL_UART_Init(&huart1) != HAL_OK)
-			{
+	if (HAL_UART_Init(&huart1) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN USART1_Init 2 */
@@ -1140,8 +1044,7 @@ static void MX_USART1_UART_Init(void)
  * @param None
  * @retval None
  */
-static void MX_USART2_UART_Init(void)
-{
+static void MX_USART2_UART_Init(void) {
 
 	/* USER CODE BEGIN USART2_Init 0 */
 
@@ -1158,8 +1061,7 @@ static void MX_USART2_UART_Init(void)
 	huart2.Init.Mode = UART_MODE_RX;
 	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-	if (HAL_UART_Init(&huart2) != HAL_OK)
-			{
+	if (HAL_UART_Init(&huart2) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN USART2_Init 2 */
@@ -1171,8 +1073,7 @@ static void MX_USART2_UART_Init(void)
 /**
  * Enable DMA controller clock
  */
-static void MX_DMA_Init(void)
-{
+static void MX_DMA_Init(void) {
 
 	/* DMA controller clock enable */
 	__HAL_RCC_DMA2_CLK_ENABLE();
@@ -1202,8 +1103,7 @@ static void MX_DMA_Init(void)
  * @param None
  * @retval None
  */
-static void MX_GPIO_Init(void)
-{
+static void MX_GPIO_Init(void) {
 	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
 	/* GPIO Ports Clock Enable */
@@ -1215,32 +1115,44 @@ static void MX_GPIO_Init(void)
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
-			| EXT_HMI1_PWR_Pin | INT_GPS_SLEEP_Pin | EXT_HORN_PWR_Pin | INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC,
+			INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin
+					| EXT_FINGER_TOUCH_PWR_Pin | EXT_HMI1_PWR_Pin
+					| INT_GPS_SLEEP_Pin | EXT_HORN_PWR_Pin | INT_AUDIO_PWR_Pin,
+			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, EXT_FINGER_PWR_Pin | EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOC, EXT_FINGER_PWR_Pin | EXT_HMI2_PWR_Pin,
+			GPIO_PIN_SET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin,
+			GPIO_PIN_SET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB,
+	INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin,
+			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOD, EXT_GPIO_OUT1_Pin | SYS_LED_Pin | INT_CAN_PWR_Pin | INT_AUDIO_RST_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD,
+	EXT_GPIO_OUT1_Pin | SYS_LED_Pin | INT_CAN_PWR_Pin | INT_AUDIO_RST_Pin,
+			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(INT_KEYLESS_CSN_GPIO_Port, INT_KEYLESS_CSN_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(INT_KEYLESS_CSN_GPIO_Port, INT_KEYLESS_CSN_Pin,
+			GPIO_PIN_SET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOD, EXT_BMS_WAKEUP_Pin | EXT_BMS_FAN_PWR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOD, EXT_BMS_WAKEUP_Pin | EXT_BMS_FAN_PWR_Pin,
+			GPIO_PIN_SET);
 
 	/*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HBAR_REVERSE_Pin EXT_ABS_IRQ_Pin
 	 EXT_KNOB_IRQ_Pin EXT_STARTER_IRQ_Pin EXT_HBAR_LAMP_Pin EXT_REG_5V_IRQ_Pin
 	 EXT_HBAR_SEIN_L_Pin EXT_HBAR_SEIN_R_Pin */
-	GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin | EXT_HBAR_SET_Pin | EXT_HBAR_REVERSE_Pin | EXT_ABS_IRQ_Pin
-			| EXT_KNOB_IRQ_Pin | EXT_STARTER_IRQ_Pin | EXT_HBAR_LAMP_Pin | EXT_REG_5V_IRQ_Pin
+	GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin | EXT_HBAR_SET_Pin
+			| EXT_HBAR_REVERSE_Pin | EXT_ABS_IRQ_Pin | EXT_KNOB_IRQ_Pin
+			| EXT_STARTER_IRQ_Pin | EXT_HBAR_LAMP_Pin | EXT_REG_5V_IRQ_Pin
 			| EXT_HBAR_SEIN_L_Pin | EXT_HBAR_SEIN_R_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
@@ -1254,8 +1166,8 @@ static void MX_GPIO_Init(void)
 
 	/*Configure GPIO pins : INT_KEYLESS_CE_Pin INT_NET_PWR_Pin INT_GPS_PWR_Pin EXT_FINGER_TOUCH_PWR_Pin
 	 EXT_HMI1_PWR_Pin INT_AUDIO_PWR_Pin */
-	GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin | EXT_FINGER_TOUCH_PWR_Pin
-			| EXT_HMI1_PWR_Pin | INT_AUDIO_PWR_Pin;
+	GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin | INT_NET_PWR_Pin | INT_GPS_PWR_Pin
+			| EXT_FINGER_TOUCH_PWR_Pin | EXT_HMI1_PWR_Pin | INT_AUDIO_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1300,7 +1212,8 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(INT_KEYLESS_IRQ_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : INT_NET_RST_Pin INT_NET_DTR_Pin INT_GYRO_PWR_Pin INT_KEYLESS_PWR_Pin */
-	GPIO_InitStruct.Pin = INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin;
+	GPIO_InitStruct.Pin = INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin
+			| INT_KEYLESS_PWR_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1414,8 +1327,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * @retval None
  */
 /* USER CODE END Header_StartManagerTask */
-void StartManagerTask(void *argument)
-{
+void StartManagerTask(void *argument) {
 	/* USER CODE BEGIN 5 */
 	TickType_t lastWake;
 
@@ -1428,7 +1340,8 @@ void StartManagerTask(void *argument)
 
 	// Check GPIOs state
 	VCU.CheckMainPower();
-	VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+	VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port,
+	EXT_KNOB_IRQ_Pin);
 
 	// Threads management:
 	osThreadSuspend(IotTaskHandle);
@@ -1481,8 +1394,7 @@ void StartManagerTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartIotTask */
-void StartIotTask(void *argument)
-{
+void StartIotTask(void *argument) {
 	/* USER CODE BEGIN StartIotTask */
 	TickType_t lastWake;
 	osStatus_t status;
@@ -1497,12 +1409,12 @@ void StartIotTask(void *argument)
 	osMessageQueueId_t *pQueue;
 	header_t *pHeader;
 	void *pPayload;
-	const uint8_t size = sizeof(report.header.prefix) +
-			sizeof(report.header.crc) +
-			sizeof(report.header.size);
+	const uint8_t size = sizeof(report.header.prefix)
+			+ sizeof(report.header.crc) + sizeof(report.header.size);
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	// Start simcom module
 	SIMCOM_DMA_Init();
@@ -1548,7 +1460,8 @@ void StartIotTask(void *argument)
 						}
 
 						// Send to server
-						p = Simcom_Upload(pPayload, size + pHeader->size, &retry);
+						p = Simcom_Upload(pPayload, size + pHeader->size,
+								&retry);
 
 						// Handle looping NACK
 						if (p == SIM_RESULT_NACK) {
@@ -1560,7 +1473,8 @@ void StartIotTask(void *argument)
 
 						// Release back
 						if (p == SIM_RESULT_OK) {
-							EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
+							EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id,
+									type);
 							pending[type] = 0;
 
 							break;
@@ -1568,12 +1482,14 @@ void StartIotTask(void *argument)
 
 						// delay
 						osDelay(500);
-					} while (p != SIM_RESULT_OK && retry <= SIMCOM_MAX_UPLOAD_RETRY);
+					} while (p != SIM_RESULT_OK
+							&& retry <= SIMCOM_MAX_UPLOAD_RETRY);
 				}
 
 				// Handle Full Buffer
 				if (type == PAYLOAD_REPORT) {
-					notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny, 0);
+					notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny,
+							0);
 					if (_RTOS_ValidThreadFlag(notif)) {
 						pending[type] = 0;
 					}
@@ -1604,8 +1520,7 @@ void StartIotTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReporterTask */
-void StartReporterTask(void *argument)
-{
+void StartReporterTask(void *argument) {
 	/* USER CODE BEGIN StartReporterTask */
 	TickType_t lastWake;
 	report_t report;
@@ -1614,7 +1529,8 @@ void StartReporterTask(void *argument)
 	uint8_t frameDecider = 0;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	// Initialize
 	Report_Init(FR_SIMPLE, &report);
@@ -1664,8 +1580,7 @@ void StartReporterTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCommandTask */
-void StartCommandTask(void *argument)
-{
+void StartCommandTask(void *argument) {
 	/* USER CODE BEGIN StartCommandTask */
 	response_t response;
 	command_t command;
@@ -1674,7 +1589,8 @@ void StartCommandTask(void *argument)
 	uint8_t driver;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	// Initialize
 	Response_Init(&response);
@@ -1682,7 +1598,8 @@ void StartCommandTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		// get command in queue
-		status = osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever);
+		status = osMessageQueueGet(CommandQueueHandle, &command, NULL,
+		osWaitForever);
 
 		if (status == osOK) {
 			Command_Debugger(&command);
@@ -1693,138 +1610,142 @@ void StartCommandTask(void *argument)
 
 			// handle the command
 			switch (command.data.code) {
-				case CMD_CODE_GEN:
-					switch (command.data.sub_code) {
-						case CMD_GEN_INFO:
-							sprintf(response.data.message, "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
-							break;
-
-						case CMD_GEN_LED:
-							_LedWrite((uint8_t) command.data.value);
-							break;
-
-						case CMD_GEN_KNOB:
-							VCU.d.state.knob = (uint8_t) command.data.value;
-							break;
-
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
+			case CMD_CODE_GEN:
+				switch (command.data.sub_code) {
+				case CMD_GEN_INFO:
+					sprintf(response.data.message,
+							"VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d",
+							VCU_BUILD_YEAR);
 					break;
 
-				case CMD_CODE_REPORT:
-					switch (command.data.sub_code) {
-						case CMD_REPORT_RTC:
-							RTC_Write((uint64_t) command.data.value, &(VCU.d.rtc));
-							break;
-
-						case CMD_REPORT_ODOM:
-							EEPROM_Odometer(EE_CMD_W, (uint32_t) command.data.value);
-							break;
-
-						case CMD_REPORT_UNITID:
-							EEPROM_UnitID(EE_CMD_W, (uint32_t) command.data.value);
-							break;
-
-						case CMD_REPORT_INTERVAL:
-							VCU.d.interval = (uint16_t) command.data.value;
-							break;
-
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
+				case CMD_GEN_LED:
+					_LedWrite((uint8_t) command.data.value);
 					break;
 
-				case CMD_CODE_AUDIO:
-					switch (command.data.sub_code) {
-						case CMD_AUDIO_BEEP:
-							osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
-							break;
-
-						case CMD_AUDIO_MUTE:
-							if ((uint8_t) command.data.value) {
-								osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_ON);
-							} else {
-								osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_OFF);
-							}
-
-							break;
-
-						case CMD_AUDIO_VOL:
-							VCU.d.volume = (uint8_t) command.data.value;
-							break;
-
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-					break;
-
-				case CMD_CODE_FINGER:
-					// put finger index to queue
-					driver = command.data.value;
-					osMessageQueuePut(DriverQueueHandle, &driver, 0U, 0U);
-
-					switch (command.data.sub_code) {
-						case CMD_FINGER_ADD:
-							// do not handle if drivers is full
-							if (driver < FINGER_USER_MAX) {
-								osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
-							} else {
-								response.data.code = RESPONSE_STATUS_ERROR;
-							}
-							break;
-
-						case CMD_FINGER_DEL:
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_DEL);
-							break;
-
-						case CMD_FINGER_RST:
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
-							break;
-
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-
-					// wait response until timeout (30 seconds)
-					if (response.data.code == RESPONSE_STATUS_OK) {
-						notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-						if (_RTOS_ValidThreadFlag(notif)) {
-							if (notif & EVT_COMMAND_ERROR) {
-								response.data.code = RESPONSE_STATUS_ERROR;
-							}
-						}
-					}
-					break;
-
-				case CMD_CODE_KEYLESS:
-					switch (command.data.sub_code) {
-						case CMD_KEYLESS_PAIRING:
-							osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
-
-							// wait response until timeout (30 seconds)
-							notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-							if (_RTOS_ValidThreadFlag(notif)) {
-								if (notif & EVT_COMMAND_ERROR) {
-									response.data.code = RESPONSE_STATUS_ERROR;
-								}
-							}
-
-							break;
-
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
+				case CMD_GEN_KNOB:
+					VCU.d.state.knob = (uint8_t) command.data.value;
 					break;
 
 				default:
 					response.data.code = RESPONSE_STATUS_INVALID;
 					break;
+				}
+				break;
+
+			case CMD_CODE_REPORT:
+				switch (command.data.sub_code) {
+				case CMD_REPORT_RTC:
+					RTC_Write((uint64_t) command.data.value, &(VCU.d.rtc));
+					break;
+
+				case CMD_REPORT_ODOM:
+					EEPROM_Odometer(EE_CMD_W, (uint32_t) command.data.value);
+					break;
+
+				case CMD_REPORT_UNITID:
+					EEPROM_UnitID(EE_CMD_W, (uint32_t) command.data.value);
+					break;
+
+				case CMD_REPORT_INTERVAL:
+					VCU.d.interval = (uint16_t) command.data.value;
+					break;
+
+				default:
+					response.data.code = RESPONSE_STATUS_INVALID;
+					break;
+				}
+				break;
+
+			case CMD_CODE_AUDIO:
+				switch (command.data.sub_code) {
+				case CMD_AUDIO_BEEP:
+					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
+					break;
+
+				case CMD_AUDIO_MUTE:
+					if ((uint8_t) command.data.value) {
+						osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_ON);
+					} else {
+						osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_OFF);
+					}
+
+					break;
+
+				case CMD_AUDIO_VOL:
+					VCU.d.volume = (uint8_t) command.data.value;
+					break;
+
+				default:
+					response.data.code = RESPONSE_STATUS_INVALID;
+					break;
+				}
+				break;
+
+			case CMD_CODE_FINGER:
+				// put finger index to queue
+				driver = command.data.value;
+				osMessageQueuePut(DriverQueueHandle, &driver, 0U, 0U);
+
+				switch (command.data.sub_code) {
+				case CMD_FINGER_ADD:
+					// do not handle if drivers is full
+					if (driver < FINGER_USER_MAX) {
+						osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
+					} else {
+						response.data.code = RESPONSE_STATUS_ERROR;
+					}
+					break;
+
+				case CMD_FINGER_DEL:
+					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_DEL);
+					break;
+
+				case CMD_FINGER_RST:
+					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
+					break;
+
+				default:
+					response.data.code = RESPONSE_STATUS_INVALID;
+					break;
+				}
+
+				// wait response until timeout (30 seconds)
+				if (response.data.code == RESPONSE_STATUS_OK) {
+					notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny,
+							pdMS_TO_TICKS(30000));
+					if (_RTOS_ValidThreadFlag(notif)) {
+						if (notif & EVT_COMMAND_ERROR) {
+							response.data.code = RESPONSE_STATUS_ERROR;
+						}
+					}
+				}
+				break;
+
+			case CMD_CODE_KEYLESS:
+				switch (command.data.sub_code) {
+				case CMD_KEYLESS_PAIRING:
+					osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+
+					// wait response until timeout (30 seconds)
+					notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny,
+							pdMS_TO_TICKS(30000));
+					if (_RTOS_ValidThreadFlag(notif)) {
+						if (notif & EVT_COMMAND_ERROR) {
+							response.data.code = RESPONSE_STATUS_ERROR;
+						}
+					}
+
+					break;
+
+				default:
+					response.data.code = RESPONSE_STATUS_INVALID;
+					break;
+				}
+				break;
+
+			default:
+				response.data.code = RESPONSE_STATUS_INVALID;
+				break;
 			}
 
 			// Get current snapshot
@@ -1843,13 +1764,13 @@ void StartCommandTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGpsTask */
-void StartGpsTask(void *argument)
-{
+void StartGpsTask(void *argument) {
 	/* USER CODE BEGIN StartGpsTask */
 	TickType_t lastWake;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	// Initialize
 	UBLOX_DMA_Init();
@@ -1876,14 +1797,14 @@ void StartGpsTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGyroTask */
-void StartGyroTask(void *argument)
-{
+void StartGyroTask(void *argument) {
 	/* USER CODE BEGIN StartGyroTask */
 	TickType_t lastWake;
 	mems_decision_t decider, tmp;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	/* MPU6050 Initialization*/
 	GYRO_Init();
@@ -1929,14 +1850,14 @@ void StartGyroTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartKeylessTask */
-void StartKeylessTask(void *argument)
-{
+void StartKeylessTask(void *argument) {
 	/* USER CODE BEGIN StartKeylessTask */
 	uint32_t notif;
 	KLESS_CMD command;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	// initialization
 	KLESS_Init();
@@ -1955,33 +1876,37 @@ void StartKeylessTask(void *argument)
 				if (KLESS_ValidateCommand(&command)) {
 					// handle command
 					switch (command) {
-						case KLESS_CMD_PING:
-							// update heart-beat
-							VCU.d.tick.keyless = osKernelGetTickCount();
+					case KLESS_CMD_PING:
+						// update heart-beat
+						VCU.d.tick.keyless = osKernelGetTickCount();
 
-							break;
-						case KLESS_CMD_ALARM:
-							// toggle the hazard
-							SW.runner.hazard = 1;
-							for (uint8_t i = 0; i < 2; i++) {
-								// toggle HORN (+ Sein Lamp)
-								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
-								osDelay(500);
-								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
-								osDelay(500);
-							}
-							SW.runner.hazard = 0;
-
-							break;
-						case KLESS_CMD_SEAT:
-							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
+						break;
+					case KLESS_CMD_ALARM:
+						// toggle the hazard
+						SW.runner.hazard = 1;
+						for (uint8_t i = 0; i < 2; i++) {
+							// toggle HORN (+ Sein Lamp)
+							HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port,
+							EXT_HORN_PWR_Pin, 1);
 							osDelay(500);
-							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
+							HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port,
+							EXT_HORN_PWR_Pin, 0);
 							osDelay(500);
+						}
+						SW.runner.hazard = 0;
 
-							break;
-						default:
-							break;
+						break;
+					case KLESS_CMD_SEAT:
+						HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port,
+						EXT_SOLENOID_PWR_Pin, 1);
+						osDelay(500);
+						HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port,
+						EXT_SOLENOID_PWR_Pin, 0);
+						osDelay(500);
+
+						break;
+					default:
+						break;
 					}
 
 					// indicator
@@ -1990,9 +1915,9 @@ void StartKeylessTask(void *argument)
 					osDelay(command * 250);
 					_LedWrite(0);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
-					LOG_StrLn("NRF:Command = OK");
+					LOG_StrLn("NRF:Command = Valid");
 				} else {
-					LOG_StrLn("NRF:Command = ERROR");
+					LOG_StrLn("NRF:Command = NotValid");
 				}
 			}
 
@@ -2009,13 +1934,6 @@ void StartKeylessTask(void *argument)
 
 		// update state
 		KLESS_Refresh();
-
-		// for testing
-		//		if (KLESS_SendDummy()) {
-		//			LOG_StrLn("NRF:Send = OK");
-		//		} else {
-		//			LOG_StrLn("NRF:Send = ERROR");
-		//		}
 	}
 	/* USER CODE END StartKeylessTask */
 }
@@ -2027,8 +1945,7 @@ void StartKeylessTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartFingerTask */
-void StartFingerTask(void *argument)
-{
+void StartFingerTask(void *argument) {
 	/* USER CODE BEGIN StartFingerTask */
 	osStatus_t status;
 	uint32_t notif;
@@ -2036,7 +1953,8 @@ void StartFingerTask(void *argument)
 	int8_t id;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	// Initialization
 	FINGER_DMA_Init();
@@ -2069,7 +1987,8 @@ void StartFingerTask(void *argument)
 
 			if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
 				// get driver value
-				status = osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U);
+				status = osMessageQueueGet(DriverQueueHandle, &driver, NULL,
+						0U);
 
 				if (status == osOK) {
 					// Add new finger
@@ -2086,7 +2005,8 @@ void StartFingerTask(void *argument)
 					}
 
 					// handle response
-					osThreadFlagsSet(CommandTaskHandle, p ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+					osThreadFlagsSet(CommandTaskHandle,
+							p ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 				}
 			}
 
@@ -2102,13 +2022,13 @@ void StartFingerTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartAudioTask */
-void StartAudioTask(void *argument)
-{
+void StartAudioTask(void *argument) {
 	/* USER CODE BEGIN StartAudioTask */
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	AUDIO_Init();
@@ -2156,13 +2076,13 @@ void StartAudioTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSwitchTask */
-void StartSwitchTask(void *argument)
-{
+void StartSwitchTask(void *argument) {
 	/* USER CODE BEGIN StartSwitchTask */
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	// Initialize
 	HBAR_ReadStates();
@@ -2170,7 +2090,8 @@ void StartSwitchTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		// wait forever
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, osWaitForever);
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear,
+		osWaitForever);
 		if (_RTOS_ValidThreadFlag(notif)) {
 			// handle bounce effect
 			osDelay(50);
@@ -2209,7 +2130,8 @@ void StartSwitchTask(void *argument)
 			// KNOB IRQ
 			if (notif & EVT_SWITCH_KNOB_IRQ) {
 				// get current state
-				VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+				VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port,
+				EXT_KNOB_IRQ_Pin);
 			}
 		}
 	}
@@ -2223,13 +2145,13 @@ void StartSwitchTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanRxTask */
-void StartCanRxTask(void *argument)
-{
+void StartCanRxTask(void *argument) {
 	/* USER CODE BEGIN StartCanRxTask */
 	uint32_t notif;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	/* Infinite loop */
 	for (;;) {
@@ -2240,24 +2162,24 @@ void StartCanRxTask(void *argument)
 
 			// handle STD message
 			switch (CANBUS_ReadID()) {
-				case CAND_HMI2:
-					HMI2.can.r.State();
-					break;
-				case CAND_HMI1_LEFT:
-					HMI1.can.r.LeftState();
-					break;
-				case CAND_HMI1_RIGHT:
-					HMI1.can.r.RightState();
-					break;
-				case CAND_BMS_PARAM_1:
-					BMS.can.r.Param1();
-					break;
-				case CAND_BMS_PARAM_2:
-					BMS.can.r.Param2();
-					break;
-				default:
+			case CAND_HMI2:
+				HMI2.can.r.State();
+				break;
+			case CAND_HMI1_LEFT:
+				HMI1.can.r.LeftState();
+				break;
+			case CAND_HMI1_RIGHT:
+				HMI1.can.r.RightState();
+				break;
+			case CAND_BMS_PARAM_1:
+				BMS.can.r.Param1();
+				break;
+			case CAND_BMS_PARAM_2:
+				BMS.can.r.Param2();
+				break;
+			default:
 
-					break;
+				break;
 			}
 		}
 	}
@@ -2271,13 +2193,13 @@ void StartCanRxTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanTxTask */
-void StartCanTxTask(void *argument)
-{
+void StartCanTxTask(void *argument) {
 	/* USER CODE BEGIN StartCanTxTask */
 	TickType_t lastWake, last500ms, last1000ms;
 
 	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+	osWaitForever);
 
 	/* Infinite loop */
 	last500ms = osKernelGetTickCount();
@@ -2326,8 +2248,7 @@ void StartCanTxTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartHmi2PowerTask */
-__weak void StartHmi2PowerTask(void *argument)
-{
+__weak void StartHmi2PowerTask(void *argument) {
 	/* USER CODE BEGIN StartHmi2PowerTask */
 	/* Infinite loop */
 	for (;;) {
@@ -2344,8 +2265,7 @@ __weak void StartHmi2PowerTask(void *argument)
  * @param  htim : TIM handle
  * @retval None
  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	/* USER CODE BEGIN Callback 0 */
 
 	/* USER CODE END Callback 0 */
@@ -2361,8 +2281,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  * @brief  This function is executed in case of error occurrence.
  * @retval None
  */
-void Error_Handler(void)
-{
+void Error_Handler(void) {
 	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	_Error("Error Handler fired.");

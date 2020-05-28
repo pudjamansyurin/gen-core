@@ -18,19 +18,19 @@ extern hmi1_t HMI1;
 
 /* Public variables -----------------------------------------------------------*/
 vcu_t VCU = {
-		.d = { 0 },
-		.can = {
-				.t = {
-						VCU_CAN_TX_SwitchModeControl,
-						VCU_CAN_TX_Datetime,
-						VCU_CAN_TX_MixedData,
-						VCU_CAN_TX_SubTripData
-				}
-		},
-		VCU_Init,
-		VCU_SetEvent,
-		VCU_ReadEvent,
-		VCU_CheckMainPower,
+        .d = { 0 },
+        .can = {
+                .t = {
+                        VCU_CAN_TX_SwitchModeControl,
+                        VCU_CAN_TX_Datetime,
+                        VCU_CAN_TX_MixedData,
+                        VCU_CAN_TX_SubTripData
+                }
+        },
+        VCU_Init,
+        VCU_SetEvent,
+        VCU_ReadEvent,
+        VCU_CheckMainPower,
 };
 
 /* Public functions implementation --------------------------------------------*/
@@ -90,7 +90,7 @@ void VCU_CheckMainPower(void) {
 	// handle when REG_5V is OFF
 	if (!currentState) {
 		VCU.SetEvent(EV_VCU_INDEPENDENT, 1);
-		if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(VCU_ACTIVATE_LOST_MODE * 60 * 1000)) {
+		if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(VCU_ACTIVATE_LOST_MODE * 1000)) {
 			VCU.d.interval = RPT_INTERVAL_LOST;
 			VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
 		} else {

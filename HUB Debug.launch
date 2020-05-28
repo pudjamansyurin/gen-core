@@ -33,7 +33,7 @@
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.max_halt_delay" value="2"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.reset_strategy" value="no_reset"/>
 <booleanAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.stlink_check_serial_number" value="true"/>
-<stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.stlink_txt_serial_number" value="51FF72066775545547190667"/>
+<stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.stlink_txt_serial_number" value="48FF76067266535235441967"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.stlink.watchdog_config" value="enable"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.swv.datatrace_0" value="Enabled=false:Address=0x0:Access=Read/Write:Size=Word:Function=Data Value"/>
 <stringAttribute key="com.st.stm32cube.ide.mcu.debug.swv.datatrace_1" value="Enabled=false:Address=0x0:Access=Read/Write:Size=Word:Function=Data Value"/>
