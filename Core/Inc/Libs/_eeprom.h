@@ -17,7 +17,7 @@
 #define VADDR_UNITID                                  VADDR_ODOMETER + sizeof(uint32_t)
 #define VADDR_REPORT_SEQ_ID                 VADDR_UNITID + sizeof(uint32_t)
 #define VADDR_RESPONSE_SEQ_ID           VADDR_REPORT_SEQ_ID + sizeof(uint16_t)
-#define VADDR_AES_KEY                               VADDR_RESPONSE_SEQ_ID + 128
+#define VADDR_AES_KEY                               VADDR_RESPONSE_SEQ_ID + 16
 
 #define EE_NULL                     0
 
