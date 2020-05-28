@@ -200,13 +200,15 @@ const osMutexAttr_t KlessRecMutex_attributes = { .name = "KlessRecMutex",
         .attr_bits = osMutexRecursive, };
 /* USER CODE BEGIN PV */
 osEventFlagsId_t GlobalEventHandle;
-extern sw_t SW;
-extern sim_t SIM;
 
 extern vcu_t VCU;
 extern bms_t BMS;
 extern hmi1_t HMI1;
 extern hmi2_t HMI2;
+
+extern sw_t SW;
+extern sim_t SIM;
+extern uint32_t AesKey[4];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1370,12 +1372,12 @@ void StartManagerTask(void *argument) {
         _DummyGenerator();
 
         // Thread's Stack Monitor
-        _RTOS_Debugger(10000);
+//        _RTOS_Debugger(10000);
 
-        // Battery Monitor
-        //		BAT_Debugger();
+// Battery Monitor
+//		BAT_Debugger();
 
-        // Other stuffs
+// Other stuffs
         HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
         HMI1.d.status.warning = BMS.d.warning;
         HMI1.d.status.overheat = BMS.d.overheat;
@@ -1862,6 +1864,7 @@ void StartKeylessTask(void *argument) {
                     // handle command
                     switch (command) {
                         case KLESS_CMD_PING:
+                            LOG_StrLn("NRF:Command = PING");
                             // update heart-beat
                             VCU.d.tick.keyless = osKernelGetTickCount();
 
@@ -1872,6 +1875,7 @@ void StartKeylessTask(void *argument) {
                             }
                             break;
                         case KLESS_CMD_ALARM:
+                            LOG_StrLn("NRF:Command = ALARM");
                             // toggle the hazard
                             SW.runner.hazard = 1;
                             for (uint8_t i = 0; i < 2; i++) {
@@ -1885,6 +1889,8 @@ void StartKeylessTask(void *argument) {
 
                             break;
                         case KLESS_CMD_SEAT:
+                            LOG_StrLn("NRF:Command = SEAT");
+
                             HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
                             osDelay(500);
                             HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
@@ -1905,6 +1911,8 @@ void StartKeylessTask(void *argument) {
                 } else {
                     LOG_StrLn("NRF:Command = NotValid");
                 }
+
+                osDelay(1000);
             }
 
             // handle pairing

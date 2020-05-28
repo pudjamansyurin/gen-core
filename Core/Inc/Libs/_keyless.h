@@ -45,6 +45,7 @@ void KLESS_Init(void);
 void KLESS_Debugger(void);
 uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd);
 uint8_t KLESS_Payload(KLESS_MODE mode, uint8_t *payload);
+void KLESS_GenerateAesKey(uint32_t *payload);
 uint8_t KLESS_Pairing(void);
 uint8_t KLESS_SendDummy(void);
 void KLESS_Refresh(void);

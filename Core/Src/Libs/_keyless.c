@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_keyless.h"
+#include "Libs/_eeprom.h"
 #include "Nodes/VCU.h"
 #include "Nodes/HMI1.h"
 #include "Drivers/_aes.h"
@@ -95,13 +96,24 @@ uint8_t KLESS_Payload(KLESS_MODE mode, uint8_t *payload) {
     return ret;
 }
 
+void KLESS_GenerateAesKey(uint32_t *payload) {
+    for (uint8_t i = 0; i < (NRF_DATA_LENGTH / sizeof(uint32_t)); i++) {
+        HAL_RNG_GenerateRandomNumber(&hrng, payload++);
+    }
+}
+
 uint8_t KLESS_Pairing(void) {
     const uint8_t tx_address[NRF_ADDR_LENGTH] = { 0xAB, 0x00, 0x00, 0x00, 0x00 };
     const uint8_t rx_address[NRF_ADDR_LENGTH] = { 0xCD, 0x00, 0x00, 0x00, 0x00 };
-    uint8_t payload[NRF_DATA_LENGTH + NRF_ADDR_LENGTH] = { 0 };
     const uint8_t payload_length = NRF_DATA_LENGTH + NRF_ADDR_LENGTH;
-    uint32_t *pPayload;
+    uint8_t payload[NRF_DATA_LENGTH + NRF_ADDR_LENGTH] = { 0 };
     NRF_RESULT p;
+
+    // Generate Payload
+    // insert AES Key
+    KLESS_GenerateAesKey((uint32_t*) payload);
+    // insert address
+    memcpy(&payload[NRF_DATA_LENGTH], KLESS.tx.address, NRF_ADDR_LENGTH);
 
     // Default pairing configuration
     ce_reset(&nrf);
@@ -109,25 +121,17 @@ uint8_t KLESS_Pairing(void) {
     nrf_set_rx_address_p0(&nrf, (uint8_t*) rx_address);
     nrf_set_rx_payload_width_p0(&nrf, payload_length);
     ce_set(&nrf);
-
-    // Generate Payload
-    pPayload = (uint32_t*) payload;
-    // insert aes key
-    for (uint8_t i = 0; i < (NRF_DATA_LENGTH / sizeof(uint32_t)); i++) {
-        HAL_RNG_GenerateRandomNumber(&hrng, pPayload++);
-    }
-    // insert address
-    memcpy(&payload[NRF_DATA_LENGTH], KLESS.tx.address, NRF_ADDR_LENGTH);
-
     // Send Payload
     p = nrf_send_packet(&nrf, payload);
-
     // Retrieve back the configuration
     ce_reset(&nrf);
     nrf_set_tx_address(&nrf, nrf.config.tx_address);
     nrf_set_rx_address_p0(&nrf, nrf.config.rx_address);
     nrf_set_rx_payload_width_p0(&nrf, nrf.config.payload_length);
     ce_set(&nrf);
+
+    // Update the AES key, and save  permanently
+    EEPROM_AesKey(EE_CMD_W, (uint8_t*) payload);
 
     // debug
     LOG_Str("NRF:Send = ");
