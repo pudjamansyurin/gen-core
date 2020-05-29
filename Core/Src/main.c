@@ -1345,12 +1345,12 @@ void StartManagerTask(void *argument) {
     VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
     // Threads management:
-    osThreadSuspend(IotTaskHandle);
-    osThreadSuspend(ReporterTaskHandle);
-    osThreadSuspend(CommandTaskHandle);
+    //    osThreadSuspend(IotTaskHandle);
+    //    osThreadSuspend(ReporterTaskHandle);
+    //    osThreadSuspend(CommandTaskHandle);
     osThreadSuspend(GpsTaskHandle);
     osThreadSuspend(GyroTaskHandle);
-    //	osThreadSuspend(KeylessTaskHandle);
+    //    osThreadSuspend(KeylessTaskHandle);
     osThreadSuspend(FingerTaskHandle);
     osThreadSuspend(AudioTaskHandle);
     osThreadSuspend(SwitchTaskHandle);
@@ -1372,12 +1372,12 @@ void StartManagerTask(void *argument) {
         _DummyGenerator();
 
         // Thread's Stack Monitor
-//        _RTOS_Debugger(10000);
+        //        _RTOS_Debugger(10000);
 
-// Battery Monitor
-//		BAT_Debugger();
+        // Battery Monitor
+        //		BAT_Debugger();
 
-// Other stuffs
+        // Other stuffs
         HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
         HMI1.d.status.warning = BMS.d.warning;
         HMI1.d.status.overheat = BMS.d.overheat;
@@ -1982,16 +1982,14 @@ void StartFingerTask(void *argument) {
                 status = osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U);
 
                 if (status == osOK) {
-                    // Add new finger
                     if (notif & EVT_FINGER_ADD) {
+                        // Add new finger
                         p = Finger_Enroll(driver);
-                    }
-                    // Delete existing finger
-                    if (notif & EVT_FINGER_DEL) {
+                    } else if (notif & EVT_FINGER_DEL) {
+                        // Delete existing finger
                         p = Finger_DeleteID(driver);
-                    }
-                    // Reset all finger database
-                    if (notif & EVT_FINGER_RST) {
+                    } else if (notif & EVT_FINGER_RST) {
+                        // Reset all finger database
                         p = Finger_EmptyDatabase();
                     }
 
@@ -2282,10 +2280,10 @@ void Error_Handler(void) {
  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
-	/* User can add his own implementation to report the file name and line number,
+    /* USER CODE BEGIN 6 */
+    /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

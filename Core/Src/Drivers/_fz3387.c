@@ -32,30 +32,31 @@ finger_t finger;
 
 /* Public functions implementation ---------------------------------------------*/
 void FZ3387_SET_POWER(uint8_t state) {
-	HAL_GPIO_WritePin(EXT_FINGER_PWR_GPIO_Port, EXT_FINGER_PWR_Pin, !state);
-	osDelay(500);
+    // FIXME: change to FINGER_TOUCH_PWR
+    HAL_GPIO_WritePin(EXT_FINGER_PWR_GPIO_Port, EXT_FINGER_PWR_Pin, !state);
+    osDelay(500);
 }
 
 void FZ3387_SERIAL_WRITE(uint8_t c) {
-	HAL_UART_Transmit(&huart4, &c, 1, HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart4, &c, 1, HAL_MAX_DELAY);
 }
 
 void FZ3387_SERIAL_WRITE_U16(uint16_t cc) {
-	FZ3387_SERIAL_WRITE((uint8_t) (cc >> 8));
-	FZ3387_SERIAL_WRITE((uint8_t) (cc & 0xFF));
+    FZ3387_SERIAL_WRITE((uint8_t) (cc >> 8));
+    FZ3387_SERIAL_WRITE((uint8_t) (cc & 0xFF));
 }
 
 uint8_t FZ3387_SEND_CMD_PACKET(uint8_t *data, uint8_t size) {
-	FZ3387_setPacket(FINGERPRINT_COMMANDPACKET, size, data);
-	FZ3387_writeStructuredPacket();
+    FZ3387_setPacket(FINGERPRINT_COMMANDPACKET, size, data);
+    FZ3387_writeStructuredPacket();
 
-	if (FZ3387_getStructuredPacket() != FINGERPRINT_OK) {
-		return FINGERPRINT_PACKETRECIEVEERR;
-	}
-	if (packet.type != FINGERPRINT_ACKPACKET) {
-		return FINGERPRINT_PACKETRECIEVEERR;
-	}
-	return packet.data[0];
+    if (FZ3387_getStructuredPacket() != FINGERPRINT_OK) {
+        return FINGERPRINT_PACKETRECIEVEERR;
+    }
+    if (packet.type != FINGERPRINT_ACKPACKET) {
+        return FINGERPRINT_PACKETRECIEVEERR;
+    }
+    return packet.data[0];
 }
 
 /**************************************************************************/
@@ -65,23 +66,23 @@ uint8_t FZ3387_SEND_CMD_PACKET(uint8_t *data, uint8_t size) {
  */
 /**************************************************************************/
 uint8_t FZ3387_verifyPassword(void) {
-	return FZ3387_checkPassword() == FINGERPRINT_OK;
+    return FZ3387_checkPassword() == FINGERPRINT_OK;
 }
 
 uint8_t FZ3387_checkPassword(void) {
-	uint8_t data[] = {
-	FINGERPRINT_VERIFYPASSWORD,
-			(uint8_t) (FINGERPRINT_PASSWORD >> 24),
-			(uint8_t) (FINGERPRINT_PASSWORD >> 16),
-			(uint8_t) (FINGERPRINT_PASSWORD >> 8),
-			(uint8_t) (FINGERPRINT_PASSWORD & 0xFF)
-	};
+    uint8_t data[] = {
+    FINGERPRINT_VERIFYPASSWORD,
+            (uint8_t) (FINGERPRINT_PASSWORD >> 24),
+            (uint8_t) (FINGERPRINT_PASSWORD >> 16),
+            (uint8_t) (FINGERPRINT_PASSWORD >> 8),
+            (uint8_t) (FINGERPRINT_PASSWORD & 0xFF)
+    };
 
-	FZ3387_SEND_CMD_PACKET(data, sizeof(data));
-	if (packet.data[0] == FINGERPRINT_OK)
-		return FINGERPRINT_OK;
-	else
-		return FINGERPRINT_PACKETRECIEVEERR;
+    FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    if (packet.data[0] == FINGERPRINT_OK)
+        return FINGERPRINT_OK;
+    else
+        return FINGERPRINT_PACKETRECIEVEERR;
 }
 
 /**************************************************************************/
@@ -94,10 +95,10 @@ uint8_t FZ3387_checkPassword(void) {
  */
 /**************************************************************************/
 uint8_t FZ3387_getImage(void) {
-	uint8_t data[] = {
-	FINGERPRINT_GETIMAGE
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_GETIMAGE
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -111,11 +112,11 @@ uint8_t FZ3387_getImage(void) {
  @returns <code>FINGERPRINT_INVALIDIMAGE</code> on failure to identify fingerprint features
  */
 uint8_t FZ3387_image2Tz(uint8_t slot) {
-	uint8_t data[] = {
-	FINGERPRINT_IMAGE2TZ,
-			slot
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_IMAGE2TZ,
+            slot
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -126,10 +127,10 @@ uint8_t FZ3387_image2Tz(uint8_t slot) {
  @returns <code>FINGERPRINT_ENROLLMISMATCH</code> on mismatch of fingerprints
  */
 uint8_t FZ3387_createModel(void) {
-	uint8_t data[] = {
-	FINGERPRINT_REGMODEL
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_REGMODEL
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -142,13 +143,13 @@ uint8_t FZ3387_createModel(void) {
  @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t FZ3387_storeModel(uint16_t location) {
-	uint8_t data[] = {
-	FINGERPRINT_STORE,
-			0x01,
-			(uint8_t) (location >> 8),
-			(uint8_t) (location & 0xFF)
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_STORE,
+            0x01,
+            (uint8_t) (location >> 8),
+            (uint8_t) (location & 0xFF)
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -160,13 +161,13 @@ uint8_t FZ3387_storeModel(uint16_t location) {
  @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t FZ3387_loadModel(uint16_t location) {
-	uint8_t data[] = {
-	FINGERPRINT_LOAD,
-			0x01,
-			(uint8_t) (location >> 8),
-			(uint8_t) (location & 0xFF)
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_LOAD,
+            0x01,
+            (uint8_t) (location >> 8),
+            (uint8_t) (location & 0xFF)
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -176,11 +177,11 @@ uint8_t FZ3387_loadModel(uint16_t location) {
  @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t FZ3387_getModel(void) {
-	uint8_t data[] = {
-	FINGERPRINT_UPLOAD,
-			0x01
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_UPLOAD,
+            0x01
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -193,14 +194,14 @@ uint8_t FZ3387_getModel(void) {
  @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t FZ3387_deleteModel(uint16_t location) {
-	uint8_t data[] = {
-	FINGERPRINT_DELETE,
-			(uint8_t) (location >> 8),
-			(uint8_t) (location & 0xFF),
-			0x00,
-			0x01
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_DELETE,
+            (uint8_t) (location >> 8),
+            (uint8_t) (location & 0xFF),
+            0x00,
+            0x01
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -212,10 +213,10 @@ uint8_t FZ3387_deleteModel(uint16_t location) {
  @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t FZ3387_emptyDatabase(void) {
-	uint8_t data[] = {
-	FINGERPRINT_EMPTY
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_EMPTY
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -227,28 +228,28 @@ uint8_t FZ3387_emptyDatabase(void) {
  */
 /**************************************************************************/
 uint8_t FZ3387_fingerFastSearch(void) {
-	uint8_t data[] = {
-	FINGERPRINT_HISPEEDSEARCH,
-			0x01,
-			0x00,
-			0x00,
-			0x00,
-			0xA3
-	};
-	// high speed search of slot #1 starting at page 0x0000 and page #0x00A3
-	FZ3387_SEND_CMD_PACKET(data, sizeof(data));
-	finger.id = 0xFFFF;
-	finger.confidence = 0xFFFF;
+    uint8_t data[] = {
+    FINGERPRINT_HISPEEDSEARCH,
+            0x01,
+            0x00,
+            0x00,
+            0x00,
+            0xA3
+    };
+    // high speed search of slot #1 starting at page 0x0000 and page #0x00A3
+    FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    finger.id = 0xFFFF;
+    finger.confidence = 0xFFFF;
 
-	finger.id = packet.data[1];
-	finger.id <<= 8;
-	finger.id |= packet.data[2];
+    finger.id = packet.data[1];
+    finger.id <<= 8;
+    finger.id |= packet.data[2];
 
-	finger.confidence = packet.data[3];
-	finger.confidence <<= 8;
-	finger.confidence |= packet.data[4];
+    finger.confidence = packet.data[3];
+    finger.confidence <<= 8;
+    finger.confidence |= packet.data[4];
 
-	return packet.data[0];
+    return packet.data[0];
 }
 
 /**************************************************************************/
@@ -259,16 +260,16 @@ uint8_t FZ3387_fingerFastSearch(void) {
  */
 /**************************************************************************/
 uint8_t FZ3387_getTemplateCount(void) {
-	uint8_t data[] = {
-	FINGERPRINT_TEMPLATECOUNT
-	};
-	FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_TEMPLATECOUNT
+    };
+    FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 
-	finger.templateCount = packet.data[1];
-	finger.templateCount <<= 8;
-	finger.templateCount |= packet.data[2];
+    finger.templateCount = packet.data[1];
+    finger.templateCount <<= 8;
+    finger.templateCount |= packet.data[2];
 
-	return packet.data[0];
+    return packet.data[0];
 }
 
 /**************************************************************************/
@@ -280,14 +281,14 @@ uint8_t FZ3387_getTemplateCount(void) {
  */
 /**************************************************************************/
 uint8_t FZ3387_setPassword(uint32_t password) {
-	uint8_t data[] = {
-	FINGERPRINT_SETPASSWORD,
-			(password >> 24),
-			(password >> 16),
-			(password >> 8),
-			password
-	};
-	return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
+    uint8_t data[] = {
+    FINGERPRINT_SETPASSWORD,
+            (password >> 24),
+            (password >> 16),
+            (password >> 8),
+            password
+    };
+    return FZ3387_SEND_CMD_PACKET(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -297,18 +298,18 @@ uint8_t FZ3387_setPassword(uint32_t password) {
 /**************************************************************************/
 
 void FZ3387_setPacket(uint8_t type, uint16_t length, uint8_t *data) {
-	packet.start_code = FINGERPRINT_STARTCODE;
-	packet.type = type;
-	packet.length = length;
-	packet.address[0] = (uint8_t) (FINGERPRINT_ADDRESS >> 24);
-	packet.address[1] = (uint8_t) (FINGERPRINT_ADDRESS >> 16);
-	packet.address[2] = (uint8_t) (FINGERPRINT_ADDRESS >> 8);
-	packet.address[3] = (uint8_t) (FINGERPRINT_ADDRESS & 0xFF);
+    packet.start_code = FINGERPRINT_STARTCODE;
+    packet.type = type;
+    packet.length = length;
+    packet.address[0] = (uint8_t) (FINGERPRINT_ADDRESS >> 24);
+    packet.address[1] = (uint8_t) (FINGERPRINT_ADDRESS >> 16);
+    packet.address[2] = (uint8_t) (FINGERPRINT_ADDRESS >> 8);
+    packet.address[3] = (uint8_t) (FINGERPRINT_ADDRESS & 0xFF);
 
-	if (length < 64)
-		memcpy(packet.data, data, length);
-	else
-		memcpy(packet.data, data, 64);
+    if (length < 64)
+        memcpy(packet.data, data, length);
+    else
+        memcpy(packet.data, data, 64);
 }
 
 /**************************************************************************/
@@ -319,25 +320,25 @@ void FZ3387_setPacket(uint8_t type, uint16_t length, uint8_t *data) {
 /**************************************************************************/
 
 void FZ3387_writeStructuredPacket(void) {
-	FZ3387_SERIAL_WRITE_U16(packet.start_code);
-	FZ3387_SERIAL_WRITE(packet.address[0]);
-	FZ3387_SERIAL_WRITE(packet.address[1]);
-	FZ3387_SERIAL_WRITE(packet.address[2]);
-	FZ3387_SERIAL_WRITE(packet.address[3]);
-	FZ3387_SERIAL_WRITE(packet.type);
+    FZ3387_SERIAL_WRITE_U16(packet.start_code);
+    FZ3387_SERIAL_WRITE(packet.address[0]);
+    FZ3387_SERIAL_WRITE(packet.address[1]);
+    FZ3387_SERIAL_WRITE(packet.address[2]);
+    FZ3387_SERIAL_WRITE(packet.address[3]);
+    FZ3387_SERIAL_WRITE(packet.type);
 
-	uint16_t wire_length = packet.length + 2;
-	FZ3387_SERIAL_WRITE_U16(wire_length);
+    uint16_t wire_length = packet.length + 2;
+    FZ3387_SERIAL_WRITE_U16(wire_length);
 
-	uint16_t sum = ((wire_length) >> 8) + ((wire_length) & 0xFF) + packet.type;
-	for (uint8_t i = 0; i < packet.length; i++) {
-		FZ3387_SERIAL_WRITE(packet.data[i]);
-		sum += packet.data[i];
-	}
+    uint16_t sum = ((wire_length) >> 8) + ((wire_length) & 0xFF) + packet.type;
+    for (uint8_t i = 0; i < packet.length; i++) {
+        FZ3387_SERIAL_WRITE(packet.data[i]);
+        sum += packet.data[i];
+    }
 
-	FZ3387_SERIAL_WRITE_U16(sum);
+    FZ3387_SERIAL_WRITE_U16(sum);
 
-	osDelay(250);
+    osDelay(250);
 }
 
 /**************************************************************************/
@@ -350,51 +351,51 @@ void FZ3387_writeStructuredPacket(void) {
  */
 /**************************************************************************/
 uint8_t FZ3387_getStructuredPacket(void) {
-	uint8_t byte;
-	uint16_t idx = 0;
+    uint8_t byte;
+    uint16_t idx = 0;
 
-	while (1) {
-		byte = FINGER_UART_RX[idx];
+    while (1) {
+        byte = FINGER_UART_RX[idx];
 
-		switch (idx) {
-			case 0:
-				if (byte != (FINGERPRINT_STARTCODE >> 8)) {
-					// continue;
-					return FINGERPRINT_BADPACKET;
-				}
-				packet.start_code = (uint16_t) byte << 8;
-				break;
-			case 1:
-				packet.start_code |= byte;
-				if (packet.start_code != FINGERPRINT_STARTCODE) {
-					return FINGERPRINT_BADPACKET;
-				}
-				break;
-			case 2:
-				case 3:
-				case 4:
-				case 5:
-				packet.address[idx - 2] = byte;
-				break;
-			case 6:
-				packet.type = byte;
-				break;
-			case 7:
-				packet.length = (uint16_t) byte << 8;
-				break;
-			case 8:
-				packet.length |= byte;
-				break;
-			default:
-				packet.data[idx - 9] = byte;
-				if ((idx - 8) == packet.length) {
-					return FINGERPRINT_OK;
-				}
-				break;
-		}
-		idx++;
-	}
+        switch (idx) {
+            case 0:
+                if (byte != (FINGERPRINT_STARTCODE >> 8)) {
+                    // continue;
+                    return FINGERPRINT_BADPACKET;
+                }
+                packet.start_code = (uint16_t) byte << 8;
+                break;
+            case 1:
+                packet.start_code |= byte;
+                if (packet.start_code != FINGERPRINT_STARTCODE) {
+                    return FINGERPRINT_BADPACKET;
+                }
+                break;
+            case 2:
+                case 3:
+                case 4:
+                case 5:
+                packet.address[idx - 2] = byte;
+                break;
+            case 6:
+                packet.type = byte;
+                break;
+            case 7:
+                packet.length = (uint16_t) byte << 8;
+                break;
+            case 8:
+                packet.length |= byte;
+                break;
+            default:
+                packet.data[idx - 9] = byte;
+                if ((idx - 8) == packet.length) {
+                    return FINGERPRINT_OK;
+                }
+                break;
+        }
+        idx++;
+    }
 
-	// Shouldn't get here so...
-	return FINGERPRINT_BADPACKET;
+    // Shouldn't get here so...
+    return FINGERPRINT_BADPACKET;
 }
