@@ -29,12 +29,6 @@ void AES_Init(void) {
     unlock();
 }
 
-void AES_UpdateKey(uint32_t *key) {
-    lock();
-    memcpy(AesKey, key, sizeof(AesKey));
-    unlock();
-}
-
 uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
     uint8_t ret;
 

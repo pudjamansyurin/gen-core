@@ -24,8 +24,7 @@
 #define _R8(var, x)                             	((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-#define EEPROM_RESET                            16U
-#define RTC_RESET                               		1U
+#define EEPROM_RESET                            39U
 
 #define VCU_FIRMWARE_VERSION       	"0.7"
 #define VCU_VENDOR                              	"GEN Indonesia"
@@ -52,7 +51,7 @@
 
 #define RPT_INTERVAL_FULL_AT_SIMPLE          		4U											// n x INTERVAL_SIMPLE
 #define RPT_INTERVAL_SIMPLE                     				5U                      						// in second
-#define RPT_INTERVAL_INDEPENDENT                		20U											// in second
+#define RPT_INTERVAL_INDEPENDENT                		5U											// in second
 #define RPT_INTERVAL_LOST				                		60U											// in second
 #define RPT_UNITID                              							354313U
 
@@ -95,6 +94,7 @@
 #define EVT_FINGER_RST																BIT(3)
 #define EVT_COMMAND_ERROR													BIT(0)
 #define EVT_COMMAND_OK															BIT(1)
+#define EVT_COMMAND_PAIRED                                                  BIT(2)
 #define EVT_CAN_RX_IT                         											BIT(0)
 #define EVT_KEYLESS_RX_IT                     									BIT(0)
 #define EVT_KEYLESS_PAIRING													BIT(1)

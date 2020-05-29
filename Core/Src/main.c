@@ -1372,7 +1372,7 @@ void StartManagerTask(void *argument) {
         _DummyGenerator();
 
         // Thread's Stack Monitor
-        //        _RTOS_Debugger(10000);
+        // _RTOS_Debugger(10000);
 
         // Battery Monitor
         //		BAT_Debugger();
@@ -1458,7 +1458,8 @@ void StartIotTask(void *argument) {
                         }
 
                         // Send to server
-                        p = Simcom_Upload(pPayload, size + pHeader->size, &retry);
+                        p = Simcom_Upload(pPayload, size + pHeader->size);
+                        retry++;
 
                         // Handle looping NACK
                         if (p == SIM_RESULT_NACK) {
@@ -1501,7 +1502,7 @@ void StartIotTask(void *argument) {
         }
 
         // Periodic interval
-        osDelayUntil(lastWake + pdMS_TO_TICKS(500));
+        osDelayUntil(lastWake + pdMS_TO_TICKS(1000));
     }
     /* USER CODE END StartIotTask */
 }
@@ -1714,11 +1715,12 @@ void StartCommandTask(void *argument) {
                         case CMD_KEYLESS_PAIRING:
                             osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
+                            response.data.code = RESPONSE_STATUS_ERROR;
                             // wait response until timeout (30 seconds)
                             notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
                             if (_RTOS_ValidThreadFlag(notif)) {
-                                if (notif & EVT_COMMAND_ERROR) {
-                                    response.data.code = RESPONSE_STATUS_ERROR;
+                                if (notif & EVT_COMMAND_PAIRED) {
+                                    response.data.code = RESPONSE_STATUS_OK;
                                 }
                             }
 
@@ -1839,8 +1841,6 @@ void StartKeylessTask(void *argument) {
     /* USER CODE BEGIN StartKeylessTask */
     uint32_t notif;
     KLESS_CMD command;
-    uint8_t pairing = 0;
-
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
@@ -1867,32 +1867,31 @@ void StartKeylessTask(void *argument) {
                             VCU.d.tick.keyless = osKernelGetTickCount();
 
                             // handle pairing response, after get PING ack
-                            if (pairing) {
-                                pairing = 0;
-                                osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
-                            }
+                            osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_PAIRED);
+
                             break;
                         case KLESS_CMD_ALARM:
                             LOG_StrLn("NRF:Command = ALARM");
-                            // toggle the hazard
-                            SW.runner.hazard = 1;
-                            for (uint8_t i = 0; i < 2; i++) {
-                                // toggle HORN (+ Sein Lamp)
-                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
-                                osDelay(500);
-                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
-                                osDelay(500);
-                            }
-                            SW.runner.hazard = 0;
+
+                            //                            // toggle the hazard
+                            //                            SW.runner.hazard = 1;
+                            //                            for (uint8_t i = 0; i < 2; i++) {
+                            //                                // toggle HORN (+ Sein Lamp)
+                            //                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
+                            //                                osDelay(500);
+                            //                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
+                            //                                osDelay(500);
+                            //                            }
+                            //                            SW.runner.hazard = 0;
 
                             break;
                         case KLESS_CMD_SEAT:
                             LOG_StrLn("NRF:Command = SEAT");
 
-                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
-                            osDelay(500);
-                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
-                            osDelay(500);
+                            //                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
+                            //                            osDelay(500);
+                            //                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
+                            //                            osDelay(500);
 
                             break;
                         default:
@@ -1901,26 +1900,26 @@ void StartKeylessTask(void *argument) {
 
                     // indicator
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-                    _LedWrite(1);
-                    osDelay(command * 250);
+                    for (uint8_t i = 0; i < (command * 2); i++) {
+                        _LedToggle();
+                        osDelay(command * 50);
+                    }
                     _LedWrite(0);
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
+
                     LOG_StrLn("NRF:Command = Valid");
                 } else {
                     LOG_StrLn("NRF:Command = NotValid");
                 }
 
-                osDelay(1000);
+                // reset ThreadFlag
+                // osThreadFlagsClear(EVT_MASK);
             }
 
             // handle pairing
             if (notif & EVT_KEYLESS_PAIRING) {
-                pairing = 1;
                 KLESS_Pairing();
             }
-
-            // reset ThreadFlag
-            osThreadFlagsClear(EVT_MASK);
         }
 
         // update state

@@ -284,28 +284,28 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                         osDelay(1000);
                     }
 
-//                    AT_CGATT state = 1;
-//                    p = AT_GprsAttachment(ATW, &state);
-//
-//                    // wait until attached
-//                    if (p) {
-//                        iteration = 0;
-//                        while (state != CGATT_ATTACHED) {
-//                            p = AT_GprsAttachment(ATW, &state);
-//
-//                            if (p) {
-//                                if (iteration < NET_REPEAT_MAX) {
-//                                    Simcom_IdleJob(&iteration);
-//                                    osDelay(NET_REPEAT_DELAY);
-//                                } else {
-//                                    p = SIM_RESULT_ERROR;
-//                                    break;
-//                                }
-//                            } else {
-//                                break;
-//                            }
-//                        }
-//                    }
+                    //                    AT_CGATT state = 1;
+                    //                    p = AT_GprsAttachment(ATW, &state);
+                    //
+                    //                    // wait until attached
+                    //                    if (p) {
+                    //                        iteration = 0;
+                    //                        while (state != CGATT_ATTACHED) {
+                    //                            p = AT_GprsAttachment(ATW, &state);
+                    //
+                    //                            if (p) {
+                    //                                if (iteration < NET_REPEAT_MAX) {
+                    //                                    Simcom_IdleJob(&iteration);
+                    //                                    osDelay(NET_REPEAT_DELAY);
+                    //                                } else {
+                    //                                    p = SIM_RESULT_ERROR;
+                    //                                    break;
+                    //                                }
+                    //                            } else {
+                    //                                break;
+                    //                            }
+                    //                        }
+                    //                    }
                 }
 
                 // Select TCPIP application mode:
@@ -435,18 +435,21 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
     return SIM.state >= state;
 }
 
-SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
+SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint32_t tick;
     char str[20];
     command_t hCommand;
     header_t *hHeader = NULL;
 
+    Simcom_Lock();
     // combine the size
     sprintf(str, "AT+CIPSEND=%d\r", size);
 
-    Simcom_Lock();
-    if (SIM.state >= SIM_STATE_SERVER_ON) {
+    // Check IP Status
+    AT_ConnectionStatusSingle(&ipStatus);
+
+    if (SIM.state >= SIM_STATE_SERVER_ON && ipStatus == CIPSTAT_CONNECT_OK) {
         // wake-up the SIMCOM
         Simcom_Sleep(0);
         SIM.uploading = 1;
@@ -504,42 +507,42 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
             // handle communication failure
             if (SIM.state == SIM_STATE_SERVER_ON) {
                 if (p != SIM_RESULT_NACK) {
-                    // Check IP Status
-                    AT_ConnectionStatusSingle(&ipStatus);
-
-                    // handle failure properly
-                    switch ((*retry)++) {
-                        case 1:
-                            SIM.state = SIM_STATE_INTERNET_ON;
-
-                            if (ipStatus == CIPSTAT_CLOSED) {
-                                // exit the loop
-                                *retry = SIMCOM_MAX_UPLOAD_RETRY + 1;
-                            } else {
-                                // try closing the IP
-                                if (ipStatus == CIPSTAT_CONNECT_OK) {
-                                    Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
-                                }
-                            }
-
-                            break;
-                        case 2:
-                            // try closing the PDP
-                            SIM.state = SIM_STATE_PDP_ON;
-                            if (ipStatus != CIPSTAT_IP_INITIAL &&
-                                    ipStatus != CIPSTAT_PDP_DEACT) {
-                                Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
-                            }
-
-                            break;
-                        case 3:
-                            // try reset the module
-                            SIM.state = SIM_STATE_DOWN;
-
-                            break;
-                        default:
-                            break;
-                    }
+                    //                    // handle failure properly
+                    //                    // Check IP Status
+                    //                    AT_ConnectionStatusSingle(&ipStatus);
+                    //
+                    //                    switch ((*retry)++) {
+                    //                        case 1:
+                    //                            SIM.state = SIM_STATE_INTERNET_ON;
+                    //
+                    //                            if (ipStatus == CIPSTAT_CLOSED) {
+                    //                                // exit the loop
+                    //                                *retry = SIMCOM_MAX_UPLOAD_RETRY + 1;
+                    //                            } else {
+                    //                                // try closing the IP
+                    //                                if (ipStatus == CIPSTAT_CONNECT_OK) {
+                    //                                    Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
+                    //                                }
+                    //                            }
+                    //
+                    //                            break;
+                    //                        case 2:
+                    //                            // try closing the PDP
+                    //                            SIM.state = SIM_STATE_PDP_ON;
+                    //                            if (ipStatus != CIPSTAT_IP_INITIAL &&
+                    //                                    ipStatus != CIPSTAT_PDP_DEACT) {
+                    //                                Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+                    //                            }
+                    //
+                    //                            break;
+                    //                        case 3:
+                    //                            // try reset the module
+                    //                            SIM.state = SIM_STATE_DOWN;
+                    //
+                    //                            break;
+                    //                        default:
+                    //                            break;
+                    //                    }
                 }
             }
         }

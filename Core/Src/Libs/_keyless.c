@@ -29,11 +29,11 @@ kless_t KLESS = {
                 .rx_buffer = NULL,
         },
         .tx = {
-                .address = { 0xAB, 0x00, 0x00, 0x00, 0x00 },
+                .address = { 0x00, 0x00, 0x00, 0x00, 0xAB },
                 .payload = { 0 },
         },
         .rx = {
-                .address = { 0xCD, 0x00, 0x00, 0x00, 0x00 },
+                .address = { 0x00, 0x00, 0x00, 0x00, 0xCD },
                 .payload = { 0 },
         },
 };
@@ -105,6 +105,8 @@ uint8_t KLESS_Payload(KLESS_MODE mode, uint8_t *payload) {
     if (mode == KLESS_R) {
         // Decrypt
         if (AES_Decrypt(payload, KLESS.rx.payload, NRF_DATA_LENGTH)) {
+            // FIXME: use AES
+//            memcpy(payload, KLESS.rx.payload, NRF_DATA_LENGTH);
             ret = 1;
         }
     } else {
@@ -126,7 +128,7 @@ void KLESS_GenerateAesKey(uint32_t *payload) {
 
 uint8_t KLESS_Pairing(void) {
     NRF_RESULT p;
-    uint8_t transmit = 5 * 4;
+    uint8_t transmit250ms = 2;
     uint8_t *payload = KLESS.tx.payload;
 
     // Generate Payload
@@ -140,6 +142,16 @@ uint8_t KLESS_Pairing(void) {
     memset(KLESS.tx.address, 0x00, sizeof(VCU.d.unit_id));
     memset(KLESS.rx.address, 0x00, sizeof(VCU.d.unit_id));
 
+//    LOG_StrLn("NRF:Payload");
+//    LOG_BufHex((char*) payload, NRF_DATA_PAIR_LENGTH);
+//    LOG_Enter();
+//    LOG_Str("NRF:TX = ");
+//    LOG_BufHex((char*) KLESS.tx.address, sizeof(KLESS.tx.address));
+//    LOG_Enter();
+//    LOG_Str("NRF:RX = ");
+//    LOG_BufHex((char*) KLESS.rx.address, sizeof(KLESS.rx.address));
+//    LOG_Enter();
+
     // Default pairing configuration
     ce_reset(&nrf);
     nrf_set_tx_address(&nrf, KLESS.tx.address);
@@ -148,11 +160,11 @@ uint8_t KLESS_Pairing(void) {
     ce_set(&nrf);
 
     // Send Payload
-    while (transmit--) {
+    while (transmit250ms--) {
         p = nrf_send_packet(&nrf, payload);
         _LedToggle();
 
-        osDelay(5000 / transmit);
+        osDelay(250);
     }
 
     // Set Address (back)
@@ -168,11 +180,7 @@ uint8_t KLESS_Pairing(void) {
 
     // Update the AES key, and save  permanently
     EEPROM_AesKey(EE_CMD_W, (uint8_t*) payload);
-
-    // debug
-    LOG_Str("NRF:Send = ");
-    LOG_Str(p ? "ACK" : "NO_ACK");
-    LOG_Enter();
+    AES_Init();
 
     return (p == NRF_OK);
 }
