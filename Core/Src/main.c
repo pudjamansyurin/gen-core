@@ -1405,7 +1405,6 @@ void StartIotTask(void *argument) {
     uint32_t notif;
 
     SIMCOM_RESULT p;
-    at_csq_t signal;
 
     osMessageQueueId_t *pQueue;
     header_t *pHeader;
@@ -1494,9 +1493,8 @@ void StartIotTask(void *argument) {
 
         // ================= SIMCOM Related Routines ================
         if (Simcom_SetState(SIM_STATE_READY)) {
-            if (AT_SignalQualityReport(&signal)) {
-                VCU.d.signal = signal.percent;
-            }
+            Simcom_IdleJob(NULL);
+
             if (RTC_NeedCalibration()) {
                 RTC_Calibrate();
             }

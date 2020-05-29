@@ -26,30 +26,30 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-	SIM_RESULT_NACK = -4,
-	SIM_RESULT_RESTARTED = -3,
-	SIM_RESULT_NO_RESPONSE = -2,
-	SIM_RESULT_TIMEOUT = -1,
-	SIM_RESULT_ERROR = 0,
-	SIM_RESULT_OK = 1,
-	SIM_RESULT_ACK = 2,
+    SIM_RESULT_NACK = -4,
+    SIM_RESULT_RESTARTED = -3,
+    SIM_RESULT_NO_RESPONSE = -2,
+    SIM_RESULT_TIMEOUT = -1,
+    SIM_RESULT_ERROR = 0,
+    SIM_RESULT_OK = 1,
+    SIM_RESULT_ACK = 2,
 } SIMCOM_RESULT;
 
 typedef enum {
-	SIM_STATE_DOWN = -1,
-	SIM_STATE_READY = 0,
-	SIM_STATE_CONFIGURED = 1,
-	SIM_STATE_NETWORK_ON = 2,
-	SIM_STATE_GPRS_ON = 3,
-	SIM_STATE_PDP_ON = 4,
-	SIM_STATE_INTERNET_ON = 5,
-	SIM_STATE_SERVER_ON = 6
+    SIM_STATE_DOWN = -1,
+    SIM_STATE_READY = 0,
+    SIM_STATE_CONFIGURED = 1,
+    SIM_STATE_NETWORK_ON = 2,
+    SIM_STATE_GPRS_ON = 3,
+    SIM_STATE_PDP_ON = 4,
+    SIM_STATE_INTERNET_ON = 5,
+    SIM_STATE_SERVER_ON = 6
 } SIMCOM_STATE;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-	SIMCOM_STATE state;
-	uint8_t uploading;
+    SIMCOM_STATE state;
+    uint8_t uploading;
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/
@@ -61,6 +61,7 @@ SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
 SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res);
 SIMCOM_RESULT Simcom_ProcessCommand(command_t *command);
 SIMCOM_RESULT Simcom_ProcessACK(header_t *header);
+SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 void Simcom_Lock(void);
 void Simcom_Unlock(void);
 

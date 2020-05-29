@@ -14,6 +14,7 @@
 /* Exported define -----------------------------------------------------------*/
 #define NRF_DATA_LENGTH											16U									// Max: 32 bytes
 #define NRF_ADDR_LENGTH                                          5U                                    // Range 3:5
+#define NRF_DATA_PAIR_LENGTH                                    (NRF_DATA_LENGTH + NRF_ADDR_LENGTH)
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
@@ -32,11 +33,11 @@ typedef struct {
     nrf24l01_config config;
     struct {
         uint8_t address[NRF_ADDR_LENGTH];
-        uint8_t payload[NRF_DATA_LENGTH];
+        uint8_t payload[NRF_DATA_PAIR_LENGTH];
     } tx;
     struct {
         uint8_t address[NRF_ADDR_LENGTH];
-        uint8_t payload[NRF_DATA_LENGTH];
+        uint8_t payload[NRF_DATA_PAIR_LENGTH];
     } rx;
 } kless_t;
 

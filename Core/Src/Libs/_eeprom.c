@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_eeprom.h"
 #include "Libs/_reporter.h"
+#include "Libs/_keyless.h"
 #include "Drivers/_eeprom24xx.h"
 #include "Drivers/_aes.h"
 #include "Nodes/VCU.h"
@@ -82,7 +83,7 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value) {
 }
 
 void EEPROM_ResetOrLoad(void) {
-    uint32_t AesKeyDefault[4];
+    uint32_t AesKeyNew[4];
 
     if (EEPROM_Init() && !EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
         // load from EEPROM
@@ -101,8 +102,8 @@ void EEPROM_ResetOrLoad(void) {
             EEPROM_SequentialID(EE_CMD_W, 0, type);
         }
         // generate aes key
-        KLESS_GenerateAesKey((uint32_t*) AesKeyDefault);
-        EEPROM_AesKey(EE_CMD_W, (uint8_t*) AesKeyDefault);
+        KLESS_GenerateAesKey((uint32_t*) AesKeyNew);
+        EEPROM_AesKey(EE_CMD_W, (uint8_t*) AesKeyNew);
 
         // re-write eeprom
         EEPROM_Reset(EE_CMD_W, EEPROM_RESET);

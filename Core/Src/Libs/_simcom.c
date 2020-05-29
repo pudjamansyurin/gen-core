@@ -27,7 +27,6 @@ static AT_CIPSTATUS ipStatus;
 static SIMCOM_RESULT Simcom_Ready(void);
 static SIMCOM_RESULT Simcom_Power(void);
 static SIMCOM_RESULT Simcom_Reset(void);
-static SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, char *res);
 static SIMCOM_RESULT Simcom_SendIndirect(char *data, uint16_t len, uint8_t is_payload, uint32_t ms, char *res, uint8_t n);
 static void Simcom_ClearBuffer(void);
@@ -363,8 +362,14 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 if (p) {
                     SIM.state++;
                 } else {
+                    // Check IP Status
+                    AT_ConnectionStatusSingle(&ipStatus);
+
                     // Close PDP
-                    p = Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+                    if (ipStatus != CIPSTAT_IP_INITIAL &&
+                            ipStatus != CIPSTAT_PDP_DEACT) {
+                        p = Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+                    }
 
                     if (SIM.state == SIM_STATE_PDP_ON) {
                         SIM.state--;
@@ -389,8 +394,13 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 if (p) {
                     SIM.state++;
                 } else {
+                    // Check IP Status
+                    AT_ConnectionStatusSingle(&ipStatus);
+
                     // Close IP
-                    p = Simcom_Cmd("AT+CIPCLOSE\r", 1000, 1);
+                    if (ipStatus == CIPSTAT_CONNECT_OK) {
+                        p = Simcom_Cmd("AT+CIPCLOSE\r", 1000, 1);
+                    }
 
                     if (SIM.state == SIM_STATE_INTERNET_ON) {
                         SIM.state--;
@@ -400,6 +410,14 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 osDelay(500);
                 break;
             case SIM_STATE_SERVER_ON:
+                // Check IP Status
+                AT_ConnectionStatusSingle(&ipStatus);
+
+                if (ipStatus != CIPSTAT_CONNECT_OK) {
+                    if (SIM.state == SIM_STATE_SERVER_ON) {
+                        SIM.state--;
+                    }
+                }
 
                 break;
             default:
@@ -486,26 +504,32 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size, uint8_t *retry) {
             // handle communication failure
             if (SIM.state == SIM_STATE_SERVER_ON) {
                 if (p != SIM_RESULT_NACK) {
+                    // Check IP Status
+                    AT_ConnectionStatusSingle(&ipStatus);
+
                     // handle failure properly
                     switch ((*retry)++) {
                         case 1:
                             SIM.state = SIM_STATE_INTERNET_ON;
 
-                            // Check IP Status
-                            AT_ConnectionStatusSingle(&ipStatus);
                             if (ipStatus == CIPSTAT_CLOSED) {
                                 // exit the loop
                                 *retry = SIMCOM_MAX_UPLOAD_RETRY + 1;
                             } else {
                                 // try closing the IP
-                                Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
+                                if (ipStatus == CIPSTAT_CONNECT_OK) {
+                                    Simcom_Cmd("AT+CIPCLOSE\r", 500, 1);
+                                }
                             }
 
                             break;
                         case 2:
                             // try closing the PDP
                             SIM.state = SIM_STATE_PDP_ON;
-                            Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+                            if (ipStatus != CIPSTAT_IP_INITIAL &&
+                                    ipStatus != CIPSTAT_PDP_DEACT) {
+                                Simcom_Cmd("AT+CIPSHUT\r", 1000, 1);
+                            }
 
                             break;
                         case 3:
@@ -611,6 +635,27 @@ SIMCOM_RESULT Simcom_ProcessACK(header_t *header) {
     return p;
 }
 
+SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
+    SIMCOM_RESULT p;
+    at_csq_t signal;
+
+    // debug
+    if (iteration != NULL) {
+        LOG_Str("Simcom:Iteration = ");
+        LOG_Int((*iteration)++);
+        LOG_Enter();
+    }
+
+    // other routines
+    p = AT_SignalQualityReport(&signal);
+    if (p) {
+        VCU.d.signal = signal.percent;
+    }
+    AT_ConnectionStatusSingle(&ipStatus);
+
+    return p;
+}
+
 /* Private functions implementation --------------------------------------------*/
 static SIMCOM_RESULT Simcom_Ready(void) {
     uint32_t tick;
@@ -656,27 +701,6 @@ static SIMCOM_RESULT Simcom_Reset(void) {
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
     // wait response
     return Simcom_Ready();
-}
-
-static SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
-    SIMCOM_RESULT p;
-    at_csq_t signal;
-
-    // debug
-    if (iteration != NULL) {
-        LOG_Str("Simcom:Iteration = ");
-        LOG_Int((*iteration)++);
-        LOG_Enter();
-    }
-
-    // other routines
-    p = AT_SignalQualityReport(&signal);
-    if (p) {
-        VCU.d.signal = signal.percent;
-    }
-    AT_ConnectionStatusSingle(&ipStatus);
-
-    return p;
 }
 
 static SIMCOM_RESULT Simcom_SendDirect(char *data, uint16_t len, uint32_t ms, char *res) {
