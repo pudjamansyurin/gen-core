@@ -53,14 +53,10 @@ typedef struct {
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void Simcom_Sleep(uint8_t state);
 uint8_t Simcom_SetState(SIMCOM_STATE state);
-SIMCOM_RESULT Simcom_Response(char *str);
+char* Simcom_Response(char *str);
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
-SIMCOM_RESULT Simcom_Cmd(char *cmd, uint32_t ms, uint8_t n);
-SIMCOM_RESULT Simcom_Command(char *cmd, uint32_t ms, uint8_t n, char *res);
-SIMCOM_RESULT Simcom_ProcessCommand(command_t *command);
-SIMCOM_RESULT Simcom_ProcessACK(header_t *header);
+SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size);
 SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 void Simcom_Lock(void);
 void Simcom_Unlock(void);

@@ -51,5 +51,6 @@ uint8_t KLESS_Pairing(void);
 uint8_t KLESS_SendDummy(void);
 void KLESS_Refresh(void);
 void KLESS_IrqHandler(void);
+void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);
 
 #endif /* KEYLESS_H_ */

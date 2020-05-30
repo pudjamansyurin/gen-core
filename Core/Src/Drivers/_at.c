@@ -6,7 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Parser/_at.h"
+#include "Drivers/_at.h"
 #include "DMA/_dma_simcom.h"
 
 /* External variables ---------------------------------------------------------*/
@@ -143,9 +143,13 @@ SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
 
     // check either connection ok / error
     if (p) {
-        p = Simcom_Response("CONNECT OK") ||
-                Simcom_Response("ALREADY CONNECT") ||
-                Simcom_Response("TCP CLOSED");
+        if (Simcom_Response("CONNECT OK")
+                || Simcom_Response("ALREADY CONNECT")
+                || Simcom_Response("TCP CLOSED")) {
+            p = SIM_RESULT_OK;
+        } else {
+            p = SIM_RESULT_ERROR;
+        }
     }
     Simcom_Unlock();
 
@@ -653,11 +657,7 @@ static SIMCOM_RESULT AT_CmdWrite(char *cmd, uint32_t ms, char *res) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
     if (SIM.state >= SIM_STATE_READY) {
-        if (res == NULL) {
-            p = Simcom_Cmd(cmd, ms, 1);
-        } else {
-            p = Simcom_Command(cmd, ms, 1, res);
-        }
+        p = Simcom_Command(cmd, res, ms, 0);
     }
 
     return p;
@@ -667,10 +667,10 @@ static SIMCOM_RESULT AT_CmdRead(char *cmd, char *prefix, char **str) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
     if (SIM.state >= SIM_STATE_READY) {
-        p = Simcom_Cmd(cmd, 500, 1);
+        p = Simcom_Command(cmd, prefix, 500, 0);
 
         if (p) {
-            *str = strstr(SIMCOM_UART_RX, prefix);
+            *str = Simcom_Response(prefix);
 
             if (*str != NULL) {
                 *str += strlen(prefix);

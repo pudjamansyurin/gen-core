@@ -36,7 +36,9 @@
 #define NET_REPEAT_DELAY                     5000U                    // in ms
 #define NET_REPEAT_MAX							2U
 
-#define KEYLESS_TIMEOUT						5000 						// in ms
+#define COMMAND_TIMEOUT                     20U                     // in seconds
+
+#define KEYLESS_TIMEOUT						5000U 						// in ms
 
 #define PREFIX_REPORT                       		"@R"
 #define PREFIX_COMMAND                      "@C"

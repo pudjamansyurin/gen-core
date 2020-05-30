@@ -140,6 +140,10 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
 }
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint8_t *value) {
+    if (cmd == EE_CMD_W) {
+        AES_Init();
+    }
+
     return EE_Command(VADDR_AES_KEY, cmd, value, AesKey, 16);
 }
 /* Private functions implementation --------------------------------------------*/

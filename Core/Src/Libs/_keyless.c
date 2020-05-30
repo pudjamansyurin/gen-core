@@ -8,9 +8,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_keyless.h"
 #include "Libs/_eeprom.h"
+#include "Drivers/_aes.h"
 #include "Nodes/VCU.h"
 #include "Nodes/HMI1.h"
-#include "Drivers/_aes.h"
 
 /* External variables ----------------------------------------------------------*/
 extern SPI_HandleTypeDef hspi1;
@@ -71,7 +71,7 @@ void KLESS_Init(void) {
     config->irq_port = INT_KEYLESS_IRQ_GPIO_Port;
     config->irq_pin = INT_KEYLESS_IRQ_Pin;
 
-    // initialisation
+    // initialization
     nrf_init(&nrf, config);
 }
 
@@ -106,7 +106,7 @@ uint8_t KLESS_Payload(KLESS_MODE mode, uint8_t *payload) {
         // Decrypt
         if (AES_Decrypt(payload, KLESS.rx.payload, NRF_DATA_LENGTH)) {
             // FIXME: use AES
-//            memcpy(payload, KLESS.rx.payload, NRF_DATA_LENGTH);
+            //            memcpy(payload, KLESS.rx.payload, NRF_DATA_LENGTH);
             ret = 1;
         }
     } else {
@@ -127,30 +127,28 @@ void KLESS_GenerateAesKey(uint32_t *payload) {
 }
 
 uint8_t KLESS_Pairing(void) {
-    NRF_RESULT p;
-    uint8_t transmit250ms = 2;
     uint8_t *payload = KLESS.tx.payload;
+    uint8_t transmit250ms = 5 * 4;
+    NRF_RESULT p = NRF_ERROR;
 
-    // Generate Payload
-
-    // insert AES Key
+    // Insert AES Key
     KLESS_GenerateAesKey((uint32_t*) payload);
-    // insert VCU_ID
+    // Insert VCU_ID
     memcpy(&payload[NRF_DATA_LENGTH], KLESS.tx.address, NRF_ADDR_LENGTH);
 
     // Reset Address
     memset(KLESS.tx.address, 0x00, sizeof(VCU.d.unit_id));
     memset(KLESS.rx.address, 0x00, sizeof(VCU.d.unit_id));
 
-//    LOG_StrLn("NRF:Payload");
-//    LOG_BufHex((char*) payload, NRF_DATA_PAIR_LENGTH);
-//    LOG_Enter();
-//    LOG_Str("NRF:TX = ");
-//    LOG_BufHex((char*) KLESS.tx.address, sizeof(KLESS.tx.address));
-//    LOG_Enter();
-//    LOG_Str("NRF:RX = ");
-//    LOG_BufHex((char*) KLESS.rx.address, sizeof(KLESS.rx.address));
-//    LOG_Enter();
+    //    LOG_StrLn("NRF:Payload");
+    //    LOG_BufHex((char*) payload, NRF_DATA_PAIR_LENGTH);
+    //    LOG_Enter();
+    //    LOG_Str("NRF:TX = ");
+    //    LOG_BufHex((char*) KLESS.tx.address, sizeof(KLESS.tx.address));
+    //    LOG_Enter();
+    //    LOG_Str("NRF:RX = ");
+    //    LOG_BufHex((char*) KLESS.rx.address, sizeof(KLESS.rx.address));
+    //    LOG_Enter();
 
     // Default pairing configuration
     ce_reset(&nrf);
@@ -160,7 +158,7 @@ uint8_t KLESS_Pairing(void) {
     ce_set(&nrf);
 
     // Send Payload
-    while (transmit250ms--) {
+    while (transmit250ms-- && p == NRF_ERROR) {
         p = nrf_send_packet(&nrf, payload);
         _LedToggle();
 
@@ -180,14 +178,13 @@ uint8_t KLESS_Pairing(void) {
 
     // Update the AES key, and save  permanently
     EEPROM_AesKey(EE_CMD_W, (uint8_t*) payload);
-    AES_Init();
 
     return (p == NRF_OK);
 }
 
 uint8_t KLESS_SendDummy(void) {
-    NRF_RESULT p;
     uint8_t *payload = KLESS.tx.payload;
+    NRF_RESULT p;
 
     // set payload
     memset(payload, 0x00, NRF_DATA_LENGTH);
@@ -213,8 +210,7 @@ void KLESS_Debugger(void) {
 }
 
 void KLESS_Refresh(void) {
-    if ((osKernelGetTickCount() - VCU.d.tick.keyless)
-            < pdMS_TO_TICKS(KEYLESS_TIMEOUT)) {
+    if ((osKernelGetTickCount() - VCU.d.tick.keyless) < pdMS_TO_TICKS(KEYLESS_TIMEOUT)) {
         HMI1.d.status.keyless = 1;
     } else {
         HMI1.d.status.keyless = 0;
@@ -223,6 +219,12 @@ void KLESS_Refresh(void) {
 
 void KLESS_IrqHandler(void) {
     nrf_irq_handler(&nrf);
+}
+
+void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
+    // used in favor of nrf_receive_packet
+    dev->rx_busy = 0;
+
     osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RX_IT);
 }
 

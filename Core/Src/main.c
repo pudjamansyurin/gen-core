@@ -25,7 +25,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "_defines.h"
-#include "Parser/_at.h"
 #include "Libs/_simcom.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_gyro.h"
@@ -1699,9 +1698,9 @@ void StartCommandTask(void *argument) {
                             break;
                     }
 
-                    // wait response until timeout (30 seconds)
+                    // wait response until timeout
                     if (response.data.code == RESPONSE_STATUS_OK) {
-                        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
+                        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(20000));
                         if (_RTOS_ValidThreadFlag(notif)) {
                             if (notif & EVT_COMMAND_ERROR) {
                                 response.data.code = RESPONSE_STATUS_ERROR;
@@ -1715,12 +1714,13 @@ void StartCommandTask(void *argument) {
                         case CMD_KEYLESS_PAIRING:
                             osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
-                            response.data.code = RESPONSE_STATUS_ERROR;
-                            // wait response until timeout (30 seconds)
-                            notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(30000));
-                            if (_RTOS_ValidThreadFlag(notif)) {
-                                if (notif & EVT_COMMAND_PAIRED) {
-                                    response.data.code = RESPONSE_STATUS_OK;
+                            // wait response until timeout
+                            if (response.data.code == RESPONSE_STATUS_OK) {
+                                notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(COMMAND_TIMEOUT));
+                                if (_RTOS_ValidThreadFlag(notif)) {
+                                    if (notif & EVT_COMMAND_ERROR) {
+                                        response.data.code = RESPONSE_STATUS_ERROR;
+                                    }
                                 }
                             }
 
@@ -1866,9 +1866,6 @@ void StartKeylessTask(void *argument) {
                             // update heart-beat
                             VCU.d.tick.keyless = osKernelGetTickCount();
 
-                            // handle pairing response, after get PING ack
-                            osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_PAIRED);
-
                             break;
                         case KLESS_CMD_ALARM:
                             LOG_StrLn("NRF:Command = ALARM");
@@ -1906,10 +1903,6 @@ void StartKeylessTask(void *argument) {
                     }
                     _LedWrite(0);
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
-
-                    LOG_StrLn("NRF:Command = Valid");
-                } else {
-                    LOG_StrLn("NRF:Command = NotValid");
                 }
 
                 // reset ThreadFlag
@@ -1918,7 +1911,11 @@ void StartKeylessTask(void *argument) {
 
             // handle pairing
             if (notif & EVT_KEYLESS_PAIRING) {
-                KLESS_Pairing();
+                if (KLESS_Pairing()) {
+                    osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+                } else {
+                    osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_ERROR);
+                }
             }
         }
 
