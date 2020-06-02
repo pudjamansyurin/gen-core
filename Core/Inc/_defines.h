@@ -14,7 +14,7 @@
 
 /* Exported macro functions --------------------------------------------------*/
 #define BIT(x)                                  (1ULL << x)
-#define BV(var, x  )                            (var |= (1ULL << x))
+#define BV(var, x)                              (var |= (1ULL << x))
 #define BC(var, x)                              (var &= ~(1ULL << x))
 #define BT(var, x)                              (var ^= (1ULL << x))
 #define _L(var, x)                              (var << x)
@@ -51,10 +51,10 @@
 
 #define DRIVER_ID_NONE							0xFF
 
-#define RPT_INTERVAL_FULL_AT_SIMPLE          	4U			        // n x INTERVAL_SIMPLE
 #define RPT_INTERVAL_SIMPLE                     5U                  // in second
+#define RPT_INTERVAL_FULL                       20U                 // in second
 #define RPT_INTERVAL_INDEPENDENT                5U					// in second
-#define RPT_INTERVAL_LOST				        60U					// in second
+#define RPT_INTERVAL_LOST				        10U					// in second
 #define RPT_UNITID                              354313U
 
 // Payload list (Keyless)
@@ -96,7 +96,6 @@
 #define EVT_FINGER_RST							BIT(3)
 #define EVT_COMMAND_ERROR						BIT(0)
 #define EVT_COMMAND_OK							BIT(1)
-#define EVT_COMMAND_PAIRED                      BIT(2)
 #define EVT_CAN_RX_IT                         	BIT(0)
 #define EVT_KEYLESS_RX_IT                     	BIT(0)
 #define EVT_KEYLESS_PAIRING						BIT(1)

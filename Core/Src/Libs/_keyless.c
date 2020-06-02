@@ -20,6 +20,7 @@ extern RNG_HandleTypeDef hrng;
 extern nrf24l01 nrf;
 extern vcu_t VCU;
 extern hmi1_t HMI1;
+extern uint32_t AesKey[4];
 
 /* Public variables -----------------------------------------------------------*/
 kless_t KLESS = {
@@ -36,6 +37,13 @@ kless_t KLESS = {
                 .address = { 0x00, 0x00, 0x00, 0x00, 0xCD },
                 .payload = { 0 },
         },
+};
+
+/* Private variables -----------------------------------------------------------*/
+static const uint8_t commands[3][8] = {
+        { 0x5e, 0x6c, 0xa7, 0x74, 0xfd, 0xe3, 0xdf, 0xbc },
+        { 0xf7, 0xda, 0x4a, 0x4f, 0x65, 0x2d, 0x6e, 0xf0 },
+        { 0xff, 0xa6, 0xe6, 0x5a, 0x84, 0x82, 0x66, 0x4f },
 };
 
 /* Private functions declaration ---------------------------------------------*/
@@ -76,7 +84,7 @@ void KLESS_Init(void) {
 }
 
 uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
-    uint8_t pos, valid, payload_dec[NRF_DATA_LENGTH];
+    uint8_t valid, payload_dec[NRF_DATA_LENGTH];
 
     lock();
     // Read Payload
@@ -84,13 +92,17 @@ uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
 
     // Get Payload position
     if (valid) {
-        pos = (payload_dec[0] & 0xF0) >> 4;
-        *cmd = payload_dec[pos] & 0x0F;
-
+        valid = 0;
         // Check Payload Command
-        if (*cmd > KLESS_CMD_MAX) {
-            valid = 0;
+        for (uint8_t i = 0; i < 3; i++) {
+            // check command
+            if (memcmp(payload_dec, &commands[i], 8) == 0) {
+                *cmd = i;
+                valid = 1;
+                break;
+            }
         }
+
     }
     unlock();
 
@@ -105,8 +117,6 @@ uint8_t KLESS_Payload(KLESS_MODE mode, uint8_t *payload) {
     if (mode == KLESS_R) {
         // Decrypt
         if (AES_Decrypt(payload, KLESS.rx.payload, NRF_DATA_LENGTH)) {
-            // FIXME: use AES
-            //            memcpy(payload, KLESS.rx.payload, NRF_DATA_LENGTH);
             ret = 1;
         }
     } else {
@@ -128,29 +138,24 @@ void KLESS_GenerateAesKey(uint32_t *payload) {
 
 uint8_t KLESS_Pairing(void) {
     uint8_t *payload = KLESS.tx.payload;
-    uint8_t transmit250ms = 5 * 4;
+    uint32_t aes[4], swapped;
     NRF_RESULT p = NRF_ERROR;
 
     // Insert AES Key
-    KLESS_GenerateAesKey((uint32_t*) payload);
+    KLESS_GenerateAesKey(aes);
+    // swap byte order
+    for (uint8_t i = 0; i < 4; i++) {
+        swapped = _ByteSwap32(aes[i]);
+        memcpy(&payload[i * 4], &swapped, sizeof(swapped));
+    }
     // Insert VCU_ID
     memcpy(&payload[NRF_DATA_LENGTH], KLESS.tx.address, NRF_ADDR_LENGTH);
 
-    // Reset Address
+    // Set Address (pairing mode)
     memset(KLESS.tx.address, 0x00, sizeof(VCU.d.unit_id));
     memset(KLESS.rx.address, 0x00, sizeof(VCU.d.unit_id));
 
-    //    LOG_StrLn("NRF:Payload");
-    //    LOG_BufHex((char*) payload, NRF_DATA_PAIR_LENGTH);
-    //    LOG_Enter();
-    //    LOG_Str("NRF:TX = ");
-    //    LOG_BufHex((char*) KLESS.tx.address, sizeof(KLESS.tx.address));
-    //    LOG_Enter();
-    //    LOG_Str("NRF:RX = ");
-    //    LOG_BufHex((char*) KLESS.rx.address, sizeof(KLESS.rx.address));
-    //    LOG_Enter();
-
-    // Default pairing configuration
+    // Set NRF Config (pairing mode)
     ce_reset(&nrf);
     nrf_set_tx_address(&nrf, KLESS.tx.address);
     nrf_set_rx_address_p0(&nrf, KLESS.rx.address);
@@ -158,26 +163,17 @@ uint8_t KLESS_Pairing(void) {
     ce_set(&nrf);
 
     // Send Payload
-    while (transmit250ms-- && p == NRF_ERROR) {
-        p = nrf_send_packet(&nrf, payload);
-        _LedToggle();
+    p = nrf_send_packet(&nrf, payload);
+    osDelay(100);
 
-        osDelay(250);
-    }
-
-    // Set Address (back)
+    // Set Address (normal mode)
     memcpy(KLESS.tx.address, &(VCU.d.unit_id), sizeof(VCU.d.unit_id));
     memcpy(KLESS.rx.address, &(VCU.d.unit_id), sizeof(VCU.d.unit_id));
+    // Set Aes Key (new)
+    EEPROM_AesKey(EE_CMD_W, aes);
 
-    // Retrieve back the configuration
-    ce_reset(&nrf);
-    nrf_set_tx_address(&nrf, nrf.config.tx_address);
-    nrf_set_rx_address_p0(&nrf, nrf.config.rx_address);
-    nrf_set_rx_payload_width_p0(&nrf, nrf.config.payload_length);
-    ce_set(&nrf);
-
-    // Update the AES key, and save  permanently
-    EEPROM_AesKey(EE_CMD_W, (uint8_t*) payload);
+    // Set NRF Config (normal mode)
+    KLESS_Init();
 
     return (p == NRF_OK);
 }

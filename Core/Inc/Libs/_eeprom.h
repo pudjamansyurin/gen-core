@@ -34,6 +34,6 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
-uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint8_t *value);
+uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
 
 #endif /* EEPROM_H_ */

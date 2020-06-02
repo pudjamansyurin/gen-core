@@ -24,7 +24,7 @@ static void unlock(void);
 void AES_Init(void) {
     lock();
     HAL_CRYP_GetConfig(&hcryp, &config);
-    config.pKey = (uint32_t*) AesKey;
+    config.pKey = AesKey;
     HAL_CRYP_SetConfig(&hcryp, &config);
     unlock();
 }

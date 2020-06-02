@@ -20,7 +20,6 @@ extern vcu_t VCU;
 /* Public variables ----------------------------------------------------------*/
 sim_t SIM = {
         .state = SIM_STATE_DOWN,
-        .uploading = 0
 };
 
 /* Private variables ----------------------------------------------------------*/
@@ -402,10 +401,6 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
     AT_ConnectionStatusSingle(&ipStatus);
 
     if (SIM.state >= SIM_STATE_SERVER_ON && ipStatus == CIPSTAT_CONNECT_OK) {
-        //        // wake-up the SIMCOM
-        //        Simcom_Sleep(0);
-        //        SIM.uploading = 1;
-
         // send command
         p = Simcom_Command(str, SIMCOM_RSP_SEND, 5000, 0);
         if (p) {
@@ -452,10 +447,6 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
                 p = SIM_RESULT_NACK;
             }
         }
-
-        //        // sleep the SIMCOM
-        //        Simcom_Sleep(1);
-        //        SIM.uploading = 0;
     }
 
     Simcom_Unlock();
@@ -479,35 +470,23 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
     if (SIM.state >= SIM_STATE_READY || (!strcmp(data, SIMCOM_CMD_BOOT))) {
         Simcom_Lock();
 
-        // Debug: print command
-        if (!upload) {
-            LOG_Str("\n=> ");
-            LOG_Buf(data, size);
-        } else {
-            LOG_BufHex(data, size);
-        }
-        LOG_Enter();
+//        // Debug: print command
+//        if (!upload) {
+//            LOG_Str("\n=> ");
+//            LOG_Buf(data, size);
+//        } else {
+//            LOG_BufHex(data, size);
+//        }
+//        LOG_Enter();
 
-        // wake-up the SIMCOM
-        //    if (!SIM.uploading) {
-        Simcom_Sleep(0);
-        //    }
-
-        // ================================================================
         // send command
         p = Simcom_Execute(data, size, ms, res);
-        // ================================================================
 
-        // sleep the SIMCOM
-        //    if (!SIM.uploading) {
-        Simcom_Sleep(1);
-        //    }
-
-        // Debug: print response
-        if (!upload) {
-            LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-            LOG_Enter();
-        }
+//        // Debug: print response
+//        if (!upload) {
+//            LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+//            LOG_Enter();
+//        }
 
         Simcom_Unlock();
     }
@@ -643,6 +622,8 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
     uint32_t tick, timeout_tick = 0;
 
     Simcom_Lock();
+    // wake-up the SIMCOM
+    Simcom_Sleep(0);
     // transmit to serial (low-level)
     Simcom_ClearBuffer();
     SIMCOM_Transmit(data, size);
@@ -694,6 +675,8 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
         osDelay(10);
     }
 
+    // sleep the SIMCOM
+    Simcom_Sleep(1);
     Simcom_Unlock();
     return p;
 }

@@ -84,8 +84,8 @@ void EEPROM_ResetOrLoad(void) {
             EEPROM_SequentialID(EE_CMD_W, 0, type);
         }
         // generate aes key
-        KLESS_GenerateAesKey((uint32_t*) AesKeyNew);
-        EEPROM_AesKey(EE_CMD_W, (uint8_t*) AesKeyNew);
+        KLESS_GenerateAesKey(AesKeyNew);
+        EEPROM_AesKey(EE_CMD_W, AesKeyNew);
 
         // re-write eeprom
         EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
@@ -136,12 +136,16 @@ uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE typ
     return EE_Command(vaddr, cmd, &value, pSeqId, sizeof(value));
 }
 
-uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint8_t *value) {
-    if (cmd == EE_CMD_W) {
+uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
+    uint8_t ret;
+
+    ret = EE_Command(VADDR_AES_KEY, cmd, value, AesKey, 16);
+
+    if (ret) {
         AES_Init();
     }
 
-    return EE_Command(VADDR_AES_KEY, cmd, value, AesKey, 16);
+    return ret;
 }
 
 /* Private functions implementation --------------------------------------------*/

@@ -631,7 +631,12 @@ NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
     ce_set(dev);
 
     while (dev->tx_busy == 1) {
-    } // wait for end of transmittion
+    } // wait for end of transmition
+
+    osDelay(100);
+    ce_reset(dev);
+    nrf_rx_tx_control(dev, NRF_STATE_RX);
+    ce_set(dev);
 
     return dev->tx_result;
 }
@@ -645,7 +650,12 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
     ce_set(dev);
 
     while (dev->tx_busy == 1) {
-    } // wait for end of transmittion
+    } // wait for end of transmition
+
+    osDelay(100);
+    ce_reset(dev);
+    nrf_rx_tx_control(dev, NRF_STATE_RX);
+    ce_set(dev);
 
     return dev->tx_result;
 }
@@ -719,8 +729,8 @@ void nrf_irq_handler(nrf24l01 *dev) {
         status |= 1 << 5;      // clear the interrupt flag
 
         ce_reset(dev);
-        nrf_rx_tx_control(dev, NRF_STATE_RX);
-        dev->state = NRF_STATE_RX;
+        //        nrf_rx_tx_control(dev, NRF_STATE_RX);
+        //        dev->state = NRF_STATE_RX;
         nrf_write_register(dev, NRF_STATUS, &status);
         ce_set(dev);
 
@@ -735,8 +745,8 @@ void nrf_irq_handler(nrf24l01 *dev) {
         nrf_power_up(dev, 0); // power down
         nrf_power_up(dev, 1); // power up
 
-        nrf_rx_tx_control(dev, NRF_STATE_RX);
-        dev->state = NRF_STATE_RX;
+        //        nrf_rx_tx_control(dev, NRF_STATE_RX);
+        //        dev->state = NRF_STATE_RX;
         nrf_write_register(dev, NRF_STATUS, &status);
         ce_set(dev);
 

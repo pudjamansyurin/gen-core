@@ -18,10 +18,9 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-    KLESS_CMD_PING = 1,
-    KLESS_CMD_ALARM = 2,
-    KLESS_CMD_SEAT = 3,
-    KLESS_CMD_MAX = 3
+    KLESS_CMD_PING = 0,
+    KLESS_CMD_ALARM = 1,
+    KLESS_CMD_SEAT = 2
 } KLESS_CMD;
 
 typedef enum {

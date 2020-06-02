@@ -49,7 +49,6 @@ typedef enum {
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
     SIMCOM_STATE state;
-    uint8_t uploading;
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/

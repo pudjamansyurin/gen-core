@@ -1533,13 +1533,14 @@ void StartReporterTask(void *argument) {
 
         // Frame type decider
         if (!VCU.d.state.independent) {
-            if (++frameDecider == RPT_INTERVAL_FULL_AT_SIMPLE) {
+            if (++frameDecider == (RPT_INTERVAL_FULL / RPT_INTERVAL_SIMPLE)) {
                 frame = FR_FULL;
                 frameDecider = 0;
             } else {
                 frame = FR_SIMPLE;
             }
-        } else {
+        }
+        else {
             frame = FR_FULL;
             frameDecider = 0;
         }
@@ -1871,25 +1872,24 @@ void StartKeylessTask(void *argument) {
                         case KLESS_CMD_ALARM:
                             LOG_StrLn("NRF:Command = ALARM");
 
-                            //                            // toggle the hazard
-                            //                            SW.runner.hazard = 1;
-                            //                            for (uint8_t i = 0; i < 2; i++) {
-                            //                                // toggle HORN (+ Sein Lamp)
-                            //                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
-                            //                                osDelay(500);
-                            //                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
-                            //                                osDelay(500);
-                            //                            }
-                            //                            SW.runner.hazard = 0;
+//                            // toggle the hazard
+//                            SW.runner.hazard = 1;
+//                            for (uint8_t i = 0; i < 2; i++) {
+//                                // toggle HORN (+ Sein Lamp)
+//                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
+//                                osDelay(250);
+//                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
+//                                osDelay(250);
+//                            }
+//                            SW.runner.hazard = 0;
 
                             break;
                         case KLESS_CMD_SEAT:
                             LOG_StrLn("NRF:Command = SEAT");
 
-                            //                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
-                            //                            osDelay(500);
-                            //                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
-                            //                            osDelay(500);
+//                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
+//                            osDelay(500);
+//                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
 
                             break;
                         default:
@@ -1898,19 +1898,20 @@ void StartKeylessTask(void *argument) {
 
                     // indicator
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-                    for (uint8_t i = 0; i < (command * 2); i++) {
+                    for (uint8_t i = 0; i < (command + 1); i++) {
                         _LedToggle();
-                        osDelay(command * 50);
+                        osDelay((command + 1) * 50);
                     }
                     _LedWrite(0);
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
                 }
 
                 // reset ThreadFlag
-                // osThreadFlagsClear(EVT_MASK);
+                osThreadFlagsClear(EVT_MASK);
+                osDelay(1000);
             }
 
-            // handle pairing
+            // handle Pairing
             if (notif & EVT_KEYLESS_PAIRING) {
                 if (KLESS_Pairing()) {
                     osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
