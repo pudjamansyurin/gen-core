@@ -300,7 +300,6 @@ int main(void) {
     /* USER CODE BEGIN 2 */
     CANBUS_Init();
     BAT_DMA_Init();
-    AES_Init();
     /* USER CODE END 2 */
 
     /* Init scheduler */
@@ -1847,6 +1846,7 @@ void StartKeylessTask(void *argument) {
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
     // initialization
+    AES_Init();
     KLESS_Init();
 
     /* Infinite loop */
@@ -1865,6 +1865,7 @@ void StartKeylessTask(void *argument) {
                     switch (command) {
                         case KLESS_CMD_PING:
                             LOG_StrLn("NRF:Command = PING");
+
                             // update heart-beat
                             VCU.d.tick.keyless = osKernelGetTickCount();
 
@@ -1872,34 +1873,35 @@ void StartKeylessTask(void *argument) {
                         case KLESS_CMD_ALARM:
                             LOG_StrLn("NRF:Command = ALARM");
 
-//                            // toggle the hazard
-//                            SW.runner.hazard = 1;
-//                            for (uint8_t i = 0; i < 2; i++) {
-//                                // toggle HORN (+ Sein Lamp)
-//                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
-//                                osDelay(250);
-//                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
-//                                osDelay(250);
-//                            }
-//                            SW.runner.hazard = 0;
+                            // toggle Hazard & HORN (+ Sein Lamp)
+                            for (uint8_t i = 0; i < 2; i++) {
+                                SW.runner.hazard = 1;
+                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
+                                osDelay(200);
+                                SW.runner.hazard = 0;
+                                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
+                                osDelay(100);
+                            }
 
                             break;
                         case KLESS_CMD_SEAT:
                             LOG_StrLn("NRF:Command = SEAT");
 
-//                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
-//                            osDelay(500);
-//                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
+                            // open the seat via solenoid
+                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
+                            osDelay(100);
+                            HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
 
                             break;
                         default:
                             break;
                     }
 
-                    // indicator
+                    // valid command indicator
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
                     for (uint8_t i = 0; i < (command + 1); i++) {
                         _LedToggle();
+
                         osDelay((command + 1) * 50);
                     }
                     _LedWrite(0);
@@ -1908,7 +1910,6 @@ void StartKeylessTask(void *argument) {
 
                 // reset ThreadFlag
                 osThreadFlagsClear(EVT_MASK);
-                osDelay(1000);
             }
 
             // handle Pairing

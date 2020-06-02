@@ -114,11 +114,21 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
     if (value > VCU_ODOMETER_MAX) {
         value = 0;
     }
+
     return EE_Command(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer), sizeof(value));
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
-    return EE_Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
+    uint8_t ret;
+
+    ret = EE_Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
+
+    // update the NRF Address
+    if (cmd == EE_CMD_W) {
+        KLESS_Init();
+    }
+
+    return ret;
 }
 
 uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type) {
@@ -147,7 +157,8 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
         ret = EE_Command(VADDR_AES_KEY, cmd, &tmp, AesKey, 16);
     }
 
-    if (ret) {
+    // apply the AES key
+    if (cmd == EE_CMD_W) {
         AES_Init();
     }
 
