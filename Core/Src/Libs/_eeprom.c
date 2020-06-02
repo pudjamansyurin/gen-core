@@ -76,6 +76,7 @@ void EEPROM_ResetOrLoad(void) {
         }
         // load aes key
         EEPROM_AesKey(EE_CMD_R, EE_NULL);
+
     } else {
         // save to EEPROM, first
         EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
@@ -138,8 +139,13 @@ uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE typ
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
     uint8_t ret;
+    uint32_t tmp[4];
 
-    ret = EE_Command(VADDR_AES_KEY, cmd, value, AesKey, 16);
+    if (cmd == EE_CMD_W) {
+        ret = EE_Command(VADDR_AES_KEY, cmd, value, AesKey, 16);
+    } else {
+        ret = EE_Command(VADDR_AES_KEY, cmd, &tmp, AesKey, 16);
+    }
 
     if (ret) {
         AES_Init();
