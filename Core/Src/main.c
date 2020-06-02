@@ -1841,6 +1841,7 @@ void StartKeylessTask(void *argument) {
     /* USER CODE BEGIN StartKeylessTask */
     uint32_t notif;
     KLESS_CMD command;
+
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 

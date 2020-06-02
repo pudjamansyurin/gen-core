@@ -12,12 +12,12 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define VADDR_RESET                                     0x00000000
-#define VADDR_ODOMETER                          VADDR_RESET + sizeof(uint32_t)
-#define VADDR_UNITID                                  VADDR_ODOMETER + sizeof(uint32_t)
-#define VADDR_REPORT_SEQ_ID                 VADDR_UNITID + sizeof(uint32_t)
-#define VADDR_RESPONSE_SEQ_ID           VADDR_REPORT_SEQ_ID + sizeof(uint16_t)
-#define VADDR_AES_KEY                               VADDR_RESPONSE_SEQ_ID + 16
+#define VADDR_RESET                 0x00000000
+#define VADDR_ODOMETER              VADDR_RESET + sizeof(uint16_t)
+#define VADDR_UNITID                VADDR_ODOMETER + sizeof(uint32_t)
+#define VADDR_REPORT_SEQ_ID         VADDR_UNITID + sizeof(uint32_t)
+#define VADDR_RESPONSE_SEQ_ID       VADDR_REPORT_SEQ_ID + sizeof(uint16_t)
+#define VADDR_AES_KEY               VADDR_RESPONSE_SEQ_ID + sizeof(uint16_t)
 
 #define EE_NULL                     0
 
@@ -29,11 +29,11 @@ typedef enum {
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EEPROM_Init(void);
-uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value);
 void EEPROM_ResetOrLoad(void);
-uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
+uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
+uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint8_t *value);
 
 #endif /* EEPROM_H_ */

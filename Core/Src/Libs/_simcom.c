@@ -56,12 +56,6 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
     SIMCOM_RESULT p = SIM_RESULT_OK;
 
     Simcom_Lock();
-    // only executed at power up
-    if (init) {
-        init = 0;
-        LOG_StrLn("Simcom:Init");
-    }
-
     // Handle SIMCOM state properly
     do {
         // Handle locked-loop
@@ -93,8 +87,15 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
         // handle simcom states
         switch (SIM.state) {
             case SIM_STATE_DOWN:
+                // only executed at power up
+                if (init) {
+                    init = 0;
+                    LOG_StrLn("Simcom:Init");
+                } else {
+                    LOG_StrLn("Simcom:Restarting...");
+                }
+
                 // power up the module
-                LOG_StrLn("Simcom:Restarting...");
                 p = Simcom_Power();
                 // upgrade simcom state
                 if (p) {
@@ -424,10 +425,6 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
                     osDelay(10);
                 }
 
-                // debug
-                LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-                LOG_Enter();
-
                 // exception handler
                 if (Simcom_Response(PREFIX_ACK)) {
                     p = SIM_RESULT_ACK;
@@ -650,7 +647,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
     Simcom_ClearBuffer();
     SIMCOM_Transmit(data, size);
     // convert time to tick
-    timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME_MS);
+    timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME);
     // set timeout guard
     tick = osKernelGetTickCount();
 

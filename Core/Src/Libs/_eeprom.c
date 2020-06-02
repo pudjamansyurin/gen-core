@@ -28,34 +28,31 @@ static void unlock(void);
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(void) {
     const uint8_t MAX_RETRY = 5;
+    const EEPROM24_DEVICE EEPROMS[2] = {
+            EEPROM24_MAIN,
+            EEPROM24_BACKUP
+    };
     uint8_t retry, ret = 0;
 
     lock();
     LOG_StrLn("EEPROM:Init");
-    // check main eeprom
-    retry = MAX_RETRY;
-    EEPROM24XX_SetDevice(EEPROM24_MAIN);
-    do {
-        if (EEPROM24XX_IsConnected()) {
-            LOG_StrLn("EEPROM:Main");
-            ret = 1;
-            break;
-        }
-        osDelay(50);
-    } while (retry--);
+    // check each eeprom
+    for (uint8_t i = 0; i < 2; i++) {
+        if (!ret) {
+            retry = MAX_RETRY;
+            EEPROM24XX_SetDevice(EEPROMS[i]);
+            do {
+                if (EEPROM24XX_IsConnected()) {
+                    LOG_Str("EEPROM:Device = ");
+                    LOG_Int(i + 1);
+                    LOG_Enter();
 
-    // check backup eeprom
-    if (!ret) {
-        retry = MAX_RETRY;
-        EEPROM24XX_SetDevice(EEPROM24_BACKUP);
-        do {
-            if (EEPROM24XX_IsConnected()) {
-                LOG_StrLn("EEPROM:Backup");
-                ret = 1;
-                break;
-            }
-            osDelay(50);
-        } while (retry--);
+                    ret = 1;
+                    break;
+                }
+                osDelay(50);
+            } while (retry--);
+        }
     }
 
     // all failed
@@ -64,21 +61,6 @@ uint8_t EEPROM_Init(void) {
     }
 
     unlock();
-    return ret;
-}
-
-uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint32_t value) {
-    uint8_t ret;
-    uint32_t tmp = value, temp;
-
-    ret = EE_Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
-
-    if (ret) {
-        if (cmd == EE_CMD_R) {
-            return tmp != temp;
-        }
-    }
-
     return ret;
 }
 
@@ -111,6 +93,33 @@ void EEPROM_ResetOrLoad(void) {
 
 }
 
+uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
+    uint8_t ret;
+    uint16_t tmp = value, temp;
+
+    ret = EE_Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
+
+    if (ret) {
+        if (cmd == EE_CMD_R) {
+            return tmp != temp;
+        }
+    }
+
+    return ret;
+}
+
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
+    // reset on overflow
+    if (value > VCU_ODOMETER_MAX) {
+        value = 0;
+    }
+    return EE_Command(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer), sizeof(value));
+}
+
+uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
+    return EE_Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
+}
+
 uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type) {
     uint16_t *pSeqId;
     uint32_t vaddr;
@@ -127,18 +136,6 @@ uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE typ
     return EE_Command(vaddr, cmd, &value, pSeqId, sizeof(value));
 }
 
-uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
-    // reset on overflow
-    if (value > VCU_ODOMETER_MAX) {
-        value = 0;
-    }
-    return EE_Command(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer), sizeof(value));
-}
-
-uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
-    return EE_Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
-}
-
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint8_t *value) {
     if (cmd == EE_CMD_W) {
         AES_Init();
@@ -146,6 +143,7 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint8_t *value) {
 
     return EE_Command(VADDR_AES_KEY, cmd, value, AesKey, 16);
 }
+
 /* Private functions implementation --------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size) {
     uint8_t ret = 0;
@@ -154,6 +152,7 @@ static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void 
 
     // check if new value is same with old value
     if (cmd == EE_CMD_W) {
+        // apply the value
         memcpy(ptr, value, size);
         // save the value
         ret = EEPROM24XX_Save(vaddr, value, size);
