@@ -44,109 +44,59 @@ void Finger_Init(void) {
 }
 
 uint8_t Finger_Enroll(uint8_t id) {
-    const TickType_t timeout = pdMS_TO_TICKS(FINGER_SCAN_TIMEOUT*1000);
+    const TickType_t scan_time = pdMS_TO_TICKS(FINGER_SCAN_TIMEOUT*1000);
     TickType_t tick;
-    int p, error;
+    int p;
+    uint8_t timeout, error = 0;
 
     lock();
-    //	Take Image
-    LOG_Str("\nWaiting for valid finger to enroll as #");
-    LOG_Int(id);
-    LOG_Enter();
-
-    // set timeout guard
-    tick = osKernelGetTickCount();
-    do {
-        // handle timeout
-        error = ((osKernelGetTickCount() - tick) > timeout);
-        if (error) {
-            break;
-        }
-
-        // send command
-        _LedToggle();
-        HMI1.d.status.finger = !HMI1.d.status.finger;
-        p = FZ3387_getImage();
-
+    if (!error) {
+        // check number of stored id
+        p = FZ3387_getTemplateCount();
         // check response
         switch (p) {
             case FINGERPRINT_OK:
-                LOG_StrLn("Image taken");
-                break;
-            case FINGERPRINT_NOFINGER:
-                LOG_StrLn(".");
+                LOG_StrLn("Retrieve OK");
                 break;
             case FINGERPRINT_PACKETRECIEVEERR:
                 LOG_StrLn("Communication error");
-                break;
-            case FINGERPRINT_IMAGEFAIL:
-                LOG_StrLn("Imaging error");
                 break;
             default:
                 LOG_StrLn("Unknown error");
                 break;
         }
-    } while (p != FINGERPRINT_OK);
 
-    if (!error) {
-        error = 1;
+        LOG_Str("TemplateCount = ");
+        LOG_Int(finger.templateCount);
+        LOG_Enter();
 
-        //	put image to buffer 1
-        p = FZ3387_image2Tz(1);
-        switch (p) {
-            case FINGERPRINT_OK:
-                LOG_StrLn("Image converted");
-                error = 0;
-                break;
-            case FINGERPRINT_IMAGEMESS:
-                LOG_StrLn("Image too messy");
-                break;
-            case FINGERPRINT_PACKETRECIEVEERR:
-                LOG_StrLn("Communication error");
-                break;
-            case FINGERPRINT_FEATUREFAIL:
-                LOG_StrLn("Could not find finger print features");
-                break;
-            case FINGERPRINT_INVALIDIMAGE:
-                LOG_StrLn("Could not find finger print features");
-                break;
-            default:
-                LOG_StrLn("Unknown error");
-                break;
-        }
+        error = (p != FINGERPRINT_OK) || (finger.templateCount >= FINGER_USER_MAX);
     }
 
     if (!error) {
-        //	 Wait for put your finger up
-        _LedWrite(0);
-        HMI1.d.status.finger = 0;
-        LOG_StrLn("Remove finger");
-        osDelay(2000);
-
-        //	Take Image again
-        LOG_StrLn("Place same finger again");
+        //  Take Image
+        LOG_Str("\nWaiting for valid finger to enroll as #");
+        LOG_Int(id);
+        LOG_Enter();
 
         // set timeout guard
         tick = osKernelGetTickCount();
         do {
             // handle timeout
-            error = ((osKernelGetTickCount() - tick) > timeout);
-            if (error) {
-                break;
-            }
+            timeout = ((osKernelGetTickCount() - tick) > scan_time);
 
-            // indicator
+            // send command
             _LedToggle();
             HMI1.d.status.finger = !HMI1.d.status.finger;
-
-            // handle response
             p = FZ3387_getImage();
+
+            // check response
             switch (p) {
                 case FINGERPRINT_OK:
                     LOG_StrLn("Image taken");
                     break;
                 case FINGERPRINT_NOFINGER:
-                    LOG_Str(".");
+                    LOG_StrLn(".");
                     break;
                 case FINGERPRINT_PACKETRECIEVEERR:
                     LOG_StrLn("Communication error");
@@ -158,18 +108,17 @@ uint8_t Finger_Enroll(uint8_t id) {
                     LOG_StrLn("Unknown error");
                     break;
             }
-        } while (p != FINGERPRINT_OK);
+        } while (p != FINGERPRINT_OK && !timeout);
+
+        error = (p != FINGERPRINT_OK) || timeout;
     }
 
     if (!error) {
-        error = 1;
-
-        //	put image to buffer 2
-        p = FZ3387_image2Tz(2);
+        //	put image to buffer 1
+        p = FZ3387_image2Tz(1);
         switch (p) {
             case FINGERPRINT_OK:
                 LOG_StrLn("Image converted");
-                error = 0;
                 break;
             case FINGERPRINT_IMAGEMESS:
                 LOG_StrLn("Image too messy");
@@ -178,26 +127,109 @@ uint8_t Finger_Enroll(uint8_t id) {
                 LOG_StrLn("Communication error");
                 break;
             case FINGERPRINT_FEATUREFAIL:
-                LOG_StrLn("Could not find fingerprint features");
+                LOG_StrLn("Could not find finger print features");
                 break;
             case FINGERPRINT_INVALIDIMAGE:
-                LOG_StrLn("Could not find fingerprint features");
+                LOG_StrLn("Could not find finger print features");
                 break;
             default:
                 LOG_StrLn("Unknown error");
                 break;
         }
+
+        error = (p != FINGERPRINT_OK);
     }
 
+//    if (!error) {
+//        //   Wait for put your finger up
+//        _LedWrite(0);
+//        HMI1.d.status.finger = 0;
+//
+//        do {
+//            LOG_StrLn("Remove finger");
+//            osDelay(100);
+//            p = FZ3387_getImage();
+//        } while (p != FINGERPRINT_NOFINGER);
+//    }
+//
+//    if (!error) {
+//        //  Take Image again
+//        LOG_StrLn("Place same finger again");
+//
+//        // set timeout guard
+//        tick = osKernelGetTickCount();
+//        do {
+//            // handle timeout
+//            timeout = ((osKernelGetTickCount() - tick) > scan_time);
+//
+//            // indicator
+//            _LedToggle();
+//            HMI1.d.status.finger = !HMI1.d.status.finger;
+//
+//            // handle response
+//            p = FZ3387_getImage();
+//            switch (p) {
+//                case FINGERPRINT_OK:
+//                    LOG_StrLn("Image taken");
+//                    break;
+//                case FINGERPRINT_NOFINGER:
+//                    LOG_Str(".");
+//                    break;
+//                case FINGERPRINT_PACKETRECIEVEERR:
+//                    LOG_StrLn("Communication error");
+//                    break;
+//                case FINGERPRINT_IMAGEFAIL:
+//                    LOG_StrLn("Imaging error");
+//                    break;
+//                default:
+//                    LOG_StrLn("Unknown error");
+//                    break;
+//            }
+//        } while (p != FINGERPRINT_OK && !timeout);
+//
+//        error = (p != FINGERPRINT_OK) || timeout;
+//    }
+//
+//    if (!error) {
+//        //	put image to buffer 2
+//        p = FZ3387_image2Tz(2);
+//        switch (p) {
+//            case FINGERPRINT_OK:
+//                LOG_StrLn("Image converted");
+//                break;
+//            case FINGERPRINT_IMAGEMESS:
+//                LOG_StrLn("Image too messy");
+//                break;
+//            case FINGERPRINT_PACKETRECIEVEERR:
+//                LOG_StrLn("Communication error");
+//                break;
+//            case FINGERPRINT_FEATUREFAIL:
+//                LOG_StrLn("Could not find fingerprint features");
+//                break;
+//            case FINGERPRINT_INVALIDIMAGE:
+//                LOG_StrLn("Could not find fingerprint features");
+//                break;
+//            default:
+//                LOG_StrLn("Unknown error");
+//                break;
+//        }
+//
+//        error = (p != FINGERPRINT_OK);
+//    }
+//
+//    if (!error) {
+//        //   Wait for put your finger up
+//        _LedWrite(0);
+//        HMI1.d.status.finger = 0;
+//
+//        do {
+//            LOG_StrLn("Remove finger");
+//            osDelay(100);
+//            p = FZ3387_getImage();
+//        } while (p != FINGERPRINT_NOFINGER);
+//    }
+
     if (!error) {
-        error = 1;
-
-        //	 Wait for put your finger up
-        _LedWrite(0);
-        HMI1.d.status.finger = 0;
-        LOG_StrLn("Remove finger");
-        osDelay(2000);
-
         //	Create Register model
         LOG_Str("\nCreating model for #");
         LOG_Int(id);
@@ -207,7 +239,6 @@ uint8_t Finger_Enroll(uint8_t id) {
         p = FZ3387_createModel();
         if (p == FINGERPRINT_OK) {
             LOG_StrLn("Prints matched!");
-            error = 0;
         } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
             LOG_StrLn("Communication error");
         } else if (p == FINGERPRINT_ENROLLMISMATCH) {
@@ -215,11 +246,11 @@ uint8_t Finger_Enroll(uint8_t id) {
         } else {
             LOG_StrLn("Unknown error");
         }
+
+        error = (p != FINGERPRINT_OK);
     }
 
     if (!error) {
-        error = 1;
-
         // debug
         LOG_Str("\nID #");
         LOG_Int(id);
@@ -229,7 +260,6 @@ uint8_t Finger_Enroll(uint8_t id) {
         p = FZ3387_storeModel(id);
         if (p == FINGERPRINT_OK) {
             LOG_StrLn("Stored!");
-            error = 0;
         } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
             LOG_StrLn("Communication error");
         } else if (p == FINGERPRINT_BADLOCATION) {
@@ -239,6 +269,8 @@ uint8_t Finger_Enroll(uint8_t id) {
         } else {
             LOG_StrLn("Unknown error");
         }
+
+        error = (p != FINGERPRINT_OK);
     }
 
     // reset indicator
@@ -296,39 +328,40 @@ uint8_t Finger_SetPassword(uint32_t password) {
 }
 
 int8_t Finger_Auth(void) {
-    int8_t p, id = -1, error = 1;
+    int8_t p, id = -1;
+    uint8_t error = 0;
 
     lock();
-    // scan the finger print
-    p = FZ3387_getImage();
-    switch (p) {
-        case FINGERPRINT_OK:
-            LOG_StrLn("Image taken");
-            error = 0;
-            break;
-        case FINGERPRINT_NOFINGER:
-            LOG_StrLn("No finger detected");
-            break;
-        case FINGERPRINT_PACKETRECIEVEERR:
-            LOG_StrLn("Communication error");
-            break;
-        case FINGERPRINT_IMAGEFAIL:
-            LOG_StrLn("Imaging error");
-            break;
-        default:
-            LOG_StrLn("Unknown error");
-            break;
+    if (!error) {
+        // scan the finger print
+        p = FZ3387_getImage();
+        switch (p) {
+            case FINGERPRINT_OK:
+                LOG_StrLn("Image taken");
+                break;
+            case FINGERPRINT_NOFINGER:
+                LOG_StrLn("No finger detected");
+                break;
+            case FINGERPRINT_PACKETRECIEVEERR:
+                LOG_StrLn("Communication error");
+                break;
+            case FINGERPRINT_IMAGEFAIL:
+                LOG_StrLn("Imaging error");
+                break;
+            default:
+                LOG_StrLn("Unknown error");
+                break;
+        }
+
+        error = (p != FINGERPRINT_OK);
     }
 
     if (!error) {
-        error = 1;
-
         // OK success!, convert the image taken
         p = FZ3387_image2Tz(1);
         switch (p) {
             case FINGERPRINT_OK:
                 LOG_StrLn("Image converted");
-                error = 0;
                 break;
             case FINGERPRINT_IMAGEMESS:
                 LOG_StrLn("Image too messy");
@@ -346,16 +379,15 @@ int8_t Finger_Auth(void) {
                 LOG_StrLn("Unknown error");
                 break;
         }
+
+        error = (p != FINGERPRINT_OK);
     }
 
     if (!error) {
-        error = 1;
-
         // Find in the model
         p = FZ3387_fingerFastSearch();
         if (p == FINGERPRINT_OK) {
             LOG_StrLn("Found a print match!");
-            error = 0;
         } else if (p == FINGERPRINT_PACKETRECIEVEERR) {
             LOG_StrLn("Communication error");
         } else if (p == FINGERPRINT_NOTFOUND) {
@@ -363,6 +395,8 @@ int8_t Finger_Auth(void) {
         } else {
             LOG_StrLn("Unknown error");
         }
+
+        error = (p != FINGERPRINT_OK);
     }
 
     if (!error) {

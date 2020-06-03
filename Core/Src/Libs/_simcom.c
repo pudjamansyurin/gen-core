@@ -52,11 +52,12 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
     const uint8_t maxDepth = 3;
     uint8_t iteration, depth = maxDepth;
     SIMCOM_STATE lastState = SIM_STATE_DOWN;
-    SIMCOM_RESULT p = SIM_RESULT_OK;
+    SIMCOM_RESULT p;
 
     Simcom_Lock();
     // Handle SIMCOM state properly
     do {
+
         // Handle locked-loop
         if (SIM.state < lastState) {
             if (!--depth) {
@@ -67,7 +68,6 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
             LOG_Int(depth);
             LOG_Enter();
         }
-        lastState = SIM.state;
 
         // Handle signal
         if (SIM.state == SIM_STATE_DOWN) {
@@ -82,6 +82,10 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 }
             }
         }
+
+        // Set value
+        p = SIM_RESULT_OK;
+        lastState = SIM.state;
 
         // handle simcom states
         switch (SIM.state) {
@@ -470,23 +474,27 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
     if (SIM.state >= SIM_STATE_READY || (!strcmp(data, SIMCOM_CMD_BOOT))) {
         Simcom_Lock();
 
-//        // Debug: print command
-//        if (!upload) {
-//            LOG_Str("\n=> ");
-//            LOG_Buf(data, size);
-//        } else {
-//            LOG_BufHex(data, size);
-//        }
-//        LOG_Enter();
+        // Debug: print command
+        if (SIMCOM_DEBUG) {
+            if (!upload) {
+                LOG_Str("\n=> ");
+                LOG_Buf(data, size);
+            } else {
+                LOG_BufHex(data, size);
+            }
+            LOG_Enter();
+        }
 
         // send command
         p = Simcom_Execute(data, size, ms, res);
 
-//        // Debug: print response
-//        if (!upload) {
-//            LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-//            LOG_Enter();
-//        }
+        // Debug: print response
+        if (SIMCOM_DEBUG) {
+            if (!upload) {
+                LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+                LOG_Enter();
+            }
+        }
 
         Simcom_Unlock();
     }
@@ -494,7 +502,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
 }
 
 SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
-    SIMCOM_RESULT p;
+    SIMCOM_RESULT p = SIM_RESULT_ERROR;
     at_csq_t signal;
 
     // debug
@@ -509,7 +517,7 @@ SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
     if (p) {
         VCU.d.signal = signal.percent;
     }
-    AT_ConnectionStatusSingle(&ipStatus);
+    p = AT_ConnectionStatusSingle(&ipStatus);
 
     return p;
 }

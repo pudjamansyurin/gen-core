@@ -45,7 +45,7 @@
 #define PREFIX_ACK                              "@A"
 #define PREFIX_NACK                             "@N"
 
-#define FINGER_CONFIDENCE_MIN                   10U
+#define FINGER_CONFIDENCE_MIN                   50U
 #define FINGER_SCAN_TIMEOUT          	        10U                 // in second
 #define FINGER_USER_MAX						    5U
 

@@ -1343,20 +1343,20 @@ void StartManagerTask(void *argument) {
     VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
     // Threads management:
-    //    osThreadSuspend(IotTaskHandle);
-    //    osThreadSuspend(ReporterTaskHandle);
-    //    osThreadSuspend(CommandTaskHandle);
-    osThreadSuspend(GpsTaskHandle);
-    osThreadSuspend(GyroTaskHandle);
-    //    osThreadSuspend(KeylessTaskHandle);
-    osThreadSuspend(FingerTaskHandle);
-    osThreadSuspend(AudioTaskHandle);
-    osThreadSuspend(SwitchTaskHandle);
-    osThreadSuspend(CanRxTaskHandle);
-    osThreadSuspend(CanTxTaskHandle);
-    osThreadSuspend(Hmi2PowerTaskHandle);
+//    osThreadSuspend(IotTaskHandle);
+//    osThreadSuspend(ReporterTaskHandle);
+//    osThreadSuspend(CommandTaskHandle);
+//    osThreadSuspend(GpsTaskHandle);
+//    osThreadSuspend(GyroTaskHandle);
+//    osThreadSuspend(KeylessTaskHandle);
+//    osThreadSuspend(FingerTaskHandle);
+//    osThreadSuspend(AudioTaskHandle);
+//    osThreadSuspend(SwitchTaskHandle);
+//    osThreadSuspend(CanRxTaskHandle);
+//    osThreadSuspend(CanTxTaskHandle);
+//    osThreadSuspend(Hmi2PowerTaskHandle);
 
-    // Release threads
+// Release threads
     osEventFlagsSet(GlobalEventHandle, EVENT_READY);
 
     /* Infinite loop */
@@ -1444,7 +1444,7 @@ void StartIotTask(void *argument) {
 
                 // check is payload ready
                 if (pending[type]) {
-                    retry = 1;
+                    retry = SIMCOM_MAX_UPLOAD_RETRY;
                     nack = 1;
 
                     do {
@@ -1457,7 +1457,6 @@ void StartIotTask(void *argument) {
 
                         // Send to server
                         p = Simcom_Upload(pPayload, size + pHeader->size);
-                        retry++;
 
                         // Handle looping NACK
                         if (p == SIM_RESULT_NACK) {
@@ -1477,7 +1476,7 @@ void StartIotTask(void *argument) {
 
                         // delay
                         osDelay(500);
-                    } while (p != SIM_RESULT_OK && retry <= SIMCOM_MAX_UPLOAD_RETRY);
+                    } while (p != SIM_RESULT_OK && --retry);
                 }
 
                 // Handle Full Buffer
@@ -1677,12 +1676,7 @@ void StartCommandTask(void *argument) {
 
                     switch (command.data.sub_code) {
                         case CMD_FINGER_ADD:
-                            // do not handle if drivers is full
-                            if (driver < FINGER_USER_MAX) {
-                                osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
-                            } else {
-                                response.data.code = RESPONSE_STATUS_ERROR;
-                            }
+                            osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
                             break;
 
                         case CMD_FINGER_DEL:
@@ -1908,7 +1902,7 @@ void StartKeylessTask(void *argument) {
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
                 }
 
-                // reset ThreadFlag
+                // reset pending flag
                 osThreadFlagsClear(EVT_MASK);
             }
 
@@ -1970,7 +1964,6 @@ void StartFingerTask(void *argument) {
 
                     // Handle bounce effect
                     osDelay(5000);
-                    osThreadFlagsClear(EVT_FINGER_PLACED);
                 }
             }
 
@@ -1995,6 +1988,8 @@ void StartFingerTask(void *argument) {
                 }
             }
 
+            // reset pending flag
+            osThreadFlagsClear(EVT_MASK);
         }
     }
     /* USER CODE END StartFingerTask */
