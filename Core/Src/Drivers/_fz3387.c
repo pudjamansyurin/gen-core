@@ -32,8 +32,7 @@ finger_t finger;
 
 /* Public functions implementation ---------------------------------------------*/
 void FZ3387_SET_POWER(uint8_t state) {
-    // FIXME: change to FINGER_TOUCH_PWR
-    HAL_GPIO_WritePin(EXT_FINGER_PWR_GPIO_Port, EXT_FINGER_PWR_Pin, !state);
+    HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin, !state);
     osDelay(500);
 }
 

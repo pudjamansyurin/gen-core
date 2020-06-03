@@ -64,8 +64,8 @@
   - [x] Use AES features in new STM32F423VH 
   - [x] Use AES for NRF24LE1 communication
   - [x] User RNG to generate random AES-KEY
-  - [ ] Use NRF-FLASH to store permanent AES-KEY
-  - [ ] Build communication handshake between NRF & VCU
+  - [x] Use NRF-FLASH to store permanent AES-KEY
+  - [x] Build communication handshake between NRF & VCU
 - [x] Re-swap the CAN data between SwitchModulControl & MixedData
 - [?] Handle add new fingerprint error when use different finger for confirmation.
 - [ ] Add new fingerprint can only be executed when KNOB is ON (HMI1 ON)
@@ -76,6 +76,7 @@
   	- [ ] Only when knob ON
     - [ ] HMI.Primary Keyless blink
     - [ ] Send event group to Server
+  - [ ] Add finger throttle  and events, max 6 times failed within 30 second
   - [?] Keyless.BEEP turn on Horn & Sein Lamp (toggle the HORN_PWR)
   - [ ] Handle Starter Button
   - [?] Handle BMS.Fan when BMS temperature is overheat	
@@ -146,89 +147,92 @@
 - [x] Add many via (through hole) for best RF performance  
 
 ### PCB (Hardware) Revision:
-- [ ] Check crystals footprint: HCLK, RTC
-- [ ] Move all solder jumpers at the top layer
-- [ ] Make screw corner hole bigger in 4 positions
-- [ ] ~~Add Voltage-divider for 5V line as Main Power Monitor~~
-- [ ] Fix Q4 & Q7 shielded pad
-- [ ] ~~Swap GPS & NET leds position~~
-- [ ] Change R67 value as R63
-- [ ] Change R23 value to 30k
-- [ ] Change C30, C31, C70, C71 value to 20pf
-- [ ] Change Led Color to RED (not GREEN)
-- [ ] Transistor Problem:
-  - [ ] Vbase should equal to Vemitter to turn it OFF
-  - [ ] Change Q3, Q5, Q9, Q13, Q6 to TRANSISTOR PNP
-  - [ ] Increase the base resistor to 510 Ohm
-- [ ] VCU-core:
-  - [ ] Add buzzer & the GPIO pin
-  - [ ] Add recharge-able coin battery for RTC
-   - [ ] VBAT should use this
-   - [ ] Use diode & resistor to limit current
-  - [ ] Handle "different signal" trace properly (CAN, MIC_N&P)
-- [ ] The Power Trace should be wider to fix voltage drop
-  - [ ] Trace between B+ to SIMCOM's VBAT at least 60mil
-  - [ ] Also trace for HMI1 & HMI2 Power Control
-- [ ] CAN Module:
-  - [ ] Give Resistor 120 Ohm between CAN_H and CAN_L (optional, just give the space)
-  - [ ] Add MOSFET power control and the GPIO pins
-- [ ] Connector:
-  - [ ] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
-  - [ ] Make 6 pin connector same (Fingerprint & CAN)
-  - [ ] Change audio jack connector
-  - [ ] Give more space between each connector
-  - [ ] Replace downloader connector with pin-header (3*2)
-  - [ ] Give GND pin for HMI1 & HMI2
-  - [ ] Put HMI1 & HMI2 side-by-side
-- [ ] EEPROM:
-  - [ ] Change the footprint
-- [ ] Li-ion Charger:
-  - [ ] **Charger is not working!!!!**
-  - [ ] B+ only for: MCU, GPS, SIMCOM & EEPROM
-  - [ ] Add solder jumper (connect to B+ or 5V) for other components not listed above
-  - [ ] Add switch to disable the Li-ion battery
-  - [ ] Add solder switch to charge / discharge li-ion
-- [ ] Gyro:
-  - [ ] Add separate 3v3 regulator
-  - [ ] Connect INT pin to MCU (give jumper)
-  - [ ] Connect AD0 pin to GND (the problem)
-  - [ ] Separate Q4 GND and GYRO_GND (in schematic)
-- [ ] GPS:
-  - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
-  - [ ] Add solder jumper for TX pin between VCU & Ublox chip
-  - [ ] Connect V_BCKP to VCC (not VDD)
-  - [ ] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
-  - [ ] Fix eagle footprint problem, the un-shielded ground near every pins
-  - [ ] Add recharge-able coin battery
-   - [ ] Use diode & resistor to limit current
-  - [ ] Increase C90 value to 100uF (tantalum)
-  - [ ] Use EXTINT pin to control Sleep mode
+- [x] Check crystals footprint: HCLK, RTC
+- [x] ~~Move all solder jumpers at the top layer~~
+- [x] Make screw corner hole bigger in 4 positions
+- [x] ~~Add Voltage-divider for 5V line as Main Power Monitor~~
+- [x] Fix Q4 & Q7 shielded pad
+- [x] ~~Swap GPS & NET leds position~~
+- [x] Change R67 value as R63
+- [x] Change R23 value to 30k
+- [x] Change C30, C31, C70, C71 value to 20pf
+- [x] Change Led Color to RED (not GREEN)
+- [x] Transistor Problem:
+  - [x] Vbase should equal to Vemitter to turn it OFF
+  - [x] Change Q3, Q5, Q9, Q13, Q6 to TRANSISTOR PNP
+  - [x] Increase the base resistor to 510 Ohm
+- [x] VCU-core:
+  - [x] Add buzzer & the GPIO pin
+  - [x] Add recharge-able coin battery for RTC
+   - [x] VBAT should use this
+   - [x] Use diode & resistor to limit current
+  - [x] Handle "different signal" trace properly (CAN, MIC_N&P)
+- [x] The Power Trace should be wider to fix voltage drop
+  - [x] Trace between B+ to SIMCOM's VBAT at least 60mil
+  - [x] Also trace for HMI1 & HMI2 Power Control
+- [x] CAN Module:
+  - [x] Give Resistor 120 Ohm between CAN_H and CAN_L (optional, just give the space)
+  - [x] Add MOSFET power control and the GPIO pins
+- [x] Connector:
+  - [x] Remove un-necessary GPIO pin to HMI-2 (replaced by CAN) 
+  - [x] Make 6 pin connector same (Fingerprint & CAN)
+  - [x] Change audio jack connector
+  - [x] Give more space between each connector
+  - [x] Replace downloader connector with pin-header (3*2)
+  - [x] Give GND pin for HMI1 & HMI2
+  - [x] Put HMI1 & HMI2 side-by-side
+- [x] EEPROM:
+  - [x] Change the footprint
+- [x] Li-ion Charger:
+  - [x] **Charger is not working!!!!**
+  - [x] B+ only for: MCU, GPS, SIMCOM & EEPROM
+  - [x] ~~Add solder jumper (connect to B+ or 5V) for other components not listed above~~
+  - [x] Add switch to disable the Li-ion battery
+  - [x] Add solder switch to charge / discharge li-ion
+- [x] Gyro:
+  - [x] Add separate 3v3 regulator
+  - [x] Connect INT pin to MCU (give jumper)
+  - [x] Connect AD0 pin to GND (the problem)
+  - [x] Separate Q4 GND and GYRO_GND (in schematic)
+- [x] GPS:
+  - [x] Add many vias arround RF trace
+  - [x] Do not cover antenna ground
+  - [x] Fix eagle footprint problem, the un-shielded ground near every pins
+  - [x] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
+  - [x] Add solder jumper for TX pin between VCU & Ublox chip
+  - [x] Connect V_BCKP to VCC (not VDD)
+  - [x] Give jumper for GPS_IDD, it can use B+ or 5V from usb2serial
+  - [x] Add recharge-able coin battery
+   - [x] Use diode & resistor to limit current
+  - [x] Increase C90 value to 100uF (tantalum)
+  - [x] Use EXTINT pin to control Sleep mode
     - See section "9.3.2.7 EXTINT pin control" in "Receiver Description" datasheet
-- [ ] Fingerprint:
-  - [ ] Change Q6 from NPN to PNP
-  - [ ] EXT_FINGER_TOUCH_PWR change Collector trace from B+ to Vdd
-- [ ] SIMCOM:
-  - [ ] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
-  - [ ] Remove R24 & R25, instead connect "LED_NET" directly to MOSFET's gate pin.
-  - [ ] Add MOSFET between INT_NET_RST (VCU) and RESET (SIMCOM).
-  - [ ] Re-swap the USIM_VDD and USIM_DATA pin.
-  - [ ] Change USIM holder to bigger size.
-  - [ ] Change LTC output from 3.8v to 4.2v
-    - [ ] Give solder jumper to connect LTC or B+ (directly)
-    - [ ] then add MOSFET/PNP power control (used RUN pin) between B+ and VBAT
-  - [ ] Increase C42 value to 1000uF (tantalum)
-  - [ ] Move SIMcard related components closer to the SIMcard-holder
-- [ ] AUDIO:
-  - [ ] Connect pin 41 to GND (bellow the chip)
-  - [ ] Give GND hole (un-isolated) bellow the chip.
-  - [ ] VL & VP pin should use its own 3v3 regulator (so add it), 
-  - [ ] and it must be controlled also using MOSFET or GPIO pin (directly)
-- [ ] Keyless:
-  - [ ] Increase C91 value to 100uF (tantalum)
-  - [ ] Preserve on-board NRF chip
-  - [ ] Add uFL connector for on-board chip like GPS & SIMCOM
-  - [ ] Change the on-board microstrip antenna to v2
-  - [ ] Add Solder-Jumper (for next optimization) to switch between uFL or microstrip
+- [x] Fingerprint:
+  - [x] Change Q6 from NPN to PNP
+  - [x] EXT_FINGER_TOUCH_PWR change Collector trace from B+ to Vdd
+- [x] SIMCOM:
+  - [x] Add many vias arround RF trace
+  - [x] Add Matching Network between on-board Antenna and Solder-Jumper (for next optimization)
+  - [x] Remove R24 & R25, instead connect "LED_NET" directly to MOSFET's gate pin.
+  - [x] Add MOSFET between INT_NET_RST (VCU) and RESET (SIMCOM).
+  - [x] Re-swap the USIM_VDD and USIM_DATA pin.
+  - [x] Change USIM holder.
+  - [x] Change LTC output from 3.8v to 4.2v
+    - [x] Give solder jumper to connect LTC or B+ (directly)
+    - [x] then add MOSFET/PNP power control (used RUN pin) between B+ and VBAT
+  - [x] Increase C42 value to 1000uF (tantalum)
+  - [x] Move SIMcard related components closer to the SIMcard-holder
+- [x] AUDIO:
+  - [x] Connect pin 41 to GND (bellow the chip)
+  - [x] Give GND hole (un-isolated) bellow the chip.
+  - [x] VL & VP pin should use its own 3v3 regulator (so add it), 
+  - [x] and it must be controlled also using MOSFET or GPIO pin (directly)
+- [x] Keyless:
+  - [x] Increase C91 value to 100uF (tantalum)
+  - [x] Preserve on-board NRF chip
+  - [x] Add uFL connector for on-board chip like GPS & SIMCOM
+  - [x] Change the on-board microstrip antenna to v2
+  - [x] Add Solder-Jumper (for next optimization) to switch between uFL or microstrip
   
 ## RF PCB Guidelines : 
 - http://iot-bits.com/simple-rf-pcb-layout-tips-tricks/ 
@@ -236,20 +240,22 @@
 - http://www.summitdata.com/blog/parasitic-effects-rf-design/ 
 
 ## Sub-Modules Progress:
-| No | Sub Module                  | Chip           | ST-Periph.  | FW  | HW | F423 | Note		  							|
-|:--:|-----------------------------|----------------|:-----------:|:---:|:--:|:----:|---------------------------------------|
-|  1 | IoT                         | SIM5300e       | USART1	  | 95% | ✔  | ✔    | **Done**: See PCB Revision			|
-|  2 | GPS                         | Ublox NEO-6M   | USART2	  | ✔   | ✔  | ✔    | **Done**: Use long-cable antenna		|
-|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3	      | ✔   | ✔	 | ✔    | **Done**: AD0 pin should be grounded	|
-|  4 | Keyless/RF                  | nRF24L01 (semi)| SPI1		  | 75% | ✔  | ✔    | **Done**: Use semi module				|
-|  5 | Fingerprint                 | FZ3387         | UART4		  | ✔   | ✔	 |      | **Done**: Replace Q6 from NPN to PNP	|
-|  6 | RTC                         | ST-RTC		    | RTC		  | ✔   | ✔  | ✔    | **Done**								|
-|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -			  | ✔   | ✔  | ✔    | **Done**								|
-|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3  | ✔   | ✔	 | ✔    | **Done**: Connect pin 41 to GND		|
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1		  | ✔   | ✔  | ✔    | **Done**								|
-| 10 | EEPROM                      | 24AA32A        | I2C2		  | ✔   | ✔  | ✔    | **Done**								|
-| 11 | Handlebar/Switch            | ST-EXTI        | PE		  | ✔   | ✔  |      | **Done**								|
-| 12 | Data Validator	           | ST-CRC        	| CRC		  | ✔   | -  | ✔    | **Done**								|
-| 13 | Backup Battery Monitor      | ST-ADC			| ADC1		  | ✔   | ✔  | ✔    | **Done** 								|
-| 14 | Encryption IoT & RF		   | ST-AES			| -  		  | 0%  | -	 |      | Waiting: Server & pocket keyless		|
-| 15 | Firmware upgrade OTA (FOTA) | ST-FLASH		| - 		  | 0%  | -  |      | Pending: Auxiliary					|
+| No | Sub Module                  | Chip           | ST-Periph.  | FW  | HW | Note		  				|
+|:--:|-----------------------------|----------------|:-----------:|:---:|:--:|--------------------------|
+|  1 | IoT                         | SIM5300e       | USART1	  | ✔   | ✔  | **Done**					|
+|  2 | GPS                         | Ublox NEO-6M   | USART2	  | ✔   | ✔  | **Done**					|
+|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3	      | ✔   | ✔	 | **Done**					|
+|  4 | Keyless/RF                  | nRF24L01 		| SPI1		  | ✔   | ✔  | **Done**: Semi module	|
+|  5 | Fingerprint                 | FZ3387         | UART4		  | ✔   | ✔	 | **Done**					|
+|  6 | RTC                         | -			    | RTC		  | ✔   | ✔  | **Done**					|
+|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -			  | ✔   | ✔  | **Done**					|
+|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3  | ✔   | ✔	 | **Done**					|
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1		  | ✔   | ✔  | **Done**					|
+| 10 | EEPROM                      | 24AA32A        | I2C2		  | ✔   | ✔  | **Done**					|
+| 11 | Handlebar/Switch            | -		        | EXTI-PE	  | ✔   | ✔  | **Done**					|
+| 12 | Data Validator	           | -      	  	| CRC		  | ✔   | -  | **Done**					|
+| 13 | Backup Battery Monitor      | -				| ADC1		  | ✔   | ✔  | **Done** 				|
+| 14 | Debugging Buzzer			   | -				| TIM10-PWM	  | ✔   | ✔  | **Done** 				|
+| 15 | Encryption RF			   | -				| AES  		  | ✔   | -	 | **Done**					|
+| 16 | Firmware upgrade OTA (FOTA) | -				| FLASH		  | 0%  | -  | On-Progress				|
+| 17 | Encryption IoT			   | -				| MbedTLS	  | 0%  | -	 | Waiting: Real Server		|

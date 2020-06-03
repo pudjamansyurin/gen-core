@@ -79,7 +79,7 @@ void EEPROM_ResetOrLoad(void) {
 
     } else {
         // save to EEPROM, first
-        EEPROM_UnitID(EE_CMD_W, RPT_UNITID);
+        EEPROM_UnitID(EE_CMD_W, VCU_UNITID);
         EEPROM_Odometer(EE_CMD_W, 0);
         for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
             EEPROM_SequentialID(EE_CMD_W, 0, type);

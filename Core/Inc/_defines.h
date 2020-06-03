@@ -29,7 +29,7 @@
 #define VCU_FIRMWARE_VERSION       	            "0.7"
 #define VCU_VENDOR                              "GEN Indonesia"
 #define VCU_BUILD_YEAR                          20U
-#define VCU_ACTIVATE_LOST_MODE		            120U				// in second
+#define VCU_UNITID                              354313U
 
 #define NET_BOOT_TIMEOUT                        7000U               // in ms
 #define NET_EXTRA_TIME                          1000U               // in ms
@@ -53,9 +53,9 @@
 
 #define RPT_INTERVAL_SIMPLE                     5U                  // in second
 #define RPT_INTERVAL_FULL                       20U                 // in second
-#define RPT_INTERVAL_INDEPENDENT                5U					// in second
-#define RPT_INTERVAL_LOST				        10U					// in second
-#define RPT_UNITID                              354313U
+#define RPT_INTERVAL_INDEPENDENT                10U					// in second
+#define RPT_INTERVAL_LOST				        60U					// in second
+#define VCU_ACTIVATE_LOST_MODE                  120U                // in second
 
 // Payload list (Keyless)
 #define KEYLESS_MSG_BROADCAST                   BIT(0)
