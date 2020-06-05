@@ -53,9 +53,9 @@
 
 #define RPT_INTERVAL_SIMPLE                     5U                  // in second
 #define RPT_INTERVAL_FULL                       20U                 // in second
-#define RPT_INTERVAL_INDEPENDENT                10U					// in second
-#define RPT_INTERVAL_LOST				        60U					// in second
-#define VCU_ACTIVATE_LOST_MODE                  120U                // in second
+#define RPT_INTERVAL_INDEPENDENT                5U					// in second
+#define RPT_INTERVAL_LOST				        5U					// in second
+#define VCU_ACTIVATE_LOST_MODE                  300U                // in second
 
 // Payload list (Keyless)
 #define KEYLESS_MSG_BROADCAST                   BIT(0)
@@ -101,6 +101,7 @@
 #define EVT_KEYLESS_PAIRING						BIT(1)
 #define EVT_SWITCH_TRIGGERED					BIT(0)
 #define EVT_SWITCH_REG_5V_IRQ                	BIT(1)
+#define EVT_SWITCH_STARTER_IRQ                  BIT(2)
 #define EVT_SWITCH_KNOB_IRQ                  	BIT(2)
 #define EVT_HMI2POWER_CHANGED					BIT(0)
 

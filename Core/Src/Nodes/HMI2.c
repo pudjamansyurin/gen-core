@@ -51,7 +51,6 @@ void HMI2_PowerOverCan(uint8_t state) {
     // past to thread handler
     HMI2.d.power = state;
     osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
-//	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !state);
 }
 
 /* ====================================== THREAD =================================== */

@@ -4,6 +4,10 @@
  *  Created on: Aug 14, 2019
  *      Author: Puja
  */
+
+// FIXME: if you want to use MQTT
+// https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/transport.c
+// https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/pub0sub1.c
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_simcom.h"
 #include "DMA/_dma_simcom.h"

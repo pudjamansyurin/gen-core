@@ -79,13 +79,13 @@
   - [ ] Add finger throttle  and events, max 6 times failed within 30 second
   - [?] Keyless.BEEP turn on Horn & Sein Lamp (toggle the HORN_PWR)
   - [ ] Handle Starter Button
+  - [ ] Handle Gyroscope crash & fall to switched OFF BMS & MCU
   - [?] Handle BMS.Fan when BMS temperature is overheat	
   - [?] Handle SOLENOID_PWR by Keyless.Seat
   - [?] VCU Lost Mode / Independent (NO BMS more thant 2 minutes)
     - [?] Send event "Unauthorized Battery Removal" 
     - [ ] Sleep every 1 hour, just wakeup to Send Data
     - [ ] When wakeup, only turn ON: VCU, GPS & SIMCOM
-  - [ ] Handle Gyroscope crash & fall to switched OFF BMS & MCU
   - [x] ~~MCU Power control with GPIO ?~~
     - [x] Controlled by BMS_WAKEUP (by 63V power)
   - [x] SteerLock & Kickstand use GPIO of KNOB_IRQ

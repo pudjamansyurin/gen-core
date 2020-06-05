@@ -36,6 +36,7 @@ vcu_t VCU = {
 /* Public functions implementation --------------------------------------------*/
 void VCU_Init(void) {
     // reset VCU data
+    VCU.d.state.vehicle = VEHICLE_INDEPENDENT;
     VCU.d.state.starter = 0;
     VCU.d.state.knob = 0;
     VCU.d.state.independent = 1;

@@ -1221,10 +1221,8 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_WritePin(GPIOC, EXT_FINGER_MCU_PWR_Pin | EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
 
     /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, GPIO_PIN_SET);
-
-    /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOB, INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin | INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin
+            | INT_KEYLESS_PWR_Pin, GPIO_PIN_RESET);
 
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOD, EXT_GPIO_OUT1_Pin | SYS_LED_Pin | INT_CAN_PWR_Pin | INT_AUDIO_RST_Pin, GPIO_PIN_RESET);
@@ -1236,11 +1234,11 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_WritePin(GPIOD, EXT_BMS_WAKEUP_Pin | EXT_BMS_FAN_PWR_Pin, GPIO_PIN_SET);
 
     /*Configure GPIO pins : EXT_HBAR_SELECT_Pin EXT_HBAR_SET_Pin EXT_HBAR_REVERSE_Pin EXT_ABS_IRQ_Pin
-     EXT_KNOB_IRQ_Pin EXT_STARTER_IRQ_Pin EXT_HBAR_LAMP_Pin EXT_REG_5V_IRQ_Pin
-     EXT_HBAR_SEIN_L_Pin EXT_HBAR_SEIN_R_Pin */
+     EXT_KNOB_IRQ_Pin EXT_HBAR_LAMP_Pin EXT_REG_5V_IRQ_Pin EXT_HBAR_SEIN_L_Pin
+     EXT_HBAR_SEIN_R_Pin */
     GPIO_InitStruct.Pin = EXT_HBAR_SELECT_Pin | EXT_HBAR_SET_Pin | EXT_HBAR_REVERSE_Pin | EXT_ABS_IRQ_Pin
-            | EXT_KNOB_IRQ_Pin | EXT_STARTER_IRQ_Pin | EXT_HBAR_LAMP_Pin | EXT_REG_5V_IRQ_Pin
-            | EXT_HBAR_SEIN_L_Pin | EXT_HBAR_SEIN_R_Pin;
+            | EXT_KNOB_IRQ_Pin | EXT_HBAR_LAMP_Pin | EXT_REG_5V_IRQ_Pin | EXT_HBAR_SEIN_L_Pin
+            | EXT_HBAR_SEIN_R_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -1267,24 +1265,24 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : PB0 PB12 PB13 */
-    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_12 | GPIO_PIN_13;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
     /*Configure GPIO pin : EXT_SOLENOID_PWR_Pin */
     GPIO_InitStruct.Pin = EXT_SOLENOID_PWR_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(EXT_SOLENOID_PWR_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : EXT_FINGER_IRQ_Pin */
-    GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin;
+    /*Configure GPIO pin : BOOT1_Pin */
+    GPIO_InitStruct.Pin = BOOT1_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pins : EXT_FINGER_IRQ_Pin EXT_STARTER_IRQ_Pin */
+    GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin | EXT_STARTER_IRQ_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-    HAL_GPIO_Init(EXT_FINGER_IRQ_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
     /*Configure GPIO pin : INT_GYRO_IRQ_Pin */
     GPIO_InitStruct.Pin = INT_GYRO_IRQ_Pin;
@@ -1297,6 +1295,12 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(INT_KEYLESS_IRQ_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pins : PB12 PB13 */
+    GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_13;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /*Configure GPIO pins : INT_NET_RST_Pin INT_NET_DTR_Pin INT_GYRO_PWR_Pin INT_KEYLESS_PWR_Pin */
     GPIO_InitStruct.Pin = INT_NET_RST_Pin | INT_NET_DTR_Pin | INT_GYRO_PWR_Pin | INT_KEYLESS_PWR_Pin;
@@ -1382,6 +1386,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         if (GPIO_Pin == EXT_REG_5V_IRQ_Pin) {
             osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_REG_5V_IRQ);
         }
+        // handle Starter Button
+        if (GPIO_Pin == EXT_STARTER_IRQ_Pin) {
+            osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_STARTER_IRQ);
+        }
         // handle KNOB IRQ (Power control for HMI1 & HMI2)
         if (GPIO_Pin == EXT_KNOB_IRQ_Pin) {
             osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_KNOB_IRQ);
@@ -1430,21 +1438,23 @@ void StartManagerTask(void *argument)
     VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
     // Threads management:
-//    osThreadSuspend(IotTaskHandle);
-//    osThreadSuspend(ReporterTaskHandle);
-//    osThreadSuspend(CommandTaskHandle);
-//    osThreadSuspend(GpsTaskHandle);
-//    osThreadSuspend(GyroTaskHandle);
-//    osThreadSuspend(KeylessTaskHandle);
-//    osThreadSuspend(FingerTaskHandle);
-//    osThreadSuspend(AudioTaskHandle);
-//    osThreadSuspend(SwitchTaskHandle);
-//    osThreadSuspend(CanRxTaskHandle);
-//    osThreadSuspend(CanTxTaskHandle);
-//    osThreadSuspend(Hmi2PowerTaskHandle);
+    //    osThreadSuspend(IotTaskHandle);
+    //    osThreadSuspend(ReporterTaskHandle);
+    //    osThreadSuspend(CommandTaskHandle);
+    //    osThreadSuspend(GpsTaskHandle);
+    //    osThreadSuspend(GyroTaskHandle);
+    //    osThreadSuspend(KeylessTaskHandle);
+    //    osThreadSuspend(FingerTaskHandle);
+    //    osThreadSuspend(AudioTaskHandle);
+    //    osThreadSuspend(SwitchTaskHandle);
+    //    osThreadSuspend(CanRxTaskHandle);
+    //    osThreadSuspend(CanTxTaskHandle);
+    //    osThreadSuspend(Hmi2PowerTaskHandle);
 
-// Release threads
+    // Release threads
     osEventFlagsSet(GlobalEventHandle, EVENT_READY);
+
+    //    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
     /* Infinite loop */
     for (;;) {
@@ -1910,6 +1920,12 @@ void StartGyroTask(void *argument)
             _LedWrite(decider.fall.state);
         }
 
+        // Handle for both event
+        if (decider.crash.state || decider.fall.state) {
+            // Turn OFF BMS (+ MCU)
+
+        }
+
         // Periodic interval
         osDelayUntil(lastWake + pdMS_TO_TICKS(100));
     }
@@ -2046,8 +2062,9 @@ void StartFingerTask(void *argument)
             // Scan existing finger
             if (notif & EVT_FINGER_PLACED) {
                 id = Finger_AuthFast();
+                // Finger is registered
                 if (id >= 0) {
-                    // Finger is registered
+                    // FIXME: use vehicle_state
                     VCU.d.state.knob = !VCU.d.state.knob;
 
                     // Finger Heart-Beat
@@ -2198,6 +2215,12 @@ void StartSwitchTask(void *argument)
             // BMS Power IRQ
             if (notif & EVT_SWITCH_REG_5V_IRQ) {
                 // independent mode activated
+
+            }
+            // Starter Button IRQ
+            if (notif & EVT_SWITCH_STARTER_IRQ) {
+                // check KNOB, KickStand, Keyless, Fingerprint
+
             }
             // KNOB IRQ
             if (notif & EVT_SWITCH_KNOB_IRQ) {
@@ -2367,18 +2390,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
-  /* USER CODE BEGIN 6 */
+{
+    /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

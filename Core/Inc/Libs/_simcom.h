@@ -13,8 +13,6 @@
 #include "_reporter.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define SIMCOM_DEBUG                    0
-
 #define SIMCOM_RSP_NONE                 "\r\n"
 #define SIMCOM_RSP_SEND 				">"
 #define SIMCOM_RSP_SENT					"SEND OK\r"
@@ -23,7 +21,7 @@
 #define SIMCOM_RSP_READY 				"RDY"
 #define SIMCOM_RSP_IPD                  "+IPD,"
 #define SIMCOM_CMD_BOOT 				"AT\r"
-
+#define SIMCOM_DEBUG                    1
 #define SIMCOM_MAX_UPLOAD_RETRY         3
 
 /* Exported enum -------------------------------------------------------------*/
