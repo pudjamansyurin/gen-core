@@ -1731,10 +1731,6 @@ void StartCommandTask(void *argument)
                             EEPROM_UnitID(EE_CMD_W, (uint32_t) command.data.value);
                             break;
 
-                        case CMD_REPORT_INTERVAL:
-                            VCU.d.interval = (uint16_t) command.data.value;
-                            break;
-
                         default:
                             response.data.code = RESPONSE_STATUS_INVALID;
                             break;

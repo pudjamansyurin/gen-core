@@ -124,7 +124,6 @@
 #define CMD_REPORT_RTC                          0
 #define CMD_REPORT_ODOM                         1
 #define CMD_REPORT_UNITID                       2
-#define CMD_REPORT_INTERVAL                     3
 
 #define CMD_AUDIO_BEEP                          0
 #define CMD_AUDIO_MUTE                         	1
