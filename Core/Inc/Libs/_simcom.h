@@ -49,12 +49,15 @@ typedef enum {
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
     SIMCOM_STATE state;
+    uint8_t uploading;
+    uint8_t commando;
+    PAYLOAD_TYPE payload_type;
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t Simcom_SetState(SIMCOM_STATE state);
 char* Simcom_Response(char *str);
-SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
+SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size);
 SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size);
 SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 void Simcom_Lock(void);

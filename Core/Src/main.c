@@ -1433,10 +1433,6 @@ void StartManagerTask(void *argument)
     HMI2.Init();
     EEPROM_ResetOrLoad();
 
-    // Check GPIOs state
-    VCU.CheckMainPower();
-    VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
-
     // Threads management:
     //    osThreadSuspend(IotTaskHandle);
     //    osThreadSuspend(ReporterTaskHandle);
@@ -1501,11 +1497,15 @@ void StartIotTask(void *argument)
     uint32_t notif;
 
     SIMCOM_RESULT p;
+    PAYLOAD_TYPE type;
+    extern sim_t SIM;
 
     osMessageQueueId_t *pQueue;
     header_t *pHeader;
     void *pPayload;
-    const uint8_t size = sizeof(report.header.prefix) + sizeof(report.header.crc) + sizeof(report.header.size);
+    const uint8_t size = sizeof(report.header.prefix)
+            + sizeof(report.header.crc)
+            + sizeof(report.header.size);
 
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -1520,7 +1520,7 @@ void StartIotTask(void *argument)
         // Upload Report & Response Payload
         if (Simcom_SetState(SIM_STATE_SERVER_ON)) {
             // Iterate between REPORT & RESPONSE
-            for (uint8_t type = 0; type <= PAYLOAD_MAX; type++) {
+            for (type = 0; type <= PAYLOAD_MAX; type++) {
                 // decide the payload
                 if (type == PAYLOAD_REPORT) {
                     pQueue = &ReportQueueHandle;
@@ -1559,7 +1559,7 @@ void StartIotTask(void *argument)
                     }
 
                     // Send to server
-                    p = Simcom_Upload(pPayload, size + pHeader->size);
+                    p = Simcom_Upload(type, pPayload, size + pHeader->size);
 
                     // Handle looping NACK
                     if (p == SIM_RESULT_NACK) {
@@ -1571,6 +1571,11 @@ void StartIotTask(void *argument)
 
                     // Release back
                     if (p == SIM_RESULT_OK) {
+                        // reset commando flag
+                        if (type == PAYLOAD_RESPONSE) {
+                            SIM.commando = 0;
+                        }
+
                         EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
                         pending[type] = 0;
                     }
@@ -2167,8 +2172,11 @@ void StartSwitchTask(void *argument)
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-    // Initialize
+    // Initialise
     HBAR_ReadStates();
+    // Check GPIOs state
+    VCU.CheckMainPower();
+    VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
     /* Infinite loop */
     for (;;) {

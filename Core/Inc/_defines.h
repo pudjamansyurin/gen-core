@@ -32,7 +32,7 @@
 #define VCU_UNITID                              354313U
 
 #define NET_BOOT_TIMEOUT                        7000U               // in ms
-#define NET_EXTRA_TIME                          1000U               // in ms
+#define NET_EXTRA_TIME                          0U                  // in ms
 #define NET_REPEAT_DELAY                        5000U               // in ms
 #define NET_REPEAT_MAX							2U
 
@@ -53,9 +53,9 @@
 
 #define RPT_INTERVAL_SIMPLE                     5U                  // in second
 #define RPT_INTERVAL_FULL                       20U                 // in second
-#define RPT_INTERVAL_INDEPENDENT                5U					// in second
-#define RPT_INTERVAL_LOST				        5U					// in second
-#define VCU_ACTIVATE_LOST_MODE                  300U                // in second
+#define RPT_INTERVAL_INDEPENDENT                10U					// in second
+#define RPT_INTERVAL_LOST				        60U					// in second
+#define VCU_ACTIVATE_LOST_MODE                  120U                // in second
 
 // Payload list (Keyless)
 #define KEYLESS_MSG_BROADCAST                   BIT(0)
@@ -160,7 +160,9 @@
 
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {
-    PAYLOAD_RESPONSE = 0, PAYLOAD_REPORT = 1, PAYLOAD_MAX = 1,
+    PAYLOAD_RESPONSE = 0,
+    PAYLOAD_REPORT = 1,
+    PAYLOAD_MAX = 1,
 } PAYLOAD_TYPE;
 
 /* Exported struct --------------------------------------------------------------*/

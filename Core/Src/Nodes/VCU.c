@@ -70,7 +70,7 @@ uint8_t VCU_ReadEvent(uint64_t event_id) {
 }
 
 void VCU_CheckMainPower(void) {
-    TickType_t tick;
+    static TickType_t tick;
     static int8_t lastState = -1;
     uint8_t currentState;
 
