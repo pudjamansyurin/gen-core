@@ -315,7 +315,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 // =========== IP ATTACH
                 // Bring Up IP Connection
                 if (p) {
-                    p = Simcom_Command("AT+CIICR\r", NULL, 20000, 0);
+                    p = Simcom_Command("AT+CIICR\r", NULL, 10000, 0);
                 }
                 // Check IP Address
                 if (p) {
@@ -398,7 +398,6 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint32_t tick;
     char str[20];
-    command_t hCommand;
     header_t *hHeader = NULL;
 
     Simcom_Lock();
@@ -413,7 +412,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
         p = Simcom_Command(str, SIMCOM_RSP_SEND, 5000, 0);
         if (p) {
             // send the payload
-            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 20000, size);
+            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 10000, size);
             // wait for ACK/NACK
             if (p) {
                 // set timeout guard
@@ -422,37 +421,27 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
                 while (SIM.state >= SIM_STATE_SERVER_ON) {
                     if (Simcom_Response(PREFIX_ACK) ||
                             Simcom_Response(PREFIX_NACK) ||
-                            (osKernelGetTickCount() - tick) >= pdMS_TO_TICKS(30000)) {
+                            Simcom_Response(PREFIX_COMMAND) ||
+                            (osKernelGetTickCount() - tick) >= pdMS_TO_TICKS(10000)) {
                         break;
                     }
                     osDelay(10);
                 }
 
-                // exception handler
+                // handle SIMCOM result
                 if (Simcom_Response(PREFIX_ACK)) {
-                    p = SIM_RESULT_ACK;
-                } else if (Simcom_Response(PREFIX_NACK)) {
+                    p = SIM_RESULT_OK;
+
+                    // validate ACK
+                    hHeader = (header_t*) payload;
+                    if (!Simcom_ProcessACK(hHeader)) {
+                        p = SIM_RESULT_NACK;
+                    }
+                } else if (Simcom_Response(PREFIX_NACK) || Simcom_Response(PREFIX_COMMAND)) {
                     p = SIM_RESULT_NACK;
                 } else {
                     p = SIM_RESULT_TIMEOUT;
                 }
-            }
-        }
-
-        // handle SIMCOM result
-        if (p == SIM_RESULT_ACK) {
-            // validate ACK
-            hHeader = (header_t*) payload;
-            if (Simcom_ProcessACK(hHeader)) {
-                p = SIM_RESULT_OK;
-
-                // handle instruction (if any)
-                if (Simcom_ProcessInstruction(&hCommand)) {
-                    osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
-                }
-
-            } else {
-                p = SIM_RESULT_NACK;
             }
         }
     }
@@ -534,9 +523,14 @@ static SIMCOM_RESULT Simcom_ProcessInstruction(command_t *command) {
 
     Simcom_Lock();
     if (Simcom_Response(SIMCOM_RSP_IPD)) {
-        str = Simcom_Response(PREFIX_ACK);
         // get pointer reference
-        str = strstr(str + sizeof(ack_t), PREFIX_COMMAND);
+        str = Simcom_Response(PREFIX_ACK);
+        if (str) {
+            str = strstr(str + sizeof(ack_t), PREFIX_COMMAND);
+        } else {
+            str = Simcom_Response(PREFIX_COMMAND);
+        }
+
         if (str != NULL) {
             // copy the whole value (any time the buffer can change)
             *command = *(command_t*) str;
@@ -694,11 +688,18 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
 }
 
 static void Simcom_ClearBuffer(void) {
+    command_t hCommand;
+
     // handle things on every request
     //	LOG_StrLn("============ SIMCOM DEBUG ============");
     //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
     //	LOG_Enter();
     //	LOG_StrLn("======================================");
+
+    // handle instruction (if any)
+    if (Simcom_ProcessInstruction(&hCommand)) {
+        osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
+    }
 
     // reset rx buffer
     SIMCOM_Reset_Buffer();

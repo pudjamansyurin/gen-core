@@ -1497,7 +1497,7 @@ void StartIotTask(void *argument)
     osStatus_t status;
     report_t report;
     response_t response;
-    uint8_t retry, nack, pending[2] = { 0 };
+    uint8_t retry, pending[2] = { 0 };
     uint32_t notif;
 
     SIMCOM_RESULT p;
@@ -1531,52 +1531,6 @@ void StartIotTask(void *argument)
                 }
                 pHeader = (header_t*) pPayload;
 
-                // check report log
-                if (!pending[type]) {
-                    status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
-                    // check is mail ready
-                    if (status == osOK) {
-                        pending[type] = 1;
-                    }
-                }
-
-                // check is payload ready
-                if (pending[type]) {
-                    retry = SIMCOM_MAX_UPLOAD_RETRY;
-                    nack = 1;
-
-                    do {
-                        // Re-calculate CRC
-                        if (type == PAYLOAD_REPORT) {
-                            Report_SetCRC((report_t*) pPayload);
-                        } else {
-                            Response_SetCRC((response_t*) pPayload);
-                        }
-
-                        // Send to server
-                        p = Simcom_Upload(pPayload, size + pHeader->size);
-
-                        // Handle looping NACK
-                        if (p == SIM_RESULT_NACK) {
-                            if (nack++ >= SIMCOM_MAX_UPLOAD_RETRY) {
-                                // Probably  CRC not valid, cancel but force as success
-                                p = SIM_RESULT_OK;
-                            }
-                        }
-
-                        // Release back
-                        if (p == SIM_RESULT_OK) {
-                            EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
-                            pending[type] = 0;
-
-                            break;
-                        }
-
-                        // delay
-                        osDelay(500);
-                    } while (p != SIM_RESULT_OK && --retry);
-                }
-
                 // Handle Full Buffer
                 if (type == PAYLOAD_REPORT) {
                     notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny, 0);
@@ -1584,6 +1538,44 @@ void StartIotTask(void *argument)
                         pending[type] = 0;
                     }
                 }
+
+                // check report log
+                if (!pending[type]) {
+                    status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
+                    // check is mail ready
+                    if (status == osOK) {
+                        pending[type] = 1;
+                        retry = SIMCOM_MAX_UPLOAD_RETRY;
+                    }
+                }
+
+                // check is payload ready
+                if (pending[type]) {
+                    // Re-calculate CRC
+                    if (type == PAYLOAD_REPORT) {
+                        Report_SetCRC((report_t*) pPayload);
+                    } else {
+                        Response_SetCRC((response_t*) pPayload);
+                    }
+
+                    // Send to server
+                    p = Simcom_Upload(pPayload, size + pHeader->size);
+
+                    // Handle looping NACK
+                    if (p == SIM_RESULT_NACK) {
+                        // Probably  CRC not valid, cancel but force as success
+                        if (!retry--) {
+                            p = SIM_RESULT_OK;
+                        }
+                    }
+
+                    // Release back
+                    if (p == SIM_RESULT_OK) {
+                        EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
+                        pending[type] = 0;
+                    }
+                }
+
             }
         }
 
