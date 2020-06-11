@@ -12,6 +12,7 @@
 #include "Libs/_simcom.h"
 
 /* Exported enum -------------------------------------------------------------*/
+#define MAX_ENUM_SIZE                       0xFFFFFFFF
 typedef enum {
     ATW = 0,
     ATR,
@@ -20,30 +21,35 @@ typedef enum {
 typedef enum {
     CMEE_DISABLE = 0,
     CMEE_NUMERIC,
-    CMEE_VERBOSE
+    CMEE_VERBOSE,
+    CMEE_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CMEE;
 
 typedef enum {
     CSCLK_DISABLE = 0,
     CSCLK_EN_DTR,
-    CSCLK_EN_AUTO
+    CSCLK_EN_AUTO,
+    CSCLK_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CSCLK;
 
 typedef enum {
     CNMP_ACT_AUTO = 2,
     CNMP_ACT_GSM_ONLY = 13,
-    CNMP_ACT_UMTS_ONLY = 14
+    CNMP_ACT_UMTS_ONLY = 14,
+    CNMP_ACT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CNMP_MODE;
 
 typedef enum {
     CNMP_ACT_P_GSM = 13,
-    CNMP_ACT_P_UMTS
+    CNMP_ACT_P_UMTS,
+    CNMP_ACT_P_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CNMP_PREFERRED;
 
 typedef enum {
     CREG_MODE_DISABLE = 0,
     CREG_MODE_ENABLE,
     CREG_MODE_EN_LOCATION,
+    CREG_MODE_ForceEnumSize = MAX_ENUM_SIZE
 } AT_C_GREG_MODE;
 
 typedef enum {
@@ -52,22 +58,26 @@ typedef enum {
     CREG_STAT_SEARCHING,
     CREG_STAT_REG_DENIED,
     CREG_STAT_UNKNOWN,
-    CREG_STAT_REG_ROAMING
+    CREG_STAT_REG_ROAMING,
+    CREG_STAT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_C_GREG_STAT;
 
 typedef enum {
     CGATT_DETACHED = 0,
-    CGATT_ATTACHED
+    CGATT_ATTACHED,
+    CGATT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CGATT;
 
 typedef enum {
     CIPMODE_NORMAL = 0,
-    CIPMODE_TRANSPARENT
+    CIPMODE_TRANSPARENT,
+    CIPMODE_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CIPMODE;
 
 typedef enum {
     CIPMUX_SINGLE_IP = 0,
-    CIPMUX_MULTI_IP
+    CIPMUX_MULTI_IP,
+    CIPMUX_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CIPMUX;
 
 typedef enum {
@@ -75,7 +85,8 @@ typedef enum {
     CIPRXGET_ENABLE,
     CIPRXGET_EN_1460B,
     CIPRXGET_EN_HEX_730B,
-    CIPRXGET_QUERY
+    CIPRXGET_QUERY,
+    CIPRXGET_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CIPRXGET;
 
 typedef enum {
@@ -86,7 +97,8 @@ typedef enum {
     CAT_ACT_UTRAN_HSDPA,
     CAT_ACT_UTRAN_HSUPA,
     CAT_ACT_UTRAN_HSDPA_AND_HSUPA,
-    CAT_ACT_E_UTRAN
+    CAT_ACT_E_UTRAN,
+    CAT_ACT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CSACT_ACT;
 
 typedef enum {
@@ -100,7 +112,8 @@ typedef enum {
     CIPSTAT_CLOSING,
     CIPSTAT_CLOSED,
     CIPSTAT_PDP_DEACT,
-    CIPSTAT_UNKNOWN
+    CIPSTAT_UNKNOWN,
+    CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CIPSTATUS;
 
 typedef enum {
@@ -108,14 +121,16 @@ typedef enum {
     SAPBR_BEARER_OPEN,
     SAPBR_BEARER_QUERY,
     SAPBR_PARAMETERS_SET,
-    SAPBR_PARAMETERS_GET
+    SAPBR_PARAMETERS_GET,
+    SAPBR_ForceEnumSize = MAX_ENUM_SIZE
 } AT_SAPBR_CMD;
 
 typedef enum {
     SAPBR_CONNECTING = 0,
     SAPBR_CONNECTED,
     SAPBR_CLOSING,
-    SAPBR_CLOSED
+    SAPBR_CLOSED,
+    SAPBR_STATUS_ForceEnumSize = MAX_ENUM_SIZE
 } AT_SAPBR_STATUS;
 
 typedef enum {
@@ -137,17 +152,20 @@ typedef enum {
     FTP_ERROR_OPERATE,
     FTP_ERROR_UPLOAD,
     FTP_ERROR_DOWNLOAD,
-    FTP_ERROR_QUIT
+    FTP_ERROR_QUIT,
+    FTP_ForceEnumSize = MAX_ENUM_SIZE
 } AT_FTPGET_STATE;
 
 typedef enum {
     FTPGET_OPEN = 1,
     FTPGET_READ,
+    FTPGET_ForceEnumSize = MAX_ENUM_SIZE
 } AT_FTPGET_MODE;
 
 typedef enum {
     AT_DISABLE = 0,
-    AT_ENABLE
+    AT_ENABLE,
+    AT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_BOOL;
 
 /* Exported struct -----------------------------------------------------------*/
@@ -201,31 +219,42 @@ typedef struct {
 } at_ftpget_t;
 
 typedef struct {
+    int32_t id;
+    char server[30];
+    char username[30];
+    char password[20];
+    char path[20];
+    char file[20];
+} at_ftp_t;
+
+typedef struct {
     char address[20];
 } at_cifsr_t;
 
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
-SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
-SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
 SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
+SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
+SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
 SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param);
-SIMCOM_RESULT AT_DownloadFile(at_ftpget_t *param);
+SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
+SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
+SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
+SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);
+SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm);
+
+SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t *param);
+
+SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
 SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state);
 SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state);
 SIMCOM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state);
-SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
-SIMCOM_RESULT AT_NetworkRegistrationStatus(AT_MODE mode, at_c_greg_t *param);
-SIMCOM_RESULT AT_NetworkRegistration(AT_MODE mode, at_c_greg_t *param);
-SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
-SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);
 SIMCOM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state);
 SIMCOM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state);
-SIMCOM_RESULT AT_GetLocalTimestamp(AT_MODE mode, AT_BOOL *state);
+SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state);
 SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state);
 SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state);
 SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate);
-SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm);
 #endif /* INC_LIBS__AT_H_ */

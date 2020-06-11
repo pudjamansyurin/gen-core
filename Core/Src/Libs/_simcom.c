@@ -141,7 +141,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 // Enable time reporting
                 if (p) {
                     AT_BOOL state = AT_ENABLE;
-                    p = AT_GetLocalTimestamp(ATW, &state);
+                    p = AT_EnableLocalTimestamp(ATW, &state);
                 }
                 // Enable “+IPD” header
                 if (p) {
@@ -190,7 +190,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                             .mode = CREG_MODE_DISABLE,
                             .stat = CREG_STAT_REG_HOME
                     };
-                    p = AT_NetworkRegistration(ATW, &param);
+                    p = AT_NetworkRegistration("CREG", ATW, &param);
 
 //                    // wait until attached
 //                    if (p) {
@@ -228,7 +228,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                             .mode = CREG_MODE_DISABLE,
                             .stat = CREG_STAT_REG_HOME
                     };
-                    p = AT_NetworkRegistrationStatus(ATW, &param);
+                    p = AT_NetworkRegistration("CGREG", ATW, &param);
 
 //                    // wait until attached
 //                    if (p) {
@@ -468,10 +468,12 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
     return p;
 }
 
+// FIXME: remove me
+char buffer[1024];
 SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     at_sapbr_t param;
-    char str[50];
+    uint8_t len = 0;
 
     Simcom_Lock();
     // send command
@@ -480,53 +482,50 @@ SIMCOM_RESULT Simcom_FOTA(void) {
 
         // BEARER connected
         if (p && param.status == SAPBR_CONNECTED) {
-            p = Simcom_Command("AT+FTPCID=1\r", NULL, 500, 0);
+            at_ftp_t param = {
+                    .id = 1,
+                    .server = NET_FTP_SERVER,
+                    .username = NET_FTP_USERNAME,
+                    .password = NET_FTP_PASSWORD,
+                    .path = "/vcu/",
+                    .file = "app-1.0.2.txt"
+            };
+            p = AT_FtpInitialize(&param);
 
-            // set server & credential
-            if (p) {
-                sprintf(str, "AT+FTPSERV=\"%s\"\r", NET_FTP_SERVER);
-                p = Simcom_Command(str, NULL, 500, 0);
-            }
-            if (p) {
-                sprintf(str, "AT+FTPUN=\"%s\"\r", NET_FTP_USERNAME);
-                p = Simcom_Command(str, NULL, 500, 0);
-            }
-            if (p) {
-                sprintf(str, "AT+FTPPW=\"%s\"\r", NET_FTP_PASSWORD);
-                p = Simcom_Command(str, NULL, 500, 0);
-            }
-            // set path & file
-            if (p) {
-                sprintf(str, "AT+FTPGETPATH=\"%s\"\r", "/vcu/");
-                p = Simcom_Command(str, NULL, 500, 0);
-            }
-            if (p) {
-                sprintf(str, "AT+FTPGETNAME=\"application-%s.txt\"\r", "1.0.2");
-                p = Simcom_Command(str, NULL, 500, 0);
-            }
             // open ftp session
             if (p) {
                 at_ftpget_t param = {
                         .mode = FTPGET_OPEN,
-                        .reqlength = 1024
+                        .reqlength = 2
                 };
-                p = AT_DownloadFile(&param);
+                p = AT_FtpDownload(&param);
 
-                // get ftp session state
+                // cehck state
                 if (p && param.state == FTP_READY) {
                     param.mode = FTPGET_READ;
-
                     // read file
-                    LOG_Str("Simcom:FileContent = ");
                     do {
-                        p = AT_DownloadFile(&param);
+                        p = AT_FtpDownload(&param);
 
+                        // fill buffer
                         if (param.cnflength) {
-                            LOG_Buf(param.ptr, param.cnflength);
+                            memcpy(&buffer[len], param.ptr, param.cnflength);
+                            len += param.cnflength;
+
                             osDelay(100);
                         }
                     } while (p && param.cnflength);
-                    LOG_Enter();
+
+                    // buffer filled
+                    if (p && len) {
+                        LOG_Str("Simcom:FileContent = ");
+                        LOG_Buf(buffer, len);
+                        LOG_Enter();
+                    }
+
+                    // close session
+                    p = Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
+
                 }
             }
         }
