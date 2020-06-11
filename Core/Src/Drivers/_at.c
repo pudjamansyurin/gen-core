@@ -452,7 +452,7 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
 
         // Write
         if (mode == ATW) {
-            if (tmp.mode != param->mode) {
+            if (memcmp(&tmp, param, sizeof(tmp)) != 0) {
                 sprintf(cmd, "AT+%s=%d\r", command, param->mode);
                 p = AT_CmdWrite(cmd, 500, NULL);
             }

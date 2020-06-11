@@ -191,26 +191,6 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                             .stat = CREG_STAT_REG_HOME
                     };
                     p = AT_NetworkRegistration("CREG", ATW, &param);
-
-//                    // wait until attached
-//                    if (p) {
-//                        iteration = 0;
-//                        while (param.stat != CREG_STAT_REG_HOME) {
-//                            p = AT_NetworkRegistration(ATW, &param);
-//
-//                            if (p) {
-//                                if (iteration < NET_REPEAT_MAX) {
-//                                    Simcom_IdleJob(&iteration);
-//                                    osDelay(NET_REPEAT_DELAY);
-//                                } else {
-//                                    p = SIM_RESULT_ERROR;
-//                                    break;
-//                                }
-//                            } else {
-//                                break;
-//                            }
-//                        }
-//                    }
                 }
 
                 // upgrade simcom state
@@ -229,26 +209,6 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                             .stat = CREG_STAT_REG_HOME
                     };
                     p = AT_NetworkRegistration("CGREG", ATW, &param);
-
-//                    // wait until attached
-//                    if (p) {
-//                        iteration = 0;
-//                        while (param.stat != CREG_STAT_REG_HOME) {
-//                            p = AT_NetworkRegistrationStatus(ATW, &param);
-//
-//                            if (p) {
-//                                if (iteration < NET_REPEAT_MAX) {
-//                                    Simcom_IdleJob(&iteration);
-//                                    osDelay(NET_REPEAT_DELAY);
-//                                } else {
-//                                    p = SIM_RESULT_ERROR;
-//                                    break;
-//                                }
-//                            } else {
-//                                break;
-//                            }
-//                        }
-//                    }
                 }
 
                 // upgrade simcom state
@@ -474,6 +434,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     at_sapbr_t param;
     uint8_t len = 0;
+    uint32_t checksum;
 
     Simcom_Lock();
     // send command
@@ -491,42 +452,47 @@ SIMCOM_RESULT Simcom_FOTA(void) {
                     .file = "app-1.0.2.txt"
             };
             p = AT_FtpInitialize(&param);
+        }
 
-            // open ftp session
-            if (p) {
-                at_ftpget_t param = {
-                        .mode = FTPGET_OPEN,
-                        .reqlength = 2
-                };
-                p = AT_FtpDownload(&param);
+        // Open FTP Session
+        if (p) {
+            at_ftpget_t param = {
+                    .mode = FTPGET_OPEN,
+                    .reqlength = 4
+            };
+            p = AT_FtpDownload(&param);
 
-                // cehck state
-                if (p && param.state == FTP_READY) {
-                    param.mode = FTPGET_READ;
-                    // read file
-                    do {
-                        p = AT_FtpDownload(&param);
+            // Read FTP File
+            if (p && param.state == FTP_READY) {
+                param.mode = FTPGET_READ;
+                do {
+                    p = AT_FtpDownload(&param);
 
-                        // fill buffer
-                        if (param.cnflength) {
-                            memcpy(&buffer[len], param.ptr, param.cnflength);
-                            len += param.cnflength;
+                    // Copy to Independent Buffer
+                    if (param.cnflength) {
+                        memcpy(&buffer[len], param.ptr, param.cnflength);
 
-                            osDelay(100);
-                        }
-                    } while (p && param.cnflength);
-
-                    // buffer filled
-                    if (p && len) {
-                        LOG_Str("Simcom:FileContent = ");
-                        LOG_Buf(buffer, len);
-                        LOG_Enter();
+                        len += param.cnflength;
+                        osDelay(100);
                     }
+                } while (p && param.cnflength);
 
-                    // close session
-                    p = Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
+                // Buffer filled
+                if (p && len) {
+                    // Calculate CRC
+                    checksum = CRC_Calculate8((uint8_t*) buffer, len);
 
+                    // Indicator
+                    LOG_Str("Simcom:FileContent = ");
+                    LOG_Buf(buffer, len);
+                    LOG_Enter();
+                    LOG_Str("Simcom:Checksum = 0x");
+                    LOG_Hex32(checksum);
+                    LOG_Enter();
                 }
+
+                // Close session
+                p = Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
             }
         }
     }

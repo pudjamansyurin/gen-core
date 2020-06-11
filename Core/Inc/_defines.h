@@ -33,7 +33,6 @@
 
 #define NET_BOOT_TIMEOUT                        7000U               // in ms
 #define NET_EXTRA_TIME                          500U                // in ms
-#define NET_REPEAT_DELAY                        5000U               // in ms
 #define NET_REPEAT_MAX							2U
 
 #define NET_CON_APN                             "3gprs"             // "telkomsel"
