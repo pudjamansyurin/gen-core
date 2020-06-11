@@ -24,7 +24,6 @@ extern vcu_t VCU;
 /* Public variables ----------------------------------------------------------*/
 sim_t SIM = {
         .state = SIM_STATE_DOWN,
-        .uploading = 0,
         .commando = 0,
         .payload_type = PAYLOAD_REPORT,
 };
@@ -57,8 +56,8 @@ char* Simcom_Response(char *str) {
 
 uint8_t Simcom_SetState(SIMCOM_STATE state) {
     static uint8_t init = 1;
-    const uint8_t maxDepth = 3;
-    uint8_t iteration, depth = maxDepth;
+//    uint8_t iteration;
+    uint8_t depth = 3;
     SIMCOM_STATE lastState = SIM_STATE_DOWN;
     SIMCOM_RESULT p;
 
@@ -69,8 +68,8 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
         // Handle locked-loop
         if (SIM.state < lastState) {
             if (!--depth) {
-                depth = maxDepth;
                 SIM.state = SIM_STATE_DOWN;
+                break;
             }
             LOG_Str("Simcom:LockedLoop = ");
             LOG_Int(depth);
@@ -193,25 +192,25 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                     };
                     p = AT_NetworkRegistration(ATW, &param);
 
-                    // wait until attached
-                    if (p) {
-                        iteration = 0;
-                        while (param.stat != CREG_STAT_REG_HOME) {
-                            p = AT_NetworkRegistration(ATW, &param);
-
-                            if (p) {
-                                if (iteration < NET_REPEAT_MAX) {
-                                    Simcom_IdleJob(&iteration);
-                                    osDelay(NET_REPEAT_DELAY);
-                                } else {
-                                    p = SIM_RESULT_ERROR;
-                                    break;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-                    }
+//                    // wait until attached
+//                    if (p) {
+//                        iteration = 0;
+//                        while (param.stat != CREG_STAT_REG_HOME) {
+//                            p = AT_NetworkRegistration(ATW, &param);
+//
+//                            if (p) {
+//                                if (iteration < NET_REPEAT_MAX) {
+//                                    Simcom_IdleJob(&iteration);
+//                                    osDelay(NET_REPEAT_DELAY);
+//                                } else {
+//                                    p = SIM_RESULT_ERROR;
+//                                    break;
+//                                }
+//                            } else {
+//                                break;
+//                            }
+//                        }
+//                    }
                 }
 
                 // upgrade simcom state
@@ -231,25 +230,25 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                     };
                     p = AT_NetworkRegistrationStatus(ATW, &param);
 
-                    // wait until attached
-                    if (p) {
-                        iteration = 0;
-                        while (param.stat != CREG_STAT_REG_HOME) {
-                            p = AT_NetworkRegistrationStatus(ATW, &param);
-
-                            if (p) {
-                                if (iteration < NET_REPEAT_MAX) {
-                                    Simcom_IdleJob(&iteration);
-                                    osDelay(NET_REPEAT_DELAY);
-                                } else {
-                                    p = SIM_RESULT_ERROR;
-                                    break;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-                    }
+//                    // wait until attached
+//                    if (p) {
+//                        iteration = 0;
+//                        while (param.stat != CREG_STAT_REG_HOME) {
+//                            p = AT_NetworkRegistrationStatus(ATW, &param);
+//
+//                            if (p) {
+//                                if (iteration < NET_REPEAT_MAX) {
+//                                    Simcom_IdleJob(&iteration);
+//                                    osDelay(NET_REPEAT_DELAY);
+//                                } else {
+//                                    p = SIM_RESULT_ERROR;
+//                                    break;
+//                                }
+//                            } else {
+//                                break;
+//                            }
+//                        }
+//                    }
                 }
 
                 // upgrade simcom state
@@ -310,16 +309,30 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 // Set type of authentication for PDP connections of socket
                 if (p) {
                     at_cstt_t param = {
-                            .apn = "3gprs",								// "telkomsel"
-                            .username = "3gprs",					// "wap"
-                            .password = "3gprs",					// "wap123"
-                            };
+                            .apn = NET_CON_APN,
+                            .username = NET_CON_USERNAME,
+                            .password = NET_CON_PASSWORD,
+                    };
                     p = AT_ConfigureAPN(ATW, &param);
                 }
                 // =========== IP ATTACH
                 // Bring Up IP Connection
                 if (p) {
                     p = Simcom_Command("AT+CIICR\r", NULL, 10000, 0);
+                }
+                // =========== BEARER ATTACH
+                // Set bearer for TCP Based Application
+                if (p) {
+                    at_sapbr_t param = {
+                            .cmd_type = SAPBR_BEARER_OPEN,
+                            .status = SAPBR_CONNECTED,
+                            .con = {
+                                    .apn = NET_CON_APN,
+                                    .username = NET_CON_USERNAME,
+                                    .password = NET_CON_PASSWORD,
+                            },
+                    };
+                    p = AT_BearerSettings(ATW, &param);
                 }
                 // Check IP Address
                 if (p) {
@@ -400,9 +413,9 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 
 SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
+    header_t *hHeader = NULL;
     uint32_t tick;
     char str[20];
-    header_t *hHeader = NULL;
 
     // Check IP Status
     AT_ConnectionStatusSingle(&ipStatus);
@@ -410,7 +423,6 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
     sprintf(str, "AT+CIPSEND=%d\r", size);
 
     Simcom_Lock();
-    SIM.uploading = 1;
     SIM.payload_type = type;
 
     if (SIM.state >= SIM_STATE_SERVER_ON && ipStatus == CIPSTAT_CONNECT_OK) {
@@ -452,7 +464,74 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
         }
     }
 
-    SIM.uploading = 0;
+    Simcom_Unlock();
+    return p;
+}
+
+SIMCOM_RESULT Simcom_FOTA(void) {
+    SIMCOM_RESULT p = SIM_RESULT_ERROR;
+    at_sapbr_t param;
+    char str[50];
+
+    Simcom_Lock();
+    // send command
+    if (SIM.state >= SIM_STATE_INTERNET_ON) {
+        p = AT_BearerSettings(ATR, &param);
+
+        // BEARER connected
+        if (p && param.status == SAPBR_CONNECTED) {
+            p = Simcom_Command("AT+FTPCID=1\r", NULL, 500, 0);
+
+            // set server & credential
+            if (p) {
+                sprintf(str, "AT+FTPSERV=\"%s\"\r", NET_FTP_SERVER);
+                p = Simcom_Command(str, NULL, 500, 0);
+            }
+            if (p) {
+                sprintf(str, "AT+FTPUN=\"%s\"\r", NET_FTP_USERNAME);
+                p = Simcom_Command(str, NULL, 500, 0);
+            }
+            if (p) {
+                sprintf(str, "AT+FTPPW=\"%s\"\r", NET_FTP_PASSWORD);
+                p = Simcom_Command(str, NULL, 500, 0);
+            }
+            // set path & file
+            if (p) {
+                sprintf(str, "AT+FTPGETPATH=\"%s\"\r", "/vcu/");
+                p = Simcom_Command(str, NULL, 500, 0);
+            }
+            if (p) {
+                sprintf(str, "AT+FTPGETNAME=\"application-%s.txt\"\r", "1.0.2");
+                p = Simcom_Command(str, NULL, 500, 0);
+            }
+            // open ftp session
+            if (p) {
+                at_ftpget_t param = {
+                        .mode = FTPGET_OPEN,
+                        .reqlength = 1024
+                };
+                p = AT_DownloadFile(&param);
+
+                // get ftp session state
+                if (p && param.state == FTP_READY) {
+                    param.mode = FTPGET_READ;
+
+                    // read file
+                    LOG_Str("Simcom:FileContent = ");
+                    do {
+                        p = AT_DownloadFile(&param);
+
+                        if (param.cnflength) {
+                            LOG_Buf(param.ptr, param.cnflength);
+                            osDelay(100);
+                        }
+                    } while (p && param.cnflength);
+                    LOG_Enter();
+                }
+            }
+        }
+    }
+
     Simcom_Unlock();
     return p;
 }

@@ -14,19 +14,19 @@
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
     ATW = 0,
-    ATR = 1,
+    ATR,
 } AT_MODE;
 
 typedef enum {
     CMEE_DISABLE = 0,
-    CMEE_NUMERIC = 1,
-    CMEE_VERBOSE = 2
+    CMEE_NUMERIC,
+    CMEE_VERBOSE
 } AT_CMEE;
 
 typedef enum {
     CSCLK_DISABLE = 0,
-    CSCLK_EN_DTR = 1,
-    CSCLK_EN_AUTO = 2
+    CSCLK_EN_DTR,
+    CSCLK_EN_AUTO
 } AT_CSCLK;
 
 typedef enum {
@@ -37,75 +37,117 @@ typedef enum {
 
 typedef enum {
     CNMP_ACT_P_GSM = 13,
-    CNMP_ACT_P_UMTS = 14
+    CNMP_ACT_P_UMTS
 } AT_CNMP_PREFERRED;
 
 typedef enum {
     CREG_MODE_DISABLE = 0,
-    CREG_MODE_ENABLE = 1,
-    CREG_MODE_EN_LOCATION = 2,
+    CREG_MODE_ENABLE,
+    CREG_MODE_EN_LOCATION,
 } AT_C_GREG_MODE;
 
 typedef enum {
     CREG_STAT_NOT_REGISTERED = 0,
-    CREG_STAT_REG_HOME = 1,
-    CREG_STAT_SEARCHING = 2,
-    CREG_STAT_REG_DENIED = 3,
-    CREG_STAT_UNKNOWN = 4,
-    CREG_STAT_REG_ROAMING = 5
+    CREG_STAT_REG_HOME,
+    CREG_STAT_SEARCHING,
+    CREG_STAT_REG_DENIED,
+    CREG_STAT_UNKNOWN,
+    CREG_STAT_REG_ROAMING
 } AT_C_GREG_STAT;
 
 typedef enum {
     CGATT_DETACHED = 0,
-    CGATT_ATTACHED = 1
+    CGATT_ATTACHED
 } AT_CGATT;
 
 typedef enum {
     CIPMODE_NORMAL = 0,
-    CIPMODE_TRANSPARENT = 1,
+    CIPMODE_TRANSPARENT
 } AT_CIPMODE;
 
 typedef enum {
     CIPMUX_SINGLE_IP = 0,
-    CIPMUX_MULTI_IP = 1,
+    CIPMUX_MULTI_IP
 } AT_CIPMUX;
 
 typedef enum {
     CIPRXGET_DISABLE = 0,
-    CIPRXGET_ENABLE = 1,
-    CIPRXGET_EN_1460B = 2,
-    CIPRXGET_EN_HEX_730B = 3,
-    CIPRXGET_QUERY = 4,
+    CIPRXGET_ENABLE,
+    CIPRXGET_EN_1460B,
+    CIPRXGET_EN_HEX_730B,
+    CIPRXGET_QUERY
 } AT_CIPRXGET;
 
 typedef enum {
     CAT_ACT_GSM = 0,
-    CAT_ACT_GSM_COMPACT = 1,
-    CAT_ACT_UTRAN = 2,
-    CAT_ACT_GSM_EDGE = 3,
-    CAT_ACT_UTRAN_HSDPA = 4,
-    CAT_ACT_UTRAN_HSUPA = 5,
-    CAT_ACT_UTRAN_HSDPA_AND_HSUPA = 6,
-    CAT_ACT_E_UTRAN = 7
+    CAT_ACT_GSM_COMPACT,
+    CAT_ACT_UTRAN,
+    CAT_ACT_GSM_EDGE,
+    CAT_ACT_UTRAN_HSDPA,
+    CAT_ACT_UTRAN_HSUPA,
+    CAT_ACT_UTRAN_HSDPA_AND_HSUPA,
+    CAT_ACT_E_UTRAN
 } AT_CSACT_ACT;
 
 typedef enum {
     CIPSTAT_IP_INITIAL = 0,
-    CIPSTAT_IP_START = 1,
-    CIPSTAT_IP_CONFIG = 2,
-    CIPSTAT_IP_GPRSACT = 3,
-    CIPSTAT_IP_STATUS = 4,
-    CIPSTAT_CONNECTING = 5,
-    CIPSTAT_CONNECT_OK = 6,
-    CIPSTAT_CLOSING = 7,
-    CIPSTAT_CLOSED = 8,
-    CIPSTAT_PDP_DEACT = 9,
-    CIPSTAT_UNKNOWN = 10,
+    CIPSTAT_IP_START,
+    CIPSTAT_IP_CONFIG,
+    CIPSTAT_IP_GPRSACT,
+    CIPSTAT_IP_STATUS,
+    CIPSTAT_CONNECTING,
+    CIPSTAT_CONNECT_OK,
+    CIPSTAT_CLOSING,
+    CIPSTAT_CLOSED,
+    CIPSTAT_PDP_DEACT,
+    CIPSTAT_UNKNOWN
 } AT_CIPSTATUS;
 
 typedef enum {
+    SAPBR_BEARER_CLOSE = 0,
+    SAPBR_BEARER_OPEN,
+    SAPBR_BEARER_QUERY,
+    SAPBR_PARAMETERS_SET,
+    SAPBR_PARAMETERS_GET
+} AT_SAPBR_CMD;
+
+typedef enum {
+    SAPBR_CONNECTING = 0,
+    SAPBR_CONNECTED,
+    SAPBR_CLOSING,
+    SAPBR_CLOSED
+} AT_SAPBR_STATUS;
+
+typedef enum {
+    FTP_FINISH = 0,
+    FTP_READY,
+    FTP_ERROR_NET = 61,
+    FTP_ERROR_DNS,
+    FTP_ERROR_CONNECT,
+    FTP_ERROR_TIMEOUT,
+    FTP_ERROR_SERVER,
+    FTP_ERROR_OPERATION_NOT_ALLOW,
+    FTP_ERROR_REPLAY,
+    FTP_ERROR_USER,
+    FTP_ERROR_PASSWORD,
+    FTP_ERROR_TYPE,
+    FTP_ERROR_REST,
+    FTP_ERROR_PASSIVE,
+    FTP_ERROR_ACTIVE,
+    FTP_ERROR_OPERATE,
+    FTP_ERROR_UPLOAD,
+    FTP_ERROR_DOWNLOAD,
+    FTP_ERROR_QUIT
+} AT_FTPGET_STATE;
+
+typedef enum {
+    FTPGET_OPEN = 1,
+    FTPGET_READ,
+} AT_FTPGET_MODE;
+
+typedef enum {
     AT_DISABLE = 0,
-    AT_ENABLE = 1
+    AT_ENABLE
 } AT_BOOL;
 
 /* Exported struct -----------------------------------------------------------*/
@@ -145,6 +187,20 @@ typedef struct {
 } at_cstt_t;
 
 typedef struct {
+    AT_SAPBR_CMD cmd_type;
+    AT_SAPBR_STATUS status;
+    at_cstt_t con;
+} at_sapbr_t;
+
+typedef struct {
+    AT_FTPGET_MODE mode;
+    AT_FTPGET_STATE state;
+    uint16_t reqlength;
+    uint16_t cnflength;
+    char *ptr;
+} at_ftpget_t;
+
+typedef struct {
     char address[20];
 } at_cifsr_t;
 
@@ -154,6 +210,8 @@ SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
 SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
 SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
+SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param);
+SIMCOM_RESULT AT_DownloadFile(at_ftpget_t *param);
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
 SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state);
 SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state);

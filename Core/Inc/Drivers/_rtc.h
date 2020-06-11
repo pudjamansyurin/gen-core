@@ -20,6 +20,6 @@ void RTC_Write(uint64_t dateTime, rtc_t *rtc);
 void RTC_WriteRaw(timestamp_t *timestamp, rtc_t *rtc);
 uint8_t RTC_IsDaylight(timestamp_t timestamp);
 uint8_t RTC_NeedCalibration(void);
-void RTC_Calibrate(void);
+void RTC_CalibrateWithSimcom(void);
 
 #endif /* RTC_H_ */

@@ -89,7 +89,7 @@ void VCU_CheckMainPower(void) {
     // handle when REG_5V is OFF
     if (currentState == 0) {
         VCU.SetEvent(EV_VCU_INDEPENDENT, 1);
-        if (osKernelGetTickCount() - tick > lost) {
+        if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(VCU_ACTIVATE_LOST_MODE * 1000)) {
             VCU.d.interval = RPT_INTERVAL_LOST;
             VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
         } else {

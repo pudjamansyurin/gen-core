@@ -137,7 +137,7 @@ uint8_t RTC_NeedCalibration(void) {
             VCU.d.rtc.calibration.Date != VCU.d.rtc.timestamp.date.Date);
 }
 
-void RTC_Calibrate(void) {
+void RTC_CalibrateWithSimcom(void) {
     timestamp_t timestamp;
 
     if (AT_Clock(ATR, &timestamp)) {

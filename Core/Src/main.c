@@ -1517,6 +1517,11 @@ void StartIotTask(void *argument)
     for (;;) {
         lastWake = osKernelGetTickCount();
 
+        // FOTA
+        if (Simcom_SetState(SIM_STATE_INTERNET_ON)) {
+            Simcom_FOTA();
+        }
+
         // Upload Report & Response Payload
         if (Simcom_SetState(SIM_STATE_SERVER_ON)) {
             // Iterate between REPORT & RESPONSE
@@ -1580,7 +1585,6 @@ void StartIotTask(void *argument)
                         pending[type] = 0;
                     }
                 }
-
             }
         }
 
@@ -1589,7 +1593,7 @@ void StartIotTask(void *argument)
             Simcom_IdleJob(NULL);
 
             if (RTC_NeedCalibration()) {
-                RTC_Calibrate();
+                RTC_CalibrateWithSimcom();
             }
         }
 
