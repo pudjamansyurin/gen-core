@@ -503,7 +503,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
 
                         // Copy to Buffer
                         if (prm.cnflength) {
-                            FLASHER_Write8(prm.ptr, prm.cnflength, (len < prm.reqlength));
+                            FLASHER_Write8(prm.ptr, prm.cnflength, len);
 
                             len += prm.cnflength;
                         }

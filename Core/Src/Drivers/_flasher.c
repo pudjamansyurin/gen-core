@@ -15,16 +15,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* Public functions implementation ---------------------------------------------*/
-uint8_t FLASHER_Write8(char *ptr, uint16_t size, uint8_t reset) {
-    static uint32_t Address = FLASH_USER_START_ADDR;
+uint8_t FLASHER_Write8(char *ptr, uint16_t size, uint32_t offset) {
+    uint32_t Address = FLASH_USER_START_ADDR + offset;
     uint32_t *ptr32 = (uint32_t*) ptr;
     uint32_t ret = 0;
-
-    /* Program the user Flash area word by word
-     (area defined by FLASH_USER_START_ADDR and FLASH_USER_END_ADDR) ***********/
-    if (reset) {
-        Address = FLASH_USER_START_ADDR;
-    }
 
     /* Unlock the Flash to enable the flash control register access *************/
     HAL_FLASH_Unlock();
