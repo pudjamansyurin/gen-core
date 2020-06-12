@@ -26,10 +26,8 @@ sim_t SIM = {
         .state = SIM_STATE_DOWN,
         .commando = 0,
         .payload_type = PAYLOAD_REPORT,
+        .ip_status = CIPSTAT_UNKNOWN,
 };
-
-/* Private variables ----------------------------------------------------------*/
-static AT_CIPSTATUS ipStatus;
 
 /* Private functions prototype -----------------------------------------------*/
 static SIMCOM_RESULT Simcom_Ready(void);
@@ -56,7 +54,6 @@ char* Simcom_Response(char *str) {
 
 uint8_t Simcom_SetState(SIMCOM_STATE state) {
     static uint8_t init = 1;
-//    uint8_t iteration;
     uint8_t depth = 3;
     SIMCOM_STATE lastState = SIM_STATE_DOWN;
     SIMCOM_RESULT p;
@@ -186,11 +183,19 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 }
                 // Network Registration Status
                 if (p) {
-                    at_c_greg_t param = {
+                    at_c_greg_t read, param = {
                             .mode = CREG_MODE_DISABLE,
                             .stat = CREG_STAT_REG_HOME
                     };
-                    p = AT_NetworkRegistration("CREG", ATW, &param);
+                    // wait until attached
+                    do {
+                        p = AT_NetworkRegistration("CREG", ATW, &param);
+                        if (p) {
+                            p = AT_NetworkRegistration("CREG", ATR, &read);
+                        }
+
+                        osDelay(1000);
+                    } while (p && read.stat != param.stat);
                 }
 
                 // upgrade simcom state
@@ -204,11 +209,19 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 // =========== GPRS ATTACH
                 // GPRS Registration Status
                 if (p) {
-                    at_c_greg_t param = {
+                    at_c_greg_t read, param = {
                             .mode = CREG_MODE_DISABLE,
                             .stat = CREG_STAT_REG_HOME
                     };
-                    p = AT_NetworkRegistration("CGREG", ATW, &param);
+                    // wait until attached
+                    do {
+                        p = AT_NetworkRegistration("CGREG", ATW, &param);
+                        if (p) {
+                            p = AT_NetworkRegistration("CGREG", ATR, &read);
+                        }
+
+                        osDelay(1000);
+                    } while (p && read.stat != param.stat);
                 }
 
                 // upgrade simcom state
@@ -226,14 +239,13 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 // =========== PDP CONFIGURATION
                 // Attach to GPRS service
                 if (p) {
-                    AT_CGATT state = 0;
-
+                    AT_CGATT state;
                     // wait until attached
-                    while (p && !state) {
+                    do {
                         p = AT_GprsAttachment(ATR, &state);
 
                         osDelay(1000);
-                    }
+                    } while (p && !state);
                 }
 
                 // Select TCPIP application mode:
@@ -267,7 +279,8 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
             case SIM_STATE_PDP_ON:
                 // =========== PDP ATTACH
                 // Set type of authentication for PDP connections of socket
-                if (p) {
+                AT_ConnectionStatusSingle(&(SIM.ip_status));
+                if (p && SIM.ip_status == CIPSTAT_IP_INITIAL) {
                     at_cstt_t param = {
                             .apn = NET_CON_APN,
                             .username = NET_CON_USERNAME,
@@ -277,22 +290,9 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 }
                 // =========== IP ATTACH
                 // Bring Up IP Connection
-                if (p) {
+                AT_ConnectionStatusSingle(&(SIM.ip_status));
+                if (p && SIM.ip_status == CIPSTAT_IP_START) {
                     p = Simcom_Command("AT+CIICR\r", NULL, 10000, 0);
-                }
-                // =========== BEARER ATTACH
-                // Set bearer for TCP Based Application
-                if (p) {
-                    at_sapbr_t param = {
-                            .cmd_type = SAPBR_BEARER_OPEN,
-                            .status = SAPBR_CONNECTED,
-                            .con = {
-                                    .apn = NET_CON_APN,
-                                    .username = NET_CON_USERNAME,
-                                    .password = NET_CON_PASSWORD,
-                            },
-                    };
-                    p = AT_BearerSettings(ATW, &param);
                 }
                 // Check IP Address
                 if (p) {
@@ -305,11 +305,11 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                     SIM.state++;
                 } else {
                     // Check IP Status
-                    AT_ConnectionStatusSingle(&ipStatus);
+                    AT_ConnectionStatusSingle(&(SIM.ip_status));
 
                     // Close PDP
-                    if (ipStatus != CIPSTAT_IP_INITIAL &&
-                            ipStatus != CIPSTAT_PDP_DEACT) {
+                    if (SIM.ip_status != CIPSTAT_IP_INITIAL &&
+                            SIM.ip_status != CIPSTAT_PDP_DEACT) {
                         p = Simcom_Command("AT+CIPSHUT\r", NULL, 1000, 0);
                     }
 
@@ -330,6 +330,12 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                             .port = 31974
                     };
                     p = AT_StartConnectionSingle(&param);
+
+                    // wait until attached
+                    do {
+                        AT_ConnectionStatusSingle(&(SIM.ip_status));
+                        osDelay(1000);
+                    } while (SIM.ip_status == CIPSTAT_CONNECTING);
                 }
 
                 // upgrade simcom state
@@ -337,11 +343,17 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                     SIM.state++;
                 } else {
                     // Check IP Status
-                    AT_ConnectionStatusSingle(&ipStatus);
+                    AT_ConnectionStatusSingle(&(SIM.ip_status));
 
                     // Close IP
-                    if (ipStatus == CIPSTAT_CONNECT_OK) {
+                    if (SIM.ip_status == CIPSTAT_CONNECT_OK) {
                         p = Simcom_Command("AT+CIPCLOSE\r", NULL, 1000, 0);
+
+                        // wait until closed
+                        do {
+                            AT_ConnectionStatusSingle(&(SIM.ip_status));
+                            osDelay(1000);
+                        } while (SIM.ip_status == CIPSTAT_CLOSING);
                     }
 
                     if (SIM.state == SIM_STATE_INTERNET_ON) {
@@ -353,9 +365,9 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 break;
             case SIM_STATE_SERVER_ON:
                 // Check IP Status
-                AT_ConnectionStatusSingle(&ipStatus);
+                AT_ConnectionStatusSingle(&(SIM.ip_status));
 
-                if (ipStatus != CIPSTAT_CONNECT_OK) {
+                if (SIM.ip_status != CIPSTAT_CONNECT_OK) {
                     if (SIM.state == SIM_STATE_SERVER_ON) {
                         SIM.state--;
                     }
@@ -378,14 +390,14 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
     char str[20];
 
     // Check IP Status
-    AT_ConnectionStatusSingle(&ipStatus);
+    AT_ConnectionStatusSingle(&(SIM.ip_status));
     // combine the size
     sprintf(str, "AT+CIPSEND=%d\r", size);
 
     Simcom_Lock();
     SIM.payload_type = type;
 
-    if (SIM.state >= SIM_STATE_SERVER_ON && ipStatus == CIPSTAT_CONNECT_OK) {
+    if (SIM.state >= SIM_STATE_SERVER_ON && SIM.ip_status == CIPSTAT_CONNECT_OK) {
         // send command
         p = Simcom_Command(str, SIMCOM_RSP_SEND, 500, 0);
         if (p) {
@@ -432,24 +444,38 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
 char buffer[1024];
 SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    at_sapbr_t param;
     uint8_t len = 0;
     uint32_t checksum;
 
     Simcom_Lock();
     // send command
     if (SIM.state >= SIM_STATE_INTERNET_ON) {
-        p = AT_BearerSettings(ATR, &param);
+        // BEARER attach
+        at_sapbr_t read, param = {
+                .cmd_type = SAPBR_BEARER_OPEN,
+                .status = SAPBR_CONNECTED,
+                .con = {
+                        .apn = NET_CON_APN,
+                        .username = NET_CON_USERNAME,
+                        .password = NET_CON_PASSWORD,
+                },
+        };
+        p = AT_BearerSettings(ATW, &param);
 
-        // BEARER connected
-        if (p && param.status == SAPBR_CONNECTED) {
+        // BEARER init
+        if (p) {
+            p = AT_BearerSettings(ATR, &read);
+        }
+
+        // FTP Init
+        if (p && read.status == SAPBR_CONNECTED) {
             at_ftp_t param = {
                     .id = 1,
                     .server = NET_FTP_SERVER,
                     .username = NET_FTP_USERNAME,
                     .password = NET_FTP_PASSWORD,
                     .path = "/vcu/",
-                    .file = "app-1.0.2.txt"
+                    .file = "app-1.0.txt"
             };
             p = AT_FtpInitialize(&param);
         }
@@ -458,7 +484,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
         if (p) {
             at_ftpget_t param = {
                     .mode = FTPGET_OPEN,
-                    .reqlength = 4
+                    .reqlength = 768
             };
             p = AT_FtpDownload(&param);
 
@@ -480,7 +506,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
                 // Buffer filled
                 if (p && len) {
                     // Calculate CRC
-                    checksum = CRC_Calculate8((uint8_t*) buffer, len);
+                    checksum = CRC_Calculate8((uint8_t*) buffer, len, 1);
 
                     // Indicator
                     LOG_Str("Simcom:FileContent = ");
@@ -490,11 +516,11 @@ SIMCOM_RESULT Simcom_FOTA(void) {
                     LOG_Hex32(checksum);
                     LOG_Enter();
                 }
-
-                // Close session
-                p = Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
             }
         }
+
+        // Close session
+        p = Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
     }
 
     Simcom_Unlock();
@@ -505,8 +531,8 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint8_t upload = 1;
 
-    // Handle default value
-    if (!res) {
+// Handle default value
+    if (res == NULL) {
         res = SIMCOM_RSP_OK;
     }
     if (!size) {
@@ -514,7 +540,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
         size = strlen(data);
     }
 
-    // only handle command if SIM_STATE_READY or BOOT_CMD
+// only handle command if SIM_STATE_READY or BOOT_CMD
     if (SIM.state >= SIM_STATE_READY || (!strcmp(data, SIMCOM_CMD_BOOT))) {
         Simcom_Lock();
 
@@ -547,19 +573,19 @@ SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     at_csq_t signal;
 
-    // debug
+// debug
     if (iteration != NULL) {
         LOG_Str("Simcom:Iteration = ");
         LOG_Int((*iteration)++);
         LOG_Enter();
     }
 
-    // other routines
+// other routines
     p = AT_SignalQualityReport(&signal);
     if (p) {
         VCU.d.signal = signal.percent;
     }
-    p = AT_ConnectionStatusSingle(&ipStatus);
+    p = AT_ConnectionStatusSingle(&(SIM.ip_status));
 
     return p;
 }
@@ -587,8 +613,10 @@ static SIMCOM_RESULT Simcom_ProcessCommando(command_t *command) {
             // check the Size
             if (command->header.size == sizeof(command->data)) {
                 // calculate the CRC
-                crcValue = CRC_Calculate8((uint8_t*) &(command->header.size),
-                        sizeof(command->header.size) + sizeof(command->data));
+                crcValue = CRC_Calculate8(
+                        (uint8_t*) &(command->header.size),
+                        sizeof(command->header.size) + sizeof(command->data),
+                        0);
 
                 // check the CRC
                 if (command->header.crc == crcValue) {
@@ -629,10 +657,10 @@ static SIMCOM_RESULT Simcom_ProcessACK(header_t *header) {
 static SIMCOM_RESULT Simcom_Ready(void) {
     uint32_t tick;
 
-    // save event
+// save event
     VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
 
-    // wait until 1s response
+// wait until 1s response
     tick = osKernelGetTickCount();
     while (SIM.state == SIM_STATE_DOWN) {
         if (Simcom_Response(SIMCOM_RSP_READY) ||
@@ -643,27 +671,27 @@ static SIMCOM_RESULT Simcom_Ready(void) {
         osDelay(1);
     }
 
-    // check
+// check
     return Simcom_Command(SIMCOM_CMD_BOOT, SIMCOM_RSP_READY, 1000, 0);
 }
 
 static SIMCOM_RESULT Simcom_Power(void) {
     LOG_StrLn("Simcom:Powered");
-    // reset buffer
+// reset buffer
     SIMCOM_Reset_Buffer();
 
-    // power control
+// power control
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
     osDelay(100);
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
     osDelay(100);
 
-    // simcom reset pin
+// simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
     HAL_Delay(1);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
-    // wait response
+// wait response
     return Simcom_Ready();
 }
 
@@ -682,19 +710,19 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
     uint32_t tick, timeout_tick = 0;
 
     Simcom_Lock();
-    // wake-up the SIMCOM
+// wake-up the SIMCOM
     Simcom_Sleep(0);
 
-    // transmit to serial (low-level)
+// transmit to serial (low-level)
     Simcom_ClearBuffer();
     SIMCOM_Transmit(data, size);
 
-    // convert time to tick
+// convert time to tick
     timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME);
-    // set timeout guard
+// set timeout guard
     tick = osKernelGetTickCount();
 
-    // wait response from SIMCOM
+// wait response from SIMCOM
     while (1) {
         if (Simcom_Response(res)
                 || Simcom_Response(SIMCOM_RSP_ERROR)
@@ -740,7 +768,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
         osDelay(10);
     }
 
-    // sleep the SIMCOM
+// sleep the SIMCOM
     Simcom_Sleep(1);
     Simcom_Unlock();
     return p;
@@ -749,18 +777,18 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
 static void Simcom_ClearBuffer(void) {
     command_t hCommand;
 
-    // handle things on every request
-    //	LOG_StrLn("============ SIMCOM DEBUG ============");
-    //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-    //	LOG_Enter();
-    //	LOG_StrLn("======================================");
+// handle things on every request
+//	LOG_StrLn("============ SIMCOM DEBUG ============");
+//	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+//	LOG_Enter();
+//	LOG_StrLn("======================================");
 
-    // handle Commando (if any)
+// handle Commando (if any)
     if (Simcom_ProcessCommando(&hCommand)) {
         SIM.commando = 1;
         osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
     }
 
-    // reset rx buffer
+// reset rx buffer
     SIMCOM_Reset_Buffer();
 }

@@ -24,6 +24,34 @@ static int32_t AT_ParseNumber(const char *ptr, uint8_t *cnt);
 //static float AT_ParseFloat(const char *ptr, uint8_t *cnt);
 
 /* Public functions implementation --------------------------------------------*/
+SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
+    SIMCOM_RESULT p;
+
+    Simcom_Lock();
+    p = AT_SingleInteger("FTPCID", ATW, &param->id);
+
+    // set server & credential
+    if (p) {
+        p = AT_SingleString("FTPSERV", ATW, param->server, sizeof(param->server));
+    }
+    if (p) {
+        p = AT_SingleString("FTPUN", ATW, param->username, sizeof(param->username));
+    }
+    if (p) {
+        p = AT_SingleString("FTPPW", ATW, param->password, sizeof(param->password));
+    }
+    // set path & file
+    if (p) {
+        p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path));
+    }
+    if (p) {
+        p = AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file));
+    }
+
+    Simcom_Unlock();
+    return p;
+}
+
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     char cmd[6];
@@ -153,37 +181,11 @@ SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state) {
         } else {
             *state = CIPSTAT_UNKNOWN;
         }
+    } else {
+        *state = CIPSTAT_UNKNOWN;
     }
     Simcom_Unlock();
 
-    return p;
-}
-
-SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
-    SIMCOM_RESULT p;
-
-    Simcom_Lock();
-    p = AT_SingleInteger("FTPCID", ATW, &param->id);
-
-    // set server & credential
-    if (p) {
-        p = AT_SingleString("FTPSERV", ATW, param->server, sizeof(param->server));
-    }
-    if (p) {
-        p = AT_SingleString("FTPUN", ATW, param->username, sizeof(param->username));
-    }
-    if (p) {
-        p = AT_SingleString("FTPPW", ATW, param->password, sizeof(param->password));
-    }
-    // set path & file
-    if (p) {
-        p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path));
-    }
-    if (p) {
-        p = AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file));
-    }
-
-    Simcom_Unlock();
     return p;
 }
 
@@ -199,7 +201,7 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
     } else {
         sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
     }
-    p = AT_CmdRead(cmd, 5000, "+FTPGET: ", &str);
+    p = AT_CmdRead(cmd, 10000, "+FTPGET: ", &str);
 
     if (p) {
         // parsing

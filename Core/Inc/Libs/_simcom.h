@@ -24,6 +24,8 @@
 #define SIMCOM_DEBUG                    1
 #define SIMCOM_MAX_UPLOAD_RETRY         3
 
+#define MAX_ENUM_SIZE                   0xFFFFFFFF
+
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
     SIM_RESULT_NACK = -4,
@@ -46,11 +48,27 @@ typedef enum {
     SIM_STATE_SERVER_ON = 6
 } SIMCOM_STATE;
 
+typedef enum {
+    CIPSTAT_UNKNOWN = -1,
+    CIPSTAT_IP_INITIAL = 0,
+    CIPSTAT_IP_START,
+    CIPSTAT_IP_CONFIG,
+    CIPSTAT_IP_GPRSACT,
+    CIPSTAT_IP_STATUS,
+    CIPSTAT_CONNECTING,
+    CIPSTAT_CONNECT_OK,
+    CIPSTAT_CLOSING,
+    CIPSTAT_CLOSED,
+    CIPSTAT_PDP_DEACT,
+    CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
+} AT_CIPSTATUS;
+
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
     SIMCOM_STATE state;
     uint8_t commando;
     PAYLOAD_TYPE payload_type;
+    AT_CIPSTATUS ip_status;
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/

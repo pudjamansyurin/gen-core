@@ -27,7 +27,7 @@
 #define EEPROM_RESET                            52U
 
 #define VCU_FIRMWARE_VERSION       	            "0.7"
-#define VCU_VENDOR                              "GEN Indonesia"
+#define VCU_VENDOR                              "GEN"
 #define VCU_BUILD_YEAR                          20U
 #define VCU_UNITID                              354313U
 

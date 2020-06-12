@@ -18,7 +18,7 @@
  * @param  count: Number of elements in array for calculation
  * @retval 32-bit CRC calculated number
  */
-uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count);
+uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped);
 
 /**
  * @brief  Calculates 32-bit CRC value from 32-bit input array

@@ -1493,7 +1493,7 @@ void StartIotTask(void *argument)
     osStatus_t status;
     report_t report;
     response_t response;
-    uint8_t retry, pending[2] = { 0 };
+    uint8_t retry[2], pending[2] = { 0 };
     uint32_t notif;
 
     SIMCOM_RESULT p;
@@ -1544,17 +1544,17 @@ void StartIotTask(void *argument)
                     }
                 }
 
-                // check report log
+                // Check logs
                 if (!pending[type]) {
                     status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
                     // check is mail ready
                     if (status == osOK) {
                         pending[type] = 1;
-                        retry = SIMCOM_MAX_UPLOAD_RETRY;
+                        retry[type] = SIMCOM_MAX_UPLOAD_RETRY;
                     }
                 }
 
-                // check is payload ready
+                // Check is payload ready
                 if (pending[type]) {
                     // Re-calculate CRC
                     if (type == PAYLOAD_REPORT) {
@@ -1569,7 +1569,7 @@ void StartIotTask(void *argument)
                     // Handle looping NACK
                     if (p == SIM_RESULT_NACK) {
                         // Probably  CRC not valid, cancel but force as success
-                        if (!retry--) {
+                        if (!--retry[type]) {
                             p = SIM_RESULT_OK;
                         }
                     }

@@ -12,7 +12,6 @@
 #include "Libs/_simcom.h"
 
 /* Exported enum -------------------------------------------------------------*/
-#define MAX_ENUM_SIZE                       0xFFFFFFFF
 typedef enum {
     ATW = 0,
     ATR,
@@ -100,21 +99,6 @@ typedef enum {
     CAT_ACT_E_UTRAN,
     CAT_ACT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CSACT_ACT;
-
-typedef enum {
-    CIPSTAT_IP_INITIAL = 0,
-    CIPSTAT_IP_START,
-    CIPSTAT_IP_CONFIG,
-    CIPSTAT_IP_GPRSACT,
-    CIPSTAT_IP_STATUS,
-    CIPSTAT_CONNECTING,
-    CIPSTAT_CONNECT_OK,
-    CIPSTAT_CLOSING,
-    CIPSTAT_CLOSED,
-    CIPSTAT_PDP_DEACT,
-    CIPSTAT_UNKNOWN,
-    CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
-} AT_CIPSTATUS;
 
 typedef enum {
     SAPBR_BEARER_CLOSE = 0,
