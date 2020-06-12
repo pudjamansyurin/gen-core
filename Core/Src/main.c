@@ -1466,7 +1466,7 @@ void StartManagerTask(void *argument)
         // _RTOS_Debugger(10000);
 
         // Battery Monitor
-        //		BAT_Debugger();
+        BAT_Debugger();
 
         // Other stuffs
         HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);

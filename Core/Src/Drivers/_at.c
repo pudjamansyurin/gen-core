@@ -47,8 +47,66 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
     if (p) {
         p = AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file));
     }
-
     Simcom_Unlock();
+    return p;
+}
+
+SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
+    SIMCOM_RESULT p = SIM_RESULT_ERROR;
+    uint8_t cnt, len = 0;
+    char *str = NULL, cmd[80];
+
+    Simcom_Lock();
+    // Open or Read
+    if (param->mode == FTPGET_OPEN) {
+        sprintf(cmd, "AT+FTPGET=%d\r", param->mode);
+    } else {
+        sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
+    }
+    p = AT_CmdRead(cmd, 10000, "+FTPGET: ", &str);
+
+    if (p) {
+        // parsing
+        AT_ParseNumber(&str[len], &cnt);
+        len += cnt + 1;
+        if (param->mode == FTPGET_OPEN) {
+            param->state = AT_ParseNumber(&str[len], &cnt);
+        } else {
+            param->cnflength = AT_ParseNumber(&str[len], &cnt);
+            len += cnt + 2;
+            // Wait until transferred
+            osDelay(100);
+            // start of file content
+            param->ptr = &str[len];
+        }
+    }
+    Simcom_Unlock();
+
+    return p;
+}
+
+SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
+    SIMCOM_RESULT p = SIM_RESULT_ERROR;
+    uint8_t cnt, len = 0;
+    char *str = NULL;
+
+    Simcom_Lock();
+    // Read
+    p = AT_CmdRead("AT+FTPSIZE\r", 10000, "+FTPSIZE: ", &str);
+    if (p) {
+        // parsing
+        AT_ParseNumber(&str[len], &cnt);
+        len += cnt + 1;
+        param->state = AT_ParseNumber(&str[len], &cnt);
+
+        if (param->state == FTP_FINISH) {
+            len += cnt + 1;
+            param->size = AT_ParseNumber(&str[len], &cnt);
+
+        }
+    }
+    Simcom_Unlock();
+
     return p;
 }
 
@@ -183,38 +241,6 @@ SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state) {
         }
     } else {
         *state = CIPSTAT_UNKNOWN;
-    }
-    Simcom_Unlock();
-
-    return p;
-}
-
-SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
-    SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    uint8_t cnt, len = 0;
-    char *str = NULL, cmd[80];
-
-    Simcom_Lock();
-    // Open or Read
-    if (param->mode == FTPGET_OPEN) {
-        sprintf(cmd, "AT+FTPGET=%d\r", param->mode);
-    } else {
-        sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
-    }
-    p = AT_CmdRead(cmd, 10000, "+FTPGET: ", &str);
-
-    if (p) {
-        // parsing
-        AT_ParseNumber(&str[len], &cnt);
-        len += cnt + 1;
-        if (param->mode == FTPGET_OPEN) {
-            param->state = AT_ParseNumber(&str[len], &cnt);
-        } else {
-            param->cnflength = AT_ParseNumber(&str[len], &cnt);
-            len += cnt + 2;
-            // start of file content
-            param->ptr = &str[len];
-        }
     }
     Simcom_Unlock();
 

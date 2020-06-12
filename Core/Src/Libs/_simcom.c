@@ -13,6 +13,7 @@
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_at.h"
+#include "Drivers/_flasher.h"
 #include "Nodes/VCU.h"
 
 /* External variables ---------------------------------------------------------*/
@@ -440,12 +441,9 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
     return p;
 }
 
-// FIXME: remove me
-char buffer[1024];
 SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    uint8_t len = 0;
-    uint32_t checksum;
+//    uint32_t checksum;
 
     Simcom_Lock();
     // send command
@@ -475,46 +473,56 @@ SIMCOM_RESULT Simcom_FOTA(void) {
                     .username = NET_FTP_USERNAME,
                     .password = NET_FTP_PASSWORD,
                     .path = "/vcu/",
-                    .file = "app-1.0.txt"
+                    .file = "lipsum.txt",
+                    .size = 0,
             };
             p = AT_FtpInitialize(&param);
-        }
 
-        // Open FTP Session
-        if (p) {
-            at_ftpget_t param = {
-                    .mode = FTPGET_OPEN,
-                    .reqlength = 768
-            };
-            p = AT_FtpDownload(&param);
+            // get file size
+            if (p) {
+                p = AT_FtpFileSize(&param);
+            }
 
-            // Read FTP File
-            if (p && param.state == FTP_READY) {
-                param.mode = FTPGET_READ;
-                do {
-                    p = AT_FtpDownload(&param);
+            // Open FTP Session
+            if (p) {
+                // Initiate Download
+                at_ftpget_t prm = {
+                        .mode = FTPGET_OPEN,
+                        .reqlength = 512
+                };
+                uint32_t len = 0;
+                p = AT_FtpDownload(&prm);
 
-                    // Copy to Independent Buffer
-                    if (param.cnflength) {
-                        memcpy(&buffer[len], param.ptr, param.cnflength);
+                // Read FTP File
+                if (p && prm.state == FTP_READY) {
+                    // Copy chunk by chunk
+                    FLASHER_Erase();
+                    prm.mode = FTPGET_READ;
+                    do {
+                        p = AT_FtpDownload(&prm);
 
-                        len += param.cnflength;
-                        osDelay(100);
-                    }
-                } while (p && param.cnflength);
+                        // Copy to Buffer
+                        if (prm.cnflength) {
+                            FLASHER_Write8(prm.ptr, prm.cnflength, (len < prm.reqlength));
 
-                // Buffer filled
-                if (p && len) {
-                    // Calculate CRC
-                    checksum = CRC_Calculate8((uint8_t*) buffer, len, 1);
+                            len += prm.cnflength;
+                        }
 
-                    // Indicator
-                    LOG_Str("Simcom:FileContent = ");
-                    LOG_Buf(buffer, len);
-                    LOG_Enter();
-                    LOG_Str("Simcom:Checksum = 0x");
-                    LOG_Hex32(checksum);
-                    LOG_Enter();
+                        LOG_Str("FOTA Progress = ");
+                        LOG_Int(len * 100 / param.size);
+                        LOG_StrLn("%");
+                    } while (p && prm.cnflength);
+
+//                // Buffer filled
+//                if (p && len) {
+//                    // Calculate CRC
+//                    checksum = CRC_Calculate8((uint8_t*) buffer, len, 1);
+//
+//                    // Indicator
+//                    LOG_Str("Simcom:Checksum = 0x");
+//                    LOG_Hex32(checksum);
+//                    LOG_Enter();
+//                }
                 }
             }
         }

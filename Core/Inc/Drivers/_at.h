@@ -138,7 +138,7 @@ typedef enum {
     FTP_ERROR_DOWNLOAD,
     FTP_ERROR_QUIT,
     FTP_ForceEnumSize = MAX_ENUM_SIZE
-} AT_FTPGET_STATE;
+} AT_FTP_STATE;
 
 typedef enum {
     FTPGET_OPEN = 1,
@@ -196,7 +196,7 @@ typedef struct {
 
 typedef struct {
     AT_FTPGET_MODE mode;
-    AT_FTPGET_STATE state;
+    AT_FTP_STATE state;
     uint16_t reqlength;
     uint16_t cnflength;
     char *ptr;
@@ -209,6 +209,8 @@ typedef struct {
     char password[20];
     char path[20];
     char file[20];
+    uint32_t size;
+    AT_FTP_STATE state;
 } at_ftp_t;
 
 typedef struct {
@@ -216,14 +218,16 @@ typedef struct {
 } at_cifsr_t;
 
 /* Public functions implementation --------------------------------------------*/
+SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
+SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
+SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param);
+
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
 SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
 SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
 SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
 SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param);
-SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
-SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
 SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
 SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);
