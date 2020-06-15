@@ -478,32 +478,31 @@ SIMCOM_RESULT Simcom_FOTA(void) {
             };
             p = AT_FtpInitialize(&param);
 
-            // get file size
-            if (p) {
-                p = AT_FtpFileSize(&param);
-            }
-
             // Open FTP Session
             if (p) {
                 // Initiate Download
                 at_ftpget_t prm = {
                         .mode = FTPGET_OPEN,
-                        .reqlength = 512
-                };
+                        .reqlength = 1456
+                //                        .reqlength = 1024+256
+                        };
                 uint32_t len = 0;
                 p = AT_FtpDownload(&prm);
 
                 // Read FTP File
                 if (p && prm.state == FTP_READY) {
                     // Copy chunk by chunk
-                    FLASHER_Erase();
+//                    FLASHER_Erase();
                     prm.mode = FTPGET_READ;
                     do {
                         p = AT_FtpDownload(&prm);
 
                         // Copy to Buffer
                         if (prm.cnflength) {
-                            FLASHER_Write8(prm.ptr, prm.cnflength, len);
+//                            FLASHER_Write8(prm.ptr, prm.cnflength, len);
+
+                            LOG_Buf(prm.ptr, prm.cnflength);
+                            LOG_Enter();
 
                             len += prm.cnflength;
                         }
@@ -549,7 +548,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
     }
 
 // only handle command if SIM_STATE_READY or BOOT_CMD
-    if (SIM.state >= SIM_STATE_READY || (!strcmp(data, SIMCOM_CMD_BOOT))) {
+    if (SIM.state >= SIM_STATE_READY || (strcmp(data, SIMCOM_CMD_BOOT) == 0)) {
         Simcom_Lock();
 
         // Debug: print command
@@ -574,6 +573,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
 
         Simcom_Unlock();
     }
+
     return p;
 }
 
@@ -671,9 +671,9 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 // wait until 1s response
     tick = osKernelGetTickCount();
     while (SIM.state == SIM_STATE_DOWN) {
-        if (Simcom_Response(SIMCOM_RSP_READY) ||
-                //				Simcom_Response(SIMCOM_RSP_OK) ||
-                (osKernelGetTickCount() - tick) >= NET_BOOT_TIMEOUT) {
+        if (Simcom_Response(SIMCOM_RSP_READY)
+                || Simcom_Response(SIMCOM_RSP_OK)
+                || (osKernelGetTickCount() - tick) >= NET_BOOT_TIMEOUT) {
             break;
         }
         osDelay(1);
@@ -692,11 +692,11 @@ static SIMCOM_RESULT Simcom_Power(void) {
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
     osDelay(100);
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
-    osDelay(100);
+    osDelay(1000);
 
 // simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-    HAL_Delay(1);
+    HAL_Delay(10);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
 // wait response

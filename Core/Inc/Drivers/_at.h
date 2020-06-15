@@ -220,7 +220,6 @@ typedef struct {
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
 SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
-SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param);
 
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
