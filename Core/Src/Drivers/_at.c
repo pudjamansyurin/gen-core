@@ -60,30 +60,17 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
 SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint8_t cnt, len = 0;
-    char *prefix = "+FTPGET: ";
-    char *str = NULL, cmd[80];
+    char *str = NULL, cmd[80], *ptr;
 
     Simcom_Lock();
     // Open or Read
     if (param->mode == FTPGET_OPEN) {
         sprintf(cmd, "AT+FTPGET=%d\r", param->mode);
-        p = AT_CmdRead(cmd, 20000, prefix, &str);
     } else {
         sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
-        p = AT_CmdRead(cmd, 20000, SIMCOM_RSP_OK, &str);
-
-        if (p) {
-            str = Simcom_Response(prefix);
-
-            // reset pointer
-            if (str != NULL) {
-                str += strlen(prefix);
-                p = SIM_RESULT_OK;
-            } else {
-                p = SIM_RESULT_ERROR;
-            }
-        }
     }
+
+    p = AT_CmdRead(cmd, 20000, "+FTPGET: ", &str);
 
     if (p) {
         // parsing
@@ -96,6 +83,10 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
             len += cnt + 2;
             // start of file content
             param->ptr = &str[len];
+            // wait untill data transferred
+            ptr = &str[len + param->cnflength + 2];
+            while (strncmp(ptr, SIMCOM_RSP_OK, strlen(SIMCOM_RSP_OK)) != 0)
+                ;
         }
     }
     Simcom_Unlock();

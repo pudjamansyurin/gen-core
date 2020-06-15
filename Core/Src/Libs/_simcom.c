@@ -113,14 +113,15 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                     LOG_StrLn("Simcom:Error");
                 }
 
-                osDelay(500);
-                break;
-            case SIM_STATE_READY:
-                // =========== BASIC CONFIGURATION
                 // disable command echo
                 if (p) {
                     p = AT_CommandEchoMode(0);
                 }
+
+                osDelay(500);
+                break;
+            case SIM_STATE_READY:
+                // =========== BASIC CONFIGURATION
                 // Set serial baud-rate
                 if (p) {
                     uint32_t rate = 0;
@@ -443,7 +444,7 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
 
 SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
-//    uint32_t checksum;
+    uint32_t checksum;
 
     Simcom_Lock();
     // send command
@@ -473,36 +474,32 @@ SIMCOM_RESULT Simcom_FOTA(void) {
                     .username = NET_FTP_USERNAME,
                     .password = NET_FTP_PASSWORD,
                     .path = "/vcu/",
-                    .file = "lipsum.txt",
+                    .file = "HUB.bin",
                     .size = 0,
             };
             p = AT_FtpInitialize(&param);
 
             // Open FTP Session
-            if (p) {
+            if (p && param.size) {
                 // Initiate Download
                 at_ftpget_t prm = {
                         .mode = FTPGET_OPEN,
-                        .reqlength = 1456
-                //                        .reqlength = 1024+256
-                        };
+                        .reqlength = 512
+                };
                 uint32_t len = 0;
                 p = AT_FtpDownload(&prm);
 
                 // Read FTP File
                 if (p && prm.state == FTP_READY) {
                     // Copy chunk by chunk
-//                    FLASHER_Erase();
+                    FLASHER_Erase();
                     prm.mode = FTPGET_READ;
                     do {
                         p = AT_FtpDownload(&prm);
 
                         // Copy to Buffer
                         if (prm.cnflength) {
-//                            FLASHER_Write8(prm.ptr, prm.cnflength, len);
-
-                            LOG_Buf(prm.ptr, prm.cnflength);
-                            LOG_Enter();
+                            FLASHER_Write8(prm.ptr, prm.cnflength, len);
 
                             len += prm.cnflength;
                         }
@@ -512,16 +509,16 @@ SIMCOM_RESULT Simcom_FOTA(void) {
                         LOG_StrLn("%");
                     } while (p && prm.cnflength);
 
-//                // Buffer filled
-//                if (p && len) {
-//                    // Calculate CRC
-//                    checksum = CRC_Calculate8((uint8_t*) buffer, len, 1);
-//
-//                    // Indicator
-//                    LOG_Str("Simcom:Checksum = 0x");
-//                    LOG_Hex32(checksum);
-//                    LOG_Enter();
-//                }
+                    // Buffer filled
+                    if (p && len == param.size) {
+                        // Calculate CRC
+                        checksum = CRC_Calculate8((uint8_t*) FLASH_USER_START_ADDR, len, 0);
+
+                        // Indicator
+                        LOG_Str("Simcom:Checksum = 0x");
+                        LOG_Hex32(checksum);
+                        LOG_Enter();
+                    }
                 }
             }
         }
@@ -538,7 +535,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint8_t upload = 1;
 
-// Handle default value
+    // Handle default value
     if (res == NULL) {
         res = SIMCOM_RSP_OK;
     }
@@ -547,7 +544,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
         size = strlen(data);
     }
 
-// only handle command if SIM_STATE_READY or BOOT_CMD
+    // only handle command if SIM_STATE_READY or BOOT_CMD
     if (SIM.state >= SIM_STATE_READY || (strcmp(data, SIMCOM_CMD_BOOT) == 0)) {
         Simcom_Lock();
 
@@ -567,8 +564,11 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
 
         // Debug: print response
         if (SIMCOM_DEBUG) {
-            LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-            LOG_Enter();
+            char *FTPGET = "AT+FTPGET=2";
+            if (strncmp(data, FTPGET, strlen(FTPGET)) != 0) {
+                LOG_Buf(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX));
+                LOG_Enter();
+            }
         }
 
         Simcom_Unlock();
@@ -581,14 +581,14 @@ SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     at_csq_t signal;
 
-// debug
+    // debug
     if (iteration != NULL) {
         LOG_Str("Simcom:Iteration = ");
         LOG_Int((*iteration)++);
         LOG_Enter();
     }
 
-// other routines
+    // other routines
     p = AT_SignalQualityReport(&signal);
     if (p) {
         VCU.d.signal = signal.percent;
@@ -665,10 +665,10 @@ static SIMCOM_RESULT Simcom_ProcessACK(header_t *header) {
 static SIMCOM_RESULT Simcom_Ready(void) {
     uint32_t tick;
 
-// save event
+    // save event
     VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
 
-// wait until 1s response
+    // wait until 1s response
     tick = osKernelGetTickCount();
     while (SIM.state == SIM_STATE_DOWN) {
         if (Simcom_Response(SIMCOM_RSP_READY)
@@ -679,27 +679,27 @@ static SIMCOM_RESULT Simcom_Ready(void) {
         osDelay(1);
     }
 
-// check
+    // check
     return Simcom_Command(SIMCOM_CMD_BOOT, SIMCOM_RSP_READY, 1000, 0);
 }
 
 static SIMCOM_RESULT Simcom_Power(void) {
     LOG_StrLn("Simcom:Powered");
-// reset buffer
+    // reset buffer
     SIMCOM_Reset_Buffer();
 
-// power control
+    // power control
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
     osDelay(100);
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
     osDelay(1000);
 
-// simcom reset pin
+    // simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
     HAL_Delay(10);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
-// wait response
+    // wait response
     return Simcom_Ready();
 }
 
@@ -718,19 +718,19 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
     uint32_t tick, timeout_tick = 0;
 
     Simcom_Lock();
-// wake-up the SIMCOM
+    // wake-up the SIMCOM
     Simcom_Sleep(0);
 
-// transmit to serial (low-level)
+    // transmit to serial (low-level)
     Simcom_ClearBuffer();
     SIMCOM_Transmit(data, size);
 
-// convert time to tick
+    // convert time to tick
     timeout_tick = pdMS_TO_TICKS(ms + NET_EXTRA_TIME);
-// set timeout guard
+    // set timeout guard
     tick = osKernelGetTickCount();
 
-// wait response from SIMCOM
+    // wait response from SIMCOM
     while (1) {
         if (Simcom_Response(res)
                 || Simcom_Response(SIMCOM_RSP_ERROR)
@@ -776,7 +776,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
         osDelay(10);
     }
 
-// sleep the SIMCOM
+    // sleep the SIMCOM
     Simcom_Sleep(1);
     Simcom_Unlock();
     return p;
@@ -785,18 +785,18 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
 static void Simcom_ClearBuffer(void) {
     command_t hCommand;
 
-// handle things on every request
-//	LOG_StrLn("============ SIMCOM DEBUG ============");
-//	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-//	LOG_Enter();
-//	LOG_StrLn("======================================");
+    // handle things on every request
+    //	LOG_StrLn("============ SIMCOM DEBUG ============");
+    //	LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+    //	LOG_Enter();
+    //	LOG_StrLn("======================================");
 
-// handle Commando (if any)
+    // handle Commando (if any)
     if (Simcom_ProcessCommando(&hCommand)) {
         SIM.commando = 1;
         osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
     }
 
-// reset rx buffer
+    // reset rx buffer
     SIMCOM_Reset_Buffer();
 }

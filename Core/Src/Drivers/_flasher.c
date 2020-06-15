@@ -8,12 +8,6 @@
 /* Includes -------------------------------------------------------------------*/
 #include "Drivers/_flasher.h"
 
-/* Private define ------------------------------------------------------------*/
-#define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_10
-#define FLASH_USER_END_ADDR     (ADDR_FLASH_SECTOR_11  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_11) -1)
-
-/* Private variables ---------------------------------------------------------*/
-
 /* Public functions implementation ---------------------------------------------*/
 uint8_t FLASHER_Write8(char *ptr, uint16_t size, uint32_t offset) {
     uint32_t Address = FLASH_USER_START_ADDR + offset;
