@@ -14,14 +14,13 @@ extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 extern sim_t SIM;
 
 /* Private functions prototype -----------------------------------------------*/
-static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *string, uint8_t size);
-static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *value);
+static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *string, uint8_t size, uint8_t executor);
+static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *value, uint8_t executor);
 static SIMCOM_RESULT AT_CmdWrite(char *cmd, uint32_t ms, char *res);
 static SIMCOM_RESULT AT_CmdRead(char *cmd, uint32_t ms, char *prefix, char **str);
 static uint8_t AT_FindInBuffer(char *prefix, char **str);
 static void AT_ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size);
 static int32_t AT_ParseNumber(const char *ptr, uint8_t *cnt);
-static SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param);
 //static float AT_ParseFloat(const char *ptr, uint8_t *cnt);
 
 /* Public functions implementation --------------------------------------------*/
@@ -29,52 +28,47 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
     SIMCOM_RESULT p;
 
     Simcom_Lock();
-    p = AT_SingleInteger("FTPCID", ATW, &param->id);
+    p = AT_SingleInteger("FTPCID", ATW, &param->id, 0);
 
     // set server & credential
     if (p) {
-        p = AT_SingleString("FTPSERV", ATW, param->server, sizeof(param->server));
+        p = AT_SingleString("FTPSERV", ATW, param->server, sizeof(param->server), 0);
     }
     if (p) {
-        p = AT_SingleString("FTPUN", ATW, param->username, sizeof(param->username));
+        p = AT_SingleString("FTPUN", ATW, param->username, sizeof(param->username), 0);
     }
     if (p) {
-        p = AT_SingleString("FTPPW", ATW, param->password, sizeof(param->password));
+        p = AT_SingleString("FTPPW", ATW, param->password, sizeof(param->password), 0);
     }
     // set path & file
     if (p) {
-        p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path));
+        p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
     }
     if (p) {
-        p = AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file));
-    }
-    // get file size
-    if (p) {
-        p = AT_FtpFileSize(param);
+        p = AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file), 0);
     }
 
     Simcom_Unlock();
     return p;
 }
 
-static SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
+SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint8_t cnt, len = 0;
     char *str = NULL;
 
     Simcom_Lock();
     // Read
-    p = AT_CmdRead("AT+FTPSIZE\r", 20000, "+FTPSIZE: ", &str);
+    p = AT_CmdRead("AT+FTPSIZE\r", 60000, "+FTPSIZE: ", &str);
     if (p) {
         // parsing
         AT_ParseNumber(&str[len], &cnt);
         len += cnt + 1;
-        param->state = AT_ParseNumber(&str[len], &cnt);
+        param->response = AT_ParseNumber(&str[len], &cnt);
 
-        if (param->state == FTP_FINISH) {
+        if (param->response == FTP_FINISH) {
             len += cnt + 1;
             param->size = AT_ParseNumber(&str[len], &cnt);
-
         }
     }
     Simcom_Unlock();
@@ -96,14 +90,14 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
         sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
     }
 
-    p = AT_CmdRead(cmd, 20000, "+FTPGET: ", &str);
+    p = AT_CmdRead(cmd, 60000, "+FTPGET: ", &str);
 
     if (p) {
         // parsing
         AT_ParseNumber(&str[len], &cnt);
         len += cnt + 1;
         if (param->mode == FTPGET_OPEN) {
-            param->state = AT_ParseNumber(&str[len], &cnt);
+            param->response = AT_ParseNumber(&str[len], &cnt);
         } else {
             param->cnflength = AT_ParseNumber(&str[len], &cnt);
             len += cnt + 2;
@@ -125,6 +119,10 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
     Simcom_Unlock();
 
     return p;
+}
+
+SIMCOM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state) {
+    return AT_SingleInteger("FTPSTATE", ATR, (int32_t*) state, 1);
 }
 
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state) {
@@ -511,47 +509,47 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
 }
 
 SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
-    return AT_SingleInteger("CGATT", mode, (int32_t*) state);
+    return AT_SingleInteger("CGATT", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state) {
-    return AT_SingleInteger("CIPRXGET", mode, (int32_t*) state);
+    return AT_SingleInteger("CIPRXGET", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state) {
-    return AT_SingleInteger("CIPMUX", mode, (int32_t*) state);
+    return AT_SingleInteger("CIPMUX", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state) {
-    return AT_SingleInteger("CIPMODE", mode, (int32_t*) state);
+    return AT_SingleInteger("CIPMODE", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state) {
-    return AT_SingleInteger("CIPSRIP", mode, (int32_t*) state);
+    return AT_SingleInteger("CIPSRIP", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state) {
-    return AT_SingleInteger("CIPHEAD", mode, (int32_t*) state);
+    return AT_SingleInteger("CIPHEAD", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
-    return AT_SingleInteger("CLTS", mode, (int32_t*) state);
+    return AT_SingleInteger("CLTS", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state) {
-    return AT_SingleInteger("CSCLK", mode, (int32_t*) state);
+    return AT_SingleInteger("CSCLK", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state) {
-    return AT_SingleInteger("CMEE", mode, (int32_t*) state);
+    return AT_SingleInteger("CMEE", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate) {
-    return AT_SingleInteger("IPR", mode, (int32_t*) rate);
+    return AT_SingleInteger("IPR", mode, (int32_t*) rate, 0);
 }
 
 /* Private functions implementation --------------------------------------------*/
-static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *string, uint8_t size) {
+static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *string, uint8_t size, uint8_t executor) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     char *str = NULL, cmd[20], res[20], tmp[size];
 
@@ -560,7 +558,7 @@ static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *strin
 
     Simcom_Lock();
     // Read
-    sprintf(cmd, "AT+%s?\r", command);
+    sprintf(cmd, "AT+%s%s", command, executor ? "\r" : "?\r");
     sprintf(res, "+%s: ", command);
     p = AT_CmdRead(cmd, 1000, res, &str);
     if (p) {
@@ -581,7 +579,7 @@ static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *strin
     return p;
 }
 
-static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *value) {
+static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *value, uint8_t executor) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     char *str = NULL, cmd[20], res[20];
 
@@ -590,7 +588,7 @@ static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *v
 
     Simcom_Lock();
     // Read
-    sprintf(cmd, "AT+%s?\r", command);
+    sprintf(cmd, "AT+%s%s", command, executor ? "\r" : "?\r");
     sprintf(res, "+%s: ", command);
     p = AT_CmdRead(cmd, 1000, res, &str);
     if (p) {

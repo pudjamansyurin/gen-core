@@ -138,13 +138,19 @@ typedef enum {
     FTP_ERROR_DOWNLOAD,
     FTP_ERROR_QUIT,
     FTP_ForceEnumSize = MAX_ENUM_SIZE
-} AT_FTP_STATE;
+} AT_FTP_RESPONSE;
 
 typedef enum {
     FTPGET_OPEN = 1,
     FTPGET_READ,
     FTPGET_ForceEnumSize = MAX_ENUM_SIZE
 } AT_FTPGET_MODE;
+
+typedef enum {
+    FTP_STATE_IDLE = 0,
+    FTP_STATE_ESTABLISHED,
+    FTP_STATE_ForceEnumSize = MAX_ENUM_SIZE
+} AT_FTP_STATE;
 
 typedef enum {
     AT_DISABLE = 0,
@@ -196,7 +202,7 @@ typedef struct {
 
 typedef struct {
     AT_FTPGET_MODE mode;
-    AT_FTP_STATE state;
+    AT_FTP_RESPONSE response;
     uint16_t reqlength;
     uint16_t cnflength;
     char *ptr;
@@ -210,7 +216,7 @@ typedef struct {
     char path[20];
     char file[20];
     uint32_t size;
-    AT_FTP_STATE state;
+    AT_FTP_RESPONSE response;
 } at_ftp_t;
 
 typedef struct {
@@ -219,7 +225,9 @@ typedef struct {
 
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
+SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param);
 SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
+SIMCOM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state);
 
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);

@@ -447,6 +447,7 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
 SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint32_t checksum, len = 0;
+    AT_FTP_STATE state;
     at_sapbr_t getBEARER, setBEARER = {
             .cmd_type = SAPBR_BEARER_OPEN,
             .status = SAPBR_CONNECTED,
@@ -462,7 +463,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
             .username = NET_FTP_USERNAME,
             .password = NET_FTP_PASSWORD,
             .path = "/vcu/",
-            .file = "lipsum.txt",
+            .file = "HUB2.bin",
             .size = 0,
     };
     at_ftpget_t setFTPGET = {
@@ -486,13 +487,18 @@ SIMCOM_RESULT Simcom_FOTA(void) {
             p = AT_FtpInitialize(&setFTP);
         }
 
+        // Get file size
+        if (p) {
+            p = AT_FtpFileSize(&setFTP);
+        }
+
         // Open FTP Session
         if (p && setFTP.size) {
             p = AT_FtpDownload(&setFTPGET);
         }
 
         // Read FTP File
-        if (p && setFTPGET.state == FTP_READY) {
+        if (p && setFTPGET.response == FTP_READY) {
             // Preparing
             FLASHER_Erase();
             setFTPGET.mode = FTPGET_READ;
@@ -531,8 +537,12 @@ SIMCOM_RESULT Simcom_FOTA(void) {
             LOG_Enter();
         }
 
-        // Close session
-        p = Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
+        // Check state
+        AT_FtpCurrentState(&state);
+        if (state == FTP_STATE_ESTABLISHED) {
+            // Close session
+            Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
+        }
     }
 
     Simcom_Unlock();
