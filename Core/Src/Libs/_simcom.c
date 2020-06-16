@@ -50,6 +50,7 @@ void Simcom_Unlock(void) {
 }
 
 char* Simcom_Response(char *str) {
+//    return memmem(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX), str, strlen(str));
     return strstr(SIMCOM_UART_RX, str);
 }
 
@@ -323,9 +324,10 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 osDelay(500);
                 break;
             case SIM_STATE_INTERNET_ON:
+                AT_ConnectionStatusSingle(&(SIM.ip_status));
                 // ============ SOCKET CONFIGURATION
                 // Establish connection with server
-                if (p) {
+                if (p && SIM.ip_status == CIPSTAT_IP_START) {
                     at_cipstart_t param = {
                             .mode = "TCP",
                             .ip = "pujakusumae-31974.portmap.io",
@@ -444,83 +446,89 @@ SIMCOM_RESULT Simcom_Upload(PAYLOAD_TYPE type, void *payload, uint16_t size) {
 
 SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    uint32_t checksum;
+    uint32_t checksum, len = 0;
+    at_sapbr_t getBEARER, setBEARER = {
+            .cmd_type = SAPBR_BEARER_OPEN,
+            .status = SAPBR_CONNECTED,
+            .con = {
+                    .apn = NET_CON_APN,
+                    .username = NET_CON_USERNAME,
+                    .password = NET_CON_PASSWORD,
+            },
+    };
+    at_ftp_t setFTP = {
+            .id = 1,
+            .server = NET_FTP_SERVER,
+            .username = NET_FTP_USERNAME,
+            .password = NET_FTP_PASSWORD,
+            .path = "/vcu/",
+            .file = "lipsum.txt",
+            .size = 0,
+    };
+    at_ftpget_t setFTPGET = {
+            .mode = FTPGET_OPEN,
+            .reqlength = 512
+    };
 
     Simcom_Lock();
     // send command
     if (SIM.state >= SIM_STATE_INTERNET_ON) {
         // BEARER attach
-        at_sapbr_t read, param = {
-                .cmd_type = SAPBR_BEARER_OPEN,
-                .status = SAPBR_CONNECTED,
-                .con = {
-                        .apn = NET_CON_APN,
-                        .username = NET_CON_USERNAME,
-                        .password = NET_CON_PASSWORD,
-                },
-        };
-        p = AT_BearerSettings(ATW, &param);
+        p = AT_BearerSettings(ATW, &setBEARER);
 
         // BEARER init
         if (p) {
-            p = AT_BearerSettings(ATR, &read);
+            p = AT_BearerSettings(ATR, &getBEARER);
         }
 
         // FTP Init
-        if (p && read.status == SAPBR_CONNECTED) {
-            at_ftp_t param = {
-                    .id = 1,
-                    .server = NET_FTP_SERVER,
-                    .username = NET_FTP_USERNAME,
-                    .password = NET_FTP_PASSWORD,
-                    .path = "/vcu/",
-                    .file = "HUB.bin",
-                    .size = 0,
-            };
-            p = AT_FtpInitialize(&param);
+        if (p && getBEARER.status == SAPBR_CONNECTED) {
+            p = AT_FtpInitialize(&setFTP);
+        }
 
-            // Open FTP Session
-            if (p && param.size) {
+        // Open FTP Session
+        if (p && setFTP.size) {
+            p = AT_FtpDownload(&setFTPGET);
+        }
+
+        // Read FTP File
+        if (p && setFTPGET.state == FTP_READY) {
+            // Preparing
+            FLASHER_Erase();
+            setFTPGET.mode = FTPGET_READ;
+
+            // Copy chunk by chunk
+            do {
                 // Initiate Download
-                at_ftpget_t prm = {
-                        .mode = FTPGET_OPEN,
-                        .reqlength = 512
-                };
-                uint32_t len = 0;
-                p = AT_FtpDownload(&prm);
+                p = AT_FtpDownload(&setFTPGET);
 
-                // Read FTP File
-                if (p && prm.state == FTP_READY) {
-                    // Copy chunk by chunk
-                    FLASHER_Erase();
-                    prm.mode = FTPGET_READ;
-                    do {
-                        p = AT_FtpDownload(&prm);
+                // Copy to Buffer
+                FLASHER_Write8(setFTPGET.ptr, setFTPGET.cnflength, len);
+                len += setFTPGET.cnflength;
 
-                        // Copy to Buffer
-                        if (prm.cnflength) {
-                            FLASHER_Write8(prm.ptr, prm.cnflength, len);
+                // Indicator
+                LOG_Str("FOTA Progress = ");
+                LOG_Int(len);
+                LOG_Str(" Bytes (");
+                LOG_Int(len * 100 / setFTP.size);
+                LOG_StrLn("%)");
 
-                            len += prm.cnflength;
-                        }
-
-                        LOG_Str("FOTA Progress = ");
-                        LOG_Int(len * 100 / param.size);
-                        LOG_StrLn("%");
-                    } while (p && prm.cnflength);
-
-                    // Buffer filled
-                    if (p && len == param.size) {
-                        // Calculate CRC
-                        checksum = CRC_Calculate8((uint8_t*) FLASH_USER_START_ADDR, len, 0);
-
-                        // Indicator
-                        LOG_Str("Simcom:Checksum = 0x");
-                        LOG_Hex32(checksum);
-                        LOG_Enter();
-                    }
+                // Handle
+                if (setFTPGET.cnflength == 0 || len >= setFTP.size) {
+                    break;
                 }
-            }
+            } while (p);
+        }
+
+        // Buffer filled
+        if (p && len && len == setFTP.size) {
+            // Calculate CRC
+            checksum = CRC_Calculate32((uint32_t*) FLASH_USER_START_ADDR, len / 4);
+
+            // Indicator
+            LOG_Str("Simcom:Checksum = 0x");
+            LOG_Hex32(checksum);
+            LOG_Enter();
         }
 
         // Close session

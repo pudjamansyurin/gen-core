@@ -57,10 +57,36 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
     return p;
 }
 
-SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
+static SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint8_t cnt, len = 0;
-    char *str = NULL, cmd[80], *ptr;
+    char *str = NULL;
+
+    Simcom_Lock();
+    // Read
+    p = AT_CmdRead("AT+FTPSIZE\r", 20000, "+FTPSIZE: ", &str);
+    if (p) {
+        // parsing
+        AT_ParseNumber(&str[len], &cnt);
+        len += cnt + 1;
+        param->state = AT_ParseNumber(&str[len], &cnt);
+
+        if (param->state == FTP_FINISH) {
+            len += cnt + 1;
+            param->size = AT_ParseNumber(&str[len], &cnt);
+
+        }
+    }
+    Simcom_Unlock();
+
+    return p;
+}
+
+SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
+    SIMCOM_RESULT p = SIM_RESULT_ERROR;
+    TickType_t tick;
+    uint8_t cnt, len = 0;
+    char *ptr, *str = NULL, cmd[80];
 
     Simcom_Lock();
     // Open or Read
@@ -83,35 +109,17 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
             len += cnt + 2;
             // start of file content
             param->ptr = &str[len];
-            // wait untill data transferred
+            // wait until data transferred
             ptr = &str[len + param->cnflength + 2];
-            while (strncmp(ptr, SIMCOM_RSP_OK, strlen(SIMCOM_RSP_OK)) != 0)
-                ;
-        }
-    }
-    Simcom_Unlock();
 
-    return p;
-}
-
-static SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
-    SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    uint8_t cnt, len = 0;
-    char *str = NULL;
-
-    Simcom_Lock();
-    // Read
-    p = AT_CmdRead("AT+FTPSIZE\r", 20000, "+FTPSIZE: ", &str);
-    if (p) {
-        // parsing
-        AT_ParseNumber(&str[len], &cnt);
-        len += cnt + 1;
-        param->state = AT_ParseNumber(&str[len], &cnt);
-
-        if (param->state == FTP_FINISH) {
-            len += cnt + 1;
-            param->size = AT_ParseNumber(&str[len], &cnt);
-
+            tick = osKernelGetTickCount();
+            while (strncmp(ptr, SIMCOM_RSP_OK, strlen(SIMCOM_RSP_OK)) != 0) {
+                if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(5 * 1000)) {
+                    p = SIM_RESULT_ERROR;
+                    break;
+                };
+                osDelay(1);
+            };
         }
     }
     Simcom_Unlock();
@@ -554,7 +562,7 @@ static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *strin
     // Read
     sprintf(cmd, "AT+%s?\r", command);
     sprintf(res, "+%s: ", command);
-    p = AT_CmdRead(cmd, 500, res, &str);
+    p = AT_CmdRead(cmd, 1000, res, &str);
     if (p) {
         AT_ParseText(&str[0], NULL, tmp, sizeof(tmp));
 
@@ -584,7 +592,7 @@ static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *v
     // Read
     sprintf(cmd, "AT+%s?\r", command);
     sprintf(res, "+%s: ", command);
-    p = AT_CmdRead(cmd, 500, res, &str);
+    p = AT_CmdRead(cmd, 1000, res, &str);
     if (p) {
         tmp = AT_ParseNumber(&str[0], NULL);
 

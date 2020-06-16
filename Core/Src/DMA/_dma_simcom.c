@@ -22,7 +22,7 @@ static uint8_t *simcom_ptr;
 
 /* Public functions implementation ---------------------------------------------*/
 void SIMCOM_USART_IrqHandler(void) {
-    if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE) != RESET) { /* if Idle flag is set */
+    if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) { /* if Idle flag is set */
         __HAL_UART_CLEAR_IDLEFLAG(&huart1); /* Clear idle flag */
         __HAL_DMA_DISABLE(&hdma_usart1_rx); /* Disabling DMA will force transfer complete interrupt if enabled */
         SIMCOM_DMA_IrqHandler();
@@ -30,7 +30,7 @@ void SIMCOM_USART_IrqHandler(void) {
 }
 
 void SIMCOM_DMA_IrqHandler(void) {
-    if (__HAL_DMA_GET_IT_SOURCE(&hdma_usart1_rx, DMA_IT_TC) != RESET) { // if the source is TC
+    if (__HAL_DMA_GET_IT_SOURCE(&hdma_usart1_rx, DMA_IT_TC)) { // if the source is TC
         /* Get the length of the data */
         simcom_len = SIMCOM_DMA_RX_SZ - __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
 

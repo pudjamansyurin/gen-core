@@ -33,4 +33,5 @@ void _DummyGenerator(void);
 int8_t _BitPosition(uint64_t event_id);
 uint32_t _ByteSwap32(uint32_t x);
 
+void* memmem(const void *haystack, size_t n, const void *needle, size_t m);
 #endif /* UTILS_H_ */
