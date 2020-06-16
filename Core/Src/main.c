@@ -1518,9 +1518,9 @@ void StartIotTask(void *argument)
         lastWake = osKernelGetTickCount();
 
         // FOTA
-        if (Simcom_SetState(SIM_STATE_INTERNET_ON)) {
-            Simcom_FOTA();
-        }
+        //        if (Simcom_SetState(SIM_STATE_INTERNET_ON)) {
+        //            Simcom_FOTA();
+        //        }
 
         // Upload Report & Response Payload
         if (Simcom_SetState(SIM_STATE_SERVER_ON)) {
@@ -1862,7 +1862,7 @@ void StartGpsTask(void *argument)
 
         GPS_Capture();
         GPS_CalculateOdometer();
-        //		GPS_Debugger();
+        GPS_Debugger();
 
         // Periodic interval
         osDelayUntil(lastWake + pdMS_TO_TICKS(GPS_INTERVAL_MS));
@@ -2046,7 +2046,7 @@ void StartFingerTask(void *argument)
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-    // Initialization
+    // Initialisation
     FINGER_DMA_Init();
     Finger_Init();
 
@@ -2390,18 +2390,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+    /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

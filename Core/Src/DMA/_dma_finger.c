@@ -22,15 +22,16 @@ static uint8_t *finger_ptr;
 
 /* Public functions implementation ---------------------------------------------*/
 void FINGER_USART_IrqHandler(void) {
-    if (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_IDLE) != RESET) { /* if Idle flag is set */
+    if (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_IDLE)) { /* if Idle flag is set */
         __HAL_UART_CLEAR_IDLEFLAG(&huart4); /* Clear idle flag */
         __HAL_DMA_DISABLE(&hdma_uart4_rx); /* Disabling DMA will force transfer complete interrupt if enabled */
+
         FINGER_DMA_IrqHandler();
     }
 }
 
 void FINGER_DMA_IrqHandler(void) {
-    if (__HAL_DMA_GET_IT_SOURCE(&hdma_uart4_rx, DMA_IT_TC) != RESET) { // if the source is TC
+    if (__HAL_DMA_GET_IT_SOURCE(&hdma_uart4_rx, DMA_IT_TC)) { // if the source is TC
         /* Get the length of the data */
         finger_len = FINGER_DMA_RX_SZ - __HAL_DMA_GET_COUNTER(&hdma_uart4_rx);
 
@@ -69,12 +70,14 @@ void FINGER_DMA_IrqHandler(void) {
         /* Start DMA transfer again */
         __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_TC_FLAG_INDEX(&hdma_uart4_rx));
         __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_HT_FLAG_INDEX(&hdma_uart4_rx));
-        __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_TE_FLAG_INDEX(&hdma_uart4_rx));
-        __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_FE_FLAG_INDEX(&hdma_uart4_rx));
-        __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_DME_FLAG_INDEX(&hdma_uart4_rx));
+
         __HAL_DMA_SET_COUNTER(&hdma_uart4_rx, FINGER_DMA_RX_SZ);
         __HAL_DMA_ENABLE(&hdma_uart4_rx);
     } else {
+        __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_TE_FLAG_INDEX(&hdma_uart4_rx));
+        __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_FE_FLAG_INDEX(&hdma_uart4_rx));
+        __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_DME_FLAG_INDEX(&hdma_uart4_rx));
+
         /* Start DMA transfer */
         HAL_UART_Receive_DMA(&huart4, (uint8_t*) FINGER_DMA_RX, FINGER_DMA_RX_SZ);
     }

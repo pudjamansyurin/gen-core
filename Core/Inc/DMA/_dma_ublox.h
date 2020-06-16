@@ -13,7 +13,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define UBLOX_UART_RX_SZ                1024
-#define UBLOX_DMA_RX_SZ                 (UBLOX_UART_RX_SZ)
+#define UBLOX_DMA_RX_SZ                 (UBLOX_UART_RX_SZ/(UBLOX_UART_RX_SZ/256))
 
 /* Public functions prototype ------------------------------------------------*/
 void UBLOX_USART_IrqHandler(void);

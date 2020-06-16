@@ -327,7 +327,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 AT_ConnectionStatusSingle(&(SIM.ip_status));
                 // ============ SOCKET CONFIGURATION
                 // Establish connection with server
-                if (p && SIM.ip_status == CIPSTAT_IP_START) {
+                if (p && (SIM.ip_status != CIPSTAT_CONNECT_OK || SIM.ip_status != CIPSTAT_CONNECTING)) {
                     at_cipstart_t param = {
                             .mode = "TCP",
                             .ip = "pujakusumae-31974.portmap.io",
