@@ -39,8 +39,8 @@
 #define NET_CON_USERNAME                        "3gprs"             // "wap"
 #define NET_CON_PASSWORD                        "3gprs"             // "wap123"
 
-#define NET_FTP_SERVER                          "ftp.almanshurin.com"
-#define NET_FTP_USERNAME                        "fota@almanshurin.com"
+#define NET_FTP_SERVER                          "ftp.genmotorcycles.com"
+#define NET_FTP_USERNAME                        "fota@genmotorcycles.com"
 #define NET_FTP_PASSWORD                        "@Garda313"
 
 #define COMMAND_TIMEOUT                         20U                 // in seconds

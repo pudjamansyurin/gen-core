@@ -38,7 +38,7 @@ static SIMCOM_RESULT Simcom_ProcessACK(header_t *header);
 static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char *res);
 static uint8_t Simcom_CommandoIRQ(void);
 static void Simcom_Sleep(uint8_t state);
-static void Simcom_ClearBuffer(void);
+static void Simcom_BeforeTransmitHook(void);
 
 /* Public functions implementation --------------------------------------------*/
 void Simcom_Lock(void) {
@@ -283,7 +283,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 // =========== PDP ATTACH
                 // Set type of authentication for PDP connections of socket
                 AT_ConnectionStatusSingle(&(SIM.ip_status));
-                if (p && SIM.ip_status == CIPSTAT_IP_INITIAL) {
+                if (p && (SIM.ip_status == CIPSTAT_IP_INITIAL || SIM.ip_status == CIPSTAT_PDP_DEACT)) {
                     at_cstt_t param = {
                             .apn = NET_CON_APN,
                             .username = NET_CON_USERNAME,
@@ -298,7 +298,8 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                     p = Simcom_Command("AT+CIICR\r", NULL, 10000, 0);
                 }
                 // Check IP Address
-                if (p) {
+                AT_ConnectionStatusSingle(&(SIM.ip_status));
+                if (p && (SIM.ip_status == CIPSTAT_IP_CONFIG || SIM.ip_status == CIPSTAT_IP_GPRSACT)) {
                     at_cifsr_t param;
                     p = AT_GetLocalIpAddress(&param);
                 }
@@ -714,7 +715,7 @@ static SIMCOM_RESULT Simcom_Power(void) {
 
     // simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-    HAL_Delay(10);
+    HAL_Delay(5);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
     // wait response
@@ -740,7 +741,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
     Simcom_Sleep(0);
 
     // transmit to serial (low-level)
-    Simcom_ClearBuffer();
+    Simcom_BeforeTransmitHook();
     SIMCOM_Transmit(data, size);
 
     // convert time to tick
@@ -800,7 +801,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
     return p;
 }
 
-static void Simcom_ClearBuffer(void) {
+static void Simcom_BeforeTransmitHook(void) {
     command_t hCommand;
 
     // handle things on every request
@@ -814,7 +815,4 @@ static void Simcom_ClearBuffer(void) {
         SIM.commando = 1;
         osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
     }
-
-    // reset rx buffer
-    SIMCOM_Reset_Buffer();
 }

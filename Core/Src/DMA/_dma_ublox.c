@@ -22,6 +22,7 @@ static size_t ublox_write = 0;
 /* Private functions implementation -------------------------------------------*/
 static void UBLOX_Check_Buffer(uint8_t idle);
 static void UBLOX_Fill_Buffer(const void *data, size_t len);
+static void UBLOX_Reset_Buffer(void);
 
 /* Public functions implementation ---------------------------------------------*/
 void UBLOX_USART_IrqHandler(void) {
@@ -76,11 +77,12 @@ static void UBLOX_Check_Buffer(uint8_t idle) {
     static size_t old_pos;
     size_t pos;
 
-    // clearing
+    // Auto clear
     if (clear) {
-        UBLOX_Reset_Buffer();
         clear = 0;
+        UBLOX_Reset_Buffer();
     }
+    clear = idle;
 
     /* Calculate current position in buffer */
     pos = UBLOX_DMA_RX_SZ - __HAL_DMA_GET_COUNTER(&hdma_usart2_rx);
@@ -105,11 +107,6 @@ static void UBLOX_Check_Buffer(uint8_t idle) {
     if (old_pos == UBLOX_DMA_RX_SZ) {
         old_pos = 0;
     }
-
-    // handle idle
-    if (idle) {
-        clear = 1;
-    }
 }
 
 static void UBLOX_Fill_Buffer(const void *data, size_t len) {
@@ -118,7 +115,7 @@ static void UBLOX_Fill_Buffer(const void *data, size_t len) {
     ublox_write += len;
 }
 
-void UBLOX_Reset_Buffer(void) {
+static void UBLOX_Reset_Buffer(void) {
     // clear rx buffer
     memset(UBLOX_UART_RX, 0x00, ublox_write);
     ublox_write = 0;
