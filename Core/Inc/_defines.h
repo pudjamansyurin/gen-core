@@ -23,6 +23,8 @@
 #define _R2(var, x)                             ((var >> x) & 0x03)
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
+#define TICKS_TO_MS(xTimeInTicks)               ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInTicks ) * ( TickType_t ) 1000 ) / ( TickType_t ) configTICK_RATE_HZ ) )
+
 /* Exported constants --------------------------------------------------------*/
 #define EEPROM_RESET                            52U
 

@@ -1518,7 +1518,7 @@ void StartIotTask(void *argument)
 
         // FOTA
         if (Simcom_SetState(SIM_STATE_INTERNET_ON)) {
-//            Simcom_FOTA();
+            Simcom_FOTA();
         }
 
         // Upload Report & Response Payload

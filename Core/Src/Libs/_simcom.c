@@ -446,6 +446,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint32_t checksum, len = 0;
     AT_FTP_STATE state;
+    TickType_t timer;
     at_sapbr_t getBEARER, setBEARER = {
             .cmd_type = SAPBR_BEARER_OPEN,
             .status = SAPBR_CONNECTED,
@@ -466,7 +467,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
     };
     at_ftpget_t setFTPGET = {
             .mode = FTPGET_OPEN,
-            .reqlength = 512
+            .reqlength = 1024 + 256 + 64 + 32
     };
 
     Simcom_Lock();
@@ -502,6 +503,8 @@ SIMCOM_RESULT Simcom_FOTA(void) {
             setFTPGET.mode = FTPGET_READ;
 
             // Copy chunk by chunk
+            LOG_StrLn("FOTA:Start");
+            timer = osKernelGetTickCount();
             do {
                 // Initiate Download
                 p = AT_FtpDownload(&setFTPGET);
@@ -511,7 +514,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
                 len += setFTPGET.cnflength;
 
                 // Indicator
-                LOG_Str("FOTA Progress = ");
+                LOG_Str("FOTA:Progress = ");
                 LOG_Int(len);
                 LOG_Str(" Bytes (");
                 LOG_Int(len * 100 / setFTP.size);
@@ -522,15 +525,20 @@ SIMCOM_RESULT Simcom_FOTA(void) {
                     break;
                 }
             } while (p > 0);
+
+            // Stop timer
+            LOG_Str("FOTA:End = ");
+            LOG_Int(TICKS_TO_MS(osKernelGetTickCount() - timer));
+            LOG_StrLn("ms");
         }
 
         // Buffer filled
         if (p > 0 && len && len == setFTP.size) {
             // Calculate CRC
-            checksum = CRC_Calculate32((uint32_t*) FLASH_USER_START_ADDR, len / 4);
+            checksum = CRC_Calculate8((uint8_t*) FLASH_USER_START_ADDR, len, 1);
 
             // Indicator
-            LOG_Str("Simcom:Checksum = 0x");
+            LOG_Str("FOTA:Checksum = 0x");
             LOG_Hex32(checksum);
             LOG_Enter();
         }
@@ -725,7 +733,7 @@ static void Simcom_Sleep(uint8_t state) {
 }
 
 static uint8_t Simcom_CommandoIRQ(void) {
-    return Simcom_Response(PREFIX_COMMAND);
+    return Simcom_Response(PREFIX_COMMAND) != NULL;
 }
 
 static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char *res) {

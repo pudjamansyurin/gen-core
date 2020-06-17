@@ -28,7 +28,7 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
     __HAL_CRC_DR_RESET(&hcrc);
 
     /* Calculate number of 32-bit blocks */
-    cnt = _R8(count, 2);
+    cnt = _R(count, 2);
 
     /* Calculate */
     while (cnt--) {
