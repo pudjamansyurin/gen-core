@@ -31,20 +31,20 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
     p = AT_SingleInteger("FTPCID", ATW, &param->id, 0);
 
     // set server & credential
-    if (p) {
+    if (p > 0) {
         p = AT_SingleString("FTPSERV", ATW, param->server, sizeof(param->server), 0);
     }
-    if (p) {
+    if (p > 0) {
         p = AT_SingleString("FTPUN", ATW, param->username, sizeof(param->username), 0);
     }
-    if (p) {
+    if (p > 0) {
         p = AT_SingleString("FTPPW", ATW, param->password, sizeof(param->password), 0);
     }
     // set path & file
-    if (p) {
+    if (p > 0) {
         p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
     }
-    if (p) {
+    if (p > 0) {
         p = AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file), 0);
     }
 
@@ -60,7 +60,7 @@ SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
     Simcom_Lock();
     // Read
     p = AT_CmdRead("AT+FTPSIZE\r", 60000, "+FTPSIZE: ", &str);
-    if (p) {
+    if (p > 0) {
         // parsing
         AT_ParseNumber(&str[len], &cnt);
         len += cnt + 1;
@@ -92,7 +92,7 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 
     p = AT_CmdRead(cmd, 60000, "+FTPGET: ", &str);
 
-    if (p) {
+    if (p > 0) {
         // parsing
         AT_ParseNumber(&str[len], &cnt);
         len += cnt + 1;
@@ -145,7 +145,7 @@ SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param) {
     Simcom_Lock();
     // Read
     p = AT_CmdRead("AT+CIFSR\r", 500, SIMCOM_RSP_NONE, &str);
-    if (p) {
+    if (p > 0) {
         AT_ParseText(&str[0], NULL, param->address, sizeof(param->address));
     }
     Simcom_Unlock();
@@ -161,10 +161,10 @@ SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
     // Write
     sprintf(cmd, "AT+CIPSTART=\"%s\",\"%s\",\"%d\"\r",
             param->mode, param->ip, param->port);
-    p = AT_CmdWrite(cmd, 10000, "CONNECT");
+    p = AT_CmdWrite(cmd, 30000, "CONNECT");
 
     // check either connection ok / error
-    if (p) {
+    if (p > 0) {
         if (Simcom_Response("CONNECT OK")
                 || Simcom_Response("ALREADY CONNECT")
                 || Simcom_Response("TCP CLOSED")) {
@@ -187,7 +187,7 @@ SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
     Simcom_Lock();
     // Read
     p = AT_CmdRead("AT+CSQ\r", 500, "+CSQ: ", &str);
-    if (p) {
+    if (p > 0) {
         signal->rssi = AT_ParseNumber(&str[len], &cnt);
         len += cnt + 1;
         signal->ber = AT_ParseNumber(&str[len], NULL);
@@ -223,7 +223,7 @@ SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state) {
     Simcom_Lock();
     // Read
     p = AT_CmdRead("AT+CIPSTATUS\r", 500, "STATE: ", &str);
-    if (p) {
+    if (p > 0) {
         AT_ParseText(&str[0], NULL, status, sizeof(status));
 
         // decide
@@ -274,14 +274,14 @@ SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
     // Read
     sprintf(cmd, "AT+SAPBR=%d,1\r", SAPBR_BEARER_QUERY);
     p = AT_CmdRead(cmd, 500, "+SAPBR: ", &str);
-    if (p) {
+    if (p > 0) {
         tmp.cmd_type = AT_ParseNumber(&str[len], &cnt);
         len += cnt + 1;
         tmp.status = AT_ParseNumber(&str[len], &cnt);
 
         // Read parameters
         p = AT_CmdRead("AT+SAPBR=4,1\r", 500, "+SAPBR:", &str);
-        if (p) {
+        if (p > 0) {
             if (AT_FindInBuffer("APN: ", &str)) {
                 AT_ParseText(&str[0], NULL, tmp.con.apn, sizeof(tmp.con.apn));
             }
@@ -333,7 +333,7 @@ SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
     Simcom_Lock();
     // Read
     p = AT_CmdRead("AT+CSTT?\r", 500, "+CSTT: ", &str);
-    if (p) {
+    if (p > 0) {
         AT_ParseText(&str[len], &cnt, tmp.apn, sizeof(tmp.apn));
         len += cnt + 1;
         AT_ParseText(&str[len], &cnt, tmp.username, sizeof(tmp.username));
@@ -367,7 +367,7 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
     Simcom_Lock();
     // Read
     p = AT_CmdRead("AT+CNMP?\r", 500, "+CNMP: ", &str);
-    if (p) {
+    if (p > 0) {
         param->mode = AT_ParseNumber(&str[len], &cnt);
         if (param->mode == CNMP_ACT_AUTO) {
             len += cnt + 1;
@@ -405,7 +405,7 @@ SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param) {
     Simcom_Lock();
     // Read
     p = AT_CmdRead("AT+CSACT?\r", 500, "+CSACT: ", &str);
-    if (p) {
+    if (p > 0) {
         tmp.act = AT_ParseNumber(&str[len], &cnt);
         len += cnt + 1;
         AT_ParseText(&str[len], &cnt, tmp.rac, sizeof(tmp.rac));
@@ -450,7 +450,7 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
     } else {
         // Read
         p = AT_CmdRead("AT+CCLK?\r", 500, "+CCLK: ", &str);
-        if (p) {
+        if (p > 0) {
             len = 1;
             tm->date.Year = AT_ParseNumber(&str[len], &cnt);
             len += cnt + 1;
@@ -488,7 +488,7 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
     sprintf(cmd, "AT+%s?\r", command);
     sprintf(res, "+%s: ", command);
     p = AT_CmdRead(cmd, 500, res, &str);
-    if (p) {
+    if (p > 0) {
         tmp.mode = AT_ParseNumber(&str[len], &cnt);
         len += cnt + 1;
         tmp.stat = AT_ParseNumber(&str[len], &cnt);
@@ -561,7 +561,7 @@ static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *strin
     sprintf(cmd, "AT+%s%s", command, executor ? "\r" : "?\r");
     sprintf(res, "+%s: ", command);
     p = AT_CmdRead(cmd, 1000, res, &str);
-    if (p) {
+    if (p > 0) {
         AT_ParseText(&str[0], NULL, tmp, sizeof(tmp));
 
         // Write
@@ -591,7 +591,7 @@ static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *v
     sprintf(cmd, "AT+%s%s", command, executor ? "\r" : "?\r");
     sprintf(res, "+%s: ", command);
     p = AT_CmdRead(cmd, 1000, res, &str);
-    if (p) {
+    if (p > 0) {
         tmp = AT_ParseNumber(&str[0], NULL);
 
         // Write
@@ -625,7 +625,7 @@ static SIMCOM_RESULT AT_CmdRead(char *cmd, uint32_t ms, char *prefix, char **str
     if (SIM.state >= SIM_STATE_READY) {
         p = Simcom_Command(cmd, prefix, ms, 0);
 
-        if (p) {
+        if (p > 0) {
             *str = Simcom_Response(prefix);
 
             if (*str != NULL) {

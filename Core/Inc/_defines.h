@@ -32,7 +32,7 @@
 #define VCU_UNITID                              354313U
 
 #define NET_BOOT_TIMEOUT                        7000U               // in ms
-#define NET_EXTRA_TIME                          500U                // in ms
+#define NET_EXTRA_TIME                          1000U                // in ms
 #define NET_REPEAT_MAX							2U
 
 #define NET_CON_APN                             "3gprs"             // "telkomsel"
@@ -42,6 +42,11 @@
 #define NET_FTP_SERVER                          "ftp.genmotorcycles.com"
 #define NET_FTP_USERNAME                        "fota@genmotorcycles.com"
 #define NET_FTP_PASSWORD                        "@Garda313"
+
+#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
+#define NET_TCP_PORT                            46606
+//#define NET_TCP_SERVER                          "0.tcp.ngrok.io"
+//#define NET_TCP_PORT                            11531
 
 #define COMMAND_TIMEOUT                         20U                 // in seconds
 
