@@ -127,7 +127,7 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
 
             if (p > 0 && setFTPGET.cnflength) {
                 // Copy to Buffer
-                FLASHER_WriteByte(setFTPGET.ptr, setFTPGET.cnflength, *len);
+                FLASHER_WriteByte((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
                 *len += setFTPGET.cnflength;
 
                 // Indicator
@@ -181,9 +181,18 @@ uint8_t FOTA_CompareChecksum(uint32_t crcRemote, uint32_t len) {
     return (crcLocal == crcRemote);
 }
 
-uint8_t FOTA_SetInProgress(void) {
+uint8_t FOTA_SetInProgress(uint32_t checksum) {
     uint32_t data = FOTA_IN_PROGRESS;
+    uint8_t ret;
 
-    return FLASHER_WriteByte((char*) data, sizeof(data), FOTA_FLAG_ADDRESS);
+    // Set Checksum
+    ret = FLASHER_WriteByte((uint8_t*) &checksum, sizeof(checksum), FOTA_CHECKSUM_ADDRESS);
+
+    // Set DFU flag
+    if (ret) {
+        ret = FLASHER_WriteByte((uint8_t*) &data, sizeof(data), FOTA_FLAG_ADDRESS);
+    }
+
+    return ret;
 }
 

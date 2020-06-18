@@ -34,7 +34,7 @@
 #define ADDR_FLASH_SECTOR_15    ((uint32_t)0x08160000) /* Base address of Sector15, 128 Kbytes */
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t FLASHER_WriteByte(char *ptr, uint16_t size, uint32_t offset);
+uint8_t FLASHER_WriteByte(uint8_t *ptr, uint16_t size, uint32_t offset);
 uint8_t FLASHER_Erase(void);
 uint32_t FLASHER_GetSector(uint32_t Address);
 uint32_t FLASHER_GetSectorSize(uint32_t Sector);

@@ -469,7 +469,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
         if (p > 0) {
             if (FOTA_CompareChecksum(checksum, len)) {
                 // Reset System to enter Bootloader
-                FOTA_SetInProgress();
+                FOTA_SetInProgress(checksum);
                 HAL_NVIC_SystemReset();
             }
         }
