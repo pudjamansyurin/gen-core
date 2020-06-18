@@ -9,7 +9,7 @@
 #include "Drivers/_flasher.h"
 
 /* Public functions implementation ---------------------------------------------*/
-uint8_t FLASHER_Write8(char *ptr, uint16_t size, uint32_t offset) {
+uint8_t FLASHER_WriteByte(char *ptr, uint16_t size, uint32_t offset) {
     uint32_t Address = FLASH_USER_START_ADDR + offset;
     uint32_t *ptr32 = (uint32_t*) ptr;
     uint32_t ret = 0;

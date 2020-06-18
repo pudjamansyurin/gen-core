@@ -215,6 +215,7 @@ typedef struct {
     char password[20];
     char path[20];
     char file[20];
+    char version[20];
     uint32_t size;
     AT_FTP_RESPONSE response;
 } at_ftp_t;

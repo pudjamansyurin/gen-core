@@ -10,10 +10,10 @@
 // https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/pub0sub1.c
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_simcom.h"
+#include "Libs/_fota.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_at.h"
-#include "Drivers/_flasher.h"
 #include "Nodes/VCU.h"
 
 /* External variables ---------------------------------------------------------*/
@@ -48,7 +48,7 @@ void Simcom_Unlock(void) {
 }
 
 char* Simcom_Response(char *str) {
-//    return memmem(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX), str, strlen(str));
+    //    return memmem(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX), str, strlen(str));
     return strstr(SIMCOM_UART_RX, str);
 }
 
@@ -444,113 +444,36 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
 
 SIMCOM_RESULT Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    uint32_t checksum, len = 0;
-    AT_FTP_STATE state;
-    TickType_t timer;
-    at_sapbr_t getBEARER, setBEARER = {
-            .cmd_type = SAPBR_BEARER_OPEN,
-            .status = SAPBR_CONNECTED,
-            .con = {
-                    .apn = NET_CON_APN,
-                    .username = NET_CON_USERNAME,
-                    .password = NET_CON_PASSWORD,
-            },
-    };
-    at_ftp_t setFTP = {
-            .id = 1,
-            .server = NET_FTP_SERVER,
-            .username = NET_FTP_USERNAME,
-            .password = NET_FTP_PASSWORD,
+    uint32_t checksum = 0, len = 0;
+    at_ftp_t ftp = {
             .path = "/vcu/",
-            .file = "HUB2.bin",
-            .size = 0,
-    };
-    at_ftpget_t setFTPGET = {
-            .mode = FTPGET_OPEN,
-            .reqlength = 1024 + 256 + 64 + 32
+            .version = "HUB2"
     };
 
     Simcom_Lock();
-    // send command
     if (SIM.state >= SIM_STATE_INTERNET_ON) {
-        // BEARER attach
-        p = AT_BearerSettings(ATW, &setBEARER);
+        // Initialize bearer for TCP based apps.
+        p = FOTA_BearerInitialize();
 
-        // BEARER init
+        // Get Checksum of Firmware
         if (p > 0) {
-            p = AT_BearerSettings(ATR, &getBEARER);
+            p = FOTA_GetChecksum(&ftp, &checksum);
         }
 
-        // FTP Init
-        if (p > 0 && getBEARER.status == SAPBR_CONNECTED) {
-            p = AT_FtpInitialize(&setFTP);
-        }
-
-        // Get file size
+        // Download Firmware then save to FLASH
         if (p > 0) {
-            p = AT_FtpFileSize(&setFTP);
+            p = FOTA_FirmwareToFlash(&ftp, &len);
         }
 
-        // Open FTP Session
-        if (p > 0 && setFTP.size) {
-            p = AT_FtpDownload(&setFTPGET);
-        }
-
-        // Read FTP File
-        if (p > 0 && setFTPGET.response == FTP_READY) {
-            // Preparing
-            FLASHER_Erase();
-            setFTPGET.mode = FTPGET_READ;
-
-            // Copy chunk by chunk
-            LOG_StrLn("FOTA:Start");
-            timer = osKernelGetTickCount();
-            do {
-                // Initiate Download
-                p = AT_FtpDownload(&setFTPGET);
-
-                // Copy to Buffer
-                FLASHER_Write8(setFTPGET.ptr, setFTPGET.cnflength, len);
-                len += setFTPGET.cnflength;
-
-                // Indicator
-                LOG_Str("FOTA:Progress = ");
-                LOG_Int(len);
-                LOG_Str(" Bytes (");
-                LOG_Int(len * 100 / setFTP.size);
-                LOG_StrLn("%)");
-
-                // Handle
-                if (setFTPGET.cnflength == 0 || len >= setFTP.size) {
-                    break;
-                }
-            } while (p > 0);
-
-            // Stop timer
-            LOG_Str("FOTA:End = ");
-            LOG_Int(TICKS_TO_MS(osKernelGetTickCount() - timer));
-            LOG_StrLn("ms");
-        }
-
-        // Buffer filled
-        if (p > 0 && len && len == setFTP.size) {
-            // Calculate CRC
-            checksum = CRC_Calculate8((uint8_t*) FLASH_USER_START_ADDR, len, 1);
-
-            // Indicator
-            LOG_Str("FOTA:Checksum = 0x");
-            LOG_Hex32(checksum);
-            LOG_Enter();
-        }
-
-        // Check state
-        AT_FtpCurrentState(&state);
-        if (state == FTP_STATE_ESTABLISHED) {
-            // Close session
-            Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
+        // Buffer filled, compare the checksum
+        if (p > 0) {
+            if (FOTA_CompareChecksum(checksum, len)) {
+                // Reset System to enter Bootloader
+                FOTA_SetInProgress();
+                HAL_NVIC_SystemReset();
+            }
         }
     }
-
     Simcom_Unlock();
     return p;
 }

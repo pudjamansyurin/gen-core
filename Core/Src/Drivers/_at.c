@@ -59,7 +59,7 @@ SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
 
     Simcom_Lock();
     // Read
-    p = AT_CmdRead("AT+FTPSIZE\r", 60000, "+FTPSIZE: ", &str);
+    p = AT_CmdRead("AT+FTPSIZE\r", 90000, "+FTPSIZE: ", &str);
     if (p > 0) {
         // parsing
         AT_ParseNumber(&str[len], &cnt);
@@ -90,7 +90,7 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
         sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
     }
 
-    p = AT_CmdRead(cmd, 60000, "+FTPGET: ", &str);
+    p = AT_CmdRead(cmd, 90000, "+FTPGET: ", &str);
 
     if (p > 0) {
         // parsing
