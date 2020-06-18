@@ -13,9 +13,6 @@
 #include "Drivers/_at.h"
 
 /* Exported macro ------------------------------------------------------------*/
-#define FOTA_IN_PROGRESS         0xA1B2C3D4
-#define FOTA_FLAG_ADDRESS        FLASH_USER_END_ADDR - sizeof(uint32_t)
-#define FOTA_CHECKSUM_ADDRESS    FOTA_FLAG_ADDRESS - sizeof(uint32_t)
 
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT FOTA_BearerInitialize(void);

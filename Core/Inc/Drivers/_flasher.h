@@ -15,6 +15,10 @@
 #define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_10
 #define FLASH_USER_END_ADDR     (ADDR_FLASH_SECTOR_11  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_11) - 1)
 
+#define FOTA_IN_PROGRESS         0xA1B2C3D4
+#define FOTA_FLAG_ADDRESS        FLASH_USER_END_ADDR - sizeof(uint32_t)
+#define FOTA_CHECKSUM_ADDRESS    FOTA_FLAG_ADDRESS - sizeof(uint32_t)
+
 /* Base address of the Flash sectors */
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base address of Sector 0, 16 Kbytes */
 #define ADDR_FLASH_SECTOR_1     ((uint32_t)0x08004000) /* Base address of Sector 1, 16 Kbytes */
