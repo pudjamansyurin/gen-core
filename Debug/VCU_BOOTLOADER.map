@@ -37,6 +37,291 @@ Discarded input sections
  .ARM.exidx     0x0000000000000000        0x8 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/crt0.o
  .ARM.attributes
                 0x0000000000000000       0x20 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/crt0.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_crc.o
+ .text          0x0000000000000000        0x0 Core/Src/Drivers/_crc.o
+ .data          0x0000000000000000        0x0 Core/Src/Drivers/_crc.o
+ .bss           0x0000000000000000        0x0 Core/Src/Drivers/_crc.o
+ .text.CRC_Calculate8
+                0x0000000000000000       0xd8 Core/Src/Drivers/_crc.o
+ .text.CRC_Calculate32
+                0x0000000000000000       0x2c Core/Src/Drivers/_crc.o
+ .text.lock     0x0000000000000000        0xe Core/Src/Drivers/_crc.o
+ .text.unlock   0x0000000000000000        0xe Core/Src/Drivers/_crc.o
+ .debug_info    0x0000000000000000      0x393 Core/Src/Drivers/_crc.o
+ .debug_abbrev  0x0000000000000000      0x168 Core/Src/Drivers/_crc.o
+ .debug_aranges
+                0x0000000000000000       0x38 Core/Src/Drivers/_crc.o
+ .debug_ranges  0x0000000000000000       0x28 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x1ce Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0xa5a Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x184 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x28 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x8e Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x51 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0xef Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x6a Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x1df Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x1c Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0xdf Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000     0x102d Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x11f Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000    0x15c0c Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x43 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000     0x3659 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x174 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x5a Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0xd15 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x9fe Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x173 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x117 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x202 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x27 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x2bf Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x5f Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x236 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x132 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x30c Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x11a Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x91 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000       0x89 Core/Src/Drivers/_crc.o
+ .debug_macro   0x0000000000000000      0x134 Core/Src/Drivers/_crc.o
+ .debug_line    0x0000000000000000      0x710 Core/Src/Drivers/_crc.o
+ .debug_str     0x0000000000000000    0xbd501 Core/Src/Drivers/_crc.o
+ .comment       0x0000000000000000       0x7c Core/Src/Drivers/_crc.o
+ .debug_frame   0x0000000000000000       0x98 Core/Src/Drivers/_crc.o
+ .ARM.attributes
+                0x0000000000000000       0x39 Core/Src/Drivers/_crc.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Drivers/_flasher.o
+ .text          0x0000000000000000        0x0 Core/Src/Drivers/_flasher.o
+ .data          0x0000000000000000        0x0 Core/Src/Drivers/_flasher.o
+ .bss           0x0000000000000000        0x0 Core/Src/Drivers/_flasher.o
+ .text.FLASHER_WriteByte
+                0x0000000000000000       0x90 Core/Src/Drivers/_flasher.o
+ .text.FLASHER_Erase
+                0x0000000000000000       0xec Core/Src/Drivers/_flasher.o
+ .text.FLASHER_GetSector
+                0x0000000000000000      0x1a0 Core/Src/Drivers/_flasher.o
+ .text.FLASHER_GetSectorSize
+                0x0000000000000000       0x4e Core/Src/Drivers/_flasher.o
+ .debug_info    0x0000000000000000      0x3b2 Core/Src/Drivers/_flasher.o
+ .debug_abbrev  0x0000000000000000      0x167 Core/Src/Drivers/_flasher.o
+ .debug_aranges
+                0x0000000000000000       0x38 Core/Src/Drivers/_flasher.o
+ .debug_ranges  0x0000000000000000       0x28 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x1d3 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0xa5a Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x184 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x28 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x8e Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x51 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0xef Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x6a Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x1df Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x1c Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0xdf Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000     0x102d Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x11f Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000    0x15c0c Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x43 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000     0x3659 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x174 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x5a Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0xd15 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x9fe Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x173 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x117 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x202 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x27 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x2bf Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x5f Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x236 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x132 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x30c Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x11a Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x91 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x89 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000      0x134 Core/Src/Drivers/_flasher.o
+ .debug_macro   0x0000000000000000       0x70 Core/Src/Drivers/_flasher.o
+ .debug_line    0x0000000000000000      0x7a0 Core/Src/Drivers/_flasher.o
+ .debug_str     0x0000000000000000    0xbd84c Core/Src/Drivers/_flasher.o
+ .comment       0x0000000000000000       0x7c Core/Src/Drivers/_flasher.o
+ .debug_frame   0x0000000000000000       0xac Core/Src/Drivers/_flasher.o
+ .ARM.attributes
+                0x0000000000000000       0x39 Core/Src/Drivers/_flasher.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .group         0x0000000000000000        0xc Core/Src/Libs/_utils.o
+ .text          0x0000000000000000        0x0 Core/Src/Libs/_utils.o
+ .data          0x0000000000000000        0x0 Core/Src/Libs/_utils.o
+ .bss           0x0000000000000000        0x0 Core/Src/Libs/_utils.o
+ .text._ByteSwap32
+                0x0000000000000000       0x44 Core/Src/Libs/_utils.o
+ .debug_info    0x0000000000000000      0x19f Core/Src/Libs/_utils.o
+ .debug_abbrev  0x0000000000000000       0xce Core/Src/Libs/_utils.o
+ .debug_aranges
+                0x0000000000000000       0x20 Core/Src/Libs/_utils.o
+ .debug_ranges  0x0000000000000000       0x10 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x1c4 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0xa5a Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x184 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x28 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x8e Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x51 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0xef Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x6a Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x1df Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x1c Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0xdf Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000     0x102d Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x11f Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000    0x15c0c Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x43 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000     0x3659 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x174 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x5a Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0xd15 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x9fe Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x173 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x117 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x202 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x27 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x2bf Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x5f Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x236 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x132 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x30c Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x11a Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x91 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000       0x89 Core/Src/Libs/_utils.o
+ .debug_macro   0x0000000000000000      0x134 Core/Src/Libs/_utils.o
+ .debug_line    0x0000000000000000      0x682 Core/Src/Libs/_utils.o
+ .debug_str     0x0000000000000000    0xbd3ad Core/Src/Libs/_utils.o
+ .comment       0x0000000000000000       0x7c Core/Src/Libs/_utils.o
+ .debug_frame   0x0000000000000000       0x38 Core/Src/Libs/_utils.o
+ .ARM.attributes
+                0x0000000000000000       0x39 Core/Src/Libs/_utils.o
  .group         0x0000000000000000        0xc Core/Src/main.o
  .group         0x0000000000000000        0xc Core/Src/main.o
  .group         0x0000000000000000        0xc Core/Src/main.o
@@ -78,6 +363,43 @@ Discarded input sections
  .text          0x0000000000000000        0x0 Core/Src/main.o
  .data          0x0000000000000000        0x0 Core/Src/main.o
  .bss           0x0000000000000000        0x0 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0xa5a Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x184 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x28 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x8e Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x51 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0xef Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x6a Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x1df Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x1c Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0xdf Core/Src/main.o
+ .debug_macro   0x0000000000000000     0x102d Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x11f Core/Src/main.o
+ .debug_macro   0x0000000000000000    0x15c0c Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x43 Core/Src/main.o
+ .debug_macro   0x0000000000000000     0x3659 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x174 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x5a Core/Src/main.o
+ .debug_macro   0x0000000000000000      0xd15 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x9fe Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x173 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x117 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x202 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x27 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x2bf Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x5f Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x236 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x132 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x30c Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x11a Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x91 Core/Src/main.o
+ .debug_macro   0x0000000000000000       0x89 Core/Src/main.o
+ .debug_macro   0x0000000000000000      0x134 Core/Src/main.o
  .group         0x0000000000000000        0xc Core/Src/stm32f4xx_hal_msp.o
  .group         0x0000000000000000        0xc Core/Src/stm32f4xx_hal_msp.o
  .group         0x0000000000000000        0xc Core/Src/stm32f4xx_hal_msp.o
@@ -2279,6 +2601,9 @@ Linker script and memory map
 LOAD /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/crti.o
 LOAD /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/crtbegin.o
 LOAD /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/crt0.o
+LOAD Core/Src/Drivers/_crc.o
+LOAD Core/Src/Drivers/_flasher.o
+LOAD Core/Src/Libs/_utils.o
 LOAD Core/Src/main.o
 LOAD Core/Src/stm32f4xx_hal_msp.o
 LOAD Core/Src/stm32f4xx_it.o
@@ -2796,55 +3121,18 @@ OUTPUT(VCU_BOOTLOADER.elf elf32-littlearm)
  .debug_ranges  0x0000000000000348       0x78 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
  .debug_ranges  0x00000000000003c0       0x50 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
 
-.debug_macro    0x0000000000000000    0x1f2a7
+.debug_macro    0x0000000000000000     0x124b
  .debug_macro   0x0000000000000000      0x1c9 Core/Src/main.o
- .debug_macro   0x00000000000001c9      0xa5a Core/Src/main.o
- .debug_macro   0x0000000000000c23      0x184 Core/Src/main.o
- .debug_macro   0x0000000000000da7       0x2e Core/Src/main.o
- .debug_macro   0x0000000000000dd5       0x28 Core/Src/main.o
- .debug_macro   0x0000000000000dfd       0x22 Core/Src/main.o
- .debug_macro   0x0000000000000e1f       0x8e Core/Src/main.o
- .debug_macro   0x0000000000000ead       0x51 Core/Src/main.o
- .debug_macro   0x0000000000000efe       0xef Core/Src/main.o
- .debug_macro   0x0000000000000fed       0x6a Core/Src/main.o
- .debug_macro   0x0000000000001057      0x1df Core/Src/main.o
- .debug_macro   0x0000000000001236       0x1c Core/Src/main.o
- .debug_macro   0x0000000000001252       0x22 Core/Src/main.o
- .debug_macro   0x0000000000001274       0xdf Core/Src/main.o
- .debug_macro   0x0000000000001353     0x102d Core/Src/main.o
- .debug_macro   0x0000000000002380      0x11f Core/Src/main.o
- .debug_macro   0x000000000000249f    0x15c0c Core/Src/main.o
- .debug_macro   0x00000000000180ab       0x43 Core/Src/main.o
- .debug_macro   0x00000000000180ee     0x3659 Core/Src/main.o
- .debug_macro   0x000000000001b747      0x174 Core/Src/main.o
- .debug_macro   0x000000000001b8bb       0x5a Core/Src/main.o
- .debug_macro   0x000000000001b915      0xd15 Core/Src/main.o
- .debug_macro   0x000000000001c62a      0x9fe Core/Src/main.o
- .debug_macro   0x000000000001d028      0x173 Core/Src/main.o
- .debug_macro   0x000000000001d19b      0x117 Core/Src/main.o
- .debug_macro   0x000000000001d2b2      0x202 Core/Src/main.o
- .debug_macro   0x000000000001d4b4       0x27 Core/Src/main.o
- .debug_macro   0x000000000001d4db      0x2bf Core/Src/main.o
- .debug_macro   0x000000000001d79a       0x5f Core/Src/main.o
- .debug_macro   0x000000000001d7f9      0x236 Core/Src/main.o
- .debug_macro   0x000000000001da2f       0x22 Core/Src/main.o
- .debug_macro   0x000000000001da51      0x132 Core/Src/main.o
- .debug_macro   0x000000000001db83      0x30c Core/Src/main.o
- .debug_macro   0x000000000001de8f       0x2e Core/Src/main.o
- .debug_macro   0x000000000001debd      0x11a Core/Src/main.o
- .debug_macro   0x000000000001dfd7       0x91 Core/Src/main.o
- .debug_macro   0x000000000001e068       0x89 Core/Src/main.o
- .debug_macro   0x000000000001e0f1      0x134 Core/Src/main.o
- .debug_macro   0x000000000001e225       0x10 Core/Src/main.o
- .debug_macro   0x000000000001e235      0x1c9 Core/Src/stm32f4xx_hal_msp.o
- .debug_macro   0x000000000001e3fe      0x1d3 Core/Src/stm32f4xx_it.o
- .debug_macro   0x000000000001e5d1      0x1c0 Core/Src/system_stm32f4xx.o
- .debug_macro   0x000000000001e791      0x21a Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
- .debug_macro   0x000000000001e9ab      0x1ba Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
- .debug_macro   0x000000000001eb65      0x1ba Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.o
- .debug_macro   0x000000000001ed1f      0x1f0 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
- .debug_macro   0x000000000001ef0f      0x1de Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
- .debug_macro   0x000000000001f0ed      0x1ba Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
+ .debug_macro   0x00000000000001c9       0x10 Core/Src/main.o
+ .debug_macro   0x00000000000001d9      0x1c9 Core/Src/stm32f4xx_hal_msp.o
+ .debug_macro   0x00000000000003a2      0x1d3 Core/Src/stm32f4xx_it.o
+ .debug_macro   0x0000000000000575      0x1c0 Core/Src/system_stm32f4xx.o
+ .debug_macro   0x0000000000000735      0x21a Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
+ .debug_macro   0x000000000000094f      0x1ba Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
+ .debug_macro   0x0000000000000b09      0x1ba Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.o
+ .debug_macro   0x0000000000000cc3      0x1f0 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
+ .debug_macro   0x0000000000000eb3      0x1de Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
+ .debug_macro   0x0000000000001091      0x1ba Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
 
 .debug_line     0x0000000000000000     0x4f81
  .debug_line    0x0000000000000000      0x6f7 Core/Src/main.o

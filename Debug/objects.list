@@ -1,3 +1,6 @@
+"Core/Src/Drivers/_crc.o"
+"Core/Src/Drivers/_flasher.o"
+"Core/Src/Libs/_utils.o"
 "Core/Src/main.o"
 "Core/Src/stm32f4xx_hal_msp.o"
 "Core/Src/stm32f4xx_it.o"
