@@ -24,6 +24,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Libs/_utils.h"
+#include "Libs/_eeprom.h"
+#include "Libs/_simcom.h"
+#include "Drivers/_flasher.h"
+#include "DMA/_dma_battery.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,7 +56,7 @@ UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
-
+extern uint32_t IAP_FLAG;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,7 +73,6 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 /**
@@ -106,18 +109,39 @@ int main(void)
     MX_I2C2_Init();
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
-
+    EEPROM_Init();
+    BAT_DMA_Init();
+    Simcom_Init();
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    while (1)
-    {
-        _LedToggle();
-        _DelayMS(500);
+    IAP_FLAG = 1;
+    while (1) {
+        if (IAP_FLAG) {
+            if (Simcom_SetState(SIM_STATE_GPRS_ON)) {
+                // Backup current image to BKP area
+                FLASHER_BackupApp();
+
+                // Download new image to APP area
+                if (Simcom_FOTA()) {
+                    // New image has valid checksum in APP area
+                    EEPROM_FlagIAP(EE_CMD_W, 0);
+                } else {
+                    // DFU failed, restore old image to APP area
+                    FLASHER_RestoreApp();
+                }
+            }
+
+            // Reboot
+            HAL_NVIC_SystemReset();
+        } else if (IS_VALID_SP(FLASH_APP_START_ADDR)) {
+
+        }
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
+        _LedWrite(1);
     }
     /* USER CODE END 3 */
 }
@@ -462,18 +486,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+    /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

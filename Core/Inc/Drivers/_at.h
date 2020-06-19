@@ -231,21 +231,13 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
 SIMCOM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state);
 
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
-SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
-SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
 SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
-SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
 SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param);
-SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
 SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
 SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);
 
 SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t *param);
 
-SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
-SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state);
-SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state);
-SIMCOM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state);
 SIMCOM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state);
 SIMCOM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state);
 SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state);

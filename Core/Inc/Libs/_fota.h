@@ -18,7 +18,6 @@
 SIMCOM_RESULT FOTA_BearerInitialize(void);
 SIMCOM_RESULT FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum);
 SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len);
-uint8_t FOTA_CompareChecksum(uint32_t crcRemote, uint32_t len);
-uint8_t FOTA_SetInProgress(uint32_t checksum);
+uint8_t FOTA_CompareChecksum(uint32_t crcRemote, uint32_t len, uint32_t address);
 
 #endif /* INC_LIBS__FOTA_H_ */

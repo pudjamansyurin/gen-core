@@ -71,6 +71,7 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t Simcom_SetState(SIMCOM_STATE state);
+void Simcom_Init(void);
 char* Simcom_Response(char *str);
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
 SIMCOM_RESULT Simcom_FOTA(void);

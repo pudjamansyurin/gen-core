@@ -31,22 +31,29 @@
 #define ADDR_FLASH_SECTOR_15    ((uint32_t)0x08160000) /* Base address of Sector15, 128 Kbytes */
 
 /* User defined */
-#define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_10
-#define FLASH_USER_END_ADDR     (ADDR_FLASH_SECTOR_11  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_11) - 1)
+#define FLASH_APP_START_ADDR    ADDR_FLASH_SECTOR_5
+#define FLASH_APP_END_ADDR      (ADDR_FLASH_SECTOR_9  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_9) - 1)
 
-#define FOTA_IN_PROGRESS        0xA1B2C3D4
-#define FOTA_FLAG_ADDRESS       FLASH_USER_END_ADDR - sizeof(uint32_t)
-#define FOTA_CHECKSUM_ADDRESS   FOTA_FLAG_ADDRESS - sizeof(uint32_t)
-#define IS_FOTA_IN_PROGRESS     ((*(uint32_t*) FOTA_FLAG_ADDRESS) == FOTA_IN_PROGRESS)
+#define FLASH_BKP_START_ADDR    ADDR_FLASH_SECTOR_10
+#define FLASH_BKP_END_ADDR      (ADDR_FLASH_SECTOR_14  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_14) - 1)
 
-#define SRAM_START_ADDR         (uint32_t)0x20000000)
-#define SRAM_END_ADDR           (uint32_t)0x20050000)
-#define IS_VALID_SP(addr)       (((*(volatile uint32_t*)addr) & x) == SRAM_START_ADDR)
+#define SRAM_START_ADDR         (uint32_t)0x20000000
+#define SRAM_END_ADDR           ((uint32_t)0x20050000 - 1)
+#define IS_VALID_SP(addr)       (((*(uint32_t*)addr) >= SRAM_START_ADDR) && ((*(uint32_t*)addr) <= SRAM_END_ADDR))
+
+#define IAP_RETRY_ADDR          (SRAM_END_ADDR - 4)
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t FLASHER_WriteByte(uint8_t *ptr, uint16_t size, uint32_t offset);
-uint8_t FLASHER_Erase(void);
+uint8_t FLASHER_WriteByte(uint8_t *ptr, uint16_t size, uint32_t address, uint32_t end);
+uint8_t FLASHER_Erase(uint32_t FirstSector, uint32_t NbOfSectors);
 uint32_t FLASHER_GetSector(uint32_t Address);
 uint32_t FLASHER_GetSectorSize(uint32_t Sector);
+
+uint8_t FLASHER_EraseBkpArea(void);
+uint8_t FLASHER_EraseAppArea(void);
+uint8_t FLASHER_WriteBkpArea(uint8_t *ptr, uint16_t size, uint32_t offset);
+uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint16_t size, uint32_t offset);
+uint8_t FLASHER_BackupApp(void);
+uint8_t FLASHER_RestoreApp(void);
 
 #endif /* INC_DRIVERS__FLASHER_H_ */

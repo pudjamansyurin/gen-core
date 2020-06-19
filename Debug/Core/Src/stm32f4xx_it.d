@@ -30,7 +30,9 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/stm32f4xx_it.h
+ ../Core/Inc/stm32f4xx_it.h ../Core/Inc/DMA/_dma_simcom.h \
+ ../Core/Inc/Libs/_utils.h ../Core/Inc/_defines.h ../Core/Inc/main.h \
+ ../Core/Inc/Drivers/_log.h
 
 ../Core/Inc/main.h:
 
@@ -97,3 +99,13 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
 ../Core/Inc/stm32f4xx_it.h:
+
+../Core/Inc/DMA/_dma_simcom.h:
+
+../Core/Inc/Libs/_utils.h:
+
+../Core/Inc/_defines.h:
+
+../Core/Inc/main.h:
+
+../Core/Inc/Drivers/_log.h:

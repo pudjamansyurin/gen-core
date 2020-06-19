@@ -18,6 +18,7 @@
 #define VADDR_REPORT_SEQ_ID         VADDR_UNITID + sizeof(uint32_t)
 #define VADDR_RESPONSE_SEQ_ID       VADDR_REPORT_SEQ_ID + sizeof(uint16_t)
 #define VADDR_AES_KEY               VADDR_RESPONSE_SEQ_ID + sizeof(uint16_t)
+#define VADDR_IAP_FLAG              VADDR_AES_KEY + 128
 
 #define EE_NULL                     0
 
@@ -29,5 +30,6 @@ typedef enum {
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EEPROM_Init(void);
+uint8_t EEPROM_FlagIAP(EEPROM_COMMAND cmd, uint32_t value);
 
 #endif /* EEPROM_H_ */

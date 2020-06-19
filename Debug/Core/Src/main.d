@@ -31,7 +31,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/Libs/_utils.h ../Core/Inc/_defines.h ../Core/Inc/main.h \
- ../Core/Inc/Drivers/_log.h
+ ../Core/Inc/Drivers/_log.h ../Core/Inc/Libs/_eeprom.h \
+ ../Core/Inc/Libs/_simcom.h ../Core/Inc/Drivers/_flasher.h \
+ ../Core/Inc/DMA/_dma_battery.h
 
 ../Core/Inc/main.h:
 
@@ -104,3 +106,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/main.h:
 
 ../Core/Inc/Drivers/_log.h:
+
+../Core/Inc/Libs/_eeprom.h:
+
+../Core/Inc/Libs/_simcom.h:
+
+../Core/Inc/Drivers/_flasher.h:
+
+../Core/Inc/DMA/_dma_battery.h:

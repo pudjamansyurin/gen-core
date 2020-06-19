@@ -14,11 +14,12 @@
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_at.h"
+#include "Drivers/_flasher.h"
 
 /* External variables ---------------------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 
-/* Public variables ----------------------------------------------------------*/
+/* Exported variables ---------------------------------------------------------*/
 sim_t SIM = {
         .state = SIM_STATE_DOWN,
         .ip_status = CIPSTAT_UNKNOWN,
@@ -46,6 +47,11 @@ char* Simcom_Response(char *str) {
     return strstr(SIMCOM_UART_RX, str);
 }
 
+void Simcom_Init(void) {
+    SIMCOM_DMA_Init();
+    Simcom_SetState(SIM_STATE_READY);
+}
+
 uint8_t Simcom_SetState(SIMCOM_STATE state) {
     static uint8_t init = 1;
     uint8_t depth = 3;
@@ -54,8 +60,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 
     Simcom_Lock();
     // Handle SIMCOM state properly
-    do {
-
+    while (SIM.state < state) {
         // Handle locked-loop
         if (SIM.state < lastState) {
             if (!--depth) {
@@ -130,21 +135,21 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                     AT_CSCLK state = CSCLK_EN_DTR;
                     p = AT_ConfigureSlowClock(ATW, &state);
                 }
-                // Enable time reporting
-                if (p > 0) {
-                    AT_BOOL state = AT_ENABLE;
-                    p = AT_EnableLocalTimestamp(ATW, &state);
-                }
-                // Enable “+IPD” header
-                if (p > 0) {
-                    AT_BOOL state = AT_ENABLE;
-                    p = AT_IpPackageHeader(ATW, &state);
-                }
-                // Disable “RECV FROM” header
-                if (p > 0) {
-                    AT_BOOL state = AT_DISABLE;
-                    p = AT_ShowRemoteIp(ATW, &state);
-                }
+//                // Enable time reporting
+//                if (p > 0) {
+//                    AT_BOOL state = AT_ENABLE;
+//                    p = AT_EnableLocalTimestamp(ATW, &state);
+//                }
+//                // Enable “+IPD” header
+//                if (p > 0) {
+//                    AT_BOOL state = AT_ENABLE;
+//                    p = AT_IpPackageHeader(ATW, &state);
+//                }
+//                // Disable “RECV FROM” header
+//                if (p > 0) {
+//                    AT_BOOL state = AT_DISABLE;
+//                    p = AT_ShowRemoteIp(ATW, &state);
+//                }
                 // =========== NETWORK CONFIGURATION
                 // Check SIM Card
                 if (p > 0) {
@@ -231,20 +236,12 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                 _DelayMS(500);
                 break;
             case SIM_STATE_GPRS_ON:
-                // Check IP Status
-                AT_ConnectionStatusSingle(&(SIM.ip_status));
-
-//                if (SIM.ip_status != CIPSTAT_CONNECT_OK) {
-//                    if (SIM.state == SIM_STATE_SERVER_ON) {
-//                        SIM.state--;
-//                    }
-//                }
 
                 break;
             default:
                 break;
         }
-    } while (SIM.state < state);
+    };
     Simcom_Unlock();
 
     return SIM.state >= state;
@@ -259,7 +256,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
     };
 
     Simcom_Lock();
-    if (SIM.state >= SIM_STATE_INTERNET_ON) {
+    if (SIM.state >= SIM_STATE_GPRS_ON) {
         // Initialize bearer for TCP based apps.
         p = FOTA_BearerInitialize();
 
@@ -275,11 +272,7 @@ SIMCOM_RESULT Simcom_FOTA(void) {
 
         // Buffer filled, compare the checksum
         if (p > 0) {
-            if (FOTA_CompareChecksum(checksum, len)) {
-                // Reset System to enter Bootloader
-                FOTA_SetInProgress(checksum);
-                HAL_NVIC_SystemReset();
-            }
+            p = FOTA_CompareChecksum(checksum, len, FLASH_BKP_START_ADDR);
         }
     }
     Simcom_Unlock();
@@ -348,7 +341,6 @@ SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
     if (p > 0) {
         SIM.signal = signal.percent;
     }
-    p = AT_ConnectionStatusSingle(&(SIM.ip_status));
 
     return p;
 }
@@ -418,7 +410,6 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
         if (Simcom_Response(res)
                 || Simcom_Response(SIMCOM_RSP_ERROR)
                 || Simcom_Response(SIMCOM_RSP_READY)
-                || Simcom_CommandoIRQ()
                 || (_GetTickMS() - tick) >= timeout_tick) {
 
             // check response
@@ -428,9 +419,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
 
             // Handle failure
             if (p != SIM_RESULT_OK) {
-                if (Simcom_CommandoIRQ()) {
-                    p = SIM_RESULT_TIMEOUT;
-                } else if (strlen(SIMCOM_UART_RX) == 0) {
+                if (strlen(SIMCOM_UART_RX) == 0) {
                     // exception for no response
                     p = SIM_RESULT_NO_RESPONSE;
                     SIM.state = SIM_STATE_DOWN;

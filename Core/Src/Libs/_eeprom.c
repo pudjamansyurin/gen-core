@@ -9,6 +9,9 @@
 #include "Libs/_eeprom.h"
 #include "Drivers/_eeprom24xx.h"
 
+/* Exported variables ---------------------------------------------------------*/
+uint32_t IAP_FLAG = 0;
+
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
 static void lock(void);
@@ -48,9 +51,16 @@ uint8_t EEPROM_Init(void) {
     if (!ret) {
         LOG_StrLn("EEPROM:Error");
     }
-
     unlock();
+
+    // Load or Reset
+    EEPROM_FlagIAP(EE_CMD_R, EE_NULL);
+
     return ret;
+}
+
+uint8_t EEPROM_FlagIAP(EEPROM_COMMAND cmd, uint32_t value) {
+    return EE_Command(VADDR_IAP_FLAG, cmd, &value, &IAP_FLAG, sizeof(value));
 }
 
 /* Private functions implementation --------------------------------------------*/

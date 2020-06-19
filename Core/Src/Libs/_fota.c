@@ -70,6 +70,11 @@ SIMCOM_RESULT FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
         if (p > 0) {
             // Copy to Buffer
             *checksum = strtol(setFTPGET.ptr, (char**) NULL, 16);
+
+            // Indicator
+            LOG_Str("FOTA:ChecksumOrigin = ");
+            LOG_Hex32(*checksum);
+            LOG_Enter();
         }
     }
 
@@ -115,8 +120,8 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
     if (p > 0 && setFTPGET.response == FTP_READY) {
         // Prepare, start timer
         LOG_StrLn("FOTA:Start");
-        FLASHER_Erase();
         timer = _GetTickMS();
+        FLASHER_EraseAppArea();
 
         // Copy chunk by chunk
         setFTPGET.mode = FTPGET_READ;
@@ -127,10 +132,11 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
 
             if (p > 0 && setFTPGET.cnflength) {
                 // Copy to Buffer
-                FLASHER_WriteByte((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
+                FLASHER_WriteAppArea((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
                 *len += setFTPGET.cnflength;
 
                 // Indicator
+                _LedToggle();
                 LOG_Str("FOTA:Progress = ");
                 LOG_Int(*len);
                 LOG_Str(" Bytes (");
@@ -149,8 +155,11 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
         } else {
             LOG_StrLn("FOTA:Failed");
             p = SIM_RESULT_ERROR;
-            FLASHER_Erase();
         }
+    }
+
+    if (p > 0) {
+
     }
 
     // Check state
@@ -163,11 +172,12 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
     return p;
 }
 
-uint8_t FOTA_CompareChecksum(uint32_t crcRemote, uint32_t len) {
+uint8_t FOTA_CompareChecksum(uint32_t crcRemote, uint32_t len, uint32_t address) {
     uint32_t crcLocal = 0;
+    uint8_t *addr = (uint8_t*) address;
 
     // Calculate CRC
-    crcLocal = CRC_Calculate8((uint8_t*) FLASH_USER_START_ADDR, len, 1);
+    crcLocal = CRC_Calculate8(addr, len, 1);
 
     // Indicator
     LOG_Str("FOTA:Checksum = ");
@@ -175,24 +185,8 @@ uint8_t FOTA_CompareChecksum(uint32_t crcRemote, uint32_t len) {
         LOG_StrLn("MATCH");
     } else {
         LOG_StrLn("NOT MATCH");
-        FLASHER_Erase();
     }
 
     return (crcLocal == crcRemote);
-}
-
-uint8_t FOTA_SetInProgress(uint32_t checksum) {
-    uint32_t data = FOTA_IN_PROGRESS;
-    uint8_t ret;
-
-    // Set Checksum
-    ret = FLASHER_WriteByte((uint8_t*) &checksum, sizeof(checksum), FOTA_CHECKSUM_ADDRESS);
-
-    // Set DFU flag
-    if (ret) {
-        ret = FLASHER_WriteByte((uint8_t*) &data, sizeof(data), FOTA_FLAG_ADDRESS);
-    }
-
-    return ret;
 }
 
