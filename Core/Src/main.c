@@ -136,6 +136,7 @@ int main(void)
             // Reboot
             HAL_NVIC_SystemReset();
         } else if (IS_VALID_SP(FLASH_APP_START_ADDR)) {
+            // Check Image also with it's checksum
 
         }
         /* USER CODE END WHILE */
