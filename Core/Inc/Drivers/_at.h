@@ -101,58 +101,6 @@ typedef enum {
 } AT_CSACT_ACT;
 
 typedef enum {
-    SAPBR_BEARER_CLOSE = 0,
-    SAPBR_BEARER_OPEN,
-    SAPBR_BEARER_QUERY,
-    SAPBR_PARAMETERS_SET,
-    SAPBR_PARAMETERS_GET,
-    SAPBR_ForceEnumSize = MAX_ENUM_SIZE
-} AT_SAPBR_CMD;
-
-typedef enum {
-    SAPBR_CONNECTING = 0,
-    SAPBR_CONNECTED,
-    SAPBR_CLOSING,
-    SAPBR_CLOSED,
-    SAPBR_STATUS_ForceEnumSize = MAX_ENUM_SIZE
-} AT_SAPBR_STATUS;
-
-typedef enum {
-    FTP_FINISH = 0,
-    FTP_READY,
-    FTP_ERROR_NET = 61,
-    FTP_ERROR_DNS,
-    FTP_ERROR_CONNECT,
-    FTP_ERROR_TIMEOUT,
-    FTP_ERROR_SERVER,
-    FTP_ERROR_OPERATION_NOT_ALLOW,
-    FTP_ERROR_REPLAY,
-    FTP_ERROR_USER,
-    FTP_ERROR_PASSWORD,
-    FTP_ERROR_TYPE,
-    FTP_ERROR_REST,
-    FTP_ERROR_PASSIVE,
-    FTP_ERROR_ACTIVE,
-    FTP_ERROR_OPERATE,
-    FTP_ERROR_UPLOAD,
-    FTP_ERROR_DOWNLOAD,
-    FTP_ERROR_QUIT,
-    FTP_ForceEnumSize = MAX_ENUM_SIZE
-} AT_FTP_RESPONSE;
-
-typedef enum {
-    FTPGET_OPEN = 1,
-    FTPGET_READ,
-    FTPGET_ForceEnumSize = MAX_ENUM_SIZE
-} AT_FTPGET_MODE;
-
-typedef enum {
-    FTP_STATE_IDLE = 0,
-    FTP_STATE_ESTABLISHED,
-    FTP_STATE_ForceEnumSize = MAX_ENUM_SIZE
-} AT_FTP_STATE;
-
-typedef enum {
     AT_DISABLE = 0,
     AT_ENABLE,
     AT_ForceEnumSize = MAX_ENUM_SIZE
@@ -195,47 +143,15 @@ typedef struct {
 } at_cstt_t;
 
 typedef struct {
-    AT_SAPBR_CMD cmd_type;
-    AT_SAPBR_STATUS status;
-    at_cstt_t con;
-} at_sapbr_t;
-
-typedef struct {
-    AT_FTPGET_MODE mode;
-    AT_FTP_RESPONSE response;
-    uint16_t reqlength;
-    uint16_t cnflength;
-    char *ptr;
-} at_ftpget_t;
-
-typedef struct {
-    int32_t id;
-    char server[30];
-    char username[30];
-    char password[20];
-    char path[20];
-    char file[20];
-    char version[20];
-    uint32_t size;
-    AT_FTP_RESPONSE response;
-} at_ftp_t;
-
-typedef struct {
     char address[20];
 } at_cifsr_t;
 
 /* Public functions implementation --------------------------------------------*/
-SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
-SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param);
-SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
-SIMCOM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state);
-
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
 SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
 SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
 SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
-SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param);
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
 SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
 SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);

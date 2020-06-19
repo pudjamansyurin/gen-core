@@ -67,7 +67,7 @@ uint8_t EEPROM_Init(void) {
 void EEPROM_ResetOrLoad(void) {
     uint32_t AesKeyNew[4];
 
-    if (EEPROM_Init() && !EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
+    if (!EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
         // load from EEPROM
         EEPROM_UnitID(EE_CMD_R, EE_NULL);
         EEPROM_Odometer(EE_CMD_R, EE_NULL);
@@ -91,6 +91,8 @@ void EEPROM_ResetOrLoad(void) {
         // re-write eeprom
         EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
     }
+    // Reset FOTA flag
+    EEPROM_Fota(EE_CMD_W, 0);
 
 }
 
@@ -149,13 +151,11 @@ uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE typ
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
     uint8_t ret;
-    uint32_t tmp[4];
+    uint32_t *ptr, tmp[4];
 
-    if (cmd == EE_CMD_W) {
-        ret = EE_Command(VADDR_AES_KEY, cmd, value, AesKey, 16);
-    } else {
-        ret = EE_Command(VADDR_AES_KEY, cmd, &tmp, AesKey, 16);
-    }
+    // eeprom
+    ptr = (cmd == EE_CMD_W ? value : tmp);
+    ret = EE_Command(VADDR_AES_KEY, cmd, ptr, AesKey, 16);
 
     // apply the AES key
     if (cmd == EE_CMD_W) {
@@ -163,6 +163,10 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
     }
 
     return ret;
+}
+
+uint8_t EEPROM_Fota(EEPROM_COMMAND cmd, uint32_t value) {
+    return EE_Command(VADDR_FOTA, cmd, &value, &(VCU.d.fota), sizeof(value));
 }
 
 /* Private functions implementation --------------------------------------------*/

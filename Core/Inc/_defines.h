@@ -138,6 +138,7 @@
 #define CMD_GEN_INFO                            0
 #define CMD_GEN_LED                             1
 #define CMD_GEN_KNOB                            2
+#define CMD_GEN_FOTA                            3
 
 #define CMD_REPORT_RTC                          0
 #define CMD_REPORT_ODOM                         1

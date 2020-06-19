@@ -23,6 +23,7 @@ typedef enum {
 /* Exported struct --------------------------------------------------------------*/
 
 typedef struct {
+    uint32_t fota;
     uint32_t unit_id;
     uint8_t driver_id;
     uint16_t interval;

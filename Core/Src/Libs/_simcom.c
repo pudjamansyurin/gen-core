@@ -10,7 +10,6 @@
 // https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/pub0sub1.c
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_simcom.h"
-#include "Libs/_fota.h"
 #include "Libs/_reporter.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_crc.h"
@@ -50,8 +49,12 @@ void Simcom_Unlock(void) {
 }
 
 char* Simcom_Response(char *str) {
-    //    return memmem(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX), str, strlen(str));
     return strstr(SIMCOM_UART_RX, str);
+}
+
+void Simcom_Init(void) {
+    SIMCOM_DMA_Init();
+    Simcom_SetState(SIM_STATE_READY);
 }
 
 uint8_t Simcom_SetState(SIMCOM_STATE state) {
@@ -62,8 +65,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 
     Simcom_Lock();
     // Handle SIMCOM state properly
-    do {
-
+    while (SIM.state < state) {
         // Handle locked-loop
         if (SIM.state < lastState) {
             if (!--depth) {
@@ -382,7 +384,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
             default:
                 break;
         }
-    } while (SIM.state < state);
+    };
     Simcom_Unlock();
 
     return SIM.state >= state;
@@ -440,42 +442,6 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
         }
     }
 
-    Simcom_Unlock();
-    return p;
-}
-
-SIMCOM_RESULT Simcom_FOTA(void) {
-    SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    uint32_t checksum = 0, len = 0;
-    at_ftp_t ftp = {
-            .path = "/vcu/",
-            .version = "HUB2"
-    };
-
-    Simcom_Lock();
-    if (SIM.state >= SIM_STATE_INTERNET_ON) {
-        // Initialize bearer for TCP based apps.
-        p = FOTA_BearerInitialize();
-
-        // Get Checksum of Firmware
-        if (p > 0) {
-            p = FOTA_GetChecksum(&ftp, &checksum);
-        }
-
-        // Download Firmware then save to FLASH
-        if (p > 0) {
-            p = FOTA_FirmwareToFlash(&ftp, &len);
-        }
-
-        // Buffer filled, compare the checksum
-        if (p > 0) {
-            if (FOTA_CompareChecksum(checksum, len)) {
-                // Reset System to enter Bootloader
-                FOTA_SetInProgress(checksum);
-                HAL_NVIC_SystemReset();
-            }
-        }
-    }
     Simcom_Unlock();
     return p;
 }

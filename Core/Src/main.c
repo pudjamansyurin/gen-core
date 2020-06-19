@@ -38,9 +38,6 @@
 #include "Drivers/_rtc.h"
 #include "Drivers/_aes.h"
 #include "DMA/_dma_battery.h"
-#include "DMA/_dma_simcom.h"
-#include "DMA/_dma_ublox.h"
-#include "DMA/_dma_finger.h"
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
@@ -1431,6 +1428,9 @@ void StartManagerTask(void *argument)
     BMS.Init();
     HMI1.Init();
     HMI2.Init();
+
+    // Initialize EEPROM
+    EEPROM_Init();
     EEPROM_ResetOrLoad();
 
     // Threads management:
@@ -1510,16 +1510,11 @@ void StartIotTask(void *argument)
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
     // Start simcom module
-    SIMCOM_DMA_Init();
+    Simcom_Init();
 
     /* Infinite loop */
     for (;;) {
         lastWake = _GetTickMS();
-
-//        // FOTA
-//        if (Simcom_SetState(SIM_STATE_INTERNET_ON)) {
-//            Simcom_FOTA();
-//        }
 
         // Upload Report & Response Payload
         if (Simcom_SetState(SIM_STATE_SERVER_ON)) {
@@ -1564,6 +1559,16 @@ void StartIotTask(void *argument)
 
                     // Send to server
                     p = Simcom_Upload(pPayload, size + pHeader->size);
+
+                    // Handle FOTA request
+                    if (p == SIM_RESULT_OK) {
+                        if (type == PAYLOAD_RESPONSE) {
+                            if (VCU.d.fota > 0) {
+                                HAL_NVIC_SystemReset();
+                                // This point is never reached
+                            }
+                        }
+                    }
 
                     // Handle looping NACK
                     if (p == SIM_RESULT_NACK) {
@@ -1709,6 +1714,10 @@ void StartCommandTask(void *argument)
                             VCU.d.state.knob = (uint8_t) command.data.value;
                             break;
 
+                        case CMD_GEN_FOTA:
+                            EEPROM_Fota(EE_CMD_W, 1);
+                            break;
+
                         default:
                             response.data.code = RESPONSE_STATUS_INVALID;
                             break;
@@ -1847,7 +1856,6 @@ void StartGpsTask(void *argument)
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
     // Initialize
-    UBLOX_DMA_Init();
     GPS_Init();
 
     /* Infinite loop */
@@ -2041,7 +2049,6 @@ void StartFingerTask(void *argument)
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
     // Initialisation
-    FINGER_DMA_Init();
     Finger_Init();
 
     /* Infinite loop */

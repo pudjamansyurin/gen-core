@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_finger.h"
+#include "DMA/_dma_finger.h"
 #include "Nodes/VCU.h"
 #include "Nodes/HMI1.h"
 
@@ -24,6 +25,10 @@ static void unlock(void);
 void Finger_Init(void) {
     uint8_t verified = 0;
 
+    // Initialize DMA
+    FINGER_DMA_Init();
+
+    // Inititalize Module
     do {
         LOG_StrLn("Finger:Init");
 

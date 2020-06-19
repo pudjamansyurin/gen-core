@@ -25,7 +25,10 @@ static nmea_t nmea;
 void GPS_Init(void) {
     uint32_t tick;
 
-    // mosfet control
+    // Initialize DMA
+    UBLOX_DMA_Init();
+
+    // Inititalize Module
     _LedWrite(1);
     do {
         LOG_StrLn("GPS:Init");
