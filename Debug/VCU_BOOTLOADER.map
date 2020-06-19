@@ -98,6 +98,196 @@ Discarded input sections
  .ARM.exidx     0x0000000000000000        0x8 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/crt0.o
  .ARM.attributes
                 0x0000000000000000       0x20 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/crt0.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .group         0x0000000000000000        0xc Core/Src/DMA/_dma_battery.o
+ .text          0x0000000000000000        0x0 Core/Src/DMA/_dma_battery.o
+ .data          0x0000000000000000        0x0 Core/Src/DMA/_dma_battery.o
+ .bss           0x0000000000000000        0x0 Core/Src/DMA/_dma_battery.o
+ .bss.BACKUP_VOLTAGE
+                0x0000000000000000        0x2 Core/Src/DMA/_dma_battery.o
+ .bss.DMA_BUFFER
+                0x0000000000000000       0x64 Core/Src/DMA/_dma_battery.o
+ .bss.AVERAGE_BUFFER
+                0x0000000000000000      0x7d0 Core/Src/DMA/_dma_battery.o
+ .text.BAT_DMA_Init
+                0x0000000000000000       0x1c Core/Src/DMA/_dma_battery.o
+ .rodata        0x0000000000000000       0x18 Core/Src/DMA/_dma_battery.o
+ .text.BAT_Debugger
+                0x0000000000000000       0x2c Core/Src/DMA/_dma_battery.o
+ .text.HAL_ADC_ConvHalfCpltCallback
+                0x0000000000000000       0x60 Core/Src/DMA/_dma_battery.o
+ .text.HAL_ADC_ConvCpltCallback
+                0x0000000000000000       0x98 Core/Src/DMA/_dma_battery.o
+ .text.MovingAverage
+                0x0000000000000000       0x90 Core/Src/DMA/_dma_battery.o
+ .bss.sum.10205
+                0x0000000000000000        0x4 Core/Src/DMA/_dma_battery.o
+ .bss.pos.10206
+                0x0000000000000000        0x4 Core/Src/DMA/_dma_battery.o
+ .bss.length.10207
+                0x0000000000000000        0x2 Core/Src/DMA/_dma_battery.o
+ .debug_info    0x0000000000000000      0xff3 Core/Src/DMA/_dma_battery.o
+ .debug_abbrev  0x0000000000000000      0x248 Core/Src/DMA/_dma_battery.o
+ .debug_aranges
+                0x0000000000000000       0x40 Core/Src/DMA/_dma_battery.o
+ .debug_ranges  0x0000000000000000       0x30 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x421 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0xa5a Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x196 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x28 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x8e Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x51 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0xef Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x6a Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x1df Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x1c Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0xdf Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000     0x102d Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x11f Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000    0x15c0c Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x43 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000     0x3659 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x174 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x5a Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0xd15 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x9fe Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x173 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x117 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x202 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x27 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x2bf Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x5f Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x236 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x391 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x17d Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0xf9 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x132 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x30c Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x2e Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x1b5 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x22 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0xd6 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x11a Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x91 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x89 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x287 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x134 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0xac Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x46 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x18 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x3c Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x34 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x52 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x1f Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x43 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x20 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x1a3 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x32a Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x10 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x35 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x20 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x16 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x16 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x29 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x1c Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x10 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x10 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x1c Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x52 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x40 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x10 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x40 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0xd7 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x1c Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x3d Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x16 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x145 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000      0x1e1 Core/Src/DMA/_dma_battery.o
+ .debug_macro   0x0000000000000000       0x7c Core/Src/DMA/_dma_battery.o
+ .debug_line    0x0000000000000000      0x9fa Core/Src/DMA/_dma_battery.o
+ .debug_str     0x0000000000000000    0xca6fa Core/Src/DMA/_dma_battery.o
+ .comment       0x0000000000000000       0x7c Core/Src/DMA/_dma_battery.o
+ .debug_frame   0x0000000000000000       0xb8 Core/Src/DMA/_dma_battery.o
+ .ARM.attributes
+                0x0000000000000000       0x39 Core/Src/DMA/_dma_battery.o
  .group         0x0000000000000000        0xc Core/Src/DMA/_dma_simcom.o
  .group         0x0000000000000000        0xc Core/Src/DMA/_dma_simcom.o
  .group         0x0000000000000000        0xc Core/Src/DMA/_dma_simcom.o
@@ -185,7 +375,7 @@ Discarded input sections
  .text.SIMCOM_USART_IrqHandler
                 0x0000000000000000       0x3c Core/Src/DMA/_dma_simcom.o
  .text.SIMCOM_DMA_IrqHandler
-                0x0000000000000000     0x11d8 Core/Src/DMA/_dma_simcom.o
+                0x0000000000000000     0x11ec Core/Src/DMA/_dma_simcom.o
  .text.SIMCOM_DMA_Init
                 0x0000000000000000       0x50 Core/Src/DMA/_dma_simcom.o
  .text.SIMCOM_Check_Buffer
@@ -281,7 +471,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x1e1 Core/Src/DMA/_dma_simcom.o
  .debug_macro   0x0000000000000000       0x7c Core/Src/DMA/_dma_simcom.o
  .debug_macro   0x0000000000000000       0x10 Core/Src/DMA/_dma_simcom.o
- .debug_line    0x0000000000000000     0x1517 Core/Src/DMA/_dma_simcom.o
+ .debug_line    0x0000000000000000     0x1502 Core/Src/DMA/_dma_simcom.o
  .debug_str     0x0000000000000000    0xca79a Core/Src/DMA/_dma_simcom.o
  .comment       0x0000000000000000       0x7c Core/Src/DMA/_dma_simcom.o
  .debug_frame   0x0000000000000000       0xf4 Core/Src/DMA/_dma_simcom.o
@@ -5585,6 +5775,7 @@ Linker script and memory map
 LOAD /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/crti.o
 LOAD /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v7e-m/fpv4-sp/hard/crtbegin.o
 LOAD /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/crt0.o
+LOAD Core/Src/DMA/_dma_battery.o
 LOAD Core/Src/DMA/_dma_simcom.o
 LOAD Core/Src/Drivers/_at.o
 LOAD Core/Src/Drivers/_crc.o

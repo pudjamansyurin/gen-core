@@ -59,7 +59,7 @@ void SIMCOM_DMA_IrqHandler(void) {
         __HAL_DMA_CLEAR_FLAG(&hdma_usart1_rx, __HAL_DMA_GET_DME_FLAG_INDEX(&hdma_usart1_rx));
 
         /* Start DMA transfer */
-        //        HAL_UART_Receive_DMA(&huart1, (uint8_t*) SIMCOM_DMA_RX, SIMCOM_DMA_RX_SZ);
+        HAL_UART_Receive_DMA(&huart1, (uint8_t*) SIMCOM_DMA_RX, SIMCOM_DMA_RX_SZ);
     }
 }
 

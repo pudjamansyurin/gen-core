@@ -1,3 +1,4 @@
+"Core/Src/DMA/_dma_battery.o"
 "Core/Src/DMA/_dma_simcom.o"
 "Core/Src/Drivers/_at.o"
 "Core/Src/Drivers/_crc.o"
