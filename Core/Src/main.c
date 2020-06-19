@@ -269,7 +269,7 @@ extern hmi2_t HMI2;
 extern sw_t SW;
 extern sim_t SIM;
 extern uint32_t AesKey[4];
-extern uint32_t FOTA_IN_POGRESS;
+extern uint32_t IAP_FLAG;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1563,7 +1563,7 @@ void StartIotTask(void *argument)
                     // Handle FOTA request
                     if (p == SIM_RESULT_OK) {
                         if (type == PAYLOAD_RESPONSE) {
-                            if (FOTA_IN_POGRESS > 0) {
+                            if (IAP_FLAG > 0) {
                                 HAL_NVIC_SystemReset();
                                 // This point is never reached
                             }
@@ -1715,7 +1715,7 @@ void StartCommandTask(void *argument)
                             break;
 
                         case CMD_GEN_FOTA:
-                            EEPROM_Fota(EE_CMD_W, 1);
+                            EEPROM_FlagIAP(EE_CMD_W, 1);
                             break;
 
                         default:

@@ -18,7 +18,7 @@
 #define VADDR_REPORT_SEQ_ID         VADDR_UNITID + sizeof(uint32_t)
 #define VADDR_RESPONSE_SEQ_ID       VADDR_REPORT_SEQ_ID + sizeof(uint16_t)
 #define VADDR_AES_KEY               VADDR_RESPONSE_SEQ_ID + sizeof(uint16_t)
-#define VADDR_FOTA                  VADDR_AES_KEY + 128
+#define VADDR_IAP_FLAG              VADDR_AES_KEY + 128
 
 #define EE_NULL                     0
 
@@ -36,6 +36,6 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
-uint8_t EEPROM_Fota(EEPROM_COMMAND cmd, uint32_t value);
+uint8_t EEPROM_FlagIAP(EEPROM_COMMAND cmd, uint32_t value);
 
 #endif /* EEPROM_H_ */
