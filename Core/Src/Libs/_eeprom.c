@@ -13,12 +13,15 @@
 #include "Drivers/_aes.h"
 #include "Nodes/VCU.h"
 
-/* External variabless -------------------------------------------------------*/
+/* External variables -------------------------------------------------------*/
 extern osMutexId_t EepromMutexHandle;
 extern response_t RESPONSE;
 extern report_t REPORT;
 extern vcu_t VCU;
 extern uint32_t AesKey[4];
+
+/* Exported variables ---------------------------------------------------------*/
+uint32_t FOTA_IN_POGRESS = 0;
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
@@ -166,7 +169,7 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 }
 
 uint8_t EEPROM_Fota(EEPROM_COMMAND cmd, uint32_t value) {
-    return EE_Command(VADDR_FOTA, cmd, &value, &(VCU.d.fota), sizeof(value));
+    return EE_Command(VADDR_FOTA, cmd, &value, &FOTA_IN_POGRESS, sizeof(value));
 }
 
 /* Private functions implementation --------------------------------------------*/
