@@ -9,9 +9,13 @@
 #include "Drivers/_at.h"
 #include "DMA/_dma_simcom.h"
 
-/* External variables ---------------------------------------------------------*/
+/* External variables --------------------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 extern sim_t SIM;
+
+/* Private constants ---------------------------------------------------------*/
+#define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
+#define CHARTONUM(x)                            ((x) - '0')
 
 /* Private functions prototype -----------------------------------------------*/
 static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *string, uint8_t size, uint8_t executor);
@@ -106,13 +110,13 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
             // wait until data transferred
             ptr = &str[len + param->cnflength + 2];
 
-            tick = osKernelGetTickCount();
+            tick = _GetTickMS();
             while (strncmp(ptr, SIMCOM_RSP_OK, strlen(SIMCOM_RSP_OK)) != 0) {
-                if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(5 * 1000)) {
+                if (_GetTickMS() - tick > (5 * 1000)) {
                     p = SIM_RESULT_ERROR;
                     break;
                 };
-                osDelay(1);
+                _DelayMS(1);
             };
         }
     }

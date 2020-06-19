@@ -12,6 +12,11 @@
 #include "main.h"
 #include "cmsis_os.h"
 
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
 /* Exported macro functions --------------------------------------------------*/
 #define BIT(x)                                  (1ULL << x)
 #define BV(var, x)                              (var |= (1ULL << x))
@@ -23,12 +28,11 @@
 #define _R2(var, x)                             ((var >> x) & 0x03)
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
-#define TICKS_TO_MS(xTimeInTicks)               ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInTicks ) * ( TickType_t ) 1000 ) / ( TickType_t ) configTICK_RATE_HZ ) )
-
 /* Exported constants --------------------------------------------------------*/
+#define RTOS_ENABLE                             1
 #define EEPROM_RESET                            52U
 
-#define VCU_FIRMWARE_VERSION       	            "0.7"
+#define VCU_FIRMWARE_VERSION       	            0x02
 #define VCU_VENDOR                              "GEN"
 #define VCU_BUILD_YEAR                          20U
 #define VCU_UNITID                              354313U

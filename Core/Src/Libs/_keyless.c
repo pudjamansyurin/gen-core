@@ -164,7 +164,7 @@ uint8_t KLESS_Pairing(void) {
 
     // Send Payload
     p = nrf_send_packet(&nrf, payload);
-    osDelay(100);
+    _DelayMS(100);
 
     // Set Address (normal mode)
     memcpy(KLESS.tx.address, &(VCU.d.unit_id), sizeof(VCU.d.unit_id));
@@ -206,7 +206,7 @@ void KLESS_Debugger(void) {
 }
 
 void KLESS_Refresh(void) {
-    if ((osKernelGetTickCount() - VCU.d.tick.keyless) < pdMS_TO_TICKS(KEYLESS_TIMEOUT)) {
+    if ((_GetTickMS() - VCU.d.tick.keyless) < KEYLESS_TIMEOUT) {
         HMI1.d.status.keyless = 1;
     } else {
         HMI1.d.status.keyless = 0;

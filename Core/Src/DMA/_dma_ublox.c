@@ -59,7 +59,7 @@ void UBLOX_DMA_IrqHandler(void) {
         __HAL_DMA_CLEAR_FLAG(&hdma_usart2_rx, __HAL_DMA_GET_DME_FLAG_INDEX(&hdma_usart2_rx));
 
         /* Start DMA transfer */
-//        HAL_UART_Receive_DMA(&huart2, (uint8_t*) UBLOX_DMA_RX, UBLOX_DMA_RX_SZ);
+        HAL_UART_Receive_DMA(&huart2, (uint8_t*) UBLOX_DMA_RX, UBLOX_DMA_RX_SZ);
     }
 }
 

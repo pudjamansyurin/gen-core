@@ -11,7 +11,9 @@
 
 /* External variables ---------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
-extern vcu_t VCU;
+
+/* Exported variables ---------------------------------------------------------*/
+uint16_t BACKUP_VOLTAGE = 0;
 
 /* Local constants -----------------------------------------------------------*/
 #define DMA_SZ                      50U
@@ -29,65 +31,65 @@ static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value);
 
 /* Public functions implementation ---------------------------------------------*/
 void BAT_DMA_Init(void) {
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) DMA_BUFFER, DMA_SZ);
+    HAL_ADC_Start_DMA(&hadc1, (uint32_t*) DMA_BUFFER, DMA_SZ);
 }
 
 void BAT_Debugger(void) {
-	LOG_Str("Battery:Voltage = ");
-	LOG_Int(VCU.d.backup_voltage);
-	LOG_StrLn(" mV");
+    LOG_Str("Battery:Voltage = ");
+    LOG_Int(BACKUP_VOLTAGE);
+    LOG_StrLn(" mV");
 }
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
-	uint16_t i;
-	uint32_t temp = 0;
+    uint16_t i;
+    uint32_t temp = 0;
 
-	// sum all buffer sample
-	for (i = 0; i < (DMA_SZ / 2); i++) {
-		temp += DMA_BUFFER[i];
-	}
-	// calculate the average
-	temp = temp / (DMA_SZ / 2);
+    // sum all buffer sample
+    for (i = 0; i < (DMA_SZ / 2); i++) {
+        temp += DMA_BUFFER[i];
+    }
+    // calculate the average
+    temp = temp / (DMA_SZ / 2);
 
-	// calculate the moving average
-	MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
+    // calculate the moving average
+    MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-	uint16_t i;
-	uint32_t temp = 0;
+    uint16_t i;
+    uint32_t temp = 0;
 
-	// sum all buffer sample
-	for (i = ((DMA_SZ / 2) - 1); i < DMA_SZ; i++) {
-		temp += DMA_BUFFER[i];
-	}
-	// calculate the average
-	temp = temp / (DMA_SZ / 2);
+    // sum all buffer sample
+    for (i = ((DMA_SZ / 2) - 1); i < DMA_SZ; i++) {
+        temp += DMA_BUFFER[i];
+    }
+    // calculate the average
+    temp = temp / (DMA_SZ / 2);
 
-	// calculate the moving average
-	temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
-	// change to battery value
-	VCU.d.backup_voltage = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
+    // calculate the moving average
+    temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
+    // change to battery value
+    BACKUP_VOLTAGE = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
 }
 
 /* Private functions implementation ---------------------------------------------*/
 static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
-	static uint32_t sum = 0, pos = 0;
-	static uint16_t length = 0;
+    static uint32_t sum = 0, pos = 0;
+    static uint16_t length = 0;
 
-	//Subtract the oldest number from the prev sum, add the new number
-	sum = sum - pBuffer[pos] + value;
-	//Assign the nextNum to the position in the array
-	pBuffer[pos] = value;
-	//Increment position
-	pos++;
-	if (pos >= len) {
-		pos = 0;
-	}
-	// calculate filled array
-	if (length < len) {
-		length++;
-	}
-	//return the average
-	return sum / length;
+    //Subtract the oldest number from the prev sum, add the new number
+    sum = sum - pBuffer[pos] + value;
+    //Assign the nextNum to the position in the array
+    pBuffer[pos] = value;
+    //Increment position
+    pos++;
+    if (pos >= len) {
+        pos = 0;
+    }
+    // calculate filled array
+    if (length < len) {
+        length++;
+    }
+    //return the average
+    return sum / length;
 }

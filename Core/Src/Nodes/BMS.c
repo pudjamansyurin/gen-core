@@ -88,7 +88,7 @@ void BMS_ResetIndex(uint8_t i) {
 
 void BMS_RefreshIndex(void) {
     for (uint8_t i = 0; i < BMS_COUNT; i++) {
-        if ((osKernelGetTickCount() - BMS.d.pack[i].tick) > pdMS_TO_TICKS(500)) {
+        if ((_GetTickMS() - BMS.d.pack[i].tick) > 500) {
             BMS_ResetIndex(i);
         }
     }
@@ -202,7 +202,7 @@ void BMS_CAN_RX_Param1(void) {
     // read the id
     BMS.d.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
     BMS.d.pack[index].started = 1;
-    BMS.d.pack[index].tick = osKernelGetTickCount();
+    BMS.d.pack[index].tick = _GetTickMS();
 }
 
 void BMS_CAN_RX_Param2(void) {

@@ -42,7 +42,7 @@ void HMI2_Init(void) {
 }
 
 void HMI2_Refresh(void) {
-    if ((osKernelGetTickCount() - HMI2.d.tick) > pdMS_TO_TICKS(10000)) {
+    if ((_GetTickMS() - HMI2.d.tick) > 10000) {
         HMI2.d.started = 0;
     }
 }
@@ -69,12 +69,12 @@ void StartHmi2PowerTask(void *argument) {
                 while (!HMI2.d.started) {
                     // turn ON
                     HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !activeHigh);
-                    osDelay(100);
+                    _DelayMS(100);
                     HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, activeHigh);
 
                     // wait until turned ON
-                    tick = osKernelGetTickCount();
-                    while (osKernelGetTickCount() - tick < pdMS_TO_TICKS(90 * 1000)) {
+                    tick = _GetTickMS();
+                    while (_GetTickMS() - tick < (90 * 1000)) {
                         // already ON
                         if (HMI2.d.started) {
                             break;
@@ -84,8 +84,8 @@ void StartHmi2PowerTask(void *argument) {
             } else {
                 while (HMI2.d.started) {
                     // wait until turned OFF by CAN
-                    tick = osKernelGetTickCount();
-                    while (osKernelGetTickCount() - tick < pdMS_TO_TICKS(30 * 1000)) {
+                    tick = _GetTickMS();
+                    while (_GetTickMS() - tick < (30 * 1000)) {
                         // already OFF
                         if (!HMI2.d.started) {
                             break;
@@ -109,5 +109,5 @@ void HMI2_CAN_RX_State(void) {
 
     // save state
     HMI2.d.started = 1;
-    HMI2.d.tick = osKernelGetTickCount();
+    HMI2.d.tick = _GetTickMS();
 }

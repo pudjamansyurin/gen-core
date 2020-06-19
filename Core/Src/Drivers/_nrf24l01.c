@@ -58,14 +58,14 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
 
         // turn on the mosfet
         HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 0);
-        osDelay(500);
+        _DelayMS(500);
         HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
-        osDelay(500);
+        _DelayMS(500);
 
         result = nrf_check(&nrf);
 
         if (result == NRF_ERROR) {
-            osDelay(1000);
+            _DelayMS(1000);
         }
     } while (result == NRF_ERROR);
 
@@ -633,7 +633,7 @@ NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
     while (dev->tx_busy == 1) {
     } // wait for end of transmition
 
-    osDelay(100);
+    _DelayMS(100);
     ce_reset(dev);
     nrf_rx_tx_control(dev, NRF_STATE_RX);
     ce_set(dev);
@@ -652,7 +652,7 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
     while (dev->tx_busy == 1) {
     } // wait for end of transmition
 
-    osDelay(100);
+    _DelayMS(100);
     ce_reset(dev);
     nrf_rx_tx_control(dev, NRF_STATE_RX);
     ce_set(dev);
@@ -670,10 +670,10 @@ NRF_RESULT nrf_receive_packet(nrf24l01 *dev, uint8_t *data, uint16_t ms) {
     ce_set(dev);
 
     // wait for reception
-    TickType_t tick = osKernelGetTickCount();
+    TickType_t tick = _GetTickMS();
     while (dev->rx_busy == 1) {
         // handle timeout
-        if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(ms)) {
+        if (_GetTickMS() - tick > ms) {
             ret = NRF_ERROR;
             break;
         }

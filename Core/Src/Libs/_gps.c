@@ -31,16 +31,16 @@ void GPS_Init(void) {
         LOG_StrLn("GPS:Init");
 
         HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
-        osDelay(500);
+        _DelayMS(500);
         HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
 
         // set timeout guard
-        tick = osKernelGetTickCount();
-        while ((osKernelGetTickCount() - tick) < pdMS_TO_TICKS(5000)) {
+        tick = _GetTickMS();
+        while ((_GetTickMS() - tick) < 5000) {
             if (strlen(UBLOX_UART_RX) > 50) {
                 break;
             }
-            osDelay(10);
+            _DelayMS(10);
         }
     } while (strlen(UBLOX_UART_RX) <= 50);
     _LedWrite(0);

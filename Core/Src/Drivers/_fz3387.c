@@ -32,7 +32,7 @@ finger_t finger;
 /* Public functions implementation ---------------------------------------------*/
 void FZ3387_SET_POWER(uint8_t state) {
     HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin, !state);
-    osDelay(500);
+    _DelayMS(500);
 }
 
 void FZ3387_SERIAL_WRITE(uint8_t c) {
@@ -72,7 +72,7 @@ void FZ3387_writeStructuredPacket(void) {
 
     FZ3387_SERIAL_WRITE_U16(sum);
 
-    osDelay(250);
+    _DelayMS(250);
 }
 
 /**************************************************************************/

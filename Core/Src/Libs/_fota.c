@@ -116,7 +116,7 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
         // Prepare, start timer
         LOG_StrLn("FOTA:Start");
         FLASHER_Erase();
-        timer = osKernelGetTickCount();
+        timer = _GetTickMS();
 
         // Copy chunk by chunk
         setFTPGET.mode = FTPGET_READ;
@@ -144,7 +144,7 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
         // Check, stop timer
         if (*len && *len == setFTP->size) {
             LOG_Str("FOTA:End = ");
-            LOG_Int(TICKS_TO_MS(osKernelGetTickCount() - timer));
+            LOG_Int(_GetTickMS() - timer);
             LOG_StrLn("ms");
         } else {
             LOG_StrLn("FOTA:Failed");

@@ -27,8 +27,6 @@ typedef struct {
     uint8_t driver_id;
     uint16_t interval;
     uint8_t volume;
-    uint16_t backup_voltage;
-    uint8_t signal;
     uint8_t speed;
     uint32_t odometer;
     rtc_t rtc;

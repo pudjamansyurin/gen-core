@@ -7,18 +7,22 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_reporter.h"
+#include "Libs/_handlebar.h"
+#include "Libs/_simcom.h"
+#include "Libs/_gps.h"
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 #include "Drivers/_rtc.h"
 #include "Drivers/_crc.h"
-#include "Libs/_gps.h"
-#include "Libs/_handlebar.h"
+#include "DMA/_dma_battery.h"
 
 /* External variables ----------------------------------------------------------*/
 extern vcu_t VCU;
 extern bms_t BMS;
 extern gps_t GPS;
 extern sw_t SW;
+extern sim_t SIM;
+extern uint16_t BACKUP_VOLTAGE;
 
 /* Public functions implementation --------------------------------------------*/
 void Report_Init(FRAME_TYPE frame, report_t *report) {
@@ -84,8 +88,8 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
         report->data.opt.vcu.report.range = pSub->report[SW_M_REPORT_RANGE];
         report->data.opt.vcu.report.efficiency = pSub->report[SW_M_REPORT_EFFICIENCY];
 
-        report->data.opt.vcu.signal = VCU.d.signal;
-        report->data.opt.vcu.backup_voltage = VCU.d.backup_voltage / 18;
+        report->data.opt.vcu.signal = SIM.signal;
+        report->data.opt.vcu.backup_voltage = BACKUP_VOLTAGE / 18;
 
         // BMS data
         for (uint8_t i = 0; i < BMS_COUNT; i++) {

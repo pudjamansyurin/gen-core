@@ -11,9 +11,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
-#define HEX_CHARS                                "0123456789ABCDEF"
-
 /* Public functions prototype ------------------------------------------------*/
 void LOG_Char(char ch);
 void LOG_Enter(void);

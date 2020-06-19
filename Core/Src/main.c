@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "_defines.h"
+#include "Libs/_utils.h"
 #include "Libs/_simcom.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_gyro.h"
@@ -590,7 +590,7 @@ static void MX_ADC1_Init(void)
      */
     sConfig.Channel = ADC_CHANNEL_9;
     sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
+    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
     if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
             {
         Error_Handler();
@@ -1454,7 +1454,7 @@ void StartManagerTask(void *argument)
 
     /* Infinite loop */
     for (;;) {
-        lastWake = osKernelGetTickCount();
+        lastWake = _GetTickMS();
 
         // Feed the dog
         HAL_IWDG_Refresh(&hiwdg);
@@ -1474,7 +1474,7 @@ void StartManagerTask(void *argument)
         HMI1.d.status.overheat = BMS.d.overheat;
 
         // Periodic interval
-        osDelayUntil(lastWake + pdMS_TO_TICKS(1000));
+        osDelayUntil(lastWake + 1000);
     }
     /* USER CODE END 5 */
 }
@@ -1514,12 +1514,12 @@ void StartIotTask(void *argument)
 
     /* Infinite loop */
     for (;;) {
-        lastWake = osKernelGetTickCount();
+        lastWake = _GetTickMS();
 
-        // FOTA
-        if (Simcom_SetState(SIM_STATE_INTERNET_ON)) {
-            Simcom_FOTA();
-        }
+//        // FOTA
+//        if (Simcom_SetState(SIM_STATE_INTERNET_ON)) {
+//            Simcom_FOTA();
+//        }
 
         // Upload Report & Response Payload
         if (Simcom_SetState(SIM_STATE_SERVER_ON)) {
@@ -1592,7 +1592,7 @@ void StartIotTask(void *argument)
         }
 
         // Periodic interval
-        osDelayUntil(lastWake + pdMS_TO_TICKS(1000));
+        osDelayUntil(lastWake + 1000);
     }
     /* USER CODE END StartIotTask */
 }
@@ -1621,7 +1621,7 @@ void StartReporterTask(void *argument)
 
     /* Infinite loop */
     for (;;) {
-        lastWake = osKernelGetTickCount();
+        lastWake = _GetTickMS();
 
         // Frame type decider
         if (!VCU.d.state.independent) {
@@ -1653,7 +1653,7 @@ void StartReporterTask(void *argument)
         VCU.SetEvent(EV_VCU_NETWORK_RESTART, 0);
 
         // Report interval
-        osDelayUntil(lastWake + pdMS_TO_TICKS(VCU.d.interval * 1000));
+        osDelayUntil(lastWake + (VCU.d.interval * 1000));
     }
     /* USER CODE END StartReporterTask */
 }
@@ -1698,7 +1698,7 @@ void StartCommandTask(void *argument)
                     switch (command.data.sub_code) {
                         case CMD_GEN_INFO:
                             sprintf(response.data.message,
-                                    "VCU v."VCU_FIRMWARE_VERSION", "VCU_VENDOR" @ 20%d", VCU_BUILD_YEAR);
+                                    "VCU v.%d, "VCU_VENDOR" @ 20%d", VCU_FIRMWARE_VERSION, VCU_BUILD_YEAR);
                             break;
 
                         case CMD_GEN_LED:
@@ -1785,7 +1785,7 @@ void StartCommandTask(void *argument)
 
                     // wait response until timeout
                     if (response.data.code == RESPONSE_STATUS_OK) {
-                        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(20000));
+                        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 20000);
                         if (_RTOS_ValidThreadFlag(notif)) {
                             if (notif & EVT_COMMAND_ERROR) {
                                 response.data.code = RESPONSE_STATUS_ERROR;
@@ -1801,7 +1801,7 @@ void StartCommandTask(void *argument)
 
                             // wait response until timeout
                             if (response.data.code == RESPONSE_STATUS_OK) {
-                                notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(COMMAND_TIMEOUT));
+                                notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT);
                                 if (_RTOS_ValidThreadFlag(notif)) {
                                     if (notif & EVT_COMMAND_ERROR) {
                                         response.data.code = RESPONSE_STATUS_ERROR;
@@ -1852,14 +1852,14 @@ void StartGpsTask(void *argument)
 
     /* Infinite loop */
     for (;;) {
-        lastWake = osKernelGetTickCount();
+        lastWake = _GetTickMS();
 
         GPS_Capture();
         GPS_CalculateOdometer();
         // GPS_Debugger();
 
         // Periodic interval
-        osDelayUntil(lastWake + pdMS_TO_TICKS(GPS_INTERVAL_MS));
+        osDelayUntil(lastWake + GPS_INTERVAL_MS);
     }
     /* USER CODE END StartGpsTask */
 }
@@ -1885,7 +1885,7 @@ void StartGyroTask(void *argument)
 
     /* Infinite loop */
     for (;;) {
-        lastWake = osKernelGetTickCount();
+        lastWake = _GetTickMS();
 
         // Read all accelerometer, gyroscope (average)
         decider = GYRO_Decision(25);
@@ -1918,7 +1918,7 @@ void StartGyroTask(void *argument)
         }
 
         // Periodic interval
-        osDelayUntil(lastWake + pdMS_TO_TICKS(100));
+        osDelayUntil(lastWake + 100);
     }
     /* USER CODE END StartGyroTask */
 }
@@ -1946,7 +1946,7 @@ void StartKeylessTask(void *argument)
     /* Infinite loop */
     for (;;) {
         // check if has new can message
-        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
+        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 100);
         // proceed event
         if (_RTOS_ValidThreadFlag(notif)) {
             // handle incoming payload
@@ -1961,7 +1961,7 @@ void StartKeylessTask(void *argument)
                             LOG_StrLn("NRF:Command = PING");
 
                             // update heart-beat
-                            VCU.d.tick.keyless = osKernelGetTickCount();
+                            VCU.d.tick.keyless = _GetTickMS();
 
                             break;
                         case KLESS_CMD_ALARM:
@@ -1971,10 +1971,10 @@ void StartKeylessTask(void *argument)
                             for (uint8_t i = 0; i < 2; i++) {
                                 SW.runner.hazard = 1;
                                 HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
-                                osDelay(200);
+                                _DelayMS(200);
                                 SW.runner.hazard = 0;
                                 HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
-                                osDelay(100);
+                                _DelayMS(100);
                             }
 
                             break;
@@ -1983,7 +1983,7 @@ void StartKeylessTask(void *argument)
 
                             // open the seat via solenoid
                             HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
-                            osDelay(100);
+                            _DelayMS(100);
                             HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
 
                             break;
@@ -1996,7 +1996,7 @@ void StartKeylessTask(void *argument)
                     for (uint8_t i = 0; i < (command + 1); i++) {
                         _LedToggle();
 
-                        osDelay((command + 1) * 50);
+                        _DelayMS((command + 1) * 50);
                     }
                     _LedWrite(0);
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
@@ -2047,7 +2047,7 @@ void StartFingerTask(void *argument)
     /* Infinite loop */
     for (;;) {
         // check if user put finger
-        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
+        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 100);
         // proceed event
         if (_RTOS_ValidThreadFlag(notif)) {
             // Scan existing finger
@@ -2065,7 +2065,7 @@ void StartFingerTask(void *argument)
                     VCU.d.driver_id = id;
 
                     // Handle bounce effect
-                    osDelay(5000);
+                    _DelayMS(5000);
                 }
             }
 
@@ -2120,13 +2120,13 @@ void StartAudioTask(void *argument)
     /* Infinite loop */
     for (;;) {
         // wait with timeout
-        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, pdMS_TO_TICKS(100));
+        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 100);
         if (_RTOS_ValidThreadFlag(notif)) {
             // Beep command
             if (notif & EVT_AUDIO_BEEP) {
                 // Beep
                 AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
-                osDelay(250);
+                _DelayMS(250);
                 AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
             }
             // Long-Beep Command
@@ -2175,10 +2175,10 @@ void StartSwitchTask(void *argument)
     /* Infinite loop */
     for (;;) {
         // wait forever
-        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, pdMS_TO_TICKS(500));
+        notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 500);
         if (_RTOS_ValidThreadFlag(notif)) {
             // handle bounce effect
-            osDelay(50);
+            _DelayMS(50);
             osThreadFlagsClear(EVT_MASK);
 
             // Handle switch EXTI interrupt
@@ -2293,24 +2293,24 @@ void StartCanTxTask(void *argument)
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
     /* Infinite loop */
-    last500ms = osKernelGetTickCount();
-    last1000ms = osKernelGetTickCount();
+    last500ms = _GetTickMS();
+    last1000ms = _GetTickMS();
     for (;;) {
-        lastWake = osKernelGetTickCount();
+        lastWake = _GetTickMS();
 
         // Send CAN data
         // send every 20m
         VCU.can.t.SwitchModeControl(&SW);
 
         // send every 500ms
-        if (lastWake - last500ms > pdMS_TO_TICKS(500)) {
-            last500ms = osKernelGetTickCount();
+        if (lastWake - last500ms > 500) {
+            last500ms = _GetTickMS();
 
             VCU.can.t.MixedData(&(SW.runner));
         }
         // send every 1000ms
-        if (lastWake - last1000ms > pdMS_TO_TICKS(1000)) {
-            last1000ms = osKernelGetTickCount();
+        if (lastWake - last1000ms > 1000) {
+            last1000ms = _GetTickMS();
 
             VCU.can.t.Datetime(&(VCU.d.rtc.timestamp));
             VCU.can.t.SubTripData(&(SW.runner.mode.sub.trip[0]));
@@ -2327,7 +2327,7 @@ void StartCanTxTask(void *argument)
         HMI2.Refresh();
 
         // Periodic interval
-        osDelayUntil(lastWake + pdMS_TO_TICKS(20));
+        osDelayUntil(lastWake + 20);
     }
     /* USER CODE END StartCanTxTask */
 }
@@ -2344,7 +2344,7 @@ __weak void StartHmi2PowerTask(void *argument)
     /* USER CODE BEGIN StartHmi2PowerTask */
     /* Infinite loop */
     for (;;) {
-        osDelay(1);
+        _DelayMS(1);
     }
     /* USER CODE END StartHmi2PowerTask */
 }

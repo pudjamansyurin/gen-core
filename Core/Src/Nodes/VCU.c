@@ -10,11 +10,13 @@
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 #include "Drivers/_canbus.h"
+#include "Libs/_simcom.h"
 
 /* External variables ---------------------------------------------------------*/
 extern canbus_t CB;
 extern bms_t BMS;
 extern hmi1_t HMI1;
+extern sim_t SIM;
 
 /* Public variables -----------------------------------------------------------*/
 vcu_t VCU = {
@@ -44,8 +46,6 @@ void VCU_Init(void) {
     VCU.d.interval = RPT_INTERVAL_SIMPLE;
     VCU.d.driver_id = DRIVER_ID_NONE;
     VCU.d.volume = 0;
-    VCU.d.backup_voltage = 0;
-    VCU.d.signal = 0;
     VCU.d.speed = 0;
     VCU.d.odometer = 0;
     VCU.d.events = 0;
@@ -80,7 +80,7 @@ void VCU_CheckMainPower(void) {
     if (lastState != currentState) {
         lastState = currentState;
         // update tick
-        tick = osKernelGetTickCount();
+        tick = _GetTickMS();
     }
 
     // set things
@@ -89,7 +89,7 @@ void VCU_CheckMainPower(void) {
     // handle when REG_5V is OFF
     if (currentState == 0) {
         VCU.SetEvent(EV_VCU_INDEPENDENT, 1);
-        if (osKernelGetTickCount() - tick > pdMS_TO_TICKS(VCU_ACTIVATE_LOST_MODE * 1000)) {
+        if (_GetTickMS() - tick > (VCU_ACTIVATE_LOST_MODE * 1000)) {
             VCU.d.interval = RPT_INTERVAL_LOST;
             VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
         } else {
@@ -162,7 +162,7 @@ uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
     CAN_DATA *data = &(CB.tx.data);
 
     // set message
-    data->u8[0] = VCU.d.signal;
+    data->u8[0] = SIM.signal;
     data->u8[1] = BMS.d.soc;
     data->u8[2] = runner->mode.sub.report[SW_M_REPORT_RANGE];
     data->u8[3] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];

@@ -50,7 +50,7 @@ uint8_t EEPROM_Init(void) {
                     ret = 1;
                     break;
                 }
-                osDelay(50);
+                _DelayMS(50);
             } while (retry--);
         }
     }

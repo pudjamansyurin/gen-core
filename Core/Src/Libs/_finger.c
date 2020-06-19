@@ -29,21 +29,21 @@ void Finger_Init(void) {
 
         // mosfet control
         HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, 0);
-        osDelay(100);
+        _DelayMS(100);
         HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, 1);
-        osDelay(500);
+        _DelayMS(500);
 
         // verify password and check hardware
         lock();
         verified = FZ3387_verifyPassword();
         unlock();
 
-        osDelay(500);
+        _DelayMS(500);
     } while (!verified);
 }
 
 uint8_t Finger_Enroll(uint8_t id) {
-    const TickType_t scan_time = pdMS_TO_TICKS(FINGER_SCAN_TIMEOUT*1000);
+    const TickType_t scan_time = (FINGER_SCAN_TIMEOUT * 1000);
     TickType_t tick;
     int p;
     uint8_t timeout, error = 0;
@@ -79,10 +79,10 @@ uint8_t Finger_Enroll(uint8_t id) {
         LOG_Enter();
 
         // set timeout guard
-        tick = osKernelGetTickCount();
+        tick = _GetTickMS();
         do {
             // handle timeout
-            timeout = ((osKernelGetTickCount() - tick) > scan_time);
+            timeout = ((_GetTickMS() - tick) > scan_time);
 
             // send command
             _LedToggle();
@@ -146,7 +146,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 //
 //        do {
 //            LOG_StrLn("Remove finger");
-//            osDelay(100);
+//            _DelayMS(100);
 //            p = FZ3387_getImage();
 //        } while (p != FINGERPRINT_NOFINGER);
 //    }
@@ -156,10 +156,10 @@ uint8_t Finger_Enroll(uint8_t id) {
 //        LOG_StrLn("Place same finger again");
 //
 //        // set timeout guard
-//        tick = osKernelGetTickCount();
+//        tick = _GetTickMS();
 //        do {
 //            // handle timeout
-//            timeout = ((osKernelGetTickCount() - tick) > scan_time);
+//            timeout = ((_GetTickMS() - tick) > scan_time);
 //
 //            // indicator
 //            _LedToggle();
@@ -223,7 +223,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 //
 //        do {
 //            LOG_StrLn("Remove finger");
-//            osDelay(100);
+//            _DelayMS(100);
 //            p = FZ3387_getImage();
 //        } while (p != FINGERPRINT_NOFINGER);
 //    }
@@ -453,6 +453,6 @@ static void lock(void) {
 
 static void unlock(void) {
     FZ3387_SET_POWER(0);
-    osDelay(50);
+    _DelayMS(50);
     osMutexRelease(FingerRecMutexHandle);
 }

@@ -58,7 +58,7 @@ void FINGER_DMA_IrqHandler(void) {
         __HAL_DMA_CLEAR_FLAG(&hdma_uart4_rx, __HAL_DMA_GET_DME_FLAG_INDEX(&hdma_uart4_rx));
 
         /* Start DMA transfer */
-        //        HAL_UART_Receive_DMA(&huart4, (uint8_t*) FINGER_DMA_RX, FINGER_DMA_RX_SZ);
+        HAL_UART_Receive_DMA(&huart4, (uint8_t*) FINGER_DMA_RX, FINGER_DMA_RX_SZ);
     }
 }
 

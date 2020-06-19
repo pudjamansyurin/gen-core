@@ -10,7 +10,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
-#include "_reporter.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define SIMCOM_RSP_NONE                 "\r\n"
@@ -67,6 +66,7 @@ typedef enum {
 typedef struct {
     SIMCOM_STATE state;
     AT_CIPSTATUS ip_status;
+    uint8_t signal;
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/

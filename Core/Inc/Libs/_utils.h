@@ -12,11 +12,10 @@
 #include "_defines.h"
 #include "Drivers/_log.h"
 
-/* Exported constants --------------------------------------------------------*/
-#define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
-#define CHARTONUM(x)                            ((x) - '0')
-
 /* Public functions prototype ------------------------------------------------*/
+void _DelayMS(uint32_t ms);
+uint32_t _GetTickMS(void);
+
 uint8_t _LedRead(void);
 void _LedWrite(uint8_t state);
 void _LedToggle(void);
@@ -32,6 +31,4 @@ void _DummyGenerator(void);
 
 int8_t _BitPosition(uint64_t event_id);
 uint32_t _ByteSwap32(uint32_t x);
-
-void* memmem(const void *haystack, size_t n, const void *needle, size_t m);
 #endif /* UTILS_H_ */

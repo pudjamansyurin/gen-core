@@ -65,60 +65,60 @@ static void unlock(void);
 
 /* Public functions implementation ---------------------------------------------*/
 void AUDIO_Init(void) {
-	uint8_t ret;
+    uint8_t ret;
 
-	do {
-		LOG_StrLn("Audio:Init");
+    do {
+        LOG_StrLn("Audio:Init");
 
-		// Mosftet control
-		HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 0);
-		osDelay(500);
-		HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 1);
-		osDelay(1000);
+        // Mosftet control
+        HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 0);
+        _DelayMS(500);
+        HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 1);
+        _DelayMS(1000);
 
-		/* Initialize Wave player (Codec, DMA, I2C) */
-		ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AudioVolume, AUDIO_SAMPLE_FREQ);
+        /* Initialize Wave player (Codec, DMA, I2C) */
+        ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AudioVolume, AUDIO_SAMPLE_FREQ);
 
-		osDelay(500);
-	} while (ret != AUDIO_OK);
+        _DelayMS(500);
+    } while (ret != AUDIO_OK);
 }
 
 void AUDIO_Play(void) {
-	/* Get data size from audio file */
-	AudioRemSize = AUDIO_SAMPLE_SIZE;
-	/* Get total data to be played */
-	if (AUDIO_SAMPLE_SIZE > AUDIO_BUFFER_SIZE) {
-		AudioPlaySize = AUDIO_BUFFER_SIZE;
-	} else {
-		AudioPlaySize = AUDIO_SAMPLE_SIZE;
-	}
+    /* Get data size from audio file */
+    AudioRemSize = AUDIO_SAMPLE_SIZE;
+    /* Get total data to be played */
+    if (AUDIO_SAMPLE_SIZE > AUDIO_BUFFER_SIZE) {
+        AudioPlaySize = AUDIO_BUFFER_SIZE;
+    } else {
+        AudioPlaySize = AUDIO_SAMPLE_SIZE;
+    }
 
-	/* Start playing Wave */
-	AUDIO_OUT_Play((uint16_t*) AUDIO_SAMPLE, AudioPlaySize);
+    /* Start playing Wave */
+    AUDIO_OUT_Play((uint16_t*) AUDIO_SAMPLE, AudioPlaySize);
 }
 
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
-	lock();
+    lock();
 
-	cs43l22_SetBeep(AUDIO_I2C_ADDRESS, Frequency, 0, 0);
-	cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_ON);
+    cs43l22_SetBeep(AUDIO_I2C_ADDRESS, Frequency, 0, 0);
+    cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_ON);
 
-	if (TimeMS > 0) {
-		// delay with RTOS
-		osDelay(TimeMS);
-		// than stop
-		cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
-	}
+    if (TimeMS > 0) {
+        // delay with RTOS
+        _DelayMS(TimeMS);
+        // than stop
+        cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
+    }
 
-	unlock();
+    unlock();
 }
 
 void AUDIO_BeepStop(void) {
-	lock();
+    lock();
 
-	cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
+    cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
 
-	unlock();
+    unlock();
 }
 
 /**
@@ -127,7 +127,7 @@ void AUDIO_BeepStop(void) {
  * @param  Size: Number of data to be written
  */
 void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
-	HAL_I2S_Transmit_DMA(&hi2s3, pData, DMA_MAX(Size/AUDIODATA_SIZE));
+    HAL_I2S_Transmit_DMA(&hi2s3, pData, DMA_MAX(Size/AUDIODATA_SIZE));
 }
 
 /**
@@ -139,16 +139,16 @@ void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
  * @retval  AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_Pause(void) {
-	/* Call the Audio Codec Pause/Resume function */
-	if (cs43l22_Pause(AUDIO_I2C_ADDRESS) != 0) {
-		return AUDIO_ERROR;
-	} else {
-		/* Call the Media layer pause function */
-		HAL_I2S_DMAPause(&hi2s3);
+    /* Call the Audio Codec Pause/Resume function */
+    if (cs43l22_Pause(AUDIO_I2C_ADDRESS) != 0) {
+        return AUDIO_ERROR;
+    } else {
+        /* Call the Media layer pause function */
+        HAL_I2S_DMAPause(&hi2s3);
 
-		/* Return AUDIO_OK when all operations are correctly done */
-		return AUDIO_OK;
-	}
+        /* Return AUDIO_OK when all operations are correctly done */
+        return AUDIO_OK;
+    }
 }
 
 /**
@@ -159,16 +159,16 @@ uint8_t AUDIO_OUT_Pause(void) {
  * @retval  AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_Resume(void) {
-	/* Call the Audio Codec Pause/Resume function */
-	if (cs43l22_Resume(AUDIO_I2C_ADDRESS) != 0) {
-		return AUDIO_ERROR;
-	} else {
-		/* Call the Media layer resume function */
-		HAL_I2S_DMAResume(&hi2s3);
+    /* Call the Audio Codec Pause/Resume function */
+    if (cs43l22_Resume(AUDIO_I2C_ADDRESS) != 0) {
+        return AUDIO_ERROR;
+    } else {
+        /* Call the Media layer resume function */
+        HAL_I2S_DMAResume(&hi2s3);
 
-		/* Return AUDIO_OK when all operations are correctly done */
-		return AUDIO_OK;
-	}
+        /* Return AUDIO_OK when all operations are correctly done */
+        return AUDIO_OK;
+    }
 }
 
 /**
@@ -179,24 +179,24 @@ uint8_t AUDIO_OUT_Resume(void) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_Stop(uint32_t Option) {
-	/* Call DMA Stop to disable DMA stream before stopping codec */
-	HAL_I2S_DMAStop(&hi2s3);
+    /* Call DMA Stop to disable DMA stream before stopping codec */
+    HAL_I2S_DMAStop(&hi2s3);
 
-	/* Call Audio Codec Stop function */
-	if (cs43l22_Stop(AUDIO_I2C_ADDRESS, Option) != 0) {
-		return AUDIO_ERROR;
-	} else {
-		if (Option == CODEC_PDWN_HW) {
-			/* Wait at least 1ms */
-			osDelay(1);
+    /* Call Audio Codec Stop function */
+    if (cs43l22_Stop(AUDIO_I2C_ADDRESS, Option) != 0) {
+        return AUDIO_ERROR;
+    } else {
+        if (Option == CODEC_PDWN_HW) {
+            /* Wait at least 1ms */
+            _DelayMS(1);
 
-			/* Reset the pin */
-			HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
-		}
+            /* Reset the pin */
+            HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
+        }
 
-		/* Return AUDIO_OK when all operations are correctly done */
-		return AUDIO_OK;
-	}
+        /* Return AUDIO_OK when all operations are correctly done */
+        return AUDIO_OK;
+    }
 }
 
 /**
@@ -206,13 +206,13 @@ uint8_t AUDIO_OUT_Stop(uint32_t Option) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_SetVolume(uint8_t Volume) {
-	/* Call the codec volume control function with converted volume value */
-	if (cs43l22_SetVolume(AUDIO_I2C_ADDRESS, Volume) != 0) {
-		return AUDIO_ERROR;
-	} else {
-		/* Return AUDIO_OK when all operations are correctly done */
-		return AUDIO_OK;
-	}
+    /* Call the codec volume control function with converted volume value */
+    if (cs43l22_SetVolume(AUDIO_I2C_ADDRESS, Volume) != 0) {
+        return AUDIO_ERROR;
+    } else {
+        /* Return AUDIO_OK when all operations are correctly done */
+        return AUDIO_OK;
+    }
 }
 
 /**
@@ -222,13 +222,13 @@ uint8_t AUDIO_OUT_SetVolume(uint8_t Volume) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_SetMute(uint32_t Cmd) {
-	/* Call the Codec Mute function */
-	if (cs43l22_SetMute(AUDIO_I2C_ADDRESS, Cmd) != 0) {
-		return AUDIO_ERROR;
-	} else {
-		/* Return AUDIO_OK when all operations are correctly done */
-		return AUDIO_OK;
-	}
+    /* Call the Codec Mute function */
+    if (cs43l22_SetMute(AUDIO_I2C_ADDRESS, Cmd) != 0) {
+        return AUDIO_ERROR;
+    } else {
+        /* Return AUDIO_OK when all operations are correctly done */
+        return AUDIO_OK;
+    }
 }
 
 /**
@@ -240,13 +240,13 @@ uint8_t AUDIO_OUT_SetMute(uint32_t Cmd) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_SetOutputMode(uint8_t Output) {
-	/* Call the Codec output Device function */
-	if (cs43l22_SetOutputMode(AUDIO_I2C_ADDRESS, Output) != 0) {
-		return AUDIO_ERROR;
-	} else {
-		/* Return AUDIO_OK when all operations are correctly done */
-		return AUDIO_OK;
-	}
+    /* Call the Codec output Device function */
+    if (cs43l22_SetOutputMode(AUDIO_I2C_ADDRESS, Output) != 0) {
+        return AUDIO_ERROR;
+    } else {
+        /* Return AUDIO_OK when all operations are correctly done */
+        return AUDIO_OK;
+    }
 }
 
 /**
@@ -256,11 +256,11 @@ uint8_t AUDIO_OUT_SetOutputMode(uint8_t Output) {
  *         audio frequency.
  */
 void AUDIO_OUT_SetFrequency(uint32_t AudioFreq) {
-	/* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
-	AUDIO_OUT_ClockConfig(&hi2s3, AudioFreq, NULL);
+    /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
+    AUDIO_OUT_ClockConfig(&hi2s3, AudioFreq, NULL);
 
-	/* Update the I2S audio frequency configuration */
-	I2S3_Init(AudioFreq);
+    /* Update the I2S audio frequency configuration */
+    I2S3_Init(AudioFreq);
 }
 
 /**
@@ -272,36 +272,36 @@ void AUDIO_OUT_SetFrequency(uint32_t AudioFreq) {
  * @param  Params : pointer on additional configuration parameters, can be NULL.
  */
 __weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq, void *Params) {
-	RCC_PeriphCLKInitTypeDef rccclkinit;
-	uint8_t index = 0, freqindex = 0xFF;
+    RCC_PeriphCLKInitTypeDef rccclkinit;
+    uint8_t index = 0, freqindex = 0xFF;
 
-	for (index = 0; index < 7; index++) {
-		if (I2SFreq[index] == AudioFreq) {
-			freqindex = index;
-			break;
-		}
-	}
+    for (index = 0; index < 7; index++) {
+        if (I2SFreq[index] == AudioFreq) {
+            freqindex = index;
+            break;
+        }
+    }
 
-	/* Enable PLLI2S clock */
-	HAL_RCCEx_GetPeriphCLKConfig(&rccclkinit);
-	// FIXME: not consistent CubeMX for F407 & F423
-	/* PLLI2S_VCO Input = HSE_VALUE/PLL_M = 1 Mhz */
-	if (freqindex != 0xFF) {
-		/* I2S clock config
-		 PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) � (PLLI2SN/PLLM)
-		 I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
-		rccclkinit.PLLI2S.PLLI2SN = I2SPLLN[freqindex];
-		rccclkinit.PLLI2S.PLLI2SR = I2SPLLR[freqindex];
-	} else {
-		/* I2S clock config
-		 PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) � (PLLI2SN/PLLM)
-		 I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
-		rccclkinit.PLLI2S.PLLI2SN = 258;
-		rccclkinit.PLLI2S.PLLI2SR = 3;
-	}
-	rccclkinit.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1;
+    /* Enable PLLI2S clock */
+    HAL_RCCEx_GetPeriphCLKConfig(&rccclkinit);
+    // FIXME: not consistent CubeMX for F407 & F423
+    /* PLLI2S_VCO Input = HSE_VALUE/PLL_M = 1 Mhz */
+    if (freqindex != 0xFF) {
+        /* I2S clock config
+         PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) � (PLLI2SN/PLLM)
+         I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
+        rccclkinit.PLLI2S.PLLI2SN = I2SPLLN[freqindex];
+        rccclkinit.PLLI2S.PLLI2SR = I2SPLLR[freqindex];
+    } else {
+        /* I2S clock config
+         PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) � (PLLI2SN/PLLM)
+         I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
+        rccclkinit.PLLI2S.PLLI2SN = 258;
+        rccclkinit.PLLI2S.PLLI2SR = 3;
+    }
+    rccclkinit.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1;
 
-	HAL_RCCEx_PeriphCLKConfig(&rccclkinit);
+    HAL_RCCEx_PeriphCLKConfig(&rccclkinit);
 }
 
 /**
@@ -310,7 +310,7 @@ __weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq, v
  * @param  Params : pointer on additional configuration parameters, can be NULL.
  */
 void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params) {
-	HAL_I2S_MspInit(hi2s);
+    HAL_I2S_MspInit(hi2s);
 }
 
 /**
@@ -319,48 +319,48 @@ void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params) {
  * @param  Params : pointer on additional configuration parameters, can be NULL.
  */
 void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params) {
-	HAL_I2S_MspDeInit(hi2s);
+    HAL_I2S_MspDeInit(hi2s);
 }
 
 /**
  * @brief  Manages the DMA full Transfer complete event.
  */
 __weak void AUDIO_OUT_TransferComplete_CallBack(void) {
-	if (!AudioPlayDone) {
-		AUDIO_OUT_ChangeBuffer((uint16_t*) (AUDIO_SAMPLE + ((AUDIO_SAMPLE_SIZE - AudioRemSize) / AUDIODATA_SIZE)), AudioPlaySize);
-	} else {
-		/* Get data size from audio file */
-		AudioRemSize = AUDIO_SAMPLE_SIZE;
-		/* Get total data to be played */
-		if (AUDIO_SAMPLE_SIZE > AUDIO_BUFFER_SIZE) {
-			AudioPlaySize = AUDIO_BUFFER_SIZE;
-		} else {
-			AudioPlaySize = AUDIO_SAMPLE_SIZE;
-		}
+    if (!AudioPlayDone) {
+        AUDIO_OUT_ChangeBuffer((uint16_t*) (AUDIO_SAMPLE + ((AUDIO_SAMPLE_SIZE - AudioRemSize) / AUDIODATA_SIZE)), AudioPlaySize);
+    } else {
+        /* Get data size from audio file */
+        AudioRemSize = AUDIO_SAMPLE_SIZE;
+        /* Get total data to be played */
+        if (AUDIO_SAMPLE_SIZE > AUDIO_BUFFER_SIZE) {
+            AudioPlaySize = AUDIO_BUFFER_SIZE;
+        } else {
+            AudioPlaySize = AUDIO_SAMPLE_SIZE;
+        }
 
-		/* Start playing Wave again*/
-		AUDIO_OUT_ChangeBuffer((uint16_t*) AUDIO_SAMPLE, AudioPlaySize);
-	}
+        /* Start playing Wave again*/
+        AUDIO_OUT_ChangeBuffer((uint16_t*) AUDIO_SAMPLE, AudioPlaySize);
+    }
 
-	AudioPlayDone = (AudioPlaySize == AudioRemSize);
+    AudioPlayDone = (AudioPlaySize == AudioRemSize);
 }
 
 /**
  * @brief  Manages the DMA Half Transfer complete event.
  */
 __weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
-	// check remaining data
-	if (AudioRemSize > AUDIO_BUFFER_SIZE) {
-		/* Get total data to be played */
-		AudioPlaySize = AUDIO_BUFFER_SIZE;
-		/* Get remaining data */
-		AudioRemSize -= AUDIO_BUFFER_SIZE;
-	} else {
-		/* Get total data to be played */
-		if (!AudioPlayDone) {
-			AudioPlaySize = AudioRemSize;
-		}
-	}
+    // check remaining data
+    if (AudioRemSize > AUDIO_BUFFER_SIZE) {
+        /* Get total data to be played */
+        AudioPlaySize = AUDIO_BUFFER_SIZE;
+        /* Get remaining data */
+        AudioRemSize -= AUDIO_BUFFER_SIZE;
+    } else {
+        /* Get total data to be played */
+        if (!AudioPlayDone) {
+            AudioPlaySize = AudioRemSize;
+        }
+    }
 }
 
 /**
@@ -374,10 +374,10 @@ __weak void AUDIO_OUT_Error_CallBack(void) {
  * @param  hi2s: I2S handle
  */
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
-	if (hi2s->Instance == I2S) {
-		/* Call the user function which will manage directly transfer complete */
-		AUDIO_OUT_TransferComplete_CallBack();
-	}
+    if (hi2s->Instance == I2S) {
+        /* Call the user function which will manage directly transfer complete */
+        AUDIO_OUT_TransferComplete_CallBack();
+    }
 }
 
 /**
@@ -385,11 +385,11 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
  * @param  hi2s: I2S handle
  */
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
-	if (hi2s->Instance == I2S) {
-		/* Manage the remaining file size and new address offset: This function should
-		 be coded by user (its prototype is already declared in stm32f4_discovery_audio.h) */
-		AUDIO_OUT_HalfTransfer_CallBack();
-	}
+    if (hi2s->Instance == I2S) {
+        /* Manage the remaining file size and new address offset: This function should
+         be coded by user (its prototype is already declared in stm32f4_discovery_audio.h) */
+        AUDIO_OUT_HalfTransfer_CallBack();
+    }
 }
 
 /* Private functions implementation ---------------------------------------------*/
@@ -402,36 +402,36 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
-	uint8_t ret = AUDIO_OK;
+    uint8_t ret = AUDIO_OK;
 
-	/* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
-	AUDIO_OUT_ClockConfig(&hi2s3, AudioFreq, NULL);
+    /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
+    AUDIO_OUT_ClockConfig(&hi2s3, AudioFreq, NULL);
 
-	/* I2S data transfer preparation:
-	 Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
-	if (HAL_I2S_GetState(&hi2s3) == HAL_I2S_STATE_RESET) {
-		/* Init the I2S MSP: this __weak function can be redefined by the application*/
-		AUDIO_OUT_MspInit(&hi2s3, NULL);
-	}
+    /* I2S data transfer preparation:
+     Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
+    if (HAL_I2S_GetState(&hi2s3) == HAL_I2S_STATE_RESET) {
+        /* Init the I2S MSP: this __weak function can be redefined by the application*/
+        AUDIO_OUT_MspInit(&hi2s3, NULL);
+    }
 
-	/* I2S data transfer preparation:
-	 Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
-	/* Configure the I2S peripheral */
-	if (I2S3_Init(AudioFreq) != AUDIO_OK) {
-		ret = AUDIO_ERROR;
-	}
+    /* I2S data transfer preparation:
+     Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
+    /* Configure the I2S peripheral */
+    if (I2S3_Init(AudioFreq) != AUDIO_OK) {
+        ret = AUDIO_ERROR;
+    }
 
-	if (ret == AUDIO_OK) {
-		/* Retieve audio codec identifier */
-		if (((cs43l22_ReadID(AUDIO_I2C_ADDRESS)) & CS43L22_ID_MASK) == CS43L22_ID) {
-			/* Initialize the audio */
-			cs43l22_Init(AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
-		} else {
-			ret = AUDIO_ERROR;
-		}
-	}
+    if (ret == AUDIO_OK) {
+        /* Retieve audio codec identifier */
+        if (((cs43l22_ReadID(AUDIO_I2C_ADDRESS)) & CS43L22_ID_MASK) == CS43L22_ID) {
+            /* Initialize the audio */
+            cs43l22_Init(AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
+        } else {
+            ret = AUDIO_ERROR;
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
 /**
@@ -441,16 +441,16 @@ static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Au
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
-	/* Call the audio Codec Play function */
-	if (cs43l22_Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) {
-		return AUDIO_ERROR;
-	} else {
-		/* Update the Media layer and enable it for play */
+    /* Call the audio Codec Play function */
+    if (cs43l22_Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) {
+        return AUDIO_ERROR;
+    } else {
+        /* Update the Media layer and enable it for play */
 
-		HAL_I2S_Transmit_DMA(&hi2s3, pBuffer, DMA_MAX(Size/AUDIODATA_SIZE));
-		/* Return AUDIO_OK when all operations are correctly done */
-		return AUDIO_OK;
-	}
+        HAL_I2S_Transmit_DMA(&hi2s3, pBuffer, DMA_MAX(Size/AUDIODATA_SIZE));
+        /* Return AUDIO_OK when all operations are correctly done */
+        return AUDIO_OK;
+    }
 }
 
 /**
@@ -458,32 +458,32 @@ static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
  * @param  AudioFreq: Audio frequency to be configured for the I2S peripheral.
  */
 static uint8_t I2S3_Init(uint32_t AudioFreq) {
-	/* Disable I2S block */
-	__HAL_I2S_DISABLE(&hi2s3);
+    /* Disable I2S block */
+    __HAL_I2S_DISABLE(&hi2s3);
 
-	/* I2S3 peripheral configuration */
-	hi2s3.Init.AudioFreq = AudioFreq;
-	hi2s3.Init.ClockSource = I2S_CLOCK_PLL;
-	hi2s3.Init.CPOL = I2S_CPOL_LOW;
-	// FIXME: Why it works on I2S_DATAFORMAT_32B? It should be I2S_DATAFORMAT_16B
-	//	hi2s3.Init.DataFormat = I2S_DATAFORMAT_16B;
-	hi2s3.Init.DataFormat = I2S_DATAFORMAT_32B;
-	hi2s3.Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
-	hi2s3.Init.Mode = I2S_MODE_MASTER_TX;
-	hi2s3.Init.Standard = I2S_STANDARD_PHILIPS;
-	/* Initialize the I2S peripheral with the structure above */
-	if (HAL_I2S_Init(&hi2s3) != HAL_OK) {
-		return AUDIO_ERROR;
-	} else {
-		return AUDIO_OK;
-	}
+    /* I2S3 peripheral configuration */
+    hi2s3.Init.AudioFreq = AudioFreq;
+    hi2s3.Init.ClockSource = I2S_CLOCK_PLL;
+    hi2s3.Init.CPOL = I2S_CPOL_LOW;
+    // FIXME: Why it works on I2S_DATAFORMAT_32B? It should be I2S_DATAFORMAT_16B
+    //	hi2s3.Init.DataFormat = I2S_DATAFORMAT_16B;
+    hi2s3.Init.DataFormat = I2S_DATAFORMAT_32B;
+    hi2s3.Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
+    hi2s3.Init.Mode = I2S_MODE_MASTER_TX;
+    hi2s3.Init.Standard = I2S_STANDARD_PHILIPS;
+    /* Initialize the I2S peripheral with the structure above */
+    if (HAL_I2S_Init(&hi2s3) != HAL_OK) {
+        return AUDIO_ERROR;
+    } else {
+        return AUDIO_OK;
+    }
 }
 
 static void lock(void) {
-	osMutexAcquire(AudioMutexHandle, osWaitForever);
+    osMutexAcquire(AudioMutexHandle, osWaitForever);
 }
 
 static void unlock(void) {
-	osMutexRelease(AudioMutexHandle);
+    osMutexRelease(AudioMutexHandle);
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
