@@ -12,9 +12,6 @@
 #include "Libs/_utils.h"
 
 /* Exported macro ------------------------------------------------------------*/
-#define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_10
-#define FLASH_USER_END_ADDR     (ADDR_FLASH_SECTOR_11  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_11) - 1)
-
 /* Base address of the Flash sectors */
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base address of Sector 0, 16 Kbytes */
 #define ADDR_FLASH_SECTOR_1     ((uint32_t)0x08004000) /* Base address of Sector 1, 16 Kbytes */
@@ -32,6 +29,19 @@
 #define ADDR_FLASH_SECTOR_13    ((uint32_t)0x08120000) /* Base address of Sector13, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_14    ((uint32_t)0x08140000) /* Base address of Sector14, 128 Kbytes */
 #define ADDR_FLASH_SECTOR_15    ((uint32_t)0x08160000) /* Base address of Sector15, 128 Kbytes */
+
+/* User defined */
+#define FLASH_USER_START_ADDR   ADDR_FLASH_SECTOR_10
+#define FLASH_USER_END_ADDR     (ADDR_FLASH_SECTOR_11  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_11) - 1)
+
+#define FOTA_IN_PROGRESS        0xA1B2C3D4
+#define FOTA_FLAG_ADDRESS       FLASH_USER_END_ADDR - sizeof(uint32_t)
+#define FOTA_CHECKSUM_ADDRESS   FOTA_FLAG_ADDRESS - sizeof(uint32_t)
+#define IS_FOTA_IN_PROGRESS     ((*(uint32_t*) FOTA_FLAG_ADDRESS) == FOTA_IN_PROGRESS)
+
+#define SRAM_START_ADDR         (uint32_t)0x20000000)
+#define SRAM_END_ADDR           (uint32_t)0x20050000)
+#define IS_VALID_SP(addr)       (((*(volatile uint32_t*)addr) & x) == SRAM_START_ADDR)
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t FLASHER_WriteByte(uint8_t *ptr, uint16_t size, uint32_t offset);

@@ -58,8 +58,34 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SYS_OSC_IN_Pin GPIO_PIN_0
+#define SYS_OSC_IN_GPIO_Port GPIOH
+#define SYS_OSC_OUT_Pin GPIO_PIN_1
+#define SYS_OSC_OUT_GPIO_Port GPIOH
+#define INT_NET_PWR_Pin GPIO_PIN_0
+#define INT_NET_PWR_GPIO_Port GPIOC
+#define INT_ADC_VBAT_Pin GPIO_PIN_1
+#define INT_ADC_VBAT_GPIO_Port GPIOB
+#define INT_EEPROM_SCL_Pin GPIO_PIN_10
+#define INT_EEPROM_SCL_GPIO_Port GPIOB
+#define INT_NET_RST_Pin GPIO_PIN_14
+#define INT_NET_RST_GPIO_Port GPIOB
+#define INT_NET_DTR_Pin GPIO_PIN_15
+#define INT_NET_DTR_GPIO_Port GPIOB
 #define SYS_LED_Pin GPIO_PIN_13
 #define SYS_LED_GPIO_Port GPIOD
+#define INT_NET_TX_Pin GPIO_PIN_9
+#define INT_NET_TX_GPIO_Port GPIOA
+#define INT_NET_RX_Pin GPIO_PIN_10
+#define INT_NET_RX_GPIO_Port GPIOA
+#define SYS_SWDIO_Pin GPIO_PIN_13
+#define SYS_SWDIO_GPIO_Port GPIOA
+#define SYS_SWCLK_Pin GPIO_PIN_14
+#define SYS_SWCLK_GPIO_Port GPIOA
+#define SYS_SWO_Pin GPIO_PIN_3
+#define SYS_SWO_GPIO_Port GPIOB
+#define INT_EEPROM_SDA_Pin GPIO_PIN_9
+#define INT_EEPROM_SDA_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

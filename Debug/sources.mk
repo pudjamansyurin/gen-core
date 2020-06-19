@@ -17,6 +17,7 @@ OBJCOPY_BIN :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
+Core/Src/DMA \
 Core/Src/Drivers \
 Core/Src/Libs \
 Core/Src \
