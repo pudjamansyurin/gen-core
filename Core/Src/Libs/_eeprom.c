@@ -62,8 +62,12 @@ uint8_t EEPROM_Init(void) {
     if (!ret) {
         LOG_StrLn("EEPROM:Error");
     }
-
     unlock();
+
+    // Load or Reset
+    EEPROM_ResetOrLoad();
+    EEPROM_Fota(EE_CMD_W, 0);
+
     return ret;
 }
 
@@ -94,8 +98,6 @@ void EEPROM_ResetOrLoad(void) {
         // re-write eeprom
         EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
     }
-    // Reset FOTA flag
-    EEPROM_Fota(EE_CMD_W, 0);
 
 }
 

@@ -1432,7 +1432,6 @@ void StartManagerTask(void *argument)
 
     // Initialize EEPROM
     EEPROM_Init();
-    EEPROM_ResetOrLoad();
 
     // Threads management:
     //    osThreadSuspend(IotTaskHandle);
