@@ -19,8 +19,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_crc.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h \
@@ -32,8 +30,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/Libs/_utils.h ../Core/Inc/_defines.h ../Core/Inc/main.h \
  ../Core/Inc/Drivers/_log.h ../Core/Inc/Libs/_eeprom.h \
- ../Core/Inc/Libs/_simcom.h ../Core/Inc/Drivers/_flasher.h \
- ../Core/Inc/DMA/_dma_battery.h
+ ../Core/Inc/Libs/_simcom.h ../Core/Inc/Libs/_fota.h \
+ ../Core/Inc/Drivers/_at.h ../Core/Inc/Drivers/_flasher.h
 
 ../Core/Inc/main.h:
 
@@ -77,10 +75,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h:
 
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h:
-
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h:
-
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_crc.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h:
@@ -111,6 +105,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/Libs/_simcom.h:
 
-../Core/Inc/Drivers/_flasher.h:
+../Core/Inc/Libs/_fota.h:
 
-../Core/Inc/DMA/_dma_battery.h:
+../Core/Inc/Drivers/_at.h:
+
+../Core/Inc/Drivers/_flasher.h:

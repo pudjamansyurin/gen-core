@@ -74,7 +74,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state);
 void Simcom_Init(void);
 char* Simcom_Response(char *str);
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
-SIMCOM_RESULT Simcom_FOTA(void);
+uint8_t Simcom_FOTA(void);
 SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size);
 SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 void Simcom_Lock(void);

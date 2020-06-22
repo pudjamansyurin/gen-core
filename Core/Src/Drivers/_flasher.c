@@ -11,25 +11,25 @@
 /* Public functions implementation ---------------------------------------------*/
 uint8_t FLASHER_WriteByte(uint8_t *ptr, uint16_t size, uint32_t address, uint32_t end) {
     uint32_t *ptr32 = (uint32_t*) ptr;
-    uint32_t ret = 0;
+    uint32_t errors = 0;
 
     /* Unlock the Flash to enable the flash control register access *************/
     HAL_FLASH_Unlock();
 
     /* Writing...... */
     while (size && address < end) {
-        ret += (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, *ptr32++) != HAL_OK);
+        errors += (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, *ptr32++) != HAL_OK);
 
         address += 4;
         size -= 4;
     }
 
     /* Indicator */
-    if (!ret) {
+    if (!errors) {
         LOG_StrLn("HAL_FLASH_Program = OK");
     } else {
         LOG_Str("HAL_FLASH_Program = ERROR:");
-        LOG_Int(ret);
+        LOG_Int(errors);
         LOG_Enter();
     }
 
@@ -37,7 +37,7 @@ uint8_t FLASHER_WriteByte(uint8_t *ptr, uint16_t size, uint32_t address, uint32_
      to protect the FLASH memory against possible unwanted operation) *********/
     HAL_FLASH_Lock();
 
-    return ret;
+    return (errors == 0);
 }
 
 uint8_t FLASHER_Erase(uint32_t FirstSector, uint32_t NbOfSectors) {
@@ -193,9 +193,9 @@ uint8_t FLASHER_EraseBkpArea(void) {
     uint32_t FirstSector = 0, NbOfSectors = 0;
 
     /* Get the 1st sector to erase */
-    FirstSector = FLASHER_GetSector(FLASH_BKP_START_ADDR);
+    FirstSector = FLASHER_GetSector(BKP_START_ADDR);
     /* Get the number of sector to erase from 1st sector*/
-    NbOfSectors = FLASHER_GetSector(FLASH_BKP_END_ADDR) - FirstSector + 1;
+    NbOfSectors = FLASHER_GetSector(BKP_END_ADDR) - FirstSector + 1;
     // Erase
     return FLASHER_Erase(FirstSector, NbOfSectors);
 }
@@ -204,34 +204,36 @@ uint8_t FLASHER_EraseAppArea(void) {
     uint32_t FirstSector = 0, NbOfSectors = 0;
 
     /* Get the 1st sector to erase */
-    FirstSector = FLASHER_GetSector(FLASH_APP_START_ADDR);
+    FirstSector = FLASHER_GetSector(APP_START_ADDR);
     /* Get the number of sector to erase from 1st sector*/
-    NbOfSectors = FLASHER_GetSector(FLASH_APP_END_ADDR) - FirstSector + 1;
+    NbOfSectors = FLASHER_GetSector(APP_END_ADDR) - FirstSector + 1;
     // Erase
     return FLASHER_Erase(FirstSector, NbOfSectors);
 }
 
 uint8_t FLASHER_WriteBkpArea(uint8_t *ptr, uint16_t size, uint32_t offset) {
-    uint32_t address = FLASH_BKP_START_ADDR + offset;
+    uint32_t address = BKP_START_ADDR + offset;
 
-    return FLASHER_WriteByte(ptr, size, address, FLASH_BKP_END_ADDR);
+    return FLASHER_WriteByte(ptr, size, address, BKP_END_ADDR);
 }
 
 uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint16_t size, uint32_t offset) {
-    uint32_t address = FLASH_APP_START_ADDR + offset;
+    uint32_t address = APP_START_ADDR + offset;
 
-    return FLASHER_WriteByte(ptr, size, address, FLASH_APP_END_ADDR);
+    return FLASHER_WriteByte(ptr, size, address, APP_END_ADDR);
 }
 
 uint8_t FLASHER_BackupApp(void) {
-    uint8_t ret;
-    uint8_t *ptr = (uint8_t*) FLASH_APP_START_ADDR;
-    uint32_t len = (FLASH_APP_END_ADDR - FLASH_APP_START_ADDR);
+    uint8_t ret = 1;
+    uint8_t *ptr = (uint8_t*) APP_START_ADDR;
+    uint32_t len = (APP_END_ADDR - APP_START_ADDR + 1);
 
-    ret = FLASHER_EraseBkpArea();
+    if (!IS_VALID_SP(BKP_START_ADDR)) {
+        ret = FLASHER_EraseBkpArea();
 
-    if (ret) {
-        ret = FLASHER_WriteBkpArea(ptr, len, 0);
+        if (ret) {
+            ret = FLASHER_WriteBkpArea(ptr, len, 0);
+        }
     }
 
     return ret;
@@ -239,8 +241,8 @@ uint8_t FLASHER_BackupApp(void) {
 
 uint8_t FLASHER_RestoreApp(void) {
     uint8_t ret;
-    uint8_t *ptr = (uint8_t*) FLASH_BKP_START_ADDR;
-    uint32_t len = (FLASH_BKP_END_ADDR - FLASH_BKP_START_ADDR);
+    uint8_t *ptr = (uint8_t*) BKP_START_ADDR;
+    uint32_t len = (BKP_END_ADDR - BKP_START_ADDR + 1);
 
     ret = FLASHER_EraseAppArea();
 

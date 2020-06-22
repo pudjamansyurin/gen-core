@@ -31,7 +31,7 @@
 #define RTOS_ENABLE                             0
 #define VCU_BOOTLOADER_VERSION       	        0x01
 
-#define NET_BOOT_TIMEOUT                        7000U               // in ms
+#define NET_BOOT_TIMEOUT                        8000U               // in ms
 #define NET_EXTRA_TIME                          1000U               // in ms
 #define NET_REPEAT_MAX							2U
 

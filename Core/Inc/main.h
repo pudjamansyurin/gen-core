@@ -64,8 +64,8 @@ void Error_Handler(void);
 #define SYS_OSC_OUT_GPIO_Port GPIOH
 #define INT_NET_PWR_Pin GPIO_PIN_0
 #define INT_NET_PWR_GPIO_Port GPIOC
-#define INT_ADC_VBAT_Pin GPIO_PIN_1
-#define INT_ADC_VBAT_GPIO_Port GPIOB
+#define BOOT1_Pin GPIO_PIN_2
+#define BOOT1_GPIO_Port GPIOB
 #define INT_EEPROM_SCL_Pin GPIO_PIN_10
 #define INT_EEPROM_SCL_GPIO_Port GPIOB
 #define INT_NET_RST_Pin GPIO_PIN_14

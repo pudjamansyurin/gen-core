@@ -11,6 +11,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_simcom.h"
 #include "Libs/_fota.h"
+#include "Libs/_eeprom.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_at.h"
@@ -43,7 +44,6 @@ void Simcom_Unlock(void) {
 }
 
 char* Simcom_Response(char *str) {
-    //    return memmem(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX), str, strlen(str));
     return strstr(SIMCOM_UART_RX, str);
 }
 
@@ -247,36 +247,47 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
     return SIM.state >= state;
 }
 
-SIMCOM_RESULT Simcom_FOTA(void) {
+uint8_t Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint32_t checksum = 0, len = 0;
     at_ftp_t ftp = {
             .path = "/vcu/",
-            .version = "HUB2"
+            .version = "APP"
     };
 
+    // DFU flag set
+    EEPROM_FlagDFU(EE_CMD_W, 1);
+    Simcom_Init();
+
     Simcom_Lock();
-    if (SIM.state >= SIM_STATE_GPRS_ON) {
+    // FOTA download, program & check
+    if (Simcom_SetState(SIM_STATE_GPRS_ON)) {
         // Initialize bearer for TCP based apps.
         p = FOTA_BearerInitialize();
 
-        // Get Checksum of Firmware
+        // Get checksum of new firmware
         if (p > 0) {
             p = FOTA_GetChecksum(&ftp, &checksum);
         }
 
-        // Download Firmware then save to FLASH
+        // Download & Program new firmware
         if (p > 0) {
             p = FOTA_FirmwareToFlash(&ftp, &len);
         }
 
         // Buffer filled, compare the checksum
         if (p > 0) {
-            p = FOTA_CompareChecksum(checksum, len, FLASH_BKP_START_ADDR);
+            p = FOTA_CompareChecksum(checksum, len, APP_START_ADDR);
+        }
+
+        // DFU flag reset
+        if (p > 0) {
+            EEPROM_FlagDFU(EE_CMD_W, 0);
         }
     }
+
     Simcom_Unlock();
-    return p;
+    return (p == SIM_RESULT_OK);
 }
 
 SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) {
@@ -376,7 +387,7 @@ static SIMCOM_RESULT Simcom_Power(void) {
 
     // simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-    HAL_Delay(5);
+    HAL_Delay(1);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
     // wait response

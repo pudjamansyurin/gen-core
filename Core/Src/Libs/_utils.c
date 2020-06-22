@@ -37,6 +37,22 @@ void _LedToggle(void) {
     HAL_GPIO_TogglePin(SYS_LED_GPIO_Port, SYS_LED_Pin);
 }
 
+void _Error(char msg[50]) {
+#if RTOS_ENABLE
+    if (osKernelGetState() == osKernelRunning) {
+        LOG_StrLn(msg);
+    }
+#else
+    LOG_StrLn(msg);
+#endif
+
+    // indicator error
+    while (1) {
+        _LedToggle();
+        HAL_Delay(50);
+    }
+}
+
 int8_t _BitPosition(uint64_t event_id) {
     uint8_t pos = -1;
 

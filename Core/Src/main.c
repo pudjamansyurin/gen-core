@@ -26,8 +26,8 @@
 #include "Libs/_utils.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_simcom.h"
+#include "Libs/_fota.h"
 #include "Drivers/_flasher.h"
-#include "DMA/_dma_battery.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,9 +45,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-DMA_HandleTypeDef hdma_adc1;
-
 CRC_HandleTypeDef hcrc;
 
 I2C_HandleTypeDef hi2c2;
@@ -56,7 +53,7 @@ UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
-extern uint32_t IAP_FLAG;
+extern uint32_t DFU_FLAG;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,11 +61,9 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_CRC_Init(void);
-static void MX_ADC1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -82,7 +77,9 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-
+    uint8_t ret;
+    uint32_t JumpAddress;
+    pFunction JumpToApplication;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -105,44 +102,92 @@ int main(void)
     MX_GPIO_Init();
     MX_DMA_Init();
     MX_CRC_Init();
-    MX_ADC1_Init();
     MX_I2C2_Init();
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
+    HAL_Delay(1000);
     EEPROM_Init();
-    BAT_DMA_Init();
-    Simcom_Init();
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    IAP_FLAG = 1;
-    while (1) {
-        if (IAP_FLAG) {
-            if (Simcom_SetState(SIM_STATE_GPRS_ON)) {
-                // Backup current image to BKP area
-                FLASHER_BackupApp();
+    /* USER CODE END WHILE */
 
-                // Download new image to APP area
-                if (Simcom_FOTA()) {
-                    // New image has valid checksum in APP area
-                    EEPROM_FlagIAP(EE_CMD_W, 0);
-                } else {
-                    // DFU failed, restore old image to APP area
-                    FLASHER_RestoreApp();
-                }
-            }
+    /* USER CODE BEGIN 3 */
+    /* Read flag state from non-volatile memory */
+    EEPROM_FlagDFU(EE_CMD_R, EE_NULL);
+    _LedWrite(1);
 
-            // Reboot
-            HAL_NVIC_SystemReset();
-        } else if (IS_VALID_SP(FLASH_APP_START_ADDR)) {
-            // Check Image also with it's checksum
-
+    /* IAP flag has been set, initiate firmware download procedure */
+    if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
+        ret = Simcom_FOTA();
+        /* Everything went well, reset IAP flag & boot form new image */
+        if (ret) {
+            /* Reset IAP flag */
+            *(uint32_t*) IAP_FLAG_ADDR = 0;
+            /* Take branching decision on next reboot */
+            FOTA_Reboot();
         }
-        /* USER CODE END WHILE */
-
-        /* USER CODE BEGIN 3 */
-        _LedWrite(1);
+        /* DFU failed, retry until exhausted. */
+        else {
+            /* Decrement IAP retry until exhausted */
+            if (*(uint32_t*) IAP_RETRY_ADDR) {
+                (*(uint32_t*) IAP_RETRY_ADDR)--;
+                HAL_NVIC_SystemReset();
+            }
+        }
+        /* IAP flag is still set, and we ran out of retries */
+        /* Reset IAP flag */
+        *(uint32_t*) IAP_FLAG_ADDR = 0;
+        HAL_NVIC_SystemReset();
+    }
+    /* Jump to application if it exist and DFU finished */
+    else if (IS_VALID_SP(APP_START_ADDR) && !IS_DFU_IN_PROGRESS(DFU_FLAG)) {
+        LOG_StrLn("Jump to new application");
+        //        /* Disable all interrupts & clock */
+        //
+        //        /* Jump to user application */
+        //        JumpAddress = *(__IO uint32_t*) (APP_START_ADDR + sizeof(uint32_t));
+        //        JumpToApplication = (pFunction) JumpAddress;
+        //        /* Initialize user application stack's pointer */
+        //        __set_MSP(*(__IO uint32_t*) APP_START_ADDR);
+        //        /* Jump to application *
+        //        JumpToApplication();
+    }
+    /* Power reset during DFU, try once more */
+    else if (IS_DFU_IN_PROGRESS(DFU_FLAG)) {
+        ret = Simcom_FOTA();
+        /* Everything went well, boot form new image */
+        if (ret) {
+            /* Take branching decision on next reboot */
+            FOTA_Reboot();
+        }
+        /* Erase partially programmed application area */
+        FLASHER_EraseAppArea();
+        /* Reset DFU flag */
+        EEPROM_FlagDFU(EE_CMD_W, 0);
+        HAL_NVIC_SystemReset();
+    }
+    /* Try to restore the backup */
+    else {
+        /* Check is the backup image valid */
+        if (IS_VALID_SP(BKP_START_ADDR)) {
+            /* Restore back old image to application area */
+            if (FLASHER_RestoreApp()) {
+                /* Take branching decision on next reboot */
+                FOTA_Reboot();
+            }
+        } else {
+            /* Download new firmware for the first time */
+            ret = Simcom_FOTA();
+            /* Everything went well, boot form new image */
+            if (ret) {
+                /* Take branching decision on next reboot */
+                FOTA_Reboot();
+            }
+        }
+        /* Failure indicator */
+        _Error("Bootloader failure!!");
     }
     /* USER CODE END 3 */
 }
@@ -188,56 +233,6 @@ void SystemClock_Config(void)
             {
         Error_Handler();
     }
-}
-
-/**
- * @brief ADC1 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_ADC1_Init(void)
-{
-
-    /* USER CODE BEGIN ADC1_Init 0 */
-
-    /* USER CODE END ADC1_Init 0 */
-
-    ADC_ChannelConfTypeDef sConfig = { 0 };
-
-    /* USER CODE BEGIN ADC1_Init 1 */
-
-    /* USER CODE END ADC1_Init 1 */
-    /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-     */
-    hadc1.Instance = ADC1;
-    hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-    hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-    hadc1.Init.ScanConvMode = DISABLE;
-    hadc1.Init.ContinuousConvMode = ENABLE;
-    hadc1.Init.DiscontinuousConvMode = DISABLE;
-    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-    hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-    hadc1.Init.NbrOfConversion = 1;
-    hadc1.Init.DMAContinuousRequests = ENABLE;
-    hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
-    if (HAL_ADC_Init(&hadc1) != HAL_OK)
-            {
-        Error_Handler();
-    }
-    /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-     */
-    sConfig.Channel = ADC_CHANNEL_9;
-    sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
-    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-            {
-        Error_Handler();
-    }
-    /* USER CODE BEGIN ADC1_Init 2 */
-
-    /* USER CODE END ADC1_Init 2 */
-
 }
 
 /**
@@ -355,9 +350,6 @@ static void MX_DMA_Init(void)
     __HAL_RCC_DMA2_CLK_ENABLE();
 
     /* DMA interrupt init */
-    /* DMA2_Stream0_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
     /* DMA2_Stream2_IRQn interrupt configuration */
     HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
@@ -431,15 +423,21 @@ static void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : PB0 PB2 PB12 PB13
+    /*Configure GPIO pins : PB0 PB1 PB12 PB13
      PB4 PB5 PB6 PB7
      PB8 */
-    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_12 | GPIO_PIN_13
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_12 | GPIO_PIN_13
             | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7
             | GPIO_PIN_8;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : BOOT1_Pin */
+    GPIO_InitStruct.Pin = BOOT1_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
 
     /*Configure GPIO pins : INT_NET_RST_Pin INT_NET_DTR_Pin */
     GPIO_InitStruct.Pin = INT_NET_RST_Pin | INT_NET_DTR_Pin;
@@ -470,7 +468,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**
@@ -487,18 +484,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-    /* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-    /* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

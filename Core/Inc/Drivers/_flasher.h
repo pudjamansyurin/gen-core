@@ -31,17 +31,11 @@
 #define ADDR_FLASH_SECTOR_15    ((uint32_t)0x08160000) /* Base address of Sector15, 128 Kbytes */
 
 /* User defined */
-#define FLASH_APP_START_ADDR    ADDR_FLASH_SECTOR_5
-#define FLASH_APP_END_ADDR      (ADDR_FLASH_SECTOR_9  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_9) - 1)
+#define APP_START_ADDR    ADDR_FLASH_SECTOR_5
+#define APP_END_ADDR      (ADDR_FLASH_SECTOR_8  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_8) - 1)
 
-#define FLASH_BKP_START_ADDR    ADDR_FLASH_SECTOR_10
-#define FLASH_BKP_END_ADDR      (ADDR_FLASH_SECTOR_14  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_14) - 1)
-
-#define SRAM_START_ADDR         (uint32_t)0x20000000
-#define SRAM_END_ADDR           ((uint32_t)0x20050000 - 1)
-#define IS_VALID_SP(addr)       (((*(uint32_t*)addr) >= SRAM_START_ADDR) && ((*(uint32_t*)addr) <= SRAM_END_ADDR))
-
-#define IAP_RETRY_ADDR          (SRAM_END_ADDR - 4)
+#define BKP_START_ADDR    ADDR_FLASH_SECTOR_9
+#define BKP_END_ADDR      (ADDR_FLASH_SECTOR_12  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_12) - 1)
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t FLASHER_WriteByte(uint8_t *ptr, uint16_t size, uint32_t address, uint32_t end);

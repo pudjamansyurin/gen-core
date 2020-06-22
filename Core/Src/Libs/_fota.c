@@ -69,7 +69,7 @@ SIMCOM_RESULT FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
 
         if (p > 0) {
             // Copy to Buffer
-            *checksum = strtol(setFTPGET.ptr, (char**) NULL, 16);
+            *checksum = strtoul(setFTPGET.ptr, (char**) NULL, 16);
 
             // Indicator
             LOG_Str("FOTA:ChecksumOrigin = ");
@@ -116,11 +116,18 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
         p = AT_FtpDownload(&setFTPGET);
     }
 
-    // Read FTP File
+    /* Backup current application */
     if (p > 0 && setFTPGET.response == FTP_READY) {
+        p = FLASHER_BackupApp();
+    }
+
+    // Read FTP File
+    if (p > 0) {
         // Prepare, start timer
         LOG_StrLn("FOTA:Start");
         timer = _GetTickMS();
+
+        // Erase APP area
         FLASHER_EraseAppArea();
 
         // Copy chunk by chunk
@@ -158,10 +165,6 @@ SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
         }
     }
 
-    if (p > 0) {
-
-    }
-
     // Check state
     AT_FtpCurrentState(&state);
     if (state == FTP_STATE_ESTABLISHED) {
@@ -185,8 +188,17 @@ uint8_t FOTA_CompareChecksum(uint32_t crcRemote, uint32_t len, uint32_t address)
         LOG_StrLn("MATCH");
     } else {
         LOG_StrLn("NOT MATCH");
+        LOG_Str("FOTA:ChecksumLocal = ");
+        LOG_Hex32(crcLocal);
+        LOG_Enter();
     }
 
     return (crcLocal == crcRemote);
 }
 
+void FOTA_Reboot(void) {
+    /* Clear backup area */
+    FLASHER_EraseBkpArea();
+
+    HAL_NVIC_SystemReset();
+}
