@@ -129,6 +129,10 @@ int main(void)
         }
         /* DFU failed, retry until exhausted. */
         else {
+            LOG_Str("IAP failed, retry quota = ");
+            LOG_Int(*(uint32_t*) IAP_RETRY_ADDR);
+            LOG_Enter();
+
             /* Decrement IAP retry until exhausted */
             if (*(uint32_t*) IAP_RETRY_ADDR) {
                 (*(uint32_t*) IAP_RETRY_ADDR)--;

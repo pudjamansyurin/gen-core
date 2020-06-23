@@ -278,21 +278,21 @@ uint8_t Simcom_FOTA(void) {
         // Get checksum of new firmware
         if (p > 0) {
             p = FOTA_GetChecksum(&ftp, &checksum);
+
         }
 
         // Only download when image is different
-        if (p > 0 && checksumBkp != checksum) {
-            LOG_StrLn("NOT MATCH");
-            LOG_Hex32(checksumBkp);
-            LOG_Str(" != ");
-            LOG_Hex32(checksum);
-            LOG_Enter();
-            // Download & Program new firmware
-            p = FOTA_FirmwareToFlash(&ftp, &len);
+        if (p > 0) {
+            if (checksumBkp == checksum) {
+                LOG_StrLn("FOTA:Cancelled => ChecksumMatch");
+            } else {
+                // Download & Program new firmware
+                p = FOTA_FirmwareToFlash(&ftp, &len);
 
-            // Buffer filled, compare the checksum
-            if (p > 0) {
-                p = FOTA_CompareChecksum(checksum, len, APP_START_ADDR);
+                // Buffer filled, compare the checksum
+                if (p > 0) {
+                    p = FOTA_CompareChecksum(checksum, len, APP_START_ADDR);
+                }
             }
         }
 
