@@ -28,6 +28,7 @@
 #include "Libs/_simcom.h"
 #include "Libs/_fota.h"
 #include "Drivers/_flasher.h"
+#include "DMA/_dma_simcom.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,7 +54,6 @@ UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
-extern uint32_t DFU_FLAG;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -78,8 +78,6 @@ int main(void)
 {
     /* USER CODE BEGIN 1 */
     uint8_t ret;
-    uint32_t JumpAddress;
-    pFunction JumpToApplication;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -105,7 +103,7 @@ int main(void)
     MX_I2C2_Init();
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
-    HAL_Delay(1000);
+    SIMCOM_DMA_Init();
     EEPROM_Init();
     /* USER CODE END 2 */
 
@@ -120,6 +118,7 @@ int main(void)
 
     /* IAP flag has been set, initiate firmware download procedure */
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
+        LOG_StrLn("IAP set, do FOTA.");
         ret = Simcom_FOTA();
         /* Everything went well, reset IAP flag & boot form new image */
         if (ret) {
@@ -142,20 +141,14 @@ int main(void)
         HAL_NVIC_SystemReset();
     }
     /* Jump to application if it exist and DFU finished */
-    else if (IS_VALID_SP(APP_START_ADDR) && !IS_DFU_IN_PROGRESS(DFU_FLAG)) {
-        LOG_StrLn("Jump to new application");
-        //        /* Disable all interrupts & clock */
-        //
-        //        /* Jump to user application */
-        //        JumpAddress = *(__IO uint32_t*) (APP_START_ADDR + sizeof(uint32_t));
-        //        JumpToApplication = (pFunction) JumpAddress;
-        //        /* Initialize user application stack's pointer */
-        //        __set_MSP(*(__IO uint32_t*) APP_START_ADDR);
-        //        /* Jump to application *
-        //        JumpToApplication();
+    else if (FOTA_ValidImage(APP_START_ADDR) && !FOTA_InProgressDFU()) {
+        LOG_StrLn("Jump to application.");
+        /* Jump sequence */
+        FOTA_JumpToApplication();
     }
     /* Power reset during DFU, try once more */
-    else if (IS_DFU_IN_PROGRESS(DFU_FLAG)) {
+    else if (FOTA_InProgressDFU()) {
+        LOG_StrLn("DFU set, do FOTA once more.");
         ret = Simcom_FOTA();
         /* Everything went well, boot form new image */
         if (ret) {
@@ -171,13 +164,15 @@ int main(void)
     /* Try to restore the backup */
     else {
         /* Check is the backup image valid */
-        if (IS_VALID_SP(BKP_START_ADDR)) {
+        if (FOTA_ValidImage(BKP_START_ADDR)) {
+            LOG_StrLn("Has backed-up image, rollback.");
             /* Restore back old image to application area */
             if (FLASHER_RestoreApp()) {
                 /* Take branching decision on next reboot */
                 FOTA_Reboot();
             }
         } else {
+            LOG_StrLn("No image at all, do FOTA.");
             /* Download new firmware for the first time */
             ret = Simcom_FOTA();
             /* Everything went well, boot form new image */
@@ -187,7 +182,7 @@ int main(void)
             }
         }
         /* Failure indicator */
-        _Error("Bootloader failure!!");
+        _Error("Boot-loader failure!!");
     }
     /* USER CODE END 3 */
 }
@@ -484,18 +479,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+    /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

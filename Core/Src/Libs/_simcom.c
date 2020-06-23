@@ -36,11 +36,11 @@ static void Simcom_BeforeTransmitHook(void);
 
 /* Public functions implementation --------------------------------------------*/
 void Simcom_Lock(void) {
-//    osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
+    //    osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
 }
 
 void Simcom_Unlock(void) {
-//    osMutexRelease(SimcomRecMutexHandle);
+    //    osMutexRelease(SimcomRecMutexHandle);
 }
 
 char* Simcom_Response(char *str) {
@@ -48,7 +48,6 @@ char* Simcom_Response(char *str) {
 }
 
 void Simcom_Init(void) {
-    SIMCOM_DMA_Init();
     Simcom_SetState(SIM_STATE_READY);
 }
 
@@ -135,21 +134,21 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
                     AT_CSCLK state = CSCLK_EN_DTR;
                     p = AT_ConfigureSlowClock(ATW, &state);
                 }
-//                // Enable time reporting
-//                if (p > 0) {
-//                    AT_BOOL state = AT_ENABLE;
-//                    p = AT_EnableLocalTimestamp(ATW, &state);
-//                }
-//                // Enable “+IPD” header
-//                if (p > 0) {
-//                    AT_BOOL state = AT_ENABLE;
-//                    p = AT_IpPackageHeader(ATW, &state);
-//                }
-//                // Disable “RECV FROM” header
-//                if (p > 0) {
-//                    AT_BOOL state = AT_DISABLE;
-//                    p = AT_ShowRemoteIp(ATW, &state);
-//                }
+                //                // Enable time reporting
+                //                if (p > 0) {
+                //                    AT_BOOL state = AT_ENABLE;
+                //                    p = AT_EnableLocalTimestamp(ATW, &state);
+                //                }
+                //                // Enable “+IPD” header
+                //                if (p > 0) {
+                //                    AT_BOOL state = AT_ENABLE;
+                //                    p = AT_IpPackageHeader(ATW, &state);
+                //                }
+                //                // Disable “RECV FROM” header
+                //                if (p > 0) {
+                //                    AT_BOOL state = AT_DISABLE;
+                //                    p = AT_ShowRemoteIp(ATW, &state);
+                //                }
                 // =========== NETWORK CONFIGURATION
                 // Check SIM Card
                 if (p > 0) {
@@ -249,14 +248,25 @@ uint8_t Simcom_SetState(SIMCOM_STATE state) {
 
 uint8_t Simcom_FOTA(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    uint32_t checksum = 0, len = 0;
+    uint32_t checksumBkp, checksum = 0, len = 0;
     at_ftp_t ftp = {
             .path = "/vcu/",
             .version = "APP"
     };
 
-    // DFU flag set
-    EEPROM_FlagDFU(EE_CMD_W, 1);
+    /* Set DFU */
+    if (!FOTA_InProgressDFU()) {
+        EEPROM_FlagDFU(EE_CMD_W, DFU_IN_PROGRESS);
+
+        // Backup current application (if necessary)
+        if (FOTA_ValidImage(APP_START_ADDR)) {
+            FLASHER_BackupApp();
+        }
+    }
+    /* Get the stored checksum information */
+    checksumBkp = *(uint32_t*) (BKP_START_ADDR + CHECKSUM_OFFSET);
+
+    /* Initialise */
     Simcom_Init();
 
     Simcom_Lock();
@@ -270,14 +280,20 @@ uint8_t Simcom_FOTA(void) {
             p = FOTA_GetChecksum(&ftp, &checksum);
         }
 
-        // Download & Program new firmware
-        if (p > 0) {
+        // Only download when image is different
+        if (p > 0 && checksumBkp != checksum) {
+            LOG_StrLn("NOT MATCH");
+            LOG_Hex32(checksumBkp);
+            LOG_Str(" != ");
+            LOG_Hex32(checksum);
+            LOG_Enter();
+            // Download & Program new firmware
             p = FOTA_FirmwareToFlash(&ftp, &len);
-        }
 
-        // Buffer filled, compare the checksum
-        if (p > 0) {
-            p = FOTA_CompareChecksum(checksum, len, APP_START_ADDR);
+            // Buffer filled, compare the checksum
+            if (p > 0) {
+                p = FOTA_CompareChecksum(checksum, len, APP_START_ADDR);
+            }
         }
 
         // DFU flag reset
@@ -387,7 +403,7 @@ static SIMCOM_RESULT Simcom_Power(void) {
 
     // simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-    HAL_Delay(1);
+    HAL_Delay(10);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
     // wait response

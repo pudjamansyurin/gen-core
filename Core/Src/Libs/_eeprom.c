@@ -29,7 +29,7 @@ uint8_t EEPROM_Init(void) {
     lock();
     LOG_StrLn("EEPROM:Init");
     // check each eeprom
-    for (uint8_t i = 0; i < 2; i++) {
+    for (uint8_t i = 0; i < 1; i++) {
         if (!ret) {
             retry = MAX_RETRY;
             EEPROM24XX_SetDevice(EEPROMS[i]);

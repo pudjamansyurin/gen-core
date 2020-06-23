@@ -29,9 +29,6 @@
 #define IAP_RETRY_ADDR          (IAP_FLAG_ADDR - sizeof(uint32_t))
 #define IS_DFU_IN_PROGRESS(v)   ((uint32_t)v == DFU_IN_PROGRESS)
 
-/* Exported typedef-----------------------------------------------------------*/
-typedef void (*pFunction)(void);
-
 /* Public functions prototype ------------------------------------------------*/
 void _DelayMS(uint32_t ms);
 uint32_t _GetTickMS(void);

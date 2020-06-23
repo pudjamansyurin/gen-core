@@ -31,7 +31,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/Libs/_utils.h ../Core/Inc/_defines.h ../Core/Inc/main.h \
  ../Core/Inc/Drivers/_log.h ../Core/Inc/Libs/_eeprom.h \
  ../Core/Inc/Libs/_simcom.h ../Core/Inc/Libs/_fota.h \
- ../Core/Inc/Drivers/_at.h ../Core/Inc/Drivers/_flasher.h
+ ../Core/Inc/Drivers/_at.h ../Core/Inc/Drivers/_flasher.h \
+ ../Core/Inc/DMA/_dma_simcom.h
 
 ../Core/Inc/main.h:
 
@@ -110,3 +111,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/Drivers/_at.h:
 
 ../Core/Inc/Drivers/_flasher.h:
+
+../Core/Inc/DMA/_dma_simcom.h:

@@ -31,22 +31,22 @@
 #define ADDR_FLASH_SECTOR_15    ((uint32_t)0x08160000) /* Base address of Sector15, 128 Kbytes */
 
 /* User defined */
+#define APP_MAX_SIZE      (uint32_t)0x80000
+
 #define APP_START_ADDR    ADDR_FLASH_SECTOR_5
-#define APP_END_ADDR      (ADDR_FLASH_SECTOR_8  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_8) - 1)
+#define APP_END_ADDR      (ADDR_FLASH_SECTOR_5 + APP_MAX_SIZE - 1)
 
 #define BKP_START_ADDR    ADDR_FLASH_SECTOR_9
-#define BKP_END_ADDR      (ADDR_FLASH_SECTOR_12  +  FLASHER_GetSectorSize(ADDR_FLASH_SECTOR_12) - 1)
+#define BKP_END_ADDR      (ADDR_FLASH_SECTOR_9 + APP_MAX_SIZE - 1)
+
+#define SIZE_OFFSET       (APP_MAX_SIZE - sizeof(uint32_t))
+#define CHECKSUM_OFFSET   (SIZE_OFFSET - sizeof(uint32_t))
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t FLASHER_WriteByte(uint8_t *ptr, uint16_t size, uint32_t address, uint32_t end);
-uint8_t FLASHER_Erase(uint32_t FirstSector, uint32_t NbOfSectors);
-uint32_t FLASHER_GetSector(uint32_t Address);
-uint32_t FLASHER_GetSectorSize(uint32_t Sector);
-
 uint8_t FLASHER_EraseBkpArea(void);
 uint8_t FLASHER_EraseAppArea(void);
-uint8_t FLASHER_WriteBkpArea(uint8_t *ptr, uint16_t size, uint32_t offset);
-uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint16_t size, uint32_t offset);
+uint8_t FLASHER_WriteBkpArea(uint8_t *ptr, uint32_t size, uint32_t offset);
+uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset);
 uint8_t FLASHER_BackupApp(void);
 uint8_t FLASHER_RestoreApp(void);
 
