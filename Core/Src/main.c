@@ -38,6 +38,9 @@
 #include "Drivers/_rtc.h"
 #include "Drivers/_aes.h"
 #include "DMA/_dma_battery.h"
+#include "DMA/_dma_simcom.h"
+#include "DMA/_dma_ublox.h"
+#include "DMA/_dma_finger.h"
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
@@ -269,7 +272,7 @@ extern hmi2_t HMI2;
 extern sw_t SW;
 extern sim_t SIM;
 extern uint32_t AesKey[4];
-extern uint32_t IAP_FLAG;
+extern uint16_t BACKUP_VOLTAGE;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -363,6 +366,9 @@ int main(void)
     /* USER CODE BEGIN 2 */
     CANBUS_Init();
     BAT_DMA_Init();
+    SIMCOM_DMA_Init();
+    UBLOX_DMA_Init();
+    FINGER_DMA_Init();
     /* USER CODE END 2 */
 
     /* Init scheduler */
@@ -1560,16 +1566,6 @@ void StartIotTask(void *argument)
                     // Send to server
                     p = Simcom_Upload(pPayload, size + pHeader->size);
 
-                    // Handle FOTA request
-                    if (p == SIM_RESULT_OK) {
-                        if (type == PAYLOAD_RESPONSE) {
-                            if (IAP_FLAG > 0) {
-                                HAL_NVIC_SystemReset();
-                                // This point is never reached
-                            }
-                        }
-                    }
-
                     // Handle looping NACK
                     if (p == SIM_RESULT_NACK) {
                         // Probably  CRC not valid, cancel but force as success
@@ -1715,7 +1711,17 @@ void StartCommandTask(void *argument)
                             break;
 
                         case CMD_GEN_FOTA:
-                            EEPROM_FlagIAP(EE_CMD_W, 1);
+                            if (BACKUP_VOLTAGE > 3800) {
+                                /* Set flag to SRAM */
+                                *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
+                                *(uint32_t*) IAP_RETRY_ADDR = IAP_RETRY;
+                                HAL_NVIC_SystemReset();
+                            } else {
+                                sprintf(response.data.message, "Battery low at %u mV", BACKUP_VOLTAGE);
+                            }
+                            /* This line is never reached when FOTA activated */
+                            response.data.code = RESPONSE_STATUS_ERROR;
+
                             break;
 
                         default:

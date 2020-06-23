@@ -54,9 +54,14 @@ void _BuzzerWrite(uint8_t state) {
 }
 
 void _Error(char msg[50]) {
+#if RTOS_ENABLE
     if (osKernelGetState() == osKernelRunning) {
         LOG_StrLn(msg);
     }
+#else
+    LOG_StrLn(msg);
+#endif
+
     // indicator error
     while (1) {
         _LedToggle();

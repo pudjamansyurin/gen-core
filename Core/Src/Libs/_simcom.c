@@ -53,7 +53,6 @@ char* Simcom_Response(char *str) {
 }
 
 void Simcom_Init(void) {
-    SIMCOM_DMA_Init();
     Simcom_SetState(SIM_STATE_READY);
 }
 

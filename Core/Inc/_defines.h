@@ -30,14 +30,14 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define RTOS_ENABLE                             1
-#define EEPROM_RESET                            52U
+#define EEPROM_RESET                            53U
 
-#define VCU_FIRMWARE_VERSION       	            0x02
+#define VCU_FIRMWARE_VERSION       	            0x04
 #define VCU_VENDOR                              "GEN"
 #define VCU_BUILD_YEAR                          20U
 #define VCU_UNITID                              354313U
 
-#define NET_BOOT_TIMEOUT                        7000U               // in ms
+#define NET_BOOT_TIMEOUT                        8000U               // in ms
 #define NET_EXTRA_TIME                          1000U                // in ms
 #define NET_REPEAT_MAX							2U
 

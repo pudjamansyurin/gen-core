@@ -25,9 +25,6 @@ static nmea_t nmea;
 void GPS_Init(void) {
     uint32_t tick;
 
-    // Initialize DMA
-    UBLOX_DMA_Init();
-
     // Inititalize Module
     _LedWrite(1);
     do {

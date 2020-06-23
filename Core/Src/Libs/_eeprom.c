@@ -21,7 +21,7 @@ extern vcu_t VCU;
 extern uint32_t AesKey[4];
 
 /* Exported variables ---------------------------------------------------------*/
-uint32_t IAP_FLAG = 0;
+uint32_t DFU_FLAG = 0;
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
@@ -40,7 +40,7 @@ uint8_t EEPROM_Init(void) {
     lock();
     LOG_StrLn("EEPROM:Init");
     // check each eeprom
-    for (uint8_t i = 0; i < 2; i++) {
+    for (uint8_t i = 0; i < 1; i++) {
         if (!ret) {
             retry = MAX_RETRY;
             EEPROM24XX_SetDevice(EEPROMS[i]);
@@ -66,7 +66,6 @@ uint8_t EEPROM_Init(void) {
 
     // Load or Reset
     EEPROM_ResetOrLoad();
-    EEPROM_FlagIAP(EE_CMD_W, 0);
 
     return ret;
 }
@@ -168,10 +167,6 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
     }
 
     return ret;
-}
-
-uint8_t EEPROM_FlagIAP(EEPROM_COMMAND cmd, uint32_t value) {
-    return EE_Command(VADDR_IAP_FLAG, cmd, &value, &IAP_FLAG, sizeof(value));
 }
 
 /* Private functions implementation --------------------------------------------*/
