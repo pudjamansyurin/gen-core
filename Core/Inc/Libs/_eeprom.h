@@ -19,7 +19,7 @@
 #define VADDR_RESPONSE_SEQ_ID       VADDR_REPORT_SEQ_ID + sizeof(uint16_t)
 #define VADDR_AES_KEY               VADDR_RESPONSE_SEQ_ID + sizeof(uint16_t)
 
-#define VADDR_DFU_FLAG              VADDR_AES_KEY + (4*sizeof(uint32_t))
+#define VADDR_DFU_FLAG              VADDR_AES_KEY + 16
 
 #define EE_NULL                     0
 

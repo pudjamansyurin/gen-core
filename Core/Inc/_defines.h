@@ -32,7 +32,7 @@
 #define RTOS_ENABLE                             1
 #define EEPROM_RESET                            53U
 
-#define VCU_FIRMWARE_VERSION       	            0x04
+#define VCU_FIRMWARE_VERSION       	            0x05
 #define VCU_VENDOR                              "GEN"
 #define VCU_BUILD_YEAR                          20U
 #define VCU_UNITID                              354313U

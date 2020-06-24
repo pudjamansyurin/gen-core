@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SRC_BIN_FILE="../Debug/HUB.bin"
+SRC_BIN_FILE="../../Debug/HUB.bin"
 APP_BIN_FILE="APP.bin"
 APP_CRC_FILE="APP.crc"
 
