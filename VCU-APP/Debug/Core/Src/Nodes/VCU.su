@@ -1,0 +1,8 @@
+VCU.c:39:6:VCU_Init	8	static
+VCU.c:60:6:VCU_SetEvent	48	static
+VCU.c:68:9:VCU_ReadEvent	24	static
+VCU.c:72:6:VCU_CheckMainPower	16	static
+VCU.c:107:9:VCU_CAN_TX_SwitchModeControl	24	static
+VCU.c:141:9:VCU_CAN_TX_Datetime	24	static
+VCU.c:161:9:VCU_CAN_TX_MixedData	24	static
+VCU.c:177:9:VCU_CAN_TX_SubTripData	24	static

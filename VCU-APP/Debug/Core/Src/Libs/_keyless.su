@@ -1,0 +1,12 @@
+_keyless.c:54:6:KLESS_Init	16	static
+_keyless.c:86:9:KLESS_ValidateCommand	40	static
+_keyless.c:112:9:KLESS_Payload	24	static
+_keyless.c:133:6:KLESS_GenerateAesKey	24	static
+_keyless.c:139:9:KLESS_Pairing	40	static
+_keyless.c:181:9:KLESS_SendDummy	16	static
+_keyless.c:200:6:KLESS_Debugger	8	static
+_keyless.c:208:6:KLESS_Refresh	8	static
+_keyless.c:216:6:KLESS_IrqHandler	8	static
+_keyless.c:220:6:nrf_packet_received_callback	16	static
+_keyless.c:228:13:lock	8	static
+_keyless.c:232:13:unlock	8	static

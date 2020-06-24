@@ -1,0 +1,6 @@
+_dma_ublox.c:28:6:UBLOX_USART_IrqHandler	16	static
+_dma_ublox.c:38:6:UBLOX_DMA_IrqHandler	8	static
+_dma_ublox.c:66:6:UBLOX_DMA_Init	8	static
+_dma_ublox.c:75:13:UBLOX_Check_Buffer	24	static
+_dma_ublox.c:112:13:UBLOX_Fill_Buffer	16	static
+_dma_ublox.c:118:13:UBLOX_Reset_Buffer	8	static

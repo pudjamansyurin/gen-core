@@ -1,0 +1,7 @@
+_dma_simcom.c:28:6:SIMCOM_USART_IrqHandler	16	static
+_dma_simcom.c:38:6:SIMCOM_DMA_IrqHandler	8	static
+_dma_simcom.c:66:6:SIMCOM_DMA_Init	8	static
+_dma_simcom.c:75:13:SIMCOM_Check_Buffer	16	static
+_dma_simcom.c:104:13:SIMCOM_Fill_Buffer	16	static
+_dma_simcom.c:110:6:SIMCOM_Reset_Buffer	8	static
+_dma_simcom.c:116:9:SIMCOM_Transmit	16	static

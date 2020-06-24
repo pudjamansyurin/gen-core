@@ -1,0 +1,15 @@
+_simcom.c:52:6:Simcom_Lock	8	static
+_simcom.c:58:6:Simcom_Unlock	8	static
+_simcom.c:64:7:Simcom_Response	16	static
+_simcom.c:68:9:Simcom_SetState	208	static
+_simcom.c:437:15:Simcom_Upload	56	static
+_simcom.c:533:15:Simcom_Command	32	static
+_simcom.c:579:15:Simcom_IdleJob	24	static
+_simcom.c:603:22:Simcom_ProcessCommando	40	static
+_simcom.c:642:22:Simcom_ProcessACK	32	static
+_simcom.c:666:16:Simcom_CommandoIRQ	8	static
+_simcom.c:671:22:Simcom_Ready	16	static
+_simcom.c:694:22:Simcom_Power	8	static
+_simcom.c:714:13:Simcom_Sleep	16	static
+_simcom.c:719:22:Simcom_Execute	40	static
+_simcom.c:796:13:Simcom_BeforeTransmitHook	32	static

@@ -1,0 +1,13 @@
+_utils.c:21:6:_DelayMS	16	static
+_utils.c:29:10:_GetTickMS	8	static
+_utils.c:37:9:_LedRead	8	static
+_utils.c:41:6:_LedWrite	16	static
+_utils.c:45:6:_LedToggle	8	static
+_utils.c:49:6:_Error	16	static
+_utils.c:65:10:_ByteSwap32	24	static
+_utils.c:75:6:_BuzzerWrite	16	static
+_utils.c:84:6:_RTOS_Debugger	48	static
+_utils.c:134:9:_RTOS_ValidThreadFlag	24	static
+_utils.c:148:9:_RTOS_ValidEventFlag	24	static
+_utils.c:162:6:_DummyGenerator	16	static
+_utils.c:181:8:_BitPosition	32	static

@@ -1,0 +1,5 @@
+_gyro.c:21:6:GYRO_Init	56	static
+_gyro.c:45:8:GYRO_Average	32	static
+_gyro.c:90:17:GYRO_Decision	48	static
+_gyro.c:110:6:Gyro_Debugger	16	static
+_gyro.c:128:6:Gyro_RawDebugger	144	static

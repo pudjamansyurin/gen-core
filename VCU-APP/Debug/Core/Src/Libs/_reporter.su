@@ -1,0 +1,7 @@
+_reporter.c:28:6:Report_Init	16	static
+_reporter.c:41:6:Response_Init	16	static
+_reporter.c:51:6:Report_Capture	40	static
+_reporter.c:102:6:Response_Capture	16	static
+_reporter.c:114:6:Report_SetCRC	24	static
+_reporter.c:124:6:Response_SetCRC	16	static
+_reporter.c:131:6:Command_Debugger	16	static

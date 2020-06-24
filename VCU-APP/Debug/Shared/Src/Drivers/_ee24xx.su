@@ -1,0 +1,4 @@
+_ee24xx.c:18:6:EEPROM24XX_SetDevice	16	static
+_ee24xx.c:22:9:EEPROM24XX_IsConnected	8	static
+_ee24xx.c:29:9:EEPROM24XX_Save	40	static
+_ee24xx.c:62:9:EEPROM24XX_Load	40	static

@@ -1,0 +1,5 @@
+HMI2.c:39:6:HMI2_Init	4	static
+HMI2.c:44:6:HMI2_Refresh	8	static
+HMI2.c:50:6:HMI2_PowerOverCan	16	static
+HMI2.c:57:6:StartHmi2PowerTask	32	static
+HMI2.c:104:6:HMI2_CAN_RX_State	16	static
