@@ -75,10 +75,16 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
     Simcom_Lock();
     // Handle SIMCOM state properly
     while (SIM.state < state) {
-        // Handle timeout
-        if (timeout && (_GetTickMS() - tick) > timeout) {
-            LOG_StrLn("Simcom:StateTimeout");
-            break;
+        if (timeout) {
+            // Update tick
+            if (p == SIM_RESULT_OK) {
+                tick = _GetTickMS();
+            }
+            // Handle timeout
+            if ((_GetTickMS() - tick) > timeout) {
+                LOG_StrLn("Simcom:StateTimeout");
+                break;
+            }
         }
         // Handle locked-loop
         if (SIM.state < lastState) {
@@ -120,6 +126,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 // power up the module
                 p = Simcom_Power();
+
                 // upgrade simcom state
                 if (p > 0) {
                     SIM.state++;
@@ -128,15 +135,14 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                     LOG_StrLn("Simcom:Error");
                 }
 
-                // disable command echo
-                if (p > 0) {
-                    p = AT_CommandEchoMode(0);
-                }
-
                 _DelayMS(500);
                 break;
             case SIM_STATE_READY:
                 // =========== BASIC CONFIGURATION
+                // disable command echo
+                if (p > 0) {
+                    p = AT_CommandEchoMode(0);
+                }
                 // Set serial baud-rate
                 if (p > 0) {
                     uint32_t rate = 0;
@@ -452,7 +458,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
         p = Simcom_Command(str, SIMCOM_RSP_SEND, 500, 0);
         if (p > 0) {
             // send the payload
-            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 10000, size);
+            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 20000, size);
             // wait for ACK/NACK
             if (p > 0) {
                 // set timeout guard

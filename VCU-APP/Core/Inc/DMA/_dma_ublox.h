@@ -12,8 +12,8 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define UBLOX_UART_RX_SZ                512
-#define UBLOX_DMA_RX_SZ                 (UBLOX_UART_RX_SZ/(UBLOX_UART_RX_SZ/128))
+#define UBLOX_UART_RX_SZ     (uint16_t) 512
+#define UBLOX_DMA_RX_SZ      (uint16_t) (UBLOX_UART_RX_SZ/(UBLOX_UART_RX_SZ/128))
 
 /* Public functions prototype ------------------------------------------------*/
 void UBLOX_USART_IrqHandler(void);

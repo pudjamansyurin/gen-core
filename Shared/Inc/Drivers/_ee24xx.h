@@ -11,12 +11,12 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define		EEPROM_SIZE_KBIT										32
+#define		EEPROM_SIZE_KBIT			            32
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-	EEPROM24_MAIN = 0xA0,
-	EEPROM24_BACKUP = 0xA1
+    EEPROM24_MAIN = 0xA0,
+    EEPROM24_BACKUP = 0xA1
 } EEPROM24_DEVICE;
 
 /* Public functions prototype ------------------------------------------------*/

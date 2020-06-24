@@ -178,6 +178,7 @@ int main(void)
                 FOTA_Reboot();
             }
         }
+        HAL_NVIC_SystemReset();
         /* Failure indicator */
         _Error("Boot-loader failure!!");
     }

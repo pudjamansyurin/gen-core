@@ -12,30 +12,30 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define GYROSCOPE_LIMIT               (10000/10)
-#define ACCELEROMETER_LIMIT           (46000/3)
+#define GYROSCOPE_LIMIT               (uint32_t) (10000/10)
+#define ACCELEROMETER_LIMIT           (uint32_t) (46000/3)
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
-	int32_t x;
-	int32_t y;
-	int32_t z;
+    int32_t x;
+    int32_t y;
+    int32_t z;
 } coordinate_t;
 
 typedef struct {
-	coordinate_t accelerometer;
-	coordinate_t gyroscope;
+    coordinate_t accelerometer;
+    coordinate_t gyroscope;
 } mems_t;
 
 typedef struct {
-	struct {
-		uint8_t state;
-		uint32_t value;
-	} fall;
-	struct {
-		uint8_t state;
-		int32_t value;
-	} crash;
+    struct {
+        uint8_t state;
+        uint32_t value;
+    } fall;
+    struct {
+        uint8_t state;
+        int32_t value;
+    } crash;
 } mems_decision_t;
 
 /* Public functions prototype ------------------------------------------------*/

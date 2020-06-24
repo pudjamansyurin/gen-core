@@ -45,7 +45,7 @@ void Finger_Init(void) {
 }
 
 uint8_t Finger_Enroll(uint8_t id) {
-    const TickType_t scan_time = (FINGER_SCAN_TIMEOUT * 1000);
+    const TickType_t scan_time = (FINGER_SCAN_TIMEOUT);
     TickType_t tick;
     int p;
     uint8_t timeout, error = 0;

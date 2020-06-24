@@ -12,8 +12,8 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define FINGER_UART_RX_SZ               256
-#define FINGER_DMA_RX_SZ                (FINGER_UART_RX_SZ/(FINGER_UART_RX_SZ/128))
+#define FINGER_UART_RX_SZ    (uint16_t) 256
+#define FINGER_DMA_RX_SZ     (uint16_t) (FINGER_UART_RX_SZ/(FINGER_UART_RX_SZ/128))
 
 /* Public functions prototype ------------------------------------------------*/
 void FINGER_USART_IrqHandler(void);
