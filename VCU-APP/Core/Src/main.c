@@ -1625,7 +1625,7 @@ void StartReporterTask(void *argument)
 
         // Frame type decider
         if (!VCU.d.state.independent) {
-            if (++frameDecider == (RPT_INTERVAL_FULL / RPT_INTERVAL_SIMPLE)) {
+            if (++frameDecider == (RPT_INTERVAL_FULL / RPT_INTERVAL_SIMPLE )) {
                 frame = FR_FULL;
                 frameDecider = 0;
             } else {
@@ -1694,28 +1694,27 @@ void StartCommandTask(void *argument)
 
             // handle the command
             switch (command.data.code) {
-                case CMD_CODE_GEN:
+                case CMD_CODE_GEN :
                     switch (command.data.sub_code) {
-                        case CMD_GEN_INFO:
+                        case CMD_GEN_INFO :
                             sprintf(response.data.message,
                                     "VCU v.%d, "VCU_VENDOR" @ 20%d", VCU_FIRMWARE_VERSION, VCU_BUILD_YEAR);
                             break;
 
-                        case CMD_GEN_LED:
+                        case CMD_GEN_LED :
                             _LedWrite((uint8_t) command.data.value);
                             break;
 
-                        case CMD_GEN_KNOB:
+                        case CMD_GEN_KNOB :
                             VCU.d.state.knob = (uint8_t) command.data.value;
                             break;
 
-                        case CMD_GEN_FOTA:
+                        case CMD_GEN_FOTA :
                             if (BACKUP_VOLTAGE > 3800) {
-                                EEPROM_FlagDFU(EE_CMD_W, 0xAABBCCDD);
-//                                /* Set flag to SRAM */
-//                                *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
-//                                *(uint32_t*) IAP_RETRY_ADDR = IAP_RETRY;
-//                                HAL_NVIC_SystemReset();
+                                /* Set flag to SRAM */
+                                *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
+                                *(uint32_t*) IAP_RETRY_ADDR = IAP_RETRY;
+                                HAL_NVIC_SystemReset();
                             } else {
                                 sprintf(response.data.message, "Battery low at %u mV", BACKUP_VOLTAGE);
                             }
@@ -1730,17 +1729,17 @@ void StartCommandTask(void *argument)
                     }
                     break;
 
-                case CMD_CODE_REPORT:
+                case CMD_CODE_REPORT :
                     switch (command.data.sub_code) {
-                        case CMD_REPORT_RTC:
+                        case CMD_REPORT_RTC :
                             RTC_Write((uint64_t) command.data.value, &(VCU.d.rtc));
                             break;
 
-                        case CMD_REPORT_ODOM:
+                        case CMD_REPORT_ODOM :
                             EEPROM_Odometer(EE_CMD_W, (uint32_t) command.data.value);
                             break;
 
-                        case CMD_REPORT_UNITID:
+                        case CMD_REPORT_UNITID :
                             EEPROM_UnitID(EE_CMD_W, (uint32_t) command.data.value);
                             break;
 
@@ -1750,13 +1749,13 @@ void StartCommandTask(void *argument)
                     }
                     break;
 
-                case CMD_CODE_AUDIO:
+                case CMD_CODE_AUDIO :
                     switch (command.data.sub_code) {
-                        case CMD_AUDIO_BEEP:
+                        case CMD_AUDIO_BEEP :
                             osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
                             break;
 
-                        case CMD_AUDIO_MUTE:
+                        case CMD_AUDIO_MUTE :
                             if ((uint8_t) command.data.value) {
                                 osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_ON);
                             } else {
@@ -1765,7 +1764,7 @@ void StartCommandTask(void *argument)
 
                             break;
 
-                        case CMD_AUDIO_VOL:
+                        case CMD_AUDIO_VOL :
                             VCU.d.volume = (uint8_t) command.data.value;
                             break;
 
@@ -1775,21 +1774,21 @@ void StartCommandTask(void *argument)
                     }
                     break;
 
-                case CMD_CODE_FINGER:
+                case CMD_CODE_FINGER :
                     // put finger index to queue
                     driver = command.data.value;
                     osMessageQueuePut(DriverQueueHandle, &driver, 0U, 0U);
 
                     switch (command.data.sub_code) {
-                        case CMD_FINGER_ADD:
+                        case CMD_FINGER_ADD :
                             osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
                             break;
 
-                        case CMD_FINGER_DEL:
+                        case CMD_FINGER_DEL :
                             osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_DEL);
                             break;
 
-                        case CMD_FINGER_RST:
+                        case CMD_FINGER_RST :
                             osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
                             break;
 
@@ -1809,9 +1808,9 @@ void StartCommandTask(void *argument)
                     }
                     break;
 
-                case CMD_CODE_KEYLESS:
+                case CMD_CODE_KEYLESS :
                     switch (command.data.sub_code) {
-                        case CMD_KEYLESS_PAIRING:
+                        case CMD_KEYLESS_PAIRING :
                             osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
                             // wait response until timeout
@@ -2266,19 +2265,19 @@ void StartCanRxTask(void *argument)
 
             // handle STD message
             switch (CANBUS_ReadID()) {
-                case CAND_HMI2:
+                case CAND_HMI2 :
                     HMI2.can.r.State();
                     break;
-                case CAND_HMI1_LEFT:
+                case CAND_HMI1_LEFT :
                     HMI1.can.r.LeftState();
                     break;
-                case CAND_HMI1_RIGHT:
+                case CAND_HMI1_RIGHT :
                     HMI1.can.r.RightState();
                     break;
-                case CAND_BMS_PARAM_1:
+                case CAND_BMS_PARAM_1 :
                     BMS.can.r.Param1();
                     break;
-                case CAND_BMS_PARAM_2:
+                case CAND_BMS_PARAM_2 :
                     BMS.can.r.Param2();
                     break;
                 default:

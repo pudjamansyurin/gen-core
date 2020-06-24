@@ -25,4 +25,5 @@ uint8_t FOTA_ValidImage(uint32_t address);
 uint8_t FOTA_InProgressDFU(void);
 void FOTA_JumpToApplication(void);
 SIMCOM_RESULT FOTA_Upgrade(void);
+
 #endif /* INC_LIBS__FOTA_H_ */

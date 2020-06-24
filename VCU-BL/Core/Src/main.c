@@ -77,6 +77,7 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
+    extern uint32_t DFU_FLAG;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -111,9 +112,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    _LedWrite(1);
 
     /* IAP flag has been set, initiate firmware download procedure */
+    _LedWrite(1);
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
         LOG_StrLn("IAP set, do FOTA.");
         /* Everything went well, reset IAP flag & boot form new image */

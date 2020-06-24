@@ -13,20 +13,21 @@
 #include "Drivers/_log.h"
 
 /* Exported macro ------------------------------------------------------------*/
-#define SRAM_SIZE               (uint32_t)0x50000
-#define SRAM_BASE_ADDR          (uint32_t)0x20000000
-#define SRAM_END_ADDR           (SRAM_BASE_ADDR + SRAM_SIZE)
+#define SRAM_SIZE               (uint32_t) 0x50000
+#define SRAM_BASE_ADDR          (uint32_t) 0x20000000
+#define SRAM_END_ADDR                      (SRAM_BASE_ADDR + SRAM_SIZE)
 
-#define SP_MASK                 (uint32_t)0x2FFFFFFF
-#define SP_RANGE                (SP_MASK - (SRAM_SIZE - 1))
+#define SP_MASK                 (uint32_t) 0x2FFFFFFF
+#define SP_RANGE                           (SP_MASK - (SRAM_SIZE - 1))
+
+#define DFU_IN_PROGRESS         (uint32_t) 0x89ABCDEF
+#define IAP_FLAG                (uint32_t) 0xAABBCCDD
+#define IAP_RETRY                          1
+
+#define IAP_FLAG_ADDR                      (SRAM_END_ADDR - sizeof(uint32_t))
+#define IAP_RETRY_ADDR                     (IAP_FLAG_ADDR - sizeof(uint32_t))
+
 #define IS_VALID_SP(a)          ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
-
-#define DFU_IN_PROGRESS         (uint32_t)0x89ABCDEF
-#define IAP_FLAG                (uint32_t)0xAABBCCDD
-#define IAP_RETRY               1
-
-#define IAP_FLAG_ADDR           (SRAM_END_ADDR - sizeof(uint32_t))
-#define IAP_RETRY_ADDR          (IAP_FLAG_ADDR - sizeof(uint32_t))
 #define IS_DFU_IN_PROGRESS(v)   ((uint32_t)v == DFU_IN_PROGRESS)
 
 /* Public functions prototype ------------------------------------------------*/

@@ -11,16 +11,20 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
-#define VADDR_RESET                 (uint32_t) 0
-#define VADDR_ODOMETER              (uint32_t) (VADDR_RESET + sizeof(uint16_t))
-#define VADDR_UNITID                (uint32_t) (VADDR_ODOMETER + sizeof(uint32_t))
-#define VADDR_REPORT_SEQ_ID         (uint32_t) (VADDR_UNITID + sizeof(uint32_t))
-#define VADDR_RESPONSE_SEQ_ID       (uint32_t) (VADDR_REPORT_SEQ_ID + sizeof(uint16_t))
-#define VADDR_AES_KEY               (uint32_t) (VADDR_RESPONSE_SEQ_ID + sizeof(uint16_t))
-#define VADDR_DFU_FLAG              (uint32_t) (VADDR_AES_KEY + 16)
+/* Exported macro function ---------------------------------------------------*/
+/* NOTE: EEPROM is 32 bytes aligned, do not store variable in intersection */
+#define EE_AREA(ad, sz)             (((ad + sz) % 32) >= sz ? (ad) : (ad + (sz - ((ad + sz) % 32))))
 
-#define EE_NULL                     (uint32_t) 0
+/* Exported constants --------------------------------------------------------*/
+#define VADDR_RESET                 (uint16_t) 0
+#define VADDR_ODOMETER              (uint16_t) EE_AREA(VADDR_RESET + 2, 4)
+#define VADDR_UNITID                (uint16_t) EE_AREA(VADDR_ODOMETER + 4, 4)
+#define VADDR_REPORT_SEQ_ID         (uint16_t) EE_AREA(VADDR_UNITID + 4, 2)
+#define VADDR_RESPONSE_SEQ_ID       (uint16_t) EE_AREA(VADDR_REPORT_SEQ_ID + 2, 2)
+#define VADDR_AES_KEY               (uint16_t) EE_AREA(VADDR_RESPONSE_SEQ_ID + 2, 16)
+#define VADDR_DFU_FLAG              (uint16_t) EE_AREA(VADDR_AES_KEY + 16, 2)
+
+#define EE_NULL                      (uint8_t) 0
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
@@ -38,6 +42,6 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
 #else
-#endif
 uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value);
+#endif
 #endif /* EEPROM_H_ */
