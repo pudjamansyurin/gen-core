@@ -1,0 +1,12 @@
+BMS.c:43:6:BMS_Init	16	static
+BMS.c:54:6:BMS_PowerOverCan	16	static
+BMS.c:77:6:BMS_ResetIndex	16	static
+BMS.c:89:6:BMS_RefreshIndex	16	static
+BMS.c:99:9:BMS_GetIndex	24	static
+BMS.c:120:6:BMS_SetEvents	16	static
+BMS.c:153:9:BMS_CheckRun	24	static
+BMS.c:162:9:BMS_CheckState	24	static
+BMS.c:171:6:BMS_MergeData	24	static
+BMS.c:192:6:BMS_CAN_RX_Param1	24	static
+BMS.c:208:6:BMS_CAN_RX_Param2	16	static
+BMS.c:220:9:BMS_CAN_TX_Setting	24	static

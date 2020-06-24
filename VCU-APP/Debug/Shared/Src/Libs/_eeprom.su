@@ -1,0 +1,10 @@
+_eeprom.c:35:9:EEPROM_Init	16	static
+_eeprom.c:81:6:EEPROM_ResetOrLoad	32	static
+_eeprom.c:111:9:EEPROM_Reset	32	static
+_eeprom.c:126:9:EEPROM_Odometer	24	static
+_eeprom.c:135:9:EEPROM_UnitID	32	static
+_eeprom.c:148:9:EEPROM_SequentialID	32	static
+_eeprom.c:164:9:EEPROM_AesKey	48	static
+_eeprom.c:186:16:EE_Command	32	static
+_eeprom.c:210:13:lock	8	static
+_eeprom.c:216:13:unlock	8	static

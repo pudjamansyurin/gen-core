@@ -1,0 +1,4 @@
+_gps.c:25:6:GPS_Init	16	static
+_gps.c:51:9:GPS_Capture	8	static
+_gps.c:65:6:GPS_Debugger	8	static
+_gps.c:72:6:GPS_CalculateOdometer	16	static

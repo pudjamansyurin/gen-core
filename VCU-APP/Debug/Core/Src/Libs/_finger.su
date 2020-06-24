@@ -1,0 +1,9 @@
+_finger.c:25:6:Finger_Init	16	static
+_finger.c:47:9:Finger_Enroll	40	static
+_finger.c:285:9:Finger_DeleteID	24	static
+_finger.c:309:9:Finger_EmptyDatabase	16	static
+_finger.c:320:9:Finger_SetPassword	24	static
+_finger.c:331:8:Finger_Auth	16	static
+_finger.c:421:8:Finger_AuthFast	16	static
+_finger.c:451:13:lock	8	static
+_finger.c:456:13:unlock	8	static
