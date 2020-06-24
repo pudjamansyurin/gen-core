@@ -34,7 +34,7 @@
 #define RTOS_ENABLE                             !BOOTLOADER
 #define EEPROM_RESET                            53U
 
-#define NET_BOOT_TIMEOUT                        10000U               // in ms
+#define NET_BOOT_TIMEOUT                        8000U                // in ms
 #define NET_EXTRA_TIME                          1000U                // in ms
 #define NET_REPEAT_MAX                          2U
 

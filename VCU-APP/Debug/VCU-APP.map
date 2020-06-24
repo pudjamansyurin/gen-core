@@ -16141,62 +16141,63 @@ LOAD /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools
  .text.Simcom_CommandoIRQ
                 0x000000000803f400       0x20 Shared/Src/Libs/_simcom.o
  .text.Simcom_Ready
-                0x000000000803f420       0x88 Shared/Src/Libs/_simcom.o
+                0x000000000803f420       0x84 Shared/Src/Libs/_simcom.o
  .text.Simcom_Power
-                0x000000000803f4a8       0x64 Shared/Src/Libs/_simcom.o
+                0x000000000803f4a4       0x64 Shared/Src/Libs/_simcom.o
  .text.Simcom_Sleep
-                0x000000000803f50c       0x2c Shared/Src/Libs/_simcom.o
+                0x000000000803f508       0x2c Shared/Src/Libs/_simcom.o
  .text.Simcom_Execute
-                0x000000000803f538      0x154 Shared/Src/Libs/_simcom.o
+                0x000000000803f534      0x154 Shared/Src/Libs/_simcom.o
  .text.Simcom_BeforeTransmitHook
-                0x000000000803f68c       0x30 Shared/Src/Libs/_simcom.o
+                0x000000000803f688       0x30 Shared/Src/Libs/_simcom.o
  .text._DelayMS
-                0x000000000803f6bc       0x16 Shared/Src/Libs/_utils.o
-                0x000000000803f6bc                _DelayMS
+                0x000000000803f6b8       0x16 Shared/Src/Libs/_utils.o
+                0x000000000803f6b8                _DelayMS
  .text._GetTickMS
-                0x000000000803f6d2        0xe Shared/Src/Libs/_utils.o
-                0x000000000803f6d2                _GetTickMS
+                0x000000000803f6ce        0xe Shared/Src/Libs/_utils.o
+                0x000000000803f6ce                _GetTickMS
  .text._LedWrite
-                0x000000000803f6e0       0x24 Shared/Src/Libs/_utils.o
-                0x000000000803f6e0                _LedWrite
+                0x000000000803f6dc       0x24 Shared/Src/Libs/_utils.o
+                0x000000000803f6dc                _LedWrite
  .text._LedToggle
-                0x000000000803f704       0x18 Shared/Src/Libs/_utils.o
-                0x000000000803f704                _LedToggle
- .text._Error   0x000000000803f71c       0x24 Shared/Src/Libs/_utils.o
-                0x000000000803f71c                _Error
+                0x000000000803f700       0x18 Shared/Src/Libs/_utils.o
+                0x000000000803f700                _LedToggle
+ .text._Error   0x000000000803f718       0x24 Shared/Src/Libs/_utils.o
+                0x000000000803f718                _Error
  .text._ByteSwap32
-                0x000000000803f740       0x44 Shared/Src/Libs/_utils.o
-                0x000000000803f740                _ByteSwap32
+                0x000000000803f73c       0x44 Shared/Src/Libs/_utils.o
+                0x000000000803f73c                _ByteSwap32
  .text._RTOS_ValidThreadFlag
-                0x000000000803f784       0x30 Shared/Src/Libs/_utils.o
-                0x000000000803f784                _RTOS_ValidThreadFlag
+                0x000000000803f780       0x30 Shared/Src/Libs/_utils.o
+                0x000000000803f780                _RTOS_ValidThreadFlag
  .text._DummyGenerator
-                0x000000000803f7b4       0x5c Shared/Src/Libs/_utils.o
-                0x000000000803f7b4                _DummyGenerator
+                0x000000000803f7b0       0x5c Shared/Src/Libs/_utils.o
+                0x000000000803f7b0                _DummyGenerator
  .text._BitPosition
-                0x000000000803f810       0x76 Shared/Src/Libs/_utils.o
-                0x000000000803f810                _BitPosition
- *fill*         0x000000000803f886        0x2 
- .text.__errno  0x000000000803f888        0xc /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-errno.o)
-                0x000000000803f888                __errno
+                0x000000000803f80c       0x76 Shared/Src/Libs/_utils.o
+                0x000000000803f80c                _BitPosition
+ *fill*         0x000000000803f882        0x2 
+ .text.__errno  0x000000000803f884        0xc /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-errno.o)
+                0x000000000803f884                __errno
  .text.__libc_init_array
-                0x000000000803f894       0x48 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-init.o)
-                0x000000000803f894                __libc_init_array
- .text.memcmp   0x000000000803f8dc       0x1e /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-memcmp.o)
-                0x000000000803f8dc                memcmp
- .text.memcpy   0x000000000803f8fa       0x16 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-memcpy-stub.o)
-                0x000000000803f8fa                memcpy
- .text.memset   0x000000000803f910       0x10 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-memset.o)
-                0x000000000803f910                memset
- .text.sprintf  0x000000000803f920       0x40 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-sprintf.o)
-                0x000000000803f920                sprintf
-                0x000000000803f920                siprintf
- .text.strncmp  0x000000000803f960       0x24 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-strncmp.o)
-                0x000000000803f960                strncmp
- .text.strstr   0x000000000803f984       0x34 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-strstr.o)
-                0x000000000803f984                strstr
+                0x000000000803f890       0x48 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-init.o)
+                0x000000000803f890                __libc_init_array
+ .text.memcmp   0x000000000803f8d8       0x1e /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-memcmp.o)
+                0x000000000803f8d8                memcmp
+ .text.memcpy   0x000000000803f8f6       0x16 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-memcpy-stub.o)
+                0x000000000803f8f6                memcpy
+ .text.memset   0x000000000803f90c       0x10 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-memset.o)
+                0x000000000803f90c                memset
+ .text.sprintf  0x000000000803f91c       0x40 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-sprintf.o)
+                0x000000000803f91c                sprintf
+                0x000000000803f91c                siprintf
+ .text.strncmp  0x000000000803f95c       0x24 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-strncmp.o)
+                0x000000000803f95c                strncmp
+ .text.strstr   0x000000000803f980       0x34 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-strstr.o)
+                0x000000000803f980                strstr
  .text.unlikely.sulp
-                0x000000000803f9b8       0x38 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-strtod.o)
+                0x000000000803f9b4       0x38 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-strtod.o)
+ *fill*         0x000000000803f9ec        0x4 
  .text._strtod_l
                 0x000000000803f9f0      0xbe8 /opt/st/stm32cubeide_1.3.0_2/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.linux64_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m/fpv4-sp/hard/libc_nano.a(lib_a-strtod.o)
                 0x000000000803f9f0                _strtod_l
@@ -17775,141 +17776,141 @@ OUTPUT(VCU-APP.elf elf32-littlearm)
  .debug_line    0x000000000003817c     0x104a Shared/Src/Libs/_simcom.o
  .debug_line    0x00000000000391c6      0xe21 Shared/Src/Libs/_utils.o
 
-.debug_str      0x0000000000000000    0xf4a2a
+.debug_str      0x0000000000000000    0xf4a29
  .debug_str     0x0000000000000000     0x3ad7 Core/Src/Assets/_sound_engine.o
                                        0x3c56 (size before relaxing)
- .debug_str     0x0000000000003ad7    0xde42d Core/Src/DMA/_dma_battery.o
-                                      0xe230c (size before relaxing)
- .debug_str     0x00000000000e1f04      0x32a Core/Src/DMA/_dma_finger.o
-                                      0xe2281 (size before relaxing)
- .debug_str     0x00000000000e222e      0x135 Core/Src/DMA/_dma_ublox.o
-                                      0xe2241 (size before relaxing)
- .debug_str     0x00000000000e2363      0x258 Core/Src/Drivers/_aes.o
-                                      0xe222d (size before relaxing)
- .debug_str     0x00000000000e25bb      0x51a Core/Src/Drivers/_canbus.o
-                                      0xe22e6 (size before relaxing)
- .debug_str     0x00000000000e2ad5      0xfb8 Core/Src/Drivers/_cs43l22.o
-                                      0xe2fd5 (size before relaxing)
- .debug_str     0x00000000000e3a8d      0x6d7 Core/Src/Drivers/_fz3387.o
-                                      0xe2473 (size before relaxing)
- .debug_str     0x00000000000e4164      0x926 Core/Src/Drivers/_mpu6050.o
-                                      0xe2b4e (size before relaxing)
- .debug_str     0x00000000000e4a8a      0x6af Core/Src/Drivers/_nmea.o
-                                      0xe238a (size before relaxing)
- .debug_str     0x00000000000e5139      0xa6a Core/Src/Drivers/_nrf24l01.o
-                                      0xe2af0 (size before relaxing)
- .debug_str     0x00000000000e5ba3      0x578 Core/Src/Drivers/_rtc.o
-                                      0xe245f (size before relaxing)
- .debug_str     0x00000000000e611b      0x5c8 Core/Src/Libs/_audio.o
-                                      0xe3210 (size before relaxing)
- .debug_str     0x00000000000e66e3      0x11a Core/Src/Libs/_finger.o
-                                      0xe273c (size before relaxing)
- .debug_str     0x00000000000e67fd      0x1f2 Core/Src/Libs/_gps.o
-                                      0xe25ec (size before relaxing)
- .debug_str     0x00000000000e69ef      0x116 Core/Src/Libs/_gyro.o
-                                      0xe25d6 (size before relaxing)
- .debug_str     0x00000000000e6b05      0x159 Core/Src/Libs/_handlebar.o
-                                      0xe200d (size before relaxing)
- .debug_str     0x00000000000e6c5e      0x1ed Core/Src/Libs/_keyless.o
-                                      0xe2c43 (size before relaxing)
- .debug_str     0x00000000000e6e4b      0x3b7 Core/Src/Libs/_reporter.o
-                                      0xe27a8 (size before relaxing)
- .debug_str     0x00000000000e7202       0xce Core/Src/Nodes/BMS.o
-                                      0xe2471 (size before relaxing)
- .debug_str     0x00000000000e72d0       0x97 Core/Src/Nodes/HMI1.o
-                                      0xe1e53 (size before relaxing)
- .debug_str     0x00000000000e7367       0xcb Core/Src/Nodes/HMI2.o
-                                      0xe1fdc (size before relaxing)
- .debug_str     0x00000000000e7432       0xcc Core/Src/Nodes/VCU.o
-                                      0xe2737 (size before relaxing)
- .debug_str     0x00000000000e74fe     0x16cc Core/Src/main.o
-                                      0xe6909 (size before relaxing)
- .debug_str     0x00000000000e8bca      0x1de Core/Src/stm32f4xx_hal_msp.o
+ .debug_str     0x0000000000003ad7    0xde42c Core/Src/DMA/_dma_battery.o
+                                      0xe230b (size before relaxing)
+ .debug_str     0x00000000000e1f03      0x32a Core/Src/DMA/_dma_finger.o
+                                      0xe2280 (size before relaxing)
+ .debug_str     0x00000000000e222d      0x135 Core/Src/DMA/_dma_ublox.o
+                                      0xe2240 (size before relaxing)
+ .debug_str     0x00000000000e2362      0x258 Core/Src/Drivers/_aes.o
+                                      0xe222c (size before relaxing)
+ .debug_str     0x00000000000e25ba      0x51a Core/Src/Drivers/_canbus.o
+                                      0xe22e5 (size before relaxing)
+ .debug_str     0x00000000000e2ad4      0xfb8 Core/Src/Drivers/_cs43l22.o
+                                      0xe2fd4 (size before relaxing)
+ .debug_str     0x00000000000e3a8c      0x6d7 Core/Src/Drivers/_fz3387.o
+                                      0xe2472 (size before relaxing)
+ .debug_str     0x00000000000e4163      0x926 Core/Src/Drivers/_mpu6050.o
+                                      0xe2b4d (size before relaxing)
+ .debug_str     0x00000000000e4a89      0x6af Core/Src/Drivers/_nmea.o
+                                      0xe2389 (size before relaxing)
+ .debug_str     0x00000000000e5138      0xa6a Core/Src/Drivers/_nrf24l01.o
+                                      0xe2aef (size before relaxing)
+ .debug_str     0x00000000000e5ba2      0x578 Core/Src/Drivers/_rtc.o
+                                      0xe245e (size before relaxing)
+ .debug_str     0x00000000000e611a      0x5c8 Core/Src/Libs/_audio.o
+                                      0xe320f (size before relaxing)
+ .debug_str     0x00000000000e66e2      0x11a Core/Src/Libs/_finger.o
+                                      0xe273b (size before relaxing)
+ .debug_str     0x00000000000e67fc      0x1f2 Core/Src/Libs/_gps.o
+                                      0xe25eb (size before relaxing)
+ .debug_str     0x00000000000e69ee      0x116 Core/Src/Libs/_gyro.o
+                                      0xe25d5 (size before relaxing)
+ .debug_str     0x00000000000e6b04      0x159 Core/Src/Libs/_handlebar.o
+                                      0xe200c (size before relaxing)
+ .debug_str     0x00000000000e6c5d      0x1ed Core/Src/Libs/_keyless.o
+                                      0xe2c42 (size before relaxing)
+ .debug_str     0x00000000000e6e4a      0x3b7 Core/Src/Libs/_reporter.o
+                                      0xe27a7 (size before relaxing)
+ .debug_str     0x00000000000e7201       0xce Core/Src/Nodes/BMS.o
+                                      0xe2470 (size before relaxing)
+ .debug_str     0x00000000000e72cf       0x97 Core/Src/Nodes/HMI1.o
+                                      0xe1e52 (size before relaxing)
+ .debug_str     0x00000000000e7366       0xcb Core/Src/Nodes/HMI2.o
+                                      0xe1fdb (size before relaxing)
+ .debug_str     0x00000000000e7431       0xcc Core/Src/Nodes/VCU.o
+                                      0xe2736 (size before relaxing)
+ .debug_str     0x00000000000e74fd     0x16cc Core/Src/main.o
+                                      0xe6908 (size before relaxing)
+ .debug_str     0x00000000000e8bc9      0x1de Core/Src/stm32f4xx_hal_msp.o
                                       0xd9c99 (size before relaxing)
- .debug_str     0x00000000000e8da8       0x98 Core/Src/stm32f4xx_hal_timebase_tim.o
+ .debug_str     0x00000000000e8da7       0x98 Core/Src/stm32f4xx_hal_timebase_tim.o
                                       0xd7a11 (size before relaxing)
- .debug_str     0x00000000000e8e40      0x20e Core/Src/stm32f4xx_it.o
-                                      0xe2cbe (size before relaxing)
- .debug_str     0x00000000000e904e      0x351 Core/Src/sysmem.o
+ .debug_str     0x00000000000e8e3f      0x20e Core/Src/stm32f4xx_it.o
+                                      0xe2cbd (size before relaxing)
+ .debug_str     0x00000000000e904d      0x351 Core/Src/sysmem.o
                                        0x7aee (size before relaxing)
- .debug_str     0x00000000000e939f       0xc7 Core/Src/system_stm32f4xx.o
+ .debug_str     0x00000000000e939e       0xc7 Core/Src/system_stm32f4xx.o
                                       0xd6fe3 (size before relaxing)
- .debug_str     0x00000000000e9466       0x36 Core/Startup/startup_stm32f423vhtx.o
+ .debug_str     0x00000000000e9465       0x36 Core/Startup/startup_stm32f423vhtx.o
                                          0x70 (size before relaxing)
- .debug_str     0x00000000000e949c      0x542 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
+ .debug_str     0x00000000000e949b      0x542 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
                                       0xd7b68 (size before relaxing)
- .debug_str     0x00000000000e99de      0x259 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o
+ .debug_str     0x00000000000e99dd      0x259 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o
                                       0xd7553 (size before relaxing)
- .debug_str     0x00000000000e9c37      0x423 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.o
+ .debug_str     0x00000000000e9c36      0x423 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.o
                                       0xd76b3 (size before relaxing)
- .debug_str     0x00000000000ea05a      0x384 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
+ .debug_str     0x00000000000ea059      0x384 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
                                       0xd7933 (size before relaxing)
- .debug_str     0x00000000000ea3de       0x97 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.o
+ .debug_str     0x00000000000ea3dd       0x97 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.o
                                       0xd7001 (size before relaxing)
- .debug_str     0x00000000000ea475      0x696 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp.o
+ .debug_str     0x00000000000ea474      0x696 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp.o
                                       0xd79d7 (size before relaxing)
- .debug_str     0x00000000000eab0b      0x310 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o
+ .debug_str     0x00000000000eab0a      0x310 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o
                                       0xd73d1 (size before relaxing)
- .debug_str     0x00000000000eae1b      0x1f0 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
+ .debug_str     0x00000000000eae1a      0x1f0 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
                                       0xd722e (size before relaxing)
- .debug_str     0x00000000000eb00b      0xa5e Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.o
+ .debug_str     0x00000000000eb00a      0xa5e Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.o
                                       0xd7f0a (size before relaxing)
- .debug_str     0x00000000000eba69       0x3b Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.o
+ .debug_str     0x00000000000eba68       0x3b Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.o
                                       0xd73c9 (size before relaxing)
- .debug_str     0x00000000000ebaa4      0x240 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.o
+ .debug_str     0x00000000000ebaa3      0x240 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.o
                                       0xd7570 (size before relaxing)
- .debug_str     0x00000000000ebce4      0x1f1 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s_ex.o
+ .debug_str     0x00000000000ebce3      0x1f1 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s_ex.o
                                       0xd74ae (size before relaxing)
- .debug_str     0x00000000000ebed5       0x75 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_iwdg.o
+ .debug_str     0x00000000000ebed4       0x75 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_iwdg.o
                                       0xd6f09 (size before relaxing)
- .debug_str     0x00000000000ebf4a      0x239 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
+ .debug_str     0x00000000000ebf49      0x239 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
                                       0xd73d2 (size before relaxing)
- .debug_str     0x00000000000ec183      0x13e Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
+ .debug_str     0x00000000000ec182      0x13e Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
                                       0xd7376 (size before relaxing)
- .debug_str     0x00000000000ec2c1      0x175 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.o
+ .debug_str     0x00000000000ec2c0      0x175 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.o
                                       0xd70d2 (size before relaxing)
- .debug_str     0x00000000000ec436      0x210 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.o
+ .debug_str     0x00000000000ec435      0x210 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.o
                                       0xd7369 (size before relaxing)
- .debug_str     0x00000000000ec646      0x520 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.o
+ .debug_str     0x00000000000ec645      0x520 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.o
                                       0xd782a (size before relaxing)
- .debug_str     0x00000000000ecb66      0xccb Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
+ .debug_str     0x00000000000ecb65      0xccb Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
                                       0xd80c8 (size before relaxing)
- .debug_str     0x00000000000ed831      0x4fa Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
+ .debug_str     0x00000000000ed830      0x4fa Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
                                       0xd79fd (size before relaxing)
- .debug_str     0x00000000000edd2b      0x507 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
+ .debug_str     0x00000000000edd2a      0x507 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
                                       0xd7808 (size before relaxing)
- .debug_str     0x00000000000ee232     0x27a3 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_str     0x00000000000ee231     0x27a3 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
                                        0xe0b6 (size before relaxing)
- .debug_str     0x00000000000f09d5      0x4d9 Middlewares/Third_Party/FreeRTOS/Source/event_groups.o
+ .debug_str     0x00000000000f09d4      0x4d9 Middlewares/Third_Party/FreeRTOS/Source/event_groups.o
                                        0xb751 (size before relaxing)
- .debug_str     0x00000000000f0eae       0xbf Middlewares/Third_Party/FreeRTOS/Source/list.o
+ .debug_str     0x00000000000f0ead       0xbf Middlewares/Third_Party/FreeRTOS/Source/list.o
                                        0xa3c4 (size before relaxing)
- .debug_str     0x00000000000f0f6d      0x8a8 Middlewares/Third_Party/FreeRTOS/Source/queue.o
+ .debug_str     0x00000000000f0f6c      0x8a8 Middlewares/Third_Party/FreeRTOS/Source/queue.o
                                        0xbd23 (size before relaxing)
- .debug_str     0x00000000000f1815     0x1310 Middlewares/Third_Party/FreeRTOS/Source/tasks.o
+ .debug_str     0x00000000000f1814     0x1310 Middlewares/Third_Party/FreeRTOS/Source/tasks.o
                                        0xc8f5 (size before relaxing)
- .debug_str     0x00000000000f2b25      0x629 Middlewares/Third_Party/FreeRTOS/Source/timers.o
+ .debug_str     0x00000000000f2b24      0x629 Middlewares/Third_Party/FreeRTOS/Source/timers.o
                                        0xc2b3 (size before relaxing)
- .debug_str     0x00000000000f314e      0x803 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o
+ .debug_str     0x00000000000f314d      0x803 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o
                                        0x818d (size before relaxing)
- .debug_str     0x00000000000f3951      0x251 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
+ .debug_str     0x00000000000f3950      0x251 Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
                                        0xabb7 (size before relaxing)
- .debug_str     0x00000000000f3ba2       0xfc Shared/Src/DMA/_dma_simcom.o
-                                      0xe22b6 (size before relaxing)
- .debug_str     0x00000000000f3c9e      0x73d Shared/Src/Drivers/_at.o
-                                      0xe28f5 (size before relaxing)
- .debug_str     0x00000000000f43db       0x6f Shared/Src/Drivers/_crc.o
-                                      0xe1e7f (size before relaxing)
- .debug_str     0x00000000000f444a       0xf3 Shared/Src/Drivers/_ee24xx.o
-                                      0xe22fc (size before relaxing)
- .debug_str     0x00000000000f453d      0x14f Shared/Src/Drivers/_log.o
-                                      0xe1e96 (size before relaxing)
- .debug_str     0x00000000000f468c       0xf5 Shared/Src/Libs/_eeprom.o
-                                      0xe2511 (size before relaxing)
- .debug_str     0x00000000000f4781      0x170 Shared/Src/Libs/_simcom.o
-                                      0xe2bad (size before relaxing)
- .debug_str     0x00000000000f48f1      0x139 Shared/Src/Libs/_utils.o
-                                      0xe269f (size before relaxing)
+ .debug_str     0x00000000000f3ba1       0xfc Shared/Src/DMA/_dma_simcom.o
+                                      0xe22b5 (size before relaxing)
+ .debug_str     0x00000000000f3c9d      0x73d Shared/Src/Drivers/_at.o
+                                      0xe28f4 (size before relaxing)
+ .debug_str     0x00000000000f43da       0x6f Shared/Src/Drivers/_crc.o
+                                      0xe1e7e (size before relaxing)
+ .debug_str     0x00000000000f4449       0xf3 Shared/Src/Drivers/_ee24xx.o
+                                      0xe22fb (size before relaxing)
+ .debug_str     0x00000000000f453c      0x14f Shared/Src/Drivers/_log.o
+                                      0xe1e95 (size before relaxing)
+ .debug_str     0x00000000000f468b       0xf5 Shared/Src/Libs/_eeprom.o
+                                      0xe2510 (size before relaxing)
+ .debug_str     0x00000000000f4780      0x170 Shared/Src/Libs/_simcom.o
+                                      0xe2bac (size before relaxing)
+ .debug_str     0x00000000000f48f0      0x139 Shared/Src/Libs/_utils.o
+                                      0xe269e (size before relaxing)
 
 .comment        0x0000000000000000       0x7b
  .comment       0x0000000000000000       0x7b Core/Src/Assets/_sound_engine.o

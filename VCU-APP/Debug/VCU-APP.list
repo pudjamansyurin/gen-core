@@ -37,9 +37,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  16 .debug_line   00039fe7  00000000  00000000  000e13ee  2**0
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_str    000f4a2a  00000000  00000000  0011b3d5  2**0
+ 17 .debug_str    000f4a29  00000000  00000000  0011b3d5  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .comment      0000007b  00000000  00000000  0020fdff  2**0
+ 18 .comment      0000007b  00000000  00000000  0020fdfe  2**0
                   CONTENTS, READONLY
  19 .debug_ranges 00002b88  00000000  00000000  0020fe80  2**3
                   CONTENTS, READONLY, DEBUGGING
@@ -3788,7 +3788,7 @@ static void FINGER_Fill_Buffer(const void *data, size_t len) {
  80224f2:	683a      	ldr	r2, [r7, #0]
  80224f4:	6879      	ldr	r1, [r7, #4]
  80224f6:	4618      	mov	r0, r3
- 80224f8:	f01d f9ff 	bl	803f8fa <memcpy>
+ 80224f8:	f01d f9fd 	bl	803f8f6 <memcpy>
     finger_write += len;
  80224fc:	4b04      	ldr	r3, [pc, #16]	; (8022510 <FINGER_Fill_Buffer+0x30>)
  80224fe:	681a      	ldr	r2, [r3, #0]
@@ -3816,7 +3816,7 @@ void FINGER_Reset_Buffer(void) {
  8022520:	461a      	mov	r2, r3
  8022522:	2100      	movs	r1, #0
  8022524:	4804      	ldr	r0, [pc, #16]	; (8022538 <FINGER_Reset_Buffer+0x20>)
- 8022526:	f01d f9f3 	bl	803f910 <memset>
+ 8022526:	f01d f9f1 	bl	803f90c <memset>
     finger_write = 0;
  802252a:	4b02      	ldr	r3, [pc, #8]	; (8022534 <FINGER_Reset_Buffer+0x1c>)
  802252c:	2200      	movs	r2, #0
@@ -6092,7 +6092,7 @@ static void UBLOX_Fill_Buffer(const void *data, size_t len) {
  802389e:	683a      	ldr	r2, [r7, #0]
  80238a0:	6879      	ldr	r1, [r7, #4]
  80238a2:	4618      	mov	r0, r3
- 80238a4:	f01c f829 	bl	803f8fa <memcpy>
+ 80238a4:	f01c f827 	bl	803f8f6 <memcpy>
     ublox_write += len;
  80238a8:	4b04      	ldr	r3, [pc, #16]	; (80238bc <UBLOX_Fill_Buffer+0x30>)
  80238aa:	681a      	ldr	r2, [r3, #0]
@@ -6120,7 +6120,7 @@ static void UBLOX_Reset_Buffer(void) {
  80238cc:	461a      	mov	r2, r3
  80238ce:	2100      	movs	r1, #0
  80238d0:	4804      	ldr	r0, [pc, #16]	; (80238e4 <UBLOX_Reset_Buffer+0x20>)
- 80238d2:	f01c f81d 	bl	803f910 <memset>
+ 80238d2:	f01c f81b 	bl	803f90c <memset>
     ublox_write = 0;
  80238d6:	4b02      	ldr	r3, [pc, #8]	; (80238e0 <UBLOX_Reset_Buffer+0x1c>)
  80238d8:	2200      	movs	r2, #0
@@ -6451,7 +6451,7 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
  8023aa4:	e002      	b.n	8023aac <CANBUS_Write+0x14>
         _DelayMS(1);
  8023aa6:	2001      	movs	r0, #1
- 8023aa8:	f01b fe08 	bl	803f6bc <_DelayMS>
+ 8023aa8:	f01b fe06 	bl	803f6b8 <_DelayMS>
     while (!HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)) {
  8023aac:	480e      	ldr	r0, [pc, #56]	; (8023ae8 <CANBUS_Write+0x50>)
  8023aae:	f009 fb64 	bl	802d17a <HAL_CAN_GetTxMailboxesFreeLevel>
@@ -7419,7 +7419,7 @@ void AUDIO_IO_Init(void) {
     /* Wait for a delay to insure registers erasing */
     _DelayMS(500);
  802408e:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 8024092:	f01b fb13 	bl	803f6bc <_DelayMS>
+ 8024092:	f01b fb11 	bl	803f6b8 <_DelayMS>
     /* Power on the codec */
     HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_SET);
  8024096:	2201      	movs	r2, #1
@@ -7429,7 +7429,7 @@ void AUDIO_IO_Init(void) {
     /* Wait for a delay to insure registers erasing */
     _DelayMS(500);
  80240a0:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 80240a4:	f01b fb0a 	bl	803f6bc <_DelayMS>
+ 80240a4:	f01b fb08 	bl	803f6b8 <_DelayMS>
 }
  80240a8:	bf00      	nop
  80240aa:	bd80      	pop	{r7, pc}
@@ -7751,7 +7751,7 @@ void FZ3387_SET_POWER(uint8_t state) {
  80242a8:	f00b ff52 	bl	8030150 <HAL_GPIO_WritePin>
     _DelayMS(500);
  80242ac:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 80242b0:	f01b fa04 	bl	803f6bc <_DelayMS>
+ 80242b0:	f01b fa02 	bl	803f6b8 <_DelayMS>
 }
  80242b4:	bf00      	nop
  80242b6:	3708      	adds	r7, #8
@@ -7910,7 +7910,7 @@ void FZ3387_writeStructuredPacket(void) {
 
     _DelayMS(250);
  80243b2:	20fa      	movs	r0, #250	; 0xfa
- 80243b4:	f01b f982 	bl	803f6bc <_DelayMS>
+ 80243b4:	f01b f980 	bl	803f6b8 <_DelayMS>
 }
  80243b8:	bf00      	nop
  80243ba:	3708      	adds	r7, #8
@@ -8185,7 +8185,7 @@ void FZ3387_setPacket(uint8_t type, uint16_t length, uint8_t *data) {
  8024540:	461a      	mov	r2, r3
  8024542:	6839      	ldr	r1, [r7, #0]
  8024544:	480f      	ldr	r0, [pc, #60]	; (8024584 <FZ3387_setPacket+0x88>)
- 8024546:	f01b f9d8 	bl	803f8fa <memcpy>
+ 8024546:	f01b f9d6 	bl	803f8f6 <memcpy>
     else
         memcpy(packet.data, data, 64);
 }
@@ -9253,7 +9253,7 @@ uint8_t nmea_init(nmea_t *nh) {
  8024b64:	2274      	movs	r2, #116	; 0x74
  8024b66:	2100      	movs	r1, #0
  8024b68:	6878      	ldr	r0, [r7, #4]
- 8024b6a:	f01a fed1 	bl	803f910 <memset>
+ 8024b6a:	f01a fecf 	bl	803f90c <memset>
     return 1;
  8024b6e:	2301      	movs	r3, #1
 }
@@ -9292,7 +9292,7 @@ uint8_t nmea_process(nmea_t *nh, const void *data, size_t len) {
  8024b96:	2230      	movs	r2, #48	; 0x30
  8024b98:	2100      	movs	r1, #0
  8024b9a:	4618      	mov	r0, r3
- 8024b9c:	f01a feb8 	bl	803f910 <memset>
+ 8024b9c:	f01a feb6 	bl	803f90c <memset>
             TERM_ADD(nh, *d); /* Add character to term */
  8024ba0:	68fb      	ldr	r3, [r7, #12]
  8024ba2:	f893 3052 	ldrb.w	r3, [r3, #82]	; 0x52
@@ -9838,7 +9838,7 @@ static uint8_t parse_term(nmea_t *nh) {
  8024fd2:	2206      	movs	r2, #6
  8024fd4:	49c4      	ldr	r1, [pc, #784]	; (80252e8 <parse_term+0x32c>)
  8024fd6:	4618      	mov	r0, r3
- 8024fd8:	f01a fcc2 	bl	803f960 <strncmp>
+ 8024fd8:	f01a fcc0 	bl	803f95c <strncmp>
  8024fdc:	4603      	mov	r3, r0
  8024fde:	2b00      	cmp	r3, #0
  8024fe0:	d009      	beq.n	8024ff6 <parse_term+0x3a>
@@ -9847,7 +9847,7 @@ static uint8_t parse_term(nmea_t *nh) {
  8024fe6:	2206      	movs	r2, #6
  8024fe8:	49c0      	ldr	r1, [pc, #768]	; (80252ec <parse_term+0x330>)
  8024fea:	4618      	mov	r0, r3
- 8024fec:	f01a fcb8 	bl	803f960 <strncmp>
+ 8024fec:	f01a fcb6 	bl	803f95c <strncmp>
  8024ff0:	4603      	mov	r3, r0
  8024ff2:	2b00      	cmp	r3, #0
  8024ff4:	d104      	bne.n	8025000 <parse_term+0x44>
@@ -9864,7 +9864,7 @@ static uint8_t parse_term(nmea_t *nh) {
  8025004:	2206      	movs	r2, #6
  8025006:	49ba      	ldr	r1, [pc, #744]	; (80252f0 <parse_term+0x334>)
  8025008:	4618      	mov	r0, r3
- 802500a:	f01a fca9 	bl	803f960 <strncmp>
+ 802500a:	f01a fca7 	bl	803f95c <strncmp>
  802500e:	4603      	mov	r3, r0
  8025010:	2b00      	cmp	r3, #0
  8025012:	d009      	beq.n	8025028 <parse_term+0x6c>
@@ -9873,7 +9873,7 @@ static uint8_t parse_term(nmea_t *nh) {
  8025018:	2206      	movs	r2, #6
  802501a:	49b6      	ldr	r1, [pc, #728]	; (80252f4 <parse_term+0x338>)
  802501c:	4618      	mov	r0, r3
- 802501e:	f01a fc9f 	bl	803f960 <strncmp>
+ 802501e:	f01a fc9d 	bl	803f95c <strncmp>
  8025022:	4603      	mov	r3, r0
  8025024:	2b00      	cmp	r3, #0
  8025026:	d104      	bne.n	8025032 <parse_term+0x76>
@@ -9890,7 +9890,7 @@ static uint8_t parse_term(nmea_t *nh) {
  8025036:	2206      	movs	r2, #6
  8025038:	49af      	ldr	r1, [pc, #700]	; (80252f8 <parse_term+0x33c>)
  802503a:	4618      	mov	r0, r3
- 802503c:	f01a fc90 	bl	803f960 <strncmp>
+ 802503c:	f01a fc8e 	bl	803f95c <strncmp>
  8025040:	4603      	mov	r3, r0
  8025042:	2b00      	cmp	r3, #0
  8025044:	d009      	beq.n	802505a <parse_term+0x9e>
@@ -9899,7 +9899,7 @@ static uint8_t parse_term(nmea_t *nh) {
  802504a:	2206      	movs	r2, #6
  802504c:	49ab      	ldr	r1, [pc, #684]	; (80252fc <parse_term+0x340>)
  802504e:	4618      	mov	r0, r3
- 8025050:	f01a fc86 	bl	803f960 <strncmp>
+ 8025050:	f01a fc84 	bl	803f95c <strncmp>
  8025054:	4603      	mov	r3, r0
  8025056:	2b00      	cmp	r3, #0
  8025058:	d104      	bne.n	8025064 <parse_term+0xa8>
@@ -9916,7 +9916,7 @@ static uint8_t parse_term(nmea_t *nh) {
  8025068:	2206      	movs	r2, #6
  802506a:	49a5      	ldr	r1, [pc, #660]	; (8025300 <parse_term+0x344>)
  802506c:	4618      	mov	r0, r3
- 802506e:	f01a fc77 	bl	803f960 <strncmp>
+ 802506e:	f01a fc75 	bl	803f95c <strncmp>
  8025072:	4603      	mov	r3, r0
  8025074:	2b00      	cmp	r3, #0
  8025076:	d009      	beq.n	802508c <parse_term+0xd0>
@@ -9925,7 +9925,7 @@ static uint8_t parse_term(nmea_t *nh) {
  802507c:	2206      	movs	r2, #6
  802507e:	49a1      	ldr	r1, [pc, #644]	; (8025304 <parse_term+0x348>)
  8025080:	4618      	mov	r0, r3
- 8025082:	f01a fc6d 	bl	803f960 <strncmp>
+ 8025082:	f01a fc6b 	bl	803f95c <strncmp>
  8025086:	4603      	mov	r3, r0
  8025088:	2b00      	cmp	r3, #0
  802508a:	d104      	bne.n	8025096 <parse_term+0xda>
@@ -10690,7 +10690,7 @@ static uint8_t copy_from_tmp_memory(nmea_t *nh) {
  8025696:	3365      	adds	r3, #101	; 0x65
  8025698:	220c      	movs	r2, #12
  802569a:	4619      	mov	r1, r3
- 802569c:	f01a f92d 	bl	803f8fa <memcpy>
+ 802569c:	f01a f92b 	bl	803f8f6 <memcpy>
  80256a0:	e034      	b.n	802570c <copy_from_tmp_memory+0x112>
 #endif /* NMEA_CFG_STATEMENT_GPGSA */
 #if NMEA_CFG_STATEMENT_GPGSV
@@ -10850,7 +10850,7 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
  802578e:	f00a fcdf 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(500);
  8025792:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 8025796:	f019 ff91 	bl	803f6bc <_DelayMS>
+ 8025796:	f019 ff8f 	bl	803f6b8 <_DelayMS>
         HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
  802579a:	2201      	movs	r2, #1
  802579c:	2120      	movs	r1, #32
@@ -10858,7 +10858,7 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
  80257a0:	f00a fcd6 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(500);
  80257a4:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 80257a8:	f019 ff88 	bl	803f6bc <_DelayMS>
+ 80257a8:	f019 ff86 	bl	803f6b8 <_DelayMS>
 
         result = nrf_check(&nrf);
  80257ac:	4847      	ldr	r0, [pc, #284]	; (80258cc <nrf_init+0x174>)
@@ -10872,7 +10872,7 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
  80257ba:	d103      	bne.n	80257c4 <nrf_init+0x6c>
             _DelayMS(1000);
  80257bc:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 80257c0:	f019 ff7c 	bl	803f6bc <_DelayMS>
+ 80257c0:	f019 ff7a 	bl	803f6b8 <_DelayMS>
         }
     } while (result == NRF_ERROR);
  80257c4:	7bfb      	ldrb	r3, [r7, #15]
@@ -12916,7 +12916,7 @@ NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
 
     _DelayMS(100);
  80264b6:	2064      	movs	r0, #100	; 0x64
- 80264b8:	f019 f900 	bl	803f6bc <_DelayMS>
+ 80264b8:	f019 f8fe 	bl	803f6b8 <_DelayMS>
     ce_reset(dev);
  80264bc:	6878      	ldr	r0, [r7, #4]
  80264be:	f7ff f93a 	bl	8025736 <ce_reset>
@@ -13757,7 +13757,7 @@ void AUDIO_Init(void) {
  8026a80:	f009 fb66 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(500);
  8026a84:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 8026a88:	f018 fe18 	bl	803f6bc <_DelayMS>
+ 8026a88:	f018 fe16 	bl	803f6b8 <_DelayMS>
         HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 1);
  8026a8c:	2201      	movs	r2, #1
  8026a8e:	f44f 6100 	mov.w	r1, #2048	; 0x800
@@ -13765,7 +13765,7 @@ void AUDIO_Init(void) {
  8026a94:	f009 fb5c 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(1000);
  8026a98:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 8026a9c:	f018 fe0e 	bl	803f6bc <_DelayMS>
+ 8026a9c:	f018 fe0c 	bl	803f6b8 <_DelayMS>
 
         /* Initialize Wave player (Codec, DMA, I2C) */
         ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AudioVolume, AUDIO_SAMPLE_FREQ);
@@ -13781,7 +13781,7 @@ void AUDIO_Init(void) {
 
         _DelayMS(500);
  8026ab4:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 8026ab8:	f018 fe00 	bl	803f6bc <_DelayMS>
+ 8026ab8:	f018 fdfe 	bl	803f6b8 <_DelayMS>
     } while (ret != AUDIO_OK);
  8026abc:	79fb      	ldrb	r3, [r7, #7]
  8026abe:	2b00      	cmp	r3, #0
@@ -13878,7 +13878,7 @@ void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
         _DelayMS(TimeMS);
  8026b58:	88bb      	ldrh	r3, [r7, #4]
  8026b5a:	4618      	mov	r0, r3
- 8026b5c:	f018 fdae 	bl	803f6bc <_DelayMS>
+ 8026b5c:	f018 fdac 	bl	803f6b8 <_DelayMS>
         // than stop
         cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
  8026b60:	2200      	movs	r2, #0
@@ -14610,7 +14610,7 @@ void Finger_Init(void) {
  8026f5a:	f009 f8f9 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(100);
  8026f5e:	2064      	movs	r0, #100	; 0x64
- 8026f60:	f018 fbac 	bl	803f6bc <_DelayMS>
+ 8026f60:	f018 fbaa 	bl	803f6b8 <_DelayMS>
         HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, 1);
  8026f64:	2201      	movs	r2, #1
  8026f66:	2108      	movs	r1, #8
@@ -14618,7 +14618,7 @@ void Finger_Init(void) {
  8026f6a:	f009 f8f1 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(500);
  8026f6e:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 8026f72:	f018 fba3 	bl	803f6bc <_DelayMS>
+ 8026f72:	f018 fba1 	bl	803f6b8 <_DelayMS>
 
         // verify password and check hardware
         lock();
@@ -14632,7 +14632,7 @@ void Finger_Init(void) {
 
         _DelayMS(500);
  8026f86:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 8026f8a:	f018 fb97 	bl	803f6bc <_DelayMS>
+ 8026f8a:	f018 fb95 	bl	803f6b8 <_DelayMS>
     } while (!verified);
  8026f8e:	79fb      	ldrb	r3, [r7, #7]
  8026f90:	2b00      	cmp	r3, #0
@@ -14743,12 +14743,12 @@ uint8_t Finger_Enroll(uint8_t id) {
 
         // set timeout guard
         tick = _GetTickMS();
- 8027030:	f018 fb4f 	bl	803f6d2 <_GetTickMS>
+ 8027030:	f018 fb4d 	bl	803f6ce <_GetTickMS>
  8027034:	6138      	str	r0, [r7, #16]
         do {
             // handle timeout
             timeout = ((_GetTickMS() - tick) > scan_time);
- 8027036:	f018 fb4c 	bl	803f6d2 <_GetTickMS>
+ 8027036:	f018 fb4a 	bl	803f6ce <_GetTickMS>
  802703a:	4602      	mov	r2, r0
  802703c:	693b      	ldr	r3, [r7, #16]
  802703e:	1ad3      	subs	r3, r2, r3
@@ -14762,7 +14762,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
             // send command
             _LedToggle();
- 802704e:	f018 fb59 	bl	803f704 <_LedToggle>
+ 802704e:	f018 fb57 	bl	803f700 <_LedToggle>
             HMI1.d.status.finger = !HMI1.d.status.finger;
  8027052:	4b90      	ldr	r3, [pc, #576]	; (8027294 <Finger_Enroll+0x2f0>)
  8027054:	791b      	ldrb	r3, [r3, #4]
@@ -15066,7 +15066,7 @@ uint8_t Finger_Enroll(uint8_t id) {
     // reset indicator
     _LedWrite(0);
  8027256:	2000      	movs	r0, #0
- 8027258:	f018 fa42 	bl	803f6e0 <_LedWrite>
+ 8027258:	f018 fa40 	bl	803f6dc <_LedWrite>
     HMI1.d.status.finger = 0;
  802725c:	4b0d      	ldr	r3, [pc, #52]	; (8027294 <Finger_Enroll+0x2f0>)
  802725e:	2200      	movs	r2, #0
@@ -15328,7 +15328,7 @@ static void unlock(void) {
  802741e:	f7fc ff35 	bl	802428c <FZ3387_SET_POWER>
     _DelayMS(50);
  8027422:	2032      	movs	r0, #50	; 0x32
- 8027424:	f018 f94a 	bl	803f6bc <_DelayMS>
+ 8027424:	f018 f948 	bl	803f6b8 <_DelayMS>
     osMutexRelease(FingerRecMutexHandle);
  8027428:	4b03      	ldr	r3, [pc, #12]	; (8027438 <unlock+0x20>)
  802742a:	681b      	ldr	r3, [r3, #0]
@@ -15355,7 +15355,7 @@ void GPS_Init(void) {
     // Inititalize Module
     _LedWrite(1);
  8027442:	2001      	movs	r0, #1
- 8027444:	f018 f94c 	bl	803f6e0 <_LedWrite>
+ 8027444:	f018 f94a 	bl	803f6dc <_LedWrite>
     do {
         LOG_StrLn("GPS:Init");
  8027448:	481c      	ldr	r0, [pc, #112]	; (80274bc <GPS_Init+0x80>)
@@ -15368,7 +15368,7 @@ void GPS_Init(void) {
  8027454:	f008 fe7c 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(500);
  8027458:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 802745c:	f018 f92e 	bl	803f6bc <_DelayMS>
+ 802745c:	f018 f92c 	bl	803f6b8 <_DelayMS>
         HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
  8027460:	2201      	movs	r2, #1
  8027462:	2102      	movs	r1, #2
@@ -15377,7 +15377,7 @@ void GPS_Init(void) {
 
         // set timeout guard
         tick = _GetTickMS();
- 802746a:	f018 f932 	bl	803f6d2 <_GetTickMS>
+ 802746a:	f018 f930 	bl	803f6ce <_GetTickMS>
  802746e:	6078      	str	r0, [r7, #4]
         while ((_GetTickMS() - tick) < 5000) {
  8027470:	e008      	b.n	8027484 <GPS_Init+0x48>
@@ -15391,9 +15391,9 @@ void GPS_Init(void) {
             }
             _DelayMS(10);
  802747e:	200a      	movs	r0, #10
- 8027480:	f018 f91c 	bl	803f6bc <_DelayMS>
+ 8027480:	f018 f91a 	bl	803f6b8 <_DelayMS>
         while ((_GetTickMS() - tick) < 5000) {
- 8027484:	f018 f925 	bl	803f6d2 <_GetTickMS>
+ 8027484:	f018 f923 	bl	803f6ce <_GetTickMS>
  8027488:	4602      	mov	r2, r0
  802748a:	687b      	ldr	r3, [r7, #4]
  802748c:	1ad3      	subs	r3, r2, r3
@@ -15412,7 +15412,7 @@ void GPS_Init(void) {
  80274a4:	d9d0      	bls.n	8027448 <GPS_Init+0xc>
     _LedWrite(0);
  80274a6:	2000      	movs	r0, #0
- 80274a8:	f018 f91a 	bl	803f6e0 <_LedWrite>
+ 80274a8:	f018 f918 	bl	803f6dc <_LedWrite>
 
     nmea_init(&nmea);
  80274ac:	4806      	ldr	r0, [pc, #24]	; (80274c8 <GPS_Init+0x8c>)
@@ -15626,7 +15626,7 @@ void GYRO_Init(void) {
  8027630:	f008 fd8e 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(500);
  8027634:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 8027638:	f018 f840 	bl	803f6bc <_DelayMS>
+ 8027638:	f018 f83e 	bl	803f6b8 <_DelayMS>
         HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 1);
  802763c:	2201      	movs	r2, #1
  802763e:	2110      	movs	r1, #16
@@ -15634,7 +15634,7 @@ void GYRO_Init(void) {
  8027642:	f008 fd85 	bl	8030150 <HAL_GPIO_WritePin>
         _DelayMS(1000);
  8027646:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 802764a:	f018 f837 	bl	803f6bc <_DelayMS>
+ 802764a:	f018 f835 	bl	803f6b8 <_DelayMS>
 
         // module initialization
         result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
@@ -16249,7 +16249,7 @@ void HBAR_TimerSelectSet(void) {
                         // start timer for SET
                         SW.timer[i].start = _GetTickMS();
  8027aa6:	79fc      	ldrb	r4, [r7, #7]
- 8027aa8:	f017 fe13 	bl	803f6d2 <_GetTickMS>
+ 8027aa8:	f017 fe11 	bl	803f6ce <_GetTickMS>
  8027aac:	4601      	mov	r1, r0
  8027aae:	4a21      	ldr	r2, [pc, #132]	; (8027b34 <HBAR_TimerSelectSet+0xf8>)
  8027ab0:	f104 031c 	add.w	r3, r4, #28
@@ -16288,7 +16288,7 @@ void HBAR_TimerSelectSet(void) {
  8027ae4:	711a      	strb	r2, [r3, #4]
                     // stop SET
                     SW.timer[i].time = (_GetTickMS() - SW.timer[i].start) / 1000;
- 8027ae6:	f017 fdf4 	bl	803f6d2 <_GetTickMS>
+ 8027ae6:	f017 fdf2 	bl	803f6ce <_GetTickMS>
  8027aea:	4601      	mov	r1, r0
  8027aec:	79fb      	ldrb	r3, [r7, #7]
  8027aee:	4a11      	ldr	r2, [pc, #68]	; (8027b34 <HBAR_TimerSelectSet+0xf8>)
@@ -16536,7 +16536,7 @@ sein_state_t HBAR_SeinController(sw_t *sw) {
     };
 
     if ((_GetTickMS() - tickSein) >= 500) {
- 8027c84:	f017 fd25 	bl	803f6d2 <_GetTickMS>
+ 8027c84:	f017 fd23 	bl	803f6ce <_GetTickMS>
  8027c88:	4602      	mov	r2, r0
  8027c8a:	4b34      	ldr	r3, [pc, #208]	; (8027d5c <HBAR_SeinController+0xe0>)
  8027c8c:	681b      	ldr	r3, [r3, #0]
@@ -16550,7 +16550,7 @@ sein_state_t HBAR_SeinController(sw_t *sw) {
  8027c9e:	d019      	beq.n	8027cd4 <HBAR_SeinController+0x58>
             // hazard
             tickSein = _GetTickMS();
- 8027ca0:	f017 fd17 	bl	803f6d2 <_GetTickMS>
+ 8027ca0:	f017 fd15 	bl	803f6ce <_GetTickMS>
  8027ca4:	4602      	mov	r2, r0
  8027ca6:	4b2d      	ldr	r3, [pc, #180]	; (8027d5c <HBAR_SeinController+0xe0>)
  8027ca8:	601a      	str	r2, [r3, #0]
@@ -16584,7 +16584,7 @@ sein_state_t HBAR_SeinController(sw_t *sw) {
  8027cdc:	d012      	beq.n	8027d04 <HBAR_SeinController+0x88>
             // left sein
             tickSein = _GetTickMS();
- 8027cde:	f017 fcf8 	bl	803f6d2 <_GetTickMS>
+ 8027cde:	f017 fcf6 	bl	803f6ce <_GetTickMS>
  8027ce2:	4602      	mov	r2, r0
  8027ce4:	4b1d      	ldr	r3, [pc, #116]	; (8027d5c <HBAR_SeinController+0xe0>)
  8027ce6:	601a      	str	r2, [r3, #0]
@@ -16611,7 +16611,7 @@ sein_state_t HBAR_SeinController(sw_t *sw) {
  8027d0c:	d012      	beq.n	8027d34 <HBAR_SeinController+0xb8>
             // right sein
             tickSein = _GetTickMS();
- 8027d0e:	f017 fce0 	bl	803f6d2 <_GetTickMS>
+ 8027d0e:	f017 fcde 	bl	803f6ce <_GetTickMS>
  8027d12:	4602      	mov	r2, r0
  8027d14:	4b11      	ldr	r3, [pc, #68]	; (8027d5c <HBAR_SeinController+0xe0>)
  8027d16:	601a      	str	r2, [r3, #0]
@@ -16694,7 +16694,7 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
  8027d8c:	701a      	strb	r2, [r3, #0]
             // reset period tick
             tickPeriod = _GetTickMS();
- 8027d8e:	f017 fca0 	bl	803f6d2 <_GetTickMS>
+ 8027d8e:	f017 fc9e 	bl	803f6ce <_GetTickMS>
  8027d92:	4602      	mov	r2, r0
  8027d94:	4b2d      	ldr	r3, [pc, #180]	; (8027e4c <HBAR_ModeController+0xe8>)
  8027d96:	601a      	str	r2, [r3, #0]
@@ -16724,14 +16724,14 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
  8027dc2:	701a      	strb	r2, [r3, #0]
             // reset period tick
             tickPeriod = _GetTickMS();
- 8027dc4:	f017 fc85 	bl	803f6d2 <_GetTickMS>
+ 8027dc4:	f017 fc83 	bl	803f6ce <_GetTickMS>
  8027dc8:	4602      	mov	r2, r0
  8027dca:	4b20      	ldr	r3, [pc, #128]	; (8027e4c <HBAR_ModeController+0xe8>)
  8027dcc:	601a      	str	r2, [r3, #0]
         }
 
         if ((_GetTickMS() - tickPeriod) >= 5000 ||
- 8027dce:	f017 fc80 	bl	803f6d2 <_GetTickMS>
+ 8027dce:	f017 fc7e 	bl	803f6ce <_GetTickMS>
  8027dd2:	4602      	mov	r2, r0
  8027dd4:	4b1d      	ldr	r3, [pc, #116]	; (8027e4c <HBAR_ModeController+0xe8>)
  8027dd6:	681b      	ldr	r3, [r3, #0]
@@ -16766,7 +16766,7 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
         } else {
             // blink
             if ((_GetTickMS() - tick) >= 250) {
- 8027e04:	f017 fc65 	bl	803f6d2 <_GetTickMS>
+ 8027e04:	f017 fc63 	bl	803f6ce <_GetTickMS>
  8027e08:	4602      	mov	r2, r0
  8027e0a:	4b13      	ldr	r3, [pc, #76]	; (8027e58 <HBAR_ModeController+0xf4>)
  8027e0c:	681b      	ldr	r3, [r3, #0]
@@ -16774,7 +16774,7 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
  8027e10:	2bf9      	cmp	r3, #249	; 0xf9
  8027e12:	d912      	bls.n	8027e3a <HBAR_ModeController+0xd6>
                 tick = _GetTickMS();
- 8027e14:	f017 fc5d 	bl	803f6d2 <_GetTickMS>
+ 8027e14:	f017 fc5b 	bl	803f6ce <_GetTickMS>
  8027e18:	4602      	mov	r2, r0
  8027e1a:	4b0f      	ldr	r3, [pc, #60]	; (8027e58 <HBAR_ModeController+0xf4>)
  8027e1c:	601a      	str	r2, [r3, #0]
@@ -16975,7 +16975,7 @@ uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
  8027f50:	f107 030c 	add.w	r3, r7, #12
  8027f54:	2208      	movs	r2, #8
  8027f56:	4618      	mov	r0, r3
- 8027f58:	f017 fcc0 	bl	803f8dc <memcmp>
+ 8027f58:	f017 fcbe 	bl	803f8d8 <memcmp>
  8027f5c:	4603      	mov	r3, r0
  8027f5e:	2b00      	cmp	r3, #0
  8027f60:	d105      	bne.n	8027f6e <KLESS_ValidateCommand+0x52>
@@ -17138,7 +17138,7 @@ uint8_t KLESS_Pairing(void) {
  8028040:	4413      	add	r3, r2
  8028042:	f853 3c1c 	ldr.w	r3, [r3, #-28]
  8028046:	4618      	mov	r0, r3
- 8028048:	f017 fb7a 	bl	803f740 <_ByteSwap32>
+ 8028048:	f017 fb78 	bl	803f73c <_ByteSwap32>
  802804c:	4603      	mov	r3, r0
  802804e:	603b      	str	r3, [r7, #0]
         memcpy(&payload[i * 4], &swapped, sizeof(swapped));
@@ -17173,12 +17173,12 @@ uint8_t KLESS_Pairing(void) {
  802807c:	2204      	movs	r2, #4
  802807e:	2100      	movs	r1, #0
  8028080:	4820      	ldr	r0, [pc, #128]	; (8028104 <KLESS_Pairing+0xe8>)
- 8028082:	f017 fc45 	bl	803f910 <memset>
+ 8028082:	f017 fc43 	bl	803f90c <memset>
     memset(KLESS.rx.address, 0x00, sizeof(VCU.d.unit_id));
  8028086:	2204      	movs	r2, #4
  8028088:	2100      	movs	r1, #0
  802808a:	481f      	ldr	r0, [pc, #124]	; (8028108 <KLESS_Pairing+0xec>)
- 802808c:	f017 fc40 	bl	803f910 <memset>
+ 802808c:	f017 fc3e 	bl	803f90c <memset>
 
     // Set NRF Config (pairing mode)
     ce_reset(&nrf);
@@ -17209,7 +17209,7 @@ uint8_t KLESS_Pairing(void) {
  80280be:	75fb      	strb	r3, [r7, #23]
     _DelayMS(100);
  80280c0:	2064      	movs	r0, #100	; 0x64
- 80280c2:	f017 fafb 	bl	803f6bc <_DelayMS>
+ 80280c2:	f017 faf9 	bl	803f6b8 <_DelayMS>
 
     // Set Address (normal mode)
     memcpy(KLESS.tx.address, &(VCU.d.unit_id), sizeof(VCU.d.unit_id));
@@ -17288,7 +17288,7 @@ void KLESS_Refresh(void) {
  8028140:	b580      	push	{r7, lr}
  8028142:	af00      	add	r7, sp, #0
     if ((_GetTickMS() - VCU.d.tick.keyless) < KEYLESS_TIMEOUT) {
- 8028144:	f017 fac5 	bl	803f6d2 <_GetTickMS>
+ 8028144:	f017 fac3 	bl	803f6ce <_GetTickMS>
  8028148:	4602      	mov	r2, r0
  802814a:	4b08      	ldr	r3, [pc, #32]	; (802816c <KLESS_Refresh+0x2c>)
  802814c:	6bdb      	ldr	r3, [r3, #60]	; 0x3c
@@ -18215,7 +18215,7 @@ void BMS_RefreshIndex(void) {
  80287a8:	71fb      	strb	r3, [r7, #7]
  80287aa:	e015      	b.n	80287d8 <BMS_RefreshIndex+0x38>
         if ((_GetTickMS() - BMS.d.pack[i].tick) > 500) {
- 80287ac:	f016 ff91 	bl	803f6d2 <_GetTickMS>
+ 80287ac:	f016 ff8f 	bl	803f6ce <_GetTickMS>
  80287b0:	79fa      	ldrb	r2, [r7, #7]
  80287b2:	490e      	ldr	r1, [pc, #56]	; (80287ec <BMS_RefreshIndex+0x4c>)
  80287b4:	4613      	mov	r3, r2
@@ -19008,7 +19008,7 @@ void BMS_CAN_RX_Param1(void) {
  8028d7e:	701a      	strb	r2, [r3, #0]
     BMS.d.pack[index].tick = _GetTickMS();
  8028d80:	78fc      	ldrb	r4, [r7, #3]
- 8028d82:	f016 fca6 	bl	803f6d2 <_GetTickMS>
+ 8028d82:	f016 fca4 	bl	803f6ce <_GetTickMS>
  8028d86:	4601      	mov	r1, r0
  8028d88:	4a0a      	ldr	r2, [pc, #40]	; (8028db4 <BMS_CAN_RX_Param1+0x16c>)
  8028d8a:	4623      	mov	r3, r4
@@ -19246,7 +19246,7 @@ void HMI1_RefreshIndex(void) {
  8028f14:	71fb      	strb	r3, [r7, #7]
  8028f16:	e015      	b.n	8028f44 <HMI1_RefreshIndex+0x38>
         if ((_GetTickMS() - HMI1.d.device[i].tick) > 1000) {
- 8028f18:	f016 fbdb 	bl	803f6d2 <_GetTickMS>
+ 8028f18:	f016 fbd9 	bl	803f6ce <_GetTickMS>
  8028f1c:	4601      	mov	r1, r0
  8028f1e:	79fb      	ldrb	r3, [r7, #7]
  8028f20:	4a0c      	ldr	r2, [pc, #48]	; (8028f54 <HMI1_RefreshIndex+0x48>)
@@ -19315,7 +19315,7 @@ void HMI1_CAN_RX_LeftState(void) {
  8028f82:	2201      	movs	r2, #1
  8028f84:	721a      	strb	r2, [r3, #8]
     HMI1.d.device[HMI1_DEV_LEFT].tick = _GetTickMS();
- 8028f86:	f016 fba4 	bl	803f6d2 <_GetTickMS>
+ 8028f86:	f016 fba2 	bl	803f6ce <_GetTickMS>
  8028f8a:	4602      	mov	r2, r0
  8028f8c:	4b01      	ldr	r3, [pc, #4]	; (8028f94 <HMI1_CAN_RX_LeftState+0x18>)
  8028f8e:	60da      	str	r2, [r3, #12]
@@ -19335,7 +19335,7 @@ void HMI1_CAN_RX_RightState(void) {
  8028f9e:	2201      	movs	r2, #1
  8028fa0:	741a      	strb	r2, [r3, #16]
     HMI1.d.device[HMI1_DEV_RIGHT].tick = _GetTickMS();
- 8028fa2:	f016 fb96 	bl	803f6d2 <_GetTickMS>
+ 8028fa2:	f016 fb94 	bl	803f6ce <_GetTickMS>
  8028fa6:	4602      	mov	r2, r0
  8028fa8:	4b01      	ldr	r3, [pc, #4]	; (8028fb0 <HMI1_CAN_RX_RightState+0x18>)
  8028faa:	615a      	str	r2, [r3, #20]
@@ -19375,7 +19375,7 @@ void HMI2_Refresh(void) {
  8028fd4:	b580      	push	{r7, lr}
  8028fd6:	af00      	add	r7, sp, #0
     if ((_GetTickMS() - HMI2.d.tick) > 10000) {
- 8028fd8:	f016 fb7b 	bl	803f6d2 <_GetTickMS>
+ 8028fd8:	f016 fb79 	bl	803f6ce <_GetTickMS>
  8028fdc:	4602      	mov	r2, r0
  8028fde:	4b06      	ldr	r3, [pc, #24]	; (8028ff8 <HMI2_Refresh+0x24>)
  8028fe0:	685b      	ldr	r3, [r3, #4]
@@ -19446,7 +19446,7 @@ void StartHmi2PowerTask(void *argument) {
  8029040:	6138      	str	r0, [r7, #16]
         if (_RTOS_ValidThreadFlag(notif)) {
  8029042:	6938      	ldr	r0, [r7, #16]
- 8029044:	f016 fb9e 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 8029044:	f016 fb9c 	bl	803f780 <_RTOS_ValidThreadFlag>
  8029048:	4603      	mov	r3, r0
  802904a:	2b00      	cmp	r3, #0
  802904c:	d0f2      	beq.n	8029034 <StartHmi2PowerTask+0xc>
@@ -19472,7 +19472,7 @@ void StartHmi2PowerTask(void *argument) {
  802906a:	f007 f871 	bl	8030150 <HAL_GPIO_WritePin>
                     _DelayMS(100);
  802906e:	2064      	movs	r0, #100	; 0x64
- 8029070:	f016 fb24 	bl	803f6bc <_DelayMS>
+ 8029070:	f016 fb22 	bl	803f6b8 <_DelayMS>
                     HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, activeHigh);
  8029074:	7dfb      	ldrb	r3, [r7, #23]
  8029076:	461a      	mov	r2, r3
@@ -19482,7 +19482,7 @@ void StartHmi2PowerTask(void *argument) {
 
                     // wait until turned ON
                     tick = _GetTickMS();
- 8029080:	f016 fb27 	bl	803f6d2 <_GetTickMS>
+ 8029080:	f016 fb25 	bl	803f6ce <_GetTickMS>
  8029084:	60f8      	str	r0, [r7, #12]
                     while (_GetTickMS() - tick < (90 * 1000)) {
  8029086:	e004      	b.n	8029092 <StartHmi2PowerTask+0x6a>
@@ -19495,7 +19495,7 @@ void StartHmi2PowerTask(void *argument) {
                             break;
  8029090:	e007      	b.n	80290a2 <StartHmi2PowerTask+0x7a>
                     while (_GetTickMS() - tick < (90 * 1000)) {
- 8029092:	f016 fb1e 	bl	803f6d2 <_GetTickMS>
+ 8029092:	f016 fb1c 	bl	803f6ce <_GetTickMS>
  8029096:	4602      	mov	r2, r0
  8029098:	68fb      	ldr	r3, [r7, #12]
  802909a:	1ad3      	subs	r3, r2, r3
@@ -19514,7 +19514,7 @@ void StartHmi2PowerTask(void *argument) {
                 while (HMI2.d.started) {
                     // wait until turned OFF by CAN
                     tick = _GetTickMS();
- 80290ac:	f016 fb11 	bl	803f6d2 <_GetTickMS>
+ 80290ac:	f016 fb0f 	bl	803f6ce <_GetTickMS>
  80290b0:	60f8      	str	r0, [r7, #12]
                     while (_GetTickMS() - tick < (30 * 1000)) {
  80290b2:	e003      	b.n	80290bc <StartHmi2PowerTask+0x94>
@@ -19525,7 +19525,7 @@ void StartHmi2PowerTask(void *argument) {
  80290b8:	2b00      	cmp	r3, #0
  80290ba:	d009      	beq.n	80290d0 <StartHmi2PowerTask+0xa8>
                     while (_GetTickMS() - tick < (30 * 1000)) {
- 80290bc:	f016 fb09 	bl	803f6d2 <_GetTickMS>
+ 80290bc:	f016 fb07 	bl	803f6ce <_GetTickMS>
  80290c0:	4602      	mov	r2, r0
  80290c2:	68fb      	ldr	r3, [r7, #12]
  80290c4:	1ad3      	subs	r3, r2, r3
@@ -19591,7 +19591,7 @@ void HMI2_CAN_RX_State(void) {
  802911a:	2201      	movs	r2, #1
  802911c:	705a      	strb	r2, [r3, #1]
     HMI2.d.tick = _GetTickMS();
- 802911e:	f016 fad8 	bl	803f6d2 <_GetTickMS>
+ 802911e:	f016 fad6 	bl	803f6ce <_GetTickMS>
  8029122:	4602      	mov	r2, r0
  8029124:	4b04      	ldr	r3, [pc, #16]	; (8029138 <HMI2_CAN_RX_State+0x38>)
  8029126:	605a      	str	r2, [r3, #4]
@@ -19695,7 +19695,7 @@ void VCU_SetEvent(uint64_t event_id, uint8_t value) {
  80291c8:	d024      	beq.n	8029214 <VCU_SetEvent+0x64>
         BV(VCU.d.events, _BitPosition(event_id));
  80291ca:	e9d7 0102 	ldrd	r0, r1, [r7, #8]
- 80291ce:	f016 fb1f 	bl	803f810 <_BitPosition>
+ 80291ce:	f016 fb1d 	bl	803f80c <_BitPosition>
  80291d2:	4603      	mov	r3, r0
  80291d4:	461a      	mov	r2, r3
  80291d6:	f04f 0301 	mov.w	r3, #1
@@ -19721,7 +19721,7 @@ void VCU_SetEvent(uint64_t event_id, uint8_t value) {
  8029212:	e025      	b.n	8029260 <VCU_SetEvent+0xb0>
         BC(VCU.d.events, _BitPosition(event_id));
  8029214:	e9d7 0102 	ldrd	r0, r1, [r7, #8]
- 8029218:	f016 fafa 	bl	803f810 <_BitPosition>
+ 8029218:	f016 faf8 	bl	803f80c <_BitPosition>
  802921c:	4603      	mov	r3, r0
  802921e:	4619      	mov	r1, r3
  8029220:	f04f 0201 	mov.w	r2, #1
@@ -19810,7 +19810,7 @@ void VCU_CheckMainPower(void) {
  80292d8:	701a      	strb	r2, [r3, #0]
         // update tick
         tick = _GetTickMS();
- 80292da:	f016 f9fa 	bl	803f6d2 <_GetTickMS>
+ 80292da:	f016 f9f8 	bl	803f6ce <_GetTickMS>
  80292de:	4602      	mov	r2, r0
  80292e0:	4b29      	ldr	r3, [pc, #164]	; (8029388 <VCU_CheckMainPower+0xd8>)
  80292e2:	601a      	str	r2, [r3, #0]
@@ -19841,7 +19841,7 @@ void VCU_CheckMainPower(void) {
  8029308:	f04f 0100 	mov.w	r1, #0
  802930c:	4798      	blx	r3
         if (_GetTickMS() - tick > (VCU_ACTIVATE_LOST_MODE * 1000)) {
- 802930e:	f016 f9e0 	bl	803f6d2 <_GetTickMS>
+ 802930e:	f016 f9de 	bl	803f6ce <_GetTickMS>
  8029312:	4602      	mov	r2, r0
  8029314:	4b1c      	ldr	r3, [pc, #112]	; (8029388 <VCU_CheckMainPower+0xd8>)
  8029316:	681b      	ldr	r3, [r3, #0]
@@ -20764,7 +20764,7 @@ void SystemClock_Config(void)
  8029972:	2234      	movs	r2, #52	; 0x34
  8029974:	2100      	movs	r1, #0
  8029976:	4618      	mov	r0, r3
- 8029978:	f015 ffca 	bl	803f910 <memset>
+ 8029978:	f015 ffc8 	bl	803f90c <memset>
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
  802997c:	f107 0360 	add.w	r3, r7, #96	; 0x60
  8029980:	2200      	movs	r2, #0
@@ -20778,7 +20778,7 @@ void SystemClock_Config(void)
  8029990:	2258      	movs	r2, #88	; 0x58
  8029992:	2100      	movs	r1, #0
  8029994:	4618      	mov	r0, r3
- 8029996:	f015 ffbb 	bl	803f910 <memset>
+ 8029996:	f015 ffb9 	bl	803f90c <memset>
 
   /** Configure the main internal regulator output voltage 
   */
@@ -23023,7 +23023,7 @@ void StartManagerTask(void *argument)
     /* Infinite loop */
     for (;;) {
         lastWake = _GetTickMS();
- 802a620:	f015 f857 	bl	803f6d2 <_GetTickMS>
+ 802a620:	f015 f855 	bl	803f6ce <_GetTickMS>
  802a624:	60f8      	str	r0, [r7, #12]
 
         // Feed the dog
@@ -23033,7 +23033,7 @@ void StartManagerTask(void *argument)
 
         // Dummy data generator
         _DummyGenerator();
- 802a62c:	f015 f8c2 	bl	803f7b4 <_DummyGenerator>
+ 802a62c:	f015 f8c0 	bl	803f7b0 <_DummyGenerator>
 
         // Battery Monitor
         // BAT_Debugger();
@@ -23126,7 +23126,7 @@ void StartIotTask(void *argument)
     /* Infinite loop */
     for (;;) {
         lastWake = _GetTickMS();
- 802a6b2:	f015 f80e 	bl	803f6d2 <_GetTickMS>
+ 802a6b2:	f015 f80c 	bl	803f6ce <_GetTickMS>
  802a6b6:	f8c7 00bc 	str.w	r0, [r7, #188]	; 0xbc
 
         // Upload Report & Response Payload
@@ -23179,7 +23179,7 @@ void StartIotTask(void *argument)
  802a712:	f8c7 00b4 	str.w	r0, [r7, #180]	; 0xb4
                     if (_RTOS_ValidThreadFlag(notif)) {
  802a716:	f8d7 00b4 	ldr.w	r0, [r7, #180]	; 0xb4
- 802a71a:	f015 f833 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 802a71a:	f015 f831 	bl	803f780 <_RTOS_ValidThreadFlag>
  802a71e:	4603      	mov	r3, r0
  802a720:	2b00      	cmp	r3, #0
  802a722:	d007      	beq.n	802a734 <StartIotTask+0xac>
@@ -23397,7 +23397,7 @@ void StartReporterTask(void *argument)
     /* Infinite loop */
     for (;;) {
         lastWake = _GetTickMS();
- 802a8b6:	f014 ff0c 	bl	803f6d2 <_GetTickMS>
+ 802a8b6:	f014 ff0a 	bl	803f6ce <_GetTickMS>
  802a8ba:	66b8      	str	r0, [r7, #104]	; 0x68
 
         // Frame type decider
@@ -23590,7 +23590,7 @@ void StartCommandTask(void *argument)
  802aa10:	2314      	movs	r3, #20
  802aa12:	2205      	movs	r2, #5
  802aa14:	4995      	ldr	r1, [pc, #596]	; (802ac6c <StartCommandTask+0x2f8>)
- 802aa16:	f014 ff83 	bl	803f920 <siprintf>
+ 802aa16:	f014 ff81 	bl	803f91c <siprintf>
                                     "VCU v.%d, "VCU_VENDOR" @ 20%d", VCU_FIRMWARE_VERSION, VCU_BUILD_YEAR);
                             break;
  802aa1a:	e032      	b.n	802aa82 <StartCommandTask+0x10e>
@@ -23601,7 +23601,7 @@ void StartCommandTask(void *argument)
  802aa20:	f8d7 401d 	ldr.w	r4, [r7, #29]
  802aa24:	b2db      	uxtb	r3, r3
  802aa26:	4618      	mov	r0, r3
- 802aa28:	f014 fe5a 	bl	803f6e0 <_LedWrite>
+ 802aa28:	f014 fe58 	bl	803f6dc <_LedWrite>
                             break;
  802aa2c:	e029      	b.n	802aa82 <StartCommandTask+0x10e>
 
@@ -23643,7 +23643,7 @@ void StartCommandTask(void *argument)
  802aa68:	330f      	adds	r3, #15
  802aa6a:	4986      	ldr	r1, [pc, #536]	; (802ac84 <StartCommandTask+0x310>)
  802aa6c:	4618      	mov	r0, r3
- 802aa6e:	f014 ff57 	bl	803f920 <siprintf>
+ 802aa6e:	f014 ff55 	bl	803f91c <siprintf>
                             }
                             /* This line is never reached when FOTA activated */
                             response.data.code = RESPONSE_STATUS_ERROR;
@@ -23854,7 +23854,7 @@ void StartCommandTask(void *argument)
  802aba6:	66b8      	str	r0, [r7, #104]	; 0x68
                         if (_RTOS_ValidThreadFlag(notif)) {
  802aba8:	6eb8      	ldr	r0, [r7, #104]	; 0x68
- 802abaa:	f014 fdeb 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 802abaa:	f014 fde9 	bl	803f780 <_RTOS_ValidThreadFlag>
  802abae:	4603      	mov	r3, r0
  802abb0:	2b00      	cmp	r3, #0
  802abb2:	d047      	beq.n	802ac44 <StartCommandTask+0x2d0>
@@ -23903,7 +23903,7 @@ void StartCommandTask(void *argument)
  802abfe:	66b8      	str	r0, [r7, #104]	; 0x68
                                 if (_RTOS_ValidThreadFlag(notif)) {
  802ac00:	6eb8      	ldr	r0, [r7, #104]	; 0x68
- 802ac02:	f014 fdbf 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 802ac02:	f014 fdbd 	bl	803f780 <_RTOS_ValidThreadFlag>
  802ac06:	4603      	mov	r3, r0
  802ac08:	2b00      	cmp	r3, #0
  802ac0a:	d015      	beq.n	802ac38 <StartCommandTask+0x2c4>
@@ -24011,7 +24011,7 @@ void StartGpsTask(void *argument)
     /* Infinite loop */
     for (;;) {
         lastWake = _GetTickMS();
- 802acbc:	f014 fd09 	bl	803f6d2 <_GetTickMS>
+ 802acbc:	f014 fd07 	bl	803f6ce <_GetTickMS>
  802acc0:	60f8      	str	r0, [r7, #12]
 
         GPS_Capture();
@@ -24061,7 +24061,7 @@ void StartGyroTask(void *argument)
     /* Infinite loop */
     for (;;) {
         lastWake = _GetTickMS();
- 802acf8:	f014 fceb 	bl	803f6d2 <_GetTickMS>
+ 802acf8:	f014 fce9 	bl	803f6ce <_GetTickMS>
  802acfc:	62f8      	str	r0, [r7, #44]	; 0x2c
 
         // Read all accelerometer, gyroscope (average)
@@ -24130,7 +24130,7 @@ void StartGyroTask(void *argument)
             _LedWrite(decider.fall.state);
  802ad68:	7f3b      	ldrb	r3, [r7, #28]
  802ad6a:	4618      	mov	r0, r3
- 802ad6c:	f014 fcb8 	bl	803f6e0 <_LedWrite>
+ 802ad6c:	f014 fcb6 	bl	803f6dc <_LedWrite>
         }
 
         // Handle for both event
@@ -24196,7 +24196,7 @@ void StartKeylessTask(void *argument)
         // proceed event
         if (_RTOS_ValidThreadFlag(notif)) {
  802adc0:	6938      	ldr	r0, [r7, #16]
- 802adc2:	f014 fcdf 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 802adc2:	f014 fcdd 	bl	803f780 <_RTOS_ValidThreadFlag>
  802adc6:	4603      	mov	r3, r0
  802adc8:	2b00      	cmp	r3, #0
  802adca:	f000 80a9 	beq.w	802af20 <StartKeylessTask+0x190>
@@ -24242,7 +24242,7 @@ void StartKeylessTask(void *argument)
  802ae0e:	4847      	ldr	r0, [pc, #284]	; (802af2c <StartKeylessTask+0x19c>)
  802ae10:	f013 fab4 	bl	803e37c <LOG_StrLn>
                             VCU.d.tick.keyless = _GetTickMS();
- 802ae14:	f014 fc5d 	bl	803f6d2 <_GetTickMS>
+ 802ae14:	f014 fc5b 	bl	803f6ce <_GetTickMS>
  802ae18:	4602      	mov	r2, r0
  802ae1a:	4b45      	ldr	r3, [pc, #276]	; (802af30 <StartKeylessTask+0x1a0>)
  802ae1c:	63da      	str	r2, [r3, #60]	; 0x3c
@@ -24266,7 +24266,7 @@ void StartKeylessTask(void *argument)
  802ae3c:	f005 f988 	bl	8030150 <HAL_GPIO_WritePin>
                                 _DelayMS(200);
  802ae40:	20c8      	movs	r0, #200	; 0xc8
- 802ae42:	f014 fc3b 	bl	803f6bc <_DelayMS>
+ 802ae42:	f014 fc39 	bl	803f6b8 <_DelayMS>
                                 SW.runner.hazard = 0;
  802ae46:	4b3c      	ldr	r3, [pc, #240]	; (802af38 <StartKeylessTask+0x1a8>)
  802ae48:	2200      	movs	r2, #0
@@ -24278,7 +24278,7 @@ void StartKeylessTask(void *argument)
  802ae56:	f005 f97b 	bl	8030150 <HAL_GPIO_WritePin>
                                 _DelayMS(100);
  802ae5a:	2064      	movs	r0, #100	; 0x64
- 802ae5c:	f014 fc2e 	bl	803f6bc <_DelayMS>
+ 802ae5c:	f014 fc2c 	bl	803f6b8 <_DelayMS>
                             for (uint8_t i = 0; i < 2; i++) {
  802ae60:	7dfb      	ldrb	r3, [r7, #23]
  802ae62:	3301      	adds	r3, #1
@@ -24298,7 +24298,7 @@ void StartKeylessTask(void *argument)
  802ae7a:	f005 f969 	bl	8030150 <HAL_GPIO_WritePin>
                             _DelayMS(100);
  802ae7e:	2064      	movs	r0, #100	; 0x64
- 802ae80:	f014 fc1c 	bl	803f6bc <_DelayMS>
+ 802ae80:	f014 fc1a 	bl	803f6b8 <_DelayMS>
                             HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
  802ae84:	2200      	movs	r2, #0
  802ae86:	2101      	movs	r1, #1
@@ -24320,7 +24320,7 @@ void StartKeylessTask(void *argument)
  802ae9e:	75bb      	strb	r3, [r7, #22]
  802aea0:	e00c      	b.n	802aebc <StartKeylessTask+0x12c>
                         _LedToggle();
- 802aea2:	f014 fc2f 	bl	803f704 <_LedToggle>
+ 802aea2:	f014 fc2d 	bl	803f700 <_LedToggle>
 
                         _DelayMS((command + 1) * 50);
  802aea6:	7bfb      	ldrb	r3, [r7, #15]
@@ -24328,7 +24328,7 @@ void StartKeylessTask(void *argument)
  802aeaa:	2232      	movs	r2, #50	; 0x32
  802aeac:	fb02 f303 	mul.w	r3, r2, r3
  802aeb0:	4618      	mov	r0, r3
- 802aeb2:	f014 fc03 	bl	803f6bc <_DelayMS>
+ 802aeb2:	f014 fc01 	bl	803f6b8 <_DelayMS>
                     for (uint8_t i = 0; i < (command + 1); i++) {
  802aeb6:	7dbb      	ldrb	r3, [r7, #22]
  802aeb8:	3301      	adds	r3, #1
@@ -24341,7 +24341,7 @@ void StartKeylessTask(void *argument)
                     }
                     _LedWrite(0);
  802aec6:	2000      	movs	r0, #0
- 802aec8:	f014 fc0a 	bl	803f6e0 <_LedWrite>
+ 802aec8:	f014 fc08 	bl	803f6dc <_LedWrite>
                     osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
  802aecc:	4b1e      	ldr	r3, [pc, #120]	; (802af48 <StartKeylessTask+0x1b8>)
  802aece:	681b      	ldr	r3, [r3, #0]
@@ -24447,7 +24447,7 @@ void StartFingerTask(void *argument)
         // proceed event
         if (_RTOS_ValidThreadFlag(notif)) {
  802af7c:	6938      	ldr	r0, [r7, #16]
- 802af7e:	f014 fc01 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 802af7e:	f014 fbff 	bl	803f780 <_RTOS_ValidThreadFlag>
  802af82:	4603      	mov	r3, r0
  802af84:	2b00      	cmp	r3, #0
  802af86:	d0f2      	beq.n	802af6e <StartFingerTask+0x1e>
@@ -24502,7 +24502,7 @@ void StartFingerTask(void *argument)
                     // Handle bounce effect
                     _DelayMS(5000);
  802afe0:	f241 3088 	movw	r0, #5000	; 0x1388
- 802afe4:	f014 fb6a 	bl	803f6bc <_DelayMS>
+ 802afe4:	f014 fb68 	bl	803f6b8 <_DelayMS>
                 }
             }
 
@@ -24652,7 +24652,7 @@ void StartAudioTask(void *argument)
  802b0f6:	60f8      	str	r0, [r7, #12]
         if (_RTOS_ValidThreadFlag(notif)) {
  802b0f8:	68f8      	ldr	r0, [r7, #12]
- 802b0fa:	f014 fb43 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 802b0fa:	f014 fb41 	bl	803f780 <_RTOS_ValidThreadFlag>
  802b0fe:	4603      	mov	r3, r0
  802b100:	2b00      	cmp	r3, #0
  802b102:	d05c      	beq.n	802b1be <StartAudioTask+0xf6>
@@ -24674,7 +24674,7 @@ void StartAudioTask(void *argument)
  802b124:	f7fb fd00 	bl	8026b28 <AUDIO_BeepPlay>
                 _DelayMS(250);
  802b128:	20fa      	movs	r0, #250	; 0xfa
- 802b12a:	f014 fac7 	bl	803f6bc <_DelayMS>
+ 802b12a:	f014 fac5 	bl	803f6b8 <_DelayMS>
                 AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
  802b12e:	21fa      	movs	r1, #250	; 0xfa
  802b130:	200e      	movs	r0, #14
@@ -24803,14 +24803,14 @@ void StartSwitchTask(void *argument)
  802b21a:	60f8      	str	r0, [r7, #12]
         if (_RTOS_ValidThreadFlag(notif)) {
  802b21c:	68f8      	ldr	r0, [r7, #12]
- 802b21e:	f014 fab1 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 802b21e:	f014 faaf 	bl	803f780 <_RTOS_ValidThreadFlag>
  802b222:	4603      	mov	r3, r0
  802b224:	2b00      	cmp	r3, #0
  802b226:	d045      	beq.n	802b2b4 <StartSwitchTask+0xe0>
             // handle bounce effect
             _DelayMS(50);
  802b228:	2032      	movs	r0, #50	; 0x32
- 802b22a:	f014 fa47 	bl	803f6bc <_DelayMS>
+ 802b22a:	f014 fa45 	bl	803f6b8 <_DelayMS>
             osThreadFlagsClear(EVT_MASK);
  802b22e:	f06f 4000 	mvn.w	r0, #2147483648	; 0x80000000
  802b232:	f00c faff 	bl	8037834 <osThreadFlagsClear>
@@ -24935,7 +24935,7 @@ void StartCanRxTask(void *argument)
  802b2f0:	60f8      	str	r0, [r7, #12]
         if (_RTOS_ValidThreadFlag(notif)) {
  802b2f2:	68f8      	ldr	r0, [r7, #12]
- 802b2f4:	f014 fa46 	bl	803f784 <_RTOS_ValidThreadFlag>
+ 802b2f4:	f014 fa44 	bl	803f780 <_RTOS_ValidThreadFlag>
  802b2f8:	4603      	mov	r3, r0
  802b2fa:	2b00      	cmp	r3, #0
  802b2fc:	d029      	beq.n	802b352 <StartCanRxTask+0x86>
@@ -25034,14 +25034,14 @@ void StartCanTxTask(void *argument)
 
     /* Infinite loop */
     last500ms = _GetTickMS();
- 802b380:	f014 f9a7 	bl	803f6d2 <_GetTickMS>
+ 802b380:	f014 f9a5 	bl	803f6ce <_GetTickMS>
  802b384:	6178      	str	r0, [r7, #20]
     last1000ms = _GetTickMS();
- 802b386:	f014 f9a4 	bl	803f6d2 <_GetTickMS>
+ 802b386:	f014 f9a2 	bl	803f6ce <_GetTickMS>
  802b38a:	6138      	str	r0, [r7, #16]
     for (;;) {
         lastWake = _GetTickMS();
- 802b38c:	f014 f9a1 	bl	803f6d2 <_GetTickMS>
+ 802b38c:	f014 f99f 	bl	803f6ce <_GetTickMS>
  802b390:	60f8      	str	r0, [r7, #12]
 
         // Send CAN data
@@ -25060,7 +25060,7 @@ void StartCanTxTask(void *argument)
  802b3a0:	f5b3 7ffa 	cmp.w	r3, #500	; 0x1f4
  802b3a4:	d906      	bls.n	802b3b4 <StartCanTxTask+0x4c>
             last500ms = _GetTickMS();
- 802b3a6:	f014 f994 	bl	803f6d2 <_GetTickMS>
+ 802b3a6:	f014 f992 	bl	803f6ce <_GetTickMS>
  802b3aa:	6178      	str	r0, [r7, #20]
 
             VCU.can.t.MixedData(&(SW.runner));
@@ -25077,7 +25077,7 @@ void StartCanTxTask(void *argument)
  802b3ba:	f5b3 7f7a 	cmp.w	r3, #1000	; 0x3e8
  802b3be:	d90a      	bls.n	802b3d6 <StartCanTxTask+0x6e>
             last1000ms = _GetTickMS();
- 802b3c0:	f014 f987 	bl	803f6d2 <_GetTickMS>
+ 802b3c0:	f014 f985 	bl	803f6ce <_GetTickMS>
  802b3c4:	6138      	str	r0, [r7, #16]
 
             VCU.can.t.Datetime(&(VCU.d.rtc.timestamp));
@@ -25195,7 +25195,7 @@ void Error_Handler(void)
     /* User can add his own implementation to report the HAL error return state */
     _Error("Error Handler fired.");
  802b46c:	4802      	ldr	r0, [pc, #8]	; (802b478 <Error_Handler+0x10>)
- 802b46e:	f014 f955 	bl	803f71c <_Error>
+ 802b46e:	f014 f953 	bl	803f718 <_Error>
   /* USER CODE END Error_Handler_Debug */
 }
  802b472:	bf00      	nop
@@ -27083,7 +27083,7 @@ void NMI_Handler(void)
   /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
 	_Error("NMI_Handler.");
  802c014:	4802      	ldr	r0, [pc, #8]	; (802c020 <NMI_Handler+0x10>)
- 802c016:	f013 fb81 	bl	803f71c <_Error>
+ 802c016:	f013 fb7f 	bl	803f718 <_Error>
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
@@ -27107,7 +27107,7 @@ void HardFault_Handler(void)
   /* USER CODE BEGIN HardFault_IRQn 0 */
 	_Error("Hard fault interrupt.");
  802c028:	4801      	ldr	r0, [pc, #4]	; (802c030 <HardFault_Handler+0xc>)
- 802c02a:	f013 fb77 	bl	803f71c <_Error>
+ 802c02a:	f013 fb75 	bl	803f718 <_Error>
 
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -27126,7 +27126,7 @@ void MemManage_Handler(void)
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
 	_Error("Memory management fault.");
  802c038:	4801      	ldr	r0, [pc, #4]	; (802c040 <MemManage_Handler+0xc>)
- 802c03a:	f013 fb6f 	bl	803f71c <_Error>
+ 802c03a:	f013 fb6d 	bl	803f718 <_Error>
 
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
@@ -27145,7 +27145,7 @@ void BusFault_Handler(void)
   /* USER CODE BEGIN BusFault_IRQn 0 */
 	_Error("Pre-fetch fault, memory access fault.");
  802c048:	4801      	ldr	r0, [pc, #4]	; (802c050 <BusFault_Handler+0xc>)
- 802c04a:	f013 fb67 	bl	803f71c <_Error>
+ 802c04a:	f013 fb65 	bl	803f718 <_Error>
 
   /* USER CODE END BusFault_IRQn 0 */
   while (1)
@@ -27164,7 +27164,7 @@ void UsageFault_Handler(void)
   /* USER CODE BEGIN UsageFault_IRQn 0 */
 	_Error("Undefined instruction or illegal state.");
  802c058:	4801      	ldr	r0, [pc, #4]	; (802c060 <UsageFault_Handler+0xc>)
- 802c05a:	f013 fb5f 	bl	803f71c <_Error>
+ 802c05a:	f013 fb5d 	bl	803f718 <_Error>
 
   /* USER CODE END UsageFault_IRQn 0 */
   while (1)
@@ -27183,7 +27183,7 @@ void DebugMon_Handler(void)
   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
 	_Error("Debug monitor error.");
  802c068:	4802      	ldr	r0, [pc, #8]	; (802c074 <DebugMon_Handler+0x10>)
- 802c06a:	f013 fb57 	bl	803f71c <_Error>
+ 802c06a:	f013 fb55 	bl	803f718 <_Error>
 
   /* USER CODE END DebugMonitor_IRQn 0 */
   /* USER CODE BEGIN DebugMonitor_IRQn 1 */
@@ -27715,7 +27715,7 @@ caddr_t _sbrk(int incr)
  802c250:	d907      	bls.n	802c262 <_sbrk+0x3a>
 	{
 		errno = ENOMEM;
- 802c252:	f013 fb19 	bl	803f888 <__errno>
+ 802c252:	f013 fb17 	bl	803f884 <__errno>
  802c256:	4602      	mov	r2, r0
  802c258:	230c      	movs	r3, #12
  802c25a:	6013      	str	r3, [r2, #0]
@@ -27845,7 +27845,7 @@ LoopFillZerobss:
  802c2d6:	f7ff ffd3 	bl	802c280 <SystemInit>
 /* Call static constructors */
     bl __libc_init_array
- 802c2da:	f013 fadb 	bl	803f894 <__libc_init_array>
+ 802c2da:	f013 fad9 	bl	803f890 <__libc_init_array>
 /* Call the application's entry point.*/
   bl  main
  802c2de:	f7fd f9b3 	bl	8029648 <main>
@@ -65241,7 +65241,7 @@ UBaseType_t uxMessagesWaiting;
  8039454:	6c1b      	ldr	r3, [r3, #64]	; 0x40
  8039456:	461a      	mov	r2, r3
  8039458:	68b9      	ldr	r1, [r7, #8]
- 803945a:	f006 fa4e 	bl	803f8fa <memcpy>
+ 803945a:	f006 fa4c 	bl	803f8f6 <memcpy>
 		pxQueue->pcWriteTo += pxQueue->uxItemSize; /*lint !e9016 Pointer arithmetic on char types ok, especially in this use case where it is the clearest way of conveying intent. */
  803945e:	68fb      	ldr	r3, [r7, #12]
  8039460:	685a      	ldr	r2, [r3, #4]
@@ -65276,7 +65276,7 @@ UBaseType_t uxMessagesWaiting;
  8039488:	6c1b      	ldr	r3, [r3, #64]	; 0x40
  803948a:	461a      	mov	r2, r3
  803948c:	68b9      	ldr	r1, [r7, #8]
- 803948e:	f006 fa34 	bl	803f8fa <memcpy>
+ 803948e:	f006 fa32 	bl	803f8f6 <memcpy>
 		pxQueue->u.xQueue.pcReadFrom -= pxQueue->uxItemSize;
  8039492:	68fb      	ldr	r3, [r7, #12]
  8039494:	68da      	ldr	r2, [r3, #12]
@@ -65394,7 +65394,7 @@ static void prvCopyDataFromQueue( Queue_t * const pxQueue, void * const pvBuffer
  803951c:	6c1b      	ldr	r3, [r3, #64]	; 0x40
  803951e:	461a      	mov	r2, r3
  8039520:	6838      	ldr	r0, [r7, #0]
- 8039522:	f006 f9ea 	bl	803f8fa <memcpy>
+ 8039522:	f006 f9e8 	bl	803f8f6 <memcpy>
 	}
 }
  8039526:	bf00      	nop
@@ -66040,7 +66040,7 @@ BaseType_t xReturn;
  803983a:	009b      	lsls	r3, r3, #2
  803983c:	461a      	mov	r2, r3
  803983e:	21a5      	movs	r1, #165	; 0xa5
- 8039840:	f006 f866 	bl	803f910 <memset>
+ 8039840:	f006 f864 	bl	803f90c <memset>
 	grows from high memory to low (as per the 80x86) or vice versa.
 	portSTACK_GROWTH is used to make the result positive or negative as required
 	by the port. */
@@ -74857,7 +74857,7 @@ static void SIMCOM_Fill_Buffer(const void *data, size_t len) {
  803cf66:	683a      	ldr	r2, [r7, #0]
  803cf68:	6879      	ldr	r1, [r7, #4]
  803cf6a:	4618      	mov	r0, r3
- 803cf6c:	f002 fcc5 	bl	803f8fa <memcpy>
+ 803cf6c:	f002 fcc3 	bl	803f8f6 <memcpy>
     simcom_write += len;
  803cf70:	4b04      	ldr	r3, [pc, #16]	; (803cf84 <SIMCOM_Fill_Buffer+0x30>)
  803cf72:	681a      	ldr	r2, [r3, #0]
@@ -74885,7 +74885,7 @@ void SIMCOM_Reset_Buffer(void) {
  803cf94:	461a      	mov	r2, r3
  803cf96:	2100      	movs	r1, #0
  803cf98:	4804      	ldr	r0, [pc, #16]	; (803cfac <SIMCOM_Reset_Buffer+0x20>)
- 803cf9a:	f002 fcb9 	bl	803f910 <memset>
+ 803cf9a:	f002 fcb7 	bl	803f90c <memset>
     simcom_write = 0;
  803cf9e:	4b02      	ldr	r3, [pc, #8]	; (803cfa8 <SIMCOM_Reset_Buffer+0x1c>)
  803cfa0:	2200      	movs	r2, #0
@@ -74953,7 +74953,7 @@ SIMCOM_RESULT AT_CommandEchoMode(uint8_t state) {
  803cffc:	f107 0308 	add.w	r3, r7, #8
  803d000:	490a      	ldr	r1, [pc, #40]	; (803d02c <AT_CommandEchoMode+0x44>)
  803d002:	4618      	mov	r0, r3
- 803d004:	f002 fc8c 	bl	803f920 <siprintf>
+ 803d004:	f002 fc8a 	bl	803f91c <siprintf>
     p = AT_CmdWrite(cmd, 500, NULL);
  803d008:	f107 0308 	add.w	r3, r7, #8
  803d00c:	2200      	movs	r2, #0
@@ -75490,7 +75490,7 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
  803d484:	2208      	movs	r2, #8
  803d486:	6839      	ldr	r1, [r7, #0]
  803d488:	4618      	mov	r0, r3
- 803d48a:	f002 fa27 	bl	803f8dc <memcmp>
+ 803d48a:	f002 fa25 	bl	803f8d8 <memcmp>
  803d48e:	4603      	mov	r3, r0
  803d490:	2b00      	cmp	r3, #0
  803d492:	d028      	beq.n	803d4e6 <AT_RadioAccessTechnology+0x10a>
@@ -75505,7 +75505,7 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
  803d4a0:	685b      	ldr	r3, [r3, #4]
  803d4a2:	f107 0010 	add.w	r0, r7, #16
  803d4a6:	4916      	ldr	r1, [pc, #88]	; (803d500 <AT_RadioAccessTechnology+0x124>)
- 803d4a8:	f002 fa3a 	bl	803f920 <siprintf>
+ 803d4a8:	f002 fa38 	bl	803f91c <siprintf>
  803d4ac:	e007      	b.n	803d4be <AT_RadioAccessTechnology+0xe2>
                 } else {
                     sprintf(cmd, "AT+CNMP=%d\r", param->mode);
@@ -75514,7 +75514,7 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
  803d4b2:	f107 0310 	add.w	r3, r7, #16
  803d4b6:	4913      	ldr	r1, [pc, #76]	; (803d504 <AT_RadioAccessTechnology+0x128>)
  803d4b8:	4618      	mov	r0, r3
- 803d4ba:	f002 fa31 	bl	803f920 <siprintf>
+ 803d4ba:	f002 fa2f 	bl	803f91c <siprintf>
                 }
 
                 p = AT_CmdWrite(cmd, 10000, NULL);
@@ -75680,7 +75680,7 @@ SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param) {
  803d60e:	7a1b      	ldrb	r3, [r3, #8]
  803d610:	f107 0018 	add.w	r0, r7, #24
  803d614:	4911      	ldr	r1, [pc, #68]	; (803d65c <AT_NetworkAttachedStatus+0x154>)
- 803d616:	f002 f983 	bl	803f920 <siprintf>
+ 803d616:	f002 f981 	bl	803f91c <siprintf>
                 p = AT_CmdWrite(cmd, 500, NULL);
  803d61a:	f107 0318 	add.w	r3, r7, #24
  803d61e:	2200      	movs	r2, #0
@@ -75750,13 +75750,13 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
  803d694:	68fa      	ldr	r2, [r7, #12]
  803d696:	4937      	ldr	r1, [pc, #220]	; (803d774 <AT_NetworkRegistration+0x114>)
  803d698:	4618      	mov	r0, r3
- 803d69a:	f002 f941 	bl	803f920 <siprintf>
+ 803d69a:	f002 f93f 	bl	803f91c <siprintf>
     sprintf(res, "+%s: ", command);
  803d69e:	f107 0318 	add.w	r3, r7, #24
  803d6a2:	68fa      	ldr	r2, [r7, #12]
  803d6a4:	4934      	ldr	r1, [pc, #208]	; (803d778 <AT_NetworkRegistration+0x118>)
  803d6a6:	4618      	mov	r0, r3
- 803d6a8:	f002 f93a 	bl	803f920 <siprintf>
+ 803d6a8:	f002 f938 	bl	803f91c <siprintf>
     p = AT_CmdRead(cmd, 500, res, &str);
  803d6ac:	f107 0338 	add.w	r3, r7, #56	; 0x38
  803d6b0:	f107 0218 	add.w	r2, r7, #24
@@ -75807,7 +75807,7 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
  803d71a:	2208      	movs	r2, #8
  803d71c:	6879      	ldr	r1, [r7, #4]
  803d71e:	4618      	mov	r0, r3
- 803d720:	f002 f8dc 	bl	803f8dc <memcmp>
+ 803d720:	f002 f8da 	bl	803f8d8 <memcmp>
  803d724:	4603      	mov	r3, r0
  803d726:	2b00      	cmp	r3, #0
  803d728:	d01b      	beq.n	803d762 <AT_NetworkRegistration+0x102>
@@ -75817,7 +75817,7 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
  803d72e:	f107 0028 	add.w	r0, r7, #40	; 0x28
  803d732:	68fa      	ldr	r2, [r7, #12]
  803d734:	4911      	ldr	r1, [pc, #68]	; (803d77c <AT_NetworkRegistration+0x11c>)
- 803d736:	f002 f8f3 	bl	803f920 <siprintf>
+ 803d736:	f002 f8f1 	bl	803f91c <siprintf>
                 p = AT_CmdWrite(cmd, 500, NULL);
  803d73a:	f107 0328 	add.w	r3, r7, #40	; 0x28
  803d73e:	2200      	movs	r2, #0
@@ -76034,7 +76034,7 @@ SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
  803d8e4:	223c      	movs	r2, #60	; 0x3c
  803d8e6:	6839      	ldr	r1, [r7, #0]
  803d8e8:	4618      	mov	r0, r3
- 803d8ea:	f001 fff7 	bl	803f8dc <memcmp>
+ 803d8ea:	f001 fff5 	bl	803f8d8 <memcmp>
  803d8ee:	4603      	mov	r3, r0
  803d8f0:	2b00      	cmp	r3, #0
  803d8f2:	d030      	beq.n	803d956 <AT_ConfigureAPN+0x15e>
@@ -76050,7 +76050,7 @@ SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
  803d904:	9300      	str	r3, [sp, #0]
  803d906:	460b      	mov	r3, r1
  803d908:	4919      	ldr	r1, [pc, #100]	; (803d970 <AT_ConfigureAPN+0x178>)
- 803d90a:	f002 f809 	bl	803f920 <siprintf>
+ 803d90a:	f002 f807 	bl	803f91c <siprintf>
                 p = AT_CmdWrite(cmd, 1000, NULL);
  803d90e:	f107 0348 	add.w	r3, r7, #72	; 0x48
  803d912:	2200      	movs	r2, #0
@@ -76177,7 +76177,7 @@ SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
  803d9e8:	9300      	str	r3, [sp, #0]
  803d9ea:	460b      	mov	r3, r1
  803d9ec:	4919      	ldr	r1, [pc, #100]	; (803da54 <AT_StartConnectionSingle+0x8c>)
- 803d9ee:	f001 ff97 	bl	803f920 <siprintf>
+ 803d9ee:	f001 ff95 	bl	803f91c <siprintf>
     p = AT_CmdWrite(cmd, 30000, "CONNECT");
  803d9f2:	f107 030c 	add.w	r3, r7, #12
  803d9f6:	4a18      	ldr	r2, [pc, #96]	; (803da58 <AT_StartConnectionSingle+0x90>)
@@ -76307,7 +76307,7 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
  803dac6:	4663      	mov	r3, ip
  803dac8:	4632      	mov	r2, r6
  803daca:	4961      	ldr	r1, [pc, #388]	; (803dc50 <AT_Clock+0x1e8>)
- 803dacc:	f001 ff28 	bl	803f920 <siprintf>
+ 803dacc:	f001 ff26 	bl	803f91c <siprintf>
         p = AT_CmdWrite(cmd, 500, NULL);
  803dad0:	f107 0308 	add.w	r3, r7, #8
  803dad4:	2200      	movs	r2, #0
@@ -76693,13 +76693,13 @@ static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *v
  803dda8:	f107 0028 	add.w	r0, r7, #40	; 0x28
  803ddac:	68fa      	ldr	r2, [r7, #12]
  803ddae:	4926      	ldr	r1, [pc, #152]	; (803de48 <AT_SingleInteger+0xd4>)
- 803ddb0:	f001 fdb6 	bl	803f920 <siprintf>
+ 803ddb0:	f001 fdb4 	bl	803f91c <siprintf>
     sprintf(res, "+%s: ", command);
  803ddb4:	f107 0314 	add.w	r3, r7, #20
  803ddb8:	68fa      	ldr	r2, [r7, #12]
  803ddba:	4924      	ldr	r1, [pc, #144]	; (803de4c <AT_SingleInteger+0xd8>)
  803ddbc:	4618      	mov	r0, r3
- 803ddbe:	f001 fdaf 	bl	803f920 <siprintf>
+ 803ddbe:	f001 fdad 	bl	803f91c <siprintf>
     p = AT_CmdRead(cmd, 1000, res, &str);
  803ddc2:	f107 033c 	add.w	r3, r7, #60	; 0x3c
  803ddc6:	f107 0214 	add.w	r2, r7, #20
@@ -76736,7 +76736,7 @@ static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *v
  803de04:	f107 0028 	add.w	r0, r7, #40	; 0x28
  803de08:	68fa      	ldr	r2, [r7, #12]
  803de0a:	4911      	ldr	r1, [pc, #68]	; (803de50 <AT_SingleInteger+0xdc>)
- 803de0c:	f001 fd88 	bl	803f920 <siprintf>
+ 803de0c:	f001 fd86 	bl	803f91c <siprintf>
                 p = AT_CmdWrite(cmd, 500, NULL);
  803de10:	f107 0328 	add.w	r3, r7, #40	; 0x28
  803de14:	2200      	movs	r2, #0
@@ -77137,7 +77137,7 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
  803e05c:	2b00      	cmp	r3, #0
  803e05e:	d004      	beq.n	803e06a <CRC_Calculate8+0x4e>
  803e060:	69f8      	ldr	r0, [r7, #28]
- 803e062:	f001 fb6d 	bl	803f740 <_ByteSwap32>
+ 803e062:	f001 fb6b 	bl	803f73c <_ByteSwap32>
  803e066:	4603      	mov	r3, r0
  803e068:	e000      	b.n	803e06c <CRC_Calculate8+0x50>
  803e06a:	69fb      	ldr	r3, [r7, #28]
@@ -77200,7 +77200,7 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
  803e0c4:	2b00      	cmp	r3, #0
  803e0c6:	d004      	beq.n	803e0d2 <CRC_Calculate8+0xb6>
  803e0c8:	69f8      	ldr	r0, [r7, #28]
- 803e0ca:	f001 fb39 	bl	803f740 <_ByteSwap32>
+ 803e0ca:	f001 fb37 	bl	803f73c <_ByteSwap32>
  803e0ce:	4603      	mov	r3, r0
  803e0d0:	e000      	b.n	803e0d4 <CRC_Calculate8+0xb8>
  803e0d2:	69fb      	ldr	r3, [r7, #28]
@@ -77368,7 +77368,7 @@ uint8_t EEPROM24XX_Save(uint16_t Address, void *data, size_t size_of_data) {
 #endif
         _DelayMS(7);
  803e1b4:	2007      	movs	r0, #7
- 803e1b6:	f001 fa81 	bl	803f6bc <_DelayMS>
+ 803e1b6:	f001 fa7f 	bl	803f6b8 <_DelayMS>
         return 1;
  803e1ba:	2301      	movs	r3, #1
  803e1bc:	e000      	b.n	803e1c0 <EEPROM24XX_Save+0x48>
@@ -77447,7 +77447,7 @@ void LOG_Char(char ch) {
     uint32_t tick;
 
     tick = _GetTickMS();
- 803e222:	f001 fa56 	bl	803f6d2 <_GetTickMS>
+ 803e222:	f001 fa54 	bl	803f6ce <_GetTickMS>
  803e226:	60f8      	str	r0, [r7, #12]
     // wait if busy
     while (1) {
@@ -77456,7 +77456,7 @@ void LOG_Char(char ch) {
  803e22c:	681b      	ldr	r3, [r3, #0]
  803e22e:	2b00      	cmp	r3, #0
  803e230:	d10a      	bne.n	803e248 <LOG_Char+0x30>
- 803e232:	f001 fa4e 	bl	803f6d2 <_GetTickMS>
+ 803e232:	f001 fa4c 	bl	803f6ce <_GetTickMS>
  803e236:	4602      	mov	r2, r0
  803e238:	68fb      	ldr	r3, [r7, #12]
  803e23a:	1ad3      	subs	r3, r2, r3
@@ -77466,7 +77466,7 @@ void LOG_Char(char ch) {
         }
         _DelayMS(1);
  803e240:	2001      	movs	r0, #1
- 803e242:	f001 fa3b 	bl	803f6bc <_DelayMS>
+ 803e242:	f001 fa39 	bl	803f6b8 <_DelayMS>
         if (ITM->PORT[0].u32 != 0 || _GetTickMS() - tick >= 10) {
  803e246:	e7ef      	b.n	803e228 <LOG_Char+0x10>
     }
@@ -77920,7 +77920,7 @@ uint8_t EEPROM_Init(void) {
                 }
                 _DelayMS(50);
  803e4e8:	2032      	movs	r0, #50	; 0x32
- 803e4ea:	f001 f8e7 	bl	803f6bc <_DelayMS>
+ 803e4ea:	f001 f8e5 	bl	803f6b8 <_DelayMS>
             } while (retry--);
  803e4ee:	79fb      	ldrb	r3, [r7, #7]
  803e4f0:	1e5a      	subs	r2, r3, #1
@@ -78344,7 +78344,7 @@ static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void 
  803e756:	461a      	mov	r2, r3
  803e758:	68b9      	ldr	r1, [r7, #8]
  803e75a:	6878      	ldr	r0, [r7, #4]
- 803e75c:	f001 f8cd 	bl	803f8fa <memcpy>
+ 803e75c:	f001 f8cb 	bl	803f8f6 <memcpy>
         // save the value
         ret = EEPROM24XX_Save(vaddr, value, size);
  803e760:	8c3a      	ldrh	r2, [r7, #32]
@@ -78375,7 +78375,7 @@ static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void 
  803e78a:	461a      	mov	r2, r3
  803e78c:	68b9      	ldr	r1, [r7, #8]
  803e78e:	6878      	ldr	r0, [r7, #4]
- 803e790:	f001 f8b3 	bl	803f8fa <memcpy>
+ 803e790:	f001 f8b1 	bl	803f8f6 <memcpy>
         }
     }
 
@@ -78478,7 +78478,7 @@ char* Simcom_Response(char *str) {
     return strstr(SIMCOM_UART_RX, str);
  803e814:	6879      	ldr	r1, [r7, #4]
  803e816:	4804      	ldr	r0, [pc, #16]	; (803e828 <Simcom_Response+0x1c>)
- 803e818:	f001 f8b4 	bl	803f984 <strstr>
+ 803e818:	f001 f8b2 	bl	803f980 <strstr>
  803e81c:	4603      	mov	r3, r0
 }
  803e81e:	4618      	mov	r0, r3
@@ -78501,7 +78501,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
  803e838:	23ff      	movs	r3, #255	; 0xff
  803e83a:	f887 30bf 	strb.w	r3, [r7, #191]	; 0xbf
     uint32_t tick = _GetTickMS();
- 803e83e:	f000 ff48 	bl	803f6d2 <_GetTickMS>
+ 803e83e:	f000 ff46 	bl	803f6ce <_GetTickMS>
  803e842:	f8c7 00b8 	str.w	r0, [r7, #184]	; 0xb8
     static uint8_t init = 1;
     uint8_t depth = 3;
@@ -78519,7 +78519,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
  803e852:	683b      	ldr	r3, [r7, #0]
  803e854:	2b00      	cmp	r3, #0
  803e856:	d00c      	beq.n	803e872 <Simcom_SetState+0x46>
- 803e858:	f000 ff3b 	bl	803f6d2 <_GetTickMS>
+ 803e858:	f000 ff39 	bl	803f6ce <_GetTickMS>
  803e85c:	4602      	mov	r2, r0
  803e85e:	f8d7 30b8 	ldr.w	r3, [r7, #184]	; 0xb8
  803e862:	1ad3      	subs	r3, r2, r3
@@ -78646,7 +78646,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 // power up the module
                 p = Simcom_Power();
- 803e940:	f000 fdb2 	bl	803f4a8 <Simcom_Power>
+ 803e940:	f000 fdb0 	bl	803f4a4 <Simcom_Power>
  803e944:	4603      	mov	r3, r0
  803e946:	f887 30bd 	strb.w	r3, [r7, #189]	; 0xbd
                 // upgrade simcom state
@@ -78687,7 +78687,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 _DelayMS(500);
  803e986:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 803e98a:	f000 fe97 	bl	803f6bc <_DelayMS>
+ 803e98a:	f000 fe95 	bl	803f6b8 <_DelayMS>
                 break;
  803e98e:	e33d      	b.n	803f00c <Simcom_SetState+0x7e0>
             case SIM_STATE_READY:
@@ -78846,7 +78846,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 _DelayMS(500);
  803eaac:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 803eab0:	f000 fe04 	bl	803f6bc <_DelayMS>
+ 803eab0:	f000 fe02 	bl	803f6b8 <_DelayMS>
                 break;
  803eab4:	e2aa      	b.n	803f00c <Simcom_SetState+0x7e0>
             case SIM_STATE_CONFIGURED:
@@ -78914,7 +78914,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
  803eb20:	683b      	ldr	r3, [r7, #0]
  803eb22:	2b00      	cmp	r3, #0
  803eb24:	d00c      	beq.n	803eb40 <Simcom_SetState+0x314>
- 803eb26:	f000 fdd4 	bl	803f6d2 <_GetTickMS>
+ 803eb26:	f000 fdd2 	bl	803f6ce <_GetTickMS>
  803eb2a:	4602      	mov	r2, r0
  803eb2c:	f8d7 30b8 	ldr.w	r3, [r7, #184]	; 0xb8
  803eb30:	1ad3      	subs	r3, r2, r3
@@ -78929,7 +78929,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                         }
                         _DelayMS(1000);
  803eb40:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 803eb44:	f000 fdba 	bl	803f6bc <_DelayMS>
+ 803eb44:	f000 fdb8 	bl	803f6b8 <_DelayMS>
                     } while (p && read.stat != param.stat);
  803eb48:	f997 30bd 	ldrsb.w	r3, [r7, #189]	; 0xbd
  803eb4c:	2b00      	cmp	r3, #0
@@ -78958,7 +78958,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 _DelayMS(500);
  803eb76:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 803eb7a:	f000 fd9f 	bl	803f6bc <_DelayMS>
+ 803eb7a:	f000 fd9d 	bl	803f6b8 <_DelayMS>
                 break;
  803eb7e:	e245      	b.n	803f00c <Simcom_SetState+0x7e0>
  803eb80:	08043d04 	.word	0x08043d04
@@ -79018,7 +79018,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
  803ebf4:	683b      	ldr	r3, [r7, #0]
  803ebf6:	2b00      	cmp	r3, #0
  803ebf8:	d00c      	beq.n	803ec14 <Simcom_SetState+0x3e8>
- 803ebfa:	f000 fd6a 	bl	803f6d2 <_GetTickMS>
+ 803ebfa:	f000 fd68 	bl	803f6ce <_GetTickMS>
  803ebfe:	4602      	mov	r2, r0
  803ec00:	f8d7 30b8 	ldr.w	r3, [r7, #184]	; 0xb8
  803ec04:	1ad3      	subs	r3, r2, r3
@@ -79033,7 +79033,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                         }
                         _DelayMS(1000);
  803ec14:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 803ec18:	f000 fd50 	bl	803f6bc <_DelayMS>
+ 803ec18:	f000 fd4e 	bl	803f6b8 <_DelayMS>
                     } while (p && read.stat != param.stat);
  803ec1c:	f997 30bd 	ldrsb.w	r3, [r7, #189]	; 0xbd
  803ec20:	2b00      	cmp	r3, #0
@@ -79079,7 +79079,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 _DelayMS(500);
  803ec64:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 803ec68:	f000 fd28 	bl	803f6bc <_DelayMS>
+ 803ec68:	f000 fd26 	bl	803f6b8 <_DelayMS>
                 break;
  803ec6c:	e1ce      	b.n	803f00c <Simcom_SetState+0x7e0>
 #if (!BOOTLOADER)
@@ -79106,7 +79106,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
  803ec88:	683b      	ldr	r3, [r7, #0]
  803ec8a:	2b00      	cmp	r3, #0
  803ec8c:	d00c      	beq.n	803eca8 <Simcom_SetState+0x47c>
- 803ec8e:	f000 fd20 	bl	803f6d2 <_GetTickMS>
+ 803ec8e:	f000 fd1e 	bl	803f6ce <_GetTickMS>
  803ec92:	4602      	mov	r2, r0
  803ec94:	f8d7 30b8 	ldr.w	r3, [r7, #184]	; 0xb8
  803ec98:	1ad3      	subs	r3, r2, r3
@@ -79121,7 +79121,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                         }
                         _DelayMS(1000);
  803eca8:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 803ecac:	f000 fd06 	bl	803f6bc <_DelayMS>
+ 803ecac:	f000 fd04 	bl	803f6b8 <_DelayMS>
                     } while (p && !state);
  803ecb0:	f997 30bd 	ldrsb.w	r3, [r7, #189]	; 0xbd
  803ecb4:	2b00      	cmp	r3, #0
@@ -79216,7 +79216,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 _DelayMS(500);
  803ed50:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 803ed54:	f000 fcb2 	bl	803f6bc <_DelayMS>
+ 803ed54:	f000 fcb0 	bl	803f6b8 <_DelayMS>
                 break;
  803ed58:	e158      	b.n	803f00c <Simcom_SetState+0x7e0>
             case SIM_STATE_PDP_ON:
@@ -79380,7 +79380,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 _DelayMS(500);
  803ee82:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 803ee86:	f000 fc19 	bl	803f6bc <_DelayMS>
+ 803ee86:	f000 fc17 	bl	803f6b8 <_DelayMS>
                 break;
  803ee8a:	e0bf      	b.n	803f00c <Simcom_SetState+0x7e0>
  803ee8c:	08043da0 	.word	0x08043da0
@@ -79444,7 +79444,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
  803eefc:	683b      	ldr	r3, [r7, #0]
  803eefe:	2b00      	cmp	r3, #0
  803ef00:	d00c      	beq.n	803ef1c <Simcom_SetState+0x6f0>
- 803ef02:	f000 fbe6 	bl	803f6d2 <_GetTickMS>
+ 803ef02:	f000 fbe4 	bl	803f6ce <_GetTickMS>
  803ef06:	4602      	mov	r2, r0
  803ef08:	f8d7 30b8 	ldr.w	r3, [r7, #184]	; 0xb8
  803ef0c:	1ad3      	subs	r3, r2, r3
@@ -79459,7 +79459,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                         }
                         _DelayMS(1000);
  803ef1c:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 803ef20:	f000 fbcc 	bl	803f6bc <_DelayMS>
+ 803ef20:	f000 fbca 	bl	803f6b8 <_DelayMS>
                     } while (SIM.ip_status == CIPSTAT_CONNECTING);
  803ef24:	4b46      	ldr	r3, [pc, #280]	; (803f040 <Simcom_SetState+0x814>)
  803ef26:	e9d3 3402 	ldrd	r3, r4, [r3, #8]
@@ -79518,7 +79518,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
  803ef7c:	683b      	ldr	r3, [r7, #0]
  803ef7e:	2b00      	cmp	r3, #0
  803ef80:	d00c      	beq.n	803ef9c <Simcom_SetState+0x770>
- 803ef82:	f000 fba6 	bl	803f6d2 <_GetTickMS>
+ 803ef82:	f000 fba4 	bl	803f6ce <_GetTickMS>
  803ef86:	4602      	mov	r2, r0
  803ef88:	f8d7 30b8 	ldr.w	r3, [r7, #184]	; 0xb8
  803ef8c:	1ad3      	subs	r3, r2, r3
@@ -79533,7 +79533,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                             }
                             _DelayMS(1000);
  803ef9c:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 803efa0:	f000 fb8c 	bl	803f6bc <_DelayMS>
+ 803efa0:	f000 fb8a 	bl	803f6b8 <_DelayMS>
                         } while (SIM.ip_status == CIPSTAT_CLOSING);
  803efa4:	4b26      	ldr	r3, [pc, #152]	; (803f040 <Simcom_SetState+0x814>)
  803efa6:	e9d3 3402 	ldrd	r3, r4, [r3, #8]
@@ -79562,7 +79562,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
                 _DelayMS(500);
  803efce:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
- 803efd2:	f000 fb73 	bl	803f6bc <_DelayMS>
+ 803efd2:	f000 fb71 	bl	803f6b8 <_DelayMS>
                 break;
  803efd6:	e019      	b.n	803f00c <Simcom_SetState+0x7e0>
             case SIM_STATE_SERVER_ON:
@@ -79661,7 +79661,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
  803f06e:	f107 0308 	add.w	r3, r7, #8
  803f072:	4944      	ldr	r1, [pc, #272]	; (803f184 <Simcom_Upload+0x134>)
  803f074:	4618      	mov	r0, r3
- 803f076:	f000 fc53 	bl	803f920 <siprintf>
+ 803f076:	f000 fc51 	bl	803f91c <siprintf>
 
     Simcom_Lock();
  803f07a:	f7ff fbad 	bl	803e7d8 <Simcom_Lock>
@@ -79706,7 +79706,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
  803f0ce:	dd4e      	ble.n	803f16e <Simcom_Upload+0x11e>
                 // set timeout guard
                 tick = _GetTickMS();
- 803f0d0:	f000 faff 	bl	803f6d2 <_GetTickMS>
+ 803f0d0:	f000 fafd 	bl	803f6ce <_GetTickMS>
  803f0d4:	61f8      	str	r0, [r7, #28]
                 // wait ACK for payload
                 while (SIM.state >= SIM_STATE_SERVER_ON) {
@@ -79730,7 +79730,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
  803f0f8:	2b00      	cmp	r3, #0
  803f0fa:	d110      	bne.n	803f11e <Simcom_Upload+0xce>
                             || (_GetTickMS() - tick) >= 10000) {
- 803f0fc:	f000 fae9 	bl	803f6d2 <_GetTickMS>
+ 803f0fc:	f000 fae7 	bl	803f6ce <_GetTickMS>
  803f100:	4602      	mov	r2, r0
  803f102:	69fb      	ldr	r3, [r7, #28]
  803f104:	1ad3      	subs	r3, r2, r3
@@ -79741,7 +79741,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
                     }
                     _DelayMS(10);
  803f10e:	200a      	movs	r0, #10
- 803f110:	f000 fad4 	bl	803f6bc <_DelayMS>
+ 803f110:	f000 fad2 	bl	803f6b8 <_DelayMS>
                 while (SIM.state >= SIM_STATE_SERVER_ON) {
  803f114:	4b1c      	ldr	r3, [pc, #112]	; (803f188 <Simcom_Upload+0x138>)
  803f116:	f993 3000 	ldrsb.w	r3, [r3]
@@ -79909,7 +79909,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
  803f218:	68bb      	ldr	r3, [r7, #8]
  803f21a:	687a      	ldr	r2, [r7, #4]
  803f21c:	68f8      	ldr	r0, [r7, #12]
- 803f21e:	f000 f98b 	bl	803f538 <Simcom_Execute>
+ 803f21e:	f000 f989 	bl	803f534 <Simcom_Execute>
  803f222:	4603      	mov	r3, r0
  803f224:	75fb      	strb	r3, [r7, #23]
 
@@ -79925,7 +79925,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
  803f232:	461a      	mov	r2, r3
  803f234:	6939      	ldr	r1, [r7, #16]
  803f236:	68f8      	ldr	r0, [r7, #12]
- 803f238:	f000 fb92 	bl	803f960 <strncmp>
+ 803f238:	f000 fb90 	bl	803f95c <strncmp>
  803f23c:	4603      	mov	r3, r0
  803f23e:	2b00      	cmp	r3, #0
  803f240:	d006      	beq.n	803f250 <Simcom_Command+0xb0>
@@ -80062,7 +80062,7 @@ static SIMCOM_RESULT Simcom_ProcessCommando(command_t *command) {
  803f314:	3305      	adds	r3, #5
  803f316:	491c      	ldr	r1, [pc, #112]	; (803f388 <Simcom_ProcessCommando+0xa4>)
  803f318:	4618      	mov	r0, r3
- 803f31a:	f000 fb33 	bl	803f984 <strstr>
+ 803f31a:	f000 fb31 	bl	803f980 <strstr>
  803f31e:	6138      	str	r0, [r7, #16]
  803f320:	e003      	b.n	803f32a <Simcom_ProcessCommando+0x46>
         } else {
@@ -80246,7 +80246,7 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 #if (!BOOTLOADER)
     // save event
     VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
- 803f426:	4b1b      	ldr	r3, [pc, #108]	; (803f494 <Simcom_Ready+0x74>)
+ 803f426:	4b1a      	ldr	r3, [pc, #104]	; (803f490 <Simcom_Ready+0x70>)
  803f428:	6ddb      	ldr	r3, [r3, #92]	; 0x5c
  803f42a:	2201      	movs	r2, #1
  803f42c:	f04f 0001 	mov.w	r0, #1
@@ -80256,880 +80256,880 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 
     // wait until 1s response
     tick = _GetTickMS();
- 803f436:	f000 f94c 	bl	803f6d2 <_GetTickMS>
+ 803f436:	f000 f94a 	bl	803f6ce <_GetTickMS>
  803f43a:	6078      	str	r0, [r7, #4]
     while (SIM.state == SIM_STATE_DOWN) {
- 803f43c:	e017      	b.n	803f46e <Simcom_Ready+0x4e>
+ 803f43c:	e016      	b.n	803f46c <Simcom_Ready+0x4c>
         if (Simcom_Response(SIMCOM_RSP_READY)
- 803f43e:	4816      	ldr	r0, [pc, #88]	; (803f498 <Simcom_Ready+0x78>)
+ 803f43e:	4815      	ldr	r0, [pc, #84]	; (803f494 <Simcom_Ready+0x74>)
  803f440:	f7ff f9e4 	bl	803e80c <Simcom_Response>
  803f444:	4603      	mov	r3, r0
  803f446:	2b00      	cmp	r3, #0
- 803f448:	d117      	bne.n	803f47a <Simcom_Ready+0x5a>
+ 803f448:	d116      	bne.n	803f478 <Simcom_Ready+0x58>
                 || Simcom_Response(SIMCOM_RSP_OK)
- 803f44a:	4814      	ldr	r0, [pc, #80]	; (803f49c <Simcom_Ready+0x7c>)
+ 803f44a:	4813      	ldr	r0, [pc, #76]	; (803f498 <Simcom_Ready+0x78>)
  803f44c:	f7ff f9de 	bl	803e80c <Simcom_Response>
  803f450:	4603      	mov	r3, r0
  803f452:	2b00      	cmp	r3, #0
- 803f454:	d111      	bne.n	803f47a <Simcom_Ready+0x5a>
+ 803f454:	d110      	bne.n	803f478 <Simcom_Ready+0x58>
                 || (_GetTickMS() - tick) >= NET_BOOT_TIMEOUT) {
- 803f456:	f000 f93c 	bl	803f6d2 <_GetTickMS>
+ 803f456:	f000 f93a 	bl	803f6ce <_GetTickMS>
  803f45a:	4602      	mov	r2, r0
  803f45c:	687b      	ldr	r3, [r7, #4]
  803f45e:	1ad3      	subs	r3, r2, r3
- 803f460:	f242 720f 	movw	r2, #9999	; 0x270f
- 803f464:	4293      	cmp	r3, r2
- 803f466:	d808      	bhi.n	803f47a <Simcom_Ready+0x5a>
+ 803f460:	f5b3 5ffa 	cmp.w	r3, #8000	; 0x1f40
+ 803f464:	d208      	bcs.n	803f478 <Simcom_Ready+0x58>
             break;
         }
         _DelayMS(1);
- 803f468:	2001      	movs	r0, #1
- 803f46a:	f000 f927 	bl	803f6bc <_DelayMS>
+ 803f466:	2001      	movs	r0, #1
+ 803f468:	f000 f926 	bl	803f6b8 <_DelayMS>
     while (SIM.state == SIM_STATE_DOWN) {
- 803f46e:	4b0c      	ldr	r3, [pc, #48]	; (803f4a0 <Simcom_Ready+0x80>)
- 803f470:	f993 3000 	ldrsb.w	r3, [r3]
- 803f474:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
- 803f478:	d0e1      	beq.n	803f43e <Simcom_Ready+0x1e>
+ 803f46c:	4b0b      	ldr	r3, [pc, #44]	; (803f49c <Simcom_Ready+0x7c>)
+ 803f46e:	f993 3000 	ldrsb.w	r3, [r3]
+ 803f472:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 803f476:	d0e2      	beq.n	803f43e <Simcom_Ready+0x1e>
     }
 
     // check
     return Simcom_Command(SIMCOM_CMD_BOOT, SIMCOM_RSP_READY, 1000, 0);
- 803f47a:	2300      	movs	r3, #0
- 803f47c:	f44f 727a 	mov.w	r2, #1000	; 0x3e8
- 803f480:	4905      	ldr	r1, [pc, #20]	; (803f498 <Simcom_Ready+0x78>)
- 803f482:	4808      	ldr	r0, [pc, #32]	; (803f4a4 <Simcom_Ready+0x84>)
- 803f484:	f7ff fe8c 	bl	803f1a0 <Simcom_Command>
- 803f488:	4603      	mov	r3, r0
+ 803f478:	2300      	movs	r3, #0
+ 803f47a:	f44f 727a 	mov.w	r2, #1000	; 0x3e8
+ 803f47e:	4905      	ldr	r1, [pc, #20]	; (803f494 <Simcom_Ready+0x74>)
+ 803f480:	4807      	ldr	r0, [pc, #28]	; (803f4a0 <Simcom_Ready+0x80>)
+ 803f482:	f7ff fe8d 	bl	803f1a0 <Simcom_Command>
+ 803f486:	4603      	mov	r3, r0
 }
- 803f48a:	4618      	mov	r0, r3
- 803f48c:	3708      	adds	r7, #8
- 803f48e:	46bd      	mov	sp, r7
- 803f490:	bd80      	pop	{r7, pc}
- 803f492:	bf00      	nop
- 803f494:	20000228 	.word	0x20000228
- 803f498:	08043e9c 	.word	0x08043e9c
- 803f49c:	08043e64 	.word	0x08043e64
- 803f4a0:	200002a8 	.word	0x200002a8
- 803f4a4:	08043e68 	.word	0x08043e68
+ 803f488:	4618      	mov	r0, r3
+ 803f48a:	3708      	adds	r7, #8
+ 803f48c:	46bd      	mov	sp, r7
+ 803f48e:	bd80      	pop	{r7, pc}
+ 803f490:	20000228 	.word	0x20000228
+ 803f494:	08043e9c 	.word	0x08043e9c
+ 803f498:	08043e64 	.word	0x08043e64
+ 803f49c:	200002a8 	.word	0x200002a8
+ 803f4a0:	08043e68 	.word	0x08043e68
 
-0803f4a8 <Simcom_Power>:
+0803f4a4 <Simcom_Power>:
 
 static SIMCOM_RESULT Simcom_Power(void) {
- 803f4a8:	b580      	push	{r7, lr}
- 803f4aa:	af00      	add	r7, sp, #0
+ 803f4a4:	b580      	push	{r7, lr}
+ 803f4a6:	af00      	add	r7, sp, #0
     LOG_StrLn("Simcom:Powered");
- 803f4ac:	4814      	ldr	r0, [pc, #80]	; (803f500 <Simcom_Power+0x58>)
- 803f4ae:	f7fe ff65 	bl	803e37c <LOG_StrLn>
+ 803f4a8:	4814      	ldr	r0, [pc, #80]	; (803f4fc <Simcom_Power+0x58>)
+ 803f4aa:	f7fe ff67 	bl	803e37c <LOG_StrLn>
     // reset buffer
     SIMCOM_Reset_Buffer();
- 803f4b2:	f7fd fd6b 	bl	803cf8c <SIMCOM_Reset_Buffer>
+ 803f4ae:	f7fd fd6d 	bl	803cf8c <SIMCOM_Reset_Buffer>
 
     // power control
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
- 803f4b6:	2200      	movs	r2, #0
- 803f4b8:	2101      	movs	r1, #1
- 803f4ba:	4812      	ldr	r0, [pc, #72]	; (803f504 <Simcom_Power+0x5c>)
- 803f4bc:	f7f0 fe48 	bl	8030150 <HAL_GPIO_WritePin>
+ 803f4b2:	2200      	movs	r2, #0
+ 803f4b4:	2101      	movs	r1, #1
+ 803f4b6:	4812      	ldr	r0, [pc, #72]	; (803f500 <Simcom_Power+0x5c>)
+ 803f4b8:	f7f0 fe4a 	bl	8030150 <HAL_GPIO_WritePin>
     _DelayMS(100);
- 803f4c0:	2064      	movs	r0, #100	; 0x64
- 803f4c2:	f000 f8fb 	bl	803f6bc <_DelayMS>
+ 803f4bc:	2064      	movs	r0, #100	; 0x64
+ 803f4be:	f000 f8fb 	bl	803f6b8 <_DelayMS>
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
- 803f4c6:	2201      	movs	r2, #1
- 803f4c8:	2101      	movs	r1, #1
- 803f4ca:	480e      	ldr	r0, [pc, #56]	; (803f504 <Simcom_Power+0x5c>)
- 803f4cc:	f7f0 fe40 	bl	8030150 <HAL_GPIO_WritePin>
+ 803f4c2:	2201      	movs	r2, #1
+ 803f4c4:	2101      	movs	r1, #1
+ 803f4c6:	480e      	ldr	r0, [pc, #56]	; (803f500 <Simcom_Power+0x5c>)
+ 803f4c8:	f7f0 fe42 	bl	8030150 <HAL_GPIO_WritePin>
     _DelayMS(1000);
- 803f4d0:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
- 803f4d4:	f000 f8f2 	bl	803f6bc <_DelayMS>
+ 803f4cc:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
+ 803f4d0:	f000 f8f2 	bl	803f6b8 <_DelayMS>
 
     // simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
- 803f4d8:	2201      	movs	r2, #1
- 803f4da:	f44f 4180 	mov.w	r1, #16384	; 0x4000
- 803f4de:	480a      	ldr	r0, [pc, #40]	; (803f508 <Simcom_Power+0x60>)
- 803f4e0:	f7f0 fe36 	bl	8030150 <HAL_GPIO_WritePin>
+ 803f4d4:	2201      	movs	r2, #1
+ 803f4d6:	f44f 4180 	mov.w	r1, #16384	; 0x4000
+ 803f4da:	480a      	ldr	r0, [pc, #40]	; (803f504 <Simcom_Power+0x60>)
+ 803f4dc:	f7f0 fe38 	bl	8030150 <HAL_GPIO_WritePin>
     HAL_Delay(1);
- 803f4e4:	2001      	movs	r0, #1
- 803f4e6:	f7ec ff4d 	bl	802c384 <HAL_Delay>
+ 803f4e0:	2001      	movs	r0, #1
+ 803f4e2:	f7ec ff4f 	bl	802c384 <HAL_Delay>
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
- 803f4ea:	2200      	movs	r2, #0
- 803f4ec:	f44f 4180 	mov.w	r1, #16384	; 0x4000
- 803f4f0:	4805      	ldr	r0, [pc, #20]	; (803f508 <Simcom_Power+0x60>)
- 803f4f2:	f7f0 fe2d 	bl	8030150 <HAL_GPIO_WritePin>
+ 803f4e6:	2200      	movs	r2, #0
+ 803f4e8:	f44f 4180 	mov.w	r1, #16384	; 0x4000
+ 803f4ec:	4805      	ldr	r0, [pc, #20]	; (803f504 <Simcom_Power+0x60>)
+ 803f4ee:	f7f0 fe2f 	bl	8030150 <HAL_GPIO_WritePin>
 
     // wait response
     return Simcom_Ready();
- 803f4f6:	f7ff ff93 	bl	803f420 <Simcom_Ready>
- 803f4fa:	4603      	mov	r3, r0
+ 803f4f2:	f7ff ff95 	bl	803f420 <Simcom_Ready>
+ 803f4f6:	4603      	mov	r3, r0
 }
- 803f4fc:	4618      	mov	r0, r3
- 803f4fe:	bd80      	pop	{r7, pc}
- 803f500:	08043ea0 	.word	0x08043ea0
- 803f504:	40020800 	.word	0x40020800
- 803f508:	40020400 	.word	0x40020400
+ 803f4f8:	4618      	mov	r0, r3
+ 803f4fa:	bd80      	pop	{r7, pc}
+ 803f4fc:	08043ea0 	.word	0x08043ea0
+ 803f500:	40020800 	.word	0x40020800
+ 803f504:	40020400 	.word	0x40020400
 
-0803f50c <Simcom_Sleep>:
+0803f508 <Simcom_Sleep>:
 
 static void Simcom_Sleep(uint8_t state) {
- 803f50c:	b580      	push	{r7, lr}
- 803f50e:	b082      	sub	sp, #8
- 803f510:	af00      	add	r7, sp, #0
- 803f512:	4603      	mov	r3, r0
- 803f514:	71fb      	strb	r3, [r7, #7]
+ 803f508:	b580      	push	{r7, lr}
+ 803f50a:	b082      	sub	sp, #8
+ 803f50c:	af00      	add	r7, sp, #0
+ 803f50e:	4603      	mov	r3, r0
+ 803f510:	71fb      	strb	r3, [r7, #7]
     HAL_GPIO_WritePin(INT_NET_DTR_GPIO_Port, INT_NET_DTR_Pin, state);
- 803f516:	79fb      	ldrb	r3, [r7, #7]
- 803f518:	461a      	mov	r2, r3
- 803f51a:	f44f 4100 	mov.w	r1, #32768	; 0x8000
- 803f51e:	4805      	ldr	r0, [pc, #20]	; (803f534 <Simcom_Sleep+0x28>)
- 803f520:	f7f0 fe16 	bl	8030150 <HAL_GPIO_WritePin>
+ 803f512:	79fb      	ldrb	r3, [r7, #7]
+ 803f514:	461a      	mov	r2, r3
+ 803f516:	f44f 4100 	mov.w	r1, #32768	; 0x8000
+ 803f51a:	4805      	ldr	r0, [pc, #20]	; (803f530 <Simcom_Sleep+0x28>)
+ 803f51c:	f7f0 fe18 	bl	8030150 <HAL_GPIO_WritePin>
     _DelayMS(50);
- 803f524:	2032      	movs	r0, #50	; 0x32
- 803f526:	f000 f8c9 	bl	803f6bc <_DelayMS>
+ 803f520:	2032      	movs	r0, #50	; 0x32
+ 803f522:	f000 f8c9 	bl	803f6b8 <_DelayMS>
 }
- 803f52a:	bf00      	nop
- 803f52c:	3708      	adds	r7, #8
- 803f52e:	46bd      	mov	sp, r7
- 803f530:	bd80      	pop	{r7, pc}
- 803f532:	bf00      	nop
- 803f534:	40020400 	.word	0x40020400
+ 803f526:	bf00      	nop
+ 803f528:	3708      	adds	r7, #8
+ 803f52a:	46bd      	mov	sp, r7
+ 803f52c:	bd80      	pop	{r7, pc}
+ 803f52e:	bf00      	nop
+ 803f530:	40020400 	.word	0x40020400
 
-0803f538 <Simcom_Execute>:
+0803f534 <Simcom_Execute>:
 
 static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char *res) {
- 803f538:	b580      	push	{r7, lr}
- 803f53a:	b088      	sub	sp, #32
- 803f53c:	af00      	add	r7, sp, #0
- 803f53e:	60f8      	str	r0, [r7, #12]
- 803f540:	607a      	str	r2, [r7, #4]
- 803f542:	603b      	str	r3, [r7, #0]
- 803f544:	460b      	mov	r3, r1
- 803f546:	817b      	strh	r3, [r7, #10]
+ 803f534:	b580      	push	{r7, lr}
+ 803f536:	b088      	sub	sp, #32
+ 803f538:	af00      	add	r7, sp, #0
+ 803f53a:	60f8      	str	r0, [r7, #12]
+ 803f53c:	607a      	str	r2, [r7, #4]
+ 803f53e:	603b      	str	r3, [r7, #0]
+ 803f540:	460b      	mov	r3, r1
+ 803f542:	817b      	strh	r3, [r7, #10]
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
- 803f548:	2300      	movs	r3, #0
- 803f54a:	77fb      	strb	r3, [r7, #31]
+ 803f544:	2300      	movs	r3, #0
+ 803f546:	77fb      	strb	r3, [r7, #31]
     uint32_t tick, timeout = 0;
- 803f54c:	2300      	movs	r3, #0
- 803f54e:	61bb      	str	r3, [r7, #24]
+ 803f548:	2300      	movs	r3, #0
+ 803f54a:	61bb      	str	r3, [r7, #24]
 
     Simcom_Lock();
- 803f550:	f7ff f942 	bl	803e7d8 <Simcom_Lock>
+ 803f54c:	f7ff f944 	bl	803e7d8 <Simcom_Lock>
     // wake-up the SIMCOM
     Simcom_Sleep(0);
- 803f554:	2000      	movs	r0, #0
- 803f556:	f7ff ffd9 	bl	803f50c <Simcom_Sleep>
+ 803f550:	2000      	movs	r0, #0
+ 803f552:	f7ff ffd9 	bl	803f508 <Simcom_Sleep>
 
     // transmit to serial (low-level)
     Simcom_BeforeTransmitHook();
- 803f55a:	f000 f897 	bl	803f68c <Simcom_BeforeTransmitHook>
+ 803f556:	f000 f897 	bl	803f688 <Simcom_BeforeTransmitHook>
     SIMCOM_Transmit(data, size);
- 803f55e:	897b      	ldrh	r3, [r7, #10]
- 803f560:	4619      	mov	r1, r3
- 803f562:	68f8      	ldr	r0, [r7, #12]
- 803f564:	f7fd fd24 	bl	803cfb0 <SIMCOM_Transmit>
+ 803f55a:	897b      	ldrh	r3, [r7, #10]
+ 803f55c:	4619      	mov	r1, r3
+ 803f55e:	68f8      	ldr	r0, [r7, #12]
+ 803f560:	f7fd fd26 	bl	803cfb0 <SIMCOM_Transmit>
 
     // convert time to tick
     timeout = (ms + NET_EXTRA_TIME);
- 803f568:	687b      	ldr	r3, [r7, #4]
- 803f56a:	f503 737a 	add.w	r3, r3, #1000	; 0x3e8
- 803f56e:	61bb      	str	r3, [r7, #24]
+ 803f564:	687b      	ldr	r3, [r7, #4]
+ 803f566:	f503 737a 	add.w	r3, r3, #1000	; 0x3e8
+ 803f56a:	61bb      	str	r3, [r7, #24]
     // set timeout guard
     tick = _GetTickMS();
- 803f570:	f000 f8af 	bl	803f6d2 <_GetTickMS>
- 803f574:	6178      	str	r0, [r7, #20]
+ 803f56c:	f000 f8af 	bl	803f6ce <_GetTickMS>
+ 803f570:	6178      	str	r0, [r7, #20]
 
     // wait response from SIMCOM
     while (1) {
         if (Simcom_Response(res)
- 803f576:	6838      	ldr	r0, [r7, #0]
- 803f578:	f7ff f948 	bl	803e80c <Simcom_Response>
- 803f57c:	4603      	mov	r3, r0
- 803f57e:	2b00      	cmp	r3, #0
- 803f580:	d118      	bne.n	803f5b4 <Simcom_Execute+0x7c>
+ 803f572:	6838      	ldr	r0, [r7, #0]
+ 803f574:	f7ff f94a 	bl	803e80c <Simcom_Response>
+ 803f578:	4603      	mov	r3, r0
+ 803f57a:	2b00      	cmp	r3, #0
+ 803f57c:	d118      	bne.n	803f5b0 <Simcom_Execute+0x7c>
                 || Simcom_Response(SIMCOM_RSP_ERROR)
- 803f582:	483a      	ldr	r0, [pc, #232]	; (803f66c <Simcom_Execute+0x134>)
- 803f584:	f7ff f942 	bl	803e80c <Simcom_Response>
- 803f588:	4603      	mov	r3, r0
- 803f58a:	2b00      	cmp	r3, #0
- 803f58c:	d112      	bne.n	803f5b4 <Simcom_Execute+0x7c>
+ 803f57e:	483a      	ldr	r0, [pc, #232]	; (803f668 <Simcom_Execute+0x134>)
+ 803f580:	f7ff f944 	bl	803e80c <Simcom_Response>
+ 803f584:	4603      	mov	r3, r0
+ 803f586:	2b00      	cmp	r3, #0
+ 803f588:	d112      	bne.n	803f5b0 <Simcom_Execute+0x7c>
                 || Simcom_Response(SIMCOM_RSP_READY)
- 803f58e:	4838      	ldr	r0, [pc, #224]	; (803f670 <Simcom_Execute+0x138>)
- 803f590:	f7ff f93c 	bl	803e80c <Simcom_Response>
- 803f594:	4603      	mov	r3, r0
- 803f596:	2b00      	cmp	r3, #0
- 803f598:	d10c      	bne.n	803f5b4 <Simcom_Execute+0x7c>
+ 803f58a:	4838      	ldr	r0, [pc, #224]	; (803f66c <Simcom_Execute+0x138>)
+ 803f58c:	f7ff f93e 	bl	803e80c <Simcom_Response>
+ 803f590:	4603      	mov	r3, r0
+ 803f592:	2b00      	cmp	r3, #0
+ 803f594:	d10c      	bne.n	803f5b0 <Simcom_Execute+0x7c>
                 #if (!BOOTLOADER)
                 || Simcom_CommandoIRQ()
- 803f59a:	f7ff ff31 	bl	803f400 <Simcom_CommandoIRQ>
- 803f59e:	4603      	mov	r3, r0
- 803f5a0:	2b00      	cmp	r3, #0
- 803f5a2:	d107      	bne.n	803f5b4 <Simcom_Execute+0x7c>
+ 803f596:	f7ff ff33 	bl	803f400 <Simcom_CommandoIRQ>
+ 803f59a:	4603      	mov	r3, r0
+ 803f59c:	2b00      	cmp	r3, #0
+ 803f59e:	d107      	bne.n	803f5b0 <Simcom_Execute+0x7c>
                 #endif
                 || (_GetTickMS() - tick) >= timeout) {
- 803f5a4:	f000 f895 	bl	803f6d2 <_GetTickMS>
- 803f5a8:	4602      	mov	r2, r0
- 803f5aa:	697b      	ldr	r3, [r7, #20]
- 803f5ac:	1ad3      	subs	r3, r2, r3
- 803f5ae:	69ba      	ldr	r2, [r7, #24]
- 803f5b0:	429a      	cmp	r2, r3
- 803f5b2:	d84a      	bhi.n	803f64a <Simcom_Execute+0x112>
+ 803f5a0:	f000 f895 	bl	803f6ce <_GetTickMS>
+ 803f5a4:	4602      	mov	r2, r0
+ 803f5a6:	697b      	ldr	r3, [r7, #20]
+ 803f5a8:	1ad3      	subs	r3, r2, r3
+ 803f5aa:	69ba      	ldr	r2, [r7, #24]
+ 803f5ac:	429a      	cmp	r2, r3
+ 803f5ae:	d84a      	bhi.n	803f646 <Simcom_Execute+0x112>
 
             // check response
             if (Simcom_Response(res)) {
- 803f5b4:	6838      	ldr	r0, [r7, #0]
- 803f5b6:	f7ff f929 	bl	803e80c <Simcom_Response>
- 803f5ba:	4603      	mov	r3, r0
- 803f5bc:	2b00      	cmp	r3, #0
- 803f5be:	d001      	beq.n	803f5c4 <Simcom_Execute+0x8c>
+ 803f5b0:	6838      	ldr	r0, [r7, #0]
+ 803f5b2:	f7ff f92b 	bl	803e80c <Simcom_Response>
+ 803f5b6:	4603      	mov	r3, r0
+ 803f5b8:	2b00      	cmp	r3, #0
+ 803f5ba:	d001      	beq.n	803f5c0 <Simcom_Execute+0x8c>
                 p = SIM_RESULT_OK;
- 803f5c0:	2301      	movs	r3, #1
- 803f5c2:	77fb      	strb	r3, [r7, #31]
+ 803f5bc:	2301      	movs	r3, #1
+ 803f5be:	77fb      	strb	r3, [r7, #31]
             }
 
             // Handle failure
             if (p != SIM_RESULT_OK) {
- 803f5c4:	f997 301f 	ldrsb.w	r3, [r7, #31]
- 803f5c8:	2b01      	cmp	r3, #1
- 803f5ca:	d042      	beq.n	803f652 <Simcom_Execute+0x11a>
+ 803f5c0:	f997 301f 	ldrsb.w	r3, [r7, #31]
+ 803f5c4:	2b01      	cmp	r3, #1
+ 803f5c6:	d042      	beq.n	803f64e <Simcom_Execute+0x11a>
                 // exception for no response
                 if (strlen(SIMCOM_UART_RX) == 0) {
- 803f5cc:	4b29      	ldr	r3, [pc, #164]	; (803f674 <Simcom_Execute+0x13c>)
- 803f5ce:	781b      	ldrb	r3, [r3, #0]
- 803f5d0:	2b00      	cmp	r3, #0
- 803f5d2:	d108      	bne.n	803f5e6 <Simcom_Execute+0xae>
+ 803f5c8:	4b29      	ldr	r3, [pc, #164]	; (803f670 <Simcom_Execute+0x13c>)
+ 803f5ca:	781b      	ldrb	r3, [r3, #0]
+ 803f5cc:	2b00      	cmp	r3, #0
+ 803f5ce:	d108      	bne.n	803f5e2 <Simcom_Execute+0xae>
                     p = SIM_RESULT_NO_RESPONSE;
- 803f5d4:	23fe      	movs	r3, #254	; 0xfe
- 803f5d6:	77fb      	strb	r3, [r7, #31]
+ 803f5d0:	23fe      	movs	r3, #254	; 0xfe
+ 803f5d2:	77fb      	strb	r3, [r7, #31]
                     SIM.state = SIM_STATE_DOWN;
- 803f5d8:	4b27      	ldr	r3, [pc, #156]	; (803f678 <Simcom_Execute+0x140>)
- 803f5da:	22ff      	movs	r2, #255	; 0xff
- 803f5dc:	701a      	strb	r2, [r3, #0]
+ 803f5d4:	4b27      	ldr	r3, [pc, #156]	; (803f674 <Simcom_Execute+0x140>)
+ 803f5d6:	22ff      	movs	r2, #255	; 0xff
+ 803f5d8:	701a      	strb	r2, [r3, #0]
                     LOG_StrLn("Simcom:NoResponse");
- 803f5de:	4827      	ldr	r0, [pc, #156]	; (803f67c <Simcom_Execute+0x144>)
- 803f5e0:	f7fe fecc 	bl	803e37c <LOG_StrLn>
+ 803f5da:	4827      	ldr	r0, [pc, #156]	; (803f678 <Simcom_Execute+0x144>)
+ 803f5dc:	f7fe fece 	bl	803e37c <LOG_StrLn>
                     }
                 }
             }
 
             // exit loop
             break;
- 803f5e4:	e035      	b.n	803f652 <Simcom_Execute+0x11a>
+ 803f5e0:	e035      	b.n	803f64e <Simcom_Execute+0x11a>
                 else if (Simcom_CommandoIRQ()) {
- 803f5e6:	f7ff ff0b 	bl	803f400 <Simcom_CommandoIRQ>
- 803f5ea:	4603      	mov	r3, r0
- 803f5ec:	2b00      	cmp	r3, #0
- 803f5ee:	d002      	beq.n	803f5f6 <Simcom_Execute+0xbe>
+ 803f5e2:	f7ff ff0d 	bl	803f400 <Simcom_CommandoIRQ>
+ 803f5e6:	4603      	mov	r3, r0
+ 803f5e8:	2b00      	cmp	r3, #0
+ 803f5ea:	d002      	beq.n	803f5f2 <Simcom_Execute+0xbe>
                     p = SIM_RESULT_TIMEOUT;
- 803f5f0:	23ff      	movs	r3, #255	; 0xff
- 803f5f2:	77fb      	strb	r3, [r7, #31]
+ 803f5ec:	23ff      	movs	r3, #255	; 0xff
+ 803f5ee:	77fb      	strb	r3, [r7, #31]
             break;
- 803f5f4:	e02d      	b.n	803f652 <Simcom_Execute+0x11a>
+ 803f5f0:	e02d      	b.n	803f64e <Simcom_Execute+0x11a>
                     if (Simcom_Response(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {
- 803f5f6:	481e      	ldr	r0, [pc, #120]	; (803f670 <Simcom_Execute+0x138>)
- 803f5f8:	f7ff f908 	bl	803e80c <Simcom_Response>
- 803f5fc:	4603      	mov	r3, r0
- 803f5fe:	2b00      	cmp	r3, #0
- 803f600:	d015      	beq.n	803f62e <Simcom_Execute+0xf6>
- 803f602:	4b1d      	ldr	r3, [pc, #116]	; (803f678 <Simcom_Execute+0x140>)
- 803f604:	f993 3000 	ldrsb.w	r3, [r3]
- 803f608:	2b00      	cmp	r3, #0
- 803f60a:	db10      	blt.n	803f62e <Simcom_Execute+0xf6>
+ 803f5f2:	481e      	ldr	r0, [pc, #120]	; (803f66c <Simcom_Execute+0x138>)
+ 803f5f4:	f7ff f90a 	bl	803e80c <Simcom_Response>
+ 803f5f8:	4603      	mov	r3, r0
+ 803f5fa:	2b00      	cmp	r3, #0
+ 803f5fc:	d015      	beq.n	803f62a <Simcom_Execute+0xf6>
+ 803f5fe:	4b1d      	ldr	r3, [pc, #116]	; (803f674 <Simcom_Execute+0x140>)
+ 803f600:	f993 3000 	ldrsb.w	r3, [r3]
+ 803f604:	2b00      	cmp	r3, #0
+ 803f606:	db10      	blt.n	803f62a <Simcom_Execute+0xf6>
                         LOG_StrLn("Simcom:Restarted");
- 803f60c:	481c      	ldr	r0, [pc, #112]	; (803f680 <Simcom_Execute+0x148>)
- 803f60e:	f7fe feb5 	bl	803e37c <LOG_StrLn>
+ 803f608:	481c      	ldr	r0, [pc, #112]	; (803f67c <Simcom_Execute+0x148>)
+ 803f60a:	f7fe feb7 	bl	803e37c <LOG_StrLn>
                         p = SIM_RESULT_RESTARTED;
- 803f612:	23fd      	movs	r3, #253	; 0xfd
- 803f614:	77fb      	strb	r3, [r7, #31]
+ 803f60e:	23fd      	movs	r3, #253	; 0xfd
+ 803f610:	77fb      	strb	r3, [r7, #31]
                         SIM.state = SIM_STATE_READY;
- 803f616:	4b18      	ldr	r3, [pc, #96]	; (803f678 <Simcom_Execute+0x140>)
- 803f618:	2200      	movs	r2, #0
- 803f61a:	701a      	strb	r2, [r3, #0]
+ 803f612:	4b18      	ldr	r3, [pc, #96]	; (803f674 <Simcom_Execute+0x140>)
+ 803f614:	2200      	movs	r2, #0
+ 803f616:	701a      	strb	r2, [r3, #0]
                         VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
- 803f61c:	4b19      	ldr	r3, [pc, #100]	; (803f684 <Simcom_Execute+0x14c>)
- 803f61e:	6ddb      	ldr	r3, [r3, #92]	; 0x5c
- 803f620:	2201      	movs	r2, #1
- 803f622:	f04f 0001 	mov.w	r0, #1
- 803f626:	f04f 0100 	mov.w	r1, #0
- 803f62a:	4798      	blx	r3
+ 803f618:	4b19      	ldr	r3, [pc, #100]	; (803f680 <Simcom_Execute+0x14c>)
+ 803f61a:	6ddb      	ldr	r3, [r3, #92]	; 0x5c
+ 803f61c:	2201      	movs	r2, #1
+ 803f61e:	f04f 0001 	mov.w	r0, #1
+ 803f622:	f04f 0100 	mov.w	r1, #0
+ 803f626:	4798      	blx	r3
             break;
- 803f62c:	e011      	b.n	803f652 <Simcom_Execute+0x11a>
+ 803f628:	e011      	b.n	803f64e <Simcom_Execute+0x11a>
                     else if ((_GetTickMS() - tick) >= timeout) {
- 803f62e:	f000 f850 	bl	803f6d2 <_GetTickMS>
- 803f632:	4602      	mov	r2, r0
- 803f634:	697b      	ldr	r3, [r7, #20]
- 803f636:	1ad3      	subs	r3, r2, r3
- 803f638:	69ba      	ldr	r2, [r7, #24]
- 803f63a:	429a      	cmp	r2, r3
- 803f63c:	d809      	bhi.n	803f652 <Simcom_Execute+0x11a>
+ 803f62a:	f000 f850 	bl	803f6ce <_GetTickMS>
+ 803f62e:	4602      	mov	r2, r0
+ 803f630:	697b      	ldr	r3, [r7, #20]
+ 803f632:	1ad3      	subs	r3, r2, r3
+ 803f634:	69ba      	ldr	r2, [r7, #24]
+ 803f636:	429a      	cmp	r2, r3
+ 803f638:	d809      	bhi.n	803f64e <Simcom_Execute+0x11a>
                         LOG_StrLn("Simcom:Timeout");
- 803f63e:	4812      	ldr	r0, [pc, #72]	; (803f688 <Simcom_Execute+0x150>)
- 803f640:	f7fe fe9c 	bl	803e37c <LOG_StrLn>
+ 803f63a:	4812      	ldr	r0, [pc, #72]	; (803f684 <Simcom_Execute+0x150>)
+ 803f63c:	f7fe fe9e 	bl	803e37c <LOG_StrLn>
                         p = SIM_RESULT_TIMEOUT;
- 803f644:	23ff      	movs	r3, #255	; 0xff
- 803f646:	77fb      	strb	r3, [r7, #31]
+ 803f640:	23ff      	movs	r3, #255	; 0xff
+ 803f642:	77fb      	strb	r3, [r7, #31]
             break;
- 803f648:	e003      	b.n	803f652 <Simcom_Execute+0x11a>
+ 803f644:	e003      	b.n	803f64e <Simcom_Execute+0x11a>
         }
         _DelayMS(10);
- 803f64a:	200a      	movs	r0, #10
- 803f64c:	f000 f836 	bl	803f6bc <_DelayMS>
+ 803f646:	200a      	movs	r0, #10
+ 803f648:	f000 f836 	bl	803f6b8 <_DelayMS>
         if (Simcom_Response(res)
- 803f650:	e791      	b.n	803f576 <Simcom_Execute+0x3e>
+ 803f64c:	e791      	b.n	803f572 <Simcom_Execute+0x3e>
             break;
- 803f652:	bf00      	nop
+ 803f64e:	bf00      	nop
     }
 
     // sleep the SIMCOM
     Simcom_Sleep(1);
- 803f654:	2001      	movs	r0, #1
- 803f656:	f7ff ff59 	bl	803f50c <Simcom_Sleep>
+ 803f650:	2001      	movs	r0, #1
+ 803f652:	f7ff ff59 	bl	803f508 <Simcom_Sleep>
     Simcom_Unlock();
- 803f65a:	f7ff f8cb 	bl	803e7f4 <Simcom_Unlock>
+ 803f656:	f7ff f8cd 	bl	803e7f4 <Simcom_Unlock>
     return p;
- 803f65e:	f997 301f 	ldrsb.w	r3, [r7, #31]
+ 803f65a:	f997 301f 	ldrsb.w	r3, [r7, #31]
 }
- 803f662:	4618      	mov	r0, r3
- 803f664:	3720      	adds	r7, #32
- 803f666:	46bd      	mov	sp, r7
- 803f668:	bd80      	pop	{r7, pc}
- 803f66a:	bf00      	nop
- 803f66c:	08043eb0 	.word	0x08043eb0
- 803f670:	08043e9c 	.word	0x08043e9c
- 803f674:	20008e64 	.word	0x20008e64
- 803f678:	200002a8 	.word	0x200002a8
- 803f67c:	08043eb8 	.word	0x08043eb8
- 803f680:	08043ecc 	.word	0x08043ecc
- 803f684:	20000228 	.word	0x20000228
- 803f688:	08043ee0 	.word	0x08043ee0
+ 803f65e:	4618      	mov	r0, r3
+ 803f660:	3720      	adds	r7, #32
+ 803f662:	46bd      	mov	sp, r7
+ 803f664:	bd80      	pop	{r7, pc}
+ 803f666:	bf00      	nop
+ 803f668:	08043eb0 	.word	0x08043eb0
+ 803f66c:	08043e9c 	.word	0x08043e9c
+ 803f670:	20008e64 	.word	0x20008e64
+ 803f674:	200002a8 	.word	0x200002a8
+ 803f678:	08043eb8 	.word	0x08043eb8
+ 803f67c:	08043ecc 	.word	0x08043ecc
+ 803f680:	20000228 	.word	0x20000228
+ 803f684:	08043ee0 	.word	0x08043ee0
 
-0803f68c <Simcom_BeforeTransmitHook>:
+0803f688 <Simcom_BeforeTransmitHook>:
 
 static void Simcom_BeforeTransmitHook(void) {
- 803f68c:	b580      	push	{r7, lr}
- 803f68e:	b086      	sub	sp, #24
- 803f690:	af00      	add	r7, sp, #0
+ 803f688:	b580      	push	{r7, lr}
+ 803f68a:	b086      	sub	sp, #24
+ 803f68c:	af00      	add	r7, sp, #0
 #if (!BOOTLOADER)
     command_t hCommand;
     // handle Commando (if any)
     if (Simcom_ProcessCommando(&hCommand)) {
- 803f692:	1d3b      	adds	r3, r7, #4
- 803f694:	4618      	mov	r0, r3
- 803f696:	f7ff fe25 	bl	803f2e4 <Simcom_ProcessCommando>
- 803f69a:	4603      	mov	r3, r0
- 803f69c:	2b00      	cmp	r3, #0
- 803f69e:	d006      	beq.n	803f6ae <Simcom_BeforeTransmitHook+0x22>
+ 803f68e:	1d3b      	adds	r3, r7, #4
+ 803f690:	4618      	mov	r0, r3
+ 803f692:	f7ff fe27 	bl	803f2e4 <Simcom_ProcessCommando>
+ 803f696:	4603      	mov	r3, r0
+ 803f698:	2b00      	cmp	r3, #0
+ 803f69a:	d006      	beq.n	803f6aa <Simcom_BeforeTransmitHook+0x22>
         osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
- 803f6a0:	4b05      	ldr	r3, [pc, #20]	; (803f6b8 <Simcom_BeforeTransmitHook+0x2c>)
- 803f6a2:	6818      	ldr	r0, [r3, #0]
- 803f6a4:	1d39      	adds	r1, r7, #4
- 803f6a6:	2300      	movs	r3, #0
- 803f6a8:	2200      	movs	r2, #0
- 803f6aa:	f7f8 fd03 	bl	80380b4 <osMessageQueuePut>
+ 803f69c:	4b05      	ldr	r3, [pc, #20]	; (803f6b4 <Simcom_BeforeTransmitHook+0x2c>)
+ 803f69e:	6818      	ldr	r0, [r3, #0]
+ 803f6a0:	1d39      	adds	r1, r7, #4
+ 803f6a2:	2300      	movs	r3, #0
+ 803f6a4:	2200      	movs	r2, #0
+ 803f6a6:	f7f8 fd05 	bl	80380b4 <osMessageQueuePut>
     //  LOG_StrLn("============ SIMCOM DEBUG ============");
     //  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
     //  LOG_Enter();
     //  LOG_StrLn("======================================");
 
 }
- 803f6ae:	bf00      	nop
- 803f6b0:	3718      	adds	r7, #24
- 803f6b2:	46bd      	mov	sp, r7
- 803f6b4:	bd80      	pop	{r7, pc}
- 803f6b6:	bf00      	nop
- 803f6b8:	20008d24 	.word	0x20008d24
+ 803f6aa:	bf00      	nop
+ 803f6ac:	3718      	adds	r7, #24
+ 803f6ae:	46bd      	mov	sp, r7
+ 803f6b0:	bd80      	pop	{r7, pc}
+ 803f6b2:	bf00      	nop
+ 803f6b4:	20008d24 	.word	0x20008d24
 
-0803f6bc <_DelayMS>:
+0803f6b8 <_DelayMS>:
 extern vcu_t VCU;
 extern sw_t SW;
 #endif
 
 /* Public functions implementation --------------------------------------------*/
 void _DelayMS(uint32_t ms) {
- 803f6bc:	b580      	push	{r7, lr}
- 803f6be:	b082      	sub	sp, #8
- 803f6c0:	af00      	add	r7, sp, #0
- 803f6c2:	6078      	str	r0, [r7, #4]
+ 803f6b8:	b580      	push	{r7, lr}
+ 803f6ba:	b082      	sub	sp, #8
+ 803f6bc:	af00      	add	r7, sp, #0
+ 803f6be:	6078      	str	r0, [r7, #4]
 #if RTOS_ENABLE
     osDelay(ms);
- 803f6c4:	6878      	ldr	r0, [r7, #4]
- 803f6c6:	f7f8 f999 	bl	80379fc <osDelay>
+ 803f6c0:	6878      	ldr	r0, [r7, #4]
+ 803f6c2:	f7f8 f99b 	bl	80379fc <osDelay>
 #else
     HAL_Delay(ms);
 #endif
 }
- 803f6ca:	bf00      	nop
- 803f6cc:	3708      	adds	r7, #8
- 803f6ce:	46bd      	mov	sp, r7
- 803f6d0:	bd80      	pop	{r7, pc}
+ 803f6c6:	bf00      	nop
+ 803f6c8:	3708      	adds	r7, #8
+ 803f6ca:	46bd      	mov	sp, r7
+ 803f6cc:	bd80      	pop	{r7, pc}
 
-0803f6d2 <_GetTickMS>:
+0803f6ce <_GetTickMS>:
 
 uint32_t _GetTickMS(void) {
- 803f6d2:	b580      	push	{r7, lr}
- 803f6d4:	af00      	add	r7, sp, #0
+ 803f6ce:	b580      	push	{r7, lr}
+ 803f6d0:	af00      	add	r7, sp, #0
 #if RTOS_ENABLE
     return osKernelGetTickCount();
- 803f6d6:	f7f7 ff7d 	bl	80375d4 <osKernelGetTickCount>
- 803f6da:	4603      	mov	r3, r0
+ 803f6d2:	f7f7 ff7f 	bl	80375d4 <osKernelGetTickCount>
+ 803f6d6:	4603      	mov	r3, r0
 #else
     return HAL_GetTick();
 #endif
 }
- 803f6dc:	4618      	mov	r0, r3
- 803f6de:	bd80      	pop	{r7, pc}
+ 803f6d8:	4618      	mov	r0, r3
+ 803f6da:	bd80      	pop	{r7, pc}
 
-0803f6e0 <_LedWrite>:
+0803f6dc <_LedWrite>:
 
 uint8_t _LedRead(void) {
     return HAL_GPIO_ReadPin(SYS_LED_GPIO_Port, SYS_LED_Pin);
 }
 
 void _LedWrite(uint8_t state) {
- 803f6e0:	b580      	push	{r7, lr}
- 803f6e2:	b082      	sub	sp, #8
- 803f6e4:	af00      	add	r7, sp, #0
- 803f6e6:	4603      	mov	r3, r0
- 803f6e8:	71fb      	strb	r3, [r7, #7]
+ 803f6dc:	b580      	push	{r7, lr}
+ 803f6de:	b082      	sub	sp, #8
+ 803f6e0:	af00      	add	r7, sp, #0
+ 803f6e2:	4603      	mov	r3, r0
+ 803f6e4:	71fb      	strb	r3, [r7, #7]
     HAL_GPIO_WritePin(SYS_LED_GPIO_Port, SYS_LED_Pin, state);
- 803f6ea:	79fb      	ldrb	r3, [r7, #7]
- 803f6ec:	461a      	mov	r2, r3
- 803f6ee:	f44f 5100 	mov.w	r1, #8192	; 0x2000
- 803f6f2:	4803      	ldr	r0, [pc, #12]	; (803f700 <_LedWrite+0x20>)
- 803f6f4:	f7f0 fd2c 	bl	8030150 <HAL_GPIO_WritePin>
+ 803f6e6:	79fb      	ldrb	r3, [r7, #7]
+ 803f6e8:	461a      	mov	r2, r3
+ 803f6ea:	f44f 5100 	mov.w	r1, #8192	; 0x2000
+ 803f6ee:	4803      	ldr	r0, [pc, #12]	; (803f6fc <_LedWrite+0x20>)
+ 803f6f0:	f7f0 fd2e 	bl	8030150 <HAL_GPIO_WritePin>
 }
- 803f6f8:	bf00      	nop
- 803f6fa:	3708      	adds	r7, #8
- 803f6fc:	46bd      	mov	sp, r7
- 803f6fe:	bd80      	pop	{r7, pc}
- 803f700:	40020c00 	.word	0x40020c00
+ 803f6f4:	bf00      	nop
+ 803f6f6:	3708      	adds	r7, #8
+ 803f6f8:	46bd      	mov	sp, r7
+ 803f6fa:	bd80      	pop	{r7, pc}
+ 803f6fc:	40020c00 	.word	0x40020c00
 
-0803f704 <_LedToggle>:
+0803f700 <_LedToggle>:
 
 void _LedToggle(void) {
- 803f704:	b580      	push	{r7, lr}
- 803f706:	af00      	add	r7, sp, #0
+ 803f700:	b580      	push	{r7, lr}
+ 803f702:	af00      	add	r7, sp, #0
     HAL_GPIO_TogglePin(SYS_LED_GPIO_Port, SYS_LED_Pin);
- 803f708:	f44f 5100 	mov.w	r1, #8192	; 0x2000
- 803f70c:	4802      	ldr	r0, [pc, #8]	; (803f718 <_LedToggle+0x14>)
- 803f70e:	f7f0 fd38 	bl	8030182 <HAL_GPIO_TogglePin>
+ 803f704:	f44f 5100 	mov.w	r1, #8192	; 0x2000
+ 803f708:	4802      	ldr	r0, [pc, #8]	; (803f714 <_LedToggle+0x14>)
+ 803f70a:	f7f0 fd3a 	bl	8030182 <HAL_GPIO_TogglePin>
 }
+ 803f70e:	bf00      	nop
+ 803f710:	bd80      	pop	{r7, pc}
  803f712:	bf00      	nop
- 803f714:	bd80      	pop	{r7, pc}
- 803f716:	bf00      	nop
- 803f718:	40020c00 	.word	0x40020c00
+ 803f714:	40020c00 	.word	0x40020c00
 
-0803f71c <_Error>:
+0803f718 <_Error>:
 
 void _Error(char msg[50]) {
- 803f71c:	b580      	push	{r7, lr}
- 803f71e:	b082      	sub	sp, #8
- 803f720:	af00      	add	r7, sp, #0
- 803f722:	6078      	str	r0, [r7, #4]
+ 803f718:	b580      	push	{r7, lr}
+ 803f71a:	b082      	sub	sp, #8
+ 803f71c:	af00      	add	r7, sp, #0
+ 803f71e:	6078      	str	r0, [r7, #4]
 #if RTOS_ENABLE
     if (osKernelGetState() == osKernelRunning) {
- 803f724:	f7f7 fefe 	bl	8037524 <osKernelGetState>
- 803f728:	4603      	mov	r3, r0
- 803f72a:	2b02      	cmp	r3, #2
- 803f72c:	d102      	bne.n	803f734 <_Error+0x18>
+ 803f720:	f7f7 ff00 	bl	8037524 <osKernelGetState>
+ 803f724:	4603      	mov	r3, r0
+ 803f726:	2b02      	cmp	r3, #2
+ 803f728:	d102      	bne.n	803f730 <_Error+0x18>
         LOG_StrLn(msg);
- 803f72e:	6878      	ldr	r0, [r7, #4]
- 803f730:	f7fe fe24 	bl	803e37c <LOG_StrLn>
+ 803f72a:	6878      	ldr	r0, [r7, #4]
+ 803f72c:	f7fe fe26 	bl	803e37c <LOG_StrLn>
     LOG_StrLn(msg);
 #endif
 
     // indicator error
     while (1) {
         _LedToggle();
- 803f734:	f7ff ffe6 	bl	803f704 <_LedToggle>
+ 803f730:	f7ff ffe6 	bl	803f700 <_LedToggle>
         HAL_Delay(50);
- 803f738:	2032      	movs	r0, #50	; 0x32
- 803f73a:	f7ec fe23 	bl	802c384 <HAL_Delay>
+ 803f734:	2032      	movs	r0, #50	; 0x32
+ 803f736:	f7ec fe25 	bl	802c384 <HAL_Delay>
         _LedToggle();
- 803f73e:	e7f9      	b.n	803f734 <_Error+0x18>
+ 803f73a:	e7f9      	b.n	803f730 <_Error+0x18>
 
-0803f740 <_ByteSwap32>:
+0803f73c <_ByteSwap32>:
     }
 }
 
 uint32_t _ByteSwap32(uint32_t x) {
- 803f740:	b480      	push	{r7}
- 803f742:	b085      	sub	sp, #20
- 803f744:	af00      	add	r7, sp, #0
- 803f746:	6078      	str	r0, [r7, #4]
+ 803f73c:	b480      	push	{r7}
+ 803f73e:	b085      	sub	sp, #20
+ 803f740:	af00      	add	r7, sp, #0
+ 803f742:	6078      	str	r0, [r7, #4]
     uint32_t y = (x >> 24) & 0xff;
- 803f748:	687b      	ldr	r3, [r7, #4]
- 803f74a:	0e1b      	lsrs	r3, r3, #24
- 803f74c:	60fb      	str	r3, [r7, #12]
+ 803f744:	687b      	ldr	r3, [r7, #4]
+ 803f746:	0e1b      	lsrs	r3, r3, #24
+ 803f748:	60fb      	str	r3, [r7, #12]
     y |= ((x >> 16) & 0xff) << 8;
- 803f74e:	687b      	ldr	r3, [r7, #4]
- 803f750:	0c1b      	lsrs	r3, r3, #16
- 803f752:	021b      	lsls	r3, r3, #8
- 803f754:	b29b      	uxth	r3, r3
- 803f756:	68fa      	ldr	r2, [r7, #12]
- 803f758:	4313      	orrs	r3, r2
- 803f75a:	60fb      	str	r3, [r7, #12]
+ 803f74a:	687b      	ldr	r3, [r7, #4]
+ 803f74c:	0c1b      	lsrs	r3, r3, #16
+ 803f74e:	021b      	lsls	r3, r3, #8
+ 803f750:	b29b      	uxth	r3, r3
+ 803f752:	68fa      	ldr	r2, [r7, #12]
+ 803f754:	4313      	orrs	r3, r2
+ 803f756:	60fb      	str	r3, [r7, #12]
     y |= ((x >> 8) & 0xff) << 16;
- 803f75c:	687b      	ldr	r3, [r7, #4]
- 803f75e:	0a1b      	lsrs	r3, r3, #8
- 803f760:	041b      	lsls	r3, r3, #16
- 803f762:	f403 037f 	and.w	r3, r3, #16711680	; 0xff0000
- 803f766:	68fa      	ldr	r2, [r7, #12]
- 803f768:	4313      	orrs	r3, r2
- 803f76a:	60fb      	str	r3, [r7, #12]
+ 803f758:	687b      	ldr	r3, [r7, #4]
+ 803f75a:	0a1b      	lsrs	r3, r3, #8
+ 803f75c:	041b      	lsls	r3, r3, #16
+ 803f75e:	f403 037f 	and.w	r3, r3, #16711680	; 0xff0000
+ 803f762:	68fa      	ldr	r2, [r7, #12]
+ 803f764:	4313      	orrs	r3, r2
+ 803f766:	60fb      	str	r3, [r7, #12]
     y |= (x & 0xff) << 24;
- 803f76c:	687b      	ldr	r3, [r7, #4]
- 803f76e:	061b      	lsls	r3, r3, #24
- 803f770:	68fa      	ldr	r2, [r7, #12]
- 803f772:	4313      	orrs	r3, r2
- 803f774:	60fb      	str	r3, [r7, #12]
+ 803f768:	687b      	ldr	r3, [r7, #4]
+ 803f76a:	061b      	lsls	r3, r3, #24
+ 803f76c:	68fa      	ldr	r2, [r7, #12]
+ 803f76e:	4313      	orrs	r3, r2
+ 803f770:	60fb      	str	r3, [r7, #12]
 
     return y;
- 803f776:	68fb      	ldr	r3, [r7, #12]
+ 803f772:	68fb      	ldr	r3, [r7, #12]
 }
- 803f778:	4618      	mov	r0, r3
- 803f77a:	3714      	adds	r7, #20
- 803f77c:	46bd      	mov	sp, r7
- 803f77e:	f85d 7b04 	ldr.w	r7, [sp], #4
- 803f782:	4770      	bx	lr
+ 803f774:	4618      	mov	r0, r3
+ 803f776:	3714      	adds	r7, #20
+ 803f778:	46bd      	mov	sp, r7
+ 803f77a:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 803f77e:	4770      	bx	lr
 
-0803f784 <_RTOS_ValidThreadFlag>:
+0803f780 <_RTOS_ValidThreadFlag>:
         }
         LOG_StrLn("===========================================");
     }
 }
 
 uint8_t _RTOS_ValidThreadFlag(uint32_t flag) {
- 803f784:	b480      	push	{r7}
- 803f786:	b085      	sub	sp, #20
- 803f788:	af00      	add	r7, sp, #0
- 803f78a:	6078      	str	r0, [r7, #4]
+ 803f780:	b480      	push	{r7}
+ 803f782:	b085      	sub	sp, #20
+ 803f784:	af00      	add	r7, sp, #0
+ 803f786:	6078      	str	r0, [r7, #4]
     uint8_t ret = 1;
- 803f78c:	2301      	movs	r3, #1
- 803f78e:	73fb      	strb	r3, [r7, #15]
+ 803f788:	2301      	movs	r3, #1
+ 803f78a:	73fb      	strb	r3, [r7, #15]
 
     // check is empty
     if (!flag) {
- 803f790:	687b      	ldr	r3, [r7, #4]
- 803f792:	2b00      	cmp	r3, #0
- 803f794:	d102      	bne.n	803f79c <_RTOS_ValidThreadFlag+0x18>
+ 803f78c:	687b      	ldr	r3, [r7, #4]
+ 803f78e:	2b00      	cmp	r3, #0
+ 803f790:	d102      	bne.n	803f798 <_RTOS_ValidThreadFlag+0x18>
         ret = 0;
- 803f796:	2300      	movs	r3, #0
- 803f798:	73fb      	strb	r3, [r7, #15]
- 803f79a:	e004      	b.n	803f7a6 <_RTOS_ValidThreadFlag+0x22>
+ 803f792:	2300      	movs	r3, #0
+ 803f794:	73fb      	strb	r3, [r7, #15]
+ 803f796:	e004      	b.n	803f7a2 <_RTOS_ValidThreadFlag+0x22>
     } else if (flag & (~EVT_MASK)) {
- 803f79c:	687b      	ldr	r3, [r7, #4]
- 803f79e:	2b00      	cmp	r3, #0
- 803f7a0:	da01      	bge.n	803f7a6 <_RTOS_ValidThreadFlag+0x22>
+ 803f798:	687b      	ldr	r3, [r7, #4]
+ 803f79a:	2b00      	cmp	r3, #0
+ 803f79c:	da01      	bge.n	803f7a2 <_RTOS_ValidThreadFlag+0x22>
         // error
         ret = 0;
- 803f7a2:	2300      	movs	r3, #0
- 803f7a4:	73fb      	strb	r3, [r7, #15]
+ 803f79e:	2300      	movs	r3, #0
+ 803f7a0:	73fb      	strb	r3, [r7, #15]
     }
 
     return ret;
- 803f7a6:	7bfb      	ldrb	r3, [r7, #15]
+ 803f7a2:	7bfb      	ldrb	r3, [r7, #15]
 }
- 803f7a8:	4618      	mov	r0, r3
- 803f7aa:	3714      	adds	r7, #20
- 803f7ac:	46bd      	mov	sp, r7
- 803f7ae:	f85d 7b04 	ldr.w	r7, [sp], #4
- 803f7b2:	4770      	bx	lr
+ 803f7a4:	4618      	mov	r0, r3
+ 803f7a6:	3714      	adds	r7, #20
+ 803f7a8:	46bd      	mov	sp, r7
+ 803f7aa:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 803f7ae:	4770      	bx	lr
 
-0803f7b4 <_DummyGenerator>:
+0803f7b0 <_DummyGenerator>:
     }
 
     return ret;
 }
 
 void _DummyGenerator(void) {
- 803f7b4:	b480      	push	{r7}
- 803f7b6:	b083      	sub	sp, #12
- 803f7b8:	af00      	add	r7, sp, #0
+ 803f7b0:	b480      	push	{r7}
+ 803f7b2:	b083      	sub	sp, #12
+ 803f7b4:	af00      	add	r7, sp, #0
     uint8_t *pRange = &(SW.runner.mode.sub.report[SW_M_REPORT_RANGE]);
- 803f7ba:	4b13      	ldr	r3, [pc, #76]	; (803f808 <_DummyGenerator+0x54>)
- 803f7bc:	607b      	str	r3, [r7, #4]
+ 803f7b6:	4b13      	ldr	r3, [pc, #76]	; (803f804 <_DummyGenerator+0x54>)
+ 803f7b8:	607b      	str	r3, [r7, #4]
     uint8_t *pEfficiency = &(SW.runner.mode.sub.report[SW_M_REPORT_EFFICIENCY]);
- 803f7be:	4b13      	ldr	r3, [pc, #76]	; (803f80c <_DummyGenerator+0x58>)
- 803f7c0:	603b      	str	r3, [r7, #0]
+ 803f7ba:	4b13      	ldr	r3, [pc, #76]	; (803f808 <_DummyGenerator+0x58>)
+ 803f7bc:	603b      	str	r3, [r7, #0]
 
     // Dummy Report Range
     if (!(*pRange)) {
- 803f7c2:	687b      	ldr	r3, [r7, #4]
- 803f7c4:	781b      	ldrb	r3, [r3, #0]
- 803f7c6:	2b00      	cmp	r3, #0
- 803f7c8:	d103      	bne.n	803f7d2 <_DummyGenerator+0x1e>
+ 803f7be:	687b      	ldr	r3, [r7, #4]
+ 803f7c0:	781b      	ldrb	r3, [r3, #0]
+ 803f7c2:	2b00      	cmp	r3, #0
+ 803f7c4:	d103      	bne.n	803f7ce <_DummyGenerator+0x1e>
         *pRange = 255;
- 803f7ca:	687b      	ldr	r3, [r7, #4]
- 803f7cc:	22ff      	movs	r2, #255	; 0xff
- 803f7ce:	701a      	strb	r2, [r3, #0]
- 803f7d0:	e005      	b.n	803f7de <_DummyGenerator+0x2a>
+ 803f7c6:	687b      	ldr	r3, [r7, #4]
+ 803f7c8:	22ff      	movs	r2, #255	; 0xff
+ 803f7ca:	701a      	strb	r2, [r3, #0]
+ 803f7cc:	e005      	b.n	803f7da <_DummyGenerator+0x2a>
     } else {
         (*pRange)--;
- 803f7d2:	687b      	ldr	r3, [r7, #4]
- 803f7d4:	781b      	ldrb	r3, [r3, #0]
- 803f7d6:	3b01      	subs	r3, #1
- 803f7d8:	b2da      	uxtb	r2, r3
- 803f7da:	687b      	ldr	r3, [r7, #4]
- 803f7dc:	701a      	strb	r2, [r3, #0]
+ 803f7ce:	687b      	ldr	r3, [r7, #4]
+ 803f7d0:	781b      	ldrb	r3, [r3, #0]
+ 803f7d2:	3b01      	subs	r3, #1
+ 803f7d4:	b2da      	uxtb	r2, r3
+ 803f7d6:	687b      	ldr	r3, [r7, #4]
+ 803f7d8:	701a      	strb	r2, [r3, #0]
     }
 
     // Dummy Report Efficiency
     if (*pEfficiency >= 255) {
- 803f7de:	683b      	ldr	r3, [r7, #0]
- 803f7e0:	781b      	ldrb	r3, [r3, #0]
- 803f7e2:	2bff      	cmp	r3, #255	; 0xff
- 803f7e4:	d103      	bne.n	803f7ee <_DummyGenerator+0x3a>
+ 803f7da:	683b      	ldr	r3, [r7, #0]
+ 803f7dc:	781b      	ldrb	r3, [r3, #0]
+ 803f7de:	2bff      	cmp	r3, #255	; 0xff
+ 803f7e0:	d103      	bne.n	803f7ea <_DummyGenerator+0x3a>
         *pEfficiency = 0;
- 803f7e6:	683b      	ldr	r3, [r7, #0]
- 803f7e8:	2200      	movs	r2, #0
- 803f7ea:	701a      	strb	r2, [r3, #0]
+ 803f7e2:	683b      	ldr	r3, [r7, #0]
+ 803f7e4:	2200      	movs	r2, #0
+ 803f7e6:	701a      	strb	r2, [r3, #0]
     } else {
         (*pEfficiency)++;
     }
 }
- 803f7ec:	e005      	b.n	803f7fa <_DummyGenerator+0x46>
+ 803f7e8:	e005      	b.n	803f7f6 <_DummyGenerator+0x46>
         (*pEfficiency)++;
- 803f7ee:	683b      	ldr	r3, [r7, #0]
- 803f7f0:	781b      	ldrb	r3, [r3, #0]
- 803f7f2:	3301      	adds	r3, #1
- 803f7f4:	b2da      	uxtb	r2, r3
- 803f7f6:	683b      	ldr	r3, [r7, #0]
- 803f7f8:	701a      	strb	r2, [r3, #0]
+ 803f7ea:	683b      	ldr	r3, [r7, #0]
+ 803f7ec:	781b      	ldrb	r3, [r3, #0]
+ 803f7ee:	3301      	adds	r3, #1
+ 803f7f0:	b2da      	uxtb	r2, r3
+ 803f7f2:	683b      	ldr	r3, [r7, #0]
+ 803f7f4:	701a      	strb	r2, [r3, #0]
 }
- 803f7fa:	bf00      	nop
- 803f7fc:	370c      	adds	r7, #12
- 803f7fe:	46bd      	mov	sp, r7
- 803f800:	f85d 7b04 	ldr.w	r7, [sp], #4
- 803f804:	4770      	bx	lr
- 803f806:	bf00      	nop
- 803f808:	20000102 	.word	0x20000102
- 803f80c:	20000103 	.word	0x20000103
+ 803f7f6:	bf00      	nop
+ 803f7f8:	370c      	adds	r7, #12
+ 803f7fa:	46bd      	mov	sp, r7
+ 803f7fc:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 803f800:	4770      	bx	lr
+ 803f802:	bf00      	nop
+ 803f804:	20000102 	.word	0x20000102
+ 803f808:	20000103 	.word	0x20000103
 
-0803f810 <_BitPosition>:
+0803f80c <_BitPosition>:
 
 int8_t _BitPosition(uint64_t event_id) {
- 803f810:	b4f0      	push	{r4, r5, r6, r7}
- 803f812:	b084      	sub	sp, #16
- 803f814:	af00      	add	r7, sp, #0
- 803f816:	e9c7 0100 	strd	r0, r1, [r7]
+ 803f80c:	b4f0      	push	{r4, r5, r6, r7}
+ 803f80e:	b084      	sub	sp, #16
+ 803f810:	af00      	add	r7, sp, #0
+ 803f812:	e9c7 0100 	strd	r0, r1, [r7]
     uint8_t pos = -1;
- 803f81a:	22ff      	movs	r2, #255	; 0xff
- 803f81c:	73fa      	strb	r2, [r7, #15]
+ 803f816:	22ff      	movs	r2, #255	; 0xff
+ 803f818:	73fa      	strb	r2, [r7, #15]
 
     for (int8_t i = 0; i < 64; i++) {
- 803f81e:	2200      	movs	r2, #0
- 803f820:	73ba      	strb	r2, [r7, #14]
- 803f822:	e025      	b.n	803f870 <_BitPosition+0x60>
+ 803f81a:	2200      	movs	r2, #0
+ 803f81c:	73ba      	strb	r2, [r7, #14]
+ 803f81e:	e025      	b.n	803f86c <_BitPosition+0x60>
         if (event_id & BIT(i)) {
- 803f824:	f997 000e 	ldrsb.w	r0, [r7, #14]
- 803f828:	e9d7 1200 	ldrd	r1, r2, [r7]
- 803f82c:	f1c0 0620 	rsb	r6, r0, #32
- 803f830:	f1a0 0520 	sub.w	r5, r0, #32
- 803f834:	fa21 f300 	lsr.w	r3, r1, r0
- 803f838:	fa02 f606 	lsl.w	r6, r2, r6
- 803f83c:	4333      	orrs	r3, r6
- 803f83e:	fa22 f505 	lsr.w	r5, r2, r5
- 803f842:	432b      	orrs	r3, r5
- 803f844:	fa22 f400 	lsr.w	r4, r2, r0
- 803f848:	f04f 0101 	mov.w	r1, #1
- 803f84c:	f04f 0200 	mov.w	r2, #0
- 803f850:	ea01 0503 	and.w	r5, r1, r3
- 803f854:	ea02 0604 	and.w	r6, r2, r4
- 803f858:	ea55 0206 	orrs.w	r2, r5, r6
- 803f85c:	d002      	beq.n	803f864 <_BitPosition+0x54>
+ 803f820:	f997 000e 	ldrsb.w	r0, [r7, #14]
+ 803f824:	e9d7 1200 	ldrd	r1, r2, [r7]
+ 803f828:	f1c0 0620 	rsb	r6, r0, #32
+ 803f82c:	f1a0 0520 	sub.w	r5, r0, #32
+ 803f830:	fa21 f300 	lsr.w	r3, r1, r0
+ 803f834:	fa02 f606 	lsl.w	r6, r2, r6
+ 803f838:	4333      	orrs	r3, r6
+ 803f83a:	fa22 f505 	lsr.w	r5, r2, r5
+ 803f83e:	432b      	orrs	r3, r5
+ 803f840:	fa22 f400 	lsr.w	r4, r2, r0
+ 803f844:	f04f 0101 	mov.w	r1, #1
+ 803f848:	f04f 0200 	mov.w	r2, #0
+ 803f84c:	ea01 0503 	and.w	r5, r1, r3
+ 803f850:	ea02 0604 	and.w	r6, r2, r4
+ 803f854:	ea55 0206 	orrs.w	r2, r5, r6
+ 803f858:	d002      	beq.n	803f860 <_BitPosition+0x54>
             pos = i;
- 803f85e:	7bbb      	ldrb	r3, [r7, #14]
- 803f860:	73fb      	strb	r3, [r7, #15]
+ 803f85a:	7bbb      	ldrb	r3, [r7, #14]
+ 803f85c:	73fb      	strb	r3, [r7, #15]
             break;
- 803f862:	e009      	b.n	803f878 <_BitPosition+0x68>
+ 803f85e:	e009      	b.n	803f874 <_BitPosition+0x68>
     for (int8_t i = 0; i < 64; i++) {
- 803f864:	f997 200e 	ldrsb.w	r2, [r7, #14]
+ 803f860:	f997 200e 	ldrsb.w	r2, [r7, #14]
+ 803f864:	b2d2      	uxtb	r2, r2
+ 803f866:	3201      	adds	r2, #1
  803f868:	b2d2      	uxtb	r2, r2
- 803f86a:	3201      	adds	r2, #1
- 803f86c:	b2d2      	uxtb	r2, r2
- 803f86e:	73ba      	strb	r2, [r7, #14]
- 803f870:	f997 200e 	ldrsb.w	r2, [r7, #14]
- 803f874:	2a3f      	cmp	r2, #63	; 0x3f
- 803f876:	ddd5      	ble.n	803f824 <_BitPosition+0x14>
+ 803f86a:	73ba      	strb	r2, [r7, #14]
+ 803f86c:	f997 200e 	ldrsb.w	r2, [r7, #14]
+ 803f870:	2a3f      	cmp	r2, #63	; 0x3f
+ 803f872:	ddd5      	ble.n	803f820 <_BitPosition+0x14>
         }
     }
 
     return pos;
- 803f878:	f997 300f 	ldrsb.w	r3, [r7, #15]
+ 803f874:	f997 300f 	ldrsb.w	r3, [r7, #15]
 }
- 803f87c:	4618      	mov	r0, r3
- 803f87e:	3710      	adds	r7, #16
- 803f880:	46bd      	mov	sp, r7
- 803f882:	bcf0      	pop	{r4, r5, r6, r7}
- 803f884:	4770      	bx	lr
+ 803f878:	4618      	mov	r0, r3
+ 803f87a:	3710      	adds	r7, #16
+ 803f87c:	46bd      	mov	sp, r7
+ 803f87e:	bcf0      	pop	{r4, r5, r6, r7}
+ 803f880:	4770      	bx	lr
 	...
 
-0803f888 <__errno>:
- 803f888:	4b01      	ldr	r3, [pc, #4]	; (803f890 <__errno+0x8>)
- 803f88a:	6818      	ldr	r0, [r3, #0]
- 803f88c:	4770      	bx	lr
- 803f88e:	bf00      	nop
- 803f890:	200002c4 	.word	0x200002c4
+0803f884 <__errno>:
+ 803f884:	4b01      	ldr	r3, [pc, #4]	; (803f88c <__errno+0x8>)
+ 803f886:	6818      	ldr	r0, [r3, #0]
+ 803f888:	4770      	bx	lr
+ 803f88a:	bf00      	nop
+ 803f88c:	200002c4 	.word	0x200002c4
 
-0803f894 <__libc_init_array>:
- 803f894:	b570      	push	{r4, r5, r6, lr}
- 803f896:	4e0d      	ldr	r6, [pc, #52]	; (803f8cc <__libc_init_array+0x38>)
- 803f898:	4c0d      	ldr	r4, [pc, #52]	; (803f8d0 <__libc_init_array+0x3c>)
- 803f89a:	1ba4      	subs	r4, r4, r6
- 803f89c:	10a4      	asrs	r4, r4, #2
- 803f89e:	2500      	movs	r5, #0
- 803f8a0:	42a5      	cmp	r5, r4
- 803f8a2:	d109      	bne.n	803f8b8 <__libc_init_array+0x24>
- 803f8a4:	4e0b      	ldr	r6, [pc, #44]	; (803f8d4 <__libc_init_array+0x40>)
- 803f8a6:	4c0c      	ldr	r4, [pc, #48]	; (803f8d8 <__libc_init_array+0x44>)
- 803f8a8:	f003 fd9c 	bl	80433e4 <_init>
- 803f8ac:	1ba4      	subs	r4, r4, r6
- 803f8ae:	10a4      	asrs	r4, r4, #2
- 803f8b0:	2500      	movs	r5, #0
- 803f8b2:	42a5      	cmp	r5, r4
- 803f8b4:	d105      	bne.n	803f8c2 <__libc_init_array+0x2e>
- 803f8b6:	bd70      	pop	{r4, r5, r6, pc}
- 803f8b8:	f856 3025 	ldr.w	r3, [r6, r5, lsl #2]
- 803f8bc:	4798      	blx	r3
- 803f8be:	3501      	adds	r5, #1
- 803f8c0:	e7ee      	b.n	803f8a0 <__libc_init_array+0xc>
- 803f8c2:	f856 3025 	ldr.w	r3, [r6, r5, lsl #2]
- 803f8c6:	4798      	blx	r3
- 803f8c8:	3501      	adds	r5, #1
- 803f8ca:	e7f2      	b.n	803f8b2 <__libc_init_array+0x1e>
+0803f890 <__libc_init_array>:
+ 803f890:	b570      	push	{r4, r5, r6, lr}
+ 803f892:	4e0d      	ldr	r6, [pc, #52]	; (803f8c8 <__libc_init_array+0x38>)
+ 803f894:	4c0d      	ldr	r4, [pc, #52]	; (803f8cc <__libc_init_array+0x3c>)
+ 803f896:	1ba4      	subs	r4, r4, r6
+ 803f898:	10a4      	asrs	r4, r4, #2
+ 803f89a:	2500      	movs	r5, #0
+ 803f89c:	42a5      	cmp	r5, r4
+ 803f89e:	d109      	bne.n	803f8b4 <__libc_init_array+0x24>
+ 803f8a0:	4e0b      	ldr	r6, [pc, #44]	; (803f8d0 <__libc_init_array+0x40>)
+ 803f8a2:	4c0c      	ldr	r4, [pc, #48]	; (803f8d4 <__libc_init_array+0x44>)
+ 803f8a4:	f003 fd9e 	bl	80433e4 <_init>
+ 803f8a8:	1ba4      	subs	r4, r4, r6
+ 803f8aa:	10a4      	asrs	r4, r4, #2
+ 803f8ac:	2500      	movs	r5, #0
+ 803f8ae:	42a5      	cmp	r5, r4
+ 803f8b0:	d105      	bne.n	803f8be <__libc_init_array+0x2e>
+ 803f8b2:	bd70      	pop	{r4, r5, r6, pc}
+ 803f8b4:	f856 3025 	ldr.w	r3, [r6, r5, lsl #2]
+ 803f8b8:	4798      	blx	r3
+ 803f8ba:	3501      	adds	r5, #1
+ 803f8bc:	e7ee      	b.n	803f89c <__libc_init_array+0xc>
+ 803f8be:	f856 3025 	ldr.w	r3, [r6, r5, lsl #2]
+ 803f8c2:	4798      	blx	r3
+ 803f8c4:	3501      	adds	r5, #1
+ 803f8c6:	e7f2      	b.n	803f8ae <__libc_init_array+0x1e>
+ 803f8c8:	08056518 	.word	0x08056518
  803f8cc:	08056518 	.word	0x08056518
  803f8d0:	08056518 	.word	0x08056518
- 803f8d4:	08056518 	.word	0x08056518
- 803f8d8:	0805651c 	.word	0x0805651c
+ 803f8d4:	0805651c 	.word	0x0805651c
 
-0803f8dc <memcmp>:
- 803f8dc:	b530      	push	{r4, r5, lr}
- 803f8de:	2400      	movs	r4, #0
- 803f8e0:	42a2      	cmp	r2, r4
- 803f8e2:	d101      	bne.n	803f8e8 <memcmp+0xc>
- 803f8e4:	2000      	movs	r0, #0
- 803f8e6:	e007      	b.n	803f8f8 <memcmp+0x1c>
- 803f8e8:	5d03      	ldrb	r3, [r0, r4]
- 803f8ea:	3401      	adds	r4, #1
- 803f8ec:	190d      	adds	r5, r1, r4
- 803f8ee:	f815 5c01 	ldrb.w	r5, [r5, #-1]
- 803f8f2:	42ab      	cmp	r3, r5
- 803f8f4:	d0f4      	beq.n	803f8e0 <memcmp+0x4>
- 803f8f6:	1b58      	subs	r0, r3, r5
- 803f8f8:	bd30      	pop	{r4, r5, pc}
+0803f8d8 <memcmp>:
+ 803f8d8:	b530      	push	{r4, r5, lr}
+ 803f8da:	2400      	movs	r4, #0
+ 803f8dc:	42a2      	cmp	r2, r4
+ 803f8de:	d101      	bne.n	803f8e4 <memcmp+0xc>
+ 803f8e0:	2000      	movs	r0, #0
+ 803f8e2:	e007      	b.n	803f8f4 <memcmp+0x1c>
+ 803f8e4:	5d03      	ldrb	r3, [r0, r4]
+ 803f8e6:	3401      	adds	r4, #1
+ 803f8e8:	190d      	adds	r5, r1, r4
+ 803f8ea:	f815 5c01 	ldrb.w	r5, [r5, #-1]
+ 803f8ee:	42ab      	cmp	r3, r5
+ 803f8f0:	d0f4      	beq.n	803f8dc <memcmp+0x4>
+ 803f8f2:	1b58      	subs	r0, r3, r5
+ 803f8f4:	bd30      	pop	{r4, r5, pc}
 
-0803f8fa <memcpy>:
- 803f8fa:	b510      	push	{r4, lr}
- 803f8fc:	1e43      	subs	r3, r0, #1
- 803f8fe:	440a      	add	r2, r1
- 803f900:	4291      	cmp	r1, r2
- 803f902:	d100      	bne.n	803f906 <memcpy+0xc>
- 803f904:	bd10      	pop	{r4, pc}
- 803f906:	f811 4b01 	ldrb.w	r4, [r1], #1
- 803f90a:	f803 4f01 	strb.w	r4, [r3, #1]!
- 803f90e:	e7f7      	b.n	803f900 <memcpy+0x6>
+0803f8f6 <memcpy>:
+ 803f8f6:	b510      	push	{r4, lr}
+ 803f8f8:	1e43      	subs	r3, r0, #1
+ 803f8fa:	440a      	add	r2, r1
+ 803f8fc:	4291      	cmp	r1, r2
+ 803f8fe:	d100      	bne.n	803f902 <memcpy+0xc>
+ 803f900:	bd10      	pop	{r4, pc}
+ 803f902:	f811 4b01 	ldrb.w	r4, [r1], #1
+ 803f906:	f803 4f01 	strb.w	r4, [r3, #1]!
+ 803f90a:	e7f7      	b.n	803f8fc <memcpy+0x6>
 
-0803f910 <memset>:
- 803f910:	4402      	add	r2, r0
- 803f912:	4603      	mov	r3, r0
- 803f914:	4293      	cmp	r3, r2
- 803f916:	d100      	bne.n	803f91a <memset+0xa>
- 803f918:	4770      	bx	lr
- 803f91a:	f803 1b01 	strb.w	r1, [r3], #1
- 803f91e:	e7f9      	b.n	803f914 <memset+0x4>
+0803f90c <memset>:
+ 803f90c:	4402      	add	r2, r0
+ 803f90e:	4603      	mov	r3, r0
+ 803f910:	4293      	cmp	r3, r2
+ 803f912:	d100      	bne.n	803f916 <memset+0xa>
+ 803f914:	4770      	bx	lr
+ 803f916:	f803 1b01 	strb.w	r1, [r3], #1
+ 803f91a:	e7f9      	b.n	803f910 <memset+0x4>
 
-0803f920 <siprintf>:
- 803f920:	b40e      	push	{r1, r2, r3}
- 803f922:	b500      	push	{lr}
- 803f924:	b09c      	sub	sp, #112	; 0x70
- 803f926:	ab1d      	add	r3, sp, #116	; 0x74
- 803f928:	9002      	str	r0, [sp, #8]
- 803f92a:	9006      	str	r0, [sp, #24]
- 803f92c:	f06f 4100 	mvn.w	r1, #2147483648	; 0x80000000
- 803f930:	4809      	ldr	r0, [pc, #36]	; (803f958 <siprintf+0x38>)
- 803f932:	9107      	str	r1, [sp, #28]
- 803f934:	9104      	str	r1, [sp, #16]
- 803f936:	4909      	ldr	r1, [pc, #36]	; (803f95c <siprintf+0x3c>)
- 803f938:	f853 2b04 	ldr.w	r2, [r3], #4
- 803f93c:	9105      	str	r1, [sp, #20]
- 803f93e:	6800      	ldr	r0, [r0, #0]
- 803f940:	9301      	str	r3, [sp, #4]
- 803f942:	a902      	add	r1, sp, #8
- 803f944:	f001 fe98 	bl	8041678 <_svfiprintf_r>
- 803f948:	9b02      	ldr	r3, [sp, #8]
- 803f94a:	2200      	movs	r2, #0
- 803f94c:	701a      	strb	r2, [r3, #0]
- 803f94e:	b01c      	add	sp, #112	; 0x70
- 803f950:	f85d eb04 	ldr.w	lr, [sp], #4
- 803f954:	b003      	add	sp, #12
- 803f956:	4770      	bx	lr
- 803f958:	200002c4 	.word	0x200002c4
- 803f95c:	ffff0208 	.word	0xffff0208
+0803f91c <siprintf>:
+ 803f91c:	b40e      	push	{r1, r2, r3}
+ 803f91e:	b500      	push	{lr}
+ 803f920:	b09c      	sub	sp, #112	; 0x70
+ 803f922:	ab1d      	add	r3, sp, #116	; 0x74
+ 803f924:	9002      	str	r0, [sp, #8]
+ 803f926:	9006      	str	r0, [sp, #24]
+ 803f928:	f06f 4100 	mvn.w	r1, #2147483648	; 0x80000000
+ 803f92c:	4809      	ldr	r0, [pc, #36]	; (803f954 <siprintf+0x38>)
+ 803f92e:	9107      	str	r1, [sp, #28]
+ 803f930:	9104      	str	r1, [sp, #16]
+ 803f932:	4909      	ldr	r1, [pc, #36]	; (803f958 <siprintf+0x3c>)
+ 803f934:	f853 2b04 	ldr.w	r2, [r3], #4
+ 803f938:	9105      	str	r1, [sp, #20]
+ 803f93a:	6800      	ldr	r0, [r0, #0]
+ 803f93c:	9301      	str	r3, [sp, #4]
+ 803f93e:	a902      	add	r1, sp, #8
+ 803f940:	f001 fe9a 	bl	8041678 <_svfiprintf_r>
+ 803f944:	9b02      	ldr	r3, [sp, #8]
+ 803f946:	2200      	movs	r2, #0
+ 803f948:	701a      	strb	r2, [r3, #0]
+ 803f94a:	b01c      	add	sp, #112	; 0x70
+ 803f94c:	f85d eb04 	ldr.w	lr, [sp], #4
+ 803f950:	b003      	add	sp, #12
+ 803f952:	4770      	bx	lr
+ 803f954:	200002c4 	.word	0x200002c4
+ 803f958:	ffff0208 	.word	0xffff0208
 
-0803f960 <strncmp>:
- 803f960:	b510      	push	{r4, lr}
- 803f962:	b16a      	cbz	r2, 803f980 <strncmp+0x20>
- 803f964:	3901      	subs	r1, #1
- 803f966:	1884      	adds	r4, r0, r2
- 803f968:	f810 3b01 	ldrb.w	r3, [r0], #1
- 803f96c:	f811 2f01 	ldrb.w	r2, [r1, #1]!
- 803f970:	4293      	cmp	r3, r2
- 803f972:	d103      	bne.n	803f97c <strncmp+0x1c>
- 803f974:	42a0      	cmp	r0, r4
- 803f976:	d001      	beq.n	803f97c <strncmp+0x1c>
- 803f978:	2b00      	cmp	r3, #0
- 803f97a:	d1f5      	bne.n	803f968 <strncmp+0x8>
- 803f97c:	1a98      	subs	r0, r3, r2
- 803f97e:	bd10      	pop	{r4, pc}
- 803f980:	4610      	mov	r0, r2
- 803f982:	e7fc      	b.n	803f97e <strncmp+0x1e>
+0803f95c <strncmp>:
+ 803f95c:	b510      	push	{r4, lr}
+ 803f95e:	b16a      	cbz	r2, 803f97c <strncmp+0x20>
+ 803f960:	3901      	subs	r1, #1
+ 803f962:	1884      	adds	r4, r0, r2
+ 803f964:	f810 3b01 	ldrb.w	r3, [r0], #1
+ 803f968:	f811 2f01 	ldrb.w	r2, [r1, #1]!
+ 803f96c:	4293      	cmp	r3, r2
+ 803f96e:	d103      	bne.n	803f978 <strncmp+0x1c>
+ 803f970:	42a0      	cmp	r0, r4
+ 803f972:	d001      	beq.n	803f978 <strncmp+0x1c>
+ 803f974:	2b00      	cmp	r3, #0
+ 803f976:	d1f5      	bne.n	803f964 <strncmp+0x8>
+ 803f978:	1a98      	subs	r0, r3, r2
+ 803f97a:	bd10      	pop	{r4, pc}
+ 803f97c:	4610      	mov	r0, r2
+ 803f97e:	e7fc      	b.n	803f97a <strncmp+0x1e>
 
-0803f984 <strstr>:
- 803f984:	b5f0      	push	{r4, r5, r6, r7, lr}
- 803f986:	7803      	ldrb	r3, [r0, #0]
- 803f988:	b17b      	cbz	r3, 803f9aa <strstr+0x26>
- 803f98a:	4604      	mov	r4, r0
- 803f98c:	7823      	ldrb	r3, [r4, #0]
- 803f98e:	4620      	mov	r0, r4
- 803f990:	1c66      	adds	r6, r4, #1
- 803f992:	b17b      	cbz	r3, 803f9b4 <strstr+0x30>
- 803f994:	1e4a      	subs	r2, r1, #1
- 803f996:	1e63      	subs	r3, r4, #1
- 803f998:	f812 5f01 	ldrb.w	r5, [r2, #1]!
- 803f99c:	b14d      	cbz	r5, 803f9b2 <strstr+0x2e>
- 803f99e:	f813 7f01 	ldrb.w	r7, [r3, #1]!
- 803f9a2:	42af      	cmp	r7, r5
- 803f9a4:	4634      	mov	r4, r6
- 803f9a6:	d0f7      	beq.n	803f998 <strstr+0x14>
- 803f9a8:	e7f0      	b.n	803f98c <strstr+0x8>
- 803f9aa:	780b      	ldrb	r3, [r1, #0]
- 803f9ac:	2b00      	cmp	r3, #0
- 803f9ae:	bf18      	it	ne
- 803f9b0:	2000      	movne	r0, #0
- 803f9b2:	bdf0      	pop	{r4, r5, r6, r7, pc}
- 803f9b4:	4618      	mov	r0, r3
- 803f9b6:	e7fc      	b.n	803f9b2 <strstr+0x2e>
+0803f980 <strstr>:
+ 803f980:	b5f0      	push	{r4, r5, r6, r7, lr}
+ 803f982:	7803      	ldrb	r3, [r0, #0]
+ 803f984:	b17b      	cbz	r3, 803f9a6 <strstr+0x26>
+ 803f986:	4604      	mov	r4, r0
+ 803f988:	7823      	ldrb	r3, [r4, #0]
+ 803f98a:	4620      	mov	r0, r4
+ 803f98c:	1c66      	adds	r6, r4, #1
+ 803f98e:	b17b      	cbz	r3, 803f9b0 <strstr+0x30>
+ 803f990:	1e4a      	subs	r2, r1, #1
+ 803f992:	1e63      	subs	r3, r4, #1
+ 803f994:	f812 5f01 	ldrb.w	r5, [r2, #1]!
+ 803f998:	b14d      	cbz	r5, 803f9ae <strstr+0x2e>
+ 803f99a:	f813 7f01 	ldrb.w	r7, [r3, #1]!
+ 803f99e:	42af      	cmp	r7, r5
+ 803f9a0:	4634      	mov	r4, r6
+ 803f9a2:	d0f7      	beq.n	803f994 <strstr+0x14>
+ 803f9a4:	e7f0      	b.n	803f988 <strstr+0x8>
+ 803f9a6:	780b      	ldrb	r3, [r1, #0]
+ 803f9a8:	2b00      	cmp	r3, #0
+ 803f9aa:	bf18      	it	ne
+ 803f9ac:	2000      	movne	r0, #0
+ 803f9ae:	bdf0      	pop	{r4, r5, r6, r7, pc}
+ 803f9b0:	4618      	mov	r0, r3
+ 803f9b2:	e7fc      	b.n	803f9ae <strstr+0x2e>
 
-0803f9b8 <sulp>:
- 803f9b8:	b570      	push	{r4, r5, r6, lr}
- 803f9ba:	4604      	mov	r4, r0
- 803f9bc:	460d      	mov	r5, r1
- 803f9be:	ec45 4b10 	vmov	d0, r4, r5
- 803f9c2:	4616      	mov	r6, r2
- 803f9c4:	f001 fc62 	bl	804128c <__ulp>
- 803f9c8:	ec51 0b10 	vmov	r0, r1, d0
- 803f9cc:	b17e      	cbz	r6, 803f9ee <sulp+0x36>
- 803f9ce:	f3c5 530a 	ubfx	r3, r5, #20, #11
- 803f9d2:	f1c3 036b 	rsb	r3, r3, #107	; 0x6b
- 803f9d6:	2b00      	cmp	r3, #0
- 803f9d8:	dd09      	ble.n	803f9ee <sulp+0x36>
- 803f9da:	051b      	lsls	r3, r3, #20
- 803f9dc:	f103 557f 	add.w	r5, r3, #1069547520	; 0x3fc00000
- 803f9e0:	2400      	movs	r4, #0
- 803f9e2:	f505 1540 	add.w	r5, r5, #3145728	; 0x300000
- 803f9e6:	4622      	mov	r2, r4
- 803f9e8:	462b      	mov	r3, r5
- 803f9ea:	f7e0 fe3d 	bl	8020668 <__aeabi_dmul>
- 803f9ee:	bd70      	pop	{r4, r5, r6, pc}
+0803f9b4 <sulp>:
+ 803f9b4:	b570      	push	{r4, r5, r6, lr}
+ 803f9b6:	4604      	mov	r4, r0
+ 803f9b8:	460d      	mov	r5, r1
+ 803f9ba:	ec45 4b10 	vmov	d0, r4, r5
+ 803f9be:	4616      	mov	r6, r2
+ 803f9c0:	f001 fc64 	bl	804128c <__ulp>
+ 803f9c4:	ec51 0b10 	vmov	r0, r1, d0
+ 803f9c8:	b17e      	cbz	r6, 803f9ea <sulp+0x36>
+ 803f9ca:	f3c5 530a 	ubfx	r3, r5, #20, #11
+ 803f9ce:	f1c3 036b 	rsb	r3, r3, #107	; 0x6b
+ 803f9d2:	2b00      	cmp	r3, #0
+ 803f9d4:	dd09      	ble.n	803f9ea <sulp+0x36>
+ 803f9d6:	051b      	lsls	r3, r3, #20
+ 803f9d8:	f103 557f 	add.w	r5, r3, #1069547520	; 0x3fc00000
+ 803f9dc:	2400      	movs	r4, #0
+ 803f9de:	f505 1540 	add.w	r5, r5, #3145728	; 0x300000
+ 803f9e2:	4622      	mov	r2, r4
+ 803f9e4:	462b      	mov	r3, r5
+ 803f9e6:	f7e0 fe3f 	bl	8020668 <__aeabi_dmul>
+ 803f9ea:	bd70      	pop	{r4, r5, r6, pc}
+ 803f9ec:	0000      	movs	r0, r0
+	...
 
 0803f9f0 <_strtod_l>:
  803f9f0:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -81277,7 +81277,7 @@ int8_t _BitPosition(uint64_t event_id) {
  803fb40:	d929      	bls.n	803fb96 <_strtod_l+0x1a6>
  803fb42:	4622      	mov	r2, r4
  803fb44:	f8d8 1000 	ldr.w	r1, [r8]
- 803fb48:	f7ff ff0a 	bl	803f960 <strncmp>
+ 803fb48:	f7ff ff08 	bl	803f95c <strncmp>
  803fb4c:	2800      	cmp	r0, #0
  803fb4e:	d031      	beq.n	803fbb4 <_strtod_l+0x1c4>
  803fb50:	2000      	movs	r0, #0
@@ -81778,7 +81778,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8040046:	f103 010c 	add.w	r1, r3, #12
  804004a:	0092      	lsls	r2, r2, #2
  804004c:	300c      	adds	r0, #12
- 804004e:	f7ff fc54 	bl	803f8fa <memcpy>
+ 804004e:	f7ff fc52 	bl	803f8f6 <memcpy>
  8040052:	aa1e      	add	r2, sp, #120	; 0x78
  8040054:	a91d      	add	r1, sp, #116	; 0x74
  8040056:	ec4b ab10 	vmov	d0, sl, fp
@@ -82047,7 +82047,7 @@ int8_t _BitPosition(uint64_t event_id) {
  80402f6:	4650      	mov	r0, sl
  80402f8:	4659      	mov	r1, fp
  80402fa:	b173      	cbz	r3, 804031a <_strtod_l+0x92a>
- 80402fc:	f7ff fb5c 	bl	803f9b8 <sulp>
+ 80402fc:	f7ff fb5a 	bl	803f9b4 <sulp>
  8040300:	4602      	mov	r2, r0
  8040302:	460b      	mov	r3, r1
  8040304:	e9dd 0108 	ldrd	r0, r1, [sp, #32]
@@ -82058,7 +82058,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8040312:	9b0f      	ldr	r3, [sp, #60]	; 0x3c
  8040314:	ea13 0f0a 	tst.w	r3, sl
  8040318:	e7e9      	b.n	80402ee <_strtod_l+0x8fe>
- 804031a:	f7ff fb4d 	bl	803f9b8 <sulp>
+ 804031a:	f7ff fb4b 	bl	803f9b4 <sulp>
  804031e:	4602      	mov	r2, r0
  8040320:	460b      	mov	r3, r1
  8040322:	e9dd 0108 	ldrd	r0, r1, [sp, #32]
@@ -82471,7 +82471,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8040766:	9a01      	ldr	r2, [sp, #4]
  8040768:	9903      	ldr	r1, [sp, #12]
  804076a:	4638      	mov	r0, r7
- 804076c:	f7ff f8f8 	bl	803f960 <strncmp>
+ 804076c:	f7ff f8f6 	bl	803f95c <strncmp>
  8040770:	2800      	cmp	r0, #0
  8040772:	d166      	bne.n	8040842 <__gethex+0x124>
  8040774:	9b01      	ldr	r3, [sp, #4]
@@ -82501,7 +82501,7 @@ int8_t _BitPosition(uint64_t event_id) {
  80407b0:	9a01      	ldr	r2, [sp, #4]
  80407b2:	9903      	ldr	r1, [sp, #12]
  80407b4:	4630      	mov	r0, r6
- 80407b6:	f7ff f8d3 	bl	803f960 <strncmp>
+ 80407b6:	f7ff f8d1 	bl	803f95c <strncmp>
  80407ba:	b950      	cbnz	r0, 80407d2 <__gethex+0xb4>
  80407bc:	b954      	cbnz	r4, 80407d4 <__gethex+0xb6>
  80407be:	9b01      	ldr	r3, [sp, #4]
@@ -82670,7 +82670,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8040958:	9a01      	ldr	r2, [sp, #4]
  804095a:	9903      	ldr	r1, [sp, #12]
  804095c:	9309      	str	r3, [sp, #36]	; 0x24
- 804095e:	f7fe ffff 	bl	803f960 <strncmp>
+ 804095e:	f7fe fffd 	bl	803f95c <strncmp>
  8040962:	9b09      	ldr	r3, [sp, #36]	; 0x24
  8040964:	2800      	cmp	r0, #0
  8040966:	d1d8      	bne.n	804091a <__gethex+0x1fc>
@@ -82839,7 +82839,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8040b04:	4683      	mov	fp, r0
  8040b06:	0092      	lsls	r2, r2, #2
  8040b08:	300c      	adds	r0, #12
- 8040b0a:	f7fe fef6 	bl	803f8fa <memcpy>
+ 8040b0a:	f7fe fef4 	bl	803f8f6 <memcpy>
  8040b0e:	4629      	mov	r1, r5
  8040b10:	9802      	ldr	r0, [sp, #8]
  8040b12:	f000 f923 	bl	8040d5c <_Bfree>
@@ -83153,7 +83153,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8040ddc:	4680      	mov	r8, r0
  8040dde:	0092      	lsls	r2, r2, #2
  8040de0:	300c      	adds	r0, #12
- 8040de2:	f7fe fd8a 	bl	803f8fa <memcpy>
+ 8040de2:	f7fe fd88 	bl	803f8f6 <memcpy>
  8040de6:	4621      	mov	r1, r4
  8040de8:	4630      	mov	r0, r6
  8040dea:	f7ff ffb7 	bl	8040d5c <_Bfree>
@@ -83874,7 +83874,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8041500:	b118      	cbz	r0, 804150a <_calloc_r+0x18>
  8041502:	4622      	mov	r2, r4
  8041504:	2100      	movs	r1, #0
- 8041506:	f7fe fa03 	bl	803f910 <memset>
+ 8041506:	f7fe fa01 	bl	803f90c <memset>
  804150a:	4628      	mov	r0, r5
  804150c:	bd38      	pop	{r3, r4, r5, pc}
 	...
@@ -83998,7 +83998,7 @@ int8_t _BitPosition(uint64_t event_id) {
  804161c:	e8bd 87f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, pc}
  8041620:	463a      	mov	r2, r7
  8041622:	6921      	ldr	r1, [r4, #16]
- 8041624:	f7fe f969 	bl	803f8fa <memcpy>
+ 8041624:	f7fe f967 	bl	803f8f6 <memcpy>
  8041628:	89a3      	ldrh	r3, [r4, #12]
  804162a:	f423 6390 	bic.w	r3, r3, #1152	; 0x480
  804162e:	f043 0380 	orr.w	r3, r3, #128	; 0x80
@@ -84753,7 +84753,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8041cd8:	d0f2      	beq.n	8041cc0 <_realloc_r+0x1c>
  8041cda:	4631      	mov	r1, r6
  8041cdc:	4622      	mov	r2, r4
- 8041cde:	f7fd fe0c 	bl	803f8fa <memcpy>
+ 8041cde:	f7fd fe0a 	bl	803f8f6 <memcpy>
  8041ce2:	4631      	mov	r1, r6
  8041ce4:	4638      	mov	r0, r7
  8041ce6:	f7ff ff8f 	bl	8041c08 <_free_r>
@@ -84816,7 +84816,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8041d6e:	2e02      	cmp	r6, #2
  8041d70:	9300      	str	r3, [sp, #0]
  8041d72:	d119      	bne.n	8041da8 <log10+0xa8>
- 8041d74:	f7fd fd88 	bl	803f888 <__errno>
+ 8041d74:	f7fd fd86 	bl	803f884 <__errno>
  8041d78:	2321      	movs	r3, #33	; 0x21
  8041d7a:	6003      	str	r3, [r0, #0]
  8041d7c:	e019      	b.n	8041db2 <log10+0xb2>
@@ -84834,7 +84834,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8041d98:	429e      	cmp	r6, r3
  8041d9a:	9300      	str	r3, [sp, #0]
  8041d9c:	d111      	bne.n	8041dc2 <log10+0xc2>
- 8041d9e:	f7fd fd73 	bl	803f888 <__errno>
+ 8041d9e:	f7fd fd71 	bl	803f884 <__errno>
  8041da2:	2322      	movs	r3, #34	; 0x22
  8041da4:	6003      	str	r3, [r0, #0]
  8041da6:	e011      	b.n	8041dcc <log10+0xcc>
@@ -84854,7 +84854,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8041dca:	d0e8      	beq.n	8041d9e <log10+0x9e>
  8041dcc:	9b08      	ldr	r3, [sp, #32]
  8041dce:	b11b      	cbz	r3, 8041dd8 <log10+0xd8>
- 8041dd0:	f7fd fd5a 	bl	803f888 <__errno>
+ 8041dd0:	f7fd fd58 	bl	803f884 <__errno>
  8041dd4:	9b08      	ldr	r3, [sp, #32]
  8041dd6:	6003      	str	r3, [r0, #0]
  8041dd8:	ed9d 8b06 	vldr	d8, [sp, #24]
@@ -84957,7 +84957,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8041eda:	e9cd 2308 	strd	r2, r3, [sp, #32]
  8041ede:	9b0a      	ldr	r3, [sp, #40]	; 0x28
  8041ee0:	b11b      	cbz	r3, 8041eea <pow+0xea>
- 8041ee2:	f7fd fcd1 	bl	803f888 <__errno>
+ 8041ee2:	f7fd fccf 	bl	803f884 <__errno>
  8041ee6:	9b0a      	ldr	r3, [sp, #40]	; 0x28
  8041ee8:	6003      	str	r3, [r0, #0]
  8041eea:	ed9d 8b08 	vldr	d8, [sp, #32]
@@ -84993,7 +84993,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8041f40:	e9cd 0108 	strd	r0, r1, [sp, #32]
  8041f44:	2b02      	cmp	r3, #2
  8041f46:	d19c      	bne.n	8041e82 <pow+0x82>
- 8041f48:	f7fd fc9e 	bl	803f888 <__errno>
+ 8041f48:	f7fd fc9c 	bl	803f884 <__errno>
  8041f4c:	2321      	movs	r3, #33	; 0x21
  8041f4e:	6003      	str	r3, [r0, #0]
  8041f50:	e7c5      	b.n	8041ede <pow+0xde>
@@ -85071,7 +85071,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8042022:	f998 3000 	ldrsb.w	r3, [r8]
  8042026:	2b02      	cmp	r3, #2
  8042028:	d142      	bne.n	80420b0 <pow+0x2b0>
- 804202a:	f7fd fc2d 	bl	803f888 <__errno>
+ 804202a:	f7fd fc2b 	bl	803f884 <__errno>
  804202e:	2322      	movs	r3, #34	; 0x22
  8042030:	e78d      	b.n	8041f4e <pow+0x14e>
  8042032:	4b29      	ldr	r3, [pc, #164]	; (80420d8 <pow+0x2d8>)
@@ -85175,7 +85175,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8042148:	b1d0      	cbz	r0, 8042180 <sqrt+0xa0>
  804214a:	9b08      	ldr	r3, [sp, #32]
  804214c:	b11b      	cbz	r3, 8042156 <sqrt+0x76>
- 804214e:	f7fd fb9b 	bl	803f888 <__errno>
+ 804214e:	f7fd fb99 	bl	803f884 <__errno>
  8042152:	9b08      	ldr	r3, [sp, #32]
  8042154:	6003      	str	r3, [r0, #0]
  8042156:	ed9d 8b06 	vldr	d8, [sp, #24]
@@ -85192,7 +85192,7 @@ int8_t _BitPosition(uint64_t event_id) {
  8042178:	2e02      	cmp	r6, #2
  804217a:	e9cd 0106 	strd	r0, r1, [sp, #24]
  804217e:	d1e0      	bne.n	8042142 <sqrt+0x62>
- 8042180:	f7fd fb82 	bl	803f888 <__errno>
+ 8042180:	f7fd fb80 	bl	803f884 <__errno>
  8042184:	2321      	movs	r3, #33	; 0x21
  8042186:	6003      	str	r3, [r0, #0]
  8042188:	e7df      	b.n	804214a <sqrt+0x6a>

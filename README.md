@@ -94,6 +94,10 @@
     - [ ] Drive mode handle MCU related parameters
     - [ ] HMI.Primary 'warning' & 'overheat' based on MCU
 - [ ] Make routine to check SIMCOM internet package
+- [x] Build bootloader for FOTA
+- [x] Merge bootloader & application project
+- [ ] Separate audio assets with FTP download.
+  - [ ] Use last 2 sector of FLASH for its space. 
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
 - [x] ~~Lock all global variable to minimize RTOS problem.~~ 
@@ -240,22 +244,22 @@
 - http://www.summitdata.com/blog/parasitic-effects-rf-design/ 
 
 ## Sub-Modules Progress:
-| No | Sub Module                  | Chip           | ST-Periph.  | FW  | HW | Note		  				|
+| No | Sub Module                  | Chip           | ST-Periph.  | FW  | HW | Note		  	|
 |:--:|-----------------------------|----------------|:-----------:|:---:|:--:|--------------------------|
-|  1 | IoT                         | SIM5300e       | USART1	  | ✔   | ✔  | **Done**					|
-|  2 | GPS                         | Ublox NEO-6M   | USART2	  | ✔   | ✔  | **Done**					|
-|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3	      | ✔   | ✔	 | **Done**					|
-|  4 | Keyless/RF                  | nRF24L01 		| SPI1		  | ✔   | ✔  | **Done**: Semi module	|
-|  5 | Fingerprint                 | FZ3387         | UART4		  | ✔   | ✔	 | **Done**					|
-|  6 | RTC                         | -			    | RTC		  | ✔   | ✔  | **Done**					|
-|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -			  | ✔   | ✔  | **Done**					|
-|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3  | ✔   | ✔	 | **Done**					|
-|  9 | CAN Transceiver             | SN65HVD230     | CAN1		  | ✔   | ✔  | **Done**					|
-| 10 | EEPROM                      | 24AA32A        | I2C2		  | ✔   | ✔  | **Done**					|
-| 11 | Handlebar/Switch            | -		        | EXTI-PE	  | ✔   | ✔  | **Done**					|
-| 12 | Data Validator	           | -      	  	| CRC		  | ✔   | -  | **Done**					|
-| 13 | Backup Battery Monitor      | -				| ADC1		  | ✔   | ✔  | **Done** 				|
-| 14 | Debugging Buzzer			   | -				| TIM10-PWM	  | ✔   | ✔  | **Done** 				|
-| 15 | Encryption RF			   | -				| AES  		  | ✔   | -	 | **Done**					|
-| 16 | Firmware upgrade OTA (FOTA) | -				| FLASH		  | 0%  | -  | On-Progress				|
-| 17 | Encryption IoT			   | -				| MbedTLS	  | 0%  | -	 | Waiting: Real Server		|
+|  1 | IoT                         | SIM5300e       | USART1	  | ✔  | ✔ | **Done**			|
+|  2 | GPS                         | Ublox NEO-6M   | USART2	  | ✔  | ✔ | **Done**			|
+|  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3	  | ✔  | ✔ | **Done**			|
+|  4 | Keyless/RF                  | nRF24L01 	    | SPI1	  | ✔  | ✔ | **Done**: Semi module	|
+|  5 | Fingerprint                 | FZ3387         | UART4	  | ✔  | ✔ | **Done**			|
+|  6 | RTC                         | -		    | RTC	  | ✔  | ✔ | **Done**			|
+|  7 | Li-ION Charger & Protection | TP4056 & DW01A | -		  | ✔  | ✔ | **Done**			|
+|  8 | Artificial Audio            | CS43L22        | I2C1, I2S3  | ✔  | ✔ | **Done**			|
+|  9 | CAN Transceiver             | SN65HVD230     | CAN1	  | ✔  | ✔ | **Done**			|
+| 10 | EEPROM                      | 24AA32A        | I2C2	  | ✔  | ✔ | **Done**			|
+| 11 | Handlebar/Switch            | -		    | EXTI-PE	  | ✔  | ✔ | **Done**			|
+| 12 | Data Validator	           | -      	    | CRC	  | ✔  | -  | **Done**			|
+| 13 | Backup Battery Monitor      | -		    | ADC1	  | ✔  | ✔ | **Done** 		|
+| 14 | Debugging Buzzer		   | -		    | TIM10-PWM	  | ✔  | ✔ | **Done** 		|
+| 15 | Encryption RF		   | -		    | AES  	  | ✔  | -  | **Done**			|
+| 16 | Firmware upgrade OTA (FOTA) | -		    | FLASH	  | ✔  | -  | On-Progress		|
+| 17 | Encryption IoT		   | -		    | MbedTLS	  | 0%  | -  | Waiting: Real Server	|
