@@ -62,6 +62,19 @@ typedef enum {
 } AT_C_GREG_STAT;
 
 typedef enum {
+    CAT_ACT_GSM = 0,
+    CAT_ACT_GSM_COMPACT,
+    CAT_ACT_UTRAN,
+    CAT_ACT_GSM_EDGE,
+    CAT_ACT_UTRAN_HSDPA,
+    CAT_ACT_UTRAN_HSUPA,
+    CAT_ACT_UTRAN_HSDPA_AND_HSUPA,
+    CAT_ACT_E_UTRAN,
+    CAT_ACT_ForceEnumSize = MAX_ENUM_SIZE
+} AT_CSACT_ACT;
+
+#if (!BOOTLOADER)
+typedef enum {
     CGATT_DETACHED = 0,
     CGATT_ATTACHED,
     CGATT_ForceEnumSize = MAX_ENUM_SIZE
@@ -87,19 +100,7 @@ typedef enum {
     CIPRXGET_QUERY,
     CIPRXGET_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CIPRXGET;
-
-typedef enum {
-    CAT_ACT_GSM = 0,
-    CAT_ACT_GSM_COMPACT,
-    CAT_ACT_UTRAN,
-    CAT_ACT_GSM_EDGE,
-    CAT_ACT_UTRAN_HSDPA,
-    CAT_ACT_UTRAN_HSUPA,
-    CAT_ACT_UTRAN_HSDPA_AND_HSUPA,
-    CAT_ACT_E_UTRAN,
-    CAT_ACT_ForceEnumSize = MAX_ENUM_SIZE
-} AT_CSACT_ACT;
-
+#else
 typedef enum {
     SAPBR_BEARER_CLOSE = 0,
     SAPBR_BEARER_OPEN,
@@ -151,6 +152,7 @@ typedef enum {
     FTP_STATE_ESTABLISHED,
     FTP_STATE_ForceEnumSize = MAX_ENUM_SIZE
 } AT_FTP_STATE;
+#endif
 
 typedef enum {
     AT_DISABLE = 0,
@@ -183,17 +185,23 @@ typedef struct {
 } at_c_greg_t;
 
 typedef struct {
-    char mode[4];
-    char ip[30];
-    uint16_t port;
-} at_cipstart_t;
-
-typedef struct {
     char apn[20];
     char username[20];
     char password[20];
 } at_cstt_t;
 
+#if (!BOOTLOADER)
+typedef struct {
+    char mode[4];
+    char ip[30];
+    uint16_t port;
+} at_cipstart_t;
+
+
+typedef struct {
+    char address[20];
+} at_cifsr_t;
+#else
 typedef struct {
     AT_SAPBR_CMD cmd_type;
     AT_SAPBR_STATUS status;
@@ -220,28 +228,36 @@ typedef struct {
     AT_FTP_RESPONSE response;
 } at_ftp_t;
 
-typedef struct {
-    char address[20];
-} at_cifsr_t;
+#endif
 
 /* Public functions implementation --------------------------------------------*/
+SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
+SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
+SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
+SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
+SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);
+SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t *param);
+SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state);
+SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state);
+SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate);
+
+#if (!BOOTLOADER)
+SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
+SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
+SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
+SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm);
+SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
+SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state);
+SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state);
+SIMCOM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state);
+SIMCOM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state);
+SIMCOM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state);
+SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state);
+#else
 SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
 SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param);
 SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
 SIMCOM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state);
-
-SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
-SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
 SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param);
-SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
-SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);
-
-SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t *param);
-
-SIMCOM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state);
-SIMCOM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state);
-SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state);
-SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state);
-SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state);
-SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate);
+#endif
 #endif /* INC_LIBS__AT_H_ */

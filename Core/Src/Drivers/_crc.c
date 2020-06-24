@@ -11,6 +11,9 @@
 
 /* External variables ----------------------------------------------------------*/
 extern CRC_HandleTypeDef hcrc;
+#if (!BOOTLOADER)
+extern osMutexId_t CrcMutexHandle;
+#endif
 
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
@@ -70,9 +73,13 @@ uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-//    osMutexAcquire(CrcMutexHandle, osWaitForever);
+#if (!BOOTLOADER)
+    osMutexAcquire(CrcMutexHandle, osWaitForever);
+#endif
 }
 
 static void unlock(void) {
-//    osMutexRelease(CrcMutexHandle);
+#if (!BOOTLOADER)
+    osMutexRelease(CrcMutexHandle);
+#endif
 }

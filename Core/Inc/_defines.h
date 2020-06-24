@@ -28,7 +28,8 @@
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-#define RTOS_ENABLE                             0
+#define BOOTLOADER                              1
+#define RTOS_ENABLE                             !BOOTLOADER
 #define VCU_BOOTLOADER_VERSION       	        0x01
 
 #define NET_BOOT_TIMEOUT                        8000U               // in ms

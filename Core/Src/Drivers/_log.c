@@ -8,7 +8,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_log.h"
 
-/* Private constants ---------------------------------------------------------*/
+#if (!BOOTLOADER)
+/* External variables ----------------------------------------------------------*/
+extern osMutexId_t LogMutexHandle;
+#endif
+
+/* Exported constants --------------------------------------------------------*/
 #define HEX_CHARS                                "0123456789ABCDEF"
 
 /* Private functions declarations ----------------------------------------------*/
@@ -203,9 +208,13 @@ void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char sub
 
 /* Private functions implementations ----------------------------------------------*/
 static void lock(void) {
-//    osMutexAcquire(LogMutexHandle, osWaitForever);
+#if (!BOOTLOADER)
+    osMutexAcquire(LogMutexHandle, osWaitForever);
+#endif
 }
 
 static void unlock(void) {
-//    osMutexRelease(LogMutexHandle);
+#if (!BOOTLOADER)
+    osMutexRelease(LogMutexHandle);
+#endif
 }

@@ -19,7 +19,7 @@
 #define VADDR_RESPONSE_SEQ_ID       VADDR_REPORT_SEQ_ID + sizeof(uint16_t)
 #define VADDR_AES_KEY               VADDR_RESPONSE_SEQ_ID + sizeof(uint16_t)
 
-#define VADDR_DFU_FLAG              VADDR_AES_KEY + (4*sizeof(uint32_t))
+#define VADDR_DFU_FLAG              VADDR_AES_KEY + 16
 
 #define EE_NULL                     0
 
@@ -31,8 +31,14 @@ typedef enum {
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EEPROM_Init(void);
-uint8_t EEPROM_FlagIAP(EEPROM_COMMAND cmd, uint32_t value);
-uint8_t EEPROM_RetryIAP(EEPROM_COMMAND cmd, uint32_t value);
+#if (!BOOTLOADER)
+void EEPROM_ResetOrLoad(void);
+uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
+uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
+uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
+uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
+#else
 uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value);
-
+#endif
 #endif /* EEPROM_H_ */

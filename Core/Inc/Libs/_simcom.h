@@ -13,13 +13,13 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define SIMCOM_RSP_NONE                 "\r\n"
-#define SIMCOM_RSP_SEND 				">"
-#define SIMCOM_RSP_SENT					"SEND OK\r"
-#define SIMCOM_RSP_OK 					"OK\r"
-#define SIMCOM_RSP_ERROR 				"ERROR"
-#define SIMCOM_RSP_READY 				"RDY"
+#define SIMCOM_RSP_SEND                 ">"
+#define SIMCOM_RSP_SENT                 "SEND OK\r"
+#define SIMCOM_RSP_OK                   "OK\r"
+#define SIMCOM_RSP_ERROR                "ERROR"
+#define SIMCOM_RSP_READY                "RDY"
 #define SIMCOM_RSP_IPD                  "+IPD,"
-#define SIMCOM_CMD_BOOT 				"AT\r"
+#define SIMCOM_CMD_BOOT                 "AT\r"
 #define SIMCOM_DEBUG                    1
 #define SIMCOM_MAX_UPLOAD_RETRY         3
 
@@ -70,14 +70,16 @@ typedef struct {
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t Simcom_SetState(SIMCOM_STATE state);
-void Simcom_Init(void);
+uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Response(char *str);
-SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
-uint8_t Simcom_FOTA(void);
 SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size);
 SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 void Simcom_Lock(void);
 void Simcom_Unlock(void);
+#if (!BOOTLOADER)
+SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
+#else
+uint8_t Simcom_FOTA(uint32_t checksumBackup);
+#endif
 
 #endif /* SIMCOM_H_ */

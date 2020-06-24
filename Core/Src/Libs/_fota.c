@@ -96,7 +96,7 @@ SIMCOM_RESULT FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     return p;
 }
 
-SIMCOM_RESULT FOTA_FirmwareToFlash(at_ftp_t *setFTP, uint32_t *len) {
+SIMCOM_RESULT FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
     SIMCOM_RESULT p;
     uint32_t timer;
     AT_FTP_STATE state;
@@ -287,4 +287,31 @@ void FOTA_JumpToApplication(void) {
     /* Never reached */
     while (1)
         ;
+}
+
+SIMCOM_RESULT FOTA_Upgrade(void) {
+    SIMCOM_RESULT p;
+    uint32_t checksum;
+
+    /* Set DFU */
+    if (!FOTA_InProgressDFU()) {
+        EEPROM_FlagDFU(EE_CMD_W, DFU_IN_PROGRESS);
+
+        // Backup current application (if necessary)
+        if (FOTA_ValidImage(APP_START_ADDR)) {
+            FLASHER_BackupApp();
+        }
+    }
+    /* Get the stored checksum information */
+    checksum = *(uint32_t*) (BKP_START_ADDR + CHECKSUM_OFFSET);
+
+    /* Download image and install */
+    p = Simcom_FOTA(checksum);
+
+    // DFU flag reset
+    if (p > 0) {
+        EEPROM_FlagDFU(EE_CMD_W, 0);
+    }
+
+    return p;
 }

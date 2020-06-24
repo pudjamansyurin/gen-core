@@ -112,14 +112,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    /* Read flag state from non-volatile memory */
-    EEPROM_FlagDFU(EE_CMD_R, EE_NULL);
     _LedWrite(1);
 
     /* IAP flag has been set, initiate firmware download procedure */
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
         LOG_StrLn("IAP set, do FOTA.");
-        ret = Simcom_FOTA();
+        ret = FOTA_Upgrade();
         /* Everything went well, reset IAP flag & boot form new image */
         if (ret) {
             /* Reset IAP flag */
@@ -153,7 +151,7 @@ int main(void)
     /* Power reset during DFU, try once more */
     else if (FOTA_InProgressDFU()) {
         LOG_StrLn("DFU set, do FOTA once more.");
-        ret = Simcom_FOTA();
+        ret = FOTA_Upgrade();
         /* Everything went well, boot form new image */
         if (ret) {
             /* Take branching decision on next reboot */
@@ -178,7 +176,7 @@ int main(void)
         } else {
             LOG_StrLn("No image at all, do FOTA.");
             /* Download new firmware for the first time */
-            ret = Simcom_FOTA();
+            ret = FOTA_Upgrade();
             /* Everything went well, boot form new image */
             if (ret) {
                 /* Take branching decision on next reboot */

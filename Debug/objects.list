@@ -1,7 +1,7 @@
 "Core/Src/DMA/_dma_simcom.o"
 "Core/Src/Drivers/_at.o"
 "Core/Src/Drivers/_crc.o"
-"Core/Src/Drivers/_eeprom24xx.o"
+"Core/Src/Drivers/_ee24xx.o"
 "Core/Src/Drivers/_flasher.o"
 "Core/Src/Drivers/_log.o"
 "Core/Src/Libs/_eeprom.o"
