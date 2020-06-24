@@ -8,11 +8,13 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include Shared/Src/Libs/subdir.mk
+-include Shared/Src/Drivers/subdir.mk
+-include Shared/Src/DMA/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/Libs/subdir.mk
 -include Core/Src/Drivers/subdir.mk
--include Core/Src/DMA/subdir.mk
 -include Core/Src/subdir.mk
 -include subdir.mk
 -include objects.mk
@@ -43,8 +45,8 @@ VCU_BOOTLOADER.bin \
 all: VCU_BOOTLOADER.elf secondary-outputs
 
 # Tool invocations
-VCU_BOOTLOADER.elf: $(OBJS) $(USER_OBJS) /home/geni/STM32CubeIDE/workspace_1.3.0/VCU_BOOTLOADER/STM32F423VHTX_FLASH.ld
-	arm-none-eabi-gcc -o "VCU_BOOTLOADER.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/geni/STM32CubeIDE/workspace_1.3.0/VCU_BOOTLOADER/STM32F423VHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="VCU_BOOTLOADER.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+VCU_BOOTLOADER.elf: $(OBJS) $(USER_OBJS) /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/VCU_BOOTLOADER/STM32F423VHTX_FLASH.ld
+	arm-none-eabi-gcc -o "VCU_BOOTLOADER.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/VCU_BOOTLOADER/STM32F423VHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="VCU_BOOTLOADER.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

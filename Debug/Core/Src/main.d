@@ -28,11 +28,16 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/Libs/_utils.h ../Core/Inc/_defines.h ../Core/Inc/main.h \
- ../Core/Inc/Drivers/_log.h ../Core/Inc/Libs/_eeprom.h \
- ../Core/Inc/Libs/_simcom.h ../Core/Inc/Libs/_fota.h \
- ../Core/Inc/Drivers/_at.h ../Core/Inc/Drivers/_flasher.h \
- ../Core/Inc/DMA/_dma_simcom.h
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h \
+ ../Core/Inc/_defines.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_eeprom.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_simcom.h \
+ ../Core/Inc/Libs/_fota.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_at.h \
+ ../Core/Inc/Drivers/_flasher.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/DMA/_dma_simcom.h
 
 ../Core/Inc/main.h:
 
@@ -94,22 +99,22 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
-../Core/Inc/Libs/_utils.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h:
 
 ../Core/Inc/_defines.h:
 
-../Core/Inc/main.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h:
 
-../Core/Inc/Drivers/_log.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h:
 
-../Core/Inc/Libs/_eeprom.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_eeprom.h:
 
-../Core/Inc/Libs/_simcom.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_simcom.h:
 
 ../Core/Inc/Libs/_fota.h:
 
-../Core/Inc/Drivers/_at.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_at.h:
 
 ../Core/Inc/Drivers/_flasher.h:
 
-../Core/Inc/DMA/_dma_simcom.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/DMA/_dma_simcom.h:
