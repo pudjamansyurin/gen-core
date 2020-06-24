@@ -8,9 +8,14 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
+/* Choose between VCU or Boot-loader mode */
+#define BOOTLOADER                              0
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#if (!BOOTLOADER)
 #include "cmsis_os.h"
+#endif
 
 #include <string.h>
 #include <stdlib.h>
@@ -29,16 +34,10 @@
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-#define BOOTLOADER                              0
 #define RTOS_ENABLE                             !BOOTLOADER
 #define EEPROM_RESET                            53U
 
-#define VCU_FIRMWARE_VERSION       	            0x05
-#define VCU_VENDOR                              "GEN"
-#define VCU_BUILD_YEAR                          20U
-#define VCU_UNITID                              354313U
-
-#define NET_BOOT_TIMEOUT                        8000U               // in ms
+#define NET_BOOT_TIMEOUT                        10000U               // in ms
 #define NET_EXTRA_TIME                          1000U                // in ms
 #define NET_REPEAT_MAX							2U
 
@@ -50,10 +49,16 @@
 #define NET_FTP_USERNAME                        "fota@genmotorcycles.com"
 #define NET_FTP_PASSWORD                        "@Garda313"
 
+#if (!BOOTLOADER)
 #define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
 #define NET_TCP_PORT                            46606
 //#define NET_TCP_SERVER                          "0.tcp.ngrok.io"
 //#define NET_TCP_PORT                            11531
+
+#define VCU_FIRMWARE_VERSION                    0x05
+#define VCU_VENDOR                              "GEN"
+#define VCU_BUILD_YEAR                          20U
+#define VCU_UNITID                              354313U
 
 #define COMMAND_TIMEOUT                         20U                 // in seconds
 
@@ -196,4 +201,5 @@ typedef struct {
     RTC_DateTypeDef calibration;
 } rtc_t;
 
+#endif
 #endif /* DEFINES_H_ */

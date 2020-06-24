@@ -1455,7 +1455,6 @@ void StartManagerTask(void *argument)
 
     // Release threads
     osEventFlagsSet(GlobalEventHandle, EVENT_READY);
-
     //    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
     /* Infinite loop */
