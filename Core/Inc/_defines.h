@@ -29,7 +29,8 @@
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
 /* Exported constants --------------------------------------------------------*/
-#define RTOS_ENABLE                             1
+#define BOOTLOADER                              0
+#define RTOS_ENABLE                             !BOOTLOADER
 #define EEPROM_RESET                            53U
 
 #define VCU_FIRMWARE_VERSION       	            0x05

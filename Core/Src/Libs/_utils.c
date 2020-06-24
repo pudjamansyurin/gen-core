@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#if (!BOOTLOADER)
 #include "Libs/_handlebar.h"
 #include "Nodes/VCU.h"
 
@@ -14,6 +15,7 @@
 extern TIM_HandleTypeDef htim10;
 extern vcu_t VCU;
 extern sw_t SW;
+#endif
 
 /* Public functions implementation --------------------------------------------*/
 void _DelayMS(uint32_t ms) {
@@ -44,15 +46,6 @@ void _LedToggle(void) {
     HAL_GPIO_TogglePin(SYS_LED_GPIO_Port, SYS_LED_Pin);
 }
 
-void _BuzzerWrite(uint8_t state) {
-    // note: https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
-    if (state) {
-        HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
-    } else {
-        HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
-    }
-}
-
 void _Error(char msg[50]) {
 #if RTOS_ENABLE
     if (osKernelGetState() == osKernelRunning) {
@@ -66,6 +59,25 @@ void _Error(char msg[50]) {
     while (1) {
         _LedToggle();
         HAL_Delay(50);
+    }
+}
+
+uint32_t _ByteSwap32(uint32_t x) {
+    uint32_t y = (x >> 24) & 0xff;
+    y |= ((x >> 16) & 0xff) << 8;
+    y |= ((x >> 8) & 0xff) << 16;
+    y |= (x & 0xff) << 24;
+
+    return y;
+}
+
+#if (!BOOTLOADER)
+void _BuzzerWrite(uint8_t state) {
+    // note: https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
+    if (state) {
+        HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
+    } else {
+        HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
     }
 }
 
@@ -179,12 +191,4 @@ int8_t _BitPosition(uint64_t event_id) {
     return pos;
 }
 
-uint32_t _ByteSwap32(uint32_t x) {
-    uint32_t y = (x >> 24) & 0xff;
-    y |= ((x >> 16) & 0xff) << 8;
-    y |= ((x >> 8) & 0xff) << 16;
-    y |= (x & 0xff) << 24;
-
-    return y;
-}
-
+#endif

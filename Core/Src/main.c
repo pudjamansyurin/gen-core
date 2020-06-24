@@ -1516,14 +1516,14 @@ void StartIotTask(void *argument)
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
     // Start simcom module
-    Simcom_Init();
+    Simcom_SetState(SIM_STATE_READY, 0);
 
     /* Infinite loop */
     for (;;) {
         lastWake = _GetTickMS();
 
         // Upload Report & Response Payload
-        if (Simcom_SetState(SIM_STATE_SERVER_ON)) {
+        if (Simcom_SetState(SIM_STATE_SERVER_ON, 0)) {
             // Iterate between REPORT & RESPONSE
             for (type = 0; type <= PAYLOAD_MAX; type++) {
                 // decide the payload
@@ -1584,7 +1584,7 @@ void StartIotTask(void *argument)
         }
 
         // ================= SIMCOM Related Routines ================
-        if (Simcom_SetState(SIM_STATE_READY)) {
+        if (Simcom_SetState(SIM_STATE_READY, 0)) {
             Simcom_IdleJob(NULL);
 
             if (RTC_NeedCalibration()) {

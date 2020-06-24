@@ -71,9 +71,13 @@ uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
+#if (!BOOTLOADER)
     osMutexAcquire(CrcMutexHandle, osWaitForever);
+#endif
 }
 
 static void unlock(void) {
+#if (!BOOTLOADER)
     osMutexRelease(CrcMutexHandle);
+#endif
 }

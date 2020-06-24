@@ -7,9 +7,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_eeprom.h"
+#include "Drivers/_ee24xx.h"
+#if (!BOOTLOADER)
 #include "Libs/_reporter.h"
 #include "Libs/_keyless.h"
-#include "Drivers/_eeprom24xx.h"
 #include "Drivers/_aes.h"
 #include "Nodes/VCU.h"
 
@@ -19,9 +20,11 @@ extern response_t RESPONSE;
 extern report_t REPORT;
 extern vcu_t VCU;
 extern uint32_t AesKey[4];
+#else
 
 /* Exported variables ---------------------------------------------------------*/
 uint32_t DFU_FLAG = 0;
+#endif
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
@@ -64,12 +67,17 @@ uint8_t EEPROM_Init(void) {
     }
     unlock();
 
+#if (!BOOTLOADER)
     // Load or Reset
     EEPROM_ResetOrLoad();
-
+#else
+    /* Read DFU flag */
+    EEPROM_FlagDFU(EE_CMD_R, EE_NULL);
+#endif
     return ret;
 }
 
+#if (!BOOTLOADER)
 void EEPROM_ResetOrLoad(void) {
     uint32_t AesKeyNew[4];
 
@@ -168,6 +176,11 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 
     return ret;
 }
+#else
+uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value) {
+    return EE_Command(VADDR_DFU_FLAG, cmd, &value, &DFU_FLAG, sizeof(value));
+}
+#endif
 
 /* Private functions implementation --------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size) {
@@ -195,9 +208,13 @@ static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void 
 }
 
 static void lock(void) {
+#if (!BOOTLOADER)
     osMutexAcquire(EepromMutexHandle, osWaitForever);
+#endif
 }
 
 static void unlock(void) {
+#if (!BOOTLOADER)
     osMutexRelease(EepromMutexHandle);
+#endif
 }

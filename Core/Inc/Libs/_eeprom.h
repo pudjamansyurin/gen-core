@@ -31,11 +31,14 @@ typedef enum {
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EEPROM_Init(void);
+#if (!BOOTLOADER)
 void EEPROM_ResetOrLoad(void);
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
-
+#else
+uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value);
+#endif
 #endif /* EEPROM_H_ */
