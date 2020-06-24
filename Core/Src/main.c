@@ -77,7 +77,6 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-    uint8_t ret;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -117,9 +116,8 @@ int main(void)
     /* IAP flag has been set, initiate firmware download procedure */
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
         LOG_StrLn("IAP set, do FOTA.");
-        ret = FOTA_Upgrade();
         /* Everything went well, reset IAP flag & boot form new image */
-        if (ret) {
+        if (FOTA_Upgrade()) {
             /* Reset IAP flag */
             *(uint32_t*) IAP_FLAG_ADDR = 0;
             /* Take branching decision on next reboot */
@@ -151,9 +149,8 @@ int main(void)
     /* Power reset during DFU, try once more */
     else if (FOTA_InProgressDFU()) {
         LOG_StrLn("DFU set, do FOTA once more.");
-        ret = FOTA_Upgrade();
         /* Everything went well, boot form new image */
-        if (ret) {
+        if (FOTA_Upgrade()) {
             /* Take branching decision on next reboot */
             FOTA_Reboot();
         }
@@ -176,9 +173,7 @@ int main(void)
         } else {
             LOG_StrLn("No image at all, do FOTA.");
             /* Download new firmware for the first time */
-            ret = FOTA_Upgrade();
-            /* Everything went well, boot form new image */
-            if (ret) {
+            if (FOTA_Upgrade()) {
                 /* Take branching decision on next reboot */
                 FOTA_Reboot();
             }

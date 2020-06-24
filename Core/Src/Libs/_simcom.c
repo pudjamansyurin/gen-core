@@ -704,7 +704,7 @@ static SIMCOM_RESULT Simcom_Power(void) {
 
     // simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-    HAL_Delay(5);
+    HAL_Delay(1);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
     // wait response
