@@ -30,4 +30,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>Shared</name>
+			<type>2</type>
+			<location>/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared</location>
+		</link>
+	</linkedResources>
 </projectDescription>
