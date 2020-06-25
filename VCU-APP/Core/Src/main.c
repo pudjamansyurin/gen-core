@@ -1698,7 +1698,10 @@ void StartCommandTask(void *argument)
                     switch (command.data.sub_code) {
                         case CMD_GEN_INFO :
                             sprintf(response.data.message,
-                                    "VCU v.%d, "VCU_VENDOR" @ 20%d", VCU_FIRMWARE_VERSION, VCU_BUILD_YEAR);
+                                    "VCU v%d.%d, "VCU_VENDOR" @ 20%d",
+                                    _R8(VCU_VERSION, 8),
+                                    _R8(VCU_VERSION, 0),
+                                    VCU_BUILD_YEAR);
                             break;
 
                         case CMD_GEN_LED :
@@ -1710,7 +1713,7 @@ void StartCommandTask(void *argument)
                             break;
 
                         case CMD_GEN_FOTA :
-                            if (BACKUP_VOLTAGE > 3800) {
+                            if (BACKUP_VOLTAGE > 3600) {
                                 /* Set flag to SRAM */
                                 *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
                                 *(uint32_t*) IAP_RETRY_ADDR = IAP_RETRY;

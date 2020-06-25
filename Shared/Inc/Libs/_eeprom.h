@@ -16,7 +16,7 @@
 #define EE_AREA(ad, sz)             (((ad + sz) % 32) >= sz ? (ad) : (ad + (sz - ((ad + sz) % 32))))
 
 /* Exported constants --------------------------------------------------------*/
-#define VADDR_RESET                 (uint16_t) 0
+#define VADDR_RESET                 (uint16_t) EE_AREA(0, 2)
 #define VADDR_ODOMETER              (uint16_t) EE_AREA(VADDR_RESET + 2, 4)
 #define VADDR_UNITID                (uint16_t) EE_AREA(VADDR_ODOMETER + 4, 4)
 #define VADDR_REPORT_SEQ_ID         (uint16_t) EE_AREA(VADDR_UNITID + 4, 2)

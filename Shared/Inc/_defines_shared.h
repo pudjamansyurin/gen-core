@@ -32,7 +32,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define RTOS_ENABLE                             !BOOTLOADER
-#define EEPROM_RESET                 (uint16_t) 53U
+#define EEPROM_RESET                 (uint16_t) 53
 
 #define NET_BOOT_TIMEOUT             (uint32_t) 8000                // in ms
 #define NET_EXTRA_TIME               (uint32_t) 1000                // in ms
@@ -46,13 +46,12 @@
 #define NET_FTP_PASSWORD                        "@Garda313"
 
 #if (!BOOTLOADER)
-#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
-#define NET_TCP_PORT                 (uint16_t) 46606
-
 #define VCU_VENDOR                              "GEN"
 #define VCU_BUILD_YEAR               (uint8_t)  20
 #define VCU_UNITID                   (uint32_t) 354313
-#define VCU_FIRMWARE_VERSION         (uint16_t) 5
+
+#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
+#define NET_TCP_PORT                 (uint16_t) 46606
 
 #define COMMAND_TIMEOUT              (uint32_t) 20000               // in ms
 
@@ -101,7 +100,7 @@
 #define EV_BMS_SYSTEM_FAILURE                   BIT(41)
 
 // Events (for Individual Thread)
-#define EVT_MASK                                0x7FFFFFFFUL
+#define EVT_MASK                     (uint32_t) 0x7FFFFFFF
 #define EVT_IOT_DISCARD                         BIT(0)
 #define EVT_AUDIO_BEEP                          BIT(0)
 #define EVT_AUDIO_BEEP_START                    BIT(1)

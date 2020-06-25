@@ -77,7 +77,6 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-    extern uint32_t DFU_FLAG;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/

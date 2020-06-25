@@ -22,7 +22,7 @@
 #endif
 
 /* External variables ---------------------------------------------------------*/
-extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
+extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ ];
 #if (!BOOTLOADER)
 extern osMutexId_t SimcomRecMutexHandle;
 extern osMessageQueueId_t CommandQueueHandle;
@@ -74,13 +74,14 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
     Simcom_Lock();
     // Handle SIMCOM state properly
-    while (SIM.state < state) {
+    do {
+        // Handle timeout
         if (timeout) {
             // Update tick
             if (p == SIM_RESULT_OK) {
                 tick = _GetTickMS();
             }
-            // Handle timeout
+            // Timeout expired
             if ((_GetTickMS() - tick) > timeout) {
                 LOG_StrLn("Simcom:StateTimeout");
                 break;
@@ -96,7 +97,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
             LOG_Int(depth);
             LOG_Enter();
         }
-        // Handle signal
+        // Handle signal strength
         if (SIM.state == SIM_STATE_DOWN) {
             SIM.signal = 0;
         } else {
@@ -113,7 +114,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
         // Set value
         p = SIM_RESULT_OK;
         lastState = SIM.state;
-        // Handle simcom states
+        // Handle states
         switch (SIM.state) {
             case SIM_STATE_DOWN:
                 // only executed at power up
@@ -433,7 +434,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
             default:
                 break;
         }
-    };
+    } while (SIM.state < state);
     Simcom_Unlock();
 
     return (SIM.state >= state);
@@ -458,7 +459,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
         p = Simcom_Command(str, SIMCOM_RSP_SEND, 500, 0);
         if (p > 0) {
             // send the payload
-            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 20000, size);
+            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 60000, size);
             // wait for ACK/NACK
             if (p > 0) {
                 // set timeout guard
@@ -735,7 +736,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
     SIMCOM_Transmit(data, size);
 
     // convert time to tick
-    timeout = (ms + NET_EXTRA_TIME);
+    timeout = (ms + NET_EXTRA_TIME );
     // set timeout guard
     tick = _GetTickMS();
 
