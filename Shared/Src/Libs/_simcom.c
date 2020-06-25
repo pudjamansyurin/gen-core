@@ -469,7 +469,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
                     if (Simcom_Response(PREFIX_ACK)
                             || Simcom_Response(PREFIX_NACK)
                             || Simcom_Response(PREFIX_COMMAND)
-                            || (_GetTickMS() - tick) >= 10000) {
+                            || (_GetTickMS() - tick) >= 20000) {
                         break;
                     }
                     _DelayMS(10);
