@@ -116,6 +116,7 @@
 #define EVT_CAN_RX_IT                           BIT(0)
 #define EVT_KEYLESS_RX_IT                       BIT(0)
 #define EVT_KEYLESS_PAIRING                     BIT(1)
+#define EVT_KEYLESS_RESET                       BIT(2)
 #define EVT_SWITCH_TRIGGERED                    BIT(0)
 #define EVT_SWITCH_REG_5V_IRQ                   BIT(1)
 #define EVT_SWITCH_STARTER_IRQ                  BIT(2)

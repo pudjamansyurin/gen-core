@@ -15,6 +15,7 @@
 #include "Nodes/VCU.h"
 
 /* External variables -------------------------------------------------------*/
+extern osThreadId_t KeylessTaskHandle;
 extern osMutexId_t EepromMutexHandle;
 extern response_t RESPONSE;
 extern report_t REPORT;
@@ -135,7 +136,7 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
 
     // update the NRF Address
     if (cmd == EE_CMD_W) {
-        KLESS_Init();
+        osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
     }
 
     return ret;
@@ -167,7 +168,7 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 
     // apply the AES key
     if (cmd == EE_CMD_W) {
-        AES_Init();
+        osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
     }
 
     return ret;

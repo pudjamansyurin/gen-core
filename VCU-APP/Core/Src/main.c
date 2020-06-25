@@ -1965,6 +1965,12 @@ void StartKeylessTask(void *argument)
         notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 100);
         // proceed event
         if (_RTOS_ValidThreadFlag(notif)) {
+            // handle reset key & id
+            if (notif & EVT_KEYLESS_RESET) {
+                AES_Init();
+                KLESS_Init();
+            }
+
             // handle incoming payload
             if (notif & EVT_KEYLESS_RX_IT) {
                 KLESS_Debugger();
