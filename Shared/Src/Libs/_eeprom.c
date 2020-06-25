@@ -21,8 +21,12 @@ extern response_t RESPONSE;
 extern report_t REPORT;
 extern vcu_t VCU;
 extern uint32_t AesKey[4];
-#else
+#endif
+
 /* Exported variables ---------------------------------------------------------*/
+#if (!BOOTLOADER)
+uint16_t FIRMWARE_VERSION = 0;
+#else
 uint32_t DFU_FLAG = 0;
 #endif
 
@@ -33,12 +37,12 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(void) {
+    uint8_t retry, ret = 0;
     const uint8_t MAX_RETRY = 5;
     const EEPROM24_DEVICE EEPROMS[2] = {
             EEPROM24_MAIN,
             EEPROM24_BACKUP
     };
-    uint8_t retry, ret = 0;
 
     lock();
     LOG_StrLn("EEPROM:Init");
@@ -70,6 +74,7 @@ uint8_t EEPROM_Init(void) {
 #if (!BOOTLOADER)
     // Load or Reset
     EEPROM_ResetOrLoad();
+    EEPROM_FirmwareVersion(EE_CMD_R, EE_NULL);
 #endif
     return ret;
 }
@@ -102,7 +107,6 @@ void EEPROM_ResetOrLoad(void) {
         // re-write eeprom
         EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
     }
-
 }
 
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
@@ -173,6 +177,11 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 
     return ret;
 }
+
+uint8_t EEPROM_FirmwareVersion(EEPROM_COMMAND cmd, uint16_t value) {
+    return EE_Command(VADDR_FIRMWARE_VERSION, cmd, &value, &FIRMWARE_VERSION, sizeof(value));
+}
+
 #else
 uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value) {
     return EE_Command(VADDR_DFU_FLAG, cmd, &value, &DFU_FLAG, sizeof(value));

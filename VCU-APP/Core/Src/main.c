@@ -1668,6 +1668,7 @@ void StartReporterTask(void *argument)
 void StartCommandTask(void *argument)
 {
     /* USER CODE BEGIN StartCommandTask */
+    extern uint16_t FIRMWARE_VERSION;
     response_t response;
     command_t command;
     osStatus_t status;
@@ -1679,6 +1680,25 @@ void StartCommandTask(void *argument)
 
     // Initialize
     Response_Init(&response);
+
+    // Handle Post-FOTA
+    if (FIRMWARE_VERSION) {
+        /* Success or Failed*/
+        if (FIRMWARE_VERSION != VCU_VERSION) {
+            strcpy(response.data.message, "Firmware upgraded");
+            response.data.code = RESPONSE_STATUS_OK;
+        } else {
+            strcpy(response.data.message, "Something wrong");
+            response.data.code = RESPONSE_STATUS_ERROR;
+        }
+
+        /* Send Response */
+        Response_Capture(&response);
+        osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
+
+        /* Reset after FOTA */
+        EEPROM_FirmwareVersion(EE_CMD_W, 0);
+    }
 
     /* Infinite loop */
     for (;;) {
@@ -1714,9 +1734,11 @@ void StartCommandTask(void *argument)
 
                         case CMD_GEN_FOTA :
                             if (BACKUP_VOLTAGE > 3600) {
+                                EEPROM_FirmwareVersion(EE_CMD_W, VCU_VERSION);
                                 /* Set flag to SRAM */
                                 *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
                                 *(uint32_t*) IAP_RETRY_ADDR = IAP_RETRY;
+                                /* Reset */
                                 HAL_NVIC_SystemReset();
                             } else {
                                 sprintf(response.data.message, "Battery low at %u mV", BACKUP_VOLTAGE);
