@@ -57,7 +57,8 @@ Core/Src/Nodes/HMI2.o: ../Core/Src/Nodes/HMI2.c ../Core/Inc/Nodes/HMI2.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h \
- ../Core/Inc/Nodes/HMI1.h ../Core/Inc/Drivers/_canbus.h
+ ../Core/Inc/Nodes/HMI1.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_canbus.h
 
 ../Core/Inc/Nodes/HMI2.h:
 
@@ -181,4 +182,4 @@ Core/Src/Nodes/HMI2.o: ../Core/Src/Nodes/HMI2.c ../Core/Inc/Nodes/HMI2.h \
 
 ../Core/Inc/Nodes/HMI1.h:
 
-../Core/Inc/Drivers/_canbus.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_canbus.h:

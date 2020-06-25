@@ -27,6 +27,7 @@
 #include "Libs/_eeprom.h"
 #include "Libs/_simcom.h"
 #include "Libs/_fota.h"
+#include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "DMA/_dma_simcom.h"
 /* USER CODE END Includes */
@@ -46,6 +47,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CAN_HandleTypeDef hcan1;
+
 CRC_HandleTypeDef hcrc;
 
 I2C_HandleTypeDef hi2c2;
@@ -61,6 +64,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_CRC_Init(void);
+static void MX_CAN1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
@@ -99,11 +103,13 @@ int main(void)
     MX_GPIO_Init();
     MX_DMA_Init();
     MX_CRC_Init();
+    MX_CAN1_Init();
     MX_I2C2_Init();
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
     SIMCOM_DMA_Init();
     EEPROM_Init();
+    CANBUS_Init();
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -226,6 +232,43 @@ void SystemClock_Config(void)
             {
         Error_Handler();
     }
+}
+
+/**
+ * @brief CAN1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_CAN1_Init(void)
+{
+
+    /* USER CODE BEGIN CAN1_Init 0 */
+
+    /* USER CODE END CAN1_Init 0 */
+
+    /* USER CODE BEGIN CAN1_Init 1 */
+
+    /* USER CODE END CAN1_Init 1 */
+    hcan1.Instance = CAN1;
+    hcan1.Init.Prescaler = 10;
+    hcan1.Init.Mode = CAN_MODE_NORMAL;
+    hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
+    hcan1.Init.TimeSeg1 = CAN_BS1_8TQ;
+    hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
+    hcan1.Init.TimeTriggeredMode = DISABLE;
+    hcan1.Init.AutoBusOff = ENABLE;
+    hcan1.Init.AutoWakeUp = DISABLE;
+    hcan1.Init.AutoRetransmission = DISABLE;
+    hcan1.Init.ReceiveFifoLocked = DISABLE;
+    hcan1.Init.TransmitFifoPriority = DISABLE;
+    if (HAL_CAN_Init(&hcan1) != HAL_OK)
+            {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN CAN1_Init 2 */
+
+    /* USER CODE END CAN1_Init 2 */
+
 }
 
 /**
@@ -440,13 +483,13 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /*Configure GPIO pins : PD8 PD9 PD10 PD11
-     PD12 PD14 PD15 PD0
-     PD1 PD2 PD3 PD4
-     PD5 PD6 PD7 */
+     PD12 PD14 PD15 PD2
+     PD3 PD4 PD5 PD6
+     PD7 */
     GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11
-            | GPIO_PIN_12 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0
-            | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4
-            | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
+            | GPIO_PIN_12 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_2
+            | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6
+            | GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
@@ -477,18 +520,18 @@ void Error_Handler(void)
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-    /* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-    /* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

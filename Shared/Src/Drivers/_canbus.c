@@ -9,9 +9,11 @@
 #include "Drivers/_canbus.h"
 
 /* External variables ---------------------------------------------------------*/
+extern CAN_HandleTypeDef hcan1;
+#if (!BOOTLOADER)
 extern osThreadId_t CanRxTaskHandle;
 extern osMutexId_t CanTxMutexHandle;
-extern CAN_HandleTypeDef hcan1;
+#endif
 
 /* Public variables -----------------------------------------------------------*/
 canbus_t CB;
@@ -22,7 +24,6 @@ static void unlock(void);
 
 /* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(void) {
-
     /* Configure the CAN Filter */
     if (!CANBUS_Filter()) {
         /* Start Error */
@@ -76,11 +77,10 @@ uint8_t CANBUS_Filter(void) {
  wite a message to CAN peripheral and transmit it
  *----------------------------------------------------------------------------*/
 uint8_t CANBUS_Write(canbus_tx_t *tx) {
-    lock();
-
     uint32_t TxMailbox;
     HAL_StatusTypeDef status;
 
+    lock();
     // check tx mailbox is ready
     while (!HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)) {
         _DelayMS(1);
@@ -89,11 +89,11 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
     /* Start the Transmission process */
     status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), tx->data.u8, &TxMailbox);
 
-    if (status == HAL_OK) {
-//		CANBUS_TxDebugger();
-    }
-
+//    if (status == HAL_OK) {
+//        CANBUS_TxDebugger();
+//    }
     unlock();
+
     return (status == HAL_OK);
 }
 
@@ -122,6 +122,10 @@ uint8_t CANBUS_Read(canbus_rx_t *rx) {
     /* Get RX message */
     status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
 
+    //    if (status == HAL_OK) {
+    //        CANBUS_RxDebugger();
+    //    }
+
     return (status == HAL_OK);
 }
 
@@ -146,20 +150,29 @@ uint32_t CANBUS_ReadID(void) {
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-    // read rx fifo
+    // Read rx fifo
     if (CANBUS_Read(&(CB.rx))) {
-        // signal only when RTOS started
+#if (!BOOTLOADER)
+        // Signal only when RTOS started
         if (osKernelGetState() == osKernelRunning) {
             osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_RX_IT);
         }
+#else
+        // Process Directly
+
+#endif
     }
 }
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
+#if (!BOOTLOADER)
     osMutexAcquire(CanTxMutexHandle, osWaitForever);
+#endif
 }
 
 static void unlock(void) {
+#if (!BOOTLOADER)
     osMutexRelease(CanTxMutexHandle);
+#endif
 }

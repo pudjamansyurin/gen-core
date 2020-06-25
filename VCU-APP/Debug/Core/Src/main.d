@@ -64,7 +64,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/Drivers/_fz3387.h ../Core/Inc/Libs/_audio.h \
  ../Core/Inc/Drivers/_cs43l22.h ../Core/Inc/Libs/_keyless.h \
  ../Core/Inc/Drivers/_nrf24l01.h ../Core/Inc/Libs/_reporter.h \
- ../Core/Inc/Libs/_handlebar.h ../Core/Inc/Drivers/_canbus.h \
+ ../Core/Inc/Libs/_handlebar.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_canbus.h \
  ../Core/Inc/Drivers/_rtc.h ../Core/Inc/Drivers/_aes.h \
  ../Core/Inc/DMA/_dma_battery.h \
  /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/DMA/_dma_simcom.h \
@@ -216,7 +217,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/Libs/_handlebar.h:
 
-../Core/Inc/Drivers/_canbus.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_canbus.h:
 
 ../Core/Inc/Drivers/_rtc.h:
 
