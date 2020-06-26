@@ -56,7 +56,6 @@ Mcu.UserName=STM32F423VHTx
 MxCube.Version=5.6.0
 MxDb.Version=DB.5.0.60
 NVIC.BusFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false
-NVIC.CAN1_RX0_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.DMA2_Stream2_IRQn=true\:0\:0\:false\:false\:true\:false\:true
 NVIC.DebugMonitor_IRQn=true\:0\:0\:false\:false\:true\:false\:false
 NVIC.ForceEnableDMAVector=true

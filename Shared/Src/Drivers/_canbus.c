@@ -36,11 +36,13 @@ void CANBUS_Init(void) {
         Error_Handler();
     }
 
+#if (!BOOTLOADER)
     /* Activate CAN RX notification */
     if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
         /* Notification Error */
         Error_Handler();
     }
+#endif
 }
 
 void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC) {

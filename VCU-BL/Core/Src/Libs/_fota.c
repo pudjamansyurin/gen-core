@@ -13,6 +13,8 @@
 
 /* External variables ---------------------------------------------------------*/
 extern uint32_t DFU_FLAG;
+
+extern CAN_HandleTypeDef hcan1;
 extern CRC_HandleTypeDef hcrc;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart1;
@@ -252,6 +254,7 @@ void FOTA_JumpToApplication(void) {
     appEntry = *(__IO uint32_t*) (APP_START_ADDR + 4);
 
     /* Shutdown all peripherals */
+    HAL_CAN_MspDeInit(&hcan1);
     HAL_CRC_MspDeInit(&hcrc);
     HAL_I2C_MspDeInit(&hi2c2);
     HAL_UART_MspDeInit(&huart1);
