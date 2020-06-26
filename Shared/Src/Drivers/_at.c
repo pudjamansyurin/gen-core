@@ -10,7 +10,7 @@
 #include "DMA/_dma_simcom.h"
 
 /* External variables --------------------------------------------------------*/
-extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
+extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ ];
 extern sim_t SIM;
 
 /* Private constants ---------------------------------------------------------*/
@@ -394,6 +394,7 @@ SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
     return AT_SingleInteger("CLTS", mode, (int32_t*) state, 0);
 }
 #else
+
 SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
     SIMCOM_RESULT p;
 
@@ -415,11 +416,15 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
         p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
     }
     if (p > 0) {
-        p = AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file), 0);
+        p = AT_FtpSetFile(param);
     }
 
     Simcom_Unlock();
     return p;
+}
+
+SIMCOM_RESULT AT_FtpSetFile(at_ftp_t *param) {
+    return AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file), 0);
 }
 
 SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {

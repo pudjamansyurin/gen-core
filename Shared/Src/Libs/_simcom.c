@@ -501,8 +501,13 @@ uint8_t Simcom_FOTA(uint32_t checksumBackup) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint32_t checksum = 0, len = 0;
     at_ftp_t ftp = {
+            .id = 1,
+            .server = NET_FTP_SERVER,
+            .username = NET_FTP_USERNAME,
+            .password = NET_FTP_PASSWORD,
             .path = "/vcu/",
-            .version = "APP"
+            .version = "APP",
+            .size = 0,
     };
 
     Simcom_Lock();
@@ -510,6 +515,11 @@ uint8_t Simcom_FOTA(uint32_t checksumBackup) {
     if (Simcom_SetState(SIM_STATE_GPRS_ON, 60000)) {
         // Initialize bearer for TCP based apps.
         p = FOTA_BearerInitialize();
+
+        // Initialize FTP
+        if (p > 0) {
+            p = AT_FtpInitialize(&ftp);
+        }
 
         // Get checksum of new firmware
         if (p > 0) {

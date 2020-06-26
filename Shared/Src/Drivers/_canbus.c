@@ -149,20 +149,17 @@ uint32_t CANBUS_ReadID(void) {
     return _R(CB.rx.header.ExtId, 20);
 }
 
+#if (!BOOTLOADER)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
     // Read rx fifo
     if (CANBUS_Read(&(CB.rx))) {
-#if (!BOOTLOADER)
         // Signal only when RTOS started
         if (osKernelGetState() == osKernelRunning) {
             osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_RX_IT);
         }
-#else
-        // Process Directly
-
-#endif
     }
 }
+#endif
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {

@@ -51,16 +51,9 @@ SIMCOM_RESULT FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     AT_FTP_STATE state;
     at_ftpget_t setFTPGET;
 
-    // Set Default Parameter
-    setFTP->id = 1;
-    setFTP->size = 0;
-    strcpy(setFTP->server, NET_FTP_SERVER);
-    strcpy(setFTP->username, NET_FTP_USERNAME);
-    strcpy(setFTP->password, NET_FTP_PASSWORD);
+    // FTP Set file name
     sprintf(setFTP->file, "%s.crc", setFTP->version);
-
-    // FTP Init
-    p = AT_FtpInitialize(setFTP);
+    p = AT_FtpSetFile(setFTP);
 
     // Open FTP Session
     if (p > 0) {
@@ -102,16 +95,9 @@ SIMCOM_RESULT FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
     AT_FTP_STATE state;
     at_ftpget_t setFTPGET;
 
-    // Set Default Parameter
-    setFTP->id = 1;
-    setFTP->size = 0;
-    strcpy(setFTP->server, NET_FTP_SERVER);
-    strcpy(setFTP->username, NET_FTP_USERNAME);
-    strcpy(setFTP->password, NET_FTP_PASSWORD);
+    // FTP Set file name
     sprintf(setFTP->file, "%s.bin", setFTP->version);
-
-    // FTP Init
-    p = AT_FtpInitialize(setFTP);
+    p = AT_FtpSetFile(setFTP);
 
     // Get file size
     if (p > 0) {
