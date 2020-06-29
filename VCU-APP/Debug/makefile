@@ -55,8 +55,8 @@ VCU-APP.bin \
 all: VCU-APP.elf secondary-outputs
 
 # Tool invocations
-VCU-APP.elf: $(OBJS) $(USER_OBJS) /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/VCU-APP/STM32F423VHTX_FLASH.ld
-	arm-none-eabi-gcc -o "VCU-APP.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/VCU-APP/STM32F423VHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="VCU-APP.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+VCU-APP.elf: $(OBJS) $(USER_OBJS) /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/VCU-APP/STM32F423VHTX_FLASH.ld
+	arm-none-eabi-gcc -o "VCU-APP.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/VCU-APP/STM32F423VHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="VCU-APP.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

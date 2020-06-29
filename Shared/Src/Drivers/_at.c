@@ -394,6 +394,32 @@ SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
     return AT_SingleInteger("CLTS", mode, (int32_t*) state, 0);
 }
 #else
+SIMCOM_RESULT AT_BearerInitialize(void) {
+    SIMCOM_RESULT p;
+    at_sapbr_t getBEARER, setBEARER = {
+            .cmd_type = SAPBR_BEARER_OPEN,
+            .status = SAPBR_CONNECTED,
+            .con = {
+                    .apn = NET_CON_APN,
+                    .username = NET_CON_USERNAME,
+                    .password = NET_CON_PASSWORD,
+            },
+    };
+
+    // BEARER attach
+    p = AT_BearerSettings(ATW, &setBEARER);
+
+    // BEARER init
+    if (p > 0) {
+        p = AT_BearerSettings(ATR, &getBEARER);
+    }
+
+    if (p > 0 && getBEARER.status != SAPBR_CONNECTED) {
+        p = SIM_RESULT_ERROR;
+    }
+
+    return p;
+}
 
 SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
     SIMCOM_RESULT p;

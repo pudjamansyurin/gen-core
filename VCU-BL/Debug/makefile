@@ -45,8 +45,8 @@ VCU-BL.bin \
 all: VCU-BL.elf secondary-outputs
 
 # Tool invocations
-VCU-BL.elf: $(OBJS) $(USER_OBJS) /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/VCU-BL/STM32F423VHTX_FLASH.ld
-	arm-none-eabi-gcc -o "VCU-BL.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/VCU-BL/STM32F423VHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="VCU-BL.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+VCU-BL.elf: $(OBJS) $(USER_OBJS) /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/VCU-BL/STM32F423VHTX_FLASH.ld
+	arm-none-eabi-gcc -o "VCU-BL.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/VCU-BL/STM32F423VHTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="VCU-BL.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

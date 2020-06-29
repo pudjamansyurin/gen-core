@@ -99,6 +99,31 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
     return (status == HAL_OK);
 }
 
+/*----------------------------------------------------------------------------
+ read a message from CAN peripheral and release it
+ *----------------------------------------------------------------------------*/
+uint8_t CANBUS_Read(canbus_rx_t *rx) {
+    HAL_StatusTypeDef status;
+
+    lock();
+    /* Get RX message */
+    status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
+
+    //    if (status == HAL_OK) {
+    //        CANBUS_RxDebugger();
+    //    }
+    unlock();
+
+    return (status == HAL_OK);
+}
+
+uint32_t CANBUS_ReadID(void) {
+    if (CB.rx.header.IDE == CAN_ID_STD) {
+        return CB.rx.header.StdId;
+    }
+    return _R(CB.rx.header.ExtId, 20);
+}
+
 void CANBUS_TxDebugger(void) {
     // debugging
     LOG_Str("\n[TX] ");
@@ -115,21 +140,6 @@ void CANBUS_TxDebugger(void) {
     }
     LOG_Enter();
 }
-/*----------------------------------------------------------------------------
- read a message from CAN peripheral and release it
- *----------------------------------------------------------------------------*/
-uint8_t CANBUS_Read(canbus_rx_t *rx) {
-    HAL_StatusTypeDef status;
-
-    /* Get RX message */
-    status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
-
-    //    if (status == HAL_OK) {
-    //        CANBUS_RxDebugger();
-    //    }
-
-    return (status == HAL_OK);
-}
 
 void CANBUS_RxDebugger(void) {
     // debugging
@@ -142,13 +152,6 @@ void CANBUS_RxDebugger(void) {
         LOG_Str("RTR");
     }
     LOG_Enter();
-}
-
-uint32_t CANBUS_ReadID(void) {
-    if (CB.rx.header.IDE == CAN_ID_STD) {
-        return CB.rx.header.StdId;
-    }
-    return _R(CB.rx.header.ExtId, 20);
 }
 
 #if (!BOOTLOADER)

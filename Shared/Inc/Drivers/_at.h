@@ -254,6 +254,7 @@ SIMCOM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state);
 SIMCOM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state);
 SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state);
 #else
+SIMCOM_RESULT AT_BearerInitialize(void);
 SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
 SIMCOM_RESULT AT_FtpSetFile(at_ftp_t *param);
 SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param);

@@ -13,7 +13,7 @@
 extern osMutexId_t LogMutexHandle;
 #endif
 
-/* Exported constants --------------------------------------------------------*/
+/* Private constants -----------------------------------------------------------*/
 #define HEX_CHARS                                "0123456789ABCDEF"
 
 /* Private functions declarations ----------------------------------------------*/

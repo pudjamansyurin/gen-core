@@ -52,13 +52,13 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/DMA/_dma_simcom.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/DMA/_dma_simcom.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_utils.h \
  ../Core/Inc/_defines.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/_defines_shared.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_log.h \
  ../Core/Inc/DMA/_dma_ublox.h ../Core/Inc/DMA/_dma_finger.h
 
 ../Core/Inc/main.h:
@@ -169,19 +169,19 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 
 ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/DMA/_dma_simcom.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/DMA/_dma_simcom.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_utils.h:
 
 ../Core/Inc/_defines.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/_defines_shared.h:
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_log.h:
 
 ../Core/Inc/DMA/_dma_ublox.h:
 

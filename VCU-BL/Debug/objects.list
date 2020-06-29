@@ -1,4 +1,5 @@
 "Core/Src/Drivers/_flasher.o"
+"Core/Src/Libs/_focan.o"
 "Core/Src/Libs/_fota.o"
 "Core/Src/main.o"
 "Core/Src/stm32f4xx_hal_msp.o"

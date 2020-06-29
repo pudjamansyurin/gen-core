@@ -11,6 +11,7 @@
 "Core/Src/Drivers/_rtc.o"
 "Core/Src/Libs/_audio.o"
 "Core/Src/Libs/_finger.o"
+"Core/Src/Libs/_firmware.o"
 "Core/Src/Libs/_gps.o"
 "Core/Src/Libs/_gyro.o"
 "Core/Src/Libs/_handlebar.o"

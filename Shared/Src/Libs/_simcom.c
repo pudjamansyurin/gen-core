@@ -497,7 +497,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
     return p;
 }
 #else
-uint8_t Simcom_FOTA(uint32_t checksumBackup) {
+uint8_t Simcom_FOTA(uint32_t checksumOld) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint32_t checksum = 0, len = 0;
     at_ftp_t ftp = {
@@ -514,7 +514,7 @@ uint8_t Simcom_FOTA(uint32_t checksumBackup) {
     // FOTA download, program & check
     if (Simcom_SetState(SIM_STATE_GPRS_ON, 60000)) {
         // Initialize bearer for TCP based apps.
-        p = FOTA_BearerInitialize();
+        p = AT_BearerInitialize();
 
         // Initialize FTP
         if (p > 0) {
@@ -528,17 +528,20 @@ uint8_t Simcom_FOTA(uint32_t checksumBackup) {
 
         // Only download when image is different
         if (p > 0) {
-            if (checksumBackup == checksum) {
+            p = (checksumOld != checksum);
+            if (!p) {
                 LOG_StrLn("FOTA:Cancelled => SameVersion");
-            } else {
-                // Download & Program new firmware
-                p = FOTA_DownloadAndInstall(&ftp, &len);
-
-                // Buffer filled, compare the checksum
-                if (p > 0) {
-                    p = FOTA_CompareChecksum(checksum, len, APP_START_ADDR);
-                }
             }
+        }
+
+        // Download & Program new firmware
+        if (p > 0) {
+            p = FOTA_DownloadAndInstall(&ftp, &len);
+        }
+
+        // Buffer filled, compare the checksum
+        if (p > 0) {
+            p = FOTA_CompareChecksum(checksum, len, APP_START_ADDR);
         }
     }
     Simcom_Unlock();
@@ -757,7 +760,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
                 || Simcom_Response(SIMCOM_RSP_READY)
                 #if (!BOOTLOADER)
                 || Simcom_CommandoIRQ()
-                #endif
+#endif
                 || (_GetTickMS() - tick) >= timeout) {
 
             // check response
@@ -778,7 +781,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
                 else if (Simcom_CommandoIRQ()) {
                     p = SIM_RESULT_TIMEOUT;
                 }
-                #endif
+#endif
                 else {
                     // exception for auto reboot module
                     if (Simcom_Response(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {

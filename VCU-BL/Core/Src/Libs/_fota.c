@@ -13,41 +13,12 @@
 
 /* External variables ---------------------------------------------------------*/
 extern uint32_t DFU_FLAG;
-
 extern CAN_HandleTypeDef hcan1;
 extern CRC_HandleTypeDef hcrc;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart1;
-//DMA_HandleTypeDef hdma_usart1_rx;
 
 /* Public functions implementation --------------------------------------------*/
-SIMCOM_RESULT FOTA_BearerInitialize(void) {
-    SIMCOM_RESULT p;
-    at_sapbr_t getBEARER, setBEARER = {
-            .cmd_type = SAPBR_BEARER_OPEN,
-            .status = SAPBR_CONNECTED,
-            .con = {
-                    .apn = NET_CON_APN,
-                    .username = NET_CON_USERNAME,
-                    .password = NET_CON_PASSWORD,
-            },
-    };
-
-    // BEARER attach
-    p = AT_BearerSettings(ATW, &setBEARER);
-
-    // BEARER init
-    if (p > 0) {
-        p = AT_BearerSettings(ATR, &getBEARER);
-    }
-
-    if (p > 0 && getBEARER.status != SAPBR_CONNECTED) {
-        p = SIM_RESULT_ERROR;
-    }
-
-    return p;
-}
-
 SIMCOM_RESULT FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     SIMCOM_RESULT p;
     AT_FTP_STATE state;
@@ -278,29 +249,31 @@ void FOTA_JumpToApplication(void) {
         ;
 }
 
-SIMCOM_RESULT FOTA_Upgrade(void) {
-    SIMCOM_RESULT p;
+uint8_t FOTA_Upgrade(void) {
+    uint8_t p;
     uint32_t checksum;
 
-    /* Set DFU */
+    /* Set DFU flag */
     if (!FOTA_InProgressDFU()) {
-        EEPROM_FlagDFU(EE_CMD_W, DFU_IN_PROGRESS);
+        EEPROM_FlagDFU(EE_CMD_W, DFU_FLAG);
 
         // Backup current application (if necessary)
         if (FOTA_ValidImage(APP_START_ADDR)) {
             FLASHER_BackupApp();
         }
     }
+
     /* Get the stored checksum information */
     checksum = *(uint32_t*) (BKP_START_ADDR + CHECKSUM_OFFSET);
 
     /* Download image and install */
     p = Simcom_FOTA(checksum);
 
-    // DFU flag reset
-    if (p > 0) {
+    // Reset DFU flag only when FOTA success
+    if (p) {
         EEPROM_FlagDFU(EE_CMD_W, 0);
     }
 
     return p;
 }
+

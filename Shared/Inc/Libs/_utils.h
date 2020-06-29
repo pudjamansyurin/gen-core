@@ -20,15 +20,20 @@
 #define SP_MASK                 (uint32_t) 0x2FFFFFFF
 #define SP_RANGE                           (SP_MASK - (SRAM_SIZE - 1))
 
-#define DFU_IN_PROGRESS         (uint32_t) 0x89ABCDEF
+#define DFU_PROGRESS_FLAG       (uint32_t) 0x89ABCDEF
 #define IAP_FLAG                (uint32_t) 0xAABBCCDD
-#define IAP_RETRY                          1
 
 #define IAP_FLAG_ADDR                      (SRAM_END_ADDR - sizeof(uint32_t))
-#define IAP_RETRY_ADDR                     (IAP_FLAG_ADDR - sizeof(uint32_t))
+#define IAP_TYPE_ADDR                      (IAP_FLAG_ADDR - sizeof(uint32_t))
 
 #define IS_VALID_SP(a)          ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
-#define IS_DFU_IN_PROGRESS(v)   ((uint32_t)v == DFU_IN_PROGRESS)
+#define IS_DFU_IN_PROGRESS(v)   ((uint32_t)v == DFU_PROGRESS_FLAG)
+
+/* Exported typedef ----------------------------------------------------------*/
+typedef enum {
+    IAP_TYPE_VCU = 0xA1B2C3D4,
+    IAP_TYPE_HMI = 0X1A2B3C4D
+} IAP_TYPE;
 
 /* Public functions prototype ------------------------------------------------*/
 void _DelayMS(uint32_t ms);

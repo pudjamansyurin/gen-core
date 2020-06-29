@@ -1,8 +1,8 @@
 Core/Src/Drivers/_nrf24l01.o: ../Core/Src/Drivers/_nrf24l01.c \
  ../Core/Inc/Drivers/_nrf24l01.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_utils.h \
  ../Core/Inc/_defines.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/_defines_shared.h \
  ../Core/Inc/main.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -57,16 +57,16 @@ Core/Src/Drivers/_nrf24l01.o: ../Core/Src/Drivers/_nrf24l01.c \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_log.h \
  ../Core/Inc/Libs/_keyless.h
 
 ../Core/Inc/Drivers/_nrf24l01.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_utils.h:
 
 ../Core/Inc/_defines.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/_defines_shared.h:
 
 ../Core/Inc/main.h:
 
@@ -178,6 +178,6 @@ Core/Src/Drivers/_nrf24l01.o: ../Core/Src/Drivers/_nrf24l01.c \
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_log.h:
 
 ../Core/Inc/Libs/_keyless.h:

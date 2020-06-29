@@ -24,9 +24,8 @@ extern uint32_t AesKey[4];
 #endif
 
 /* Exported variables ---------------------------------------------------------*/
-#if (!BOOTLOADER)
-uint16_t FIRMWARE_VERSION = 0;
-#else
+uint16_t VCU_FW_VERSION = 0, HMI_FW_VERSION = 0;
+#if (BOOTLOADER)
 uint32_t DFU_FLAG = 0;
 #endif
 
@@ -74,7 +73,7 @@ uint8_t EEPROM_Init(void) {
 #if (!BOOTLOADER)
     // Load or Reset
     EEPROM_ResetOrLoad();
-    EEPROM_FirmwareVersion(EE_CMD_R, EE_NULL);
+    EEPROM_FirmwareVersion(EE_CMD_R, EE_NULL, IAP_TYPE_VCU);
 #endif
     return ret;
 }
@@ -177,16 +176,23 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 
     return ret;
 }
-
-uint8_t EEPROM_FirmwareVersion(EEPROM_COMMAND cmd, uint16_t value) {
-    return EE_Command(VADDR_FIRMWARE_VERSION, cmd, &value, &FIRMWARE_VERSION, sizeof(value));
-}
-
 #else
 uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value) {
     return EE_Command(VADDR_DFU_FLAG, cmd, &value, &DFU_FLAG, sizeof(value));
 }
 #endif
+
+uint8_t EEPROM_FirmwareVersion(EEPROM_COMMAND cmd, uint16_t value, IAP_TYPE type) {
+    uint32_t vaddr = VADDR_VCU_FW_VERSION;
+    uint16_t *ptr = &VCU_FW_VERSION;
+
+    if (type == IAP_TYPE_HMI) {
+        vaddr = VADDR_HMI_FW_VERSION;
+        ptr = &HMI_FW_VERSION;
+    }
+
+    return EE_Command(vaddr, cmd, &value, ptr, sizeof(value));
+}
 
 /* Private functions implementation --------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size) {

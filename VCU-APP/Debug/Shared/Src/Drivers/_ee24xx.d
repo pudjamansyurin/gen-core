@@ -1,9 +1,9 @@
 Shared/Src/Drivers/_ee24xx.o: \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Src/Drivers/_ee24xx.c \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_ee24xx.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Src/Drivers/_ee24xx.c \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_ee24xx.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_utils.h \
  ../Core/Inc/_defines.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/_defines_shared.h \
  ../Core/Inc/main.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -58,15 +58,15 @@ Shared/Src/Drivers/_ee24xx.o: \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_log.h
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_ee24xx.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_ee24xx.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_utils.h:
 
 ../Core/Inc/_defines.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/_defines_shared.h:
 
 ../Core/Inc/main.h:
 
@@ -178,4 +178,4 @@ Shared/Src/Drivers/_ee24xx.o: \
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_log.h:

@@ -50,6 +50,8 @@
 #define VCU_BUILD_YEAR               (uint8_t)  20
 #define VCU_UNITID                   (uint32_t) 354313
 
+#define FOTA_MIN_VOLTAGE             (uint16_t) 3600
+
 #define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
 #define NET_TCP_PORT                 (uint16_t) 46606
 
@@ -139,6 +141,7 @@
 #define CMD_GEN_LED                   (uint8_t) 1
 #define CMD_GEN_KNOB                  (uint8_t) 2
 #define CMD_GEN_FOTA                  (uint8_t) 3
+#define CMD_GEN_FOCAN                 (uint8_t) 4
 
 #define CMD_REPORT_RTC                (uint8_t) 0
 #define CMD_REPORT_ODOM               (uint8_t) 1
@@ -167,10 +170,12 @@
 #define CAND_BMS_PARAM_1             (uint16_t) 0x0B0
 #define CAND_BMS_PARAM_2             (uint16_t) 0x0B1
 #define CAND_BMS_SETTING             (uint16_t) 0x1B2
+#define CAND_HMI2                    (uint16_t) 0x7D0
+#endif
 #define CAND_HMI1_LEFT               (uint16_t) 0x7C0
 #define CAND_HMI1_RIGHT              (uint16_t) 0x7C1
-#define CAND_HMI2                    (uint16_t) 0x7D0
 
+#if (!BOOTLOADER)
 // Others Parameters
 #define MCU_SPEED_MAX                 (uint8_t) 255
 #define MCU_RPM_MAX                  (uint32_t) 99999

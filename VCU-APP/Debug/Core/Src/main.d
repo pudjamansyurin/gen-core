@@ -53,22 +53,22 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_utils.h \
  ../Core/Inc/_defines.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_simcom.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_eeprom.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/_defines_shared.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_log.h \
+ ../Core/Inc/Libs/_firmware.h ../Core/Inc/Libs/_reporter.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_simcom.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_eeprom.h \
  ../Core/Inc/Libs/_gyro.h ../Core/Inc/Libs/_gps.h \
  ../Core/Inc/Drivers/_nmea.h ../Core/Inc/Libs/_finger.h \
  ../Core/Inc/Drivers/_fz3387.h ../Core/Inc/Libs/_audio.h \
  ../Core/Inc/Drivers/_cs43l22.h ../Core/Inc/Libs/_keyless.h \
- ../Core/Inc/Drivers/_nrf24l01.h ../Core/Inc/Libs/_reporter.h \
- ../Core/Inc/Libs/_handlebar.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_canbus.h \
+ ../Core/Inc/Drivers/_nrf24l01.h ../Core/Inc/Libs/_handlebar.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_canbus.h \
  ../Core/Inc/Drivers/_rtc.h ../Core/Inc/Drivers/_aes.h \
  ../Core/Inc/DMA/_dma_battery.h \
- /home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/DMA/_dma_simcom.h \
+ /home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/DMA/_dma_simcom.h \
  ../Core/Inc/DMA/_dma_ublox.h ../Core/Inc/DMA/_dma_finger.h \
  ../Core/Inc/Nodes/VCU.h ../Core/Inc/Nodes/BMS.h ../Core/Inc/Nodes/HMI1.h \
  ../Core/Inc/Nodes/HMI2.h
@@ -183,17 +183,21 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_utils.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_utils.h:
 
 ../Core/Inc/_defines.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/_defines_shared.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/_defines_shared.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_log.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_log.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_simcom.h:
+../Core/Inc/Libs/_firmware.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Libs/_eeprom.h:
+../Core/Inc/Libs/_reporter.h:
+
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_simcom.h:
+
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Libs/_eeprom.h:
 
 ../Core/Inc/Libs/_gyro.h:
 
@@ -213,11 +217,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/Drivers/_nrf24l01.h:
 
-../Core/Inc/Libs/_reporter.h:
-
 ../Core/Inc/Libs/_handlebar.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/Drivers/_canbus.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/Drivers/_canbus.h:
 
 ../Core/Inc/Drivers/_rtc.h:
 
@@ -225,7 +227,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/DMA/_dma_battery.h:
 
-/home/geni/STM32CubeIDE/workspace_1.3.0/VCU/Shared/Inc/DMA/_dma_simcom.h:
+/home/geni/STM32CubeIDE/workspace_1.3.0/gen-core/Shared/Inc/DMA/_dma_simcom.h:
 
 ../Core/Inc/DMA/_dma_ublox.h:
 

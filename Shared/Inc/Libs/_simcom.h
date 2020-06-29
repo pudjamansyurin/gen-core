@@ -79,7 +79,7 @@ void Simcom_Unlock(void);
 #if (!BOOTLOADER)
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
 #else
-uint8_t Simcom_FOTA(uint32_t checksumBackup);
+uint8_t Simcom_FOTA(uint32_t checksumOld);
 #endif
 
 #endif /* SIMCOM_H_ */
