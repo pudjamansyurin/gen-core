@@ -18,8 +18,8 @@ _at.c:381:15:AT_TcpApllicationMode	16	static
 _at.c:385:15:AT_ShowRemoteIp	16	static
 _at.c:389:15:AT_IpPackageHeader	16	static
 _at.c:393:15:AT_EnableLocalTimestamp	16	static
-_at.c:607:22:AT_SingleInteger	80	static
-_at.c:637:22:AT_CmdWrite	32	static
-_at.c:647:22:AT_CmdRead	40	static
-_at.c:667:13:AT_ParseText	32	static
-_at.c:700:16:AT_ParseNumber	24	static
+_at.c:633:22:AT_SingleInteger	80	static
+_at.c:663:22:AT_CmdWrite	32	static
+_at.c:673:22:AT_CmdRead	40	static
+_at.c:693:13:AT_ParseText	32	static
+_at.c:726:16:AT_ParseNumber	24	static
