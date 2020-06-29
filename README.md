@@ -261,5 +261,6 @@
 | 13 | Backup Battery Monitor      | -		    | ADC1	  | ✔  | ✔ | **Done** 		|
 | 14 | Debugging Buzzer		   | -		    | TIM10-PWM	  | ✔  | ✔ | **Done** 		|
 | 15 | Encryption RF		   | -		    | AES  	  | ✔  | -  | **Done**			|
-| 16 | Firmware upgrade OTA (FOTA) | -		    | FLASH	  | ✔  | -  | On-Progress		|
-| 17 | Encryption IoT		   | -		    | MbedTLS	  | 0%  | -  | Waiting: Real Server	|
+| 16 | Encryption IoT		   | -		    | MbedTLS	  | 0%  | -  | Waiting: Real Server	|
+| 17 | Fw upgrade OTA (FOTA) 	   | -		    | FLASH	  | ✔  | -  | **Done**			|
+| 18 | Fw upgrade CAN (FOCAN)     | -		    | FLASH, CAN  | ✔  | -  | On Progress		|
