@@ -1,4 +1,0 @@
-_crc.c:23:10:CRC_Calculate8	48	static
-_crc.c:64:10:CRC_Calculate32	24	static
-_crc.c:75:13:lock	8	static
-_crc.c:81:13:unlock	8	static

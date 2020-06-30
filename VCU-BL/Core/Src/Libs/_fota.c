@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_fota.h"
+#include "Libs/_focan.h"
 #include "Libs/_eeprom.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_crc.h"
@@ -18,8 +19,11 @@ extern CRC_HandleTypeDef hcrc;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart1;
 
+/* Exported variables ---------------------------------------------------------*/
+uint32_t DFU_FLAG = 0;
+
 /* Public functions implementation --------------------------------------------*/
-SIMCOM_RESULT FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
+uint8_t FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     SIMCOM_RESULT p;
     AT_FTP_STATE state;
     at_ftpget_t setFTPGET;
@@ -59,10 +63,10 @@ SIMCOM_RESULT FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
         Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
     }
 
-    return p;
+    return (p == SIM_RESULT_OK);
 }
 
-SIMCOM_RESULT FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
+uint8_t FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
     SIMCOM_RESULT p;
     uint32_t timer;
     AT_FTP_STATE state;
@@ -137,7 +141,7 @@ SIMCOM_RESULT FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
         Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
     }
 
-    return p;
+    return (p == SIM_RESULT_OK);
 }
 
 uint8_t FOTA_CompareChecksum(uint32_t checksum, uint32_t len, uint32_t address) {
@@ -168,7 +172,7 @@ void FOTA_Reboot(void) {
     /* Clear backup area */
     FLASHER_EraseBkpArea();
     /* Reset DFU flag */
-    EEPROM_FlagDFU(EE_CMD_W, 0);
+    FOTA_ResetDFU();
 
     HAL_NVIC_SystemReset();
 }
@@ -213,10 +217,6 @@ uint8_t FOTA_ValidImage(uint32_t address) {
     return ret;
 }
 
-uint8_t FOTA_InProgressDFU(void) {
-    return IS_DFU_IN_PROGRESS(DFU_FLAG);
-}
-
 void FOTA_JumpToApplication(void) {
     uint32_t appStack, appEntry;
 
@@ -249,31 +249,51 @@ void FOTA_JumpToApplication(void) {
         ;
 }
 
-uint8_t FOTA_Upgrade(void) {
+uint8_t FOTA_Upgrade(IAP_TYPE type) {
     uint8_t p;
     uint32_t checksum;
 
     /* Set DFU flag */
-    if (!FOTA_InProgressDFU()) {
-        EEPROM_FlagDFU(EE_CMD_W, DFU_FLAG);
+    FOTA_SetDFU();
 
-        // Backup current application (if necessary)
-        if (FOTA_ValidImage(APP_START_ADDR)) {
+    // Backup current application
+    if (type == IAP_TYPE_VCU) {
+        // Backup current application
+        if (FOTA_NeedBackup()) {
             FLASHER_BackupApp();
         }
     }
 
-    /* Get the stored checksum information */
-    checksum = *(uint32_t*) (BKP_START_ADDR + CHECKSUM_OFFSET);
-
-    /* Download image and install */
-    p = Simcom_FOTA(checksum);
+    /* Upgrade */
+    if (type == IAP_TYPE_VCU) {
+        /* Get the stored checksum information */
+        checksum = *(uint32_t*) (BKP_START_ADDR + CHECKSUM_OFFSET);
+        /* Download image and install */
+        p = Simcom_FOTA(checksum);
+    } else {
+        p = FOCAN_Upgrade();
+    }
 
     // Reset DFU flag only when FOTA success
     if (p) {
-        EEPROM_FlagDFU(EE_CMD_W, 0);
+        FOTA_ResetDFU();
     }
 
     return p;
 }
 
+uint8_t FOTA_NeedBackup(void) {
+    return (FOTA_ValidImage(APP_START_ADDR) && !FOTA_ValidImage(BKP_START_ADDR));
+}
+
+void FOTA_SetDFU(void) {
+    EEPROM_FlagDFU(EE_CMD_W, DFU_FLAG);
+}
+
+void FOTA_ResetDFU(void) {
+    EEPROM_FlagDFU(EE_CMD_W, 0);
+}
+
+uint8_t FOTA_InProgressDFU(void) {
+    return IS_DFU_IN_PROGRESS(DFU_FLAG);
+}

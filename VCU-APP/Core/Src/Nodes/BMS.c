@@ -46,7 +46,7 @@ void BMS_Init(void) {
     BMS.d.overheat = 0;
     BMS.d.warning = 0;
     // set each BMS
-    for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    for (uint8_t i = 0; i < BMS_COUNT ; i++) {
         BMS_ResetIndex(i);
     }
 }
@@ -87,7 +87,7 @@ void BMS_ResetIndex(uint8_t i) {
 }
 
 void BMS_RefreshIndex(void) {
-    for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    for (uint8_t i = 0; i < BMS_COUNT ; i++) {
         if ((_GetTickMS() - BMS.d.pack[i].tick) > 500) {
             BMS_ResetIndex(i);
         }
@@ -100,14 +100,14 @@ uint8_t BMS_GetIndex(uint32_t id) {
     uint8_t i;
 
     // find index (if already exist)
-    for (i = 0; i < BMS_COUNT; i++) {
+    for (i = 0; i < BMS_COUNT ; i++) {
         if (BMS.d.pack[i].id == id) {
             return i;
         }
     }
 
     // finx index (if not exist)
-    for (i = 0; i < BMS_COUNT; i++) {
+    for (i = 0; i < BMS_COUNT ; i++) {
         if (BMS.d.pack[i].id == BMS_ID_NONE) {
             return i;
         }
@@ -151,7 +151,7 @@ void BMS_SetEvents(uint16_t flag) {
 }
 
 uint8_t BMS_CheckRun(uint8_t state) {
-    for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    for (uint8_t i = 0; i < BMS_COUNT ; i++) {
         if (BMS.d.pack[i].started != state) {
             return 0;
         }
@@ -160,7 +160,7 @@ uint8_t BMS_CheckRun(uint8_t state) {
 }
 
 uint8_t BMS_CheckState(BMS_STATE state) {
-    for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    for (uint8_t i = 0; i < BMS_COUNT ; i++) {
         if (BMS.d.pack[i].state != state) {
             return 0;
         }
@@ -173,13 +173,13 @@ void BMS_MergeData(void) {
     uint8_t soc = 0, device = 0;
 
     // Merge flags (OR-ed)
-    for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    for (uint8_t i = 0; i < BMS_COUNT ; i++) {
         flags |= BMS.d.pack[i].flag;
     }
     BMS_SetEvents(flags);
 
     // Average SOC
-    for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    for (uint8_t i = 0; i < BMS_COUNT ; i++) {
         if (BMS.d.pack[i].started == 1) {
             soc += BMS.d.pack[i].soc;
             device++;
@@ -224,9 +224,7 @@ uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
     data->u8[0] = start;
     data->u8[0] |= _L(state, 1);
 
-    // set default header
-    CANBUS_Header(&(CB.tx.header), CAND_BMS_SETTING, 1);
     // send message
-    return CANBUS_Write(&(CB.tx));
+    return CANBUS_Write(CAND_BMS_SETTING, 1, 0);
 }
 

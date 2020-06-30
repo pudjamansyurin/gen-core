@@ -21,6 +21,7 @@ canbus_t CB;
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
+static void CANBUS_Header(uint32_t StdId, uint32_t DLC, uint8_t RTR);
 
 /* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(void) {
@@ -36,22 +37,11 @@ void CANBUS_Init(void) {
         Error_Handler();
     }
 
-#if (!BOOTLOADER)
     /* Activate CAN RX notification */
     if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
         /* Notification Error */
         Error_Handler();
     }
-#endif
-}
-
-void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t StdId, uint32_t DLC) {
-    /* Configure Global Transmission process */
-    TxHeader->RTR = CAN_RTR_DATA;
-    TxHeader->IDE = CAN_ID_STD;
-    TxHeader->TransmitGlobalTime = DISABLE;
-    TxHeader->StdId = StdId;
-    TxHeader->DLC = DLC;
 }
 
 uint8_t CANBUS_Filter(void) {
@@ -59,6 +49,8 @@ uint8_t CANBUS_Filter(void) {
 
     /* Configure the CAN Filter */
     sFilterConfig.FilterBank = 0;
+    // give all filter to CAN2
+    sFilterConfig.SlaveStartFilterBank = 0;
     // set filter to mask mode (not id_list mode)
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
     // set 32-bit scale configuration
@@ -78,7 +70,8 @@ uint8_t CANBUS_Filter(void) {
 /*----------------------------------------------------------------------------
  wite a message to CAN peripheral and transmit it
  *----------------------------------------------------------------------------*/
-uint8_t CANBUS_Write(canbus_tx_t *tx) {
+uint8_t CANBUS_Write(uint32_t StdId, uint32_t DLC, uint8_t RTR) {
+    canbus_tx_t *tx = &(CB.tx);
     uint32_t TxMailbox;
     HAL_StatusTypeDef status;
 
@@ -88,36 +81,40 @@ uint8_t CANBUS_Write(canbus_tx_t *tx) {
         _DelayMS(1);
     };
 
+    // set header
+    CANBUS_Header(StdId, DLC, RTR);
+
     /* Start the Transmission process */
-    status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), tx->data.u8, &TxMailbox);
+    status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), (uint8_t*) &(tx->data), &TxMailbox);
 
-//    if (status == HAL_OK) {
-//        CANBUS_TxDebugger();
-//    }
+    //  // debugging
+    //    if (status == HAL_OK) {
+    //        CANBUS_TxDebugger();
+    //    }
+
     unlock();
-
     return (status == HAL_OK);
 }
 
 /*----------------------------------------------------------------------------
  read a message from CAN peripheral and release it
  *----------------------------------------------------------------------------*/
-uint8_t CANBUS_Read(canbus_rx_t *rx) {
+uint8_t CANBUS_Read(void) {
+    canbus_rx_t *rx = &(CB.rx);
     HAL_StatusTypeDef status;
 
-    lock();
     /* Get RX message */
     status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
 
+    //  // debugging
     //    if (status == HAL_OK) {
     //        CANBUS_RxDebugger();
     //    }
-    unlock();
 
     return (status == HAL_OK);
 }
 
-uint32_t CANBUS_ReadID(void) {
+uint16_t CANBUS_ReadID(void) {
     if (CB.rx.header.IDE == CAN_ID_STD) {
         return CB.rx.header.StdId;
     }
@@ -156,9 +153,9 @@ void CANBUS_RxDebugger(void) {
 
 #if (!BOOTLOADER)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-    // Read rx fifo
-    if (CANBUS_Read(&(CB.rx))) {
-        // Signal only when RTOS started
+    // read rx fifo
+    if (CANBUS_Read()) {
+        // signal only when RTOS started
         if (osKernelGetState() == osKernelRunning) {
             osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_RX_IT);
         }
@@ -177,4 +174,14 @@ static void unlock(void) {
 #if (!BOOTLOADER)
     osMutexRelease(CanTxMutexHandle);
 #endif
+}
+
+static void CANBUS_Header(uint32_t StdId, uint32_t DLC, uint8_t RTR) {
+    CAN_TxHeaderTypeDef *TxHeader = &(CB.tx.header);
+    /* Configure Global Transmission process */
+    TxHeader->RTR = (RTR ? CAN_RTR_REMOTE : CAN_RTR_DATA);
+    TxHeader->IDE = CAN_ID_STD;
+    TxHeader->TransmitGlobalTime = DISABLE;
+    TxHeader->StdId = StdId;
+    TxHeader->DLC = DLC;
 }

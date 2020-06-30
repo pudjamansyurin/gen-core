@@ -1,5 +1,0 @@
-_dma_battery.c:33:6:BAT_DMA_Init	8	static
-_dma_battery.c:37:6:BAT_Debugger	8	static
-_dma_battery.c:43:6:HAL_ADC_ConvHalfCpltCallback	24	static
-_dma_battery.c:58:6:HAL_ADC_ConvCpltCallback	24	static
-_dma_battery.c:76:17:MovingAverage	16	static

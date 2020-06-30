@@ -1,6 +1,0 @@
-_aes.c:24:6:AES_Init	8	static
-_aes.c:32:9:AES_Encrypt	40	static
-_aes.c:42:9:AES_Decrypt	40	static
-_aes.c:52:6:AES_Tester	64	static
-_aes.c:76:13:lock	8	static
-_aes.c:80:13:unlock	8	static

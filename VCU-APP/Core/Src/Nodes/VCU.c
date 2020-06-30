@@ -132,10 +132,8 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
     // others
     data->u8[3] = VCU.d.speed;
 
-    // set default header
-    CANBUS_Header(&(CB.tx.header), CAND_VCU_SWITCH, 4);
     // send message
-    return CANBUS_Write(&(CB.tx));
+    return CANBUS_Write(CAND_VCU_SWITCH, 4, 0);
 }
 
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
@@ -152,10 +150,8 @@ uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
     // HMI2 shutdown request
     data->u8[7] = !VCU.d.state.knob;
 
-    // set default header
-    CANBUS_Header(&(CB.tx.header), CAND_VCU_DATETIME, 8);
     // send message
-    return CANBUS_Write(&(CB.tx));
+    return CANBUS_Write(CAND_VCU_DATETIME, 8, 0);
 }
 
 uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
@@ -168,10 +164,8 @@ uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
     data->u8[3] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];
     data->u32[1] = VCU.d.odometer;
 
-    // set default header
-    CANBUS_Header(&(CB.tx.header), CAND_VCU_SELECT_SET, 8);
     // send message
-    return CANBUS_Write(&(CB.tx));
+    return CANBUS_Write(CAND_VCU_SELECT_SET, 8, 0);
 }
 
 uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip) {
@@ -181,8 +175,6 @@ uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip) {
     data->u32[0] = trip[SW_M_TRIP_A];
     data->u32[1] = trip[SW_M_TRIP_B];
 
-    // set default header
-    CANBUS_Header(&(CB.tx.header), CAND_VCU_TRIP_MODE, 8);
     // send message
-    return CANBUS_Write(&(CB.tx));
+    return CANBUS_Write(CAND_VCU_TRIP_MODE, 8, 0);
 }

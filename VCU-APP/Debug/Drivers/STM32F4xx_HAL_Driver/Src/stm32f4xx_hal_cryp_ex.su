@@ -1,4 +1,0 @@
-stm32f4xx_hal_cryp_ex.c:128:19:HAL_CRYPEx_AESGCM_GenerateAuthTAG	96	static,ignoring_inline_asm
-stm32f4xx_hal_cryp_ex.c:349:19:HAL_CRYPEx_AESCCM_GenerateAuthTAG	216	static,ignoring_inline_asm
-stm32f4xx_hal_cryp_ex.c:625:7:HAL_CRYPEx_EnableAutoKeyDerivation	16	static
-stm32f4xx_hal_cryp_ex.c:642:7:HAL_CRYPEx_DisableAutoKeyDerivation	16	static

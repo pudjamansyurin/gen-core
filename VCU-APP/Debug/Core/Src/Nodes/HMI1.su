@@ -1,5 +1,0 @@
-HMI1.c:26:6:HMI1_Init	16	static
-HMI1.c:42:6:HMI1_RefreshIndex	16	static
-HMI1.c:50:6:HMI1_Power	16	static
-HMI1.c:56:6:HMI1_CAN_RX_LeftState	8	static
-HMI1.c:62:6:HMI1_CAN_RX_RightState	8	static

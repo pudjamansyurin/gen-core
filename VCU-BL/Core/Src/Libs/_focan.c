@@ -36,7 +36,7 @@ uint8_t FOCAN_Upgrade(void) {
         p = FOCAN_GetVersion(&version);
     }
 
-    return 0;
+    return p;
 }
 
 /* Private functions implementation ------------------------------------------*/
@@ -49,22 +49,20 @@ static uint8_t FOCAN_EnterModeIAP(void) {
     CAN_DATA *rxd = &(CB.rx.data);
     uint8_t step = 0, reply = 1;
     uint32_t tick;
-    uint8_t ret;
+    uint8_t p;
 
     // set message
     txd->u16[0] = HMI_ADDR;
 
-    // set default header
-    CANBUS_Header(&(CB.tx.header), CAND_ENTER_IAP, 2);
     // send message
-    ret = CANBUS_Write(&(CB.tx));
+    p = CANBUS_Write(CAND_ENTER_IAP, 2, 0);
 
     // wait response
-    if (ret) {
+    if (p) {
         tick = _GetTickMS();
         while ((step < reply) && (_GetTickMS() - tick < 1000)) {
             // read
-            if (CANBUS_Read(&(CB.rx))) {
+            if (CANBUS_Read()) {
                 if (CANBUS_ReadID() == CAND_ENTER_IAP) {
                     switch (step) {
                         case 0: // ack
@@ -76,10 +74,10 @@ static uint8_t FOCAN_EnterModeIAP(void) {
                 }
             }
         }
-        ret = (step == reply);
+        p = (step == reply);
     }
 
-    return ret;
+    return p;
 }
 
 static uint8_t FOCAN_GetVersion(uint16_t *version) {
@@ -87,19 +85,17 @@ static uint8_t FOCAN_GetVersion(uint16_t *version) {
     CAN_DATA *rxd = &(CB.rx.data);
     uint8_t step = 0, reply = 4;
     uint32_t tick;
-    uint8_t ret;
+    uint8_t p;
 
-    // set default header
-    CANBUS_Header(&(CB.tx.header), CAND_GET_VERSION, 0);
     // send message
-    ret = CANBUS_Write(&(CB.tx));
+    p = CANBUS_Write(CAND_GET_VERSION, 0, 0);
 
     // wait response
-    if (ret) {
+    if (p) {
         tick = _GetTickMS();
         while ((step < reply) && (_GetTickMS() - tick < 1000)) {
             // read
-            if (CANBUS_Read(&(CB.rx))) {
+            if (CANBUS_Read()) {
                 if (CANBUS_ReadID() == CAND_GET_VERSION) {
                     switch (step) {
                         case 0: // ack
@@ -122,9 +118,9 @@ static uint8_t FOCAN_GetVersion(uint16_t *version) {
             }
         }
         /* return value */
-        ret = (step == reply);
+        p = (step == reply);
     }
 
-    return ret;
+    return p;
 }
 

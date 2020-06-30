@@ -21,13 +21,12 @@ extern response_t RESPONSE;
 extern report_t REPORT;
 extern vcu_t VCU;
 extern uint32_t AesKey[4];
+#else
+extern uint32_t DFU_FLAG;
 #endif
 
 /* Exported variables ---------------------------------------------------------*/
 uint16_t VCU_FW_VERSION = 0, HMI_FW_VERSION = 0;
-#if (BOOTLOADER)
-uint32_t DFU_FLAG = 0;
-#endif
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);

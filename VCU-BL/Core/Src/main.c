@@ -27,7 +27,6 @@
 #include "Libs/_eeprom.h"
 #include "Libs/_simcom.h"
 #include "Libs/_fota.h"
-#include "Libs/_focan.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "DMA/_dma_simcom.h"
@@ -82,7 +81,6 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-    uint8_t ret;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -119,27 +117,19 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    /* IAP flag has been set, initiate firmware download procedure */
     _LedWrite(1);
+    /* IAP flag has been set, initiate firmware download procedure */
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
-        /* Handle VCU FOTA */
-        if (*(uint32_t*) IAP_TYPE_ADDR == IAP_TYPE_VCU) {
-            LOG_StrLn("IAP set, do FOTA.");
-            ret = FOTA_Upgrade();
-        }
-        /* Handle HMI FOCAN */
-        else {
-            LOG_StrLn("IAP set, do FOCAN.");
-            ret = FOCAN_Upgrade();
-        }
-
-        /* Reset IAP flag */
-        *(uint32_t*) IAP_FLAG_ADDR = 0;
+        LOG_StrLn("IAP set, do DFU.");
         /* Everything went well */
-        if (ret) {
+        if (FOTA_Upgrade(*(uint32_t*) IAP_TYPE_ADDR)) {
+            /* Reset IAP flag */
+            *(uint32_t*) IAP_FLAG_ADDR = 0;
             /* Take branching decision on next reboot */
             FOTA_Reboot();
         }
+        /* Reset IAP flag */
+        *(uint32_t*) IAP_FLAG_ADDR = 0;
         /* FOTA failed */
         HAL_NVIC_SystemReset();
     }
@@ -151,16 +141,16 @@ int main(void)
     }
     /* Power reset during DFU, try once more */
     else if (FOTA_InProgressDFU()) {
-        LOG_StrLn("DFU set, do FOTA once more.");
+        LOG_StrLn("DFU set, do DFU once more.");
         /* Everything went well, boot form new image */
-        if (FOTA_Upgrade()) {
+        if (FOTA_Upgrade(*(uint32_t*) IAP_TYPE_ADDR)) {
             /* Take branching decision on next reboot */
             FOTA_Reboot();
         }
         /* Erase partially programmed application area */
         FLASHER_EraseAppArea();
         /* Reset DFU flag */
-        EEPROM_FlagDFU(EE_CMD_W, 0);
+        FOTA_ResetDFU();
         HAL_NVIC_SystemReset();
     }
     /* Try to restore the backup */
@@ -174,9 +164,9 @@ int main(void)
                 FOTA_Reboot();
             }
         } else {
-            LOG_StrLn("No image at all, do FOTA.");
+            LOG_StrLn("No image at all, do DFU.");
             /* Download new firmware for the first time */
-            if (FOTA_Upgrade()) {
+            if (FOTA_Upgrade(IAP_TYPE_VCU)) {
                 /* Take branching decision on next reboot */
                 FOTA_Reboot();
             }

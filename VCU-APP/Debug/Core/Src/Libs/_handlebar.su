@@ -1,9 +1,0 @@
-_handlebar.c:97:6:HBAR_ReadStates	24	static
-_handlebar.c:107:6:HBAR_RestoreMode	4	static
-_handlebar.c:113:6:HBAR_CheckReverse	4	static
-_handlebar.c:127:6:HBAR_TimerSelectSet	24	static
-_handlebar.c:161:6:HBAR_RunSelect	4	static
-_handlebar.c:174:6:HBAR_RunSet	16	static
-_handlebar.c:194:6:HBAR_AccumulateSubTrip	16	static
-_handlebar.c:204:14:HBAR_SeinController	24	static
-_handlebar.c:236:9:HBAR_ModeController	16	static
