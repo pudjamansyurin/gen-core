@@ -121,6 +121,7 @@ static uint8_t FOCAN_GetVersion(uint16_t *version) {
                 }
             }
         }
+        /* return value */
         ret = (step == reply);
     }
 
