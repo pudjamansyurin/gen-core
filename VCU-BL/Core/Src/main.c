@@ -27,6 +27,7 @@
 #include "Libs/_eeprom.h"
 #include "Libs/_simcom.h"
 #include "Libs/_fota.h"
+#include "Libs/_focan.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "DMA/_dma_simcom.h"
@@ -118,6 +119,10 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     _LedWrite(1);
+//    while (1) {
+//        FOCAN_Upgrade();
+//    }
+
     /* IAP flag has been set, initiate firmware download procedure */
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
         LOG_StrLn("IAP set, do DFU.");

@@ -1719,10 +1719,10 @@ void StartCommandTask(void *argument)
                             VCU.d.state.knob = (uint8_t) command.data.value;
                             break;
 
-                        case CMD_GEN_FOTA :
-                            case CMD_GEN_FOCAN :
+                        case CMD_GEN_UPGRADE_VCU :
+                            case CMD_GEN_UPGRADE_HMI :
                             /* Enter IAP mode */
-                            if (command.data.sub_code == CMD_GEN_FOTA) {
+                            if (command.data.sub_code == CMD_GEN_UPGRADE_VCU) {
                                 FW_EnterModeIAP(IAP_TYPE_VCU);
                             } else {
                                 FW_EnterModeIAP(IAP_TYPE_HMI);

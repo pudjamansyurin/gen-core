@@ -53,7 +53,6 @@ static uint8_t FOCAN_EnterModeIAP(void) {
 
     // set message
     txd->u16[0] = HMI_ADDR;
-
     // send message
     p = CANBUS_Write(CAND_ENTER_IAP, 2, 0);
 
