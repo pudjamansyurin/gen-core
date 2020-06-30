@@ -89,10 +89,10 @@ uint8_t CANBUS_Write(uint32_t StdId, uint32_t DLC, uint8_t RTR) {
     /* Start the Transmission process */
     status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), (uint8_t*) &(tx->data), &TxMailbox);
 
-    //  // debugging
-    //    if (status == HAL_OK) {
-    //        CANBUS_TxDebugger();
-    //    }
+    // debugging
+    if (status == HAL_OK) {
+        CANBUS_TxDebugger();
+    }
 
     unlock();
     return (status == HAL_OK);
@@ -108,10 +108,10 @@ uint8_t CANBUS_Read(void) {
     /* Get RX message */
     status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
 
-    //  // debugging
-    //    if (status == HAL_OK) {
-    //        CANBUS_RxDebugger();
-    //    }
+    // debugging
+    if (status == HAL_OK) {
+        CANBUS_RxDebugger();
+    }
 
     return (status == HAL_OK);
 }
