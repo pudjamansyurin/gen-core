@@ -25,7 +25,9 @@ uint8_t FOCAN_Upgrade(void) {
     uint16_t version;
     uint8_t p;
 
+    /* Set HMI target */
     FOCAN_SetTarget(CAND_HMI1_LEFT);
+
     /* Tell HMI to enter IAP mode */
     p = FOCAN_EnterModeIAP();
 

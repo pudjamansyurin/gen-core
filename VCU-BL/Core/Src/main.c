@@ -132,15 +132,15 @@ int main(void)
             LOG_StrLn("IAP set, do FOCAN.");
             ret = FOCAN_Upgrade();
         }
+
+        /* Reset IAP flag */
+        *(uint32_t*) IAP_FLAG_ADDR = 0;
         /* Everything went well */
         if (ret) {
-            /* Reset IAP flag */
-            *(uint32_t*) IAP_FLAG_ADDR = 0;
             /* Take branching decision on next reboot */
             FOTA_Reboot();
         }
-        /* Reset IAP flag */
-        *(uint32_t*) IAP_FLAG_ADDR = 0;
+        /* FOTA failed */
         HAL_NVIC_SystemReset();
     }
     /* Jump to application if it exist and DFU finished */

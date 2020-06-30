@@ -1719,16 +1719,13 @@ void StartCommandTask(void *argument)
                             break;
 
                         case CMD_GEN_FOTA :
-                            FW_EnterModeIAP(IAP_TYPE_VCU);
-                            /* This line is never reached when FOTA activated */
-                            sprintf(response.data.message,
-                                    "Battery low %u mV", BACKUP_VOLTAGE);
-                            response.data.code = RESPONSE_STATUS_ERROR;
-
-                            break;
-
-                        case CMD_GEN_FOCAN :
-                            FW_EnterModeIAP(IAP_TYPE_HMI);
+                            case CMD_GEN_FOCAN :
+                            /* Enter IAP mode */
+                            if (command.data.sub_code == CMD_GEN_FOTA) {
+                                FW_EnterModeIAP(IAP_TYPE_VCU);
+                            } else {
+                                FW_EnterModeIAP(IAP_TYPE_HMI);
+                            }
                             /* This line is never reached when FOTA activated */
                             sprintf(response.data.message,
                                     "Battery low %u mV", BACKUP_VOLTAGE);
