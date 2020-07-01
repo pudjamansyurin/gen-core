@@ -76,20 +76,19 @@ uint8_t CANBUS_Write(uint32_t StdId, uint32_t DLC, uint8_t RTR) {
     HAL_StatusTypeDef status;
 
     lock();
-    // check tx mailbox is ready
-    while (!HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)) {
-        _DelayMS(1);
-    };
-
     // set header
     CANBUS_Header(StdId, DLC, RTR);
 
     /* Start the Transmission process */
     status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), tx->data.u8, &TxMailbox);
 
+    /* Wait transmission complete */
+    while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) != 3)
+        ;
+
     // debugging
     if (status == HAL_OK) {
-        CANBUS_TxDebugger();
+//        CANBUS_TxDebugger();
     }
 
     unlock();
@@ -104,12 +103,16 @@ uint8_t CANBUS_Read(void) {
     HAL_StatusTypeDef status;
 
     lock();
-    /* Get RX message */
-    status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
-
-    // debugging
-    if (status == HAL_OK) {
-        CANBUS_RxDebugger();
+    /* Check FIFO */
+    if (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0)) {
+        /* Get RX message */
+        status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
+        // debugging
+        if (status == HAL_OK) {
+//            CANBUS_RxDebugger();
+        }
+    } else {
+    	status = HAL_ERROR;
     }
     unlock();
 
@@ -117,10 +120,12 @@ uint8_t CANBUS_Read(void) {
 }
 
 uint16_t CANBUS_ReadID(void) {
-    if (CB.rx.header.IDE == CAN_ID_STD) {
-        return CB.rx.header.StdId;
+    CAN_RxHeaderTypeDef *header = &(CB.rx.header);
+
+    if (header->IDE == CAN_ID_STD) {
+        return header->StdId;
     }
-    return _R(CB.rx.header.ExtId, 20);
+    return _R(header->ExtId, 20);
 }
 
 void CANBUS_TxDebugger(void) {

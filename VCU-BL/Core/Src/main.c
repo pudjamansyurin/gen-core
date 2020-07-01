@@ -119,9 +119,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     _LedWrite(1);
-//    while (1) {
-//        FOCAN_Upgrade();
-//    }
+    while (1) {
+        FOCAN_Upgrade();
+    }
 
     /* IAP flag has been set, initiate firmware download procedure */
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
