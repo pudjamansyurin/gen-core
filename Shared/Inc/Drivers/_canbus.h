@@ -47,6 +47,6 @@ uint8_t CANBUS_Write(uint32_t StdId, uint32_t DLC, uint8_t RTR);
 uint8_t CANBUS_Read(void);
 uint16_t CANBUS_ReadID(void);
 void CANBUS_TxDebugger(void);
-void CANBUS_TxDebugger(void);
+void CANBUS_RxDebugger(void);
 
 #endif /* CANBUS_H_ */

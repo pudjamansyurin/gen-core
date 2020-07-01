@@ -51,8 +51,6 @@ uint8_t CANBUS_Filter(void) {
 
     /* Configure the CAN Filter */
     sFilterConfig.FilterBank = 0;
-    // give all filter to CAN2
-    sFilterConfig.SlaveStartFilterBank = 0;
     // set filter to mask mode (not id_list mode)
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
     // set 32-bit scale configuration
@@ -87,7 +85,7 @@ uint8_t CANBUS_Write(uint32_t StdId, uint32_t DLC, uint8_t RTR) {
     CANBUS_Header(StdId, DLC, RTR);
 
     /* Start the Transmission process */
-    status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), (uint8_t*) &(tx->data), &TxMailbox);
+    status = HAL_CAN_AddTxMessage(&hcan1, &(tx->header), tx->data.u8, &TxMailbox);
 
     // debugging
     if (status == HAL_OK) {
@@ -105,6 +103,7 @@ uint8_t CANBUS_Read(void) {
     canbus_rx_t *rx = &(CB.rx);
     HAL_StatusTypeDef status;
 
+    lock();
     /* Get RX message */
     status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(rx->header), rx->data.u8);
 
@@ -112,6 +111,7 @@ uint8_t CANBUS_Read(void) {
     if (status == HAL_OK) {
         CANBUS_RxDebugger();
     }
+    unlock();
 
     return (status == HAL_OK);
 }
