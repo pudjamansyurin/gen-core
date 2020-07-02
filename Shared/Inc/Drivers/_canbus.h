@@ -43,7 +43,7 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void CANBUS_Init(void);
 uint8_t CANBUS_Filter(void);
-uint8_t CANBUS_Write(uint32_t StdId, uint32_t DLC, uint8_t RTR);
+uint8_t CANBUS_Write(uint32_t StdId, uint32_t DLC);
 uint8_t CANBUS_Read(void);
 uint32_t CANBUS_ReadID(void);
 void CANBUS_TxDebugger(void);

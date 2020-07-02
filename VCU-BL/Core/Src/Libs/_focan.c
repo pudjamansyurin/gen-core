@@ -57,7 +57,7 @@ static uint8_t FOCAN_EnterModeIAP(void) {
     // set message
     txd->u16[0] = HMI_ADDR;
     // send message
-    p = CANBUS_Write(CAND_ENTER_IAP, 2, 0);
+    p = CANBUS_Write(CAND_ENTER_IAP, 2);
 
     // wait response
     if (p) {
@@ -87,14 +87,16 @@ static uint8_t FOCAN_EnterModeIAP(void) {
 }
 
 static uint8_t FOCAN_GetVersion(uint16_t *version) {
-    //    CAN_DATA *txd = &(CB.tx.data);
+    CAN_DATA *txd = &(CB.tx.data);
     CAN_DATA *rxd = &(CB.rx.data);
     uint8_t step = 0, reply = 4;
     uint32_t tick;
     uint8_t p;
 
+    // set message (dummy)
+    txd->u8[0] = 0x00;
     // send message
-    p = CANBUS_Write(CAND_GET_VERSION, 0, 0);
+    p = CANBUS_Write(CAND_GET_VERSION, 1);
 
     // wait response
     if (p) {

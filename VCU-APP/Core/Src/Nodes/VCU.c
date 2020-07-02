@@ -133,7 +133,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
     data->u8[3] = VCU.d.speed;
 
     // send message
-    return CANBUS_Write(CAND_VCU_SWITCH, 4, 0);
+    return CANBUS_Write(CAND_VCU_SWITCH, 4);
 }
 
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
@@ -151,7 +151,7 @@ uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
     data->u8[7] = !VCU.d.state.knob;
 
     // send message
-    return CANBUS_Write(CAND_VCU_DATETIME, 8, 0);
+    return CANBUS_Write(CAND_VCU_DATETIME, 8);
 }
 
 uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
@@ -165,7 +165,7 @@ uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
     data->u32[1] = VCU.d.odometer;
 
     // send message
-    return CANBUS_Write(CAND_VCU_SELECT_SET, 8, 0);
+    return CANBUS_Write(CAND_VCU_SELECT_SET, 8);
 }
 
 uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip) {
@@ -176,5 +176,5 @@ uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip) {
     data->u32[1] = trip[SW_M_TRIP_B];
 
     // send message
-    return CANBUS_Write(CAND_VCU_TRIP_MODE, 8, 0);
+    return CANBUS_Write(CAND_VCU_TRIP_MODE, 8);
 }

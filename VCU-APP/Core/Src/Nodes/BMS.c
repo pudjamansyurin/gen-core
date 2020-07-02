@@ -225,6 +225,6 @@ uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
     data->u8[0] |= _L(state, 1);
 
     // send message
-    return CANBUS_Write(CAND_BMS_SETTING, 1, 0);
+    return CANBUS_Write(CAND_BMS_SETTING, 1);
 }
 
