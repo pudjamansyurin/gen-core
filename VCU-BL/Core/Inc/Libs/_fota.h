@@ -14,8 +14,8 @@
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type);
-uint8_t FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum);
-uint8_t FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len);
+uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, uint32_t *checksum);
+uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len);
 uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address);
 void FOTA_Reboot(void);
 uint8_t FOTA_ValidImage(uint32_t address);
@@ -24,5 +24,6 @@ uint8_t FOTA_NeedBackup(void);
 void FOTA_SetDFU(void);
 void FOTA_ResetDFU(void);
 uint8_t FOTA_InProgressDFU(void);
+void FOTA_GetChecksum(uint32_t *checksum);
 
 #endif /* INC_LIBS__FOTA_H_ */

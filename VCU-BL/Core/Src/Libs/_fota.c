@@ -47,31 +47,32 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
         strcpy(ftp.path, "/vcu/");
     } else {
         strcpy(ftp.path, "/hmi/");
+
+        /* Tell HMI to enter IAP mode */
+        p = FOCAN_EnterModeIAP(CAND_HMI1_LEFT, 1000);
     }
 
-    /* Set DFU flag */
-    if (!FOTA_InProgressDFU()) {
-        FOTA_SetDFU();
-    }
-
-    // Backup current application
-    if (currentIAP == IAP_VCU) {
-        if (FOTA_NeedBackup()) {
-            FLASHER_BackupApp();
+    /* Backup if needed */
+    if (p > 0) {
+        /* Set DFU flag */
+        if (!FOTA_InProgressDFU()) {
+            FOTA_SetDFU();
         }
-    } else {
 
+        // Backup current application
+        if (currentIAP == IAP_VCU) {
+            FLASHER_BackupApp();
+        } else {
+            FOCAN_BackupApp(100);
+        }
     }
 
     /* Get the stored checksum information */
-    if (currentIAP == IAP_VCU) {
-        cksumOld = *(uint32_t*) (BKP_START_ADDR + CHECKSUM_OFFSET);
-    } else {
-        /* Tell HMI to enter IAP mode */
-        p = FOCAN_EnterModeIAP(CAND_HMI1_LEFT, 1000);
-
-        /* Get HMI checksum via CAN */
-        if (p > 0) {
+    if (p > 0) {
+        if (currentIAP == IAP_VCU) {
+            FOTA_GetChecksum(&cksumOld);
+        } else {
+            /* Get HMI checksum via CAN */
             p = FOCAN_GetChecksum(&cksumOld, 100);
         }
     }
@@ -94,7 +95,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
     // Get checksum of new firmware
     if (p > 0) {
-        p = FOTA_GetChecksum(&ftp, &cksumNew);
+        p = FOTA_DownloadChecksum(&ftp, &cksumNew);
 
         // Only download when image is different
         if (p > 0) {
@@ -104,7 +105,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
     // Download & Program new firmware
     if (p > 0) {
-        p = FOTA_DownloadAndInstall(&ftp, &len);
+        p = FOTA_DownloadFlashFirmware(&ftp, &len);
     }
 
     // Buffer filled, compare the checksum
@@ -120,7 +121,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     return (p > 0);
 }
 
-uint8_t FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
+uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     SIMCOM_RESULT p;
     AT_FTP_STATE state;
     at_ftpget_t setFTPGET;
@@ -163,7 +164,7 @@ uint8_t FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     return (p == SIM_RESULT_OK);
 }
 
-uint8_t FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
+uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len) {
     SIMCOM_RESULT p;
     uint32_t timer;
     AT_FTP_STATE state;
@@ -350,4 +351,14 @@ void FOTA_ResetDFU(void) {
 
 uint8_t FOTA_InProgressDFU(void) {
     return IS_DFU_IN_PROGRESS(DFU_FLAG);
+}
+
+void FOTA_GetChecksum(uint32_t *checksum) {
+    uint32_t address = BKP_START_ADDR;
+
+    if (FOTA_NeedBackup()) {
+        address = APP_START_ADDR;
+    }
+
+    *checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
 }

@@ -203,6 +203,8 @@ typedef enum {
 // FOCAN Message Address
 #define CAND_ENTER_IAP               (uint32_t) 0x100
 #define CAND_GET_CHECKSUM            (uint32_t) 0x101
+#define CAND_NEED_BACKUP             (uint32_t) 0x104
+#define CAND_BACKUP_APP              (uint32_t) 0x105
 
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {

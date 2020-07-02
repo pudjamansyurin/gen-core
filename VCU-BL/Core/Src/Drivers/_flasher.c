@@ -7,6 +7,7 @@
 
 /* Includes -------------------------------------------------------------------*/
 #include "Drivers/_flasher.h"
+#include "Libs/_fota.h"
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t FLASHER_WriteByte(uint8_t *ptr, uint32_t size, uint32_t address, uint32_t end);
@@ -49,7 +50,7 @@ static uint8_t FLASHER_WriteByte(uint8_t *ptr, uint32_t size, uint32_t address, 
 static uint8_t FLASHER_Erase(uint32_t FirstSector, uint32_t NbOfSectors) {
     FLASH_EraseInitTypeDef EraseInitStruct;
     uint32_t SectorError = 0;
-    uint8_t ret;
+    uint8_t p;
 
     /* Fill EraseInit structure*/
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
@@ -69,10 +70,10 @@ static uint8_t FLASHER_Erase(uint32_t FirstSector, uint32_t NbOfSectors) {
             );
 
     /* Erasing......... */
-    ret = (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) == HAL_OK);
+    p = (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) == HAL_OK);
 
     /* Handle error */
-    if (!ret) {
+    if (!p) {
         /*
          Error occurred while sector erase.
          User can add here some code to deal with this error.
@@ -110,7 +111,7 @@ static uint8_t FLASHER_Erase(uint32_t FirstSector, uint32_t NbOfSectors) {
      to protect the FLASH memory against possible unwanted operation) *********/
     HAL_FLASH_Lock();
 
-    return ret;
+    return p;
 }
 
 /**
@@ -230,28 +231,32 @@ uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset) {
 }
 
 uint8_t FLASHER_BackupApp(void) {
-    uint8_t ret;
     uint8_t *ptr = (uint8_t*) APP_START_ADDR;
+    uint8_t p;
 
-    ret = FLASHER_EraseBkpArea();
+    p = FOTA_NeedBackup();
 
-    if (ret) {
-        ret = FLASHER_WriteBkpArea(ptr, APP_MAX_SIZE, 0);
+    if (p) {
+        p = FLASHER_EraseBkpArea();
     }
 
-    return ret;
+    if (p) {
+        p = FLASHER_WriteBkpArea(ptr, APP_MAX_SIZE, 0);
+    }
+
+    return p;
 }
 
 uint8_t FLASHER_RestoreApp(void) {
-    uint8_t ret;
     uint8_t *ptr = (uint8_t*) BKP_START_ADDR;
+    uint8_t p;
 
-    ret = FLASHER_EraseAppArea();
+    p = FLASHER_EraseAppArea();
 
-    if (ret) {
-        ret = FLASHER_WriteAppArea(ptr, APP_MAX_SIZE, 0);
+    if (p) {
+        p = FLASHER_WriteAppArea(ptr, APP_MAX_SIZE, 0);
     }
 
-    return ret;
+    return p;
 }
 
