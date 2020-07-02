@@ -185,7 +185,7 @@ uint8_t EEPROM_FirmwareVersion(EEPROM_COMMAND cmd, uint16_t value, IAP_TYPE type
     uint32_t vaddr = VADDR_VCU_FW_VERSION;
     uint16_t *ptr = &VCU_FW_VERSION;
 
-    if (type == IAP_TYPE_HMI) {
+    if (type == IAP_HMI) {
         vaddr = VADDR_HMI_FW_VERSION;
         ptr = &HMI_FW_VERSION;
     }

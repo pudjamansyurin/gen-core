@@ -45,8 +45,8 @@
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {
-    IAP_TYPE_VCU = 0xA1B2C3D4,
-    IAP_TYPE_HMI = 0X1A2B3C4D
+    IAP_VCU = 0xA1B2C3D4,
+    IAP_HMI = 0X1A2B3C4D
 } IAP_TYPE;
 
 /* Exported constants --------------------------------------------------------*/

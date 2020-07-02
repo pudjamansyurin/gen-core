@@ -22,7 +22,104 @@ extern UART_HandleTypeDef huart1;
 /* Exported variables ---------------------------------------------------------*/
 uint32_t DFU_FLAG = 0;
 
+/* Private variables ----------------------------------------------------------*/
+static IAP_TYPE currentIAP;
+
 /* Public functions implementation --------------------------------------------*/
+
+uint8_t FOTA_Upgrade(IAP_TYPE type) {
+    SIMCOM_RESULT p = SIM_RESULT_OK;
+    uint32_t cksumOld, cksumNew = 0, len = 0;
+    at_ftp_t ftp = {
+            .id = 1,
+            .server = NET_FTP_SERVER,
+            .username = NET_FTP_USERNAME,
+            .password = NET_FTP_PASSWORD,
+            .version = "APP",
+            .size = 0,
+    };
+
+    /* Set current IAP type */
+    currentIAP = type;
+
+    /* Set FTP directory */
+    if (currentIAP == IAP_VCU) {
+        strcpy(ftp.path, "/vcu/");
+    } else {
+        strcpy(ftp.path, "/hmi/");
+    }
+
+    /* Set DFU flag */
+    if (!FOTA_InProgressDFU()) {
+        FOTA_SetDFU();
+    }
+
+    // Backup current application
+    if (currentIAP == IAP_VCU) {
+        if (FOTA_NeedBackup()) {
+            FLASHER_BackupApp();
+        }
+    } else {
+
+    }
+
+    /* Get the stored checksum information */
+    if (currentIAP == IAP_VCU) {
+        cksumOld = *(uint32_t*) (BKP_START_ADDR + CHECKSUM_OFFSET);
+    } else {
+        /* Tell HMI to enter IAP mode */
+        p = FOCAN_EnterModeIAP(CAND_HMI1_LEFT, 1000);
+
+        /* Get HMI checksum via CAN */
+        if (p > 0) {
+            p = FOCAN_GetChecksum(&cksumOld, 100);
+        }
+    }
+
+    // Initialise SIMCOM
+    if (p > 0) {
+        p = Simcom_SetState(SIM_STATE_GPRS_ON, 60000);
+
+        // Initialise Bearer &  FTP
+        if (p > 0) {
+            // Initialise bearer for TCP based applications.
+            p = AT_BearerInitialize();
+
+            // Initialise FTP
+            if (p > 0) {
+                p = AT_FtpInitialize(&ftp);
+            }
+        }
+    }
+
+    // Get checksum of new firmware
+    if (p > 0) {
+        p = FOTA_GetChecksum(&ftp, &cksumNew);
+
+        // Only download when image is different
+        if (p > 0) {
+            p = (cksumOld != cksumNew);
+        }
+    }
+
+    // Download & Program new firmware
+    if (p > 0) {
+        p = FOTA_DownloadAndInstall(&ftp, &len);
+    }
+
+    // Buffer filled, compare the checksum
+    if (p > 0) {
+        p = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
+    }
+
+    // Reset DFU flag only when FOTA success
+    if (p > 0) {
+        FOTA_ResetDFU();
+    }
+
+    return (p > 0);
+}
+
 uint8_t FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     SIMCOM_RESULT p;
     AT_FTP_STATE state;
@@ -30,7 +127,7 @@ uint8_t FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
 
     // FTP Set file name
     sprintf(setFTP->file, "%s.crc", setFTP->version);
-    p = AT_FtpSetFile(setFTP);
+    p = AT_FtpSetFile(setFTP->file);
 
     // Open FTP Session
     if (p > 0) {
@@ -74,7 +171,7 @@ uint8_t FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
 
     // FTP Set file name
     sprintf(setFTP->file, "%s.bin", setFTP->version);
-    p = AT_FtpSetFile(setFTP);
+    p = AT_FtpSetFile(setFTP->file);
 
     // Get file size
     if (p > 0) {
@@ -94,7 +191,11 @@ uint8_t FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
         timer = _GetTickMS();
 
         // Erase APP area
-        FLASHER_EraseAppArea();
+        if (currentIAP == IAP_VCU) {
+            FLASHER_EraseAppArea();
+        } else {
+
+        }
 
         // Copy chunk by chunk
         setFTPGET.mode = FTPGET_READ;
@@ -144,7 +245,42 @@ uint8_t FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len) {
     return (p == SIM_RESULT_OK);
 }
 
-uint8_t FOTA_CompareChecksum(uint32_t checksum, uint32_t len, uint32_t address) {
+void FOTA_Reboot(void) {
+    /* Clear backup area */
+    FLASHER_EraseBkpArea();
+    /* Reset DFU flag */
+    FOTA_ResetDFU();
+
+    HAL_NVIC_SystemReset();
+}
+
+uint8_t FOTA_ValidImage(uint32_t address) {
+    uint32_t size, checksum;
+    uint8_t ret;
+
+    /* Check beginning stack pointer */
+    ret = IS_VALID_SP(APP_START_ADDR);
+
+    /* Check the size */
+    if (ret) {
+        /* Get the stored size information */
+        size = *(uint32_t*) (address + SIZE_OFFSET);
+        ret = (size < APP_MAX_SIZE );
+    }
+
+    /* Check the checksum */
+    if (ret) {
+        /* Get the stored checksum information */
+        checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
+
+        /* Validate checksum */
+        ret = FOTA_ValidateChecksum(checksum, size, address);
+    }
+
+    return ret;
+}
+
+uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address) {
     uint32_t crc = 0;
     uint8_t *addr = (uint8_t*) address;
 
@@ -166,55 +302,6 @@ uint8_t FOTA_CompareChecksum(uint32_t checksum, uint32_t len, uint32_t address) 
     }
 
     return (crc == checksum);
-}
-
-void FOTA_Reboot(void) {
-    /* Clear backup area */
-    FLASHER_EraseBkpArea();
-    /* Reset DFU flag */
-    FOTA_ResetDFU();
-
-    HAL_NVIC_SystemReset();
-}
-
-uint8_t FOTA_ValidImage(uint32_t address) {
-    uint32_t size, checksum = 0, crc = 0;
-    uint8_t ret;
-    uint8_t *ptr = (uint8_t*) address;
-
-    /* Check beginning stack pointer */
-    ret = IS_VALID_SP(APP_START_ADDR);
-
-    /* Check the size */
-    if (ret) {
-        /* Get the stored size information */
-        size = *(uint32_t*) (address + SIZE_OFFSET);
-        ret = (size < APP_MAX_SIZE );
-    }
-
-    /* Check the checksum */
-    if (ret) {
-        /* Get the stored checksum information */
-        checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
-        /* Calculate CRC */
-        crc = CRC_Calculate8(ptr, size, 1);
-
-        // Indicator
-        LOG_Str("APP:Checksum = ");
-        if (crc == checksum) {
-            LOG_StrLn("MATCH");
-        } else {
-            LOG_StrLn("NOT MATCH");
-            LOG_Hex32(checksum);
-            LOG_Str(" != ");
-            LOG_Hex32(crc);
-            LOG_Enter();
-        }
-
-        ret = (checksum == crc);
-    }
-
-    return ret;
 }
 
 void FOTA_JumpToApplication(void) {
@@ -247,39 +334,6 @@ void FOTA_JumpToApplication(void) {
     /* Never reached */
     while (1)
         ;
-}
-
-uint8_t FOTA_Upgrade(IAP_TYPE type) {
-    uint8_t p;
-    uint32_t checksum;
-
-    /* Set DFU flag */
-    FOTA_SetDFU();
-
-    // Backup current application
-    if (type == IAP_TYPE_VCU) {
-        // Backup current application
-        if (FOTA_NeedBackup()) {
-            FLASHER_BackupApp();
-        }
-    }
-
-    /* Upgrade */
-    if (type == IAP_TYPE_VCU) {
-        /* Get the stored checksum information */
-        checksum = *(uint32_t*) (BKP_START_ADDR + CHECKSUM_OFFSET);
-        /* Download image and install */
-        p = Simcom_FOTA(checksum);
-    } else {
-        p = FOCAN_Upgrade();
-    }
-
-    // Reset DFU flag only when FOTA success
-    if (p) {
-        FOTA_ResetDFU();
-    }
-
-    return p;
 }
 
 uint8_t FOTA_NeedBackup(void) {

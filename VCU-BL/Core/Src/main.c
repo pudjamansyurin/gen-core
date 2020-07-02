@@ -27,7 +27,6 @@
 #include "Libs/_eeprom.h"
 #include "Libs/_simcom.h"
 #include "Libs/_fota.h"
-#include "Libs/_focan.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "DMA/_dma_simcom.h"
@@ -123,7 +122,7 @@ int main(void)
     _LedWrite(0);
 
     while (1) {
-        FOCAN_Upgrade();
+        FOTA_Upgrade(IAP_HMI);
     }
 
     /* IAP flag has been set, initiate firmware download procedure */
@@ -174,7 +173,7 @@ int main(void)
         } else {
             LOG_StrLn("No image at all, do DFU.");
             /* Download new firmware for the first time */
-            if (FOTA_Upgrade(IAP_TYPE_VCU)) {
+            if (FOTA_Upgrade(IAP_VCU)) {
                 /* Take branching decision on next reboot */
                 FOTA_Reboot();
             }

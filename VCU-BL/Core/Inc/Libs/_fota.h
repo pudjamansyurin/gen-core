@@ -13,14 +13,13 @@
 #include "Drivers/_at.h"
 
 /* Public functions implementation --------------------------------------------*/
+uint8_t FOTA_Upgrade(IAP_TYPE type);
 uint8_t FOTA_GetChecksum(at_ftp_t *setFTP, uint32_t *checksum);
 uint8_t FOTA_DownloadAndInstall(at_ftp_t *setFTP, uint32_t *len);
-
-uint8_t FOTA_CompareChecksum(uint32_t checksum, uint32_t len, uint32_t address);
+uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address);
 void FOTA_Reboot(void);
 uint8_t FOTA_ValidImage(uint32_t address);
 void FOTA_JumpToApplication(void);
-uint8_t FOTA_Upgrade(IAP_TYPE type);
 uint8_t FOTA_NeedBackup(void);
 void FOTA_SetDFU(void);
 void FOTA_ResetDFU(void);

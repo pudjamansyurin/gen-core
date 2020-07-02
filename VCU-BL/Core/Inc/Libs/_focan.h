@@ -12,5 +12,7 @@
 #include "Libs/_fota.h"
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FOCAN_Upgrade(void);
+uint8_t FOCAN_EnterModeIAP(uint32_t node, uint32_t timeout);
+uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout);
+
 #endif /* INC_LIBS__FOCAN_H_ */

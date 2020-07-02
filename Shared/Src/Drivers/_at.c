@@ -442,15 +442,15 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
         p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
     }
     if (p > 0) {
-        p = AT_FtpSetFile(param);
+        p = AT_FtpSetFile(param->file);
     }
 
     Simcom_Unlock();
     return p;
 }
 
-SIMCOM_RESULT AT_FtpSetFile(at_ftp_t *param) {
-    return AT_SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file), 0);
+SIMCOM_RESULT AT_FtpSetFile(char *file) {
+    return AT_SingleString("FTPGETNAME", ATW, file, sizeof(file), 0);
 }
 
 SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
