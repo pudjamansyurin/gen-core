@@ -181,6 +181,11 @@ typedef enum {
 #define RESPONSE_STATUS_OK            (uint8_t) 1
 #define RESPONSE_STATUS_INVALID       (uint8_t) 2
 
+// Others Parameters
+#define MCU_SPEED_MAX                 (uint8_t) 255
+#define MCU_RPM_MAX                  (uint32_t) 99999
+#define VCU_ODOMETER_MAX             (uint32_t) 99999
+
 // CAN Message Address
 #define CAND_VCU_SWITCH              (uint32_t) 0x000
 #define CAND_VCU_DATETIME            (uint32_t) 0x001
@@ -195,21 +200,17 @@ typedef enum {
 #define CAND_HMI1_RIGHT              (uint32_t) 0x7C1
 
 #if (BOOTLOADER)
-// FOCAN
-#define FOCAN_ACK                     (uint8_t) 0x79
-#define FOCAN_NACK                    (uint8_t) 0x1F
 // FOCAN Message Address
 #define CAND_ENTER_IAP               (uint32_t) 0x100
-#define CAND_GET_VERSION             (uint32_t) 0x101
-#endif
-
-#if (!BOOTLOADER)
-// Others Parameters
-#define MCU_SPEED_MAX                 (uint8_t) 255
-#define MCU_RPM_MAX                  (uint32_t) 99999
-#define VCU_ODOMETER_MAX             (uint32_t) 99999
+#define CAND_GET_CHECKSUM            (uint32_t) 0x101
 
 /* Exported enum ----------------------------------------------------------------*/
+typedef enum {
+    FOCAN_ACK = 0x79,
+    FOCAN_NACK = 0x1F
+} FOCAN;
+
+#else
 typedef enum {
     PAYLOAD_RESPONSE = 0,
     PAYLOAD_REPORT = 1,

@@ -13,111 +13,92 @@
 extern canbus_t CB;
 
 /* Private variables ----------------------------------------------------------*/
-static uint16_t HMI_ADDR;
+static uint32_t HMI_ADDR;
 
 /* Private functions prototypes -----------------------------------------------*/
-static void FOCAN_SetTarget(uint16_t address);
-static uint8_t FOCAN_EnterModeIAP(void);
-static uint8_t FOCAN_GetVersion(uint16_t *version);
+static void FOCAN_SetTarget(uint32_t address);
+static uint8_t FOCAN_xResponse(uint32_t address, FOCAN response, uint32_t timeout);
+static uint8_t FOCAN_EnterModeIAP(uint32_t timeout);
+static uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOCAN_Upgrade(void) {
-    uint16_t version;
+    uint32_t checksum = 0;
     uint8_t p;
 
     /* Set HMI target */
     FOCAN_SetTarget(CAND_HMI1_LEFT);
 
     /* Tell HMI to enter IAP mode */
-    p = FOCAN_EnterModeIAP();
+    p = FOCAN_EnterModeIAP(1000);
 
-    /* Get HMI version via CAN */
-    //    if (p > 0) {
-    p = FOCAN_GetVersion(&version);
-    //    }
-
-    _DelayMS(100);
-    _LedToggle();
-
-    return p;
-}
-
-/* Private functions implementation ------------------------------------------*/
-static void FOCAN_SetTarget(uint16_t address) {
-    HMI_ADDR = address;
-}
-
-static uint8_t FOCAN_EnterModeIAP(void) {
-    CAN_DATA *txd = &(CB.tx.data);
-    CAN_DATA *rxd = &(CB.rx.data);
-    uint8_t step = 0, reply = 1;
-    uint32_t tick;
-    uint8_t p;
-
-    // set message
-    txd->u16[0] = HMI_ADDR;
-    // send message
-    p = CANBUS_Write(CAND_ENTER_IAP, 2);
-
-    // wait response
-    if (p) {
-        tick = _GetTickMS();
-        while (step < reply) {
-            // handle timeout
-            if (_GetTickMS() - tick > 1000) {
-                break;
-            }
-            // read
-            if (CANBUS_Read()) {
-                if (CANBUS_ReadID() == CAND_ENTER_IAP) {
-                    switch (step) {
-                        case 0: // ack
-                            step += (rxd->u8[0] == FOCAN_ACK );
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        }
-        p = (step == reply);
+    /* Get HMI checksum via CAN */
+    if (p > 0) {
+        p = FOCAN_GetChecksum(&checksum, 500);
     }
 
     return p;
 }
 
-static uint8_t FOCAN_GetVersion(uint16_t *version) {
+/* Private functions implementation ------------------------------------------*/
+static void FOCAN_SetTarget(uint32_t address) {
+    HMI_ADDR = address;
+}
+
+static uint8_t FOCAN_xResponse(uint32_t address, FOCAN response, uint32_t timeout) {
+    CAN_DATA *rxd = &(CB.rx.data);
+    uint32_t tick;
+    uint8_t p = 0;
+
+    // wait response
+    tick = _GetTickMS();
+    while (!p && _GetTickMS() - tick < timeout) {
+        // read
+        if (CANBUS_Read()) {
+            if (CANBUS_ReadID() == address) {
+                if (rxd->u8[0] == response) {
+                    p = 1;
+                }
+            }
+        }
+    }
+
+    return p;
+}
+
+static uint8_t FOCAN_EnterModeIAP(uint32_t timeout) {
+    return FOCAN_xResponse(CAND_ENTER_IAP, FOCAN_ACK, timeout);
+}
+
+static uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout) {
     CAN_DATA *txd = &(CB.tx.data);
     CAN_DATA *rxd = &(CB.rx.data);
-    uint8_t step = 0, reply = 4;
+    uint8_t p, step = 0, reply = 3;
+    uint32_t address = CAND_GET_CHECKSUM;
     uint32_t tick;
-    uint8_t p;
 
     // set message (dummy)
     txd->u8[0] = 0x00;
     // send message
-    p = CANBUS_Write(CAND_GET_VERSION, 1);
+    p = CANBUS_Write(address, 1);
 
     // wait response
     if (p) {
         tick = _GetTickMS();
-        while ((step < reply) && (_GetTickMS() - tick < 1000)) {
+        while ((step < reply) && (_GetTickMS() - tick < timeout)) {
             // read
             if (CANBUS_Read()) {
-                if (CANBUS_ReadID() == CAND_GET_VERSION) {
+                if (CANBUS_ReadID() == address) {
                     switch (step) {
                         case 0: // ack
-                            step += (rxd->u8[0] == FOCAN_ACK );
+                            step += (rxd->u8[0] == FOCAN_ACK);
                             break;
-                        case 1: // version
-                            *version = rxd->u16[0];
+                        case 1: // checksum
+                            *checksum = rxd->u32[0];
                             step++;
                             break;
-                        case 2: // option message (2 bytes)
-                            step += (rxd->u16[0] == 0x0000);
-                            break;
                         case 3: // ack
-                            step += (rxd->u8[0] == FOCAN_ACK );
+                            step += (rxd->u8[0] == FOCAN_ACK);
                             break;
                         default:
                             break;
