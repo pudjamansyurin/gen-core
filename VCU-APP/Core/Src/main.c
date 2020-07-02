@@ -2279,8 +2279,6 @@ void StartCanRxTask(void *argument)
         // wait forever
         notif = osThreadFlagsWait(EVT_CAN_RX_IT, osFlagsWaitAny, osWaitForever);
         if (_RTOS_ValidThreadFlag(notif)) {
-            //			CANBUS_RxDebugger();
-
             // handle STD message
             switch (CANBUS_ReadID()) {
                 case CAND_HMI2 :

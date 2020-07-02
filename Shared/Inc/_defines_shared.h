@@ -182,25 +182,25 @@ typedef enum {
 #define RESPONSE_STATUS_INVALID       (uint8_t) 2
 
 // CAN Message Address
-#define CAND_VCU_SWITCH              (uint16_t) 0x000
-#define CAND_VCU_DATETIME            (uint16_t) 0x001
-#define CAND_VCU_SELECT_SET          (uint16_t) 0x002
-#define CAND_VCU_TRIP_MODE           (uint16_t) 0x003
-#define CAND_BMS_PARAM_1             (uint16_t) 0x0B0
-#define CAND_BMS_PARAM_2             (uint16_t) 0x0B1
-#define CAND_BMS_SETTING             (uint16_t) 0x1B2
-#define CAND_HMI2                    (uint16_t) 0x7D0
+#define CAND_VCU_SWITCH              (uint32_t) 0x000
+#define CAND_VCU_DATETIME            (uint32_t) 0x001
+#define CAND_VCU_SELECT_SET          (uint32_t) 0x002
+#define CAND_VCU_TRIP_MODE           (uint32_t) 0x003
+#define CAND_BMS_PARAM_1             (uint32_t) 0x0B0
+#define CAND_BMS_PARAM_2             (uint32_t) 0x0B1
+#define CAND_BMS_SETTING             (uint32_t) 0x1B2
+#define CAND_HMI2                    (uint32_t) 0x7D0
 #endif
-#define CAND_HMI1_LEFT               (uint16_t) 0x7C0
-#define CAND_HMI1_RIGHT              (uint16_t) 0x7C1
+#define CAND_HMI1_LEFT               (uint32_t) 0x7C0
+#define CAND_HMI1_RIGHT              (uint32_t) 0x7C1
 
 #if (BOOTLOADER)
 // FOCAN
 #define FOCAN_ACK                     (uint8_t) 0x79
 #define FOCAN_NACK                    (uint8_t) 0x1F
 // FOCAN Message Address
-#define CAND_ENTER_IAP               (uint16_t) 0x100
-#define CAND_GET_VERSION             (uint16_t) 0x101
+#define CAND_ENTER_IAP               (uint32_t) 0x100
+#define CAND_GET_VERSION             (uint32_t) 0x101
 #endif
 
 #if (!BOOTLOADER)

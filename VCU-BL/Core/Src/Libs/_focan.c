@@ -32,9 +32,12 @@ uint8_t FOCAN_Upgrade(void) {
     p = FOCAN_EnterModeIAP();
 
     /* Get HMI version via CAN */
-    if (p > 0) {
-        p = FOCAN_GetVersion(&version);
-    }
+    //    if (p > 0) {
+    p = FOCAN_GetVersion(&version);
+    //    }
+
+    _DelayMS(100);
+    _LedToggle();
 
     return p;
 }
@@ -59,7 +62,11 @@ static uint8_t FOCAN_EnterModeIAP(void) {
     // wait response
     if (p) {
         tick = _GetTickMS();
-        while ((step < reply) && (_GetTickMS() - tick < 1000)) {
+        while (step < reply) {
+            // handle timeout
+            if (_GetTickMS() - tick > 1000) {
+                break;
+            }
             // read
             if (CANBUS_Read()) {
                 if (CANBUS_ReadID() == CAND_ENTER_IAP) {
