@@ -98,12 +98,21 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
     // Download & Program new firmware
     if (p > 0) {
-        p = FOTA_DownloadFlashFirmware(&ftp, &len);
+        p = FOTA_DownloadFirmware(&ftp, &len);
     }
 
     // Buffer filled, compare the checksum
     if (p > 0) {
-        p = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
+        if (currentIAP == IAP_VCU) {
+            p = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
+            // Glue related information to new image
+            if (p > 0) {
+                FOTA_GlueInfo32(CHECKSUM_OFFSET, &cksumNew);
+                FOTA_GlueInfo32(SIZE_OFFSET, &len);
+            }
+        } else {
+            p = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew, 100);
+        }
     }
 
     // Reset DFU flag only when FOTA success
@@ -157,7 +166,7 @@ uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     return (p == SIM_RESULT_OK);
 }
 
-uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len) {
+uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
     SIMCOM_RESULT p;
     uint32_t timer;
     AT_FTP_STATE state;
@@ -178,18 +187,20 @@ uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len) {
         p = AT_FtpDownload(&setFTPGET);
     }
 
-    // Read FTP File
+    // Backup and prepare the area
     if (p > 0 && setFTPGET.response == FTP_READY) {
-        // Prepare, start timer
-        LOG_StrLn("FOTA:Start");
-        timer = _GetTickMS();
-
-        // Backup and prepare the area
         if (currentIAP == IAP_VCU) {
             FLASHER_BackupApp();
         } else {
-            FOCAN_BackupApp(100);
+            p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size), 100);
         }
+    }
+
+    // Read FTP File
+    if (p > 0) {
+        // Prepare, start timer
+        LOG_StrLn("FOTA:Start");
+        timer = _GetTickMS();
 
         // Copy chunk by chunk
         setFTPGET.mode = FTPGET_READ;
@@ -198,9 +209,21 @@ uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len) {
             // Initiate Download
             p = AT_FtpDownload(&setFTPGET);
 
+            // Copy buffer to flash
             if (p > 0 && setFTPGET.cnflength) {
-                // Copy to Buffer
-                FLASHER_WriteAppArea((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
+                if (currentIAP == IAP_VCU) {
+                    p = FLASHER_WriteAppArea((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
+                } else {
+                    p = FOCAN_DownloadFlash((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
+                }
+            } else {
+                // failure
+                break;
+            }
+
+            // Check after flashing
+            if (p > 0) {
+                // Update pointer position
                 *len += setFTPGET.cnflength;
 
                 // Indicator
@@ -210,20 +233,14 @@ uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len) {
                 LOG_Str(" Bytes (");
                 LOG_Int(*len * 100 / setFTP->size);
                 LOG_StrLn("%)");
-            } else {
-                // failure
-                break;
             }
-        } while (*len < setFTP->size);
+        } while ((p > 0) && (*len < setFTP->size));
 
         // Check, stop timer
         if (*len == setFTP->size) {
             LOG_Str("FOTA:End = ");
             LOG_Int(_GetTickMS() - timer);
             LOG_StrLn("ms");
-
-            /* Glue size information to image */
-            FOTA_GlueSizeInfo(len);
         } else {
             LOG_StrLn("FOTA:Failed");
             p = SIM_RESULT_ERROR;
@@ -251,8 +268,6 @@ uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address)
     LOG_Str("FOTA:Checksum = ");
     if (crc == checksum) {
         LOG_StrLn("MATCH");
-        /* Glue checksum information to image */
-        FOTA_GlueChecksumInfo(&crc);
     } else {
         LOG_StrLn("NOT MATCH");
         LOG_Hex32(checksum);
@@ -341,12 +356,8 @@ void FOTA_GetChecksum(uint32_t *checksum) {
     *checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
 }
 
-void FOTA_GlueSizeInfo(uint32_t *size) {
-    FLASHER_WriteAppArea((uint8_t*) size, sizeof(uint32_t), SIZE_OFFSET);
-}
-
-void FOTA_GlueChecksumInfo(uint32_t *checksum) {
-    FLASHER_WriteAppArea((uint8_t*) checksum, sizeof(uint32_t), CHECKSUM_OFFSET);
+void FOTA_GlueInfo32(uint32_t offset, uint32_t *data) {
+    FLASHER_WriteAppArea((uint8_t*) data, sizeof(uint32_t), offset);
 }
 
 uint8_t FOTA_NeedBackup(void) {

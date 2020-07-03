@@ -39,7 +39,7 @@ uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
         p = FOCAN_WaitSqueezed(address, &rxd, 100);
 
         if (p) {
-            p = rxd.u32[0] == currentSide;
+            p = (rxd.u32[0] == currentSide);
         }
     }
 
@@ -66,19 +66,25 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout) {
     return p;
 }
 
-uint8_t FOCAN_BackupApp(uint32_t timeout) {
-    uint32_t address = CAND_BACKUP_APP;
+uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data, uint32_t timeout) {
+    CAN_DATA *txd = &(CB.tx.data);
     uint8_t p;
 
+    // set message
+    txd->u32[0] = *data;
     // send message
-    p = CANBUS_Write(address, 0);
+    p = CANBUS_Write(address, sizeof(uint32_t));
 
     // wait response
     if (p) {
-        p = FOCAN_WaitResponse(address, timeout);
+        p = (FOCAN_WaitResponse(address, timeout) == FOCAN_ACK);
     }
 
     return p;
+}
+
+uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
+
 }
 
 /* Private functions implementation --------------------------------------------*/
@@ -99,7 +105,7 @@ static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout) {
         }
     }
 
-    return (response != FOCAN_ERROR);
+    return response;
 }
 
 static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t timeout) {
