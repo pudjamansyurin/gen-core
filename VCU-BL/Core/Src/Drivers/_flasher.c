@@ -232,16 +232,20 @@ uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset) {
 
 uint8_t FLASHER_BackupApp(void) {
     uint8_t *ptr = (uint8_t*) APP_START_ADDR;
-    uint8_t p;
+    uint8_t p = 1;
 
-    p = FOTA_NeedBackup();
-
-    if (p) {
+    // Move to backup area (if not yet)
+    if (FOTA_NeedBackup()) {
         p = FLASHER_EraseBkpArea();
+
+        if (p) {
+            p = FLASHER_WriteBkpArea(ptr, APP_MAX_SIZE, 0);
+        }
     }
 
+    // Erase APP area
     if (p) {
-        p = FLASHER_WriteBkpArea(ptr, APP_MAX_SIZE, 0);
+        p = FLASHER_EraseAppArea();
     }
 
     return p;

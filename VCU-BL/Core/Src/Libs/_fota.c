@@ -58,13 +58,6 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
         if (!FOTA_InProgressDFU()) {
             FOTA_SetDFU();
         }
-
-        // Backup current application
-        if (currentIAP == IAP_VCU) {
-            FLASHER_BackupApp();
-        } else {
-            FOCAN_BackupApp(100);
-        }
     }
 
     /* Get the stored checksum information */
@@ -191,11 +184,11 @@ uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len) {
         LOG_StrLn("FOTA:Start");
         timer = _GetTickMS();
 
-        // Erase APP area
+        // Backup and prepare the area
         if (currentIAP == IAP_VCU) {
-            FLASHER_EraseAppArea();
+            FLASHER_BackupApp();
         } else {
-
+            FOCAN_BackupApp(100);
         }
 
         // Copy chunk by chunk
@@ -218,18 +211,19 @@ uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len) {
                 LOG_Int(*len * 100 / setFTP->size);
                 LOG_StrLn("%)");
             } else {
+                // failure
                 break;
             }
         } while (*len < setFTP->size);
 
         // Check, stop timer
-        if (*len && *len == setFTP->size) {
-            /* Glue size information to image */
-            FLASHER_WriteAppArea((uint8_t*) len, sizeof(uint32_t), SIZE_OFFSET);
-
+        if (*len == setFTP->size) {
             LOG_Str("FOTA:End = ");
             LOG_Int(_GetTickMS() - timer);
             LOG_StrLn("ms");
+
+            /* Glue size information to image */
+            FOTA_GlueSizeInfo(len);
         } else {
             LOG_StrLn("FOTA:Failed");
             p = SIM_RESULT_ERROR;
@@ -246,41 +240,6 @@ uint8_t FOTA_DownloadFlashFirmware(at_ftp_t *setFTP, uint32_t *len) {
     return (p == SIM_RESULT_OK);
 }
 
-void FOTA_Reboot(void) {
-    /* Clear backup area */
-    FLASHER_EraseBkpArea();
-    /* Reset DFU flag */
-    FOTA_ResetDFU();
-
-    HAL_NVIC_SystemReset();
-}
-
-uint8_t FOTA_ValidImage(uint32_t address) {
-    uint32_t size, checksum;
-    uint8_t ret;
-
-    /* Check beginning stack pointer */
-    ret = IS_VALID_SP(APP_START_ADDR);
-
-    /* Check the size */
-    if (ret) {
-        /* Get the stored size information */
-        size = *(uint32_t*) (address + SIZE_OFFSET);
-        ret = (size < APP_MAX_SIZE );
-    }
-
-    /* Check the checksum */
-    if (ret) {
-        /* Get the stored checksum information */
-        checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
-
-        /* Validate checksum */
-        ret = FOTA_ValidateChecksum(checksum, size, address);
-    }
-
-    return ret;
-}
-
 uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address) {
     uint32_t crc = 0;
     uint8_t *addr = (uint8_t*) address;
@@ -293,7 +252,7 @@ uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address)
     if (crc == checksum) {
         LOG_StrLn("MATCH");
         /* Glue checksum information to image */
-        FLASHER_WriteAppArea((uint8_t*) &crc, sizeof(uint32_t), CHECKSUM_OFFSET);
+        FOTA_GlueChecksumInfo(&crc);
     } else {
         LOG_StrLn("NOT MATCH");
         LOG_Hex32(checksum);
@@ -303,6 +262,32 @@ uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address)
     }
 
     return (crc == checksum);
+}
+
+uint8_t FOTA_ValidImage(uint32_t address) {
+    uint32_t size, checksum;
+    uint8_t p;
+
+    /* Check beginning stack pointer */
+    p = IS_VALID_SP(APP_START_ADDR);
+
+    /* Check the size */
+    if (p) {
+        /* Get the stored size information */
+        size = *(uint32_t*) (address + SIZE_OFFSET);
+        p = (size < APP_MAX_SIZE );
+    }
+
+    /* Check the checksum */
+    if (p) {
+        /* Get the stored checksum information */
+        checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
+
+        /* Validate checksum */
+        p = FOTA_ValidateChecksum(checksum, size, address);
+    }
+
+    return p;
 }
 
 void FOTA_JumpToApplication(void) {
@@ -337,20 +322,13 @@ void FOTA_JumpToApplication(void) {
         ;
 }
 
-uint8_t FOTA_NeedBackup(void) {
-    return (FOTA_ValidImage(APP_START_ADDR) && !FOTA_ValidImage(BKP_START_ADDR));
-}
+void FOTA_Reboot(void) {
+    /* Clear backup area */
+    FLASHER_EraseBkpArea();
+    /* Reset DFU flag */
+    FOTA_ResetDFU();
 
-void FOTA_SetDFU(void) {
-    EEPROM_FlagDFU(EE_CMD_W, DFU_FLAG);
-}
-
-void FOTA_ResetDFU(void) {
-    EEPROM_FlagDFU(EE_CMD_W, 0);
-}
-
-uint8_t FOTA_InProgressDFU(void) {
-    return IS_DFU_IN_PROGRESS(DFU_FLAG);
+    HAL_NVIC_SystemReset();
 }
 
 void FOTA_GetChecksum(uint32_t *checksum) {
@@ -361,4 +339,28 @@ void FOTA_GetChecksum(uint32_t *checksum) {
     }
 
     *checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
+}
+
+void FOTA_GlueSizeInfo(uint32_t *size) {
+    FLASHER_WriteAppArea((uint8_t*) size, sizeof(uint32_t), SIZE_OFFSET);
+}
+
+void FOTA_GlueChecksumInfo(uint32_t *checksum) {
+    FLASHER_WriteAppArea((uint8_t*) checksum, sizeof(uint32_t), CHECKSUM_OFFSET);
+}
+
+uint8_t FOTA_NeedBackup(void) {
+    return (FOTA_ValidImage(APP_START_ADDR) && !FOTA_ValidImage(BKP_START_ADDR));
+}
+
+uint8_t FOTA_InProgressDFU(void) {
+    return IS_DFU_IN_PROGRESS(DFU_FLAG);
+}
+
+void FOTA_SetDFU(void) {
+    EEPROM_FlagDFU(EE_CMD_W, DFU_FLAG);
+}
+
+void FOTA_ResetDFU(void) {
+    EEPROM_FlagDFU(EE_CMD_W, 0);
 }

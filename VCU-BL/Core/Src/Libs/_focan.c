@@ -23,7 +23,7 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t tim
 uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
     uint32_t address = CAND_ENTER_IAP;
     CAN_DATA *txd = &(CB.tx.data);
-    CAN_DATA data;
+    CAN_DATA rxd;
     uint8_t p;
 
     /* Set current side to be updated */
@@ -36,10 +36,10 @@ uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
 
     // wait response
     if (p) {
-        p = FOCAN_WaitSqueezed(address, &data, 100);
+        p = FOCAN_WaitSqueezed(address, &rxd, 100);
 
         if (p) {
-            p = data.u32[0] == currentSide;
+            p = rxd.u32[0] == currentSide;
         }
     }
 
@@ -48,7 +48,7 @@ uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
 
 uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout) {
     uint32_t address = CAND_GET_CHECKSUM;
-    CAN_DATA data;
+    CAN_DATA rxd;
     uint8_t p;
 
     // send message
@@ -56,10 +56,10 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout) {
 
     // wait response
     if (p) {
-        p = FOCAN_WaitSqueezed(address, &data, 100);
+        p = FOCAN_WaitSqueezed(address, &rxd, 100);
 
         if (p) {
-            *checksum = data.u32[0];
+            *checksum = rxd.u32[0];
         }
     }
 
@@ -84,7 +84,7 @@ uint8_t FOCAN_BackupApp(uint32_t timeout) {
 /* Private functions implementation --------------------------------------------*/
 static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout) {
     CAN_DATA *rxd = &(CB.rx.data);
-    FOCAN response = FOCAN_NACK;
+    FOCAN response = FOCAN_ERROR;
     uint32_t tick;
 
     // wait response
@@ -99,7 +99,7 @@ static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout) {
         }
     }
 
-    return (response == FOCAN_ACK);
+    return (response != FOCAN_ERROR);
 }
 
 static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t timeout) {

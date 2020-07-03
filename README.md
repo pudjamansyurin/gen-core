@@ -105,6 +105,7 @@
 - [ ] Configure UBLOX if you order the IC separately, so build the library for it
   - [ ] Implement this UBX library:
     - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
+- [ ] Simplify simcom library with pointer data
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
