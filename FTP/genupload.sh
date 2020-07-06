@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SRC_BIN_FILE="../../Debug/VCU-APP.bin"
+SRC_BIN_FILE="../VCU-APP/Debug/VCU-APP.bin"
 APP_BIN_FILE="APP.bin"
 APP_CRC_FILE="APP.crc"
 
