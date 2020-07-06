@@ -76,7 +76,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
     CAN_DATA *txd = &(CB.tx.data);
     uint32_t pendingBlk, pendingSubBlk, tmpBlk, tmpSubBlk;
     uint32_t timeout = 100;
-    uint8_t p;
+    uint8_t p = 1;
 
     // flash each block
     pendingBlk = size;

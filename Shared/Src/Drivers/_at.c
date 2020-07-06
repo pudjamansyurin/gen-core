@@ -441,9 +441,9 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
     if (p > 0) {
         p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
     }
-    if (p > 0) {
-        p = AT_FtpSetFile(param->file);
-    }
+//    if (p > 0) {
+//        p = AT_FtpSetFile(param->file);
+//    }
 
     Simcom_Unlock();
     return p;
