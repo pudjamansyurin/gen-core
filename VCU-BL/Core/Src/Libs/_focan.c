@@ -16,6 +16,8 @@ extern canbus_t CB;
 static uint32_t currentSide;
 
 /* Private functions prototypes -----------------------------------------------*/
+static uint8_t FOCAN_WriteAndWaitResponse(uint32_t StdId, uint32_t DLC, uint32_t timeout);
+static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t StdId, uint32_t DLC, CAN_DATA *data, uint32_t timeout);
 static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout);
 static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t timeout);
 
@@ -32,15 +34,11 @@ uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
     // set message
     txd->u16[0] = currentSide;
     // send message
-    p = CANBUS_Write(address, 2);
+    p = FOCAN_WriteAndWaitSqueezed(address, 2, &rxd, 100);
 
-    // wait response
+    // process response
     if (p) {
-        p = FOCAN_WaitSqueezed(address, &rxd, 100);
-
-        if (p) {
-            p = (rxd.u32[0] == currentSide);
-        }
+        p = (rxd.u32[0] == currentSide);
     }
 
     return p;
@@ -52,15 +50,11 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout) {
     uint8_t p;
 
     // send message
-    p = CANBUS_Write(address, 0);
+    p = FOCAN_WriteAndWaitSqueezed(address, 0, &rxd, 100);
 
-    // wait response
+    // process response
     if (p) {
-        p = FOCAN_WaitSqueezed(address, &rxd, 100);
-
-        if (p) {
-            *checksum = rxd.u32[0];
-        }
+        *checksum = rxd.u32[0];
     }
 
     return p;
@@ -73,21 +67,89 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data, uint32_t timeout) {
     // set message
     txd->u32[0] = *data;
     // send message
-    p = CANBUS_Write(address, sizeof(uint32_t));
-
-    // wait response
-    if (p) {
-        p = (FOCAN_WaitResponse(address, timeout) == FOCAN_ACK);
-    }
+    p = FOCAN_WriteAndWaitResponse(address, sizeof(uint32_t), timeout);
 
     return p;
 }
 
 uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
+    CAN_DATA *txd = &(CB.tx.data);
+    uint32_t pendingBlk, pendingSubBlk, tmpBlk, tmpSubBlk;
+    uint32_t timeout = 100;
+    uint8_t p;
 
+    // flash each block
+    pendingBlk = size;
+    while (p && pendingBlk) {
+        tmpBlk = (pendingBlk >= BLK_SIZE ? BLK_SIZE : pendingBlk);
+
+        // set message
+        txd->u32[0] = offset;
+        txd->u8[4] = tmpBlk;
+        // send message
+        p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 5, timeout);
+
+        // flash each sub-block (as CAN packet)
+        if (p) {
+            pendingSubBlk = tmpBlk;
+            while (p && pendingSubBlk) {
+                tmpSubBlk = (pendingSubBlk >= 8 ? 8 : pendingSubBlk);
+
+                // set message
+                memcpy(txd, ptr, tmpSubBlk);
+                // send message
+                p = FOCAN_WriteAndWaitResponse(CAND_DOWNLOADING, tmpSubBlk, timeout);
+
+                // update pointer
+                if (p) {
+                    pendingSubBlk -= tmpSubBlk;
+                    ptr += tmpSubBlk;
+                }
+            }
+
+            // update pointer
+            if (p) {
+                pendingBlk -= tmpBlk;
+                offset += tmpBlk;
+            }
+        }
+
+        // wait final response
+        if (p) {
+            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, timeout) == FOCAN_ACK);
+        }
+    }
+
+    return p;
 }
 
 /* Private functions implementation --------------------------------------------*/
+static uint8_t FOCAN_WriteAndWaitResponse(uint32_t StdId, uint32_t DLC, uint32_t timeout) {
+    uint8_t p;
+
+    // send message
+    p = CANBUS_Write(StdId, DLC);
+    // wait response
+    if (p) {
+        p = (FOCAN_WaitResponse(StdId, timeout) == FOCAN_ACK);
+    }
+
+    return p;
+}
+
+static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t StdId, uint32_t DLC, CAN_DATA *data, uint32_t timeout) {
+    uint8_t p;
+
+    // send message
+    p = CANBUS_Write(StdId, DLC);
+    // wait response
+    if (p) {
+        p = FOCAN_WaitSqueezed(StdId, data, timeout);
+    }
+
+    return p;
+}
+
 static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout) {
     CAN_DATA *rxd = &(CB.rx.data);
     FOCAN response = FOCAN_ERROR;

@@ -11,6 +11,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_fota.h"
 
+/* Exported macro -------------------------------------------------------------*/
+#define BLK_SIZE                        (uint8_t) 0xFF
+
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOCAN_EnterModeIAP(uint32_t node, uint32_t timeout);
 uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout);
