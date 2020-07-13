@@ -334,7 +334,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                 // Bring Up IP Connection
                 AT_ConnectionStatusSingle(&(SIM.ip_status));
                 if (p > 0 && SIM.ip_status == CIPSTAT_IP_START) {
-                    p = Simcom_Command("AT+CIICR\r", NULL, 30000, 0);
+                    p = Simcom_Command("AT+CIICR\r", NULL, 10000, 0);
                 }
                 // Check IP Address
                 AT_ConnectionStatusSingle(&(SIM.ip_status));
@@ -459,7 +459,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
         p = Simcom_Command(str, SIMCOM_RSP_SEND, 500, 0);
         if (p > 0) {
             // send the payload
-            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 60000, size);
+            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 10000, size);
             // wait for ACK/NACK
             if (p > 0) {
                 // set timeout guard
@@ -469,7 +469,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
                     if (Simcom_Response(PREFIX_ACK)
                             || Simcom_Response(PREFIX_NACK)
                             || Simcom_Response(PREFIX_COMMAND)
-                            || (_GetTickMS() - tick) >= 20000) {
+                            || (_GetTickMS() - tick) >= 10000) {
                         break;
                     }
                     _DelayMS(10);

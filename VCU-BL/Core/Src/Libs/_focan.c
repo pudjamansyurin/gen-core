@@ -74,9 +74,10 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data, uint32_t timeout) {
 
 uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
     CAN_DATA *txd = &(CB.tx.data);
+    CAN_DATA rxd;
     uint32_t pendingBlk, pendingSubBlk, tmpBlk, tmpSubBlk;
-    uint32_t timeout = 100;
-    uint8_t p = 1;
+    uint32_t timeout = 500;
+    uint8_t retry = 1, p = 1;
 
     // flash each block
     pendingBlk = size;
@@ -85,7 +86,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
 
         // set message
         txd->u32[0] = offset;
-        txd->u8[4] = tmpBlk;
+        txd->u8[4] = tmpBlk - 1;
         // send message
         p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 5, timeout);
 
@@ -99,11 +100,16 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
                 memcpy(txd, ptr, tmpSubBlk);
                 // send message
                 p = FOCAN_WriteAndWaitResponse(CAND_DOWNLOADING, tmpSubBlk, timeout);
+                //                p = FOCAN_WriteAndWaitSqueezed(CAND_DOWNLOADING, tmpSubBlk, &rxd, timeout);
 
                 // update pointer
                 if (p) {
+                    retry = 1;
                     pendingSubBlk -= tmpSubBlk;
                     ptr += tmpSubBlk;
+                } else if (retry--) {
+                    // try once more
+                    p = 1;
                 }
             }
 
