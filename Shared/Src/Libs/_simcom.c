@@ -290,23 +290,6 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                     } while (p && !state);
                 }
 
-                // Select TCPIP application mode:
-                // (0: Non Transparent (command mode), 1: Transparent (data mode))
-                if (p > 0) {
-                    AT_CIPMODE state = CIPMODE_NORMAL;
-                    p = AT_TcpApllicationMode(ATW, &state);
-                }
-                // Set to Single IP Connection (Backend)
-                if (p > 0) {
-                    AT_CIPMUX state = CIPMUX_SINGLE_IP;
-                    p = AT_MultiIpConnection(ATW, &state);
-                }
-                // Get data from network automatically
-                if (p > 0) {
-                    AT_CIPRXGET state = CIPRXGET_DISABLE;
-                    p = AT_ManuallyReceiveData(ATW, &state);
-                }
-
                 // upgrade simcom state
                 if (p > 0) {
                     SIM.state++;
@@ -330,6 +313,23 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
                     };
                     p = AT_ConfigureAPN(ATW, &param);
                 }
+                // Select TCPIP application mode:
+                // (0: Non Transparent (command mode), 1: Transparent (data mode))
+                if (p > 0) {
+                    AT_CIPMODE state = CIPMODE_NORMAL;
+                    p = AT_TcpApllicationMode(ATW, &state);
+                }
+                // Set to Single IP Connection (Backend)
+                if (p > 0) {
+                    AT_CIPMUX state = CIPMUX_SINGLE_IP;
+                    p = AT_MultiIpConnection(ATW, &state);
+                }
+                // Get data from network automatically
+                if (p > 0) {
+                    AT_CIPRXGET state = CIPRXGET_DISABLE;
+                    p = AT_ManuallyReceiveData(ATW, &state);
+                }
+
                 // =========== IP ATTACH
                 // Bring Up IP Connection
                 AT_ConnectionStatusSingle(&(SIM.ip_status));

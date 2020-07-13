@@ -22,8 +22,8 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type) {
         *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
         *(uint32_t*) IAP_TYPE_ADDR = type;
         /* Retain VCU version */
-        if (type == IAP_TYPE_VCU) {
-            EEPROM_FirmwareVersion(EE_CMD_W, VCU_VERSION, IAP_TYPE_VCU);
+        if (type == IAP_VCU) {
+            EEPROM_FirmwareVersion(EE_CMD_W, VCU_VERSION, IAP_VCU);
         }
         /* Reset */
         HAL_NVIC_SystemReset();
@@ -53,6 +53,6 @@ void FW_PostFota(response_t *response) {
         osMessageQueuePut(ResponseQueueHandle, response, 0U, 0U);
 
         /* Reset after FOTA */
-        EEPROM_FirmwareVersion(EE_CMD_W, 0, IAP_TYPE_VCU);
+        EEPROM_FirmwareVersion(EE_CMD_W, 0, IAP_VCU);
     }
 }

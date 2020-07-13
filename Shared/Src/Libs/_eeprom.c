@@ -72,7 +72,7 @@ uint8_t EEPROM_Init(void) {
 #if (!BOOTLOADER)
     // Load or Reset
     EEPROM_ResetOrLoad();
-    EEPROM_FirmwareVersion(EE_CMD_R, EE_NULL, IAP_TYPE_VCU);
+    EEPROM_FirmwareVersion(EE_CMD_R, EE_NULL, IAP_VCU);
 #endif
     return ret;
 }

@@ -26,7 +26,6 @@ uint32_t DFU_FLAG = 0;
 static IAP_TYPE currentIAP;
 
 /* Public functions implementation --------------------------------------------*/
-
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
     SIMCOM_RESULT p = SIM_RESULT_OK;
     uint32_t cksumOld, cksumNew = 0, len = 0;

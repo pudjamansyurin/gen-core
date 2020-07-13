@@ -1722,9 +1722,9 @@ void StartCommandTask(void *argument)
                             case CMD_GEN_UPGRADE_HMI :
                             /* Enter IAP mode */
                             if (command.data.sub_code == CMD_GEN_UPGRADE_VCU) {
-                                FW_EnterModeIAP(IAP_TYPE_VCU);
+                                FW_EnterModeIAP(IAP_VCU);
                             } else {
-                                FW_EnterModeIAP(IAP_TYPE_HMI);
+                                FW_EnterModeIAP(IAP_HMI);
                             }
                             /* This line is never reached when FOTA activated */
                             sprintf(response.data.message,
