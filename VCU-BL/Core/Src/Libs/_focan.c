@@ -16,11 +16,10 @@ extern canbus_t CB;
 static uint32_t currentSide;
 
 /* Private functions prototypes -----------------------------------------------*/
-static uint8_t FOCAN_WriteAndWaitResponse(uint32_t StdId, uint32_t DLC, uint32_t timeout);
-static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t StdId, uint32_t DLC, CAN_DATA *data, uint32_t timeout);
+static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32_t timeout);
+static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DATA *data, uint32_t timeout);
 static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout);
 static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t timeout);
-static uint8_t FOCAN_DownloadByte(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout);
 static uint8_t FOCAN_DownloadBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout);
 
 /* Public functions implementation --------------------------------------------*/
@@ -83,7 +82,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
     // flash each block
     pendingBlk = size;
     do {
-        tmpBlk = (pendingBlk >= BLK_SIZE ? BLK_SIZE : pendingBlk);
+        tmpBlk = (pendingBlk > BLK_SIZE ? BLK_SIZE : pendingBlk);
 
         // set message
         txd->u32[0] = offset;
@@ -91,18 +90,9 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
         // send message
         p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 5, timeout);
 
-        if (!p) {
-            LOG_StrLn("CAND_INIT_DOWNLOAD ERROR");
-        }
-
         // flash
         if (p) {
-//            p = FOCAN_DownloadBlock(ptr, &tmpBlk, timeout);
-            p = FOCAN_DownloadByte(ptr, &tmpBlk, timeout);
-        }
-
-        if (!p) {
-            LOG_StrLn("FOCAN_DownloadByte ERROR");
+            p = FOCAN_DownloadBlock(ptr, &tmpBlk, timeout);
         }
 
         // update pointer
@@ -115,68 +105,28 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
         if (p) {
             p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, timeout) == FOCAN_ACK);
         }
-
-        if (!p) {
-            LOG_StrLn("FOCAN_WaitResponse ERROR");
-        }
     } while (p && pendingBlk);
-
-    if (!p) {
-        LOG_StrLn("ERROR");
-    }
 
     return p;
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t FOCAN_DownloadByte(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout) {
-    CAN_DATA *txd = &(CB.tx.data);
-    uint32_t pendingSubBlk, tmpSubBlk;
-    uint8_t pos = 0;
-    uint8_t p;
-
-    // flash each sub-block (as CAN packet)
-    pendingSubBlk = *tmpBlk;
-    do {
-        tmpSubBlk = (pendingSubBlk >= 4 ? 4 : pendingSubBlk);
-
-        // set message
-        memcpy(&(txd->u32[0]), ptr, tmpSubBlk);
-        memcpy(&(txd->u8[4]), &pos, 1);
-        // send message
-        p = FOCAN_WriteAndWaitResponse(CAND_DOWNLOADING, 5, timeout);
-
-        // update pointer
-        if (p) {
-            pendingSubBlk -= tmpSubBlk;
-            ptr += tmpSubBlk;
-            pos += tmpSubBlk;
-        }
-    } while (p && pendingSubBlk);
-
-    if (!p) {
-        LOG_StrLn("CAND_DOWNLOADING ERROR");
-    }
-
-    return p;
-}
-
 static uint8_t FOCAN_DownloadBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout) {
     CAN_DATA *txd = &(CB.tx.data);
-    //    CAN_DATA rxd;
     uint32_t pendingSubBlk, tmpSubBlk;
+    uint32_t address;
     uint8_t p;
 
     // flash each sub-block (as CAN packet)
     pendingSubBlk = *tmpBlk;
     do {
-        tmpSubBlk = (pendingSubBlk >= 8 ? 8 : pendingSubBlk);
+        tmpSubBlk = (pendingSubBlk > 8 ? 8 : pendingSubBlk);
 
         // set message
         memcpy(txd, ptr, tmpSubBlk);
         // send message
-        p = FOCAN_WriteAndWaitResponse(CAND_DOWNLOADING, tmpSubBlk, timeout);
-        //                p = FOCAN_WriteAndWaitSqueezed(CAND_DOWNLOADING, tmpSubBlk, &rxd, timeout);
+        address = _L(CAND_DOWNLOADING, 20) | (*tmpBlk - pendingSubBlk);
+        p = FOCAN_WriteAndWaitResponse(address, tmpSubBlk, timeout);
 
         // update pointer
         if (p) {
@@ -185,37 +135,33 @@ static uint8_t FOCAN_DownloadBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t time
         }
     } while (p && pendingSubBlk);
 
-    if (!p) {
-        LOG_StrLn("CAND_DOWNLOADING ERROR");
-    }
-
     return p;
 }
 
-static uint8_t FOCAN_WriteAndWaitResponse(uint32_t StdId, uint32_t DLC, uint32_t timeout) {
+static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32_t timeout) {
     uint8_t retry = FOCAN_RETRY, p = 0;
 
     while (!p && retry--) {
         // send message
-        p = CANBUS_Write(StdId, DLC);
+        p = CANBUS_Write(address, DLC);
         // wait response
         if (p) {
-            p = (FOCAN_WaitResponse(StdId, timeout) == FOCAN_ACK);
+            p = (FOCAN_WaitResponse(address, timeout) == FOCAN_ACK);
         }
     }
 
     return p;
 }
 
-static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t StdId, uint32_t DLC, CAN_DATA *data, uint32_t timeout) {
+static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DATA *data, uint32_t timeout) {
     uint8_t retry = FOCAN_RETRY, p = 0;
 
     while (!p && retry--) {
         // send message
-        p = CANBUS_Write(StdId, DLC);
+        p = CANBUS_Write(address, DLC);
         // wait response
         if (p) {
-            p = FOCAN_WaitSqueezed(StdId, data, timeout);
+            p = FOCAN_WaitSqueezed(address, data, timeout);
         }
     }
 

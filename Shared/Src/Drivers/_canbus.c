@@ -183,9 +183,14 @@ static void unlock(void) {
 static void CANBUS_Header(uint32_t address, uint32_t DLC) {
     CAN_TxHeaderTypeDef *TxHeader = &(CB.tx.header);
     /* Configure Global Transmission process */
+    if (address > 0x7FF) {
+        TxHeader->IDE = CAN_ID_EXT;
+        TxHeader->ExtId = address;
+    } else {
+        TxHeader->IDE = CAN_ID_STD;
+        TxHeader->StdId = address;
+    }
     TxHeader->RTR = (DLC ? CAN_RTR_DATA : CAN_RTR_REMOTE);
-    TxHeader->IDE = (address > 0x7FF ? CAN_ID_EXT : CAN_ID_STD);
-    TxHeader->TransmitGlobalTime = DISABLE;
-    TxHeader->StdId = address;
     TxHeader->DLC = DLC;
+    TxHeader->TransmitGlobalTime = DISABLE;
 }
