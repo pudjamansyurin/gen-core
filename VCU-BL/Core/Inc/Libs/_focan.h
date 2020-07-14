@@ -13,6 +13,7 @@
 
 /* Exported macro -------------------------------------------------------------*/
 #define BLK_SIZE                   (uint16_t) 256
+#define FOCAN_RETRY                 (uint8_t) 5
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOCAN_EnterModeIAP(uint32_t node, uint32_t timeout);

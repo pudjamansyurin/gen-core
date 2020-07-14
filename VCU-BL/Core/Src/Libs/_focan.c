@@ -74,10 +74,10 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data, uint32_t timeout) {
 
 uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
     CAN_DATA *txd = &(CB.tx.data);
-    CAN_DATA rxd;
+//    CAN_DATA rxd;
     uint32_t pendingBlk, pendingSubBlk, tmpBlk, tmpSubBlk;
-    uint32_t timeout = 500;
-    uint8_t retry = 1, p = 1;
+    uint32_t timeout = 200;
+    uint8_t p = 1;
 
     // flash each block
     pendingBlk = size;
@@ -89,6 +89,10 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
         txd->u8[4] = tmpBlk - 1;
         // send message
         p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 5, timeout);
+
+        if (!p) {
+            LOG_StrLn("CAND_INIT_DOWNLOAD ERROR");
+        }
 
         // flash each sub-block (as CAN packet)
         if (p) {
@@ -104,13 +108,13 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
 
                 // update pointer
                 if (p) {
-                    retry = 1;
                     pendingSubBlk -= tmpSubBlk;
                     ptr += tmpSubBlk;
-                } else if (retry--) {
-                    // try once more
-                    p = 1;
                 }
+            }
+
+            if (!p) {
+                LOG_StrLn("CAND_DOWNLOADING ERROR");
             }
 
             // update pointer
@@ -126,31 +130,39 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
         }
     }
 
+    if (!p) {
+        LOG_StrLn("ERROR");
+    }
+
     return p;
 }
 
 /* Private functions implementation --------------------------------------------*/
 static uint8_t FOCAN_WriteAndWaitResponse(uint32_t StdId, uint32_t DLC, uint32_t timeout) {
-    uint8_t p;
+    uint8_t retry = FOCAN_RETRY, p = 0;
 
-    // send message
-    p = CANBUS_Write(StdId, DLC);
-    // wait response
-    if (p) {
-        p = (FOCAN_WaitResponse(StdId, timeout) == FOCAN_ACK);
+    while (!p && retry--) {
+        // send message
+        p = CANBUS_Write(StdId, DLC);
+        // wait response
+        if (p) {
+            p = (FOCAN_WaitResponse(StdId, timeout) == FOCAN_ACK);
+        }
     }
 
     return p;
 }
 
 static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t StdId, uint32_t DLC, CAN_DATA *data, uint32_t timeout) {
-    uint8_t p;
+    uint8_t retry = FOCAN_RETRY, p = 0;
 
-    // send message
-    p = CANBUS_Write(StdId, DLC);
-    // wait response
-    if (p) {
-        p = FOCAN_WaitSqueezed(StdId, data, timeout);
+    while (!p && retry--) {
+        // send message
+        p = CANBUS_Write(StdId, DLC);
+        // wait response
+        if (p) {
+            p = FOCAN_WaitSqueezed(StdId, data, timeout);
+        }
     }
 
     return p;
