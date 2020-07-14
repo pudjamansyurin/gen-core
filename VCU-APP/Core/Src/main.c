@@ -2289,13 +2289,18 @@ void StartCanRxTask(void *argument)
                 case CAND_HMI1_RIGHT :
                     HMI1.can.r.RightState();
                     break;
-                case CAND_BMS_PARAM_1 :
-                    BMS.can.r.Param1();
-                    break;
-                case CAND_BMS_PARAM_2 :
-                    BMS.can.r.Param2();
-                    break;
                 default:
+                    // BMS - Extendend id
+                    switch (_R(CANBUS_ReadID(), 20)) {
+                        case CAND_BMS_PARAM_1 :
+                            BMS.can.r.Param1();
+                            break;
+                        case CAND_BMS_PARAM_2 :
+                            BMS.can.r.Param2();
+                            break;
+                        default:
+                            break;
+                    }
 
                     break;
             }

@@ -203,7 +203,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
 
         // Copy chunk by chunk
         setFTPGET.mode = FTPGET_READ;
-        setFTPGET.reqlength = 1376;
+        setFTPGET.reqlength = 256 * 5;
         do {
             // Initiate Download
             p = AT_FtpDownload(&setFTPGET);
