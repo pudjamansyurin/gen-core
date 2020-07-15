@@ -1672,6 +1672,7 @@ void StartCommandTask(void *argument)
     response_t response;
     command_t command;
     osStatus_t status;
+    IAP_TYPE type;
     uint32_t notif;
     uint8_t driver;
 
@@ -1722,13 +1723,12 @@ void StartCommandTask(void *argument)
                             case CMD_GEN_UPGRADE_HMI :
                             /* Enter IAP mode */
                             if (command.data.sub_code == CMD_GEN_UPGRADE_VCU) {
-                                FW_EnterModeIAP(IAP_VCU);
+                                type = IAP_VCU;
                             } else {
-                                FW_EnterModeIAP(IAP_HMI);
+                                type = IAP_HMI;
                             }
+                            FW_EnterModeIAP(type, response.data.message);
                             /* This line is never reached when FOTA activated */
-                            sprintf(response.data.message,
-                                    "Battery low %u mV", BACKUP_VOLTAGE);
                             response.data.code = RESPONSE_STATUS_ERROR;
 
                             break;
@@ -2284,10 +2284,8 @@ void StartCanRxTask(void *argument)
                     HMI2.can.r.State();
                     break;
                 case CAND_HMI1_LEFT :
-                    HMI1.can.r.LeftState();
-                    break;
-                case CAND_HMI1_RIGHT :
-                    HMI1.can.r.RightState();
+                    case CAND_HMI1_RIGHT :
+                    HMI1.can.r.State(CANBUS_ReadID());
                     break;
                 default:
                     // BMS - Extendend id

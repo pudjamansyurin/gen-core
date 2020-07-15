@@ -21,12 +21,14 @@ extern response_t RESPONSE;
 extern report_t REPORT;
 extern vcu_t VCU;
 extern uint32_t AesKey[4];
-#else
-extern uint32_t DFU_FLAG;
 #endif
 
 /* Exported variables ---------------------------------------------------------*/
-uint16_t VCU_FW_VERSION = 0, HMI_FW_VERSION = 0;
+uint16_t FOTA_VERSION = 0;
+IAP_TYPE FOTA_TYPE = 0;
+#if (BOOTLOADER)
+uint32_t DFU_FLAG = 0;
+#endif
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
@@ -72,8 +74,9 @@ uint8_t EEPROM_Init(void) {
 #if (!BOOTLOADER)
     // Load or Reset
     EEPROM_ResetOrLoad();
-    EEPROM_FirmwareVersion(EE_CMD_R, EE_NULL, IAP_VCU);
+    EEPROM_FotaVersion(EE_CMD_R, EE_NULL);
 #endif
+    EEPROM_FotaType(EE_CMD_R, EE_NULL);
     return ret;
 }
 
@@ -181,16 +184,12 @@ uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value) {
 }
 #endif
 
-uint8_t EEPROM_FirmwareVersion(EEPROM_COMMAND cmd, uint16_t value, IAP_TYPE type) {
-    uint32_t vaddr = VADDR_VCU_FW_VERSION;
-    uint16_t *ptr = &VCU_FW_VERSION;
+uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value) {
+    return EE_Command(VADDR_FOTA_VERSION, cmd, &value, &FOTA_VERSION, sizeof(value));
+}
 
-    if (type == IAP_HMI) {
-        vaddr = VADDR_HMI_FW_VERSION;
-        ptr = &HMI_FW_VERSION;
-    }
-
-    return EE_Command(vaddr, cmd, &value, ptr, sizeof(value));
+uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value) {
+    return EE_Command(VADDR_FOTA_TYPE, cmd, &value, &FOTA_TYPE, sizeof(uint32_t));
 }
 
 /* Private functions implementation --------------------------------------------*/

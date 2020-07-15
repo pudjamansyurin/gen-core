@@ -13,14 +13,12 @@
 #include "Drivers/_crc.h"
 
 /* External variables ---------------------------------------------------------*/
-extern uint32_t DFU_FLAG;
 extern CAN_HandleTypeDef hcan1;
 extern CRC_HandleTypeDef hcrc;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart1;
-
-/* Exported variables ---------------------------------------------------------*/
-uint32_t DFU_FLAG = 0;
+extern uint32_t DFU_FLAG;
+extern IAP_TYPE FOTA_TYPE;
 
 /* Private variables ----------------------------------------------------------*/
 static IAP_TYPE currentIAP;
@@ -257,8 +255,8 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
 }
 
 uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address) {
-    uint32_t crc = 0;
     uint8_t *addr = (uint8_t*) address;
+    uint32_t crc = 0;
 
     // Calculate CRC
     crc = CRC_Calculate8(addr, len, 1);
@@ -339,7 +337,6 @@ void FOTA_JumpToApplication(void) {
 void FOTA_Reboot(void) {
     /* Clear backup area */
     FLASHER_EraseBkpArea();
-    /* Reset DFU flag */
     FOTA_ResetDFU();
 
     HAL_NVIC_SystemReset();
@@ -364,11 +361,11 @@ uint8_t FOTA_NeedBackup(void) {
 }
 
 uint8_t FOTA_InProgressDFU(void) {
-    return IS_DFU_IN_PROGRESS(DFU_FLAG);
+    return (DFU_FLAG == DFU_PROGRESS_FLAG );
 }
 
 void FOTA_SetDFU(void) {
-    EEPROM_FlagDFU(EE_CMD_W, DFU_FLAG);
+    EEPROM_FlagDFU(EE_CMD_W, DFU_PROGRESS_FLAG);
 }
 
 void FOTA_ResetDFU(void) {

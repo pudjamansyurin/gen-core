@@ -7,14 +7,17 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/HMI1.h"
+#include "Drivers/_canbus.h"
+
+/* External variables ---------------------------------------------------------*/
+extern canbus_t CB;
 
 /* Public variables -----------------------------------------------------------*/
 hmi1_t HMI1 = {
         .d = { 0 },
         .can = {
                 .r = {
-                        HMI1_CAN_RX_LeftState,
-                        HMI1_CAN_RX_RightState
+                        HMI1_CAN_RX_State,
                 },
         },
         HMI1_Init,
@@ -36,6 +39,7 @@ void HMI1_Init(void) {
     for (uint8_t i = 0; i < HMI1_DEV_MAX; i++) {
         HMI1.d.device[i].started = 0;
         HMI1.d.device[i].tick = 0;
+        HMI1.d.device[i].version = 0;
     }
 }
 
@@ -43,6 +47,8 @@ void HMI1_RefreshIndex(void) {
     for (uint8_t i = 0; i < HMI1_DEV_MAX; i++) {
         if ((_GetTickMS() - HMI1.d.device[i].tick) > 1000) {
             HMI1.d.device[i].started = 0;
+            HMI1.d.device[i].tick = 0;
+            HMI1.d.device[i].version = 0;
         }
     }
 }
@@ -53,14 +59,17 @@ void HMI1_Power(uint8_t state) {
 }
 
 /* ====================================== CAN RX =================================== */
-void HMI1_CAN_RX_LeftState(void) {
-    // save state
-    HMI1.d.device[HMI1_DEV_LEFT].started = 1;
-    HMI1.d.device[HMI1_DEV_LEFT].tick = _GetTickMS();
-}
+void HMI1_CAN_RX_State(uint32_t address) {
+    CAN_DATA *data = &(CB.rx.data);
+    HMI1_DEVICE device = HMI1_DEV_LEFT;
 
-void HMI1_CAN_RX_RightState(void) {
+    // check node
+    if (address == CAND_HMI1_RIGHT) {
+        device = HMI1_DEV_RIGHT;
+    }
+
     // save state
-    HMI1.d.device[HMI1_DEV_RIGHT].started = 1;
-    HMI1.d.device[HMI1_DEV_RIGHT].tick = _GetTickMS();
+    HMI1.d.device[device].started = 1;
+    HMI1.d.device[device].tick = _GetTickMS();
+    HMI1.d.device[device].version = data->u16[0];
 }

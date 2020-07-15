@@ -39,9 +39,8 @@
 #define DFU_PROGRESS_FLAG       (uint32_t) 0x89ABCDEF
 #define IAP_FLAG                (uint32_t) 0xAABBCCDD
 #define IAP_FLAG_ADDR                      (SRAM_END_ADDR - sizeof(uint32_t))
-#define IAP_TYPE_ADDR                      (IAP_FLAG_ADDR - sizeof(uint32_t))
+#define IAP_RETRY_ADDR                     (IAP_FLAG_ADDR - sizeof(uint32_t))
 #define IS_VALID_SP(a)          ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
-#define IS_DFU_IN_PROGRESS(v)   ((uint32_t)v == DFU_PROGRESS_FLAG)
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {

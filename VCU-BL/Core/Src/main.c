@@ -81,6 +81,7 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
+    extern IAP_TYPE FOTA_TYPE;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -117,23 +118,29 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    _LedWrite(1);
-    _DelayMS(5000);
-    _LedWrite(0);
-
-    while (1) {
-        FOTA_Upgrade(IAP_HMI);
-    }
-
+//    _LedWrite(1);
+//    _DelayMS(5000);
+//    _LedWrite(0);
+//
+//    while (1) {
+//        FOTA_Upgrade(IAP_HMI);
+//    }
     /* IAP flag has been set, initiate firmware download procedure */
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
         LOG_StrLn("IAP set, do DFU.");
         /* Everything went well */
-        if (FOTA_Upgrade(*(uint32_t*) IAP_TYPE_ADDR)) {
+        if (FOTA_Upgrade(FOTA_TYPE)) {
             /* Reset IAP flag */
             *(uint32_t*) IAP_FLAG_ADDR = 0;
             /* Take branching decision on next reboot */
             FOTA_Reboot();
+        }
+        /* If has retries */
+        else if (*(uint32_t*) IAP_RETRY_ADDR) {
+            /* Decrease */
+            (*(uint32_t*) IAP_RETRY_ADDR)--;
+            /* Retry again */
+            HAL_NVIC_SystemReset();
         }
         /* Reset IAP flag */
         *(uint32_t*) IAP_FLAG_ADDR = 0;
@@ -148,14 +155,16 @@ int main(void)
     }
     /* Power reset during DFU, try once more */
     else if (FOTA_InProgressDFU()) {
-        LOG_StrLn("DFU set, do DFU once more.");
-        /* Everything went well, boot form new image */
-        if (FOTA_Upgrade(*(uint32_t*) IAP_TYPE_ADDR)) {
-            /* Take branching decision on next reboot */
-            FOTA_Reboot();
+        if (FOTA_TYPE == IAP_VCU) {
+            LOG_StrLn("DFU set, do DFU once more.");
+            /* Everything went well, boot form new image */
+            if (FOTA_Upgrade(IAP_VCU)) {
+                /* Take branching decision on next reboot */
+                FOTA_Reboot();
+            }
+            /* Erase partially programmed application area */
+            FLASHER_EraseAppArea();
         }
-        /* Erase partially programmed application area */
-        FLASHER_EraseAppArea();
         /* Reset DFU flag */
         FOTA_ResetDFU();
         HAL_NVIC_SystemReset();

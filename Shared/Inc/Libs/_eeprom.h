@@ -23,8 +23,8 @@
 #define VADDR_RESPONSE_SEQ_ID       (uint16_t) EE_AREA(VADDR_REPORT_SEQ_ID + 2, 2)
 #define VADDR_AES_KEY               (uint16_t) EE_AREA(VADDR_RESPONSE_SEQ_ID + 2, 16)
 #define VADDR_DFU_FLAG              (uint16_t) EE_AREA(VADDR_AES_KEY + 16, 4)
-#define VADDR_VCU_FW_VERSION        (uint16_t) EE_AREA(VADDR_DFU_FLAG + 4, 2)
-#define VADDR_HMI_FW_VERSION        (uint16_t) EE_AREA(VADDR_VCU_FW_VERSION + 2, 2)
+#define VADDR_FOTA_VERSION          (uint16_t) EE_AREA(VADDR_DFU_FLAG + 4, 2)
+#define VADDR_FOTA_TYPE             (uint16_t) EE_AREA(VADDR_FOTA_VERSION + 2, 4)
 
 #define EE_NULL                      (uint8_t) 0
 
@@ -46,5 +46,6 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
 #else
 uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value);
 #endif
-uint8_t EEPROM_FirmwareVersion(EEPROM_COMMAND cmd, uint16_t value, IAP_TYPE type);
+uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value);
+uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value);
 #endif /* EEPROM_H_ */

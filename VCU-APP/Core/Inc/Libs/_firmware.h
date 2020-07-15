@@ -13,7 +13,7 @@
 #include "Libs/_reporter.h"
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t FW_EnterModeIAP(IAP_TYPE type);
+uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message);
 void FW_PostFota(response_t *response);
 
 #endif /* INC_LIBS__FIRMWARE_H_ */
