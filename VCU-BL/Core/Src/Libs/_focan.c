@@ -87,7 +87,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
         txd->u32[0] = offset;
         txd->u16[2] = tmpBlk - 1;
         // send message
-        p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 1000);
+        p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 5000);
 
         // flash
         if (p) {
@@ -103,7 +103,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
 
         // wait final response
         if (p) {
-            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 1000) == FOCAN_ACK);
+            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 5000) == FOCAN_ACK);
         }
     } while (p && pendingBlk);
 
