@@ -47,7 +47,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
         strcpy(ftp.path, "/hmi/");
 
         /* Tell HMI to enter IAP mode */
-        p = FOCAN_EnterModeIAP(CAND_HMI1_LEFT, 5000);
+        p = FOCAN_EnterModeIAP(CAND_HMI1_LEFT);
     }
 
     /* Backup if needed */
@@ -64,7 +64,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
             FOTA_GetChecksum(&cksumOld);
         } else {
             /* Get HMI checksum via CAN */
-            p = FOCAN_GetChecksum(&cksumOld, 5000);
+            p = FOCAN_GetChecksum(&cksumOld);
         }
     }
 
@@ -126,7 +126,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
                 FOTA_GlueInfo32(SIZE_OFFSET, &len);
             }
         } else {
-            p = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew, 5000);
+            p = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew);
         }
 
         // Handle error
@@ -215,7 +215,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
         if (currentIAP == IAP_VCU) {
             FLASHER_BackupApp();
         } else {
-            p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size), 5000);
+            p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size));
         }
     }
 

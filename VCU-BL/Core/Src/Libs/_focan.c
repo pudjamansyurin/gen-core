@@ -16,14 +16,14 @@ extern canbus_t CB;
 static uint32_t currentSide;
 
 /* Private functions prototypes -----------------------------------------------*/
-static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32_t timeout);
-static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DATA *data, uint32_t timeout);
+static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32_t timeout, uint32_t retry);
+static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DATA *data, uint32_t timeout, uint32_t retry);
 static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout);
 static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t timeout);
-static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout);
+static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
+uint8_t FOCAN_EnterModeIAP(uint32_t side) {
     uint32_t address = CAND_ENTER_IAP;
     CAN_DATA *txd = &(CB.tx.data);
     CAN_DATA rxd;
@@ -35,7 +35,7 @@ uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
     // set message
     txd->u32[0] = currentSide;
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, 4, &rxd, timeout);
+    p = FOCAN_WriteAndWaitSqueezed(address, 4, &rxd, 2500, 6);
 
     // process response
     if (p) {
@@ -45,13 +45,13 @@ uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
     return p;
 }
 
-uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout) {
+uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
     uint32_t address = CAND_GET_CHECKSUM;
     CAN_DATA rxd;
     uint8_t p;
 
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, 0, &rxd, timeout);
+    p = FOCAN_WriteAndWaitSqueezed(address, 0, &rxd, 2500, 6);
 
     // process response
     if (p) {
@@ -61,14 +61,14 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout) {
     return p;
 }
 
-uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data, uint32_t timeout) {
+uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
     CAN_DATA *txd = &(CB.tx.data);
     uint8_t p;
 
     // set message
     txd->u32[0] = *data;
     // send message
-    p = FOCAN_WriteAndWaitResponse(address, sizeof(uint32_t), timeout);
+    p = FOCAN_WriteAndWaitResponse(address, sizeof(uint32_t), 5000, 3);
 
     return p;
 }
@@ -87,11 +87,11 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
         txd->u32[0] = offset;
         txd->u16[2] = tmpBlk - 1;
         // send message
-        p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 5000);
+        p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 100, 200);
 
         // flash
         if (p) {
-            p = FOCAN_FlashBlock(ptr, &tmpBlk, 100);
+            p = FOCAN_FlashBlock(ptr, &tmpBlk);
         }
 
         // update pointer
@@ -103,7 +103,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
 
         // wait final response
         if (p) {
-            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 5000) == FOCAN_ACK);
+            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 1000) == FOCAN_ACK);
         }
     } while (p && pendingBlk);
 
@@ -111,7 +111,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout) {
+static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
     CAN_DATA *txd = &(CB.tx.data);
     uint32_t pendingSubBlk, tmpSubBlk;
     uint32_t address;
@@ -126,7 +126,7 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout
         memcpy(txd, ptr, tmpSubBlk);
         // send message
         address = _L(CAND_DOWNLOADING, 20) | (*tmpBlk - pendingSubBlk);
-        p = FOCAN_WriteAndWaitResponse(address, tmpSubBlk, timeout);
+        p = FOCAN_WriteAndWaitResponse(address, tmpSubBlk, 5, 2000);
 
         // update pointer
         if (p) {
@@ -138,8 +138,8 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout
     return p;
 }
 
-static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32_t timeout) {
-    uint8_t retry = FOCAN_RETRY, p;
+static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32_t timeout, uint32_t retry) {
+    uint8_t p;
 
     do {
         // send message
@@ -158,8 +158,8 @@ static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32
     return p;
 }
 
-static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DATA *data, uint32_t timeout) {
-    uint8_t retry = FOCAN_RETRY, p;
+static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DATA *data, uint32_t timeout, uint32_t retry) {
+    uint8_t p;
 
     do {
         // send message
