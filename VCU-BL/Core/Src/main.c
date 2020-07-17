@@ -118,13 +118,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//    _LedWrite(1);
-//    _DelayMS(5000);
-//    _LedWrite(0);
-//
-//    while (1) {
-//        FOTA_Upgrade(IAP_HMI);
-//    }
+    _LedWrite(1);
+    _DelayMS(1000);
+    _LedWrite(0);
+
     /* IAP flag has been set, initiate firmware download procedure */
     if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
         LOG_StrLn("IAP set, do DFU.");
@@ -134,13 +131,6 @@ int main(void)
             *(uint32_t*) IAP_FLAG_ADDR = 0;
             /* Take branching decision on next reboot */
             FOTA_Reboot();
-        }
-        /* If has retries */
-        else if (*(uint32_t*) IAP_RETRY_ADDR) {
-            /* Decrease */
-            (*(uint32_t*) IAP_RETRY_ADDR)--;
-            /* Retry again */
-            HAL_NVIC_SystemReset();
         }
         /* Reset IAP flag */
         *(uint32_t*) IAP_FLAG_ADDR = 0;

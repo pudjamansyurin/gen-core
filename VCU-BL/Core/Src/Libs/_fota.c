@@ -37,6 +37,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     };
 
     /* Set current IAP type */
+    *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
     currentIAP = type;
 
     /* Set FTP directory */
@@ -63,7 +64,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
             FOTA_GetChecksum(&cksumOld);
         } else {
             /* Get HMI checksum via CAN */
-            p = FOCAN_GetChecksum(&cksumOld, 100);
+            p = FOCAN_GetChecksum(&cksumOld, 1000);
         }
     }
 
@@ -81,6 +82,11 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
                 p = AT_FtpInitialize(&ftp);
             }
         }
+
+        // Handle error
+        if (p <= 0) {
+            *(uint32_t*) IAP_RESPONSE_ADDR = IAP_SIMCOM_TIMEOUT;
+        }
     }
 
     // Get checksum of new firmware
@@ -90,12 +96,24 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
         // Only download when image is different
         if (p > 0) {
             p = (cksumOld != cksumNew);
+
+            // Handle error
+            if (p <= 0) {
+                *(uint32_t*) IAP_RESPONSE_ADDR = IAP_FIRMWARE_SAME;
+            }
         }
     }
 
     // Download & Program new firmware
     if (p > 0) {
         p = FOTA_DownloadFirmware(&ftp, &len);
+
+        // Handle error
+        if (p <= 0) {
+            if ((*(uint32_t*) IAP_RESPONSE_ADDR) != IAP_CANBUS_FAILED) {
+                *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DOWNLOAD_ERROR;
+            }
+        }
     }
 
     // Buffer filled, compare the checksum
@@ -108,13 +126,21 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
                 FOTA_GlueInfo32(SIZE_OFFSET, &len);
             }
         } else {
-            p = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew, 5000);
+            p = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew, 1000);
+        }
+
+        // Handle error
+        if (p <= 0) {
+            *(uint32_t*) IAP_RESPONSE_ADDR = IAP_CHECKSUM_INVALID;
         }
     }
 
     // Reset DFU flag only when FOTA success
     if (p > 0) {
         FOTA_ResetDFU();
+
+        // Handle success
+        *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_SUCCESS;
     }
 
     return (p > 0);
@@ -189,7 +215,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
         if (currentIAP == IAP_VCU) {
             FLASHER_BackupApp();
         } else {
-            p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size), 5000);
+            p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size), 1000);
         }
     }
 

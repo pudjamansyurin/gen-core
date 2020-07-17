@@ -12,8 +12,8 @@
 #include "Libs/_fota.h"
 
 /* Exported macro -------------------------------------------------------------*/
-#define BLK_SIZE                   (uint16_t) 256
-#define FOCAN_RETRY                 (uint8_t) 10
+#define BLK_SIZE                   (uint16_t) (256*5)
+#define FOCAN_RETRY                 (uint8_t) 50
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOCAN_EnterModeIAP(uint32_t node, uint32_t timeout);

@@ -43,14 +43,13 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
 
         /* Set flag to SRAM */
         *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
-        *(uint32_t*) IAP_RETRY_ADDR = 0;
 
         /* Reset */
         HAL_NVIC_SystemReset();
 
     } else {
         /* Battery is low */
-        sprintf(message, "Battery %u mV < %u mV",
+        sprintf(message, "Battery %u mV (< %u mV)",
                 BACKUP_VOLTAGE, FOTA_MIN_VOLTAGE);
     }
     /* Never reached if FOTA executed */
@@ -62,7 +61,8 @@ void FW_PostFota(response_t *response) {
     uint16_t versionOld = FOTA_VERSION;
     char node[4] = "VCU";
 
-    if (versionOld) {
+    if (FOTA_TYPE) {
+        // decide the node
         if (FOTA_TYPE == IAP_HMI) {
             sprintf(node, "HMI");
             versionNew = *HMI_VERSION;
@@ -72,19 +72,43 @@ void FW_PostFota(response_t *response) {
             }
         }
 
-        /* Success or Failed*/
-        if (FOTA_VERSION != versionNew) {
-            sprintf(response->data.message,
-                    "%s upgraded v%d.%d to v%d.%d",
-                    node,
-                    _R8(versionOld, 8),
-                    _R8(versionOld, 0),
-                    _R8(versionNew, 8),
-                    _R8(versionNew, 0));
-            response->data.code = RESPONSE_STATUS_OK;
-        } else {
-            sprintf(response->data.message, "FOTA of %s failed", node);
-            response->data.code = RESPONSE_STATUS_ERROR;
+        // set default value
+        response->data.code = RESPONSE_STATUS_ERROR;
+        sprintf(response->data.message, "%s IAP_FAILED", node);
+
+        // check fota response
+        switch (*(uint32_t*) IAP_RESPONSE_ADDR) {
+            case IAP_SIMCOM_TIMEOUT:
+                sprintf(response->data.message, "%s IAP_SIMCOM_TIMEOUT", node);
+                break;
+            case IAP_DOWNLOAD_ERROR:
+                sprintf(response->data.message, "%s IAP_DOWNLOAD_ERROR", node);
+                break;
+            case IAP_FIRMWARE_SAME:
+                sprintf(response->data.message, "%s IAP_FIRMWARE_SAME", node);
+                break;
+            case IAP_CHECKSUM_INVALID:
+                sprintf(response->data.message, "%s IAP_CHECKSUM_INVALID", node);
+                break;
+            case IAP_CANBUS_FAILED:
+                sprintf(response->data.message, "%s IAP_CANBUS_FAILED", node);
+                break;
+            case IAP_DFU_ERROR:
+                sprintf(response->data.message, "%s IAP_DFU_ERROR", node);
+                break;
+            case IAP_DFU_SUCCESS:
+                sprintf(response->data.message,
+                        "%s IAP_DFU_SUCCESS v%d.%d -> v%d.%d",
+                        node,
+                        _R8(versionOld, 8),
+                        _R8(versionOld, 0),
+                        _R8(versionNew, 8),
+                        _R8(versionNew, 0));
+
+                response->data.code = RESPONSE_STATUS_OK;
+                break;
+            default:
+                break;
         }
 
         /* Send Response */

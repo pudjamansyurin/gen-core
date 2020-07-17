@@ -16,12 +16,11 @@ extern canbus_t CB;
 static uint32_t currentSide;
 
 /* Private functions prototypes -----------------------------------------------*/
-static uint8_t FOCAN_SendResponse(uint32_t address, FOCAN response);
 static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32_t timeout);
 static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DATA *data, uint32_t timeout);
 static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout);
 static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t timeout);
-static uint8_t FOCAN_DownloadBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout);
+static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
@@ -36,7 +35,7 @@ uint8_t FOCAN_EnterModeIAP(uint32_t side, uint32_t timeout) {
     // set message
     txd->u32[0] = currentSide;
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, 4, &rxd, 100);
+    p = FOCAN_WriteAndWaitSqueezed(address, 4, &rxd, timeout);
 
     // process response
     if (p) {
@@ -52,7 +51,7 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum, uint32_t timeout) {
     uint8_t p;
 
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, 0, &rxd, 100);
+    p = FOCAN_WriteAndWaitSqueezed(address, 0, &rxd, timeout);
 
     // process response
     if (p) {
@@ -86,13 +85,13 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
 
         // set message
         txd->u32[0] = offset;
-        txd->u8[4] = tmpBlk - 1;
+        txd->u16[2] = tmpBlk - 1;
         // send message
-        p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 5, 100);
+        p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 1000);
 
         // flash
         if (p) {
-            p = FOCAN_DownloadBlock(ptr, &tmpBlk, 50);
+            p = FOCAN_FlashBlock(ptr, &tmpBlk, 100);
         }
 
         // update pointer
@@ -104,7 +103,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
 
         // wait final response
         if (p) {
-            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 500) == FOCAN_ACK);
+            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 1000) == FOCAN_ACK);
         }
     } while (p && pendingBlk);
 
@@ -112,7 +111,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t FOCAN_DownloadBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout) {
+static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk, uint32_t timeout) {
     CAN_DATA *txd = &(CB.tx.data);
     uint32_t pendingSubBlk, tmpSubBlk;
     uint32_t address;
@@ -149,9 +148,12 @@ static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32
         if (p) {
             p = (FOCAN_WaitResponse(address, timeout) == FOCAN_ACK);
         }
-        //        // send 3 way handshake
-        //        FOCAN_SendResponse(address, p ? FOCAN_ACK : FOCAN_NACK);
     } while (!p && --retry);
+
+    // handle error
+    if (!p) {
+        *(uint32_t*) IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
+    }
 
     return p;
 }
@@ -166,9 +168,12 @@ static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DA
         if (p) {
             p = FOCAN_WaitSqueezed(address, data, timeout);
         }
-        //        // send 3 way handshake
-        //        FOCAN_SendResponse(address, p ? FOCAN_ACK : FOCAN_NACK);
     } while (!p && --retry);
+
+    // handle error
+    if (!p) {
+        *(uint32_t*) IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
+    }
 
     return p;
 }
@@ -223,16 +228,4 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t tim
     } while ((step < reply) && (_GetTickMS() - tick < timeout));
 
     return (step == reply);
-}
-
-static uint8_t FOCAN_SendResponse(uint32_t address, FOCAN response) {
-    CAN_DATA *txd = &(CB.tx.data);
-    uint8_t p;
-
-    // set message
-    txd->u8[0] = response;
-    // send message
-    p = CANBUS_Write(address, 1);
-
-    return p;
 }

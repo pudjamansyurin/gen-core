@@ -39,14 +39,8 @@
 #define DFU_PROGRESS_FLAG       (uint32_t) 0x89ABCDEF
 #define IAP_FLAG                (uint32_t) 0xAABBCCDD
 #define IAP_FLAG_ADDR                      (SRAM_END_ADDR - sizeof(uint32_t))
-#define IAP_RETRY_ADDR                     (IAP_FLAG_ADDR - sizeof(uint32_t))
-#define IS_VALID_SP(a)          ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
-
-/* Exported typedef ----------------------------------------------------------*/
-typedef enum {
-    IAP_VCU = 0xA1B2C3D4,
-    IAP_HMI = 0X1A2B3C4D
-} IAP_TYPE;
+#define IAP_RESPONSE_ADDR                  (IAP_FLAG_ADDR - sizeof(uint32_t))
+#define IS_VALID_SP(a)                     ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
 
 /* Exported constants --------------------------------------------------------*/
 #define RTOS_ENABLE                             !BOOTLOADER
@@ -206,8 +200,25 @@ typedef enum {
 #define CAND_PRA_DOWNLOAD            (uint32_t) 0x105
 #define CAND_PASCA_DOWNLOAD          (uint32_t) 0x106
 #define CAND_INIT_DOWNLOAD           (uint32_t) 0x131
+#endif
 
-/* Exported enum ----------------------------------------------------------------*/
+/* Exported typedef ----------------------------------------------------------*/
+typedef enum {
+    IAP_VCU = 0xA1B2C3D4,
+    IAP_HMI = 0X1A2B3C4D
+} IAP_TYPE;
+
+typedef enum {
+    IAP_SIMCOM_TIMEOUT = 0x035f67b8,
+    IAP_DOWNLOAD_ERROR = 0x6aa55122,
+    IAP_FIRMWARE_SAME = 0xa5be5ff3,
+    IAP_CHECKSUM_INVALID = 0xd7e9ef0d,
+    IAP_CANBUS_FAILED = 0x977fc0a3,
+    IAP_DFU_ERROR = 0xfa359ea1,
+    IAP_DFU_SUCCESS = 0x41b0fc9e,
+} IAP_RESPONSE;
+
+#if (BOOTLOADER)
 typedef enum {
     FOCAN_ERROR = 0x00,
     FOCAN_ACK = 0x79,
@@ -217,7 +228,7 @@ typedef enum {
 #else
 typedef enum {
     PAYLOAD_RESPONSE = 0,
-    PAYLOAD_REPORT = 1,
+    PAYLOAD_REPORT,
     PAYLOAD_MAX = 1,
 } PAYLOAD_TYPE;
 

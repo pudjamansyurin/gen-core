@@ -303,7 +303,7 @@ SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
     // Write
     sprintf(cmd, "AT+CIPSTART=\"%s\",\"%s\",\"%d\"\r",
             param->mode, param->ip, param->port);
-    p = AT_CmdWrite(cmd, 10000, "CONNECT");
+    p = AT_CmdWrite(cmd, 20000, "CONNECT");
 
     // check either connection ok / error
     if (p > 0) {
@@ -460,7 +460,7 @@ SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
 
     Simcom_Lock();
     // Read
-    p = AT_CmdRead("AT+FTPSIZE\r", 10000, "+FTPSIZE: ", &str);
+    p = AT_CmdRead("AT+FTPSIZE\r", 20000, "+FTPSIZE: ", &str);
     if (p > 0) {
         // parsing
         AT_ParseNumber(&str[len], &cnt);
@@ -491,7 +491,7 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
         sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
     }
 
-    p = AT_CmdRead(cmd, 10000, "+FTPGET: ", &str);
+    p = AT_CmdRead(cmd, 20000, "+FTPGET: ", &str);
 
     if (p > 0) {
         // parsing

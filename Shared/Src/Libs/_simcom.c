@@ -459,7 +459,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
         p = Simcom_Command(str, SIMCOM_RSP_SEND, 500, 0);
         if (p > 0) {
             // send the payload
-            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 10000, size);
+            p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 20000, size);
             // wait for ACK/NACK
             if (p > 0) {
                 // set timeout guard
@@ -469,7 +469,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
                     if (Simcom_Response(PREFIX_ACK)
                             || Simcom_Response(PREFIX_NACK)
                             || Simcom_Response(PREFIX_COMMAND)
-                            || (_GetTickMS() - tick) >= 10000) {
+                            || (_GetTickMS() - tick) >= 20000) {
                         break;
                     }
                     _DelayMS(10);
@@ -708,7 +708,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
                 || Simcom_Response(SIMCOM_RSP_READY)
                 #if (!BOOTLOADER)
                 || Simcom_CommandoIRQ()
-#endif
+                #endif
                 || (_GetTickMS() - tick) >= timeout) {
 
             // check response
@@ -729,7 +729,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
                 else if (Simcom_CommandoIRQ()) {
                     p = SIM_RESULT_TIMEOUT;
                 }
-#endif
+                #endif
                 else {
                     // exception for auto reboot module
                     if (Simcom_Response(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {
