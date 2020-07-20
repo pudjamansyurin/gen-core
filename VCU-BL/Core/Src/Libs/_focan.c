@@ -12,9 +12,6 @@
 /* External variables ---------------------------------------------------------*/
 extern canbus_t CB;
 
-/* Private variables ----------------------------------------------------------*/
-static uint32_t currentSide;
-
 /* Private functions prototypes -----------------------------------------------*/
 static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, uint32_t DLC, uint32_t timeout, uint32_t retry);
 static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, uint32_t DLC, CAN_DATA *data, uint32_t timeout, uint32_t retry);
@@ -23,23 +20,25 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *data, uint32_t tim
 static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FOCAN_EnterModeIAP(uint32_t side) {
+uint8_t FOCAN_EnterModeIAP(IAP_TYPE type) {
     uint32_t address = CAND_ENTER_IAP;
     CAN_DATA *txd = &(CB.tx.data);
     CAN_DATA rxd;
     uint8_t p;
 
-    /* Set current side to be updated */
-    currentSide = side;
-
     // set message
-    txd->u32[0] = currentSide;
+    txd->u32[0] = type;
+    /* Set current side to be updated */
+    if (type == IAP_HMI) {
+        txd->u32[1] = CAND_HMI1_LEFT;
+    }
+
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, 4, &rxd, 2500, 6);
+    p = FOCAN_WriteAndWaitSqueezed(address, 8, &rxd, 5000, (20000 / 5000));
 
     // process response
     if (p) {
-        p = (rxd.u32[0] == currentSide);
+        p = (rxd.u32[0] == type);
     }
 
     return p;
@@ -51,12 +50,30 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
     uint8_t p;
 
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, 0, &rxd, 2500, 6);
+    p = FOCAN_WriteAndWaitSqueezed(address, 0, &rxd, 2500, (15000 / 2500));
 
     // process response
     if (p) {
         *checksum = rxd.u32[0];
     }
+
+    return p;
+}
+
+uint8_t FOCAN_SetProgress(IAP_TYPE type, uint8_t percent) {
+    uint32_t address = CAND_SET_PROGRESS;
+    CAN_DATA *txd = &(CB.tx.data);
+    uint32_t retry = 5;
+    uint8_t p;
+
+    // set message
+    txd->u32[0] = type;
+    txd->u8[4] = percent;
+    // send message
+    do {
+        // send message
+        p = CANBUS_Write(address, 5);
+    } while (!p && --retry);
 
     return p;
 }
@@ -68,15 +85,15 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
     // set message
     txd->u32[0] = *data;
     // send message
-    p = FOCAN_WriteAndWaitResponse(address, sizeof(uint32_t), 5000, 3);
+    p = FOCAN_WriteAndWaitResponse(address, sizeof(uint32_t), 5000, (15000 / 5000));
 
     return p;
 }
 
-uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
+uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32_t total_size) {
     CAN_DATA *txd = &(CB.tx.data);
     uint32_t pendingBlk, tmpBlk;
-    uint8_t p;
+    uint8_t p, percent;
 
     // flash each block
     pendingBlk = size;
@@ -88,9 +105,9 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
         txd->u16[2] = tmpBlk - 1;
         // send message
         if (offset) {
-            p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 100, 200);
+            p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 100, (20000 / 100));
         } else {
-            p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 2500, 6);
+            p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, 6, 2500, (15000 / 2500));
         }
 
         // flash
@@ -103,6 +120,10 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset) {
             pendingBlk -= tmpBlk;
             offset += tmpBlk;
             ptr += tmpBlk;
+
+            // indicator
+            percent = (offset * 100 / total_size);
+            FOCAN_SetProgress(IAP_HMI, percent);
         }
 
         // wait final response
@@ -130,7 +151,7 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
         memcpy(txd, ptr, tmpSubBlk);
         // send message
         address = _L(CAND_DOWNLOADING, 20) | (*tmpBlk - pendingSubBlk);
-        p = FOCAN_WriteAndWaitResponse(address, tmpSubBlk, 5, 2000);
+        p = FOCAN_WriteAndWaitResponse(address, tmpSubBlk, 5, (5000 / 5));
 
         // update pointer
         if (p) {

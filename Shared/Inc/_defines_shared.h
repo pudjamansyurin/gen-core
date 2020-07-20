@@ -199,6 +199,7 @@
 #define CAND_DOWNLOADING             (uint32_t) 0x104
 #define CAND_PRA_DOWNLOAD            (uint32_t) 0x105
 #define CAND_PASCA_DOWNLOAD          (uint32_t) 0x106
+#define CAND_SET_PROGRESS            (uint32_t) 0x10A
 #define CAND_INIT_DOWNLOAD           (uint32_t) 0x131
 #endif
 

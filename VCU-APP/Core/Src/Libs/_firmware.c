@@ -74,31 +74,31 @@ void FW_PostFota(response_t *response) {
 
         // set default value
         response->data.code = RESPONSE_STATUS_ERROR;
-        sprintf(response->data.message, "%s IAP_FAILED", node);
+        sprintf(response->data.message, "%s Failed", node);
 
         // check fota response
         switch (*(uint32_t*) IAP_RESPONSE_ADDR) {
             case IAP_SIMCOM_TIMEOUT:
-                sprintf(response->data.message, "%s IAP_SIMCOM_TIMEOUT", node);
+                sprintf(response->data.message, "%s Simcom Timeout", node);
                 break;
             case IAP_DOWNLOAD_ERROR:
-                sprintf(response->data.message, "%s IAP_DOWNLOAD_ERROR", node);
+                sprintf(response->data.message, "%s Download Error", node);
                 break;
             case IAP_FIRMWARE_SAME:
-                sprintf(response->data.message, "%s IAP_FIRMWARE_SAME", node);
+                sprintf(response->data.message, "%s Version Same", node);
                 break;
             case IAP_CHECKSUM_INVALID:
-                sprintf(response->data.message, "%s IAP_CHECKSUM_INVALID", node);
+                sprintf(response->data.message, "%s Checksum Invalid", node);
                 break;
             case IAP_CANBUS_FAILED:
-                sprintf(response->data.message, "%s IAP_CANBUS_FAILED", node);
+                sprintf(response->data.message, "%s Canbus Failed", node);
                 break;
             case IAP_DFU_ERROR:
-                sprintf(response->data.message, "%s IAP_DFU_ERROR", node);
+                sprintf(response->data.message, "%s DFU Error", node);
                 break;
             case IAP_DFU_SUCCESS:
                 sprintf(response->data.message,
-                        "%s IAP_DFU_SUCCESS v%d.%d -> v%d.%d",
+                        "%s Success v%d.%d (> v%d.%d)",
                         node,
                         _R8(versionOld, 8),
                         _R8(versionOld, 0),

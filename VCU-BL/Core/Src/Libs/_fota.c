@@ -18,10 +18,7 @@ extern CRC_HandleTypeDef hcrc;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart1;
 extern uint32_t DFU_FLAG;
-extern IAP_TYPE FOTA_TYPE;
-
-/* Private variables ----------------------------------------------------------*/
-static IAP_TYPE currentIAP;
+extern sim_t SIM;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
@@ -38,17 +35,16 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
     /* Set current IAP type */
     *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
-    currentIAP = type;
 
     /* Set FTP directory */
-    if (currentIAP == IAP_VCU) {
+    if (type == IAP_VCU) {
         strcpy(ftp.path, "/vcu/");
     } else {
         strcpy(ftp.path, "/hmi/");
-
-        /* Tell HMI to enter IAP mode */
-        p = FOCAN_EnterModeIAP(CAND_HMI1_LEFT);
     }
+
+    /* Tell HMI to enter IAP mode */
+    p = FOCAN_EnterModeIAP(type);
 
     /* Backup if needed */
     if (p > 0) {
@@ -60,7 +56,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
     /* Get the stored checksum information */
     if (p > 0) {
-        if (currentIAP == IAP_VCU) {
+        if (type == IAP_VCU) {
             FOTA_GetChecksum(&cksumOld);
         } else {
             /* Get HMI checksum via CAN */
@@ -106,7 +102,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
     // Download & Program new firmware
     if (p > 0) {
-        p = FOTA_DownloadFirmware(&ftp, &len);
+
+        p = FOTA_DownloadFirmware(&ftp, &len, type);
 
         // Handle error
         if (p <= 0) {
@@ -118,7 +115,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
     // Buffer filled, compare the checksum
     if (p > 0) {
-        if (currentIAP == IAP_VCU) {
+        if (type == IAP_VCU) {
             p = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
             // Glue related information to new image
             if (p > 0) {
@@ -189,9 +186,10 @@ uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
     return (p == SIM_RESULT_OK);
 }
 
-uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
+uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len, IAP_TYPE type) {
     SIMCOM_RESULT p;
     uint32_t timer;
+    uint8_t percent;
     AT_FTP_STATE state;
     at_ftpget_t setFTPGET;
 
@@ -212,7 +210,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
 
     // Backup and prepare the area
     if (p > 0 && setFTPGET.response == FTP_READY) {
-        if (currentIAP == IAP_VCU) {
+        if (type == IAP_VCU) {
             FLASHER_BackupApp();
         } else {
             p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size));
@@ -224,6 +222,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
         // Prepare, start timer
         LOG_StrLn("FOTA:Start");
         timer = _GetTickMS();
+        SIM.downloading = 1;
 
         // Copy chunk by chunk
         setFTPGET.mode = FTPGET_READ;
@@ -234,10 +233,10 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
 
             // Copy buffer to flash
             if (p > 0 && setFTPGET.cnflength) {
-                if (currentIAP == IAP_VCU) {
+                if (type == IAP_VCU) {
                     p = FLASHER_WriteAppArea((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
                 } else {
-                    p = FOCAN_DownloadFlash((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
+                    p = FOCAN_DownloadFlash((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len, setFTP->size);
                 }
             } else {
                 // failure
@@ -250,12 +249,15 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len) {
                 *len += setFTPGET.cnflength;
 
                 // Indicator
+                percent = (*len * 100 / setFTP->size);
                 _LedToggle();
                 LOG_Str("FOTA:Progress = ");
                 LOG_Int(*len);
                 LOG_Str(" Bytes (");
-                LOG_Int(*len * 100 / setFTP->size);
+                LOG_Int(percent);
                 LOG_StrLn("%)");
+
+                FOCAN_SetProgress(type, percent);
             }
         } while ((p > 0) && (*len < setFTP->size));
 

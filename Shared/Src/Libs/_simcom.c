@@ -18,6 +18,7 @@
 #include "Nodes/VCU.h"
 #else
 #include "Libs/_fota.h"
+#include "Libs/_focan.h"
 #include "Drivers/_flasher.h"
 #endif
 
@@ -27,13 +28,16 @@ extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ ];
 extern osMutexId_t SimcomRecMutexHandle;
 extern osMessageQueueId_t CommandQueueHandle;
 extern vcu_t VCU;
+#else
+extern IAP_TYPE FOTA_TYPE;
 #endif
 
 /* Public variables ----------------------------------------------------------*/
 sim_t SIM = {
         .state = SIM_STATE_DOWN,
         .ip_status = CIPSTAT_UNKNOWN,
-        .signal = 0
+        .signal = 0,
+        .downloading = 0,
 };
 
 /* Private functions prototype -----------------------------------------------*/
@@ -767,6 +771,10 @@ static void Simcom_BeforeTransmitHook(void) {
     // handle Commando (if any)
     if (Simcom_ProcessCommando(&hCommand)) {
         osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
+    }
+#else
+    if (SIM.downloading == 0) {
+        FOCAN_SetProgress(FOTA_TYPE, 0);
     }
 #endif
 

@@ -72,6 +72,7 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+extern IAP_TYPE FOTA_TYPE;
 /* USER CODE END 0 */
 
 /**
@@ -81,7 +82,6 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-    extern IAP_TYPE FOTA_TYPE;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/

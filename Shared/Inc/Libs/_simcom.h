@@ -67,6 +67,7 @@ typedef struct {
     SIMCOM_STATE state;
     AT_CIPSTATUS ip_status;
     uint8_t signal;
+    uint8_t downloading;
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/

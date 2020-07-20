@@ -16,9 +16,10 @@
 #define FOCAN_RETRY                 (uint8_t) 5
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FOCAN_EnterModeIAP(uint32_t node);
+uint8_t FOCAN_EnterModeIAP(IAP_TYPE type);
 uint8_t FOCAN_GetChecksum(uint32_t *checksum);
+uint8_t FOCAN_SetProgress(IAP_TYPE type, uint8_t percent);
 uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data);
-uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset);
+uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32_t total_size);
 
 #endif /* INC_LIBS__FOCAN_H_ */
