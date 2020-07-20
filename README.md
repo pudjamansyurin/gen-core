@@ -96,16 +96,15 @@
 - [ ] Make routine to check SIMCOM internet package
 - [x] Build bootloader for FOTA
 - [x] Merge bootloader & application project
-- [ ] Separate audio assets with FTP download.
-  - [ ] Use last 2 sector of FLASH for its space. 
+- [x] ~~Separate audio assets with FTP download~~.
+  - [x] ~~Use last 2 sector of FLASH for its space~~. 
 - [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
 - [x] ~~Lock all global variable to minimize RTOS problem.~~ 
 - [ ] RTOS: give timeout for any osWaitForever
-- [ ] Configure UBLOX if you order the IC separately, so build the library for it
-  - [ ] Implement this UBX library:
-    - https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library
-- [ ] Simplify simcom library with pointer data
+- [x] ~~Configure UBLOX if you order the IC separately, so build the library for it~~
+  - [x] ~~Library: https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library~~
+- [ ] Simplify CANBUS library with pointer data
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
@@ -264,4 +263,4 @@
 | 15 | Encryption RF		   | -		    | AES  	  | ✔  | -  | **Done**			|
 | 16 | Encryption IoT		   | -		    | MbedTLS	  | 0%  | -  | Waiting: Real Server	|
 | 17 | Fw upgrade OTA (FOTA) 	   | -		    | FLASH	  | ✔  | -  | **Done**			|
-| 18 | Fw upgrade CAN (FOCAN)     | -		    | FLASH, CAN  | ✔  | -  | On Progress		|
+| 18 | Fw upgrade CAN (FOCAN)     | -		    | FLASH, CAN  | ✔  | -  | **Done**			|
