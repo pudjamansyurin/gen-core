@@ -13,12 +13,13 @@ extern CAN_HandleTypeDef hcan1;
 #if (!BOOTLOADER)
 extern osThreadId_t CanRxTaskHandle;
 extern osMutexId_t CanTxMutexHandle;
+extern osMessageQueueId_t CanRxQueueHandle;
 #endif
 
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static void CANBUS_Header(uint32_t address, CAN_TxHeaderTypeDef *TxHeader, uint32_t DLC);
+static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC);
 
 /* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(void) {
@@ -73,7 +74,7 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 
     lock();
     // set header
-    CANBUS_Header(address, &TxHeader, DLC);
+    CANBUS_Header(&TxHeader, address, DLC);
 
     /* Wait transmission complete */
     while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0)
@@ -84,7 +85,7 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 
     // debugging
     if (status == HAL_OK) {
-        CANBUS_TxDebugger(&TxHeader, TxData);
+        //        CANBUS_TxDebugger(&TxHeader, TxData);
     }
 
     unlock();
@@ -104,7 +105,7 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
         status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
         // debugging
         if (status == HAL_OK) {
-            CANBUS_RxDebugger(Rx);
+            //            CANBUS_RxDebugger(Rx);
         }
     }
     unlock();
@@ -137,7 +138,7 @@ void CANBUS_TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
 }
 
 void CANBUS_RxDebugger(can_rx_t *Rx) {
-// debugging
+    // debugging
     LOG_Str("\n[RX] ");
     LOG_Hex32(CANBUS_ReadID(&(Rx->header)));
     LOG_Str(" <= ");
@@ -151,9 +152,12 @@ void CANBUS_RxDebugger(can_rx_t *Rx) {
 
 #if (!BOOTLOADER)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+    can_rx_t Rx;
     // signal only when RTOS started
     if (osKernelGetState() == osKernelRunning) {
-        osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_RX_IT);
+        if(CANBUS_Read(&Rx)){
+            osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
+        }
     }
 }
 #endif
@@ -171,7 +175,7 @@ static void unlock(void) {
 #endif
 }
 
-static void CANBUS_Header(uint32_t address, CAN_TxHeaderTypeDef *TxHeader, uint32_t DLC) {
+static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC) {
     /* Configure Transmission process */
     if (address > 0x7FF) {
         TxHeader->IDE = CAN_ID_EXT;

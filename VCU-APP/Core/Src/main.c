@@ -209,6 +209,11 @@ osMessageQueueId_t DriverQueueHandle;
 const osMessageQueueAttr_t DriverQueue_attributes = {
         .name = "DriverQueue"
 };
+/* Definitions for CanRxQueue */
+osMessageQueueId_t CanRxQueueHandle;
+const osMessageQueueAttr_t CanRxQueue_attributes = {
+        .name = "CanRxQueue"
+};
 /* Definitions for AudioMutex */
 osMutexId_t AudioMutexHandle;
 const osMutexAttr_t AudioMutex_attributes = {
@@ -431,6 +436,9 @@ int main(void)
     /* creation of DriverQueue */
     DriverQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &DriverQueue_attributes);
 
+    /* creation of CanRxQueue */
+    CanRxQueueHandle = osMessageQueueNew(10, sizeof(can_rx_t), &CanRxQueue_attributes);
+
     /* USER CODE BEGIN RTOS_QUEUES */
     /* add queues, ... */
     GlobalEventHandle = osEventFlagsNew(NULL);
@@ -511,10 +519,11 @@ void SystemClock_Config(void)
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
     /** Initializes the CPU, AHB and APB busses clocks
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
             | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    RCC_OscInitStruct.LSIState = RCC_LSI_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLM = 4;
@@ -2269,40 +2278,39 @@ void StartCanRxTask(void *argument)
 {
     /* USER CODE BEGIN StartCanRxTask */
     can_rx_t Rx;
-    uint32_t notif;
+    osStatus_t status;
 
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
     /* Infinite loop */
     for (;;) {
+        // get can rx in queue
+        status = osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, osWaitForever);
         // wait forever
-        notif = osThreadFlagsWait(EVT_CAN_RX_IT, osFlagsWaitAny, osWaitForever);
-        if (_RTOS_ValidThreadFlag(notif)) {
-            if (CANBUS_Read(&Rx)) {
-                // handle STD message
-                switch (CANBUS_ReadID(&(Rx.header))) {
-                    case CAND_HMI1 :
-                        HMI1.can.r.State(&Rx);
-                        break;
-                    case CAND_HMI2 :
-                        HMI2.can.r.State(&Rx);
-                        break;
-                    default:
-                        // BMS - Extendend id
-                        switch (_R(CANBUS_ReadID(&(Rx.header)), 20)) {
-                            case CAND_BMS_PARAM_1 :
-                                BMS.can.r.Param1(&Rx);
-                                break;
-                            case CAND_BMS_PARAM_2 :
-                                BMS.can.r.Param2(&Rx);
-                                break;
-                            default:
-                                break;
-                        }
+        if (status == osOK) {
+            // handle STD message
+            switch (CANBUS_ReadID(&(Rx.header))) {
+                case CAND_HMI1 :
+                    HMI1.can.r.State(&Rx);
+                    break;
+                case CAND_HMI2 :
+                    HMI2.can.r.State(&Rx);
+                    break;
+                default:
+                    // BMS - Extendend id
+                    switch (_R(CANBUS_ReadID(&(Rx.header)), 20)) {
+                        case CAND_BMS_PARAM_1 :
+                            BMS.can.r.Param1(&Rx);
+                            break;
+                        case CAND_BMS_PARAM_2 :
+                            BMS.can.r.Param2(&Rx);
+                            break;
+                        default:
+                            break;
+                    }
 
-                        break;
-                }
+                    break;
             }
         }
     }
