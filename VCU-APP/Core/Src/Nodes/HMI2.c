@@ -102,10 +102,10 @@ void StartHmi2PowerTask(void *argument) {
 
 /* ====================================== CAN RX =================================== */
 void HMI2_CAN_RX_State(void) {
-    CAN_DATA *data = &(CB.rx.data);
+    CAN_DATA *rxd = &(CB.rx.data);
 
     // read message
-    HMI1.d.status.mirroring = _R1(data->u8[0], 0);
+    HMI1.d.status.mirroring = _R1(rxd->u8[0], 0);
 
     // save state
     HMI2.d.started = 1;

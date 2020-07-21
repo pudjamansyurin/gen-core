@@ -190,14 +190,14 @@ void BMS_MergeData(void) {
 
 /* ====================================== CAN RX =================================== */
 void BMS_CAN_RX_Param1(void) {
-    CAN_DATA *data = &(CB.rx.data);
+    CAN_DATA *rxd = &(CB.rx.data);
     uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
 
     // read the content
-    BMS.d.pack[index].voltage = data->u16[0] * 0.01;
-    BMS.d.pack[index].current = (data->u16[1] * 0.01) - 50;
-    BMS.d.pack[index].soc = data->u16[2];
-    BMS.d.pack[index].temperature = (data->u16[3] * 0.1) - 40;
+    BMS.d.pack[index].voltage = rxd->u16[0] * 0.01;
+    BMS.d.pack[index].current = (rxd->u16[1] * 0.01) - 50;
+    BMS.d.pack[index].soc = rxd->u16[2];
+    BMS.d.pack[index].temperature = (rxd->u16[3] * 0.1) - 40;
 
     // read the id
     BMS.d.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
@@ -206,23 +206,23 @@ void BMS_CAN_RX_Param1(void) {
 }
 
 void BMS_CAN_RX_Param2(void) {
-    CAN_DATA *data = &(CB.rx.data);
+    CAN_DATA *rxd = &(CB.rx.data);
     uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
 
     // save flag
-    BMS.d.pack[index].flag = data->u16[3];
+    BMS.d.pack[index].flag = rxd->u16[3];
 
     // save state
-    BMS.d.pack[index].state = _L(_R1(data->u8[7], 4), 1) | _R1(data->u8[7], 5);
+    BMS.d.pack[index].state = _L(_R1(rxd->u8[7], 4), 1) | _R1(rxd->u8[7], 5);
 }
 
 /* ====================================== CAN TX =================================== */
 uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
-    CAN_DATA *data = &(CB.tx.data);
+    CAN_DATA *txd = &(CB.tx.data);
 
     // set message
-    data->u8[0] = start;
-    data->u8[0] |= _L(state, 1);
+    txd->u8[0] = start;
+    txd->u8[0] |= _L(state, 1);
 
     // send message
     return CANBUS_Write(CAND_BMS_SETTING, 1);

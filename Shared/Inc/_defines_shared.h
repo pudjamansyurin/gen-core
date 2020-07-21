@@ -189,8 +189,7 @@
 #define CAND_BMS_SETTING             (uint32_t) 0x1B2
 #define CAND_HMI2                    (uint32_t) 0x7D0
 #endif
-#define CAND_HMI1_LEFT               (uint32_t) 0x7C0
-#define CAND_HMI1_RIGHT              (uint32_t) 0x7C1
+#define CAND_HMI1                    (uint32_t) 0x7C0
 
 #if (BOOTLOADER)
 // FOCAN Message Address

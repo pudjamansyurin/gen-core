@@ -2280,12 +2280,11 @@ void StartCanRxTask(void *argument)
         if (_RTOS_ValidThreadFlag(notif)) {
             // handle STD message
             switch (CANBUS_ReadID()) {
+                case CAND_HMI1 :
+                    HMI1.can.r.State();
+                    break;
                 case CAND_HMI2 :
                     HMI2.can.r.State();
-                    break;
-                case CAND_HMI1_LEFT :
-                    case CAND_HMI1_RIGHT :
-                    HMI1.can.r.State(CANBUS_ReadID());
                     break;
                 default:
                     // BMS - Extendend id
@@ -2353,7 +2352,7 @@ void StartCanTxTask(void *argument)
 
         // Refresh state
         BMS.RefreshIndex();
-        HMI1.RefreshIndex();
+        HMI1.Refresh();
         HMI2.Refresh();
 
         // Periodic interval

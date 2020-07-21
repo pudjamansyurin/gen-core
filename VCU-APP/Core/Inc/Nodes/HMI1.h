@@ -11,16 +11,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Exported enum -------------------------------------------------------------*/
-typedef enum {
-    HMI1_DEV_LEFT = 0,
-    HMI1_DEV_RIGHT = 1,
-    HMI1_DEV_MAX = 1
-} HMI1_DEVICE;
-
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
     uint8_t started;
+    uint32_t tick;
+    uint16_t version;
     struct {
         //	uint8_t abs;
         uint8_t mirroring;
@@ -33,16 +28,11 @@ typedef struct {
     //	uint8_t sein_left;
     //	uint8_t sein_right;
     } status;
-    struct {
-        uint8_t started;
-        uint32_t tick;
-        uint16_t version;
-    } device[2];
 } hmi1_data_t;
 
 typedef struct {
     struct {
-        void (*State)(uint32_t);
+        void (*State)(void);
     } r;
 } hmi1_can_t;
 
@@ -50,14 +40,14 @@ typedef struct {
     hmi1_data_t d;
     hmi1_can_t can;
     void (*Init)(void);
-    void (*RefreshIndex)(void);
+    void (*Refresh)(void);
     void (*Power)(uint8_t);
 } hmi1_t;
 
 /* Public functions implementation --------------------------------------------*/
 void HMI1_Init(void);
-void HMI1_RefreshIndex(void);
+void HMI1_Refresh(void);
 void HMI1_Power(uint8_t state);
-void HMI1_CAN_RX_State(uint32_t address);
+void HMI1_CAN_RX_State(void);
 
 #endif /* INC_NODES_HMI1_H_ */

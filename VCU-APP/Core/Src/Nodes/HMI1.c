@@ -21,7 +21,7 @@ hmi1_t HMI1 = {
                 },
         },
         HMI1_Init,
-        HMI1_RefreshIndex,
+        HMI1_Refresh,
         HMI1_Power
 };
 
@@ -29,27 +29,21 @@ hmi1_t HMI1 = {
 void HMI1_Init(void) {
     // reset HMI1 data
     HMI1.d.started = 0;
+    HMI1.d.tick = 0;
+    HMI1.d.version = 0;
     HMI1.d.status.mirroring = 0;
     HMI1.d.status.warning = 0;
     HMI1.d.status.overheat = 0;
     HMI1.d.status.finger = 0;
     HMI1.d.status.keyless = 0;
     HMI1.d.status.daylight = 0;
-    // each HMIs
-    for (uint8_t i = 0; i < HMI1_DEV_MAX; i++) {
-        HMI1.d.device[i].started = 0;
-        HMI1.d.device[i].tick = 0;
-        HMI1.d.device[i].version = 0;
-    }
 }
 
-void HMI1_RefreshIndex(void) {
-    for (uint8_t i = 0; i < HMI1_DEV_MAX; i++) {
-        if ((_GetTickMS() - HMI1.d.device[i].tick) > 1000) {
-            HMI1.d.device[i].started = 0;
-            HMI1.d.device[i].tick = 0;
-            HMI1.d.device[i].version = 0;
-        }
+void HMI1_Refresh(void) {
+    if ((_GetTickMS() - HMI1.d.tick) > 1000) {
+        HMI1.d.started = 0;
+        HMI1.d.tick = 0;
+        HMI1.d.version = 0;
     }
 }
 
@@ -59,17 +53,11 @@ void HMI1_Power(uint8_t state) {
 }
 
 /* ====================================== CAN RX =================================== */
-void HMI1_CAN_RX_State(uint32_t address) {
-    CAN_DATA *data = &(CB.rx.data);
-    HMI1_DEVICE device = HMI1_DEV_LEFT;
-
-    // check node
-    if (address == CAND_HMI1_RIGHT) {
-        device = HMI1_DEV_RIGHT;
-    }
+void HMI1_CAN_RX_State(void) {
+    CAN_DATA *rxd = &(CB.rx.data);
 
     // save state
-    HMI1.d.device[device].started = 1;
-    HMI1.d.device[device].tick = _GetTickMS();
-    HMI1.d.device[device].version = data->u16[0];
+    HMI1.d.started = 1;
+    HMI1.d.tick = _GetTickMS();
+    HMI1.d.version = rxd->u16[0];
 }

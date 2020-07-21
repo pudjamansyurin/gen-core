@@ -28,13 +28,8 @@ uint8_t FOCAN_EnterModeIAP(IAP_TYPE type) {
 
     // set message
     txd->u32[0] = type;
-    /* Set current side to be updated */
-    if (type == IAP_HMI) {
-        txd->u32[1] = CAND_HMI1_LEFT;
-    }
-
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, 8, &rxd, 5000, (20000 / 5000));
+    p = FOCAN_WriteAndWaitSqueezed(address, 4, &rxd, 5000, (20000 / 5000));
 
     // process response
     if (p) {

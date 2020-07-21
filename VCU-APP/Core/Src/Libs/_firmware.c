@@ -18,22 +18,19 @@ extern IAP_TYPE FOTA_TYPE;
 extern hmi1_t HMI1;
 extern osMessageQueueId_t ResponseQueueHandle;
 
-/* Public variables -----------------------------------------------------------*/
-uint16_t *HMI_VERSION = &(HMI1.d.device[HMI1_DEV_LEFT].version);
-
 /* Public functions implementation --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
     uint16_t version = VCU_VERSION;
 
     if (BACKUP_VOLTAGE > FOTA_MIN_VOLTAGE) {
         if (type == IAP_HMI) {
-            if (*HMI_VERSION == 0) {
+            if (HMI1.d.version == 0) {
                 /* HMI device not connected */
                 sprintf(message, "HMI Device not connected");
 
                 return 0;
             } else {
-                version = *HMI_VERSION;
+                version = HMI1.d.version;
             }
         }
 
@@ -65,7 +62,7 @@ void FW_PostFota(response_t *response) {
         // decide the node
         if (FOTA_TYPE == IAP_HMI) {
             sprintf(node, "HMI");
-            versionNew = *HMI_VERSION;
+            versionNew = HMI1.d.version;
             /* Handle empty firmware */
             if (versionOld == 0xFFFF) {
                 versionOld = 0x0000;
