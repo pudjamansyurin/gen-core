@@ -83,9 +83,9 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
     status = HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData->u8, NULL);
 
     // debugging
-    //    if (status == HAL_OK) {
-    //        CANBUS_TxDebugger();
-    //    }
+    if (status == HAL_OK) {
+        CANBUS_TxDebugger(&TxHeader, TxData);
+    }
 
     unlock();
     return (status == HAL_OK);
@@ -103,9 +103,9 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
         /* Get RX message */
         status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
         // debugging
-        //        if (status == HAL_OK) {
-        //            CANBUS_RxDebugger();
-        //        }
+        if (status == HAL_OK) {
+            CANBUS_RxDebugger(Rx);
+        }
     }
     unlock();
 
@@ -119,17 +119,17 @@ uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef *RxHeader) {
     return RxHeader->ExtId;
 }
 
-void CANBUS_TxDebugger(can_tx_t *Tx) {
+void CANBUS_TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
     // debugging
     LOG_Str("\n[TX] ");
-    if (Tx->header.IDE == CAN_ID_STD) {
-        LOG_Hex32(Tx->header.StdId);
+    if (TxHeader->IDE == CAN_ID_STD) {
+        LOG_Hex32(TxHeader->StdId);
     } else {
-        LOG_Hex32(Tx->header.ExtId);
+        LOG_Hex32(TxHeader->ExtId);
     }
     LOG_Str(" => ");
-    if (Tx->header.RTR == CAN_RTR_DATA) {
-        LOG_BufHex((char*) &(Tx->data), sizeof(Tx->data));
+    if (TxHeader->RTR == CAN_RTR_DATA) {
+        LOG_BufHex((char*) TxData, TxHeader->DLC);
     } else {
         LOG_Str("RTR");
     }
@@ -137,12 +137,12 @@ void CANBUS_TxDebugger(can_tx_t *Tx) {
 }
 
 void CANBUS_RxDebugger(can_rx_t *Rx) {
-    // debugging
+// debugging
     LOG_Str("\n[RX] ");
     LOG_Hex32(CANBUS_ReadID(&(Rx->header)));
     LOG_Str(" <= ");
     if (Rx->header.RTR == CAN_RTR_DATA) {
-        LOG_BufHex(Rx->data.CHAR, sizeof(Rx->data.CHAR));
+        LOG_BufHex(Rx->data.CHAR, Rx->header.DLC);
     } else {
         LOG_Str("RTR");
     }
