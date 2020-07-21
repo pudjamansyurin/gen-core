@@ -104,7 +104,7 @@
 - [ ] RTOS: give timeout for any osWaitForever
 - [x] ~~Configure UBLOX if you order the IC separately, so build the library for it~~
   - [x] ~~Library: https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library~~
-- [ ] Simplify CANBUS library with pointer data
+- [x] Simplify CANBUS library with pointer data
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
