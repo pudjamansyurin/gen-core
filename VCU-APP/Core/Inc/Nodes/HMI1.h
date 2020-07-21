@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Drivers/_canbus.h"
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
@@ -32,7 +33,7 @@ typedef struct {
 
 typedef struct {
     struct {
-        void (*State)(void);
+        void (*State)(can_rx_t*);
     } r;
 } hmi1_can_t;
 
@@ -48,6 +49,6 @@ typedef struct {
 void HMI1_Init(void);
 void HMI1_Refresh(void);
 void HMI1_Power(uint8_t state);
-void HMI1_CAN_RX_State(void);
+void HMI1_CAN_RX_State(can_rx_t *Rx);
 
 #endif /* INC_NODES_HMI1_H_ */

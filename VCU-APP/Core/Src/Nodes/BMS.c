@@ -9,10 +9,8 @@
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
-#include "Drivers/_canbus.h"
 
 /* External variables ---------------------------------------------------------*/
-extern canbus_t CB;
 extern vcu_t VCU;
 extern hmi1_t HMI1;
 
@@ -189,42 +187,40 @@ void BMS_MergeData(void) {
 }
 
 /* ====================================== CAN RX =================================== */
-void BMS_CAN_RX_Param1(void) {
-    CAN_DATA *rxd = &(CB.rx.data);
-    uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
+void BMS_CAN_RX_Param1(can_rx_t *Rx) {
+    uint8_t index = BMS.GetIndex(Rx->header.ExtId & BMS_ID_MASK);
 
     // read the content
-    BMS.d.pack[index].voltage = rxd->u16[0] * 0.01;
-    BMS.d.pack[index].current = (rxd->u16[1] * 0.01) - 50;
-    BMS.d.pack[index].soc = rxd->u16[2];
-    BMS.d.pack[index].temperature = (rxd->u16[3] * 0.1) - 40;
+    BMS.d.pack[index].voltage = Rx->data.u16[0] * 0.01;
+    BMS.d.pack[index].current = (Rx->data.u16[1] * 0.01) - 50;
+    BMS.d.pack[index].soc = Rx->data.u16[2];
+    BMS.d.pack[index].temperature = (Rx->data.u16[3] * 0.1) - 40;
 
     // read the id
-    BMS.d.pack[index].id = CB.rx.header.ExtId & BMS_ID_MASK;
+    BMS.d.pack[index].id = Rx->header.ExtId & BMS_ID_MASK;
     BMS.d.pack[index].started = 1;
     BMS.d.pack[index].tick = _GetTickMS();
 }
 
-void BMS_CAN_RX_Param2(void) {
-    CAN_DATA *rxd = &(CB.rx.data);
-    uint8_t index = BMS.GetIndex(CB.rx.header.ExtId & BMS_ID_MASK);
+void BMS_CAN_RX_Param2(can_rx_t *Rx) {
+    uint8_t index = BMS.GetIndex(Rx->header.ExtId & BMS_ID_MASK);
 
     // save flag
-    BMS.d.pack[index].flag = rxd->u16[3];
+    BMS.d.pack[index].flag = Rx->data.u16[3];
 
     // save state
-    BMS.d.pack[index].state = _L(_R1(rxd->u8[7], 4), 1) | _R1(rxd->u8[7], 5);
+    BMS.d.pack[index].state = _L(_R1(Rx->data.u8[7], 4), 1) | _R1(Rx->data.u8[7], 5);
 }
 
 /* ====================================== CAN TX =================================== */
 uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
-    CAN_DATA *txd = &(CB.tx.data);
+    CAN_DATA TxData;
 
     // set message
-    txd->u8[0] = start;
-    txd->u8[0] |= _L(state, 1);
+    TxData.u8[0] = start;
+    TxData.u8[0] |= _L(state, 1);
 
     // send message
-    return CANBUS_Write(CAND_BMS_SETTING, 1);
+    return CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);
 }
 

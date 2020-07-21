@@ -30,23 +30,20 @@ typedef union {
 typedef struct {
     CAN_TxHeaderTypeDef header;
     CAN_DATA data;
-} canbus_tx_t;
+} can_tx_t;
+
 typedef struct {
     CAN_RxHeaderTypeDef header;
     CAN_DATA data;
-} canbus_rx_t;
-typedef struct {
-    canbus_tx_t tx;
-    canbus_rx_t rx;
-} canbus_t;
+} can_rx_t;
 
 /* Public functions prototype ------------------------------------------------*/
 void CANBUS_Init(void);
 uint8_t CANBUS_Filter(void);
-uint8_t CANBUS_Write(uint32_t address, uint32_t DLC);
-uint8_t CANBUS_Read(void);
-uint32_t CANBUS_ReadID(void);
-void CANBUS_TxDebugger(void);
-void CANBUS_RxDebugger(void);
+uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC);
+uint8_t CANBUS_Read(can_rx_t *Rx);
+uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef *RxHeader);
+void CANBUS_TxDebugger(can_tx_t *Tx);
+void CANBUS_RxDebugger(can_rx_t *Rx);
 
 #endif /* CANBUS_H_ */

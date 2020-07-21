@@ -7,10 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/HMI1.h"
-#include "Drivers/_canbus.h"
-
-/* External variables ---------------------------------------------------------*/
-extern canbus_t CB;
 
 /* Public variables -----------------------------------------------------------*/
 hmi1_t HMI1 = {
@@ -53,11 +49,9 @@ void HMI1_Power(uint8_t state) {
 }
 
 /* ====================================== CAN RX =================================== */
-void HMI1_CAN_RX_State(void) {
-    CAN_DATA *rxd = &(CB.rx.data);
-
+void HMI1_CAN_RX_State(can_rx_t *Rx) {
     // save state
     HMI1.d.started = 1;
     HMI1.d.tick = _GetTickMS();
-    HMI1.d.version = rxd->u16[0];
+    HMI1.d.version = Rx->data.u16[0];
 }

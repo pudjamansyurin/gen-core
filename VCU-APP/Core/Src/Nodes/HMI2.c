@@ -15,11 +15,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/HMI2.h"
 #include "Nodes/HMI1.h"
-#include "Drivers/_canbus.h"
 
 /* External variables ----------------------------------------------------------*/
 extern osThreadId_t Hmi2PowerTaskHandle;
-extern canbus_t CB;
 extern hmi1_t HMI1;
 
 /* Public variables -----------------------------------------------------------*/
@@ -101,12 +99,9 @@ void StartHmi2PowerTask(void *argument) {
 }
 
 /* ====================================== CAN RX =================================== */
-void HMI2_CAN_RX_State(void) {
-    CAN_DATA *rxd = &(CB.rx.data);
-
+void HMI2_CAN_RX_State(can_rx_t *Rx) {
     // read message
-    HMI1.d.status.mirroring = _R1(rxd->u8[0], 0);
-
+    HMI1.d.status.mirroring = _R1(Rx->data.u8[0], 0);
     // save state
     HMI2.d.started = 1;
     HMI2.d.tick = _GetTickMS();

@@ -13,7 +13,6 @@
 #include "Libs/_simcom.h"
 
 /* External variables ---------------------------------------------------------*/
-extern canbus_t CB;
 extern bms_t BMS;
 extern hmi1_t HMI1;
 extern sim_t SIM;
@@ -105,76 +104,76 @@ void VCU_CheckMainPower(void) {
 
 /* ====================================== CAN TX =================================== */
 uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
-    CAN_DATA *txd = &(CB.tx.data);
     sein_state_t sein = HBAR_SeinController(sw);
+    CAN_DATA TxData;
 
     // set message
-    txd->u8[0] = sw->list[SW_K_ABS].state;
-    txd->u8[0] |= _L(HMI1.d.status.mirroring, 1);
-    txd->u8[0] |= _L(sw->list[SW_K_LAMP].state, 2);
-    txd->u8[0] |= _L(HMI1.d.status.warning, 3);
-    txd->u8[0] |= _L(HMI1.d.status.overheat, 4);
-    txd->u8[0] |= _L(HMI1.d.status.finger, 5);
-    txd->u8[0] |= _L(HMI1.d.status.keyless, 6);
-    txd->u8[0] |= _L(HMI1.d.status.daylight, 7);
+    TxData.u8[0] = sw->list[SW_K_ABS].state;
+    TxData.u8[0] |= _L(HMI1.d.status.mirroring, 1);
+    TxData.u8[0] |= _L(sw->list[SW_K_LAMP].state, 2);
+    TxData.u8[0] |= _L(HMI1.d.status.warning, 3);
+    TxData.u8[0] |= _L(HMI1.d.status.overheat, 4);
+    TxData.u8[0] |= _L(HMI1.d.status.finger, 5);
+    TxData.u8[0] |= _L(HMI1.d.status.keyless, 6);
+    TxData.u8[0] |= _L(HMI1.d.status.daylight, 7);
 
     // sein value
-    txd->u8[1] = sein.left;
-    txd->u8[1] |= _L(sein.right, 1);
+    TxData.u8[1] = sein.left;
+    TxData.u8[1] |= _L(sein.right, 1);
 
     // mode
-    txd->u8[2] = sw->runner.mode.sub.val[SW_M_DRIVE];
-    txd->u8[2] |= _L(sw->runner.mode.sub.val[SW_M_TRIP], 2);
-    txd->u8[2] |= _L(sw->runner.mode.sub.val[SW_M_REPORT], 3);
-    txd->u8[2] |= _L(sw->runner.mode.val, 4);
-    txd->u8[2] |= _L(HBAR_ModeController(&(sw->runner)), 6);
+    TxData.u8[2] = sw->runner.mode.sub.val[SW_M_DRIVE];
+    TxData.u8[2] |= _L(sw->runner.mode.sub.val[SW_M_TRIP], 2);
+    TxData.u8[2] |= _L(sw->runner.mode.sub.val[SW_M_REPORT], 3);
+    TxData.u8[2] |= _L(sw->runner.mode.val, 4);
+    TxData.u8[2] |= _L(HBAR_ModeController(&(sw->runner)), 6);
 
     // others
-    txd->u8[3] = VCU.d.speed;
+    TxData.u8[3] = VCU.d.speed;
 
     // send message
-    return CANBUS_Write(CAND_VCU_SWITCH, 4);
+    return CANBUS_Write(CAND_VCU_SWITCH, &TxData, 4);
 }
 
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
-    CAN_DATA *txd = &(CB.tx.data);
+    CAN_DATA TxData;
 
     // set message
-    txd->u8[0] = timestamp->time.Seconds;
-    txd->u8[1] = timestamp->time.Minutes;
-    txd->u8[2] = timestamp->time.Hours;
-    txd->u8[3] = timestamp->date.Date;
-    txd->u8[4] = timestamp->date.Month;
-    txd->u8[5] = timestamp->date.Year;
-    txd->u8[6] = timestamp->date.WeekDay;
+    TxData.u8[0] = timestamp->time.Seconds;
+    TxData.u8[1] = timestamp->time.Minutes;
+    TxData.u8[2] = timestamp->time.Hours;
+    TxData.u8[3] = timestamp->date.Date;
+    TxData.u8[4] = timestamp->date.Month;
+    TxData.u8[5] = timestamp->date.Year;
+    TxData.u8[6] = timestamp->date.WeekDay;
     // HMI2 shutdown request
-    txd->u8[7] = !VCU.d.state.knob;
+    TxData.u8[7] = !VCU.d.state.knob;
 
     // send message
-    return CANBUS_Write(CAND_VCU_DATETIME, 8);
+    return CANBUS_Write(CAND_VCU_DATETIME, &TxData, 8);
 }
 
 uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
-    CAN_DATA *txd = &(CB.tx.data);
+    CAN_DATA TxData;
 
     // set message
-    txd->u8[0] = SIM.signal;
-    txd->u8[1] = BMS.d.soc;
-    txd->u8[2] = runner->mode.sub.report[SW_M_REPORT_RANGE];
-    txd->u8[3] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];
-    txd->u32[1] = VCU.d.odometer;
+    TxData.u8[0] = SIM.signal;
+    TxData.u8[1] = BMS.d.soc;
+    TxData.u8[2] = runner->mode.sub.report[SW_M_REPORT_RANGE];
+    TxData.u8[3] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];
+    TxData.u32[1] = VCU.d.odometer;
 
     // send message
-    return CANBUS_Write(CAND_VCU_SELECT_SET, 8);
+    return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 8);
 }
 
 uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip) {
-    CAN_DATA *txd = &(CB.tx.data);
+    CAN_DATA TxData;
 
     // set message
-    txd->u32[0] = trip[SW_M_TRIP_A];
-    txd->u32[1] = trip[SW_M_TRIP_B];
+    TxData.u32[0] = trip[SW_M_TRIP_A];
+    TxData.u32[1] = trip[SW_M_TRIP_B];
 
     // send message
-    return CANBUS_Write(CAND_VCU_TRIP_MODE, 8);
+    return CANBUS_Write(CAND_VCU_TRIP_MODE, &TxData, 8);
 }

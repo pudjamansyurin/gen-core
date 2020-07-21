@@ -2268,6 +2268,7 @@ void StartSwitchTask(void *argument)
 void StartCanRxTask(void *argument)
 {
     /* USER CODE BEGIN StartCanRxTask */
+    can_rx_t Rx;
     uint32_t notif;
 
     // wait until ManagerTask done
@@ -2278,28 +2279,30 @@ void StartCanRxTask(void *argument)
         // wait forever
         notif = osThreadFlagsWait(EVT_CAN_RX_IT, osFlagsWaitAny, osWaitForever);
         if (_RTOS_ValidThreadFlag(notif)) {
-            // handle STD message
-            switch (CANBUS_ReadID()) {
-                case CAND_HMI1 :
-                    HMI1.can.r.State();
-                    break;
-                case CAND_HMI2 :
-                    HMI2.can.r.State();
-                    break;
-                default:
-                    // BMS - Extendend id
-                    switch (_R(CANBUS_ReadID(), 20)) {
-                        case CAND_BMS_PARAM_1 :
-                            BMS.can.r.Param1();
-                            break;
-                        case CAND_BMS_PARAM_2 :
-                            BMS.can.r.Param2();
-                            break;
-                        default:
-                            break;
-                    }
+            if (CANBUS_Read(&Rx)) {
+                // handle STD message
+                switch (CANBUS_ReadID(&(Rx.header))) {
+                    case CAND_HMI1 :
+                        HMI1.can.r.State(&Rx);
+                        break;
+                    case CAND_HMI2 :
+                        HMI2.can.r.State(&Rx);
+                        break;
+                    default:
+                        // BMS - Extendend id
+                        switch (_R(CANBUS_ReadID(&(Rx.header)), 20)) {
+                            case CAND_BMS_PARAM_1 :
+                                BMS.can.r.Param1(&Rx);
+                                break;
+                            case CAND_BMS_PARAM_2 :
+                                BMS.can.r.Param2(&Rx);
+                                break;
+                            default:
+                                break;
+                        }
 
-                    break;
+                        break;
+                }
             }
         }
     }

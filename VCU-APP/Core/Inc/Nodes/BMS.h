@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Drivers/_canbus.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define BMS_COUNT                     (uint8_t) 2
@@ -45,8 +46,8 @@ typedef struct {
 
 typedef struct {
     struct {
-        void (*Param1)(void);
-        void (*Param2)(void);
+        void (*Param1)(can_rx_t*);
+        void (*Param2)(can_rx_t*);
     } r;
     struct {
         uint8_t (*Setting)(uint8_t, BMS_STATE);
@@ -78,8 +79,8 @@ uint8_t BMS_CheckRun(uint8_t state);
 uint8_t BMS_CheckState(BMS_STATE state);
 void BMS_MergeData(void);
 
-void BMS_CAN_RX_Param1(void);
-void BMS_CAN_RX_Param2(void);
+void BMS_CAN_RX_Param1(can_rx_t *Rx);
+void BMS_CAN_RX_Param2(can_rx_t *Rx);
 uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state);
 
 #endif /* INC_NODES_BMS_H_ */
