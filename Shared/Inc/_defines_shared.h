@@ -192,12 +192,12 @@
 
 #if (BOOTLOADER)
 // FOCAN Message Address
-#define CAND_GET_CHECKSUM            (uint32_t) 0x101
-#define CAND_DOWNLOADING             (uint32_t) 0x104
-#define CAND_PRA_DOWNLOAD            (uint32_t) 0x105
+#define CAND_SET_PROGRESS            (uint32_t) 0x101
+#define CAND_GET_CHECKSUM            (uint32_t) 0x102
+#define CAND_PRA_DOWNLOAD            (uint32_t) 0x103
+#define CAND_INIT_DOWNLOAD           (uint32_t) 0x104
+#define CAND_DOWNLOADING             (uint32_t) 0x105
 #define CAND_PASCA_DOWNLOAD          (uint32_t) 0x106
-#define CAND_INIT_DOWNLOAD           (uint32_t) 0x107
-#define CAND_SET_PROGRESS            (uint32_t) 0x10A
 #endif
 
 /* Exported typedef ----------------------------------------------------------*/
