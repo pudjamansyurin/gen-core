@@ -41,8 +41,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
         strcpy(ftp.path, "/vcu/");
     } else {
         strcpy(ftp.path, "/hmi/");
-        /* Tell HMI to enter IAP mode */
-        p = FOCAN_EnterModeIAP(type);
+        p = FOCAN_SetProgress(type, 0);
     }
 
     /* Backup if needed */

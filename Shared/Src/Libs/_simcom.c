@@ -656,7 +656,11 @@ static SIMCOM_RESULT Simcom_Ready(void) {
                 || (_GetTickMS() - tick) >= NET_BOOT_TIMEOUT) {
             break;
         }
-        _DelayMS(1);
+        _DelayMS(1000);
+
+#if (BOOTLOADER)
+        FOCAN_SetProgress(FOTA_TYPE, 0);
+#endif
     }
 
     // check

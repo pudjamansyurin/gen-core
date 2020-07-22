@@ -11,11 +11,12 @@
 /* External variables ---------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan1;
 #if (!BOOTLOADER)
-extern osThreadId_t CanRxTaskHandle;
 extern osMutexId_t CanTxMutexHandle;
 extern osMessageQueueId_t CanRxQueueHandle;
 #endif
 
+/* Exported variables ---------------------------------------------------------*/
+//can_rx_t CanRx;
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
@@ -154,8 +155,8 @@ void CANBUS_RxDebugger(can_rx_t *Rx) {
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
     can_rx_t Rx;
     // signal only when RTOS started
-    if (osKernelGetState() == osKernelRunning) {
-        if(CANBUS_Read(&Rx)){
+    if (CANBUS_Read(&Rx)) {
+        if (osKernelGetState() == osKernelRunning) {
             osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
         }
     }

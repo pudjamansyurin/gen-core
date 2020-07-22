@@ -180,7 +180,7 @@ osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
         .name = "CanTxTask",
         .priority = (osPriority_t) osPriorityHigh,
-        .stack_size = 224 * 4
+        .stack_size = 256 * 4
 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
@@ -1459,8 +1459,8 @@ void StartManagerTask(void *argument)
     //    osThreadSuspend(FingerTaskHandle);
     //    osThreadSuspend(AudioTaskHandle);
     //    osThreadSuspend(SwitchTaskHandle);
-    //    osThreadSuspend(CanRxTaskHandle);
-    //    osThreadSuspend(CanTxTaskHandle);
+//    osThreadSuspend(CanRxTaskHandle);
+//    osThreadSuspend(CanTxTaskHandle);
     //    osThreadSuspend(Hmi2PowerTaskHandle);
 
     // Release threads
@@ -1478,7 +1478,7 @@ void StartManagerTask(void *argument)
         _DummyGenerator();
 
         // Thread's Stack Monitor
-        // _RTOS_Debugger(10000);
+        // _RTOS_Debugger(1000);
 
         // Battery Monitor
         // BAT_Debugger();

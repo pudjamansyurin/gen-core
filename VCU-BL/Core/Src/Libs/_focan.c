@@ -18,25 +18,6 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData, uint32_t t
 static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FOCAN_EnterModeIAP(IAP_TYPE type) {
-    uint32_t address = CAND_ENTER_IAP;
-    CAN_DATA TxData;
-    CAN_DATA RxData;
-    uint8_t p;
-
-    // set message
-    TxData.u32[0] = type;
-    // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, &TxData, 4, &RxData, 5000, (20000 / 5000));
-
-    // process response
-    if (p) {
-        p = (RxData.u32[0] == type);
-    }
-
-    return p;
-}
-
 uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
     uint32_t address = CAND_GET_CHECKSUM;
     CAN_DATA RxData;
@@ -78,7 +59,7 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
     // set message
     TxData.u32[0] = *data;
     // send message
-    p = FOCAN_WriteAndWaitResponse(address, &TxData, 4, 5000, (15000 / 5000));
+    p = FOCAN_WriteAndWaitResponse(address, &TxData, 4, 2500, (15000 / 2500));
 
     return p;
 }
