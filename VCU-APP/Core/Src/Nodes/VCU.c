@@ -120,13 +120,14 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
     // sein value
     TxData.u8[1] = sein.left;
     TxData.u8[1] |= _L(sein.right, 1);
+    TxData.u8[1] |= _L(sw->runner.reverse, 2);
 
     // mode
     TxData.u8[2] = sw->runner.mode.sub.val[SW_M_DRIVE];
     TxData.u8[2] |= _L(sw->runner.mode.sub.val[SW_M_TRIP], 2);
-    TxData.u8[2] |= _L(sw->runner.mode.sub.val[SW_M_REPORT], 3);
-    TxData.u8[2] |= _L(sw->runner.mode.val, 4);
-    TxData.u8[2] |= _L(HBAR_ModeController(&(sw->runner)), 6);
+    TxData.u8[2] |= _L(sw->runner.mode.sub.val[SW_M_REPORT], 4);
+    TxData.u8[2] |= _L(sw->runner.mode.sel, 5);
+    TxData.u8[2] |= _L(HBAR_ModeController(&(sw->runner)), 7);
 
     // others
     TxData.u8[3] = VCU.d.speed;
@@ -160,7 +161,7 @@ uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
     TxData.u8[0] = SIM.signal;
     TxData.u8[1] = BMS.d.soc;
     TxData.u8[2] = runner->mode.sub.report[SW_M_REPORT_RANGE];
-    TxData.u8[3] = runner->mode.sub.report[SW_M_REPORT_EFFICIENCY];
+    TxData.u8[3] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
     TxData.u32[1] = VCU.d.odometer;
 
     // send message

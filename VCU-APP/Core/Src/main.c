@@ -1417,7 +1417,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
             KLESS_IrqHandler();
         }
         // handle Switches EXTI
-        for (uint8_t i = 0; i < SW_TOTAL_LIST; i++) {
+        for (uint8_t i = 0; i < SW_K_TOTAL; i++) {
             if (GPIO_Pin == SW.list[i].pin) {
                 osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_TRIGGERED);
 
@@ -2215,29 +2215,22 @@ void StartSwitchTask(void *argument)
         // wait forever
         notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 500);
         if (_RTOS_ValidThreadFlag(notif)) {
+            osThreadFlagsClear(EVT_MASK);
             // handle bounce effect
             _DelayMS(50);
-            osThreadFlagsClear(EVT_MASK);
 
             // Handle switch EXTI interrupt
             if (notif & EVT_SWITCH_TRIGGERED) {
                 // Read all (to handle multiple switch change at the same time)
                 HBAR_ReadStates();
-
                 // handle select & set: timer
                 HBAR_TimerSelectSet();
-
                 // Only handle Select & Set when in non-reverse
                 if (!SW.list[SW_K_REVERSE].state) {
-                    // restore previous Mode
-                    HBAR_RestoreMode();
-
                     // handle Select & Set
                     if (SW.list[SW_K_SELECT].state) {
-                        // handle select key
                         HBAR_RunSelect();
                     } else if (SW.list[SW_K_SET].state) {
-                        // handle set key
                         HBAR_RunSet();
                     }
                 }

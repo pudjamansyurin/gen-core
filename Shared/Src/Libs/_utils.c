@@ -161,7 +161,7 @@ uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
 
 void _DummyGenerator(void) {
     uint8_t *pRange = &(SW.runner.mode.sub.report[SW_M_REPORT_RANGE]);
-    uint8_t *pEfficiency = &(SW.runner.mode.sub.report[SW_M_REPORT_EFFICIENCY]);
+    uint8_t *pAverage = &(SW.runner.mode.sub.report[SW_M_REPORT_AVERAGE]);
 
     // Dummy Report Range
     if (!(*pRange)) {
@@ -170,11 +170,11 @@ void _DummyGenerator(void) {
         (*pRange)--;
     }
 
-    // Dummy Report Efficiency
-    if (*pEfficiency >= 255) {
-        *pEfficiency = 0;
+    // Dummy Report Average (Efficiency)
+    if (*pAverage >= 255) {
+        *pAverage = 0;
     } else {
-        (*pEfficiency)++;
+        (*pAverage)++;
     }
 }
 

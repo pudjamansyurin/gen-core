@@ -65,7 +65,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
     report->data.req.vcu.events_group = VCU.d.events;
     report->data.req.vcu.rtc.log = RTC_Read();
     // BMS data
-    for (uint8_t i = 0; i < BMS_COUNT; i++) {
+    for (uint8_t i = 0; i < BMS_COUNT ; i++) {
         report->data.req.bms.pack[i].id = BMS.d.pack[i].id;
         report->data.req.bms.pack[i].voltage = BMS.d.pack[i].voltage * 100;
         report->data.req.bms.pack[i].current = (BMS.d.pack[i].current + 50) * 100;
@@ -86,13 +86,13 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
         report->data.opt.vcu.trip.a = pSub->trip[SW_M_TRIP_A];
         report->data.opt.vcu.trip.b = pSub->trip[SW_M_TRIP_B];
         report->data.opt.vcu.report.range = pSub->report[SW_M_REPORT_RANGE];
-        report->data.opt.vcu.report.efficiency = pSub->report[SW_M_REPORT_EFFICIENCY];
+        report->data.opt.vcu.report.efficiency = pSub->report[SW_M_REPORT_AVERAGE];
 
         report->data.opt.vcu.signal = SIM.signal;
         report->data.opt.vcu.backup_voltage = BACKUP_VOLTAGE / 18;
 
         // BMS data
-        for (uint8_t i = 0; i < BMS_COUNT; i++) {
+        for (uint8_t i = 0; i < BMS_COUNT ; i++) {
             report->data.opt.bms.pack[i].soc = BMS.d.pack[i].soc;
             report->data.opt.bms.pack[i].temperature = (BMS.d.pack[i].temperature + 40) * 10;
         }
