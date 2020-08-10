@@ -39,9 +39,9 @@ typedef enum {
 } SW_MODE_DRIVE;
 
 typedef enum {
-    SW_M_TRIP_A = 0,
+    SW_M_TRIP_ODO = 0,
+    SW_M_TRIP_A,
     SW_M_TRIP_B,
-    SW_M_TRIP_ODO,
     SW_M_TRIP_MAX = 2
 } SW_MODE_TRIP;
 

@@ -75,7 +75,7 @@ sw_t SW = {
                         .sel = SW_M_DRIVE,
                         .sub = {
                                 .val = {
-                                        SW_M_DRIVE_ECONOMY,
+                                        SW_M_DRIVE_STANDARD,
                                         SW_M_TRIP_ODO,
                                         SW_M_REPORT_RANGE
                                 },
