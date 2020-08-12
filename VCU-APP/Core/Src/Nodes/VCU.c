@@ -104,7 +104,7 @@ void VCU_CheckMainPower(void) {
 
 /* ====================================== CAN TX =================================== */
 uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
-    sein_state_t sein = HBAR_SeinController(sw);
+    sein_t sein = HBAR_SeinController(sw);
     CAN_DATA TxData;
 
     // set message

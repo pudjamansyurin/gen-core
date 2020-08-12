@@ -185,8 +185,8 @@ void HBAR_AccumulateSubTrip(void) {
     }
 }
 
-sein_state_t HBAR_SeinController(sw_t *sw) {
-    static sein_state_t sein = { 0, 0 };
+sein_t HBAR_SeinController(sw_t *sw) {
+    static sein_t sein = { 0, 0 };
     static TickType_t tickSein;
 
     if ((_GetTickMS() - tickSein) >= 500) {

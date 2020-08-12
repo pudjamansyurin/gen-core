@@ -53,11 +53,6 @@ typedef enum {
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
-    uint8_t left;
-    uint8_t right;
-} sein_state_t;
-
-typedef struct {
     uint8_t max[SW_M_MAX + 1];
     uint8_t val[SW_M_MAX + 1];
     uint8_t report[SW_M_REPORT_MAX + 1];
@@ -89,6 +84,11 @@ typedef struct {
     sw_runner_t runner;
 } sw_t;
 
+typedef struct {
+    uint8_t left;
+    uint8_t right;
+} sein_t;
+
 /* Public functions prototype ------------------------------------------------*/
 void HBAR_ReadStates(void);
 void HBAR_CheckReverse(void);
@@ -97,7 +97,7 @@ void HBAR_RunSelect(void);
 void HBAR_RunSet(void);
 void HBAR_AccumulateSubTrip(void);
 
-sein_state_t HBAR_SeinController(sw_t *sw);
+sein_t HBAR_SeinController(sw_t *sw);
 uint8_t HBAR_ModeController(sw_runner_t *runner);
 
 #endif /* LIBS__HANDLEBAR_H_ */
