@@ -12,6 +12,8 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
+#define MODE_TIME_GUARD              (uint16_t) 3000
+
 // EXTI list
 #define SW_K_TOTAL                              7
 #define SW_K_SELECT                             0

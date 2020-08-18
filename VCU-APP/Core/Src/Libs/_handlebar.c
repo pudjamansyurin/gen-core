@@ -233,7 +233,7 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
         }
 
         // stop listening
-        if ((_GetTickMS() - tickPeriod) >= 5000 || runner->reverse) {
+        if ((_GetTickMS() - tickPeriod) >= MODE_TIME_GUARD || runner->reverse) {
             runner->listening = 0;
             iHide = 0;
             iName = -1;
