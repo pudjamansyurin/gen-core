@@ -630,10 +630,13 @@ NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
     nrf_write_tx_payload(dev, data);
     ce_set(dev);
 
+    uint32_t tick = _GetTickMS();
     while (dev->tx_busy == 1) {
+        if (_GetTickMS() - tick > 500) {
+            break;
+        }
     } // wait for end of transmition
 
-    _DelayMS(100);
     ce_reset(dev);
     nrf_rx_tx_control(dev, NRF_STATE_RX);
     ce_set(dev);
@@ -649,7 +652,11 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
     nrf_write_tx_payload_noack(dev, data);
     ce_set(dev);
 
+    uint32_t tick = _GetTickMS();
     while (dev->tx_busy == 1) {
+        if (_GetTickMS() - tick > 500) {
+            break;
+        }
     } // wait for end of transmition
 
     _DelayMS(100);

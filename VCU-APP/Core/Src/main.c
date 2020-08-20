@@ -17,7 +17,6 @@
  ******************************************************************************
  */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
@@ -180,7 +179,7 @@ osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
         .name = "CanTxTask",
         .priority = (osPriority_t) osPriorityHigh,
-        .stack_size = 256 * 4
+        .stack_size = 288 * 4
 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
@@ -517,7 +516,8 @@ void SystemClock_Config(void)
      */
     __HAL_RCC_PWR_CLK_ENABLE();
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-    /** Initializes the CPU, AHB and APB busses clocks
+    /** Initializes the RCC Oscillators according to the specified parameters
+     * in the RCC_OscInitTypeDef structure.
      */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
             | RCC_OSCILLATORTYPE_LSE;
@@ -535,7 +535,7 @@ void SystemClock_Config(void)
             {
         Error_Handler();
     }
-    /** Initializes the CPU, AHB and APB busses clocks
+    /** Initializes the CPU, AHB and APB buses clocks
      */
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
             | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
@@ -1459,8 +1459,8 @@ void StartManagerTask(void *argument)
     //    osThreadSuspend(FingerTaskHandle);
     //    osThreadSuspend(AudioTaskHandle);
     //    osThreadSuspend(SwitchTaskHandle);
-//    osThreadSuspend(CanRxTaskHandle);
-//    osThreadSuspend(CanTxTaskHandle);
+    //    osThreadSuspend(CanRxTaskHandle);
+    //    osThreadSuspend(CanTxTaskHandle);
     //    osThreadSuspend(Hmi2PowerTaskHandle);
 
     // Release threads
@@ -1833,13 +1833,12 @@ void StartCommandTask(void *argument)
                         case CMD_KEYLESS_PAIRING :
                             osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
+                            response.data.code == RESPONSE_STATUS_ERROR;
                             // wait response until timeout
-                            if (response.data.code == RESPONSE_STATUS_OK) {
-                                notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT);
-                                if (_RTOS_ValidThreadFlag(notif)) {
-                                    if (notif & EVT_COMMAND_ERROR) {
-                                        response.data.code = RESPONSE_STATUS_ERROR;
-                                    }
+                            notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT);
+                            if (_RTOS_ValidThreadFlag(notif)) {
+                                if (notif & EVT_COMMAND_OK) {
+                                    response.data.code = RESPONSE_STATUS_OK;
                                 }
                             }
 
@@ -1968,6 +1967,7 @@ void StartKeylessTask(void *argument)
     /* USER CODE BEGIN StartKeylessTask */
     uint32_t notif;
     KLESS_CMD command;
+    uint32_t tick_pairing = 0;
 
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -1998,6 +1998,14 @@ void StartKeylessTask(void *argument)
                     switch (command) {
                         case KLESS_CMD_PING:
                             LOG_StrLn("NRF:Command = PING");
+
+                            // response pairing command
+                            if (tick_pairing > 0) {
+                                if (_GetTickMS() - tick_pairing < 5000) {
+                                    osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+                                }
+                                tick_pairing = 0;
+                            }
 
                             // update heart-beat
                             VCU.d.tick.keyless = _GetTickMS();
@@ -2047,11 +2055,8 @@ void StartKeylessTask(void *argument)
 
             // handle Pairing
             if (notif & EVT_KEYLESS_PAIRING) {
-                if (KLESS_Pairing()) {
-                    osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
-                } else {
-                    osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_ERROR);
-                }
+                KLESS_Pairing();
+                tick_pairing = _GetTickMS();
             }
         }
 

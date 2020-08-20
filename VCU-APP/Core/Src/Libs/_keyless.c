@@ -55,8 +55,8 @@ void KLESS_Init(void) {
     nrf24l01_config *config = &(KLESS.config);
 
     // use VCU_ID as address
-    memcpy(KLESS.tx.address, &(VCU.d.unit_id), sizeof(VCU.d.unit_id));
-    memcpy(KLESS.rx.address, &(VCU.d.unit_id), sizeof(VCU.d.unit_id));
+    memcpy(KLESS.tx.address, &(VCU.d.unit_id), 4);
+    memcpy(KLESS.rx.address, &(VCU.d.unit_id), 4);
 
     // set configuration
     config->tx_address = KLESS.tx.address;
@@ -84,7 +84,7 @@ void KLESS_Init(void) {
 }
 
 uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
-    uint8_t valid, payload_dec[NRF_DATA_LENGTH];
+    uint8_t valid, payload_dec[NRF_DATA_LENGTH ];
 
     lock();
     // Read Payload
@@ -149,11 +149,11 @@ uint8_t KLESS_Pairing(void) {
         memcpy(&payload[i * 4], &swapped, sizeof(swapped));
     }
     // Insert VCU_ID
-    memcpy(&payload[NRF_DATA_LENGTH], KLESS.tx.address, NRF_ADDR_LENGTH);
+    memcpy(&payload[NRF_DATA_LENGTH ], KLESS.tx.address, NRF_ADDR_LENGTH);
 
     // Set Address (pairing mode)
-    memset(KLESS.tx.address, 0x00, sizeof(VCU.d.unit_id));
-    memset(KLESS.rx.address, 0x00, sizeof(VCU.d.unit_id));
+    memset(KLESS.tx.address, 0x00, 4);
+    memset(KLESS.rx.address, 0x00, 4);
 
     // Set NRF Config (pairing mode)
     ce_reset(&nrf);
@@ -163,12 +163,13 @@ uint8_t KLESS_Pairing(void) {
     ce_set(&nrf);
 
     // Send Payload
-    p = nrf_send_packet(&nrf, payload);
+//    p = nrf_send_packet(&nrf, payload);
+    p = nrf_send_packet_noack(&nrf, payload);
     _DelayMS(100);
 
     // Set Address (normal mode)
-    memcpy(KLESS.tx.address, &(VCU.d.unit_id), sizeof(VCU.d.unit_id));
-    memcpy(KLESS.rx.address, &(VCU.d.unit_id), sizeof(VCU.d.unit_id));
+    memcpy(KLESS.tx.address, &(VCU.d.unit_id), 4);
+    memcpy(KLESS.rx.address, &(VCU.d.unit_id), 4);
     // Set Aes Key (new)
     EEPROM_AesKey(EE_CMD_W, aes);
 

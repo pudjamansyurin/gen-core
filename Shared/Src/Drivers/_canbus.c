@@ -86,7 +86,7 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 
     // debugging
     if (status == HAL_OK) {
-        //        CANBUS_TxDebugger(&TxHeader, TxData);
+//        CANBUS_TxDebugger(&TxHeader, TxData);
     }
 
     unlock();
@@ -106,7 +106,7 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
         status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
         // debugging
         if (status == HAL_OK) {
-            //            CANBUS_RxDebugger(Rx);
+//            CANBUS_RxDebugger(Rx);
         }
     }
     unlock();
