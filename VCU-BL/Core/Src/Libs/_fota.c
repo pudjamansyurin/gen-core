@@ -24,12 +24,13 @@ extern sim_t SIM;
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
     SIMCOM_RESULT p = SIM_RESULT_OK;
     uint32_t cksumOld, cksumNew = 0, len = 0;
+    at_ftpget_t ftpget;
     at_ftp_t ftp = {
             .id = 1,
             .server = NET_FTP_SERVER,
             .username = NET_FTP_USERNAME,
             .password = NET_FTP_PASSWORD,
-            .version = "APP",
+            .file = "CRC_APP.bin",
             .size = 0,
     };
 
@@ -83,9 +84,24 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
         }
     }
 
+    // Get file size
+    if (p > 0) {
+        p = AT_FtpFileSize(&ftp);
+    }
+
+    // Open FTP Session
+    if (p > 0) {
+        ftpget.mode = FTPGET_OPEN;
+        p = AT_FtpDownload(&ftpget);
+
+        if (p > 0) {
+            p = ftpget.response == FTP_READY;
+        }
+    }
+
     // Get checksum of new firmware
     if (p > 0) {
-        p = FOTA_DownloadChecksum(&ftp, &cksumNew);
+        p = FOTA_DownloadChecksum(&ftp, &ftpget, &cksumNew);
 
         // Only download when image is different
         if (p > 0) {
@@ -96,12 +112,16 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
                 *(uint32_t*) IAP_RESPONSE_ADDR = IAP_FIRMWARE_SAME;
             }
         }
+
+        // Decrease the total size
+        if (p > 0) {
+            ftp.size -= 4;
+        }
     }
 
     // Download & Program new firmware
     if (p > 0) {
-
-        p = FOTA_DownloadFirmware(&ftp, &len, type);
+        p = FOTA_DownloadFirmware(&ftp, &ftpget, &len, type);
 
         // Handle error
         if (p <= 0) {
@@ -141,79 +161,65 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     return (p > 0);
 }
 
-uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, uint32_t *checksum) {
+uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t *checksum) {
     SIMCOM_RESULT p;
-    AT_FTP_STATE state;
-    at_ftpget_t setFTPGET;
+//    AT_FTP_STATE state;
 
-    // FTP Set file name
-    sprintf(setFTP->file, "%s.crc", setFTP->version);
-    p = AT_FtpSetFile(setFTP->file);
+// FTP Set file name
+//    sprintf(setFTP->file, "%s.crc", setFTP->version);
+//    p = AT_FtpSetFile(setFTP->file);
 
-    // Open FTP Session
+// Read FTP File
+    // Initiate Download
+    setFTPGET->mode = FTPGET_READ;
+    setFTPGET->reqlength = 4;
+    p = AT_FtpDownload(setFTPGET);
+
     if (p > 0) {
-        setFTPGET.mode = FTPGET_OPEN;
-        p = AT_FtpDownload(&setFTPGET);
+//        crc = _ByteSwap32((uint32_t) *(setFTPGET->ptr));
+        // Copy to Buffer
+        memcpy(checksum, setFTPGET->ptr, sizeof(uint32_t));
+
+        // Indicator
+        LOG_Str("FOTA:ChecksumOrigin = ");
+        LOG_Hex32(*checksum);
+        LOG_Enter();
     }
 
-    // Read FTP File
-    if (p > 0 && setFTPGET.response == FTP_READY) {
-        // Initiate Download
-        setFTPGET.mode = FTPGET_READ;
-        setFTPGET.reqlength = 8;
-        p = AT_FtpDownload(&setFTPGET);
-
-        if (p > 0) {
-            // Copy to Buffer
-            *checksum = strtoul(setFTPGET.ptr, (char**) NULL, 16);
-
-            // Indicator
-            LOG_Str("FOTA:ChecksumOrigin = ");
-            LOG_Hex32(*checksum);
-            LOG_Enter();
-        }
-    }
-
-    // Check state
-    AT_FtpCurrentState(&state);
-    if (state == FTP_STATE_ESTABLISHED) {
-        // Close session
-        Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
-    }
+//    // Check state
+//    AT_FtpCurrentState(&state);
+//    if (state == FTP_STATE_ESTABLISHED) {
+//        // Close session
+//        Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
+//    }
 
     return (p == SIM_RESULT_OK);
 }
 
-uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len, IAP_TYPE type) {
-    SIMCOM_RESULT p;
+uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t *len, IAP_TYPE type) {
+    SIMCOM_RESULT p = SIM_RESULT_OK;
     uint32_t timer;
     uint8_t percent;
     AT_FTP_STATE state;
-    at_ftpget_t setFTPGET;
 
-    // FTP Set file name
-    sprintf(setFTP->file, "%s.bin", setFTP->version);
-    p = AT_FtpSetFile(setFTP->file);
+//    // FTP Set file name
+//    sprintf(setFTP->file, "%s.bin", setFTP->version);
+//    p = AT_FtpSetFile(setFTP->file);
 
-    // Get file size
-    if (p > 0) {
-        p = AT_FtpFileSize(setFTP);
+//// Open FTP Session
+//    if (p > 0 && setFTP->size) {
+//        setFTPGET->mode = FTPGET_OPEN;
+//        p = AT_FtpDownload(&setFTPGET);
+//    }
+
+// Backup and prepare the area
+//    if (p > 0) {
+    if (type == IAP_VCU) {
+        FLASHER_BackupApp();
+    } else {
+        p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size));
     }
-
-    // Open FTP Session
-    if (p > 0 && setFTP->size) {
-        setFTPGET.mode = FTPGET_OPEN;
-        p = AT_FtpDownload(&setFTPGET);
-    }
-
-    // Backup and prepare the area
-    if (p > 0 && setFTPGET.response == FTP_READY) {
-        if (type == IAP_VCU) {
-            FLASHER_BackupApp();
-        } else {
-            p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size));
-        }
-    }
+//    }
 
     // Read FTP File
     if (p > 0) {
@@ -223,18 +229,18 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len, IAP_TYPE type) {
         SIM.downloading = 1;
 
         // Copy chunk by chunk
-        setFTPGET.mode = FTPGET_READ;
-        setFTPGET.reqlength = 256 * 5;
+        setFTPGET->mode = FTPGET_READ;
+        setFTPGET->reqlength = 256 * 5;
         do {
             // Initiate Download
-            p = AT_FtpDownload(&setFTPGET);
+            p = AT_FtpDownload(setFTPGET);
 
             // Copy buffer to flash
-            if (p > 0 && setFTPGET.cnflength) {
+            if (p > 0 && setFTPGET->cnflength) {
                 if (type == IAP_VCU) {
-                    p = FLASHER_WriteAppArea((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len);
+                    p = FLASHER_WriteAppArea((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len);
                 } else {
-                    p = FOCAN_DownloadFlash((uint8_t*) setFTPGET.ptr, setFTPGET.cnflength, *len, setFTP->size);
+                    p = FOCAN_DownloadFlash((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len, setFTP->size);
                 }
             } else {
                 // failure
@@ -244,7 +250,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len, IAP_TYPE type) {
             // Check after flashing
             if (p > 0) {
                 // Update pointer position
-                *len += setFTPGET.cnflength;
+                *len += setFTPGET->cnflength;
 
                 // Indicator
                 percent = (*len * 100 / setFTP->size);

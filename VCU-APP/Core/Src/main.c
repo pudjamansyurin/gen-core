@@ -1833,7 +1833,7 @@ void StartCommandTask(void *argument)
                         case CMD_KEYLESS_PAIRING :
                             osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
-                            response.data.code == RESPONSE_STATUS_ERROR;
+                            response.data.code = RESPONSE_STATUS_ERROR;
                             // wait response until timeout
                             notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT);
                             if (_RTOS_ValidThreadFlag(notif)) {

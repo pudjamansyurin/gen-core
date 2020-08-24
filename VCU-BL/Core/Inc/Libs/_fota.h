@@ -14,8 +14,8 @@
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type);
-uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, uint32_t *checksum);
-uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, uint32_t *len, IAP_TYPE type);
+uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t *checksum);
+uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t *len, IAP_TYPE type);
 uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address);
 uint8_t FOTA_ValidImage(uint32_t address);
 void FOTA_JumpToApplication(void);

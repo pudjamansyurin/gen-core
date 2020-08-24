@@ -441,9 +441,9 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
     if (p > 0) {
         p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
     }
-//    if (p > 0) {
-//        p = AT_FtpSetFile(param->file);
-//    }
+    if (p > 0) {
+        p = AT_FtpSetFile(param->file);
+    }
 
     Simcom_Unlock();
     return p;
@@ -460,7 +460,7 @@ SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
 
     Simcom_Lock();
     // Read
-    p = AT_CmdRead("AT+FTPSIZE\r", 20000, "+FTPSIZE: ", &str);
+    p = AT_CmdRead("AT+FTPSIZE\r", 60000, "+FTPSIZE: ", &str);
     if (p > 0) {
         // parsing
         AT_ParseNumber(&str[len], &cnt);
@@ -491,7 +491,7 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
         sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
     }
 
-    p = AT_CmdRead(cmd, 20000, "+FTPGET: ", &str);
+    p = AT_CmdRead(cmd, 60000, "+FTPGET: ", &str);
 
     if (p > 0) {
         // parsing
@@ -608,7 +608,7 @@ static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *strin
         if (mode == ATW) {
             if (strcmp(tmp, string) != 0) {
                 sprintf(cmd, "AT+%s=\"%s\"\r", command, string);
-                p = AT_CmdWrite(cmd, 500, NULL);
+                p = AT_CmdWrite(cmd, 1000, NULL);
             }
         } else {
             memcpy(string, tmp, size);
