@@ -163,20 +163,13 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
 uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t *checksum) {
     SIMCOM_RESULT p;
-//    AT_FTP_STATE state;
 
-// FTP Set file name
-//    sprintf(setFTP->file, "%s.crc", setFTP->version);
-//    p = AT_FtpSetFile(setFTP->file);
-
-// Read FTP File
     // Initiate Download
     setFTPGET->mode = FTPGET_READ;
     setFTPGET->reqlength = 4;
     p = AT_FtpDownload(setFTPGET);
 
     if (p > 0) {
-//        crc = _ByteSwap32((uint32_t) *(setFTPGET->ptr));
         // Copy to Buffer
         memcpy(checksum, setFTPGET->ptr, sizeof(uint32_t));
 
@@ -185,13 +178,6 @@ uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
         LOG_Hex32(*checksum);
         LOG_Enter();
     }
-
-//    // Check state
-//    AT_FtpCurrentState(&state);
-//    if (state == FTP_STATE_ESTABLISHED) {
-//        // Close session
-//        Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
-//    }
 
     return (p == SIM_RESULT_OK);
 }
@@ -202,24 +188,12 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
     uint8_t percent;
     AT_FTP_STATE state;
 
-//    // FTP Set file name
-//    sprintf(setFTP->file, "%s.bin", setFTP->version);
-//    p = AT_FtpSetFile(setFTP->file);
-
-//// Open FTP Session
-//    if (p > 0 && setFTP->size) {
-//        setFTPGET->mode = FTPGET_OPEN;
-//        p = AT_FtpDownload(&setFTPGET);
-//    }
-
 // Backup and prepare the area
-//    if (p > 0) {
     if (type == IAP_VCU) {
         FLASHER_BackupApp();
     } else {
         p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size));
     }
-//    }
 
     // Read FTP File
     if (p > 0) {

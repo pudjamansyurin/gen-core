@@ -1694,8 +1694,6 @@ void StartCommandTask(void *argument)
     // Handle Post-FOTA
     FW_PostFota(&response);
 
-    // Handle Post-FOCAN
-
     /* Infinite loop */
     for (;;) {
         // get command in queue

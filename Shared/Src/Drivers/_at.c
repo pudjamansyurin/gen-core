@@ -575,7 +575,7 @@ SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
             // open or close
             if (tmp.status != param->status) {
                 sprintf(cmd, "AT+SAPBR=%d,1\r", param->cmd_type);
-                p = AT_CmdWrite(cmd, 10000, NULL);
+                p = AT_CmdWrite(cmd, 60000, NULL);
             }
         } else {
             *param = tmp;

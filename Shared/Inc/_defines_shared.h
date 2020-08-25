@@ -62,7 +62,7 @@
 #define VCU_BUILD_YEAR               (uint8_t)  20
 #define VCU_UNITID                   (uint32_t) 354313
 
-#define FOTA_MIN_VOLTAGE             (uint16_t) 3600
+#define FOTA_MIN_VOLTAGE             (uint16_t) 3900
 
 #define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
 #define NET_TCP_PORT                 (uint16_t) 46606

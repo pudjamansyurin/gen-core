@@ -24,7 +24,7 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
     uint8_t p;
 
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, NULL, 0, &RxData, 2500, (15000 / 2500));
+    p = FOCAN_WriteAndWaitSqueezed(address, NULL, 0, &RxData, 5000, (20000 / 5000));
 
     // process response
     if (p) {
@@ -59,7 +59,7 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
     // set message
     TxData.u32[0] = *data;
     // send message
-    p = FOCAN_WriteAndWaitResponse(address, &TxData, 4, 2500, (15000 / 2500));
+    p = FOCAN_WriteAndWaitResponse(address, &TxData, 4, 10000, (30000 / 10000));
 
     return p;
 }
@@ -81,7 +81,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
         if (offset) {
             p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, &TxData, 6, 100, (20000 / 100));
         } else {
-            p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, &TxData, 6, 2500, (15000 / 2500));
+            p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, &TxData, 6, 2500, (20000 / 2500));
         }
 
         // flash

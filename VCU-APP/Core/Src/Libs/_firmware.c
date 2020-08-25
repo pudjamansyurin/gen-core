@@ -22,7 +22,11 @@ extern osMessageQueueId_t ResponseQueueHandle;
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
     uint16_t version = VCU_VERSION;
 
-    if (BACKUP_VOLTAGE > FOTA_MIN_VOLTAGE) {
+    if (BACKUP_VOLTAGE < FOTA_MIN_VOLTAGE) {
+        /* Battery is low */
+        sprintf(message, "Battery %u mV (< %u mV)",
+                BACKUP_VOLTAGE, FOTA_MIN_VOLTAGE - BACKUP_VOLTAGE);
+    } else {
         if (type == IAP_HMI) {
             if (HMI1.d.version == 0) {
                 /* HMI device not connected */
@@ -43,11 +47,6 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
 
         /* Reset */
         HAL_NVIC_SystemReset();
-
-    } else {
-        /* Battery is low */
-        sprintf(message, "Battery %u mV (< %u mV)",
-                BACKUP_VOLTAGE, FOTA_MIN_VOLTAGE);
     }
     /* Never reached if FOTA executed */
     return 0;
@@ -76,7 +75,7 @@ void FW_PostFota(response_t *response) {
         // check fota response
         switch (*(uint32_t*) IAP_RESPONSE_ADDR) {
             case IAP_SIMCOM_TIMEOUT:
-                sprintf(response->data.message, "%s Simcom Timeout", node);
+                sprintf(response->data.message, "%s Internet Timeout", node);
                 break;
             case IAP_DOWNLOAD_ERROR:
                 sprintf(response->data.message, "%s Download Error", node);
@@ -94,13 +93,17 @@ void FW_PostFota(response_t *response) {
                 sprintf(response->data.message, "%s DFU Error", node);
                 break;
             case IAP_DFU_SUCCESS:
-                sprintf(response->data.message,
-                        "%s Success v%d.%d (> v%d.%d)",
-                        node,
-                        _R8(versionOld, 8),
-                        _R8(versionOld, 0),
-                        _R8(versionNew, 8),
-                        _R8(versionNew, 0));
+                sprintf(response->data.message, "%s Success", node);
+
+                if (versionOld != versionNew) {
+                    sprintf(response->data.message,
+                            "%s v%d.%d (> v%d.%d)",
+                            response->data.message,
+                            _R8(versionOld, 8),
+                            _R8(versionOld, 0),
+                            _R8(versionNew, 8),
+                            _R8(versionNew, 0));
+                }
 
                 response->data.code = RESPONSE_STATUS_OK;
                 break;
