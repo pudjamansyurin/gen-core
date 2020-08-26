@@ -53,6 +53,7 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
 }
 
 void FW_PostFota(response_t *response) {
+    uint32_t tick;
     uint16_t versionNew = VCU_VERSION;
     uint16_t versionOld = FOTA_VERSION;
     char node[4] = "VCU";
@@ -61,7 +62,14 @@ void FW_PostFota(response_t *response) {
         // decide the node
         if (FOTA_TYPE == IAP_HMI) {
             sprintf(node, "HMI");
-            versionNew = HMI1.d.version;
+
+            // wait until receive CAN data
+            tick = _GetTickMS();
+            do {
+                versionNew = HMI1.d.version;
+                osDelay(100);
+            } while (!versionNew && (_GetTickMS() - tick > 5000));
+
             /* Handle empty firmware */
             if (versionOld == 0xFFFF) {
                 versionOld = 0x0000;
@@ -95,7 +103,7 @@ void FW_PostFota(response_t *response) {
             case IAP_DFU_SUCCESS:
                 sprintf(response->data.message, "%s Success", node);
 
-                if (versionOld != versionNew) {
+                if (versionNew && (versionOld != versionNew)) {
                     sprintf(response->data.message,
                             "%s v%d.%d (> v%d.%d)",
                             response->data.message,

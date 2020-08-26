@@ -36,7 +36,7 @@ void HMI1_Init(void) {
 }
 
 void HMI1_Refresh(void) {
-    if ((_GetTickMS() - HMI1.d.tick) > 1000) {
+    if ((_GetTickMS() - HMI1.d.tick) > 10000) {
         HMI1.d.started = 0;
         HMI1.d.tick = 0;
         HMI1.d.version = 0;

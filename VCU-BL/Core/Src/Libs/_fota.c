@@ -340,11 +340,13 @@ void FOTA_JumpToApplication(void) {
         ;
 }
 
-void FOTA_Reboot(void) {
+void FOTA_Reboot(IAP_TYPE type) {
     /* Clear backup area */
-    FLASHER_EraseBkpArea();
-    FOTA_ResetDFU();
+    if (type == IAP_VCU) {
+        FLASHER_EraseBkpArea();
+    }
 
+    FOTA_ResetDFU();
     HAL_NVIC_SystemReset();
 }
 

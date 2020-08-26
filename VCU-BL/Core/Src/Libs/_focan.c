@@ -24,7 +24,7 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
     uint8_t p;
 
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, NULL, 0, &RxData, 5000, (20000 / 5000));
+    p = FOCAN_WriteAndWaitSqueezed(address, NULL, 0, &RxData, 15000, 1);
 
     // process response
     if (p) {
@@ -59,7 +59,7 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
     // set message
     TxData.u32[0] = *data;
     // send message
-    p = FOCAN_WriteAndWaitResponse(address, &TxData, 4, 10000, (30000 / 10000));
+    p = FOCAN_WriteAndWaitResponse(address, &TxData, 4, 30000, 1);
 
     return p;
 }
@@ -78,11 +78,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
         TxData.u32[0] = offset;
         TxData.u16[2] = tmpBlk - 1;
         // send message
-        if (offset) {
-            p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, &TxData, 6, 100, (20000 / 100));
-        } else {
-            p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, &TxData, 6, 2500, (20000 / 2500));
-        }
+        p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, &TxData, 6, 500, 20);
 
         // flash
         if (p) {
@@ -125,7 +121,7 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
         memcpy(&TxData, ptr, tmpSubBlk);
         // send message
         address = _L(CAND_DOWNLOADING, 20) | (*tmpBlk - pendingSubBlk);
-        p = FOCAN_WriteAndWaitResponse(address, &TxData, tmpSubBlk, 5, (5000 / 5));
+        p = FOCAN_WriteAndWaitResponse(address, &TxData, tmpSubBlk, 5, (100 / 5));
 
         // update pointer
         if (p) {
