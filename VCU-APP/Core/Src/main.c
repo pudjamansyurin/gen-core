@@ -2187,7 +2187,7 @@ void StartAudioTask(void *argument)
 
         // update volume
 //        AUDIO_OUT_SetVolume(VCU.d.volume);
-        AUDIO_OUT_SetVolume(20);
+        AUDIO_OUT_SetVolume(10);
     }
     /* USER CODE END StartAudioTask */
 }

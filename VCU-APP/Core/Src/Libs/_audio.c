@@ -48,7 +48,7 @@ extern uint32_t AUDIO_SAMPLE_SIZE;
 extern uint16_t AUDIO_SAMPLE[];
 
 /* Private variables ---------------------------------------------------------*/
-static uint8_t AudioVolume = 100, AudioPlayDone = 0;
+static uint8_t AudioVolume = 100;
 static uint16_t AudioPlaySize;
 static uint32_t AudioRemSize;
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
@@ -326,13 +326,7 @@ void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params) {
  * @brief  Manages the DMA Half Transfer complete event.
  */
 __weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
-
-}
-
-/**
- * @brief  Manages the DMA full Transfer complete event.
- */
-__weak void AUDIO_OUT_TransferComplete_CallBack(void) {
+    // decrease remaining buffer
     AudioRemSize -= AudioPlaySize;
 
     // done, repeat
@@ -347,7 +341,12 @@ __weak void AUDIO_OUT_TransferComplete_CallBack(void) {
     } else {
         AudioPlaySize = AudioRemSize;
     }
+}
 
+/**
+ * @brief  Manages the DMA full Transfer complete event.
+ */
+__weak void AUDIO_OUT_TransferComplete_CallBack(void) {
     // play it
     AUDIO_OUT_ChangeBuffer((uint16_t*) (AUDIO_SAMPLE + ((AUDIO_SAMPLE_SIZE - AudioRemSize) / AUDIODATA_SIZE)), AudioPlaySize);
 }
