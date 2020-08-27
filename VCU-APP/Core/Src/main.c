@@ -359,7 +359,6 @@ int main(void)
     MX_I2C1_Init();
     MX_I2C2_Init();
     MX_I2C3_Init();
-    MX_I2S3_Init();
     MX_IWDG_Init();
     MX_RTC_Init();
     MX_SPI1_Init();
@@ -550,9 +549,9 @@ void SystemClock_Config(void)
     }
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1 | RCC_PERIPHCLK_RTC
             | RCC_PERIPHCLK_CLK48;
-    PeriphClkInitStruct.PLLI2S.PLLI2SN = 256;
+    PeriphClkInitStruct.PLLI2S.PLLI2SN = 258;
     PeriphClkInitStruct.PLLI2S.PLLI2SM = 8;
-    PeriphClkInitStruct.PLLI2S.PLLI2SR = 5;
+    PeriphClkInitStruct.PLLI2S.PLLI2SR = 3;
     PeriphClkInitStruct.PLLI2S.PLLI2SQ = 2;
     PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
     PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLQ;
@@ -1450,18 +1449,18 @@ void StartManagerTask(void *argument)
     EEPROM_Init();
 
     // Threads management:
-    //    osThreadSuspend(IotTaskHandle);
-    //    osThreadSuspend(ReporterTaskHandle);
-    //    osThreadSuspend(CommandTaskHandle);
-    //    osThreadSuspend(GpsTaskHandle);
-    //    osThreadSuspend(GyroTaskHandle);
-    //    osThreadSuspend(KeylessTaskHandle);
-    //    osThreadSuspend(FingerTaskHandle);
-    //    osThreadSuspend(AudioTaskHandle);
-    //    osThreadSuspend(SwitchTaskHandle);
-    //    osThreadSuspend(CanRxTaskHandle);
-    //    osThreadSuspend(CanTxTaskHandle);
-    //    osThreadSuspend(Hmi2PowerTaskHandle);
+    osThreadSuspend(IotTaskHandle);
+    osThreadSuspend(ReporterTaskHandle);
+    osThreadSuspend(CommandTaskHandle);
+    osThreadSuspend(GpsTaskHandle);
+    osThreadSuspend(GyroTaskHandle);
+    osThreadSuspend(KeylessTaskHandle);
+    osThreadSuspend(FingerTaskHandle);
+//        osThreadSuspend(AudioTaskHandle);
+    osThreadSuspend(SwitchTaskHandle);
+    osThreadSuspend(CanRxTaskHandle);
+    osThreadSuspend(CanTxTaskHandle);
+    osThreadSuspend(Hmi2PowerTaskHandle);
 
     // Release threads
     osEventFlagsSet(GlobalEventHandle, EVENT_READY);

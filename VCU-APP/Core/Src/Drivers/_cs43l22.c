@@ -79,19 +79,15 @@ uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume
         case OUTPUT_DEVICE_SPEAKER:
             OutputDev = 0xFA;
             break;
-
         case OUTPUT_DEVICE_HEADPHONE:
             OutputDev = 0xAF;
             break;
-
         case OUTPUT_DEVICE_BOTH:
             OutputDev = 0xAA;
             break;
-
         case OUTPUT_DEVICE_AUTO:
             OutputDev = 0x05;
             break;
-
         default:
             OutputDev = 0x05;
             break;
@@ -252,7 +248,7 @@ uint32_t cs43l22_Stop(uint16_t DeviceAddr, uint32_t CodecPdwnMode) {
     counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_MISC_CTL, 0x04);
 
     /* Power down the DAC and the speaker (PMDAC and PMSPK bits)*/
-    counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL1, 0x9F);
+    counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL1, 0x01);
 
     Is_cs43l22_Stop = 1;
     return counter;
@@ -320,8 +316,9 @@ uint32_t cs43l22_SetMute(uint16_t DeviceAddr, uint32_t Cmd) {
         // mute
         counter += CODEC_IO_Write(DeviceAddr, regA, 0x01);
         counter += CODEC_IO_Write(DeviceAddr, regB, 0x01);
-    } else /* AUDIO_MUTE_OFF Disable the Mute */
-    {
+    }
+    /* AUDIO_MUTE_OFF Disable the Mute */
+    else {
         // set to max
         counter += CODEC_IO_Write(DeviceAddr, regA, VOLUME_CONVERT(theVolume));
         counter += CODEC_IO_Write(DeviceAddr, regB, VOLUME_CONVERT(theVolume));
