@@ -68,6 +68,15 @@
   - [x] Build communication handshake between NRF & VCU
 - [x] Re-swap the CAN data between SwitchModulControl & MixedData
 - [?] Handle add new fingerprint error when use different finger for confirmation.
+- [x] Build bootloader for FOTA
+- [x] Merge bootloader & application project
+- [x] ~~Separate audio assets with FTP download~~.
+  - [x] ~~Use last 2 sector of FLASH for its space~~. 
+- [x] ~~Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte)~~ 
+- [x] ~~Lock all global variable to minimize RTOS problem.~~ 
+- [x] ~~Configure UBLOX if you order the IC separately, so build the library for it~~
+  - [x] ~~Library: https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library~~
+- [x] Simplify CANBUS library with pointer data
 - [ ] Add new fingerprint can only be executed when KNOB is ON (HMI1 ON)
 - [ ] E-Scooter Diagram:
   - [?] HMI.Primary Fingerprint indicator blink when Scanning
@@ -94,17 +103,8 @@
     - [ ] Drive mode handle MCU related parameters
     - [ ] HMI.Primary 'warning' & 'overheat' based on MCU
 - [ ] Make routine to check SIMCOM internet package
-- [x] Build bootloader for FOTA
-- [x] Merge bootloader & application project
-- [x] ~~Separate audio assets with FTP download~~.
-  - [x] ~~Use last 2 sector of FLASH for its space~~. 
-- [ ] Something wrong with I2S DMA Data Width (it should be Half-Word, not Byte) 
 - [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
-- [x] ~~Lock all global variable to minimize RTOS problem.~~ 
 - [ ] RTOS: give timeout for any osWaitForever
-- [x] ~~Configure UBLOX if you order the IC separately, so build the library for it~~
-  - [x] ~~Library: https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library~~
-- [x] Simplify CANBUS library with pointer data
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
