@@ -29,6 +29,7 @@ extern osMutexId_t SimcomRecMutexHandle;
 extern osMessageQueueId_t CommandQueueHandle;
 extern vcu_t VCU;
 #else
+extern IWDG_HandleTypeDef hiwdg;
 extern IAP_TYPE FOTA_TYPE;
 #endif
 
@@ -780,6 +781,8 @@ static void Simcom_BeforeTransmitHook(void) {
     if (SIM.downloading == 0) {
         FOCAN_SetProgress(FOTA_TYPE, 0);
     }
+    // reset watchdog
+    HAL_IWDG_Refresh(&hiwdg);
 #endif
 
     // handle things on every request

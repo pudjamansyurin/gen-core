@@ -9,6 +9,9 @@
 #include "Libs/_focan.h"
 #include "Drivers/_canbus.h"
 
+/* External variables ---------------------------------------------------------*/
+extern IWDG_HandleTypeDef hiwdg;
+
 /* Private functions prototypes -----------------------------------------------*/
 static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, CAN_DATA *TxData, uint32_t DLC, uint32_t timeout, uint32_t retry);
 static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, CAN_DATA *TxData, uint32_t DLC, CAN_DATA *RxData, uint32_t timeout,
@@ -24,7 +27,7 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
     uint8_t p;
 
     // send message
-    p = FOCAN_WriteAndWaitSqueezed(address, NULL, 0, &RxData, 15000, 1);
+    p = FOCAN_WriteAndWaitSqueezed(address, NULL, 0, &RxData, 20000, 1);
 
     // process response
     if (p) {
@@ -189,6 +192,8 @@ static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout) {
                 break;
             }
         }
+        // reset watchdog
+        HAL_IWDG_Refresh(&hiwdg);
     } while (_GetTickMS() - tick < timeout);
 
     return response;
@@ -221,6 +226,8 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData, uint32_t t
                 }
             }
         }
+        // reset watchdog
+        HAL_IWDG_Refresh(&hiwdg);
     } while ((step < reply) && (_GetTickMS() - tick < timeout));
 
     return (step == reply);
