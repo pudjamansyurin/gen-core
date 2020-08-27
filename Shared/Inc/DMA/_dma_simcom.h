@@ -12,7 +12,7 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define SIMCOM_UART_RX_SZ    (uint16_t) (1024+512)
+#define SIMCOM_UART_RX_SZ    (uint16_t) (1024+512+128)
 #define SIMCOM_DMA_RX_SZ     (uint16_t) (SIMCOM_UART_RX_SZ/(SIMCOM_UART_RX_SZ/128))
 
 /* Public functions prototype ------------------------------------------------*/

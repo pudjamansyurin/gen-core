@@ -761,6 +761,10 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
             // exit loop
             break;
         }
+#if (BOOTLOADER)
+        // reset watchdog
+        HAL_IWDG_Refresh(&hiwdg);
+#endif
         _DelayMS(10);
     }
 
@@ -781,8 +785,6 @@ static void Simcom_BeforeTransmitHook(void) {
     if (SIM.downloading == 0) {
         FOCAN_SetProgress(FOTA_TYPE, 0);
     }
-    // reset watchdog
-    HAL_IWDG_Refresh(&hiwdg);
 #endif
 
     // handle things on every request

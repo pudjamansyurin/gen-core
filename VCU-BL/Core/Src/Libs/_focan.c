@@ -88,6 +88,11 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
             p = FOCAN_FlashBlock(ptr, &tmpBlk);
         }
 
+        // wait final response
+        if (p) {
+            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 5000) == FOCAN_ACK);
+        }
+
         // update pointer
         if (p) {
             pendingBlk -= tmpBlk;
@@ -99,10 +104,6 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
             FOCAN_SetProgress(IAP_HMI, percent);
         }
 
-        // wait final response
-        if (p) {
-            p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 1000) == FOCAN_ACK);
-        }
     } while (p && pendingBlk);
 
     return p;

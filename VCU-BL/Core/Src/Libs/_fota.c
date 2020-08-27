@@ -204,7 +204,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
 
         // Copy chunk by chunk
         setFTPGET->mode = FTPGET_READ;
-        setFTPGET->reqlength = 256 * 5;
+        setFTPGET->reqlength = 1460;
         do {
             // Initiate Download
             p = AT_FtpDownload(setFTPGET);
@@ -287,7 +287,7 @@ uint8_t FOTA_ValidImage(uint32_t address) {
     uint8_t p;
 
     /* Check beginning stack pointer */
-    p = IS_VALID_SP(APP_START_ADDR);
+    p = IS_VALID_SP(address);
 
     /* Check the size */
     if (p) {
