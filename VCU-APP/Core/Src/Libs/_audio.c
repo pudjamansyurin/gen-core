@@ -38,7 +38,7 @@
 #include "Libs/_audio.h"
 
 /* Private constants ---------------------------------------------------------*/
-#define AUDIO_BUFFER_SIZE         1000
+#define AUDIO_BUFFER_SIZE         1024
 
 /* External variables --------------------------------------------------------*/
 extern I2S_HandleTypeDef hi2s3;

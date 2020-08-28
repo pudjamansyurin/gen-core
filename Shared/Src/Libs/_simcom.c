@@ -673,16 +673,19 @@ static SIMCOM_RESULT Simcom_Power(void) {
     // reset buffer
     SIMCOM_Reset_Buffer();
 
-    // power control
-    HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-    _DelayMS(100);
-    HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
-    _DelayMS(1000);
-
     // simcom reset pin
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
     HAL_Delay(1);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
+
+    if (Simcom_Ready() == SIM_RESULT_OK) {
+        return SIM_RESULT_OK;
+    }
+
+    // power control
+    HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
+    _DelayMS(1000);
+    HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
 
     // wait response
     return Simcom_Ready();
