@@ -37,7 +37,7 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
     return p;
 }
 
-uint8_t FOCAN_SetProgress(IAP_TYPE type, uint8_t percent) {
+uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
     uint32_t address = CAND_SET_PROGRESS;
     uint32_t retry = 5;
     CAN_DATA TxData;
@@ -45,11 +45,11 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, uint8_t percent) {
 
     // set message
     TxData.u32[0] = type;
-    TxData.u8[4] = percent;
+    TxData.FLOAT[1] = percent;
     // send message
     do {
         // send message
-        p = CANBUS_Write(address, &TxData, 5);
+        p = CANBUS_Write(address, &TxData, 8);
     } while (!p && --retry);
 
     return p;
@@ -62,7 +62,7 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
     // set message
     TxData.u32[0] = *data;
     // send message
-    p = FOCAN_WriteAndWaitResponse(address, &TxData, 4, 30000, 1);
+    p = FOCAN_WriteAndWaitResponse(address, &TxData, 4, 40000, 1);
 
     return p;
 }
@@ -70,7 +70,8 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
 uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32_t total_size) {
     CAN_DATA TxData;
     uint32_t pendingBlk, tmpBlk;
-    uint8_t p, percent;
+    uint8_t p;
+    float percent;
 
     // flash each block
     pendingBlk = size;
@@ -100,7 +101,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
             ptr += tmpBlk;
 
             // indicator
-            percent = (offset * 100 / total_size);
+            percent = (float) (offset * 100.0f / total_size);
             FOCAN_SetProgress(IAP_HMI, percent);
         }
 

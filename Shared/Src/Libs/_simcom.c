@@ -644,11 +644,6 @@ static uint8_t Simcom_CommandoIRQ(void) {
 static SIMCOM_RESULT Simcom_Ready(void) {
     uint32_t tick;
 
-#if (!BOOTLOADER)
-    // save event
-    VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
-#endif
-
     // wait until 1s response
     tick = _GetTickMS();
     while (SIM.state == SIM_STATE_DOWN) {
@@ -678,16 +673,25 @@ static SIMCOM_RESULT Simcom_Power(void) {
     HAL_Delay(1);
     HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
+    // wait response
     if (Simcom_Ready() == SIM_RESULT_OK) {
+#if (!BOOTLOADER)
+        // save event
+        VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 1);
+#endif
         return SIM_RESULT_OK;
     }
 
     // power control
-    HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
-    _DelayMS(1000);
     HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
+    _DelayMS(1000);
+    HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
 
     // wait response
+#if (!BOOTLOADER)
+    // save event
+    VCU.SetEvent(EV_VCU_NET_HARD_RESET, 1);
+#endif
     return Simcom_Ready();
 }
 
@@ -749,7 +753,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
                         p = SIM_RESULT_RESTARTED;
                         SIM.state = SIM_STATE_READY;
 #if (!BOOTLOADER)
-                        VCU.SetEvent(EV_VCU_NETWORK_RESTART, 1);
+                        VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 1);
 #endif
 
                     }

@@ -94,12 +94,13 @@
 #define KEYLESS_MSG_SEAT                        BIT(2)
 
 // Events group (for Frame Report)
-#define EV_VCU_NETWORK_RESTART                  BIT(0)
-#define EV_VCU_BIKE_FALLING                     BIT(1)
-#define EV_VCU_BIKE_CRASHED                     BIT(2)
-#define EV_VCU_KEYLESS_MISSING                  BIT(3)
-#define EV_VCU_INDEPENDENT                      BIT(4)
-#define EV_VCU_UNAUTHORIZE_REMOVAL              BIT(5)
+#define EV_VCU_NET_SOFT_RESET                   BIT(0)
+#define EV_VCU_NET_HARD_RESET                   BIT(1)
+#define EV_VCU_BIKE_FALLING                     BIT(2)
+#define EV_VCU_BIKE_CRASHED                     BIT(3)
+#define EV_VCU_KEYLESS_MISSING                  BIT(4)
+#define EV_VCU_INDEPENDENT                      BIT(5)
+#define EV_VCU_UNAUTHORIZE_REMOVAL              BIT(6)
 #define EV_BMS_DISCHARGE_OVER_CURRENT           BIT(30)
 #define EV_BMS_CHARGE_OVER_CURRENT              BIT(31)
 #define EV_BMS_SHORT_CIRCUIT                    BIT(32)
@@ -207,13 +208,13 @@ typedef enum {
 } IAP_TYPE;
 
 typedef enum {
-    IAP_SIMCOM_TIMEOUT = 0x035f67b8,
-    IAP_DOWNLOAD_ERROR = 0x6aa55122,
-    IAP_FIRMWARE_SAME = 0xa5be5ff3,
-    IAP_CHECKSUM_INVALID = 0xd7e9ef0d,
-    IAP_CANBUS_FAILED = 0x977fc0a3,
-    IAP_DFU_ERROR = 0xfa359ea1,
-    IAP_DFU_SUCCESS = 0x41b0fc9e,
+    IAP_SIMCOM_TIMEOUT = 0x035F67B8,
+    IAP_DOWNLOAD_ERROR = 0x6AA55122,
+    IAP_FIRMWARE_SAME = 0xA5BE5FF3,
+    IAP_CHECKSUM_INVALID = 0xD7E9EF0D,
+    IAP_CANBUS_FAILED = 0x977FC0A3,
+    IAP_DFU_ERROR = 0xFA359EA1,
+    IAP_DFU_SUCCESS = 0x41B0FC9E,
 } IAP_RESPONSE;
 
 #if (BOOTLOADER)

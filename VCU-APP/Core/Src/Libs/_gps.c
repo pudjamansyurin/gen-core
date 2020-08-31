@@ -12,10 +12,10 @@
 #include "Nodes/VCU.h"
 
 /* External variables ---------------------------------------------------------*/
-extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
+extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ ];
 extern vcu_t VCU;
 
-/* Public variables -----------------------------------------------------------*/
+/* Private variables -----------------------------------------------------------*/
 gps_t GPS;
 
 /* Private variables ----------------------------------------------------------*/
@@ -74,7 +74,7 @@ void GPS_CalculateOdometer(void) {
 
     // dummy odometer
     if (GPS.speed_mps > 5) {
-        odometer_mps += (GPS.speed_mps * GPS_INTERVAL_MS) / 1000;
+        odometer_mps += (GPS.speed_mps * GPS_INTERVAL_MS ) / 1000;
     }
     // check if already > 1km
     if (odometer_mps >= 1000) {

@@ -80,7 +80,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
         report->data.opt.vcu.gps.hdop = (uint8_t) (GPS.dop_h * 10);
         report->data.opt.vcu.gps.heading = (uint8_t) (GPS.heading / 2);
 
-        report->data.opt.vcu.speed = GPS.speed_kph;
+        report->data.opt.vcu.speed = VCU.d.speed;
         report->data.opt.vcu.odometer = VCU.d.odometer;
 
         report->data.opt.vcu.trip.a = pSub->trip[SW_M_TRIP_A];

@@ -42,7 +42,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
         strcpy(ftp.path, "/vcu/");
     } else {
         strcpy(ftp.path, "/hmi/");
-        p = FOCAN_SetProgress(type, 0);
+        p = FOCAN_SetProgress(type, 0.0f);
     }
 
     /* Backup if needed */
@@ -184,11 +184,11 @@ uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
 
 uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t *len, IAP_TYPE type) {
     SIMCOM_RESULT p = SIM_RESULT_OK;
-    uint32_t timer;
-    uint8_t percent;
     AT_FTP_STATE state;
+    uint32_t timer;
+    float percent;
 
-// Backup and prepare the area
+    // Backup and prepare the area
     if (type == IAP_VCU) {
         FLASHER_BackupApp();
     } else {
@@ -227,12 +227,12 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
                 *len += setFTPGET->cnflength;
 
                 // Indicator
-                percent = (*len * 100 / setFTP->size);
+                percent = (float) (*len * 100.0f / setFTP->size);
                 _LedToggle();
                 LOG_Str("FOTA:Progress = ");
                 LOG_Int(*len);
                 LOG_Str(" Bytes (");
-                LOG_Int(percent);
+                LOG_Int((uint8_t) percent);
                 LOG_StrLn("%)");
 
                 FOCAN_SetProgress(type, percent);

@@ -1449,20 +1449,20 @@ void StartManagerTask(void *argument)
     EEPROM_Init();
 
     // Threads management:
-    osThreadSuspend(IotTaskHandle);
-    osThreadSuspend(ReporterTaskHandle);
-    osThreadSuspend(CommandTaskHandle);
-    osThreadSuspend(GpsTaskHandle);
-    osThreadSuspend(GyroTaskHandle);
-    osThreadSuspend(KeylessTaskHandle);
-    osThreadSuspend(FingerTaskHandle);
-//        osThreadSuspend(AudioTaskHandle);
-    osThreadSuspend(SwitchTaskHandle);
-    osThreadSuspend(CanRxTaskHandle);
-    osThreadSuspend(CanTxTaskHandle);
-    osThreadSuspend(Hmi2PowerTaskHandle);
+//    osThreadSuspend(IotTaskHandle);
+//    osThreadSuspend(ReporterTaskHandle);
+//    osThreadSuspend(CommandTaskHandle);
+//    osThreadSuspend(GpsTaskHandle);
+//    osThreadSuspend(GyroTaskHandle);
+//    osThreadSuspend(KeylessTaskHandle);
+//    osThreadSuspend(FingerTaskHandle);
+//    osThreadSuspend(AudioTaskHandle);
+//    osThreadSuspend(SwitchTaskHandle);
+//    osThreadSuspend(CanRxTaskHandle);
+//    osThreadSuspend(CanTxTaskHandle);
+//    osThreadSuspend(Hmi2PowerTaskHandle);
 
-    // Release threads
+// Release threads
     osEventFlagsSet(GlobalEventHandle, EVENT_READY);
     //    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
@@ -1659,7 +1659,8 @@ void StartReporterTask(void *argument)
         } while (status != osOK);
 
         // reset some events group
-        VCU.SetEvent(EV_VCU_NETWORK_RESTART, 0);
+        VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
+        VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
 
         // Report interval
         osDelayUntil(lastWake + (VCU.d.interval * 1000));
@@ -2186,8 +2187,8 @@ void StartAudioTask(void *argument)
         }
 
         // update volume
-//        AUDIO_OUT_SetVolume(VCU.d.volume);
-        AUDIO_OUT_SetVolume(10);
+        AUDIO_OUT_SetVolume(VCU.d.volume);
+//        AUDIO_OUT_SetVolume(10);
     }
     /* USER CODE END StartAudioTask */
 }
