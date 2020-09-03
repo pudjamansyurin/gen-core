@@ -630,11 +630,8 @@ NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
     nrf_write_tx_payload(dev, data);
     ce_set(dev);
 
-    uint32_t tick = _GetTickMS();
     while (dev->tx_busy == 1) {
-        if (_GetTickMS() - tick > 500) {
-            break;
-        }
+        break;
     } // wait for end of transmition
 
     ce_reset(dev);

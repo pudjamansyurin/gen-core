@@ -163,7 +163,7 @@ uint8_t KLESS_Pairing(void) {
     ce_set(&nrf);
 
     // Send Payload
-//    p = nrf_send_packet(&nrf, payload);
+    //    p = nrf_send_packet(&nrf, payload);
     p = nrf_send_packet_noack(&nrf, payload);
     _DelayMS(100);
 
