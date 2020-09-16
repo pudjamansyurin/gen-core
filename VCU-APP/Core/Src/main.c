@@ -354,7 +354,7 @@ int main(void)
     MX_DMA_Init();
     MX_ADC1_Init();
     MX_AES_Init();
-    MX_CAN1_Init();
+//    MX_CAN1_Init();
     MX_CRC_Init();
     MX_I2C1_Init();
     MX_I2C2_Init();
@@ -368,7 +368,7 @@ int main(void)
     MX_RNG_Init();
     MX_TIM10_Init();
     /* USER CODE BEGIN 2 */
-    CANBUS_Init();
+//    CANBUS_Init();
     BAT_DMA_Init();
     SIMCOM_DMA_Init();
     UBLOX_DMA_Init();
@@ -1458,8 +1458,8 @@ void StartManagerTask(void *argument)
 //    osThreadSuspend(FingerTaskHandle);
 //    osThreadSuspend(AudioTaskHandle);
 //    osThreadSuspend(SwitchTaskHandle);
-//    osThreadSuspend(CanRxTaskHandle);
-//    osThreadSuspend(CanTxTaskHandle);
+    osThreadSuspend(CanRxTaskHandle);
+    osThreadSuspend(CanTxTaskHandle);
 //    osThreadSuspend(Hmi2PowerTaskHandle);
 
 // Release threads
@@ -1645,6 +1645,8 @@ void StartReporterTask(void *argument)
             frame = FR_FULL;
             frameDecider = 0;
         }
+        // TODO: DELETE_ME
+        frame = FR_FULL;
 
         // Get current snapshot
         Report_Capture(frame, &report);

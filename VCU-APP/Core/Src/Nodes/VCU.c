@@ -11,6 +11,7 @@
 #include "Nodes/HMI1.h"
 #include "Drivers/_canbus.h"
 #include "Libs/_simcom.h"
+#include "Libs/_gps.h"
 
 /* External variables ---------------------------------------------------------*/
 extern bms_t BMS;
@@ -100,6 +101,8 @@ void VCU_CheckMainPower(void) {
         VCU.SetEvent(EV_VCU_INDEPENDENT, 0);
         VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
     }
+    // TODO: DELETE_ME
+    VCU.d.interval = GPS_INTERVAL_MS / 3000;
 }
 
 /* ====================================== CAN TX =================================== */
