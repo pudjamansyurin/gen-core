@@ -105,6 +105,7 @@
 - [ ] Make routine to check SIMCOM internet package
 - [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
 - [ ] RTOS: give timeout for any osWaitForever
+- [ ] Keyless: Move RNG to VCU side, not FOB. It act as challenge code.
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
