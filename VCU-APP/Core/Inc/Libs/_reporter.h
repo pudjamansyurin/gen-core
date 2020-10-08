@@ -53,11 +53,14 @@ typedef struct __attribute__((packed)) {
             struct __attribute__((packed)) {
                 int32_t longitude;
                 int32_t latitude;
+                uint32_t altitude;
                 uint8_t hdop;
+                uint8_t vdop;
                 uint8_t heading;
             } gps;
             uint8_t speed;
             uint32_t odometer;
+            uint32_t odometer_m;
             uint8_t signal;
             uint8_t backup_voltage;
             struct __attribute__((packed)) {

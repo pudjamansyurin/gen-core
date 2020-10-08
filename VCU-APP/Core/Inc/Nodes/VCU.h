@@ -29,6 +29,7 @@ typedef struct {
     uint8_t volume;
     uint8_t speed;
     uint32_t odometer;
+    uint32_t odometer_m;
     rtc_t rtc;
     uint64_t events;
     struct {

@@ -1601,7 +1601,7 @@ void StartIotTask(void *argument)
         }
 
         // Periodic interval
-        osDelayUntil(lastWake + 1000);
+        osDelayUntil(lastWake + 100);
     }
     /* USER CODE END StartIotTask */
 }

@@ -77,11 +77,14 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
         // set parameter
         report->data.opt.vcu.gps.latitude = (int32_t) (GPS.latitude * 10000000);
         report->data.opt.vcu.gps.longitude = (int32_t) (GPS.longitude * 10000000);
+        report->data.opt.vcu.gps.altitude = (uint32_t) GPS.altitude;
         report->data.opt.vcu.gps.hdop = (uint8_t) (GPS.dop_h * 10);
+        report->data.opt.vcu.gps.vdop = (uint8_t) (GPS.dop_v * 10);
         report->data.opt.vcu.gps.heading = (uint8_t) (GPS.heading / 2);
 
         report->data.opt.vcu.speed = VCU.d.speed;
         report->data.opt.vcu.odometer = VCU.d.odometer;
+        report->data.opt.vcu.odometer_m = VCU.d.odometer_m;
 
         report->data.opt.vcu.trip.a = pSub->trip[SW_M_TRIP_A];
         report->data.opt.vcu.trip.b = pSub->trip[SW_M_TRIP_B];

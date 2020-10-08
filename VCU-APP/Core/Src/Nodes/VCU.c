@@ -48,6 +48,7 @@ void VCU_Init(void) {
     VCU.d.volume = 0;
     VCU.d.speed = 0;
     VCU.d.odometer = 0;
+    VCU.d.odometer_m = 0;
     VCU.d.events = 0;
 
     VCU.d.tick.keyless = 0;

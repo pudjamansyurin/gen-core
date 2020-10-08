@@ -53,6 +53,8 @@ uint8_t GPS_Capture(void) {
 
     // copy only necessary part
     GPS.dop_h = nmea.dop_h;
+    GPS.dop_v = nmea.dop_v;
+    GPS.altitude = nmea.altitude;
     GPS.latitude = nmea.latitude;
     GPS.longitude = nmea.longitude;
     GPS.heading = nmea.coarse;
@@ -75,7 +77,9 @@ void GPS_CalculateOdometer(void) {
     // dummy odometer
     if (GPS.speed_mps > 5) {
         odometer_mps += (GPS.speed_mps * GPS_INTERVAL_MS ) / 1000;
+        VCU.d.odometer_m += (GPS.speed_mps * GPS_INTERVAL_MS ) / 1000;
     }
+
     // check if already > 1km
     if (odometer_mps >= 1000) {
         odometer_mps = 0;
