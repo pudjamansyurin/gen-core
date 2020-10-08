@@ -187,7 +187,7 @@ typedef struct {
 			struct {
 				nmea_float_t latitude; /*!< NMEA latitude position in degrees */
 				nmea_float_t longitude; /*!< NMEA longitude position in degrees */
-				nmea_float_t altitude; /*!< NMEA altitude in meters */
+				nmea_float_t altitude; /*!< NMEA altitude in (1/10) meters */
 				nmea_float_t geo_sep; /*!< Geoid separation in units of meters */
 				uint8_t sats_in_use; /*!< Number of satellites currently in use */
 				uint8_t fix; /*!< Type of current fix, `0` = Invalid, `1` = NMEA fix, `2` = Differential NMEA fix */
