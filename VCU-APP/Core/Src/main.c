@@ -1503,12 +1503,12 @@ void StartManagerTask(void *argument)
 void StartIotTask(void *argument)
 {
     /* USER CODE BEGIN StartIotTask */
-    TickType_t lastWake;
+	TickType_t lastWake, lastCheckSignal;
     osStatus_t status;
     report_t report;
     response_t response;
+	uint32_t notif;
     uint8_t retry[2], pending[2] = { 0 };
-    uint32_t notif;
 
     SIMCOM_RESULT p;
     PAYLOAD_TYPE type;
@@ -1524,84 +1524,87 @@ void StartIotTask(void *argument)
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
     // Start simcom module
-    Simcom_SetState(SIM_STATE_READY, 0);
+	Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 
     /* Infinite loop */
+	lastCheckSignal = _GetTickMS();
     for (;;) {
         lastWake = _GetTickMS();
 
-        // Upload Report & Response Payload
-        if (Simcom_SetState(SIM_STATE_SERVER_ON, 0)) {
-            // Iterate between REPORT & RESPONSE
-            for (type = 0; type <= PAYLOAD_MAX; type++) {
-                // decide the payload
-                if (type == PAYLOAD_REPORT) {
-                    pQueue = &ReportQueueHandle;
-                    pPayload = &report;
-                } else {
-                    pQueue = &ResponseQueueHandle;
-                    pPayload = &response;
-                }
-                pHeader = (header_t*) pPayload;
+		// Upload Report & Response Payload
+		// Iterate between REPORT & RESPONSE
+		for (type = 0; type <= PAYLOAD_MAX; type++) {
+			// decide the payload
+			if (type == PAYLOAD_REPORT) {
+				pQueue = &ReportQueueHandle;
+				pPayload = &report;
+			} else {
+				pQueue = &ResponseQueueHandle;
+				pPayload = &response;
+			}
+			pHeader = (header_t*) pPayload;
 
-                // Handle Full Buffer
-                if (type == PAYLOAD_REPORT) {
-                    notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny, 0);
-                    if (_RTOS_ValidThreadFlag(notif)) {
-                        pending[type] = 0;
-                    }
-                }
+			// Handle Full Buffer
+			if (type == PAYLOAD_REPORT) {
+				notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny, 0);
+				if (_RTOS_ValidThreadFlag(notif)) {
+					pending[type] = 0;
+				}
+			}
 
-                // Check logs
-                if (!pending[type]) {
-                    status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
-                    // check is mail ready
-                    if (status == osOK) {
-                        pending[type] = 1;
-                        retry[type] = SIMCOM_MAX_UPLOAD_RETRY;
-                    }
-                }
+			// Check logs
+			if (!pending[type]) {
+				status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
+				// check is mail ready
+				if (status == osOK) {
+					pending[type] = 1;
+					retry[type] = SIMCOM_MAX_UPLOAD_RETRY;
+				}
+			}
 
-                // Check is payload ready
-                if (pending[type]) {
-                    // Re-calculate CRC
-                    if (type == PAYLOAD_REPORT) {
-                        Report_SetCRC((report_t*) pPayload);
-                    } else {
-                        Response_SetCRC((response_t*) pPayload);
-                    }
+			// Check is payload ready
+			if (pending[type]) {
+				// Re-calculate CRC
+				if (type == PAYLOAD_REPORT) {
+					Report_SetCRC((report_t*) pPayload);
+				} else {
+					Response_SetCRC((response_t*) pPayload);
+				}
 
-                    // Send to server
-                    p = Simcom_Upload(pPayload, size + pHeader->size);
+				// Send to server
+				p = Simcom_Upload(pPayload, size + pHeader->size);
 
-                    // Handle looping NACK
-                    if (p == SIM_RESULT_NACK) {
-                        // Probably  CRC not valid, cancel but force as success
-                        if (!--retry[type]) {
-                            p = SIM_RESULT_OK;
-                        }
-                    }
+				// Handle looping NACK
+				if (p == SIM_RESULT_NACK) {
+					// Probably  CRC not valid, cancel but force as success
+					if (!--retry[type]) {
+						p = SIM_RESULT_OK;
+					}
+				}
 
-                    // Release back
-                    if (p == SIM_RESULT_OK) {
-                        EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
-                        pending[type] = 0;
-                    }
-                }
-            }
-        }
+				// Release back
+				if (p == SIM_RESULT_OK) {
+					EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
+					pending[type] = 0;
+				} else {
+					Simcom_SetState(SIM_STATE_SERVER_ON, 0);
+				}
+			}
+		}
 
         // ================= SIMCOM Related Routines ================
-        if (Simcom_SetState(SIM_STATE_READY, 0)) {
-            Simcom_IdleJob(NULL);
-
-            if (RTC_NeedCalibration()) {
-                RTC_CalibrateWithSimcom();
-            }
-        }
+		if (RTC_NeedCalibration()) {
+			if (Simcom_SetState(SIM_STATE_READY, 0)) {
+				RTC_CalibrateWithSimcom();
+			}
+		}
+		if (lastCheckSignal - _GetTickMS() > 60000) {
+			lastCheckSignal = _GetTickMS();
+			Simcom_UpdateSignalQuality();
+		}
 
         // Periodic interval
-        osDelayUntil(lastWake + 100);
+		osDelayUntil(lastWake + 1000);
     }
     /* USER CODE END StartIotTask */
 }
@@ -1620,7 +1623,6 @@ void StartReporterTask(void *argument)
     report_t report;
     osStatus_t status;
     FRAME_TYPE frame;
-    uint8_t frameDecider = 0;
 
     // wait until ManagerTask done
     osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -1633,20 +1635,7 @@ void StartReporterTask(void *argument)
         lastWake = _GetTickMS();
 
         // Frame type decider
-        if (!VCU.d.state.independent) {
-            if (++frameDecider == (RPT_INTERVAL_FULL / RPT_INTERVAL_SIMPLE )) {
-                frame = FR_FULL;
-                frameDecider = 0;
-            } else {
-                frame = FR_SIMPLE;
-            }
-        }
-        else {
-            frame = FR_FULL;
-            frameDecider = 0;
-        }
-        // TODO: DELETE_ME
-        frame = FR_FULL;
+		frame = Frame_Decider();
 
         // Get current snapshot
         Report_Capture(frame, &report);
@@ -1664,6 +1653,8 @@ void StartReporterTask(void *argument)
         VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
         VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
 
+		// TODO: DELETE_ME
+		VCU.d.interval = 5;
         // Report interval
         osDelayUntil(lastWake + (VCU.d.interval * 1000));
     }
@@ -1891,7 +1882,7 @@ void StartGpsTask(void *argument)
         // GPS_Debugger();
 
         // Periodic interval
-        osDelayUntil(lastWake + GPS_INTERVAL_MS);
+		osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
     }
     /* USER CODE END StartGpsTask */
 }

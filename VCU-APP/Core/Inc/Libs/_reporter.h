@@ -124,4 +124,5 @@ void Response_Capture(response_t *response);
 void Report_SetCRC(report_t *report);
 void Response_SetCRC(response_t *response);
 void Command_Debugger(command_t *cmd);
+FRAME_TYPE Frame_Decider(void);
 #endif /* REPORTER_H_ */

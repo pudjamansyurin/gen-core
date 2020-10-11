@@ -168,6 +168,12 @@ typedef struct {
 } at_csq_t;
 
 typedef struct {
+	uint16_t txlen;
+	uint16_t acklen;
+	uint16_t nacklen;
+} at_cipack_t;
+
+typedef struct {
     AT_CSACT_ACT act;
     char rac[3];
     uint8_t creg;
@@ -231,6 +237,7 @@ typedef struct {
 
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
+SIMCOM_RESULT AT_QueryTransmittedData(at_cipack_t *info);
 SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
 SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
 SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);

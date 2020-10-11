@@ -448,8 +448,9 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 #if (!BOOTLOADER)
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    header_t *hHeader = NULL;
-    uint32_t tick;
+//	at_cipack_t info;
+//    header_t *hHeader = NULL;
+//    uint32_t tick;
     char str[20];
 
     // Check IP Status
@@ -467,36 +468,43 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
             p = Simcom_Command((char*) payload, SIMCOM_RSP_SENT, 20000, size);
             // wait for ACK/NACK
             if (p > 0) {
-                // set timeout guard
-                tick = _GetTickMS();
-                // wait ACK for payload
-                while (SIM.state >= SIM_STATE_SERVER_ON) {
-                    if (Simcom_Response(PREFIX_ACK)
-                            || Simcom_Response(PREFIX_NACK)
-                            || Simcom_Response(PREFIX_COMMAND)
-                            || (_GetTickMS() - tick) >= 20000) {
-                        break;
-                    }
-                    _DelayMS(10);
-                }
+				p = SIM_RESULT_OK;
+				if (Simcom_Response(PREFIX_COMMAND)) {
+					p = SIM_RESULT_NACK;
+				}
 
-                // handle SIMCOM result
-                if (Simcom_Response(PREFIX_ACK)) {
-                    p = SIM_RESULT_NACK;
+//				AT_QueryTransmittedData(&info);
 
-                    // validate ACK
-                    hHeader = (header_t*) payload;
-                    if (Simcom_ProcessACK(hHeader)) {
-                        p = SIM_RESULT_OK;
-                    }
-                } else if (Simcom_Response(PREFIX_NACK) || Simcom_Response(PREFIX_COMMAND)) {
-                    p = SIM_RESULT_NACK;
-                } else {
-                    p = SIM_RESULT_TIMEOUT;
-                }
-            }
+//                // set timeout guard
+//                tick = _GetTickMS();
+//                // wait ACK for payload
+//                while (SIM.state >= SIM_STATE_SERVER_ON) {
+//                    if (Simcom_Response(PREFIX_ACK)
+//                            || Simcom_Response(PREFIX_NACK)
+//                            || Simcom_Response(PREFIX_COMMAND)
+//                            || (_GetTickMS() - tick) >= 20000) {
+//                        break;
+//                    }
+//                    _DelayMS(10);
+//                }
+//
+//                // handle SIMCOM result
+//                if (Simcom_Response(PREFIX_ACK)) {
+//                    p = SIM_RESULT_NACK;
+//
+//                    // validate ACK
+//                    hHeader = (header_t*) payload;
+//                    if (Simcom_ProcessACK(hHeader)) {
+//                        p = SIM_RESULT_OK;
+//                    }
+//				} else if (Simmcom_Response(PREFIX_NACK) || Simcom_Response(PREFIX_COMMAND)) {
+//                    p = SIM_RESULT_NACK;
+//              } else {
+//					p = SIM_RESULT_TIMEOUT;
+//              }
+			}
         }
-    }
+	}
 
     Simcom_Unlock();
     return p;
@@ -549,9 +557,21 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
     return p;
 }
 
-SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
+SIMCOM_RESULT Simcom_UpdateSignalQuality(void) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     at_csq_t signal;
+
+	// other routines
+	p = AT_SignalQualityReport(&signal);
+	if (p > 0) {
+		SIM.signal = signal.percent;
+	}
+
+	return p;
+}
+
+SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
+	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
     // debug
     if (iteration != NULL) {
@@ -561,10 +581,8 @@ SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
     }
 
     // other routines
-    p = AT_SignalQualityReport(&signal);
-    if (p > 0) {
-        SIM.signal = signal.percent;
-    }
+	p = Simcom_UpdateSignalQuality();
+
 #if (!BOOTLOADER)
     p = AT_ConnectionStatusSingle(&(SIM.ip_status));
 #endif

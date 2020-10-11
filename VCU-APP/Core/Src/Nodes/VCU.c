@@ -102,8 +102,6 @@ void VCU_CheckMainPower(void) {
         VCU.SetEvent(EV_VCU_INDEPENDENT, 0);
         VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
     }
-    // TODO: DELETE_ME
-    VCU.d.interval = GPS_INTERVAL_MS / 1000;
 }
 
 /* ====================================== CAN TX =================================== */

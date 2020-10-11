@@ -13,7 +13,7 @@
 #include "Drivers/_nmea.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define GPS_INTERVAL_MS          (uint32_t) 5000
+#define GPS_INTERVAL          (uint16_t) 3				// in second
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {

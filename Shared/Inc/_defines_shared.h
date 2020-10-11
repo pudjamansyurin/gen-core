@@ -82,6 +82,7 @@
 
 #define DRIVER_ID_NONE               (uint8_t)  0xFF
 
+#define REPORT_INTERVAL				 (uint16_t) 5
 #define RPT_INTERVAL_SIMPLE          (uint16_t) 5                  // in second
 #define RPT_INTERVAL_FULL            (uint16_t) 20                 // in second
 #define RPT_INTERVAL_INDEPENDENT     (uint16_t) 10                 // in second

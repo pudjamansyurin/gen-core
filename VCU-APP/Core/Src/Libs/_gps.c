@@ -73,11 +73,13 @@ void GPS_Debugger(void) {
 
 void GPS_CalculateOdometer(void) {
     static uint16_t odometer_mps = 0;
+	uint16_t odometer_delta;
 
     // dummy odometer
     if (GPS.speed_mps > 5) {
-        odometer_mps += (GPS.speed_mps * GPS_INTERVAL_MS ) / 1000;
-        VCU.d.odometer_m += (GPS.speed_mps * GPS_INTERVAL_MS ) / 1000;
+		odometer_delta = GPS.speed_mps * GPS_INTERVAL;
+		odometer_mps += odometer_delta;
+		VCU.d.odometer_m += odometer_delta;
     }
 
     // check if already > 1km

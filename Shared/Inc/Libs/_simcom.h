@@ -74,6 +74,7 @@ typedef struct {
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Response(char *str);
 SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size);
+SIMCOM_RESULT Simcom_UpdateSignalQuality(void);
 SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 void Simcom_Lock(void);
 void Simcom_Unlock(void);

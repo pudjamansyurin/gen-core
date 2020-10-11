@@ -140,3 +140,22 @@ void Command_Debugger(command_t *cmd) {
     LOG_BufHex((char*) &(cmd->data.value), sizeof(cmd->data.value));
     LOG_Enter();
 }
+
+FRAME_TYPE Frame_Decider(void) {
+	FRAME_TYPE frame;
+	static uint8_t frameDecider = 0;
+
+	if (!VCU.d.state.independent) {
+		if (++frameDecider == (RPT_INTERVAL_FULL / RPT_INTERVAL_SIMPLE )) {
+			frame = FR_FULL;
+			frameDecider = 0;
+		} else {
+			frame = FR_SIMPLE;
+		}
+	} else {
+		frame = FR_FULL;
+		frameDecider = 0;
+	}
+
+	return frame;
+}

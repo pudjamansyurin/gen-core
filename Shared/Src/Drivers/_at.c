@@ -43,6 +43,26 @@ SIMCOM_RESULT AT_CommandEchoMode(uint8_t state) {
     return p;
 }
 
+SIMCOM_RESULT AT_QueryTransmittedData(at_cipack_t *info) {
+	SIMCOM_RESULT p = SIM_RESULT_ERROR;
+	uint8_t cnt, len = 0;
+	char *str = NULL;
+
+	Simcom_Lock();
+	// Read
+	p = AT_CmdRead("AT+CIPACK?\r", 500, "+CIPACK: ", &str);
+	if (p > 0) {
+		info->txlen = AT_ParseNumber(&str[len], &cnt);
+		len += cnt + 1;
+		info->acklen = AT_ParseNumber(&str[len], &cnt);
+		len += cnt + 1;
+		info->nacklen = AT_ParseNumber(&str[len], NULL);
+	}
+	Simcom_Unlock();
+
+	return p;
+}
+
 SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
     SIMCOM_RESULT p = SIM_RESULT_ERROR;
     uint8_t cnt, len = 0;
