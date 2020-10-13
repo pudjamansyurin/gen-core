@@ -429,7 +429,8 @@ int main(void)
     ResponseQueueHandle = osMessageQueueNew(1, sizeof(response_t), &ResponseQueue_attributes);
 
     /* creation of ReportQueue */
-    ReportQueueHandle = osMessageQueueNew(100, sizeof(report_t), &ReportQueue_attributes);
+	ReportQueueHandle = osMessageQueueNew(150, sizeof(report_t),
+			&ReportQueue_attributes);
 
     /* creation of DriverQueue */
     DriverQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &DriverQueue_attributes);
@@ -1503,7 +1504,7 @@ void StartManagerTask(void *argument)
 void StartIotTask(void *argument)
 {
     /* USER CODE BEGIN StartIotTask */
-	TickType_t lastWake, lastCheckSignal;
+	TickType_t lastWake;
     osStatus_t status;
     report_t report;
     response_t response;
@@ -1527,7 +1528,6 @@ void StartIotTask(void *argument)
 	Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 
     /* Infinite loop */
-	lastCheckSignal = _GetTickMS();
     for (;;) {
         lastWake = _GetTickMS();
 
@@ -1598,10 +1598,8 @@ void StartIotTask(void *argument)
 				RTC_CalibrateWithSimcom();
 			}
 		}
-		if (lastCheckSignal - _GetTickMS() > 60000) {
-			lastCheckSignal = _GetTickMS();
-			Simcom_UpdateSignalQuality();
-		}
+
+		Simcom_UpdateSignalQuality();
 
         // Periodic interval
 		osDelayUntil(lastWake + 1000);
