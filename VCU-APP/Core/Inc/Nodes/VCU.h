@@ -11,6 +11,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 #include "Libs/_handlebar.h"
+#include "Libs/_gyro.h"
 
 /* Exported enums --------------------------------------------------------------*/
 typedef enum {
@@ -21,7 +22,6 @@ typedef enum {
 } vehicle_state_t;
 
 /* Exported struct --------------------------------------------------------------*/
-
 typedef struct {
     uint32_t unit_id;
     uint8_t driver_id;
@@ -30,6 +30,10 @@ typedef struct {
     uint8_t speed;
     uint32_t odometer;
     uint32_t odometer_m;
+    struct {
+        int8_t pitch;
+        int8_t roll;
+    } motion;
     rtc_t rtc;
     uint64_t events;
     struct {

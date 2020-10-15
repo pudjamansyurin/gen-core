@@ -1450,10 +1450,10 @@ void StartManagerTask(void *argument)
     EEPROM_Init();
 
     // Threads management:
-    osThreadSuspend(IotTaskHandle);
-    osThreadSuspend(ReporterTaskHandle);
-    osThreadSuspend(CommandTaskHandle);
-    osThreadSuspend(GpsTaskHandle);
+//    osThreadSuspend(IotTaskHandle);
+//    osThreadSuspend(ReporterTaskHandle);
+//    osThreadSuspend(CommandTaskHandle);
+//    osThreadSuspend(GpsTaskHandle);
 //    osThreadSuspend(GyroTaskHandle);
     osThreadSuspend(KeylessTaskHandle);
     osThreadSuspend(FingerTaskHandle);

@@ -11,7 +11,6 @@
 #include "Nodes/HMI1.h"
 #include "Drivers/_canbus.h"
 #include "Libs/_simcom.h"
-#include "Libs/_gps.h"
 
 /* External variables ---------------------------------------------------------*/
 extern bms_t BMS;
@@ -49,6 +48,8 @@ void VCU_Init(void) {
     VCU.d.speed = 0;
     VCU.d.odometer = 0;
     VCU.d.odometer_m = 0;
+    VCU.d.motion.pitch = 0;
+    VCU.d.motion.roll = 0;
     VCU.d.events = 0;
 
     VCU.d.tick.keyless = 0;

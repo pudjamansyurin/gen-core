@@ -7,9 +7,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_gyro.h"
 #include "Drivers/_mpu6050.h"
+#include "Nodes/VCU.h"
 
 /* External variables ---------------------------------------------------------*/
 extern I2C_HandleTypeDef hi2c3;
+extern vcu_t VCU;
 
 /* Private variables ----------------------------------------------------------*/
 static MPU6050 mpu;
@@ -129,6 +131,10 @@ mems_decision_t GYRO_Decision(uint16_t sample) {
     // calculate movement change
     decider.fall.value = sqrt(pow(abs(motion.roll),2) + pow(abs(motion.pitch),2));
     decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT;
+
+    // record as report
+    VCU.d.motion.pitch = motion.pitch;
+    VCU.d.motion.roll = motion.roll;
 
     // debugger
     //	Gyro_RawDebugger();

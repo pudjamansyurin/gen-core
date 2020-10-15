@@ -64,6 +64,10 @@ typedef struct __attribute__((packed)) {
             uint8_t signal;
             uint8_t backup_voltage;
             struct __attribute__((packed)) {
+                int8_t pitch;
+                int8_t roll;
+            } motion;
+            struct __attribute__((packed)) {
                 uint8_t range;
                 uint8_t efficiency;
             } report;
