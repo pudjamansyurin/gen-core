@@ -146,56 +146,6 @@ MPU6050_Result MPU6050_SetAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataSt
 MPU6050_Result MPU6050_SetDataRate(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, uint8_t rate);
 
 /**
- * @brief  Enables interrupts
- * @param  *DataStruct: Pointer to @ref MPU6050_t structure indicating MPU6050 device
- * @retval Member of @ref MPU6050_Result_t enumeration
- */
-MPU6050_Result MPU6050_EnableInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
-
-/**
- * @brief  Disables interrupts
- * @param  *DataStruct: Pointer to @ref MPU6050_t structure indicating MPU6050 device
- * @retval Member of @ref MPU6050_Result_t enumeration
- */
-MPU6050_Result MPU6050_DisableInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
-
-/**
- * @brief  Reads and clears interrupts
- * @param  *DataStruct: Pointer to @ref MPU6050_t structure indicating MPU6050 device
- * @param  *InterruptsStruct: Pointer to @ref MPU6050_Interrupt_t structure to store status in
- * @retval Member of @ref MPU6050_Result_t enumeration
- */
-MPU6050_Result MPU6050_ReadInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
-		MPU6050_Interrupt *InterruptsStruct);
-
-/**
- * @brief  Reads accelerometer data from sensor
- * @param  *DataStruct: Pointer to @ref MPU6050_t structure to store data to
- * @retval Member of @ref MPU6050_Result_t:
- *            - MPU6050_Result_Ok: everything is OK
- *            - Other: in other cases
- */
-MPU6050_Result MPU6050_ReadAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
-
-/**
- * @brief  Reads gyroscope data from sensor
- * @param  *DataStruct: Pointer to @ref MPU6050_t structure to store data to
- * @retval Member of @ref MPU6050_Result_t:
- *            - MPU6050_Result_Ok: everything is OK
- *            - Other: in other cases
- */
-MPU6050_Result MPU6050_ReadGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
-
-/**
- * @brief  Reads temperature data from sensor
- * @param  *DataStruct: Pointer to @ref MPU6050_t structure to store data to
- * @retval Member of @ref MPU6050_Result_t:
- *            - MPU6050_Result_Ok: everything is OK
- *            - Other: in other cases
- */
-MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
-
-/**
  * @brief  Reads accelerometer, gyroscope and temperature data from sensor
  * @param  *DataStruct: Pointer to @ref MPU6050_t structure to store data to
  * @retval Member of @ref MPU6050_Result_t:
@@ -203,5 +153,55 @@ MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStr
  *            - Other: in other cases
  */
 MPU6050_Result MPU6050_ReadAll(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
+
+///**
+// * @brief  Reads accelerometer data from sensor
+// * @param  *DataStruct: Pointer to @ref MPU6050_t structure to store data to
+// * @retval Member of @ref MPU6050_Result_t:
+// *            - MPU6050_Result_Ok: everything is OK
+// *            - Other: in other cases
+// */
+//MPU6050_Result MPU6050_ReadAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
+//
+///**
+// * @brief  Reads gyroscope data from sensor
+// * @param  *DataStruct: Pointer to @ref MPU6050_t structure to store data to
+// * @retval Member of @ref MPU6050_Result_t:
+// *            - MPU6050_Result_Ok: everything is OK
+// *            - Other: in other cases
+// */
+//MPU6050_Result MPU6050_ReadGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
+//
+///**
+// * @brief  Reads temperature data from sensor
+// * @param  *DataStruct: Pointer to @ref MPU6050_t structure to store data to
+// * @retval Member of @ref MPU6050_Result_t:
+// *            - MPU6050_Result_Ok: everything is OK
+// *            - Other: in other cases
+// */
+//MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
+//
+///**
+// * @brief  Enables interrupts
+// * @param  *DataStruct: Pointer to @ref MPU6050_t structure indicating MPU6050 device
+// * @retval Member of @ref MPU6050_Result_t enumeration
+// */
+//MPU6050_Result MPU6050_EnableInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
+//
+///**
+// * @brief  Disables interrupts
+// * @param  *DataStruct: Pointer to @ref MPU6050_t structure indicating MPU6050 device
+// * @retval Member of @ref MPU6050_Result_t enumeration
+// */
+//MPU6050_Result MPU6050_DisableInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
+//
+///**
+// * @brief  Reads and clears interrupts
+// * @param  *DataStruct: Pointer to @ref MPU6050_t structure indicating MPU6050 device
+// * @param  *InterruptsStruct: Pointer to @ref MPU6050_Interrupt_t structure to store status in
+// * @retval Member of @ref MPU6050_Result_t enumeration
+// */
+//MPU6050_Result MPU6050_ReadInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
+//        MPU6050_Interrupt *InterruptsStruct);
 
 #endif /* MPU6050_H_ */

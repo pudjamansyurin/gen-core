@@ -38,8 +38,8 @@ void GYRO_Init(void) {
     } while (result != MPU6050_Result_Ok);
 
     // Set calibrator
-    calibrator = GYRO_Average(500);
-    LOG_StrLn("Gyro:Calibrated");
+//    calibrator = GYRO_Average(500);
+//    LOG_StrLn("Gyro:Calibrated");
 }
 
 mems_t GYRO_Average(uint16_t sample) {
@@ -48,12 +48,20 @@ mems_t GYRO_Average(uint16_t sample) {
     int32_t gX=0, gY=0, gZ=0;
     double sqrtRoll, sqrtPitch, sqrtYaw;
     double tmp=0;
+    MPU6050_Result status;
 
 
     // sampling
     for (uint16_t i = 0; i < sample; i++) {
         // read sensor
-        MPU6050_ReadAll(&hi2c3, &mpu);
+        do {
+            status = MPU6050_ReadAll(&hi2c3, &mpu);
+
+            if(status != MPU6050_Result_Ok) {
+                GYRO_Init();
+            }
+        } while(status != MPU6050_Result_Ok);
+
         // sum all value
         // convert the RAW values into dps (deg/s)
         aX += mpu.Gyroscope_X / mpu.Gyro_Mult;
@@ -77,13 +85,13 @@ mems_t GYRO_Average(uint16_t sample) {
 
     // set for calibration
     if (calibrated) {
-        aX -= calibrator.accelerometer.x;
-        aY -= calibrator.accelerometer.y;
-        aZ -= calibrator.accelerometer.z;
-        gX -= calibrator.gyroscope.x;
-        gY -= calibrator.gyroscope.y;
-        gZ -= calibrator.gyroscope.z;
-        tmp -= calibrator.temperature;
+//        aX -= calibrator.accelerometer.x;
+//        aY -= calibrator.accelerometer.y;
+//        aZ -= calibrator.accelerometer.z;
+//        gX -= calibrator.gyroscope.x;
+//        gY -= calibrator.gyroscope.y;
+//        gZ -= calibrator.gyroscope.z;
+//        tmp -= calibrator.temperature;
 
         // Calculating Roll and Pitch from the accelerometer data
         sqrtYaw = sqrt(pow(gX, 2) + pow(gY, 2));
