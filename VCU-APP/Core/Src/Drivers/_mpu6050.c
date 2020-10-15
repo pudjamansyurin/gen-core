@@ -80,22 +80,21 @@
 /* Public functions implementation ---------------------------------------------*/
 MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU6050_Device DeviceNumber,
 		MPU6050_Accelerometer AccelerometerSensitivity, MPU6050_Gyroscope GyroscopeSensitivity) {
-	I2C_HandleTypeDef *Handle = I2Cx;
-	uint8_t d[2], temp;
+	uint8_t data, temp;
 
 	/* Format I2C address */
 	DataStruct->Address = MPU6050_I2C_ADDR | (uint8_t) DeviceNumber;
 	uint8_t address = DataStruct->Address;
 
 	/* Check if device is connected */
-	if (HAL_I2C_IsDeviceReady(Handle, address, 2, 5) != HAL_OK) {
+	if (HAL_I2C_IsDeviceReady(I2Cx, address, 2, 5) != HAL_OK) {
 		return MPU6050_Result_Error;
 	}
 
 	/* Check who am I */
 	//------------------
 	/* Send address */
-	if (HAL_I2C_Mem_Read(Handle, address, MPU6050_WHO_AM_I, 1, &temp, 1, 1000) != HAL_OK) {
+	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_WHO_AM_I, 1, &temp, 1, 1000) != HAL_OK) {
 		return MPU6050_Result_Error;
 	}
 
@@ -108,12 +107,8 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
 
 	/* Wakeup MPU6050 */
 	//------------------
-	/* Format array to send */
-	d[0] = MPU6050_PWR_MGMT_1;
-	d[1] = 0x01;
-
-	/* Try to transmit via I2C */
-	if (HAL_I2C_Master_Transmit(Handle, address, d, 2, 1000) != HAL_OK) {
+	data = 0x01;
+	if (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_PWR_MGMT_1, 1, &data, 1, 1000) != HAL_OK) {
 		return MPU6050_Result_Error;
 	}
 	//------------------
@@ -132,17 +127,11 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
 }
 
 MPU6050_Result MPU6050_SetDataRate(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, uint8_t rate) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t address = DataStruct->Address;
-	/* Format array to send */
-	//  d[0] = MPU6050_SMPLRT_DIV;
-	//  d[1] = rate;
+
 	/* Set data sample rate */
-	while (HAL_I2C_Mem_Write(Handle, address, MPU6050_SMPLRT_DIV, 1, &rate, 1, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_SMPLRT_DIV, 1, &rate, 1, 1000) != HAL_OK)
 		;
-	//  if (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, (uint8_t*) d, 2, 1000) != HAL_OK) {
-	//    return MPU6050_Result_Error;
-	//  }
 
 	/* Return OK */
 	return MPU6050_Result_Ok;
@@ -150,30 +139,16 @@ MPU6050_Result MPU6050_SetDataRate(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
 
 MPU6050_Result MPU6050_SetAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
 		MPU6050_Accelerometer AccelerometerSensitivity) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t data, address = DataStruct->Address;
 
 	/* Config accelerometer */
-	while (HAL_I2C_Mem_Read(Handle, address, MPU6050_ACCEL_CONFIG, 1, &data, 1, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_ACCEL_CONFIG, 1, &data, 1, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &regAdd, 1, 1000) != HAL_OK)
-	//    ;
-	//  /*{
-	//   return MPU6050_Result_Error;
-	//   }*/
-	//  while (HAL_I2C_Master_Receive(Handle, (uint16_t) address, &data, 1, 1000) != HAL_OK)
-	//    ;
-	//  /*{
-	//   return MPU6050_Result_Error;
-	//   }*/
+
 	data = (data & 0xE7) | (uint8_t) AccelerometerSensitivity << 3;
-	while (HAL_I2C_Mem_Write(Handle, address, MPU6050_ACCEL_CONFIG, 1, &data, 1, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_ACCEL_CONFIG, 1, &data, 1, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &data, 1, 1000) != HAL_OK)
-	//    ;
-	//  /*{
-	//   return MPU6050_Result_Error;
-	//   }*/
+
 
 	/* Set sensitivities for multiplying gyro and accelerometer data */
 	switch (AccelerometerSensitivity) {
@@ -199,30 +174,15 @@ MPU6050_Result MPU6050_SetAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataSt
 
 MPU6050_Result MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
 		MPU6050_Gyroscope GyroscopeSensitivity) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t data, address = DataStruct->Address;
 
 	/* Config gyroscope */
-	while (HAL_I2C_Mem_Read(Handle, address, MPU6050_GYRO_CONFIG, 1, &data, 1, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_GYRO_CONFIG, 1, &data, 1, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &regAdd, 1, 1000) != HAL_OK)
-	//    ;
-	//  /*{
-	//   return MPU6050_Result_Error;
-	//   }*/
-	//  while (HAL_I2C_Master_Receive(Handle, (uint16_t) address, &data, 1, 1000) != HAL_OK)
-	//    ;
-	//  /*{
-	//   return MPU6050_Result_Error;
-	//   }*/
+
 	data = (data & 0xE7) | (uint8_t) GyroscopeSensitivity << 3;
-	while (HAL_I2C_Mem_Write(Handle, address, MPU6050_GYRO_CONFIG, 1, &data, 1, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_GYRO_CONFIG, 1, &data, 1, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &data, 1, 1000) != HAL_OK)
-	//    ;
-	//  /*{
-	//   return MPU6050_Result_Error;
-	//   }*/
 
 	switch (GyroscopeSensitivity) {
 		case MPU6050_Gyroscope_250s:
@@ -245,17 +205,11 @@ MPU6050_Result MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct
 }
 
 MPU6050_Result MPU6050_ReadAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t data[6], address = DataStruct->Address;
 
 	/* Read accelerometer data */
-	while (HAL_I2C_Mem_Read(Handle, address, MPU6050_ACCEL_XOUT_H, 1, data, 6, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_ACCEL_XOUT_H, 1, data, 6, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &reg, 1, 1000) != HAL_OK)
-	//    ;
-	//
-	//  while (HAL_I2C_Master_Receive(Handle, (uint16_t) address, data, 6, 1000) != HAL_OK)
-	//    ;
 
 	/* Format */
 	DataStruct->Accelerometer_X = (int16_t) (data[0] << 8 | data[1]);
@@ -266,17 +220,11 @@ MPU6050_Result MPU6050_ReadAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataS
 	return MPU6050_Result_Ok;
 }
 MPU6050_Result MPU6050_ReadGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t data[6], address = DataStruct->Address;
 
 	/* Read gyroscope data */
-	while (HAL_I2C_Mem_Read(Handle, address, MPU6050_GYRO_XOUT_H, 1, data, 6, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_GYRO_XOUT_H, 1, data, 6, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &reg, 1, 1000) != HAL_OK)
-	//    ;
-	//
-	//  while (HAL_I2C_Master_Receive(Handle, (uint16_t) address, data, 6, 1000) != HAL_OK)
-	//    ;
 
 	/* Format */
 	DataStruct->Gyroscope_X = (int16_t) (data[0] << 8 | data[1]);
@@ -287,18 +235,12 @@ MPU6050_Result MPU6050_ReadGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruc
 	return MPU6050_Result_Ok;
 }
 MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t data[2], address = DataStruct->Address;
 	int16_t temp;
 
 	/* Read temperature */
-	while (HAL_I2C_Mem_Read(Handle, address, MPU6050_TEMP_OUT_H, 1, data, 2, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_TEMP_OUT_H, 1, data, 2, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &reg, 1, 1000) != HAL_OK)
-	//    ;
-	//
-	//  while (HAL_I2C_Master_Receive(Handle, (uint16_t) address, data, 2, 1000) != HAL_OK)
-	//    ;
 
 	/* Format temperature */
 	temp = (data[0] << 8 | data[1]);
@@ -308,18 +250,12 @@ MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStr
 	return MPU6050_Result_Ok;
 }
 MPU6050_Result MPU6050_ReadAll(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t data[14], address = DataStruct->Address;
 	int16_t temp;
 
 	/* Read full raw data, 14bytes */
-	while (HAL_I2C_Mem_Read(Handle, address, MPU6050_ACCEL_XOUT_H, 1, data, 14, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_ACCEL_XOUT_H, 1, data, 14, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &reg, 1, 1000) != HAL_OK)
-	//    ;
-	//
-	//  while (HAL_I2C_Master_Receive(Handle, (uint16_t) address, data, 14, 1000) != HAL_OK)
-	//    ;
 
 	/* Format accelerometer data */
 	DataStruct->Accelerometer_X = (int16_t) (data[0] << 8 | data[1]);
@@ -340,71 +276,48 @@ MPU6050_Result MPU6050_ReadAll(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
 }
 
 MPU6050_Result MPU6050_EnableInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
-	//  uint8_t reg[2] = { MPU6050_INT_ENABLE, 0x21 };
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t temp, data, address = DataStruct->Address;
 
 	/* Enable interrupts for data ready and motion detect */
 	data = 0x21;
-	while (HAL_I2C_Mem_Write(Handle, address, MPU6050_INT_ENABLE, 1, &data, 1, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_INT_ENABLE, 1, &data, 1, 1000) != HAL_OK)
 		;
 
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, reg, 2, 1000) != HAL_OK)
-	//    ;
-
-	//  uint8_t mpu_reg = MPU6050_INT_PIN_CFG;
 	/* Clear IRQ flag on any read operation */
-	while (HAL_I2C_Mem_Read(Handle, address, MPU6050_INT_PIN_CFG, 1, &temp, 14, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_INT_PIN_CFG, 1, &temp, 14, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &mpu_reg, 1, 1000) != HAL_OK)
-	//    ;
-	//  while (HAL_I2C_Master_Receive(Handle, (uint16_t) address, &temp, 14, 1000) != HAL_OK)
-	//    ;
 
 	temp |= 0x10;
-	//  reg[0] = MPU6050_INT_PIN_CFG;
-	//  reg[1] = temp;
 
-	while (HAL_I2C_Mem_Write(Handle, address, MPU6050_INT_PIN_CFG, 1, &temp, 1, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_INT_PIN_CFG, 1, &temp, 1, 1000) != HAL_OK)
 		;
-
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, reg, 2, 1000) != HAL_OK)
-	//    ;
 
 	/* Return OK */
 	return MPU6050_Result_Ok;
 }
 MPU6050_Result MPU6050_DisableInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t data, address = DataStruct->Address;
 
 	/* Disable interrupts */
 	data = 0x00;
-	while (HAL_I2C_Mem_Write(Handle, address, MPU6050_INT_ENABLE, 1, &data, 1, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_INT_ENABLE, 1, &data, 1, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, reg, 2, 1000) != HAL_OK)
-	//    ;
+
 	/* Return OK */
 	return MPU6050_Result_Ok;
 }
 MPU6050_Result MPU6050_ReadInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
 		MPU6050_Interrupt *InterruptsStruct) {
-	I2C_HandleTypeDef *Handle = I2Cx;
 	uint8_t data, address = DataStruct->Address;
 
 	/* Reset structure */
 	InterruptsStruct->Status = 0;
 
-	while (HAL_I2C_Mem_Read(Handle, address, MPU6050_INT_STATUS, 1, &data, 14, 1000) != HAL_OK)
+	while (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_INT_STATUS, 1, &data, 14, 1000) != HAL_OK)
 		;
-	//  while (HAL_I2C_Master_Transmit(Handle, (uint16_t) address, &reg, 1, 1000) != HAL_OK)
-	//    ;
-	//
-	//  while (HAL_I2C_Master_Receive(Handle, (uint16_t) address, &read, 14, 1000) != HAL_OK)
-	//    ;
-
 	/* Fill value */
 	InterruptsStruct->Status = data;
+
 	/* Return OK */
 	return MPU6050_Result_Ok;
 }

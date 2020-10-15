@@ -14,13 +14,12 @@ extern I2C_HandleTypeDef hi2c3;
 /* Private variables ----------------------------------------------------------*/
 static MPU6050 mpu;
 static mems_t mems, calibrator;
-static uint8_t calibrated;
 static mems_decision_t decider;
+static motion_t motion = {0};
 
 /* Public functions implementation --------------------------------------------*/
 void GYRO_Init(void) {
     MPU6050_Result result;
-    calibrated = 0;
 
     do {
         LOG_StrLn("Gyro:Init");
@@ -38,71 +37,101 @@ void GYRO_Init(void) {
 
     // Set calibrator
     calibrator = GYRO_Average(500);
-    calibrated = 1;
     LOG_StrLn("Gyro:Calibrated");
 }
 
 mems_t GYRO_Average(uint16_t sample) {
-    uint16_t i;
+    static uint8_t calibrated = 0;
+    int32_t aX=0, aY=0, aZ=0;
+    int32_t gX=0, gY=0, gZ=0;
+    double sqrtRoll, sqrtPitch, sqrtYaw;
+    double tmp=0;
 
-    // reset value
-    mems.accelerometer.x = 0;
-    mems.accelerometer.y = 0;
-    mems.accelerometer.z = 0;
-    mems.gyroscope.x = 0;
-    mems.gyroscope.y = 0;
-    mems.gyroscope.z = 0;
 
     // sampling
-    for (i = 0; i < sample; i++) {
+    for (uint16_t i = 0; i < sample; i++) {
         // read sensor
         MPU6050_ReadAll(&hi2c3, &mpu);
         // sum all value
-        mems.accelerometer.x += mpu.Gyroscope_X;
-        mems.accelerometer.y += mpu.Gyroscope_Y;
-        mems.accelerometer.z += mpu.Gyroscope_Z;
-        mems.gyroscope.x += mpu.Accelerometer_X;
-        mems.gyroscope.y += mpu.Accelerometer_Y;
-        mems.gyroscope.z += mpu.Accelerometer_Z;
+        // convert the RAW values into dps (deg/s)
+        aX += mpu.Gyroscope_X / mpu.Gyro_Mult;
+        aY += mpu.Gyroscope_Y / mpu.Gyro_Mult;
+        aZ += mpu.Gyroscope_Z / mpu.Gyro_Mult;
+        // convert the RAW values into acceleration in 'g'
+        gX += mpu.Accelerometer_X / mpu.Acce_Mult;
+        gY += mpu.Accelerometer_Y / mpu.Acce_Mult;
+        gZ += mpu.Accelerometer_Z / mpu.Acce_Mult;
+        tmp += mpu.Temperature;
     }
 
     // calculate the average
-    mems.accelerometer.x = mems.accelerometer.x / sample;
-    mems.accelerometer.y = mems.accelerometer.y / sample;
-    mems.accelerometer.z = mems.accelerometer.z / sample;
-    mems.gyroscope.x = mems.gyroscope.x / sample;
-    mems.gyroscope.y = mems.gyroscope.y / sample;
-    mems.gyroscope.z = mems.gyroscope.z / sample;
+    aX /= sample;
+    aY /= sample;
+    aZ /= sample;
+    gX /= sample;
+    gY /= sample;
+    gZ /= sample;
+    tmp /= sample;
 
     // set for calibration
     if (calibrated) {
-        mems.accelerometer.x -= calibrator.accelerometer.x;
-        mems.accelerometer.y -= calibrator.accelerometer.y;
-        mems.accelerometer.z -= calibrator.accelerometer.z;
-        mems.gyroscope.x -= calibrator.gyroscope.x;
-        mems.gyroscope.y -= calibrator.gyroscope.y;
-        mems.gyroscope.z -= calibrator.gyroscope.z;
+        aX -= calibrator.accelerometer.x;
+        aY -= calibrator.accelerometer.y;
+        aZ -= calibrator.accelerometer.z;
+        gX -= calibrator.gyroscope.x;
+        gY -= calibrator.gyroscope.y;
+        gZ -= calibrator.gyroscope.z;
+        tmp -= calibrator.temperature;
+
+        // Calculating Roll and Pitch from the accelerometer data
+        sqrtYaw = sqrt(pow(gX, 2) + pow(gY, 2));
+        sqrtRoll = sqrt(pow(gX, 2) + pow(gZ, 2));
+        sqrtPitch = sqrt(pow(gY, 2) + pow(gZ, 2));
+
+        motion.yaw = sqrtYaw == 0 ? 0 : RAD2DEG(atan(gZ / sqrtYaw));
+        motion.roll = sqrtRoll == 0 ? 0 : RAD2DEG(atan(gY / sqrtRoll));
+        motion.pitch = sqrtPitch == 0 ? 0 : RAD2DEG(atan(gX / sqrtPitch));
+    } else {
+        calibrated = 1;
     }
+
+    // save the result
+    mems.accelerometer.x = aX;
+    mems.accelerometer.y = aY;
+    mems.accelerometer.z = aZ;
+    mems.gyroscope.x = gX;
+    mems.gyroscope.y = gY;
+    mems.gyroscope.z = gZ;
+    mems.temperature = tmp;
 
     return mems;
 }
 
 mems_decision_t GYRO_Decision(uint16_t sample) {
+    static uint16_t g_max = 0;
+
     // get mems data
     mems = GYRO_Average(sample);
 
     // calculate g-force
-    decider.crash.value = sqrt(pow(mems.accelerometer.x, 2) +
+    decider.crash.value = sqrt(
+            pow(mems.accelerometer.x, 2) +
             pow(mems.accelerometer.y, 2) +
-            pow(mems.accelerometer.z, 2));
+            pow(mems.accelerometer.z, 2)
+    ) / GRAVITY_FORCE;
     decider.crash.state = (decider.crash.value > ACCELEROMETER_LIMIT);
 
+    // capture max g-force
+    if(decider.crash.value > g_max) {
+        g_max = decider.crash.value;
+    }
+
     // calculate movement change
-    decider.fall.value = (abs(mems.gyroscope.z));
+    decider.fall.value = sqrt(pow(abs(motion.roll),2) + pow(abs(motion.pitch),2));
     decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT;
 
     // debugger
-//	Gyro_RawDebugger();
+    //	Gyro_RawDebugger();
 
     return decider;
 }
@@ -127,12 +156,14 @@ void Gyro_Debugger(mems_decision_t *decider) {
 
 void Gyro_RawDebugger(void) {
     // raw data
-    char str[100];
+    char str[150];
     sprintf(str,
-            "Accelerometer\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-                    "Gyroscope\n- X:%ld\n- Y:%ld\n- Z:%ld\n\n",
+            "Accelerometer\n- X:%d\n- Y:%d\n- Z:%d\n"
+            "Gyroscope\n- X:%d\n- Y:%d\n- Z:%d\n"
+            "Temperature: %d\n\n",
             mems.accelerometer.x, mems.accelerometer.y, mems.accelerometer.z,
-            mems.gyroscope.x, mems.gyroscope.y, mems.gyroscope.z
-            );
+            mems.gyroscope.x, mems.gyroscope.y, mems.gyroscope.z,
+            (int8_t) mems.temperature
+    );
     LOG_Str(str);
 }

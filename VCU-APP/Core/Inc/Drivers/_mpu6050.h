@@ -81,7 +81,6 @@ typedef struct {
 	int16_t Gyroscope_Y; /*!< Gyroscope value Y axis */
 	int16_t Gyroscope_Z; /*!< Gyroscope value Z axis */
 	float Temperature; /*!< Temperature in degrees */
-//I2C_HandleTypeDef* I2Cx;
 } MPU6050;
 
 /* Public union ----------------------------------------------------------------*/

@@ -12,19 +12,30 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define GYROSCOPE_LIMIT               (uint32_t) (10000/10)
-#define ACCELEROMETER_LIMIT           (uint32_t) (46000/3)
+#define GRAVITY_FORCE                    (float) 9.8
+
+#define GYROSCOPE_LIMIT                (uint8_t) (45)
+#define ACCELEROMETER_LIMIT           (uint32_t) (7000)
+
+#define RAD2DEG(rad)                             ((rad) * 180.0 / M_PI)
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
-    int32_t x;
-    int32_t y;
-    int32_t z;
+    float yaw;
+    float pitch;
+    float roll;
+} motion_t;
+
+typedef struct {
+    int16_t x;
+    int16_t y;
+    int16_t z;
 } coordinate_t;
 
 typedef struct {
     coordinate_t accelerometer;
     coordinate_t gyroscope;
+    float temperature;
 } mems_t;
 
 typedef struct {

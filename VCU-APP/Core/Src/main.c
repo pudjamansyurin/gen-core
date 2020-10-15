@@ -1450,18 +1450,18 @@ void StartManagerTask(void *argument)
     EEPROM_Init();
 
     // Threads management:
-//    osThreadSuspend(IotTaskHandle);
-//    osThreadSuspend(ReporterTaskHandle);
-//    osThreadSuspend(CommandTaskHandle);
-//    osThreadSuspend(GpsTaskHandle);
+    osThreadSuspend(IotTaskHandle);
+    osThreadSuspend(ReporterTaskHandle);
+    osThreadSuspend(CommandTaskHandle);
+    osThreadSuspend(GpsTaskHandle);
 //    osThreadSuspend(GyroTaskHandle);
-//    osThreadSuspend(KeylessTaskHandle);
-//    osThreadSuspend(FingerTaskHandle);
-//    osThreadSuspend(AudioTaskHandle);
-//    osThreadSuspend(SwitchTaskHandle);
+    osThreadSuspend(KeylessTaskHandle);
+    osThreadSuspend(FingerTaskHandle);
+    osThreadSuspend(AudioTaskHandle);
+    osThreadSuspend(SwitchTaskHandle);
     osThreadSuspend(CanRxTaskHandle);
     osThreadSuspend(CanTxTaskHandle);
-//    osThreadSuspend(Hmi2PowerTaskHandle);
+    osThreadSuspend(Hmi2PowerTaskHandle);
 
 // Release threads
     osEventFlagsSet(GlobalEventHandle, EVENT_READY);
@@ -1909,8 +1909,8 @@ void StartGyroTask(void *argument)
         lastWake = _GetTickMS();
 
         // Read all accelerometer, gyroscope (average)
-        decider = GYRO_Decision(25);
-        //		Gyro_Debugger(&decider);
+        decider = GYRO_Decision(50);
+//        Gyro_Debugger(&decider);
 
         // Check accelerometer, happens when impact detected
         if (tmp.crash.state != decider.crash.state) {
