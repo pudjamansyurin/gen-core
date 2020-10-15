@@ -28,7 +28,7 @@ void GYRO_Init(void) {
 
         // MOSFET Control
         HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 0);
-        _DelayMS(500);
+        _DelayMS(1000);
         HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 1);
         _DelayMS(1000);
 
@@ -38,8 +38,8 @@ void GYRO_Init(void) {
     } while (result != MPU6050_Result_Ok);
 
     // Set calibrator
-//    calibrator = GYRO_Average(500);
-//    LOG_StrLn("Gyro:Calibrated");
+    //    calibrator = GYRO_Average(500);
+    //    LOG_StrLn("Gyro:Calibrated");
 }
 
 mems_t GYRO_Average(uint16_t sample) {
@@ -85,13 +85,13 @@ mems_t GYRO_Average(uint16_t sample) {
 
     // set for calibration
     if (calibrated) {
-//        aX -= calibrator.accelerometer.x;
-//        aY -= calibrator.accelerometer.y;
-//        aZ -= calibrator.accelerometer.z;
-//        gX -= calibrator.gyroscope.x;
-//        gY -= calibrator.gyroscope.y;
-//        gZ -= calibrator.gyroscope.z;
-//        tmp -= calibrator.temperature;
+        //        aX -= calibrator.accelerometer.x;
+        //        aY -= calibrator.accelerometer.y;
+        //        aZ -= calibrator.accelerometer.z;
+        //        gX -= calibrator.gyroscope.x;
+        //        gY -= calibrator.gyroscope.y;
+        //        gZ -= calibrator.gyroscope.z;
+        //        tmp -= calibrator.temperature;
 
         // Calculating Roll and Pitch from the accelerometer data
         sqrtYaw = sqrt(pow(gX, 2) + pow(gY, 2));
