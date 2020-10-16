@@ -142,7 +142,7 @@ mems_decision_t GYRO_Decision(uint16_t sample) {
 
     // calculate movement change
     decider.fall.value = sqrt(pow(abs(motion.roll),2) + pow(abs(motion.pitch),2));
-    decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT && motion.yaw < GYROSCOPE_LIMIT;
+    decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT || motion.yaw < GYROSCOPE_LIMIT;
 
     // record as report
     VCU.d.motion.pitch = motion.pitch;
