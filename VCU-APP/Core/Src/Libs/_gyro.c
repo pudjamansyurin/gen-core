@@ -28,6 +28,9 @@ void GYRO_Init(void) {
     do {
         LOG_StrLn("Gyro:Init");
 
+        MX_I2C3_DeInit();
+        MX_I2C3_Init();
+
         // MOSFET Control
         HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 0);
         _DelayMS(2000);
@@ -139,7 +142,7 @@ mems_decision_t GYRO_Decision(uint16_t sample) {
 
     // calculate movement change
     decider.fall.value = sqrt(pow(abs(motion.roll),2) + pow(abs(motion.pitch),2));
-    decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT;
+    decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT && motion.yaw > GYROSCOPE_LIMIT;
 
     // record as report
     VCU.d.motion.pitch = motion.pitch;
