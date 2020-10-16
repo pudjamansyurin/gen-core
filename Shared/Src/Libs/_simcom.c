@@ -23,6 +23,7 @@
 #endif
 
 /* External variables ---------------------------------------------------------*/
+extern UART_HandleTypeDef huart1;
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ ];
 #if (!BOOTLOADER)
 extern osMutexId_t SimcomRecMutexHandle;
@@ -49,7 +50,7 @@ static void Simcom_Sleep(uint8_t state);
 static void Simcom_BeforeTransmitHook(void);
 #if (!BOOTLOADER)
 static SIMCOM_RESULT Simcom_ProcessCommando(command_t *command);
-static SIMCOM_RESULT Simcom_ProcessACK(header_t *header);
+//static SIMCOM_RESULT Simcom_ProcessACK(header_t *header);
 static uint8_t Simcom_CommandoIRQ(void);
 #endif
 
@@ -630,29 +631,29 @@ static SIMCOM_RESULT Simcom_ProcessCommando(command_t *command) {
     return p;
 }
 
-static SIMCOM_RESULT Simcom_ProcessACK(header_t *header) {
-    SIMCOM_RESULT p = SIM_RESULT_ERROR;
-    ack_t ack;
-    char *str = NULL;
-
-    Simcom_Lock();
-    if (Simcom_Response(SIMCOM_RSP_IPD)) {
-        // parse ACK
-        str = Simcom_Response(PREFIX_ACK);
-        if (str != NULL) {
-            ack = *(ack_t*) str;
-
-            // validate the value
-            if (header->frame_id == ack.frame_id &&
-                    header->seq_id == ack.seq_id) {
-                p = SIM_RESULT_OK;
-            }
-        }
-    }
-
-    Simcom_Unlock();
-    return p;
-}
+//static SIMCOM_RESULT Simcom_ProcessACK(header_t *header) {
+//    SIMCOM_RESULT p = SIM_RESULT_ERROR;
+//    ack_t ack;
+//    char *str = NULL;
+//
+//    Simcom_Lock();
+//    if (Simcom_Response(SIMCOM_RSP_IPD)) {
+//        // parse ACK
+//        str = Simcom_Response(PREFIX_ACK);
+//        if (str != NULL) {
+//            ack = *(ack_t*) str;
+//
+//            // validate the value
+//            if (header->frame_id == ack.frame_id &&
+//                    header->seq_id == ack.seq_id) {
+//                p = SIM_RESULT_OK;
+//            }
+//        }
+//    }
+//
+//    Simcom_Unlock();
+//    return p;
+//}
 
 static uint8_t Simcom_CommandoIRQ(void) {
     return Simcom_Response(PREFIX_COMMAND) != NULL;

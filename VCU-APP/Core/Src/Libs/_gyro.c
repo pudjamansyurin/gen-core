@@ -12,10 +12,12 @@
 /* External variables ---------------------------------------------------------*/
 extern I2C_HandleTypeDef hi2c3;
 extern vcu_t VCU;
+extern void MX_I2C3_Init(void);
 
 /* Private variables ----------------------------------------------------------*/
 static MPU6050 mpu;
-static mems_t mems, calibrator;
+static mems_t mems;
+//static mems_t calibrator;
 static mems_decision_t decider;
 static motion_t motion = {0};
 
@@ -28,9 +30,9 @@ void GYRO_Init(void) {
 
         // MOSFET Control
         HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 0);
-        _DelayMS(1000);
+        _DelayMS(2000);
         HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 1);
-        _DelayMS(1000);
+        _DelayMS(500);
 
         // module initialization
         result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
@@ -49,7 +51,6 @@ mems_t GYRO_Average(uint16_t sample) {
     double sqrtRoll, sqrtPitch, sqrtYaw;
     double tmp=0;
     MPU6050_Result status;
-
 
     // sampling
     for (uint16_t i = 0; i < sample; i++) {
@@ -170,7 +171,7 @@ void Gyro_Debugger(mems_decision_t *decider) {
 
 void Gyro_RawDebugger(void) {
     // raw data
-    char str[150];
+    char str[100];
     sprintf(str,
             "Accelerometer\n- X:%d\n- Y:%d\n- Z:%d\n"
             "Gyroscope\n- X:%d\n- Y:%d\n- Z:%d\n"
