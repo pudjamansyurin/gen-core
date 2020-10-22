@@ -5,8 +5,8 @@
  *      Author: pudja
  */
 
-#ifndef INC_DRIVERS__USART_RING_H_
-#define INC_DRIVERS__USART_RING_H_
+#ifndef INC_LIBS__USART_RING_H_
+#define INC_LIBS__USART_RING_H_
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -40,4 +40,4 @@ void USART_Check_Buffer(usart_ring_t *ring);
 void USART_Fill_Buffer(usart_ring_t *ring, size_t start, size_t len);
 void USART_Reset_Buffer(usart_ring_t *ring);
 
-#endif /* INC_DRIVERS__USART_RING_H_ */
+#endif /* INC_LIBS__USART_RING_H_ */

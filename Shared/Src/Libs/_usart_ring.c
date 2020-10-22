@@ -6,7 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Drivers/_usart_ring.h"
+#include <Libs/_usart_ring.h>
 
 /* Public functions implementation --------------------------------------------*/
 void USART_DMA_Init(usart_ring_t *ring) {
