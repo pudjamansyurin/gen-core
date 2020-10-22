@@ -16,8 +16,8 @@
 #define UBLOX_DMA_RX_SZ      (uint16_t) (UBLOX_UART_RX_SZ/(UBLOX_UART_RX_SZ/128))
 
 /* Public functions prototype ------------------------------------------------*/
-void UBLOX_USART_IrqHandler(void);
-void UBLOX_DMA_IrqHandler(void);
 void UBLOX_DMA_Init(void);
+void UBLOX_DMA_IrqHandler(void);
+void UBLOX_USART_IrqHandler(void);
 
 #endif /* DMA_UBLOX_H_ */
