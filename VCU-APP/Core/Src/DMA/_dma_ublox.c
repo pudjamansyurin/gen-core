@@ -24,12 +24,12 @@ static usart_ring_t GPS_RING = {
 		.rx_only = 1,
 		.usart = {
 				.idx = 0,
-				.buf = &UBLOX_UART_RX,
-				.sz = 0
+				.buf = UBLOX_UART_RX,
+				.sz = UBLOX_UART_RX_SZ
 		},
 		.dma = {
-				.buf = &UBLOX_DMA_RX,
-				.sz = 0
+				.buf = UBLOX_DMA_RX,
+				.sz = UBLOX_DMA_RX_SZ
 		},
 		.tmp = {
 				.idle = 1,

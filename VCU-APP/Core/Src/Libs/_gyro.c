@@ -8,6 +8,7 @@
 #include "Libs/_gyro.h"
 #include "Drivers/_mpu6050.h"
 #include "Nodes/VCU.h"
+#include "i2c.h"
 
 /* External variables ---------------------------------------------------------*/
 extern I2C_HandleTypeDef hi2c3;

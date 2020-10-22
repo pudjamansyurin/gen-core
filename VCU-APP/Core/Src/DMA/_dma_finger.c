@@ -24,19 +24,18 @@ static usart_ring_t FINGER_RING = {
 		.rx_only = 0,
 		.usart = {
 				.idx = 0,
-				.buf = &FINGER_UART_RX,
-				.sz = 0
+				.buf = FINGER_UART_RX,
+				.sz = FINGER_UART_RX_SZ
 		},
 		.dma = {
-				.buf = &FINGER_DMA_RX,
-				.sz = 0
+				.buf = FINGER_DMA_RX,
+				.sz = FINGER_DMA_RX_SZ
 		},
 		.tmp = {
 				.idle = 1,
 				.old_pos = 0,
 		}
 };
-
 
 /* Public functions implementation ---------------------------------------------*/
 void FINGER_DMA_Init(void) {
@@ -51,7 +50,10 @@ void FINGER_USART_IrqHandler(void) {
 	USART_IrqHandler(&FINGER_RING);
 }
 
+void FINGER_Reset_Buffer(void) {
+    USART_Reset_Buffer(&FINGER_RING);
+}
 
-uint8_t FINGER_Transmit8(uint8_t *pData) {
-    return (HAL_UART_Transmit(&huart4, pData, 1, HAL_MAX_DELAY) == HAL_OK);
+uint8_t FINGER_Transmit8(uint8_t *data) {
+    return (HAL_UART_Transmit(FINGER_RING.huart, data, 1, HAL_MAX_DELAY) == HAL_OK);
 }

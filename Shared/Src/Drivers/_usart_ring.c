@@ -70,16 +70,16 @@ void USART_Check_Buffer(usart_ring_t *ring) {
 	}
 
 	/* Calculate current position in buffer */
-	pos = ring->dma.sz - __HAL_DMA_GET_COUNTER(&(ring->hdma));
+	pos = ring->dma.sz - __HAL_DMA_GET_COUNTER(ring->hdma);
 	if (pos != ring->tmp.old_pos) { /* Check change in received data */
 		if (pos > ring->tmp.old_pos) { /* Current position is over previous one */
 			/* We are in "linear" mode */
 			/* Process data directly by subtracting "pointers" */
-			USART_Fill_Buffer(ring, old_pos, pos - old_pos);
+			USART_Fill_Buffer(ring, ring->tmp.old_pos, pos - ring->tmp.old_pos);
 		} else {
 			/* We are in "overflow" mode */
 			/* First process data to the end of buffer */
-			USART_Fill_Buffer(ring, ring->tmp.old_pos, UBLOX_DMA_RX_SZ - old_pos);
+			USART_Fill_Buffer(ring, ring->tmp.old_pos, ring->dma.sz - ring->tmp.old_pos);
 			/* Check and continue with beginning of buffer */
 			if (pos > 0) {
 				USART_Fill_Buffer(ring, 0, pos);
