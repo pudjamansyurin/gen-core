@@ -5,33 +5,35 @@
  *      Author: pudja
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes -----------------------------------------------------------------*/
 #include "DMA/_dma_battery.h"
 #include "Nodes/VCU.h"
 
-/* External variables ---------------------------------------------------------*/
+/* External variables -------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
 
-/* Exported variables ---------------------------------------------------------*/
+/* Public variables ---------------------------------------------------------*/
 uint16_t BACKUP_VOLTAGE = 0;
 
-/* Local constants -----------------------------------------------------------*/
-#define DMA_SZ                      50U
-#define AVERAGE_SZ                  1000U
-#define ADC_MAX_VALUE               4095.0f   // 12 bit
-#define REF_MAX_VOLTAGE             3300.0f   // mV
-#define BAT_MAX_VOLTAGE             4200.0f   // mV
-
-/* Private variables ----------------------------------------------------------*/
+/* Private variables --------------------------------------------------------*/
 static uint16_t DMA_BUFFER[DMA_SZ];
 static uint16_t AVERAGE_BUFFER[AVERAGE_SZ] = { 0 };
 
-/* Public functions declaration ------------------------------------------------*/
+/* Private functions declaration --------------------------------------------*/
 static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value);
+static uint16_t AverageBuffer(uint16_t start, uint16_t stop);
 
-/* Public functions implementation ---------------------------------------------*/
+/* Public functions implementation ------------------------------------------*/
 void BAT_DMA_Init(void) {
     HAL_ADC_Start_DMA(&hadc1, (uint32_t*) DMA_BUFFER, DMA_SZ);
+}
+
+void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
+    BACKUP_VOLTAGE = AverageBuffer(0, (DMA_SZ / 2));
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
+    BACKUP_VOLTAGE = AverageBuffer(((DMA_SZ / 2) - 1), DMA_SZ);
 }
 
 void BAT_Debugger(void) {
@@ -40,39 +42,7 @@ void BAT_Debugger(void) {
     LOG_StrLn(" mV");
 }
 
-void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
-    uint16_t i;
-    uint32_t temp = 0;
-
-    // sum all buffer sample
-    for (i = 0; i < (DMA_SZ / 2); i++) {
-        temp += DMA_BUFFER[i];
-    }
-    // calculate the average
-    temp = temp / (DMA_SZ / 2);
-
-    // calculate the moving average
-    MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-    uint16_t i;
-    uint32_t temp = 0;
-
-    // sum all buffer sample
-    for (i = ((DMA_SZ / 2) - 1); i < DMA_SZ; i++) {
-        temp += DMA_BUFFER[i];
-    }
-    // calculate the average
-    temp = temp / (DMA_SZ / 2);
-
-    // calculate the moving average
-    temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
-    // change to battery value
-    BACKUP_VOLTAGE = (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
-}
-
-/* Private functions implementation ---------------------------------------------*/
+/* Private functions implementation ------------------------------------------*/
 static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
     static uint32_t sum = 0, pos = 0;
     static uint16_t length = 0;
@@ -93,3 +63,21 @@ static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
     //return the average
     return sum / length;
 }
+
+static uint16_t AverageBuffer(uint16_t start, uint16_t stop) {
+    uint32_t temp = 0;
+
+    // sum all buffer sample
+    for (uint16_t i = start; i < stop; i++) {
+        temp += DMA_BUFFER[i];
+    }
+    // calculate the average
+    temp /= (stop - start);
+
+    // calculate the moving average
+    temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
+
+    // change to battery value
+    return (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
+}
+
