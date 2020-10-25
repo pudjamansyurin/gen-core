@@ -816,6 +816,7 @@ void StartGpsTask(void *argument)
 void StartGyroTask(void *argument)
 {
 	/* USER CODE BEGIN StartGyroTask */
+	uint32_t flag;
 	TickType_t lastWake;
 	mems_decision_t decider, tmp;
 
@@ -844,11 +845,9 @@ void StartGyroTask(void *argument)
 		if (tmp.fall.state != decider.fall.state) {
 			tmp.fall.state = decider.fall.state;
 
-			if (decider.fall.state) {
-				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-			} else {
-				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
-			}
+			flag = decider.fall.state ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
+
+			osThreadFlagsSet(AudioTaskHandle, flag);
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, decider.fall.state);
 			_LedWrite(decider.fall.state);
 		}
