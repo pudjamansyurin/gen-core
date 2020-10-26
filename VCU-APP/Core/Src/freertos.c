@@ -416,12 +416,12 @@ void StartManagerTask(void *argument)
 	EEPROM_Init();
 
 	// Threads management:
-	//    osThreadSuspend(IotTaskHandle);
-	//    osThreadSuspend(ReporterTaskHandle);
-	//    osThreadSuspend(CommandTaskHandle);
-	//    osThreadSuspend(GpsTaskHandle);
-	//    osThreadSuspend(GyroTaskHandle);
-	osThreadSuspend(KeylessTaskHandle);
+	    osThreadSuspend(IotTaskHandle);
+	    osThreadSuspend(ReporterTaskHandle);
+	    osThreadSuspend(CommandTaskHandle);
+	    osThreadSuspend(GpsTaskHandle);
+	    osThreadSuspend(GyroTaskHandle);
+	//	  osThreadSuspend(KeylessTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
 	osThreadSuspend(AudioTaskHandle);
 	osThreadSuspend(SwitchTaskHandle);
@@ -431,7 +431,6 @@ void StartManagerTask(void *argument)
 
 	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
-	//    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
 	/* Infinite loop */
 	for (;;) {
@@ -447,7 +446,7 @@ void StartManagerTask(void *argument)
 		// _RTOS_Debugger(1000);
 
 		// Battery Monitor
-		// BAT_Debugger();
+		 BAT_Debugger();
 
 		// Other stuffs
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
@@ -884,10 +883,14 @@ void StartKeylessTask(void *argument)
 	AES_Init();
 	KLESS_Init();
 
+	osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 	/* Infinite loop */
 	for (;;) {
-		// check if has new can message
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 100);
+		// Send ping
+		// KLESS_SendPing();
+
+		// Check response
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 5);
 		// proceed event
 		if (_RTOS_ValidThreadFlag(notif)) {
 			// handle reset key & id
@@ -896,8 +899,14 @@ void StartKeylessTask(void *argument)
 				KLESS_Init();
 			}
 
+			// handle Pairing
+			if (notif & EVT_KEYLESS_PAIRING) {
+				KLESS_Pairing();
+				tick_pairing = _GetTickMS();
+			}
+
 			// handle incoming payload
-			if (notif & EVT_KEYLESS_RX_IT) {
+			else if (notif & EVT_KEYLESS_RX_IT) {
 				KLESS_Debugger();
 
 				// process
@@ -917,8 +926,8 @@ void StartKeylessTask(void *argument)
 
 							// update heart-beat
 							VCU.d.tick.keyless = _GetTickMS();
-
 							break;
+
 						case KLESS_CMD_ALARM:
 							LOG_StrLn("NRF:Command = ALARM");
 
@@ -931,8 +940,8 @@ void StartKeylessTask(void *argument)
 								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
 								_DelayMS(100);
 							}
-
 							break;
+
 						case KLESS_CMD_SEAT:
 							LOG_StrLn("NRF:Command = SEAT");
 
@@ -940,8 +949,8 @@ void StartKeylessTask(void *argument)
 							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
 							_DelayMS(100);
 							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
-
 							break;
+
 						default:
 							break;
 					}
@@ -959,12 +968,6 @@ void StartKeylessTask(void *argument)
 
 				// reset pending flag
 				osThreadFlagsClear(EVT_MASK);
-			}
-
-			// handle Pairing
-			if (notif & EVT_KEYLESS_PAIRING) {
-				KLESS_Pairing();
-				tick_pairing = _GetTickMS();
 			}
 		}
 

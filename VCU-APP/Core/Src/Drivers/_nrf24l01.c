@@ -56,17 +56,17 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
     do {
         LOG_StrLn("NRF:Init");
 
+        // reset peripheral
+        HAL_SPI_MspDeInit(&hspi1);
+        HAL_SPI_MspInit(&hspi1);
+
         // turn on the mosfet
         HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 0);
-        _DelayMS(500);
+        _DelayMS(1000);
         HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
-        _DelayMS(500);
+        _DelayMS(1000);
 
         result = nrf_check(&NRF);
-
-        if (result == NRF_ERROR) {
-            _DelayMS(1000);
-        }
     } while (result == NRF_ERROR);
 
     // enter standby I mode
@@ -128,7 +128,6 @@ NRF_RESULT nrf_check(nrf24l01 *dev) {
     char *nRF24_TEST_ADDR = "nRF24";
     uint8_t rxbuf[sizeof(nRF24_TEST_ADDR) - 1U];
     uint8_t *ptr = (uint8_t*) nRF24_TEST_ADDR;
-    uint8_t idx;
 
     // Write the test address to the TX_ADDR register
     nrf_write_register_mb(dev, NRF_TX_ADDR, ptr, sizeof(nRF24_TEST_ADDR) - 1U);
@@ -136,7 +135,7 @@ NRF_RESULT nrf_check(nrf24l01 *dev) {
     nrf_read_register_mb(dev, NRF_TX_ADDR, rxbuf, sizeof(nRF24_TEST_ADDR) - 1U);
 
     // Compare transmitted and received data...
-    for (idx = 0U; idx < sizeof(nRF24_TEST_ADDR) - 1U; idx++) {
+    for (uint8_t idx = 0U; idx < sizeof(nRF24_TEST_ADDR) - 1U; idx++) {
         if (rxbuf[idx] != *ptr++) {
             // The transceiver is absent
             return NRF_ERROR;

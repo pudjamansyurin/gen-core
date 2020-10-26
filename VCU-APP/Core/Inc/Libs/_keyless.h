@@ -44,10 +44,9 @@ typedef struct {
 void KLESS_Init(void);
 void KLESS_Debugger(void);
 uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd);
-uint8_t KLESS_Payload(KLESS_MODE mode, uint8_t *payload);
 void KLESS_GenerateAesKey(uint32_t *payload);
 uint8_t KLESS_Pairing(void);
-uint8_t KLESS_SendDummy(void);
+uint8_t KLESS_SendPing(void);
 void KLESS_Refresh(void);
 void KLESS_IrqHandler(void);
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);

@@ -141,7 +141,7 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
 
     // update the NRF Address
     if (cmd == EE_CMD_W) {
-        osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
+//        osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
     }
 
     return ret;
@@ -173,7 +173,7 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 
     // apply the AES key
     if (cmd == EE_CMD_W) {
-        osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
+//        osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
     }
 
     return ret;
