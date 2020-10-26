@@ -13,7 +13,6 @@
 /* External variables ---------------------------------------------------------*/
 extern I2C_HandleTypeDef hi2c3;
 extern vcu_t VCU;
-extern void MX_I2C3_Init(void);
 
 /* Private variables ----------------------------------------------------------*/
 static MPU6050 mpu;
@@ -29,6 +28,7 @@ void GYRO_Init(void) {
     do {
         LOG_StrLn("Gyro:Init");
 
+        // Reset peripheral
         MX_I2C3_DeInit();
         MX_I2C3_Init();
 

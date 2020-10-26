@@ -12,9 +12,11 @@
 extern CRYP_HandleTypeDef hcryp;
 extern osMutexId_t AesMutexHandle;
 
+/* Public variable -----------------------------------------------------------*/
+__ALIGN_BEGIN uint32_t AesKey[4] __ALIGN_END;
+
 /* Private variable ----------------------------------------------------------*/
 static CRYP_ConfigTypeDef config;
-__ALIGN_BEGIN uint32_t AesKey[4] __ALIGN_END;
 
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
@@ -54,7 +56,8 @@ void AES_Tester(void) {
             0x01, 0x02, 0x03, 0x04,
             0xAA, 0xBB, 0xCC, 0xDD,
             0xA9, 0xA8, 0xA7, 0xA6,
-            0x50, 0x60, 0x70, 0x80 };
+            0x50, 0x60, 0x70, 0x80
+    };
     uint8_t Encryptedtext[sizeof(Plaintext)] = { 0 };
     uint8_t Decryptedtext[sizeof(Plaintext)] = { 0 };
 

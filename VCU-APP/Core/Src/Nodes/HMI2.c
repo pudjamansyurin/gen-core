@@ -51,53 +51,6 @@ void HMI2_PowerOverCan(uint8_t state) {
     osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
 }
 
-/* ====================================== THREAD =================================== */
-void StartHmi2PowerTask(void *argument) {
-    TickType_t tick;
-    uint32_t notif;
-    uint8_t activeHigh = 0;
-
-    /* Infinite loop */
-    for (;;) {
-        // wait forever until triggered
-        notif = osThreadFlagsWait(EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever);
-        if (_RTOS_ValidThreadFlag(notif)) {
-            // Handle power control
-            if (HMI2.d.power) {
-                while (!HMI2.d.started) {
-                    // turn ON
-                    HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !activeHigh);
-                    _DelayMS(100);
-                    HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, activeHigh);
-
-                    // wait until turned ON
-                    tick = _GetTickMS();
-                    while (_GetTickMS() - tick < (90 * 1000)) {
-                        // already ON
-                        if (HMI2.d.started) {
-                            break;
-                        }
-                    }
-                }
-            } else {
-                while (HMI2.d.started) {
-                    // wait until turned OFF by CAN
-                    tick = _GetTickMS();
-                    while (_GetTickMS() - tick < (30 * 1000)) {
-                        // already OFF
-                        if (!HMI2.d.started) {
-                            break;
-                        }
-                    }
-
-                    // force turn OFF
-                    HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !activeHigh);
-                }
-            }
-        }
-    }
-}
-
 /* ====================================== CAN RX =================================== */
 void HMI2_CAN_RX_State(can_rx_t *Rx) {
     // read message

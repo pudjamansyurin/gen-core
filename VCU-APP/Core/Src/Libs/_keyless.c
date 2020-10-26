@@ -17,7 +17,8 @@ extern SPI_HandleTypeDef hspi1;
 extern osThreadId_t KeylessTaskHandle;
 extern osMutexId_t KlessRecMutexHandle;
 extern RNG_HandleTypeDef hrng;
-extern nrf24l01 nrf;
+extern nrf24l01 NRF;
+
 extern vcu_t VCU;
 extern hmi1_t HMI1;
 extern uint32_t AesKey[4];
@@ -80,7 +81,7 @@ void KLESS_Init(void) {
     config->irq_pin = INT_KEYLESS_IRQ_Pin;
 
     // initialization
-    nrf_init(&nrf, config);
+    nrf_init(&NRF, config);
 }
 
 uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
@@ -156,15 +157,15 @@ uint8_t KLESS_Pairing(void) {
     memset(KLESS.rx.address, 0x00, 4);
 
     // Set NRF Config (pairing mode)
-    ce_reset(&nrf);
-    nrf_set_tx_address(&nrf, KLESS.tx.address);
-    nrf_set_rx_address_p0(&nrf, KLESS.rx.address);
-    nrf_set_rx_payload_width_p0(&nrf, NRF_DATA_PAIR_LENGTH);
-    ce_set(&nrf);
+    ce_reset(&NRF);
+    nrf_set_tx_address(&NRF, KLESS.tx.address);
+    nrf_set_rx_address_p0(&NRF, KLESS.rx.address);
+    nrf_set_rx_payload_width_p0(&NRF, NRF_DATA_PAIR_LENGTH);
+    ce_set(&NRF);
 
     // Send Payload
-    //    p = nrf_send_packet(&nrf, payload);
-    p = nrf_send_packet_noack(&nrf, payload);
+    //    p = nrf_send_packet(&NRF, payload);
+    p = nrf_send_packet_noack(&NRF, payload);
     _DelayMS(100);
 
     // Set Address (normal mode)
@@ -188,7 +189,7 @@ uint8_t KLESS_SendDummy(void) {
     payload[0] = 1;
 
     // send payload
-    p = nrf_send_packet(&nrf, payload);
+    p = nrf_send_packet(&NRF, payload);
 
     // debug
     LOG_Str("NRF:Send = ");
@@ -215,7 +216,7 @@ void KLESS_Refresh(void) {
 }
 
 void KLESS_IrqHandler(void) {
-    nrf_irq_handler(&nrf);
+    nrf_irq_handler(&NRF);
 }
 
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {

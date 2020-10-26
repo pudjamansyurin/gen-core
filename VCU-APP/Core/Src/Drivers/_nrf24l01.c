@@ -12,7 +12,7 @@
 extern SPI_HandleTypeDef hspi1;
 
 /* Public variables -----------------------------------------------------------*/
-nrf24l01 nrf;
+nrf24l01 NRF;
 
 /* Private functions prototype ------------------------------------------------*/
 static void csn_set(nrf24l01 *dev);
@@ -62,7 +62,7 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
         HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
         _DelayMS(500);
 
-        result = nrf_check(&nrf);
+        result = nrf_check(&NRF);
 
         if (result == NRF_ERROR) {
             _DelayMS(1000);

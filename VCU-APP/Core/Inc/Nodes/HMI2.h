@@ -39,6 +39,4 @@ void HMI2_Refresh(void);
 void HMI2_PowerOverCan(uint8_t state);
 void HMI2_CAN_RX_State(can_rx_t *Rx);
 
-/* ====================================== THREAD =================================== */
-void StartHmi2PowerTask(void *argument);
 #endif /* INC_NODES_HMI2_H_ */

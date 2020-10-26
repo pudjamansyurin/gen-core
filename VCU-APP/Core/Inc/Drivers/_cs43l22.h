@@ -41,6 +41,7 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
+// #define VERIFY_WRITTENDATA
 /* Audio Reset Pin definition */
 #define AUDIO_RESET_PIN                 INT_AUDIO_RST_Pin
 #define AUDIO_RESET_GPIO                INT_AUDIO_RST_GPIO_Port
@@ -50,7 +51,7 @@
  // stuck if the SPI communication is corrupted.
  // You may modify these timeout values depending on CPU frequency and application
  // conditions (interrupts routines ...). */
-#define I2Cx_TIMEOUT_MAX    0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
+#define I2Cx_TIMEOUT_MAX                0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
 
 /******************************************************************************/
 /***************************  Codec User defines ******************************/
@@ -226,12 +227,6 @@ uint32_t cs43l22_SetOutputMode(uint16_t DeviceAddr, uint8_t Output);
 uint32_t cs43l22_Reset(uint16_t DeviceAddr);
 uint32_t cs43l22_SetBeep(uint16_t DeviceAddr, uint8_t Frequency, uint8_t OnTime, uint8_t OffTime);
 uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix);
-
-/* AUDIO IO functions */
-void AUDIO_IO_Init(void);
-void AUDIO_IO_DeInit(void);
-void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
-uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg);
 
 #endif /* CS43L22_H_ */
 

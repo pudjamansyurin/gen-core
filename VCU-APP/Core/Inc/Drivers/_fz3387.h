@@ -17,8 +17,8 @@
  BSD license, all text above must be included in any redistribution
  ****************************************************/
 
-#ifndef FZ3387_H_
-#define FZ3387_H_
+#ifndef fz3387_H_
+#define fz3387_H_
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
@@ -89,26 +89,25 @@ typedef struct {
 } finger_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void FZ3387_SET_POWER(uint8_t state);
-void FZ3387_SERIAL_WRITE(uint8_t c);
-void FZ3387_SERIAL_WRITE_U16(uint16_t cc);
-void FZ3387_writeStructuredPacket(void);
-uint8_t FZ3387_getStructuredPacket(void);
-uint8_t FZ3387_SendCmdPacket(uint8_t *data, uint8_t size);
-void FZ3387_setPacket(uint8_t type, uint16_t length, uint8_t *data);
+void fz3387_SET_POWER(uint8_t state);
 
-uint8_t FZ3387_verifyPassword(void);
-uint8_t FZ3387_checkPassword(void);
-uint8_t FZ3387_getImage(void);
-uint8_t FZ3387_image2Tz(uint8_t slot);
-uint8_t FZ3387_createModel(void);
-uint8_t FZ3387_emptyDatabase(void);
-uint8_t FZ3387_storeModel(uint16_t id);
-uint8_t FZ3387_loadModel(uint16_t id);
-uint8_t FZ3387_getModel(void);
-uint8_t FZ3387_deleteModel(uint16_t id);
-uint8_t FZ3387_fingerFastSearch(void);
-uint8_t FZ3387_getTemplateCount(void);
-uint8_t FZ3387_setPassword(uint32_t password);
+void fz3387_writeStructuredPacket(void);
+uint8_t fz3387_getStructuredPacket(void);
+uint8_t fz3387_SendCmdPacket(uint8_t *data, uint8_t size);
+void fz3387_setPacket(uint8_t type, uint16_t length, uint8_t *data);
 
-#endif /* FZ3387_H_ */
+uint8_t fz3387_verifyPassword(void);
+uint8_t fz3387_checkPassword(void);
+uint8_t fz3387_getImage(void);
+uint8_t fz3387_image2Tz(uint8_t slot);
+uint8_t fz3387_createModel(void);
+uint8_t fz3387_emptyDatabase(void);
+uint8_t fz3387_storeModel(uint16_t id);
+uint8_t fz3387_loadModel(uint16_t id);
+uint8_t fz3387_getModel(void);
+uint8_t fz3387_deleteModel(uint16_t id);
+uint8_t fz3387_fingerFastSearch(void);
+uint8_t fz3387_getTemplateCount(void);
+uint8_t fz3387_setPassword(uint32_t password);
+
+#endif /* fz3387_H_ */

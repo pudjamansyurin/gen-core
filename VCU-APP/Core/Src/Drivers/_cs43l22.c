@@ -39,21 +39,20 @@
 /* External variables ---------------------------------------------------------*/
 extern I2C_HandleTypeDef hi2c1;
 
-/* Local constants -----------------------------------------------------------*/
-#if !defined (VERIFY_WRITTENDATA)
-/* #define VERIFY_WRITTENDATA */
-#endif /* VERIFY_WRITTENDATA */
-
 /* Private variables ----------------------------------------------------------*/
-static uint8_t Is_cs43l22_Stop = 1;
 static uint8_t theVolume;
 static uint16_t theOutputDevice;
+static uint8_t Is_cs43l22_Stop = 1;
 static volatile uint8_t OutputDev = 0;
 
 /* Private functions prototype ------------------------------------------------*/
+static void AUDIO_IO_Init(void);
+static void AUDIO_IO_DeInit(void);
+static void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
+static uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg);
+static void I2Cx_Error(uint8_t Addr);
 static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 static uint8_t VOLUME_CONVERT(uint8_t Volume);
-static void I2Cx_Error(uint8_t Addr);
 
 /* Public functions implementation ---------------------------------------------*/
 /**
@@ -66,7 +65,6 @@ static void I2Cx_Error(uint8_t Addr);
  */
 uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
     uint32_t counter = 0;
-    theOutputDevice = OutputDevice;
 
     /* Initialize the Control interface of the Audio Codec */
     AUDIO_IO_Init();
@@ -132,7 +130,9 @@ uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume
     /* Adjust PCM volume level */
     counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_PCMA_VOL, 0x0A);
     counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_PCMB_VOL, 0x0A);
+
     /* Return communication control value */
+    theOutputDevice = OutputDevice;
     return counter;
 }
 
@@ -153,6 +153,7 @@ void cs43l22_DeInit(void) {
  */
 uint32_t cs43l22_ReadID(uint16_t DeviceAddr) {
     uint8_t Value;
+
     /* Initialize the Control interface of the Audio Codec */
     AUDIO_IO_Init();
 
@@ -212,13 +213,12 @@ uint32_t cs43l22_Pause(uint16_t DeviceAddr) {
  */
 uint32_t cs43l22_Resume(uint16_t DeviceAddr) {
     uint32_t counter = 0;
-    volatile uint32_t index = 0x00;
+
     /* Resumes the audio file playing */
     /* Unmute the output first */
     counter += cs43l22_SetMute(DeviceAddr, AUDIO_MUTE_OFF);
 
-    for (index = 0x00; index < 0xFF; index++)
-        ;
+    for (uint8_t index = 0x00; index < 0xFF; index++);
 
     counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2, OutputDev);
 
@@ -265,7 +265,6 @@ uint32_t cs43l22_Stop(uint16_t DeviceAddr, uint32_t CodecPdwnMode) {
 uint32_t cs43l22_SetVolume(uint16_t DeviceAddr, uint8_t Volume) {
     uint32_t counter = 0;
     uint16_t regA, regB;
-    theVolume = Volume;
 
     if (theOutputDevice != OUTPUT_DEVICE_HEADPHONE) {
         regA = CS43L22_REG_SPEAKER_A_VOL;
@@ -278,6 +277,7 @@ uint32_t cs43l22_SetVolume(uint16_t DeviceAddr, uint8_t Volume) {
     counter += CODEC_IO_Write(DeviceAddr, regA, VOLUME_CONVERT(Volume));
     counter += CODEC_IO_Write(DeviceAddr, regB, VOLUME_CONVERT(Volume));
 
+    theVolume = Volume;
     return counter;
 }
 
@@ -397,11 +397,12 @@ uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix) {
     return counter;
 }
 
+/* Private functions implementation ---------------------------------------------*/
 /********************************* LINK AUDIO *********************************/
 /**
  * @brief  Initializes Audio low level.
  */
-void AUDIO_IO_Init(void) {
+static void AUDIO_IO_Init(void) {
     /* Power Down the codec */
     HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
     /* Wait for a delay to insure registers erasing */
@@ -415,7 +416,7 @@ void AUDIO_IO_Init(void) {
 /**
  * @brief  DeInitializes Audio low level.
  */
-void AUDIO_IO_DeInit(void) {
+static void AUDIO_IO_DeInit(void) {
 
 }
 
@@ -425,7 +426,7 @@ void AUDIO_IO_DeInit(void) {
  * @param  Reg: Reg address
  * @param  Value: Data to be written
  */
-void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
+static void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
     HAL_StatusTypeDef status = HAL_OK;
 
     status = HAL_I2C_Mem_Write(&hi2c1, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &Value, 1, I2Cx_TIMEOUT_MAX);
@@ -443,7 +444,7 @@ void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
  * @param  Reg: Reg address
  * @retval Data to be read
  */
-uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
+static uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
     HAL_StatusTypeDef status = HAL_OK;
     uint8_t value = 0;
 
@@ -454,10 +455,10 @@ uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
         /* Execute user timeout callback */
         I2Cx_Error(Addr);
     }
+
     return value;
 }
 
-/* Private functions implementation ---------------------------------------------*/
 /**
  * @brief  Writes/Read a single data.
  * @param  Addr: I2C address
