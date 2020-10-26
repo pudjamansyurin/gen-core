@@ -68,6 +68,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+osEventFlagsId_t GlobalEventHandle;
+
 extern vcu_t VCU;
 extern bms_t BMS;
 extern hmi1_t HMI1;
@@ -77,8 +79,6 @@ extern sw_t SW;
 extern sim_t SIM;
 extern uint32_t AesKey[4];
 extern uint16_t BACKUP_VOLTAGE;
-
-osEventFlagsId_t GlobalEventHandle;
 /* USER CODE END Variables */
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
@@ -471,21 +471,20 @@ void StartIotTask(void *argument)
 {
 	/* USER CODE BEGIN StartIotTask */
 	TickType_t lastWake;
-	osStatus_t status;
+
 	report_t report;
+	payload_t pReport = {
+			.type = PAYLOAD_REPORT,
+			.pQueue = &ReportQueueHandle,
+			.pPayload = &report
+	};
+
 	response_t response;
-	uint32_t notif;
-	uint8_t retry[2], pending[2] = { 0 };
-
-	SIMCOM_RESULT p;
-	PAYLOAD_TYPE type;
-
-	osMessageQueueId_t *pQueue;
-	header_t *pHeader;
-	void *pPayload;
-	const uint8_t size = sizeof(report.header.prefix)
-			+ sizeof(report.header.crc)
-			+ sizeof(report.header.size);
+	payload_t pResponse = {
+			.type = PAYLOAD_RESPONSE,
+			.pQueue = &ResponseQueueHandle,
+			.pPayload = &response
+	};
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -498,64 +497,17 @@ void StartIotTask(void *argument)
 	for (;;) {
 		lastWake = _GetTickMS();
 
-		// Upload Report & Response Payload
-		// Iterate between REPORT & RESPONSE
-		for (type = 0; type <= PAYLOAD_MAX; type++) {
-			// decide the payload
-			if (type == PAYLOAD_REPORT) {
-				pQueue = &ReportQueueHandle;
-				pPayload = &report;
-			} else {
-				pQueue = &ResponseQueueHandle;
-				pPayload = &response;
+		// Upload Report 
+		if (Packet_Pending(&pReport)) {
+			if (!Send_Payload(&pReport)) {
+				Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 			}
-			pHeader = (header_t*) pPayload;
+		}
 
-			// Handle Full Buffer
-			if (type == PAYLOAD_REPORT) {
-				notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny, 0);
-				if (_RTOS_ValidThreadFlag(notif)) {
-					pending[type] = 0;
-				}
-			}
-
-			// Check logs
-			if (!pending[type]) {
-				status = osMessageQueueGet(*pQueue, pPayload, NULL, 0);
-				// check is mail ready
-				if (status == osOK) {
-					pending[type] = 1;
-					retry[type] = SIMCOM_MAX_UPLOAD_RETRY;
-				}
-			}
-
-			// Check is payload ready
-			if (pending[type]) {
-				// Re-calculate CRC
-				if (type == PAYLOAD_REPORT) {
-					Report_SetCRC((report_t*) pPayload);
-				} else {
-					Response_SetCRC((response_t*) pPayload);
-				}
-
-				// Send to server
-				p = Simcom_Upload(pPayload, size + pHeader->size);
-
-				// Handle looping NACK
-				if (p == SIM_RESULT_NACK) {
-					// Probably  CRC not valid, cancel but force as success
-					if (!--retry[type]) {
-						p = SIM_RESULT_OK;
-					}
-				}
-
-				// Release back
-				if (p == SIM_RESULT_OK) {
-					EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, type);
-					pending[type] = 0;
-				} else {
-					Simcom_SetState(SIM_STATE_SERVER_ON, 0);
-				}
+		// Upload Response 
+		if (Packet_Pending(&pResponse)) {
+			if (!Send_Payload(&pResponse)) {
+				Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 			}
 		}
 
@@ -863,6 +815,7 @@ void StartGpsTask(void *argument)
 void StartGyroTask(void *argument)
 {
 	/* USER CODE BEGIN StartGyroTask */
+	uint32_t flag;
 	TickType_t lastWake;
 	mems_decision_t decider, tmp;
 
@@ -891,11 +844,9 @@ void StartGyroTask(void *argument)
 		if (tmp.fall.state != decider.fall.state) {
 			tmp.fall.state = decider.fall.state;
 
-			if (decider.fall.state) {
-				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-			} else {
-				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
-			}
+			flag = decider.fall.state ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
+
+			osThreadFlagsSet(AudioTaskHandle, flag);
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, decider.fall.state);
 			_LedWrite(decider.fall.state);
 		}

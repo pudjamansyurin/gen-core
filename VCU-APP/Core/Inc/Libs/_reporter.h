@@ -120,6 +120,14 @@ typedef struct __attribute__((packed)) {
     uint16_t seq_id;
 } ack_t;
 
+typedef struct {
+	PAYLOAD_TYPE type;
+	osMessageQueueId_t *pQueue;
+	void *pPayload;
+	uint8_t retry;
+	uint8_t pending;
+} payload_t;
+
 /* Public functions prototype ------------------------------------------------*/
 void Report_Init(FRAME_TYPE frame, report_t *report);
 void Response_Init(response_t *response);
@@ -129,4 +137,6 @@ void Report_SetCRC(report_t *report);
 void Response_SetCRC(response_t *response);
 void Command_Debugger(command_t *cmd);
 FRAME_TYPE Frame_Decider(void);
+uint8_t Packet_Pending(payload_t *payload);
+uint8_t Send_Payload(payload_t *payload);
 #endif /* REPORTER_H_ */
