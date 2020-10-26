@@ -21,39 +21,37 @@
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
-    float yaw;
-    float pitch;
-    float roll;
+	float yaw;
+	float pitch;
+	float roll;
 } motion_t;
 
 typedef struct {
-    int16_t x;
-    int16_t y;
-    int16_t z;
+	int32_t x;
+	int32_t y;
+	int32_t z;
 } coordinate_t;
 
 typedef struct {
-    coordinate_t accelerometer;
-    coordinate_t gyroscope;
-    float temperature;
+	coordinate_t accelerometer;
+	coordinate_t gyroscope;
+	float temperature;
 } mems_t;
 
 typedef struct {
-    struct {
-        uint8_t state;
-        uint32_t value;
-    } fall;
-    struct {
-        uint8_t state;
-        int32_t value;
-    } crash;
+	struct {
+		uint8_t state;
+		uint32_t value;
+	} fall;
+	struct {
+		uint8_t state;
+		int32_t value;
+	} crash;
 } mems_decision_t;
 
 /* Public functions prototype ------------------------------------------------*/
 void GYRO_Init(void);
-mems_t GYRO_Average(uint16_t sample);
 mems_decision_t GYRO_Decision(uint16_t sample);
 void Gyro_Debugger(mems_decision_t *decider);
-void Gyro_RawDebugger(void);
 
 #endif /* GYRO_H_ */

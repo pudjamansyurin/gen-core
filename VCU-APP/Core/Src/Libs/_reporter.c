@@ -25,9 +25,6 @@ extern sw_t SW;
 extern sim_t SIM;
 extern uint16_t BACKUP_VOLTAGE;
 
-extern osMessageQueueId_t ReportQueueHandle;
-extern osMessageQueueId_t ResponseQueueHandle;
-
 /* Public functions implementation --------------------------------------------*/
 void Report_Init(FRAME_TYPE frame, report_t *report) {
 	// set default data

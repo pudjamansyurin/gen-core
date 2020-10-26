@@ -497,14 +497,14 @@ void StartIotTask(void *argument)
 	for (;;) {
 		lastWake = _GetTickMS();
 
-		// Upload Report 
+		// Upload Report
 		if (Packet_Pending(&pReport)) {
 			if (!Send_Payload(&pReport)) {
 				Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 			}
 		}
 
-		// Upload Response 
+		// Upload Response
 		if (Packet_Pending(&pResponse)) {
 			if (!Send_Payload(&pResponse)) {
 				Simcom_SetState(SIM_STATE_SERVER_ON, 0);
@@ -637,7 +637,7 @@ void StartCommandTask(void *argument)
 							break;
 
 						case CMD_GEN_UPGRADE_VCU :
-							case CMD_GEN_UPGRADE_HMI :
+						case CMD_GEN_UPGRADE_HMI :
 							/* Enter IAP mode */
 							if (command.data.sub_code == CMD_GEN_UPGRADE_VCU) {
 								type = IAP_VCU;
@@ -657,110 +657,110 @@ void StartCommandTask(void *argument)
 
 					break;
 
-				case CMD_CODE_REPORT :
-					switch (command.data.sub_code) {
-						case CMD_REPORT_RTC :
-							RTC_Write((uint64_t) command.data.value, &(VCU.d.rtc));
-							break;
+						case CMD_CODE_REPORT :
+							switch (command.data.sub_code) {
+								case CMD_REPORT_RTC :
+									RTC_Write((uint64_t) command.data.value, &(VCU.d.rtc));
+									break;
 
-						case CMD_REPORT_ODOM :
-							EEPROM_Odometer(EE_CMD_W, (uint32_t) command.data.value);
-							break;
+								case CMD_REPORT_ODOM :
+									EEPROM_Odometer(EE_CMD_W, (uint32_t) command.data.value);
+									break;
 
-						case CMD_REPORT_UNITID :
-							EEPROM_UnitID(EE_CMD_W, (uint32_t) command.data.value);
-							break;
+								case CMD_REPORT_UNITID :
+									EEPROM_UnitID(EE_CMD_W, (uint32_t) command.data.value);
+									break;
 
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-					break;
-
-				case CMD_CODE_AUDIO :
-					switch (command.data.sub_code) {
-						case CMD_AUDIO_BEEP :
-							osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
-							break;
-
-						case CMD_AUDIO_MUTE :
-							if ((uint8_t) command.data.value) {
-								osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_ON);
-							} else {
-								osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_OFF);
+								default:
+									response.data.code = RESPONSE_STATUS_INVALID;
+									break;
 							}
-
 							break;
 
-						case CMD_AUDIO_VOL :
-							VCU.d.volume = (uint8_t) command.data.value;
-							break;
+								case CMD_CODE_AUDIO :
+									switch (command.data.sub_code) {
+										case CMD_AUDIO_BEEP :
+											osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
+											break;
 
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-					break;
+										case CMD_AUDIO_MUTE :
+											if ((uint8_t) command.data.value) {
+												osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_ON);
+											} else {
+												osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_MUTE_OFF);
+											}
 
-				case CMD_CODE_FINGER :
-					// put finger index to queue
-					driver = command.data.value;
-					osMessageQueuePut(DriverQueueHandle, &driver, 0U, 0U);
+											break;
 
-					switch (command.data.sub_code) {
-						case CMD_FINGER_ADD :
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
-							break;
+										case CMD_AUDIO_VOL :
+											VCU.d.volume = (uint8_t) command.data.value;
+											break;
 
-						case CMD_FINGER_DEL :
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_DEL);
-							break;
+										default:
+											response.data.code = RESPONSE_STATUS_INVALID;
+											break;
+									}
+									break;
 
-						case CMD_FINGER_RST :
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
-							break;
+										case CMD_CODE_FINGER :
+											// put finger index to queue
+											driver = command.data.value;
+											osMessageQueuePut(DriverQueueHandle, &driver, 0U, 0U);
 
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
+											switch (command.data.sub_code) {
+												case CMD_FINGER_ADD :
+													osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
+													break;
 
-					// wait response until timeout
-					if (response.data.code == RESPONSE_STATUS_OK) {
-						notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 20000);
-						if (_RTOS_ValidThreadFlag(notif)) {
-							if (notif & EVT_COMMAND_ERROR) {
-								response.data.code = RESPONSE_STATUS_ERROR;
-							}
-						}
-					}
-					break;
+												case CMD_FINGER_DEL :
+													osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_DEL);
+													break;
 
-				case CMD_CODE_KEYLESS :
-					switch (command.data.sub_code) {
-						case CMD_KEYLESS_PAIRING :
-							osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+												case CMD_FINGER_RST :
+													osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
+													break;
 
-							response.data.code = RESPONSE_STATUS_ERROR;
-							// wait response until timeout
-							notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT);
-							if (_RTOS_ValidThreadFlag(notif)) {
-								if (notif & EVT_COMMAND_OK) {
-									response.data.code = RESPONSE_STATUS_OK;
-								}
-							}
+												default:
+													response.data.code = RESPONSE_STATUS_INVALID;
+													break;
+											}
 
-							break;
+											// wait response until timeout
+											if (response.data.code == RESPONSE_STATUS_OK) {
+												notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 20000);
+												if (_RTOS_ValidThreadFlag(notif)) {
+													if (notif & EVT_COMMAND_ERROR) {
+														response.data.code = RESPONSE_STATUS_ERROR;
+													}
+												}
+											}
+											break;
 
-						default:
-							response.data.code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-					break;
+												case CMD_CODE_KEYLESS :
+													switch (command.data.sub_code) {
+														case CMD_KEYLESS_PAIRING :
+															osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
-				default:
-					response.data.code = RESPONSE_STATUS_INVALID;
-					break;
+															response.data.code = RESPONSE_STATUS_ERROR;
+															// wait response until timeout
+															notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT);
+															if (_RTOS_ValidThreadFlag(notif)) {
+																if (notif & EVT_COMMAND_OK) {
+																	response.data.code = RESPONSE_STATUS_OK;
+																}
+															}
+
+															break;
+
+														default:
+															response.data.code = RESPONSE_STATUS_INVALID;
+															break;
+													}
+													break;
+
+														default:
+															response.data.code = RESPONSE_STATUS_INVALID;
+															break;
 			}
 
 			// Get current snapshot
@@ -831,7 +831,7 @@ void StartGyroTask(void *argument)
 
 		// Read all accelerometer, gyroscope (average)
 		decider = GYRO_Decision(50);
-		//        Gyro_Debugger(&decider);
+		// Gyro_Debugger(&decider);
 
 		// Check accelerometer, happens when impact detected
 		if (tmp.crash.state != decider.crash.state) {
@@ -845,8 +845,8 @@ void StartGyroTask(void *argument)
 			tmp.fall.state = decider.fall.state;
 
 			flag = decider.fall.state ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
-
 			osThreadFlagsSet(AudioTaskHandle, flag);
+
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, decider.fall.state);
 			_LedWrite(decider.fall.state);
 		}
@@ -1298,7 +1298,7 @@ void StartHmi2PowerTask(void *argument)
 
 	/* Infinite loop */
 	for (;;)
-			{
+	{
 		// wait forever until triggered
 		notif = osThreadFlagsWait(EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever);
 		if (_RTOS_ValidThreadFlag(notif)) {
