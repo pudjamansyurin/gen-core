@@ -17,14 +17,14 @@ extern SPI_HandleTypeDef hspi1;
 extern osThreadId_t KeylessTaskHandle;
 extern osMutexId_t KlessRecMutexHandle;
 extern RNG_HandleTypeDef hrng;
-extern nrf24l01 NRF;
 
 extern vcu_t VCU;
 extern hmi1_t HMI1;
 extern uint32_t AesKey[4];
 
 /* Public variables -----------------------------------------------------------*/
-kless_t KLESS = {
+nrf24l01 NRF;
+kless_t RF = {
 		.config = {
 				.addr_width = NRF_ADDR_LENGTH - 2,
 				.payload_length = NRF_DATA_LENGTH,
@@ -48,46 +48,31 @@ static const uint8_t commands[3][8] = {
 };
 
 /* Private functions declaration ---------------------------------------------*/
-static uint8_t KLESS_Payload(KLESS_MODE mode, uint8_t *payload);
+static uint8_t RF_Payload(RF_MODE mode, uint8_t *payload);
 static void GenRandomNumber32(uint32_t *payload, uint8_t size);
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
-void KLESS_Init(void) {
-	nrf24l01_config *config = &(KLESS.config);
+void RF_Init(void) {
+	// initialization
+	nrf_init(&NRF);
 
 	// use VCU_ID as address
-	memcpy(KLESS.tx.address, &(VCU.d.unit_id), 4);
-	memcpy(KLESS.rx.address, &(VCU.d.unit_id), 4);
+	memcpy(RF.tx.address, &(VCU.d.unit_id), 4);
+	memcpy(RF.rx.address, &(VCU.d.unit_id), 4);
 
 	// set configuration
-	config->tx_address = KLESS.tx.address;
-	config->rx_address = KLESS.rx.address;
-	config->rx_buffer = KLESS.rx.payload;
+	RF.config.tx_address = &(RF.tx.address[0]);
+	RF.config.rx_address = &(RF.rx.address[0]);
+	RF.config.rx_buffer = &(RF.rx.payload[0]);
 
-	config->data_rate = NRF_DATA_RATE_250KBPS;
-	config->tx_power = NRF_TX_PWR_0dBm;
-	config->crc_width = NRF_CRC_WIDTH_1B;
-	config->retransmit_count = 0x0F;   // maximum is 15 times
-	config->retransmit_delay = 0x0F; // 4000us, LSB:250us
-	config->rf_channel = 110;
-
-	config->spi = &hspi1;
-	config->spi_timeout = 100; // milliseconds
-	config->csn_port = INT_KEYLESS_CSN_GPIO_Port;
-	config->csn_pin = INT_KEYLESS_CSN_Pin;
-	config->ce_port = INT_KEYLESS_CE_GPIO_Port;
-	config->ce_pin = INT_KEYLESS_CE_Pin;
-	config->irq_port = INT_KEYLESS_IRQ_GPIO_Port;
-	config->irq_pin = INT_KEYLESS_IRQ_Pin;
-
-	// initialization
-	nrf_init(&NRF, config);
+	// apply config
+	nrf_set_config(&NRF, &(RF.config));
 }
 
-uint8_t KLESS_SendPing(void) {
-	uint8_t *payload = KLESS.tx.payload;
+uint8_t RF_SendPing(void) {
+	uint8_t *payload = RF.tx.payload;
 	NRF_RESULT p;
 
 	// generate random number
@@ -99,14 +84,14 @@ uint8_t KLESS_SendPing(void) {
 	return (p == NRF_OK);
 }
 
-uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
-	uint8_t *payload = KLESS.tx.payload;
+uint8_t RF_ValidateCommand(RF_CMD *cmd) {
+	uint8_t *payload = RF.tx.payload;
 	uint8_t valid = 0, payload_dec[NRF_DATA_LENGTH];
 	const uint8_t rng = NRF_DATA_LENGTH/2;
 
 	lock();
 	// Read Payload
-	if (KLESS_Payload(KLESS_R, payload_dec)) {
+	if (RF_Payload(RF_R, payload_dec)) {
 		// Check Payload Command
 		for (uint8_t i = 0; i < 3; i++) {
 			// check command
@@ -119,7 +104,7 @@ uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
 	}
 	// Check is valid ping response
 	if (valid) {
-		if (*cmd == KLESS_CMD_PING) {
+		if (*cmd == RF_CMD_PING) {
 			// compare upper RNG
 			if (memcmp(&payload_dec[rng], &payload[rng], rng) == 0) {
 				valid = 1;
@@ -132,13 +117,13 @@ uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd) {
 }
 
 
-uint8_t KLESS_Pairing(void) {
-	uint8_t *payload = KLESS.tx.payload;
+uint8_t RF_Pairing(void) {
+	uint8_t *payload = RF.tx.payload;
 	uint32_t aes[4], swapped;
 	NRF_RESULT p = NRF_ERROR;
 
 	// Insert AES Key
-	KLESS_GenerateAesKey(aes);
+	RF_GenerateAesKey(aes);
 
 	// swap byte order
 	for (uint8_t i = 0; i < 4; i++) {
@@ -146,16 +131,16 @@ uint8_t KLESS_Pairing(void) {
 		memcpy(&payload[i * 4], &swapped, sizeof(swapped));
 	}
 	// Insert VCU_ID
-	memcpy(&payload[NRF_DATA_LENGTH ], KLESS.tx.address, NRF_ADDR_LENGTH);
+	memcpy(&payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
 
 	// Set Address (pairing mode)
-	memset(KLESS.tx.address, 0x00, 4);
-	memset(KLESS.rx.address, 0x00, 4);
+	memset(RF.tx.address, 0x00, 4);
+	memset(RF.rx.address, 0x00, 4);
 
 	// Set NRF Config (pairing mode)
 	ce_reset(&NRF);
-	nrf_set_tx_address(&NRF, KLESS.tx.address);
-	nrf_set_rx_address_p0(&NRF, KLESS.rx.address);
+	nrf_set_tx_address(&NRF, RF.tx.address);
+	nrf_set_rx_address_p0(&NRF, RF.rx.address);
 	nrf_set_rx_payload_width_p0(&NRF, NRF_DATA_PAIR_LENGTH);
 	ce_set(&NRF);
 
@@ -163,30 +148,30 @@ uint8_t KLESS_Pairing(void) {
 	p = nrf_send_packet_noack(&NRF, payload);
 
 	// Set Address (normal mode)
-	memcpy(KLESS.tx.address, &(VCU.d.unit_id), 4);
-	memcpy(KLESS.rx.address, &(VCU.d.unit_id), 4);
+	memcpy(RF.tx.address, &(VCU.d.unit_id), 4);
+	memcpy(RF.rx.address, &(VCU.d.unit_id), 4);
 	// Set Aes Key (new)
 	EEPROM_AesKey(EE_CMD_W, aes);
 
 	// Set NRF Config (normal mode)
-	KLESS_Init();
+	RF_Init();
 
 	return (p == NRF_OK);
 }
 
-void KLESS_GenerateAesKey(uint32_t *payload) {
+void RF_GenerateAesKey(uint32_t *payload) {
 	GenRandomNumber32(payload, NRF_DATA_LENGTH/4);
 }
 
-void KLESS_Debugger(void) {
+void RF_Debugger(void) {
 	lock();
 	LOG_Str("NRF:Receive = ");
-	LOG_BufHex((char*) KLESS.rx.payload, NRF_DATA_LENGTH);
+	LOG_BufHex((char*) RF.rx.payload, NRF_DATA_LENGTH);
 	LOG_Enter();
 	unlock();
 }
 
-void KLESS_Refresh(void) {
+void RF_Refresh(void) {
 	if ((_GetTickMS() - VCU.d.tick.keyless) < KEYLESS_TIMEOUT) {
 		HMI1.d.status.keyless = 1;
 	} else {
@@ -194,7 +179,7 @@ void KLESS_Refresh(void) {
 	}
 }
 
-void KLESS_IrqHandler(void) {
+void RF_IrqHandler(void) {
 	nrf_irq_handler(&NRF);
 }
 
@@ -206,17 +191,17 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t KLESS_Payload(KLESS_MODE mode, uint8_t *payload) {
+static uint8_t RF_Payload(RF_MODE mode, uint8_t *payload) {
 	uint8_t ret = 0;
 
 	lock();
 	// Process Payload
-	if (mode == KLESS_R) {
-		if (AES_Decrypt(payload, KLESS.rx.payload, NRF_DATA_LENGTH)) {
+	if (mode == RF_R) {
+		if (AES_Decrypt(payload, RF.rx.payload, NRF_DATA_LENGTH)) {
 			ret = 1;
 		}
 	} else {
-		if (AES_Encrypt(KLESS.tx.payload, payload, NRF_DATA_LENGTH)) {
+		if (AES_Encrypt(RF.tx.payload, payload, NRF_DATA_LENGTH)) {
 			ret = 1;
 		}
 	}

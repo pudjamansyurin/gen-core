@@ -18,14 +18,14 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-    KLESS_CMD_PING = 0,
-    KLESS_CMD_ALARM = 1,
-    KLESS_CMD_SEAT = 2
-} KLESS_CMD;
+    RF_CMD_PING = 0,
+    RF_CMD_ALARM = 1,
+    RF_CMD_SEAT = 2
+} RF_CMD;
 
 typedef enum {
-    KLESS_R = 0, KLESS_W = 1
-} KLESS_MODE;
+    RF_R = 0, RF_W = 1
+} RF_MODE;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
@@ -41,14 +41,14 @@ typedef struct {
 } kless_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void KLESS_Init(void);
-void KLESS_Debugger(void);
-uint8_t KLESS_ValidateCommand(KLESS_CMD *cmd);
-void KLESS_GenerateAesKey(uint32_t *payload);
-uint8_t KLESS_Pairing(void);
-uint8_t KLESS_SendPing(void);
-void KLESS_Refresh(void);
-void KLESS_IrqHandler(void);
+void RF_Init(void);
+void RF_Debugger(void);
+uint8_t RF_ValidateCommand(RF_CMD *cmd);
+void RF_GenerateAesKey(uint32_t *payload);
+uint8_t RF_Pairing(void);
+uint8_t RF_SendPing(void);
+void RF_Refresh(void);
+void RF_IrqHandler(void);
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);
 
 #endif /* KEYLESS_H_ */

@@ -29,9 +29,11 @@ void Finger_Init(void) {
     do {
         LOG_StrLn("Finger:Init");
 
+        // reset peripheral
+
         // mosfet control
         HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, 0);
-        _DelayMS(100);
+        _DelayMS(500);
         HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, 1);
         _DelayMS(500);
 

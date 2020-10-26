@@ -420,7 +420,7 @@ void StartManagerTask(void *argument)
 	    osThreadSuspend(ReporterTaskHandle);
 	    osThreadSuspend(CommandTaskHandle);
 	    osThreadSuspend(GpsTaskHandle);
-	    osThreadSuspend(GyroTaskHandle);
+//	    osThreadSuspend(GyroTaskHandle);
 	//	  osThreadSuspend(KeylessTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
 	osThreadSuspend(AudioTaskHandle);
@@ -873,7 +873,7 @@ void StartKeylessTask(void *argument)
 {
 	/* USER CODE BEGIN StartKeylessTask */
 	uint32_t notif;
-	KLESS_CMD command;
+	RF_CMD command;
 	uint32_t tick_pairing = 0;
 
 	// wait until ManagerTask done
@@ -881,13 +881,13 @@ void StartKeylessTask(void *argument)
 
 	// initialization
 	AES_Init();
-	KLESS_Init();
+	RF_Init();
 
 	osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 	/* Infinite loop */
 	for (;;) {
 		// Send ping
-		// KLESS_SendPing();
+		// RF_SendPing();
 
 		// Check response
 		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 5);
@@ -896,24 +896,24 @@ void StartKeylessTask(void *argument)
 			// handle reset key & id
 			if (notif & EVT_KEYLESS_RESET) {
 				AES_Init();
-				KLESS_Init();
+				RF_Init();
 			}
 
 			// handle Pairing
 			if (notif & EVT_KEYLESS_PAIRING) {
-				KLESS_Pairing();
+				RF_Pairing();
 				tick_pairing = _GetTickMS();
 			}
 
 			// handle incoming payload
 			else if (notif & EVT_KEYLESS_RX_IT) {
-				KLESS_Debugger();
+				RF_Debugger();
 
 				// process
-				if (KLESS_ValidateCommand(&command)) {
+				if (RF_ValidateCommand(&command)) {
 					// handle command
 					switch (command) {
-						case KLESS_CMD_PING:
+						case RF_CMD_PING:
 							LOG_StrLn("NRF:Command = PING");
 
 							// response pairing command
@@ -928,7 +928,7 @@ void StartKeylessTask(void *argument)
 							VCU.d.tick.keyless = _GetTickMS();
 							break;
 
-						case KLESS_CMD_ALARM:
+						case RF_CMD_ALARM:
 							LOG_StrLn("NRF:Command = ALARM");
 
 							// toggle Hazard & HORN (+ Sein Lamp)
@@ -942,7 +942,7 @@ void StartKeylessTask(void *argument)
 							}
 							break;
 
-						case KLESS_CMD_SEAT:
+						case RF_CMD_SEAT:
 							LOG_StrLn("NRF:Command = SEAT");
 
 							// open the seat via solenoid
@@ -972,7 +972,7 @@ void StartKeylessTask(void *argument)
 		}
 
 		// update state
-		KLESS_Refresh();
+		RF_Refresh();
 	}
 	/* USER CODE END StartKeylessTask */
 }
@@ -1364,7 +1364,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		}
 		// handle NRF24 IRQ
 		if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
-			KLESS_IrqHandler();
+			RF_IrqHandler();
 		}
 		// handle Switches EXTI
 		for (uint8_t i = 0; i < SW_K_TOTAL; i++) {

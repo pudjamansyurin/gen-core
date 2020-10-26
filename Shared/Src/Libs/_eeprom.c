@@ -102,7 +102,7 @@ void EEPROM_ResetOrLoad(void) {
             EEPROM_SequentialID(EE_CMD_W, 0, type);
         }
         // generate aes key
-        KLESS_GenerateAesKey(AesKeyNew);
+        RF_GenerateAesKey(AesKeyNew);
         EEPROM_AesKey(EE_CMD_W, AesKeyNew);
 
         // re-write eeprom
