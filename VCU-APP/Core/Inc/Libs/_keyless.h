@@ -46,7 +46,7 @@ void RF_Debugger(void);
 uint8_t RF_ValidateCommand(RF_CMD *cmd);
 void RF_GenerateAesKey(uint32_t *payload);
 uint8_t RF_Pairing(void);
-uint8_t RF_SendPing(void);
+uint8_t RF_SendPing(uint8_t retry);
 void RF_Refresh(void);
 void RF_IrqHandler(void);
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);

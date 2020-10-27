@@ -420,7 +420,7 @@ void StartManagerTask(void *argument)
 	    osThreadSuspend(ReporterTaskHandle);
 	    osThreadSuspend(CommandTaskHandle);
 	    osThreadSuspend(GpsTaskHandle);
-//	    osThreadSuspend(GyroTaskHandle);
+	    osThreadSuspend(GyroTaskHandle);
 	//	  osThreadSuspend(KeylessTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
 	osThreadSuspend(AudioTaskHandle);
@@ -446,7 +446,7 @@ void StartManagerTask(void *argument)
 		// _RTOS_Debugger(1000);
 
 		// Battery Monitor
-		 BAT_Debugger();
+		// BAT_Debugger();
 
 		// Other stuffs
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
@@ -886,11 +886,8 @@ void StartKeylessTask(void *argument)
 	osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 	/* Infinite loop */
 	for (;;) {
-		// Send ping
-		// RF_SendPing();
-
 		// Check response
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 5);
+		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 3);
 		// proceed event
 		if (_RTOS_ValidThreadFlag(notif)) {
 			// handle reset key & id
@@ -956,19 +953,22 @@ void StartKeylessTask(void *argument)
 					}
 
 					// valid command indicator
-					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-					for (uint8_t i = 0; i < (command + 1); i++) {
-						_LedToggle();
-
-						_DelayMS((command + 1) * 50);
-					}
-					_LedWrite(0);
-					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
+//					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
+//					for (uint8_t i = 0; i < (command + 1); i++) {
+//						_LedToggle();
+//
+//						_DelayMS((command + 1) * 50);
+//					}
+//					_LedWrite(0);
+//					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
 				}
 
 				// reset pending flag
 				osThreadFlagsClear(EVT_MASK);
 			}
+		} else {
+			// Send ping
+			RF_SendPing(1);
 		}
 
 		// update state

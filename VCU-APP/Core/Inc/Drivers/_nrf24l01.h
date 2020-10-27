@@ -131,6 +131,7 @@ void ce_reset(nrf24l01 *dev);
 NRF_RESULT nrf_init(nrf24l01 *dev);
 NRF_RESULT nrf_check(nrf24l01 *dev);
 NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config);
+NRF_RESULT nrf_configure(nrf24l01 *dev);
 /* EXTI Interrupt Handler
  *
  * You must call this function on Falling edge trigger detection interrupt

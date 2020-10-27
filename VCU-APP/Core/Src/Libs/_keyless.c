@@ -55,9 +55,6 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 void RF_Init(void) {
-	// initialization
-	nrf_init(&NRF);
-
 	// use VCU_ID as address
 	memcpy(RF.tx.address, &(VCU.d.unit_id), 4);
 	memcpy(RF.rx.address, &(VCU.d.unit_id), 4);
@@ -67,11 +64,15 @@ void RF_Init(void) {
 	RF.config.rx_address = &(RF.rx.address[0]);
 	RF.config.rx_buffer = &(RF.rx.payload[0]);
 
-	// apply config
+	// set more config
 	nrf_set_config(&NRF, &(RF.config));
+	// initialization
+	nrf_init(&NRF);
+	// apply config
+	nrf_configure(&NRF);
 }
 
-uint8_t RF_SendPing(void) {
+uint8_t RF_SendPing(uint8_t retry) {
 	uint8_t *payload = RF.tx.payload;
 	NRF_RESULT p;
 
@@ -79,7 +80,9 @@ uint8_t RF_SendPing(void) {
 	GenRandomNumber32((uint32_t *) payload, NRF_DATA_LENGTH/4);
 
 	// send payload
-	p = nrf_send_packet_noack(&NRF, payload);
+	while(retry--) {
+		p = nrf_send_packet_noack(&NRF, payload);
+	}
 
 	return (p == NRF_OK);
 }
@@ -115,7 +118,6 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
 
 	return valid;
 }
-
 
 uint8_t RF_Pairing(void) {
 	uint8_t *payload = RF.tx.payload;
@@ -172,11 +174,10 @@ void RF_Debugger(void) {
 }
 
 void RF_Refresh(void) {
-	if ((_GetTickMS() - VCU.d.tick.keyless) < KEYLESS_TIMEOUT) {
-		HMI1.d.status.keyless = 1;
-	} else {
-		HMI1.d.status.keyless = 0;
-	}
+	uint8_t timeout;
+
+	timeout = ((_GetTickMS() - VCU.d.tick.keyless) < KEYLESS_TIMEOUT);
+	HMI1.d.status.keyless = timeout;
 }
 
 void RF_IrqHandler(void) {
@@ -194,16 +195,12 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 static uint8_t RF_Payload(RF_MODE mode, uint8_t *payload) {
 	uint8_t ret = 0;
 
-	lock();
 	// Process Payload
+	lock();
 	if (mode == RF_R) {
-		if (AES_Decrypt(payload, RF.rx.payload, NRF_DATA_LENGTH)) {
-			ret = 1;
-		}
+		ret = AES_Decrypt(payload, RF.rx.payload, NRF_DATA_LENGTH);
 	} else {
-		if (AES_Encrypt(RF.tx.payload, payload, NRF_DATA_LENGTH)) {
-			ret = 1;
-		}
+		ret = AES_Encrypt(RF.tx.payload, payload, NRF_DATA_LENGTH);
 	}
 	unlock();
 

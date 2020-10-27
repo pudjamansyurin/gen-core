@@ -33,12 +33,12 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
 		LOG_StrLn("NRF:Init");
 
 		// reset peripheral
-		HAL_SPI_MspDeInit(&hspi1);
-		HAL_SPI_MspInit(&hspi1);
+//		HAL_SPI_MspDeInit(&hspi1);
+//		HAL_SPI_MspInit(&hspi1);
 
 		// turn on the mosfet
 		HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 0);
-		_DelayMS(500);
+		_DelayMS(1000);
 		HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
 		_DelayMS(1000);
 
@@ -72,8 +72,6 @@ NRF_RESULT nrf_check(nrf24l01 *dev) {
 }
 
 NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config) {
-	uint8_t config_reg = 0;
-
 	config->data_rate = NRF_DATA_RATE_250KBPS;
 	config->tx_power = NRF_TX_PWR_0dBm;
 	config->crc_width = NRF_CRC_WIDTH_1B;
@@ -88,7 +86,15 @@ NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config) {
 	config->ce_pin = INT_KEYLESS_CE_Pin;
 	config->irq_port = INT_KEYLESS_IRQ_GPIO_Port;
 	config->irq_pin = INT_KEYLESS_IRQ_Pin;
+
+	// apply
 	dev->config = *config;
+
+	return NRF_OK;
+}
+
+NRF_RESULT nrf_configure(nrf24l01 *dev) {
+	uint8_t config_reg = 0;
 
 	// enter standby I mode
 	ce_reset(dev);
@@ -648,12 +654,11 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
 
 	uint32_t tick = _GetTickMS();
 	while (dev->tx_busy == 1) {
-		if (_GetTickMS() - tick > 500) {
+		if (_GetTickMS() - tick > 1) {
 			break;
 		}
 	} // wait for end of transmition
 
-	_DelayMS(100);
 	ce_reset(dev);
 	nrf_rx_tx_control(dev, NRF_STATE_RX);
 	ce_set(dev);
