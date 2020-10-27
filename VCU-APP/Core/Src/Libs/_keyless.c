@@ -73,19 +73,19 @@ void RF_Init(void) {
 }
 
 uint8_t RF_SendPing(uint8_t retry) {
-	uint8_t *payload = RF.tx.payload;
 	RF_CMD cmd = RF_CMD_PING;
 	NRF_RESULT p;
 
-	// generate random number
-	GenRandomNumber32((uint32_t *) payload, NRF_DATA_LENGTH/4);
+  // insert ping command
+  RF_Payload(RF_W, (uint8_t*) commands[cmd]);
 
-	// insert ping command
-	RF_Payload(RF_W, (uint8_t *) commands[cmd]);
+	// generate random number
+  GenRandomNumber32((uint32_t*) &RF.tx.payload[NRF_DATA_LENGTH / 2], 2);
+
 
 	// send payload
 	while(retry--) {
-		p = nrf_send_packet_noack(&NRF, payload);
+    p = nrf_send_packet_noack(&NRF, RF.tx.payload);
 	}
 
 	return (p == NRF_OK);
