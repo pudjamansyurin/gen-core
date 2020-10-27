@@ -25,59 +25,59 @@ static uint16_t AverageBuffer(uint16_t start, uint16_t stop);
 
 /* Public functions implementation ------------------------------------------*/
 void BAT_DMA_Init(void) {
-    HAL_ADC_Start_DMA(&hadc1, (uint32_t*) DMA_BUFFER, DMA_SZ);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) DMA_BUFFER, DMA_SZ);
 }
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
-    BACKUP_VOLTAGE = AverageBuffer(0, (DMA_SZ / 2));
+	BACKUP_VOLTAGE = AverageBuffer(0, (DMA_SZ / 2));
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-    BACKUP_VOLTAGE = AverageBuffer(((DMA_SZ / 2) - 1), DMA_SZ);
+	BACKUP_VOLTAGE = AverageBuffer(((DMA_SZ / 2) - 1), DMA_SZ);
 }
 
 void BAT_Debugger(void) {
-    LOG_Str("Battery:Voltage = ");
-    LOG_Int(BACKUP_VOLTAGE);
-    LOG_StrLn(" mV");
+	LOG_Str("Battery:Voltage = ");
+	LOG_Int(BACKUP_VOLTAGE);
+	LOG_StrLn(" mV");
 }
 
 /* Private functions implementation ------------------------------------------*/
 static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
-    static uint32_t sum = 0, pos = 0;
-    static uint16_t length = 0;
+	static uint32_t sum = 0, pos = 0;
+	static uint16_t length = 0;
 
-    //Subtract the oldest number from the prev sum, add the new number
-    sum = sum - pBuffer[pos] + value;
-    //Assign the nextNum to the position in the array
-    pBuffer[pos] = value;
-    //Increment position
-    pos++;
-    if (pos >= len) {
-        pos = 0;
-    }
-    // calculate filled array
-    if (length < len) {
-        length++;
-    }
-    //return the average
-    return sum / length;
+	//Subtract the oldest number from the prev sum, add the new number
+	sum = sum - pBuffer[pos] + value;
+	//Assign the nextNum to the position in the array
+	pBuffer[pos] = value;
+	//Increment position
+	pos++;
+	if (pos >= len) {
+		pos = 0;
+	}
+	// calculate filled array
+	if (length < len) {
+		length++;
+	}
+	//return the average
+	return sum / length;
 }
 
 static uint16_t AverageBuffer(uint16_t start, uint16_t stop) {
-    uint32_t temp = 0;
+	uint32_t temp = 0;
 
-    // sum all buffer sample
-    for (uint16_t i = start; i < stop; i++) {
-        temp += DMA_BUFFER[i];
-    }
-    // calculate the average
-    temp /= (stop - start);
+	// sum all buffer sample
+	for (uint16_t i = start; i < stop; i++) {
+		temp += DMA_BUFFER[i];
+	}
+	// calculate the average
+	temp /= (stop - start);
 
-    // calculate the moving average
-    temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
+	// calculate the moving average
+	temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
 
-    // change to battery value
-    return (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
+	// change to battery value
+	return (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
 }
 

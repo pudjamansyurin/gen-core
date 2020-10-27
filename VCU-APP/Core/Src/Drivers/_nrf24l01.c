@@ -33,8 +33,8 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
 		LOG_StrLn("NRF:Init");
 
 		// reset peripheral
-//		HAL_SPI_MspDeInit(&hspi1);
-//		HAL_SPI_MspInit(&hspi1);
+		//		HAL_SPI_MspDeInit(&hspi1);
+		//		HAL_SPI_MspInit(&hspi1);
 
 		// turn on the mosfet
 		HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 0);

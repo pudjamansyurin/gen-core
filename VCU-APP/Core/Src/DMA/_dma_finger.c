@@ -51,9 +51,9 @@ void FINGER_USART_IrqHandler(void) {
 }
 
 void FINGER_Reset_Buffer(void) {
-    USART_Reset_Buffer(&FINGER_RING);
+	USART_Reset_Buffer(&FINGER_RING);
 }
 
 uint8_t FINGER_Transmit8(uint8_t *data) {
-    return (HAL_UART_Transmit(FINGER_RING.huart, data, 1, HAL_MAX_DELAY) == HAL_OK);
+	return (HAL_UART_Transmit(FINGER_RING.huart, data, 1, HAL_MAX_DELAY) == HAL_OK);
 }

@@ -65,17 +65,17 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct, MPU605
 
 	/* Set sample rate to 1kHz */
 	if (MPU6050_SetDataRate(I2Cx, DataStruct, MPU6050_DataRate_8KHz) != MPU6050_Result_Ok) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Config accelerometer */
 	if (MPU6050_SetAccelerometer(I2Cx, DataStruct, AccelerometerSensitivity)!= MPU6050_Result_Ok) {
-        return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Config Gyroscope */
 	if (MPU6050_SetGyroscope(I2Cx, DataStruct, GyroscopeSensitivity) != MPU6050_Result_Ok) {
-        return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Return OK */
@@ -87,7 +87,7 @@ MPU6050_Result MPU6050_SetDataRate(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
 
 	/* Set data sample rate */
 	if (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_SMPLRT_DIV, 1, &rate, 1, 1000) != HAL_OK) {
-	   return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Return OK */
@@ -100,12 +100,12 @@ MPU6050_Result MPU6050_SetAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataSt
 
 	/* Config accelerometer */
 	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_ACCEL_CONFIG, 1, &data, 1, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	data = (data & 0xE7) | (uint8_t) AccelerometerSensitivity << 3;
 	if (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_ACCEL_CONFIG, 1, &data, 1, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 
@@ -137,12 +137,12 @@ MPU6050_Result MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct
 
 	/* Config gyroscope */
 	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_GYRO_CONFIG, 1, &data, 1, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	data = (data & 0xE7) | (uint8_t) GyroscopeSensitivity << 3;
 	if (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_GYRO_CONFIG, 1, &data, 1, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	switch (GyroscopeSensitivity) {
@@ -166,30 +166,30 @@ MPU6050_Result MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct
 }
 
 MPU6050_Result MPU6050_ReadAll(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
-    uint8_t data[14], address = DataStruct->Address;
-    int16_t temp;
+	uint8_t data[14], address = DataStruct->Address;
+	int16_t temp;
 
-    /* Read full raw data, 14bytes */
-    if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_ACCEL_XOUT_H, 1, data, 14, 1000) != HAL_OK) {
-        return MPU6050_Result_Error;
-    }
+	/* Read full raw data, 14bytes */
+	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_ACCEL_XOUT_H, 1, data, 14, 1000) != HAL_OK) {
+		return MPU6050_Result_Error;
+	}
 
-    /* Format accelerometer data */
-    DataStruct->Accelerometer_X = (int16_t) (data[0] << 8 | data[1]);
-    DataStruct->Accelerometer_Y = (int16_t) (data[2] << 8 | data[3]);
-    DataStruct->Accelerometer_Z = (int16_t) (data[4] << 8 | data[5]);
+	/* Format accelerometer data */
+	DataStruct->Accelerometer_X = (int16_t) (data[0] << 8 | data[1]);
+	DataStruct->Accelerometer_Y = (int16_t) (data[2] << 8 | data[3]);
+	DataStruct->Accelerometer_Z = (int16_t) (data[4] << 8 | data[5]);
 
-    /* Format temperature */
-    temp = (data[6] << 8 | data[7]);
-    DataStruct->Temperature = (float) ((float) ((int16_t) temp) / (float) 340.0 + (float) 36.53);
+	/* Format temperature */
+	temp = (data[6] << 8 | data[7]);
+	DataStruct->Temperature = (float) ((float) ((int16_t) temp) / (float) 340.0 + (float) 36.53);
 
-    /* Format gyroscope data */
-    DataStruct->Gyroscope_X = (int16_t) (data[8] << 8 | data[9]);
-    DataStruct->Gyroscope_Y = (int16_t) (data[10] << 8 | data[11]);
-    DataStruct->Gyroscope_Z = (int16_t) (data[12] << 8 | data[13]);
+	/* Format gyroscope data */
+	DataStruct->Gyroscope_X = (int16_t) (data[8] << 8 | data[9]);
+	DataStruct->Gyroscope_Y = (int16_t) (data[10] << 8 | data[11]);
+	DataStruct->Gyroscope_Z = (int16_t) (data[12] << 8 | data[13]);
 
-    /* Return OK */
-    return MPU6050_Result_Ok;
+	/* Return OK */
+	return MPU6050_Result_Ok;
 }
 
 MPU6050_Result MPU6050_ReadAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct) {
@@ -197,7 +197,7 @@ MPU6050_Result MPU6050_ReadAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataS
 
 	/* Read accelerometer data */
 	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_ACCEL_XOUT_H, 1, data, 6, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Format */
@@ -214,7 +214,7 @@ MPU6050_Result MPU6050_ReadGyroscope(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruc
 
 	/* Read gyroscope data */
 	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_GYRO_XOUT_H, 1, data, 6, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Format */
@@ -232,7 +232,7 @@ MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStr
 
 	/* Read temperature */
 	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_TEMP_OUT_H, 1, data, 2, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Format temperature */
@@ -249,17 +249,17 @@ MPU6050_Result MPU6050_EnableInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataSt
 	/* Enable interrupts for data ready and motion detect */
 	data = 0x21;
 	if (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_INT_ENABLE, 1, &data, 1, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Clear IRQ flag on any read operation */
 	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_INT_PIN_CFG, 1, &temp, 14, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	temp |= 0x10;
 	if (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_INT_PIN_CFG, 1, &temp, 1, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Return OK */
@@ -272,7 +272,7 @@ MPU6050_Result MPU6050_DisableInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataS
 	/* Disable interrupts */
 	data = 0x00;
 	if (HAL_I2C_Mem_Write(I2Cx, address, MPU6050_INT_ENABLE, 1, &data, 1, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Return OK */
@@ -287,7 +287,7 @@ MPU6050_Result MPU6050_ReadInterrupts(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStru
 	InterruptsStruct->Status = 0;
 
 	if (HAL_I2C_Mem_Read(I2Cx, address, MPU6050_INT_STATUS, 1, &data, 14, 1000) != HAL_OK) {
-	    return MPU6050_Result_Error;
+		return MPU6050_Result_Error;
 	}
 
 	/* Fill value */
