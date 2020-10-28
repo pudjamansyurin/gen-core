@@ -91,6 +91,10 @@ sw_t SW = {
 		}
 };
 
+/* Private functions prototype -----------------------------------------------*/
+static void HBAR_RunSelect(void);
+static void HBAR_RunSet(void);
+
 /* Public functions implementation --------------------------------------------*/
 void HBAR_ReadStates(void) {
 	// Read all EXTI state
@@ -138,38 +142,6 @@ void HBAR_TimerSelectSet(void) {
 					// reverse it
 					SW.list[i].state = 1;
 				}
-			}
-		}
-	}
-}
-
-void HBAR_RunSelect(void) {
-	if (SW.runner.listening) {
-		// change mode position
-		if (SW.runner.mode.sel == SW_M_MAX) {
-			SW.runner.mode.sel = 0;
-		} else {
-			SW.runner.mode.sel++;
-		}
-	}
-	// Listening on option
-	SW.runner.listening = 1;
-}
-
-void HBAR_RunSet(void) {
-	SW_MODE sMode = SW.runner.mode.sel;
-
-	// handle reset only if push more than n sec, and in trip mode
-	if (SW.runner.listening || (SW.timer[SW_K_SET].time >= 3 && sMode == SW_M_TRIP)) {
-		if (!SW.runner.listening) {
-			// reset value
-			SW.runner.mode.sub.trip[SW.runner.mode.sub.val[sMode]] = 0;
-		} else {
-			// if less than n sec
-			if (SW.runner.mode.sub.val[sMode] == SW.runner.mode.sub.max[sMode]) {
-				SW.runner.mode.sub.val[sMode] = 0;
-			} else {
-				SW.runner.mode.sub.val[sMode]++;
 			}
 		}
 	}
@@ -250,3 +222,49 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
 
 	return iHide;
 }
+
+void HBAR_RunSelectOrSet(void) {
+	 // Only handle Select & Set when in non-reverse
+	if (!SW.list[SW_K_REVERSE].state) {
+		// handle Select & Set
+		if (SW.list[SW_K_SELECT].state) {
+			HBAR_RunSelect();
+		} else if (SW.list[SW_K_SET].state) {
+			HBAR_RunSet();
+		}
+	}
+}
+
+/* Private functions implementation -------------------------------------------*/
+static void HBAR_RunSelect(void) {
+	if (SW.runner.listening) {
+		// change mode position
+		if (SW.runner.mode.sel == SW_M_MAX) {
+			SW.runner.mode.sel = 0;
+		} else {
+			SW.runner.mode.sel++;
+		}
+	}
+	// Listening on option
+	SW.runner.listening = 1;
+}
+
+static void HBAR_RunSet(void) {
+	SW_MODE sMode = SW.runner.mode.sel;
+
+	// handle reset only if push more than n sec, and in trip mode
+	if (SW.runner.listening || (SW.timer[SW_K_SET].time >= 3 && sMode == SW_M_TRIP)) {
+		if (!SW.runner.listening) {
+			// reset value
+			SW.runner.mode.sub.trip[SW.runner.mode.sub.val[sMode]] = 0;
+		} else {
+			// if less than n sec
+			if (SW.runner.mode.sub.val[sMode] == SW.runner.mode.sub.max[sMode]) {
+				SW.runner.mode.sub.val[sMode] = 0;
+			} else {
+				SW.runner.mode.sub.val[sMode]++;
+			}
+		}
+	}
+}
+

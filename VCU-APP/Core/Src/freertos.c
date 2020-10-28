@@ -1100,15 +1100,8 @@ void StartSwitchTask(void *argument)
 				HBAR_ReadStates();
 				// handle select & set: timer
 				HBAR_TimerSelectSet();
-				// Only handle Select & Set when in non-reverse
-				if (!SW.list[SW_K_REVERSE].state) {
-					// handle Select & Set
-					if (SW.list[SW_K_SELECT].state) {
-						HBAR_RunSelect();
-					} else if (SW.list[SW_K_SET].state) {
-						HBAR_RunSet();
-					}
-				}
+				// Only handle Select or Set
+				HBAR_RunSelectOrSet();
 			}
 
 			// Handle other EXTI interrupt
