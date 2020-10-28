@@ -169,8 +169,7 @@ uint8_t Packet_Pending(payload_t *payload) {
 
 	// Handle Full Buffer
 	if (payload->type == PAYLOAD_REPORT) {
-		notif = osThreadFlagsWait(EVT_IOT_DISCARD, osFlagsWaitAny, 0);
-		if (_RTOS_ValidThreadFlag(notif)) {
+		if (_osThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0)) {
 			payload->pending = 0;
 		}
 	}

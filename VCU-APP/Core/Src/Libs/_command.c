@@ -82,8 +82,7 @@ void CMD_Finger(uint8_t event, response_t *resp) {
 	osThreadFlagsSet(FingerTaskHandle, event);
 
 	// wait response until timeout
-	notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT);
-	if (_RTOS_ValidThreadFlag(notif)) {
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT)) {
 		if (notif & EVT_COMMAND_ERROR) {
 			resp->data.code = RESPONSE_STATUS_ERROR;
 		}
@@ -95,10 +94,9 @@ void CMD_KeylessPairing(response_t *resp) {
 
 	osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 
-	resp->data.code = RESPONSE_STATUS_ERROR;
 	// wait response until timeout
-	notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT);
-	if (_RTOS_ValidThreadFlag(notif)) {
+	resp->data.code = RESPONSE_STATUS_ERROR;
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT)) {
 		if (notif & EVT_COMMAND_OK) {
 			resp->data.code = RESPONSE_STATUS_OK;
 		}

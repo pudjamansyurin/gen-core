@@ -10,11 +10,19 @@
 #if (!BOOTLOADER)
 #include "Libs/_handlebar.h"
 #include "Nodes/VCU.h"
+#endif
 
 /* External variables ---------------------------------------------------------*/
+#if (!BOOTLOADER)
 extern TIM_HandleTypeDef htim10;
 extern vcu_t VCU;
 extern sw_t SW;
+#endif
+
+/* Private functions declarations ---------------------------------------------*/
+#if (!BOOTLOADER)
+static uint8_t _RTOS_ValidThreadFlag(uint32_t flag);
+static uint8_t _RTOS_ValidEventFlag(uint32_t flag);
 #endif
 
 /* Public functions implementation --------------------------------------------*/
@@ -131,34 +139,6 @@ void _RTOS_Debugger(uint32_t ms) {
 	}
 }
 
-uint8_t _RTOS_ValidThreadFlag(uint32_t flag) {
-	uint8_t ret = 1;
-
-	// check is empty
-	if (!flag) {
-		ret = 0;
-	} else if (flag & (~EVT_MASK )) {
-		// error
-		ret = 0;
-	}
-
-	return ret;
-}
-
-uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
-	uint8_t ret = 1;
-
-	// check is empty
-	if (!flag) {
-		ret = 0;
-	} else if (flag & (~EVENT_MASK )) {
-		// error
-		ret = 0;
-	}
-
-	return ret;
-}
-
 void _DummyGenerator(void) {
 	uint8_t *pRange = &(SW.runner.mode.sub.report[SW_M_REPORT_RANGE]);
 	uint8_t *pAverage = &(SW.runner.mode.sub.report[SW_M_REPORT_AVERAGE]);
@@ -191,4 +171,38 @@ int8_t _BitPosition(uint64_t event_id) {
 	return pos;
 }
 
+uint8_t _osThreadFlagsWait(uint32_t* notif, uint32_t flags, uint32_t options, uint32_t timeout) {
+	*notif = osThreadFlagsWait(flags, options, timeout);
+
+	return _RTOS_ValidThreadFlag(*notif);
+}
+
+/* Private functions implementation --------------------------------------------*/
+static uint8_t _RTOS_ValidThreadFlag(uint32_t flag) {
+	uint8_t ret = 1;
+
+	// check is empty
+	if (!flag) {
+		ret = 0;
+	} else if (flag & (~EVT_MASK )) {
+		// error
+		ret = 0;
+	}
+
+	return ret;
+}
+
+static uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
+	uint8_t ret = 1;
+
+	// check is empty
+	if (!flag) {
+		ret = 0;
+	} else if (flag & (~EVENT_MASK )) {
+		// error
+		ret = 0;
+	}
+
+	return ret;
+}
 #endif

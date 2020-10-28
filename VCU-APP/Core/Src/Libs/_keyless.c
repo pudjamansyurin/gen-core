@@ -68,7 +68,7 @@ void RF_Init(void) {
 uint8_t RF_SendPing(uint8_t retry) {
 	NRF_RESULT p;
 
-	GenRandomNumber32((uint32_t *) payload, NRF_DATA_LENGTH/4);
+	GenRandomNumber32((uint32_t *) RF.tx.payload, NRF_DATA_LENGTH/4);
 	RF_Payload(RF_ACTION_W, (uint8_t *) commands[RF_CMD_PING]);
 
 	while(retry--) {

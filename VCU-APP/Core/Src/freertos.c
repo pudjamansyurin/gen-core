@@ -776,7 +776,8 @@ void StartGyroTask(void *argument)
 	/* USER CODE BEGIN StartGyroTask */
 	uint32_t flag;
 	TickType_t lastWake;
-	mems_decision_t decider, tmp;
+	mems_decision_t decider;
+	uint8_t crash = 0, fall = 0;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -793,15 +794,15 @@ void StartGyroTask(void *argument)
 		// Gyro_Debugger(&decider);
 
 		// Check accelerometer, happens when impact detected
-		if (tmp.crash.state != decider.crash.state) {
-			tmp.crash.state = decider.crash.state;
+		if (crash != decider.crash.state) {
+			crash = decider.crash.state;
 
 			VCU.SetEvent(EV_VCU_BIKE_CRASHED, decider.crash.state);
 		}
 
 		// Check gyroscope, happens when fall detected
-		if (tmp.fall.state != decider.fall.state) {
-			tmp.fall.state = decider.fall.state;
+		if (fall != decider.fall.state) {
+			fall = decider.fall.state;
 
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, decider.fall.state);
 
@@ -811,7 +812,7 @@ void StartGyroTask(void *argument)
 		}
 
 		// Handle for both event
-		if (decider.crash.state || decider.fall.state) {
+		if (crash || fall) {
 			// Turn OFF BMS (+ MCU)
 
 		}
@@ -847,9 +848,7 @@ void StartKeylessTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		// Check response
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 3);
-		// proceed event
-		if (_RTOS_ValidThreadFlag(notif)) {
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
 			// handle reset key & id
 			if (notif & EVT_KEYLESS_RESET) {
 				AES_Init();
@@ -962,9 +961,7 @@ void StartFingerTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		// check if user put finger
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 100);
-		// proceed event
-		if (_RTOS_ValidThreadFlag(notif)) {
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
 			// Scan existing finger
 			if (notif & EVT_FINGER_PLACED) {
 				id = Finger_AuthFast();
@@ -1036,8 +1033,7 @@ void StartAudioTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		// wait with timeout
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny, 100);
-		if (_RTOS_ValidThreadFlag(notif)) {
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
 			// Beep command
 			if (notif & EVT_AUDIO_BEEP) {
 				// Beep
@@ -1093,8 +1089,7 @@ void StartSwitchTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		// wait forever
-		notif = osThreadFlagsWait(EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 500);
-		if (_RTOS_ValidThreadFlag(notif)) {
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 500)) {
 			osThreadFlagsClear(EVT_MASK);
 			// handle bounce effect
 			_DelayMS(50);
@@ -1263,8 +1258,7 @@ void StartHmi2PowerTask(void *argument)
 	for (;;)
 	{
 		// wait forever until triggered
-		notif = osThreadFlagsWait(EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever);
-		if (_RTOS_ValidThreadFlag(notif)) {
+		if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
 			// Handle power control
 			if (HMI2.d.power) {
 				while (!HMI2.d.started) {
