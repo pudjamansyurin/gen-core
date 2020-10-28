@@ -15,16 +15,10 @@ extern SPI_HandleTypeDef hspi1;
 /* Private functions prototype ------------------------------------------------*/
 static void csn_set(nrf24l01 *dev);
 static void csn_reset(nrf24l01 *dev);
+static void ce_set(nrf24l01 *dev);
+static void ce_reset(nrf24l01 *dev);
 
 /* Public functions implementation ---------------------------------------------*/
-void ce_set(nrf24l01 *dev) {
-	HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_SET);
-}
-
-void ce_reset(nrf24l01 *dev) {
-	HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_RESET);
-}
-
 NRF_RESULT nrf_init(nrf24l01 *dev) {
 	NRF_RESULT result;
 
@@ -89,6 +83,18 @@ NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config) {
 
 	// apply
 	dev->config = *config;
+	return NRF_OK;
+}
+
+NRF_RESULT nrf_change_mode(nrf24l01 *dev, nrf24l01_config *config){
+	// apply
+	dev->config = *config;
+
+	ce_reset(dev);
+	nrf_set_tx_address(dev, dev->config.tx_address);
+	nrf_set_rx_address_p0(dev, dev->config.rx_address);
+	nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
+	ce_set(dev);
 
 	return NRF_OK;
 }
@@ -107,11 +113,11 @@ NRF_RESULT nrf_configure(nrf24l01 *dev) {
 
 	// address width
 	nrf_set_address_width(dev, dev->config.addr_width);
-	// openWritingPipe
-	nrf_set_tx_address(dev, dev->config.tx_address);
-	// openReadingPipe
-	nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
-	nrf_set_rx_address_p0(dev, dev->config.rx_address);
+//	// openWritingPipe
+//	nrf_set_tx_address(dev, dev->config.tx_address);
+//	// openReadingPipe
+//	nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
+//	nrf_set_rx_address_p0(dev, dev->config.rx_address);
 	// enable data pipe0
 	nrf_set_rx_pipes(dev, 0x01);
 
@@ -774,4 +780,12 @@ static void csn_set(nrf24l01 *dev) {
 static void csn_reset(nrf24l01 *dev) {
 	HAL_GPIO_WritePin(dev->config.csn_port, dev->config.csn_pin,
 			GPIO_PIN_RESET);
+}
+
+static void ce_set(nrf24l01 *dev) {
+	HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_SET);
+}
+
+static void ce_reset(nrf24l01 *dev) {
+	HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_RESET);
 }

@@ -27,8 +27,6 @@ nrf24l01 NRF;
 kless_t RF = {
 		.config = {
 				.addr_width = NRF_ADDR_LENGTH - 2,
-				.payload_length = NRF_DATA_LENGTH,
-				.rx_buffer = NULL,
 		},
 		.tx = {
 				.address = { 0x00, 0x00, 0x00, 0x00, 0xAB },
@@ -48,27 +46,22 @@ static const uint8_t commands[3][8] = {
 };
 
 /* Private functions declaration ---------------------------------------------*/
-static uint8_t RF_Payload(RF_MODE mode, uint8_t *payload);
+static void RF_SetPairingPayload(uint32_t *payload);
+static void RF_SetAesPayload(uint32_t *payload, uint32_t *aes);
+static void RF_ChangeMode(RF_MODE mode);
+static uint8_t RF_Payload(RF_ACTION action, uint8_t *payload);
 static void GenRandomNumber32(uint32_t *payload, uint8_t size);
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 void RF_Init(void) {
-	// use VCU_ID as address
-	memcpy(RF.tx.address, &(VCU.d.unit_id), 4);
-	memcpy(RF.rx.address, &(VCU.d.unit_id), 4);
-
-	// set configuration
-	RF.config.tx_address = &(RF.tx.address[0]);
-	RF.config.rx_address = &(RF.rx.address[0]);
-	RF.config.rx_buffer = &(RF.rx.payload[0]);
-
 	// set more config
 	nrf_set_config(&NRF, &(RF.config));
 	// initialization
 	nrf_init(&NRF);
 	// apply config
+	RF_ChangeMode(RF_MODE_NORMAL);
 	nrf_configure(&NRF);
 }
 
@@ -77,13 +70,10 @@ uint8_t RF_SendPing(uint8_t retry) {
 	RF_CMD cmd = RF_CMD_PING;
 	NRF_RESULT p;
 
-	// generate random number
 	GenRandomNumber32((uint32_t *) payload, NRF_DATA_LENGTH/4);
 
-	// insert ping command
-	RF_Payload(RF_W, (uint8_t *) commands[cmd]);
+	RF_Payload(RF_ACTION_W, (uint8_t *) commands[cmd]);
 
-	// send payload
 	while(retry--) {
 		p = nrf_send_packet_noack(&NRF, payload);
 	}
@@ -98,7 +88,7 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
 
 	lock();
 	// Read Payload
-	if (RF_Payload(RF_R, payload_dec)) {
+	if (RF_Payload(RF_ACTION_R, payload_dec)) {
 		// Check Payload Command
 		for (uint8_t i = 0; i < 3; i++) {
 			// check command
@@ -125,48 +115,22 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
 
 uint8_t RF_Pairing(void) {
 	uint8_t *payload = RF.tx.payload;
-	uint32_t aes[4], swapped;
 	NRF_RESULT p = NRF_ERROR;
 
-	// Insert AES Key
-	RF_GenerateAesKey(aes);
+	RF_SetPairingPayload((uint32_t *) payload);
 
-	// swap byte order
-	for (uint8_t i = 0; i < 4; i++) {
-		swapped = _ByteSwap32(aes[i]);
-		memcpy(&payload[i * 4], &swapped, sizeof(swapped));
-	}
-	// Insert VCU_ID
-	memcpy(&payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
+	RF_ChangeMode(RF_MODE_PAIRING);
 
-	// Set Address (pairing mode)
-	memset(RF.tx.address, 0x00, 4);
-	memset(RF.rx.address, 0x00, 4);
-
-	// Set NRF Config (pairing mode)
-	ce_reset(&NRF);
-	nrf_set_tx_address(&NRF, RF.tx.address);
-	nrf_set_rx_address_p0(&NRF, RF.rx.address);
-	nrf_set_rx_payload_width_p0(&NRF, NRF_DATA_PAIR_LENGTH);
-	ce_set(&NRF);
-
-	// Send Payload
 	p = nrf_send_packet_noack(&NRF, payload);
 
-	// Set Address (normal mode)
-	memcpy(RF.tx.address, &(VCU.d.unit_id), 4);
-	memcpy(RF.rx.address, &(VCU.d.unit_id), 4);
-	// Set Aes Key (new)
-	EEPROM_AesKey(EE_CMD_W, aes);
-
-	// Set NRF Config (normal mode)
-	RF_Init();
+	RF_ChangeMode(RF_MODE_NORMAL);
 
 	return (p == NRF_OK);
 }
 
-void RF_GenerateAesKey(uint32_t *payload) {
-	GenRandomNumber32(payload, NRF_DATA_LENGTH/4);
+void RF_GenerateAesKey(uint32_t *aes) {
+	GenRandomNumber32(aes, NRF_DATA_LENGTH/4);
+	EEPROM_AesKey(EE_CMD_W, aes);
 }
 
 void RF_Debugger(void) {
@@ -196,12 +160,55 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t RF_Payload(RF_MODE mode, uint8_t *payload) {
+static void RF_SetPairingPayload(uint32_t *payload) {
+	uint32_t aes[4];
+
+	// Generate new AES Key
+	RF_GenerateAesKey(aes);
+	// Inject AES to payload
+	RF_SetAesPayload(payload, aes);
+	// Insert VCU_ID to payload
+	memcpy(&payload[NRF_DATA_LENGTH], &(VCU.d.unit_id), NRF_ADDR_LENGTH);
+}
+
+static void RF_SetAesPayload(uint32_t *payload, uint32_t *aes){
+	uint32_t swapped;
+
+	// insert to payload & swap byte order
+	for (uint8_t i = 0; i < (NRF_DATA_LENGTH/4); i++) {
+		swapped = _ByteSwap32(*aes++);
+		memcpy(payload++, &swapped, 4);
+	}
+}
+
+static void RF_ChangeMode(RF_MODE mode) {
+	if(mode == RF_MODE_NORMAL) {
+		// use VCU_ID as address
+		memcpy(RF.tx.address, &(VCU.d.unit_id), 4);
+		memcpy(RF.rx.address, &(VCU.d.unit_id), 4);
+		RF.config.payload_length = NRF_DATA_LENGTH;
+	} else {
+		// Set Address (pairing mode)
+		memset(RF.tx.address, 0x00, 4);
+		memset(RF.rx.address, 0x00, 4);
+		RF.config.payload_length = NRF_DATA_PAIR_LENGTH;
+	}
+
+	// set configuration
+	RF.config.tx_address = &(RF.tx.address[0]);
+	RF.config.rx_address = &(RF.rx.address[0]);
+	RF.config.rx_buffer = &(RF.rx.payload[0]);
+
+	// Set NRF Config (pairing mode)
+	nrf_change_mode(&NRF, &(RF.config));
+}
+
+static uint8_t RF_Payload(RF_ACTION action, uint8_t *payload) {
 	uint8_t ret = 0;
 
 	// Process Payload
 	lock();
-	if (mode == RF_R) {
+	if (action == RF_ACTION_R) {
 		ret = AES_Decrypt(payload, RF.rx.payload, NRF_DATA_LENGTH);
 	} else {
 		ret = AES_Encrypt(RF.tx.payload, payload, NRF_DATA_LENGTH);

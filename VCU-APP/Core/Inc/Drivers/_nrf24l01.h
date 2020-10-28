@@ -124,13 +124,12 @@ typedef struct {
 } nrf24l01;
 
 /* Public functions prototype -------------------------------------------------*/
-void ce_set(nrf24l01 *dev);
-void ce_reset(nrf24l01 *dev);
 
 /* Initialization routine */
 NRF_RESULT nrf_init(nrf24l01 *dev);
 NRF_RESULT nrf_check(nrf24l01 *dev);
 NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config);
+NRF_RESULT nrf_change_mode(nrf24l01 *dev, nrf24l01_config *config);
 NRF_RESULT nrf_configure(nrf24l01 *dev);
 /* EXTI Interrupt Handler
  *

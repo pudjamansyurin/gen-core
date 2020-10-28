@@ -19,12 +19,17 @@
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
     RF_CMD_PING = 0,
-    RF_CMD_ALARM = 1,
-    RF_CMD_SEAT = 2
+    RF_CMD_ALARM,
+    RF_CMD_SEAT
 } RF_CMD;
 
 typedef enum {
-    RF_R = 0, RF_W = 1
+    RF_ACTION_R = 0, RF_ACTION_W
+} RF_ACTION;
+
+typedef enum {
+	RF_MODE_NORMAL = 0,
+	RF_MODE_PAIRING
 } RF_MODE;
 
 /* Exported struct -----------------------------------------------------------*/
@@ -44,7 +49,7 @@ typedef struct {
 void RF_Init(void);
 void RF_Debugger(void);
 uint8_t RF_ValidateCommand(RF_CMD *cmd);
-void RF_GenerateAesKey(uint32_t *payload);
+void RF_GenerateAesKey(uint32_t *aes);
 uint8_t RF_Pairing(void);
 uint8_t RF_SendPing(uint8_t retry);
 void RF_Refresh(void);

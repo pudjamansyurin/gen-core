@@ -103,7 +103,6 @@ void EEPROM_ResetOrLoad(void) {
 		}
 		// generate aes key
 		RF_GenerateAesKey(AesKeyNew);
-		EEPROM_AesKey(EE_CMD_W, AesKeyNew);
 
 		// re-write eeprom
 		EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
