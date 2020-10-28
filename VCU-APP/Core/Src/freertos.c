@@ -843,7 +843,7 @@ void StartKeylessTask(void *argument)
 	AES_Init();
 	RF_Init();
 
-	osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+  // osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
 	/* Infinite loop */
 	for (;;) {
 		// Check response
@@ -889,23 +889,23 @@ void StartKeylessTask(void *argument)
 							LOG_StrLn("NRF:Command = ALARM");
 
 							// toggle Hazard & HORN (+ Sein Lamp)
-							for (uint8_t i = 0; i < 2; i++) {
-								SW.runner.hazard = 1;
-								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
-								_DelayMS(200);
-								SW.runner.hazard = 0;
-								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
-								_DelayMS(100);
-							}
+//							for (uint8_t i = 0; i < 2; i++) {
+//								SW.runner.hazard = 1;
+//								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
+//								_DelayMS(200);
+//								SW.runner.hazard = 0;
+//								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
+//								_DelayMS(100);
+//							}
 							break;
 
 						case RF_CMD_SEAT:
 							LOG_StrLn("NRF:Command = SEAT");
 
-							// open the seat via solenoid
-							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
-							_DelayMS(100);
-							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
+//							// open the seat via solenoid
+//							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
+//							_DelayMS(100);
+//							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
 							break;
 
 						default:

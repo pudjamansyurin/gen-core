@@ -67,7 +67,7 @@ NRF_RESULT nrf_check(nrf24l01 *dev) {
 
 NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config) {
 	config->data_rate = NRF_DATA_RATE_250KBPS;
-	config->tx_power = NRF_TX_PWR_0dBm;
+  config->tx_power = NRF_TX_PWR_M18dBm;
 	config->crc_width = NRF_CRC_WIDTH_1B;
 	config->retransmit_count = 0x0F;   // maximum is 15 times
 	config->retransmit_delay = 0x0F; // 4000us, LSB:250us
