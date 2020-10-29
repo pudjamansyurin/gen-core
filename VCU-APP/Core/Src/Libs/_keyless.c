@@ -63,8 +63,8 @@ void RF_Init(void) {
   // initialization
   nrf_init(&NRF);
   // apply config
-  RF_ChangeMode(RF_MODE_NORMAL);
   nrf_configure(&NRF);
+  RF_ChangeMode(RF_MODE_NORMAL);
 }
 
 uint8_t RF_SendPing(uint8_t retry) {
@@ -117,6 +117,8 @@ uint8_t RF_Pairing(void) {
 
   // Generate new AES Key
   RF_GenerateAesKey(aes);
+  EEPROM_AesKey(EE_CMD_W, aes);
+
   // Inject AES to payload
   RF_SetAesPayload(aes);
   // Insert VCU_ID to payload
@@ -124,9 +126,8 @@ uint8_t RF_Pairing(void) {
 
   RF_ChangeMode(RF_MODE_PAIRING);
   p = nrf_send_packet_noack(&NRF, RF.tx.payload);
-  RF_ChangeMode(RF_MODE_NORMAL);
 
-  EEPROM_AesKey(EE_CMD_W, aes);
+  RF_Init();
 
   return (p == NRF_OK);
 }
