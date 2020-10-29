@@ -67,7 +67,7 @@
 #define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
 #define NET_TCP_PORT                 (uint16_t) 46606
 
-#define COMMAND_TIMEOUT              (uint32_t) 20000               // in ms
+#define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 
 #define KEYLESS_TIMEOUT              (uint32_t) 5000                // in ms
 

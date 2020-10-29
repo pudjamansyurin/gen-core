@@ -77,13 +77,16 @@ void CMD_AudioVol(command_t *cmd) {
 }
 
 void CMD_Finger(uint8_t event, response_t *resp) {
-	uint32_t notif;
+	uint32_t notif, timeout;
 
 	osThreadFlagsSet(FingerTaskHandle, event);
 
+	// decide the timeout
+	timeout = (event == EVT_FINGER_ADD) ? 20000 : COMMAND_TIMEOUT;
+
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
-	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT)) {
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout)) {
 		if (notif & EVT_COMMAND_OK) {
 			resp->data.code = RESPONSE_STATUS_OK;
 		}
