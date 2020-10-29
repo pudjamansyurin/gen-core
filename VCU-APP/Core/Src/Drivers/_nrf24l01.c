@@ -113,11 +113,11 @@ NRF_RESULT nrf_configure(nrf24l01 *dev) {
 
 	// address width
 	nrf_set_address_width(dev, dev->config.addr_width);
-//	// openWritingPipe
-//	nrf_set_tx_address(dev, dev->config.tx_address);
-//	// openReadingPipe
-//	nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
-//	nrf_set_rx_address_p0(dev, dev->config.rx_address);
+  // openWritingPipe
+  nrf_set_tx_address(dev, dev->config.tx_address);
+  // openReadingPipe
+  nrf_set_rx_address_p0(dev, dev->config.rx_address);
+  nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
 	// enable data pipe0
 	nrf_set_rx_pipes(dev, 0x01);
 

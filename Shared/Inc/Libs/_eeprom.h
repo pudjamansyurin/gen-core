@@ -27,6 +27,7 @@
 #define VADDR_FOTA_TYPE             (uint16_t) EE_AREA(VADDR_FOTA_VERSION + 2, 4)
 
 #define EE_NULL                      (uint8_t) 0
+#define EE_DEV_TOTAL                 (uint8_t) 1
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {

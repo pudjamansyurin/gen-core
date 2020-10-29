@@ -13,8 +13,10 @@
 #include "Libs/_keyless.h"
 #include "Drivers/_aes.h"
 #include "Nodes/VCU.h"
+#endif
 
 /* External variables -------------------------------------------------------*/
+#if (!BOOTLOADER)
 extern osThreadId_t KeylessTaskHandle;
 extern osMutexId_t EepromMutexHandle;
 extern response_t RESPONSE;
@@ -103,6 +105,7 @@ void EEPROM_ResetOrLoad(void) {
 		}
 		// generate aes key
 		RF_GenerateAesKey(AesKeyNew);
+    EEPROM_AesKey(EE_CMD_W, AesKeyNew);
 
 		// re-write eeprom
 		EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
