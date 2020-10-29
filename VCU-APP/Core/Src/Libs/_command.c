@@ -82,7 +82,7 @@ void CMD_Finger(uint8_t event, response_t *resp) {
 	osThreadFlagsSet(FingerTaskHandle, event);
 
 	// decide the timeout
-	timeout = (event == EVT_FINGER_ADD) ? 20000 : COMMAND_TIMEOUT;
+	timeout = (event == EVT_FINGER_ADD) ? 20000 : 5000;
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
