@@ -416,11 +416,11 @@ void StartManagerTask(void *argument)
   EEPROM_Init();
 
   // Threads management:
-  osThreadSuspend(IotTaskHandle);
-  osThreadSuspend(ReporterTaskHandle);
-  osThreadSuspend(CommandTaskHandle);
-  osThreadSuspend(GpsTaskHandle);
-  osThreadSuspend(GyroTaskHandle);
+//  osThreadSuspend(IotTaskHandle);
+//  osThreadSuspend(ReporterTaskHandle);
+//  osThreadSuspend(CommandTaskHandle);
+//  osThreadSuspend(GpsTaskHandle);
+//  osThreadSuspend(GyroTaskHandle);
   //	  osThreadSuspend(KeylessTaskHandle);
   osThreadSuspend(FingerTaskHandle);
   osThreadSuspend(AudioTaskHandle);
@@ -844,7 +844,7 @@ void StartKeylessTask(void *argument)
   AES_Init();
   RF_Init();
 
-  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+  // osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
   /* Infinite loop */
   for (;;) {
     // Check response
