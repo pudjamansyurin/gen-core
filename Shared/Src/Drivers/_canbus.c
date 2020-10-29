@@ -16,7 +16,8 @@ extern osMessageQueueId_t CanRxQueueHandle;
 #endif
 
 /* Exported variables ---------------------------------------------------------*/
-//can_rx_t CanRx;
+uint8_t CAN_ACTIVE = 0;
+
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
@@ -35,6 +36,8 @@ void CANBUS_Init(void) {
 		/* Start Error */
 		Error_Handler();
 	}
+
+	CAN_ACTIVE = 1;
 
 #if (!BOOTLOADER)
 	/* Activate CAN RX notification */
@@ -73,6 +76,10 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 	CAN_TxHeaderTypeDef TxHeader;
 	HAL_StatusTypeDef status;
 
+	if (!CAN_ACTIVE) {
+		return 0;
+	}
+
 	lock();
 	// set header
 	CANBUS_Header(&TxHeader, address, DLC);
@@ -98,6 +105,10 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
  *----------------------------------------------------------------------------*/
 uint8_t CANBUS_Read(can_rx_t *Rx) {
 	HAL_StatusTypeDef status = HAL_ERROR;
+
+	if (!CAN_ACTIVE) {
+		return 0;
+	}
 
 	lock();
 	/* Check FIFO */

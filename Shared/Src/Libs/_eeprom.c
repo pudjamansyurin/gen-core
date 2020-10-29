@@ -49,7 +49,7 @@ uint8_t EEPROM_Init(void) {
 	lock();
 	LOG_StrLn("EEPROM:Init");
 	// check each eeprom
-	for (uint8_t i = 0; i < 1; i++) {
+	for (uint8_t i = 0; i < EE_DEV_TOTAL; i++) {
 		if (!ret) {
 			retry = MAX_RETRY;
 			EEPROM24XX_SetDevice(EEPROMS[i]);
@@ -191,7 +191,17 @@ uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value) {
 }
 
 uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value) {
-	return EE_Command(VADDR_FOTA_TYPE, cmd, &value, &FOTA_TYPE, sizeof(uint32_t));
+	uint32_t result;
+
+	result = EE_Command(VADDR_FOTA_TYPE, cmd, &value, &FOTA_TYPE, sizeof(uint32_t));
+
+	if (cmd == EE_CMD_R) {
+		if (!(FOTA_TYPE == IAP_VCU || FOTA_TYPE == IAP_HMI)) {
+			FOTA_TYPE = IAP_VCU;
+		}
+	}
+
+	return result;
 }
 
 /* Private functions implementation --------------------------------------------*/
