@@ -43,24 +43,22 @@ void BMS_Init(void) {
 	BMS.d.soc = 0;
 	BMS.d.overheat = 0;
 	BMS.d.warning = 0;
-	// set each BMS
-	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
+
+	for (uint8_t i = 0; i < BMS_COUNT ; i++)
 		BMS_ResetIndex(i);
-	}
 }
 
 void BMS_PowerOverCan(uint8_t on) {
 	if (on) {
-		if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE)) {
+		if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE))
 			BMS_CAN_TX_Setting(1, BMS_STATE_DISCHARGE);
-		} else {
-			// completely ON
-			BMS.d.started = 1;
-		}
+		else
+			BMS.d.started = 1; // completely ON
+
 	} else {
-		if (!BMS.CheckRun(0) || !BMS.CheckState(BMS_STATE_IDLE)) {
+		if (!BMS.CheckRun(0) || !BMS.CheckState(BMS_STATE_IDLE))
 			BMS_CAN_TX_Setting(0, BMS_STATE_IDLE);
-		} else {
+		else {
 			// completely OFF
 			BMS.d.started = 0;
 			BMS.d.soc = 0;
@@ -85,12 +83,10 @@ void BMS_ResetIndex(uint8_t i) {
 }
 
 void BMS_RefreshIndex(void) {
-	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-		if ((_GetTickMS() - BMS.d.pack[i].tick) > 500) {
+	for (uint8_t i = 0; i < BMS_COUNT ; i++)
+		if ((_GetTickMS() - BMS.d.pack[i].tick) > 500)
 			BMS_ResetIndex(i);
-		}
-	}
-	// update data
+
 	BMS_MergeData();
 }
 
@@ -98,18 +94,14 @@ uint8_t BMS_GetIndex(uint32_t id) {
 	uint8_t i;
 
 	// find index (if already exist)
-	for (i = 0; i < BMS_COUNT ; i++) {
-		if (BMS.d.pack[i].id == id) {
+	for (i = 0; i < BMS_COUNT ; i++)
+		if (BMS.d.pack[i].id == id)
 			return i;
-		}
-	}
 
-	// finx index (if not exist)
-	for (i = 0; i < BMS_COUNT ; i++) {
-		if (BMS.d.pack[i].id == BMS_ID_NONE) {
+	// find index (if not exist)
+	for (i = 0; i < BMS_COUNT ; i++)
+		if (BMS.d.pack[i].id == BMS_ID_NONE)
 			return i;
-		}
-	}
 
 	// force replace first index (if already full)
 	return 0;
@@ -125,6 +117,7 @@ void BMS_SetEvents(uint16_t flag) {
 	VCU.SetEvent(EV_BMS_CHARGE_OVER_TEMPERATURE, _R1(flag, 5));
 	VCU.SetEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE, _R1(flag, 6));
 	VCU.SetEvent(EV_BMS_UNBALANCE, _R1(flag, 7));
+
 	VCU.SetEvent(EV_BMS_UNDER_VOLTAGE, _R1(flag, 8));
 	VCU.SetEvent(EV_BMS_OVER_VOLTAGE, _R1(flag, 9));
 	VCU.SetEvent(EV_BMS_OVER_DISCHARGE_CAPACITY, _R1(flag, 10));
@@ -149,20 +142,16 @@ void BMS_SetEvents(uint16_t flag) {
 }
 
 uint8_t BMS_CheckRun(uint8_t state) {
-	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-		if (BMS.d.pack[i].started != state) {
+	for (uint8_t i = 0; i < BMS_COUNT ; i++)
+		if (BMS.d.pack[i].started != state)
 			return 0;
-		}
-	}
 	return 1;
 }
 
 uint8_t BMS_CheckState(BMS_STATE state) {
-	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-		if (BMS.d.pack[i].state != state) {
+	for (uint8_t i = 0; i < BMS_COUNT ; i++)
+		if (BMS.d.pack[i].state != state)
 			return 0;
-		}
-	}
 	return 1;
 }
 
@@ -171,18 +160,18 @@ void BMS_MergeData(void) {
 	uint8_t soc = 0, device = 0;
 
 	// Merge flags (OR-ed)
-	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
+	for (uint8_t i = 0; i < BMS_COUNT ; i++)
 		flags |= BMS.d.pack[i].flag;
-	}
+
 	BMS_SetEvents(flags);
 
 	// Average SOC
-	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
+	for (uint8_t i = 0; i < BMS_COUNT ; i++)
 		if (BMS.d.pack[i].started == 1) {
 			soc += BMS.d.pack[i].soc;
 			device++;
 		}
-	}
+
 	BMS.d.soc = device ? (soc / device) : soc;
 }
 
@@ -219,6 +208,7 @@ uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
 	// set message
 	TxData.u8[0] = start;
 	TxData.u8[0] |= _L(state, 1);
+	TxData.u8[0] |= _L(start, 2);
 
 	// send message
 	return CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);

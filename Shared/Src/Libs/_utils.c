@@ -64,10 +64,10 @@ void _Error(char msg[50]) {
 #endif
 
 	// indicator error
-	while (1) {
-		_LedToggle();
-		HAL_Delay(50);
-	}
+	//	while (1) {
+	//		_LedToggle();
+	//		HAL_Delay(50);
+	//	}
 }
 
 uint32_t _ByteSwap32(uint32_t x) {
@@ -171,7 +171,7 @@ int8_t _BitPosition(uint64_t event_id) {
 	return pos;
 }
 
-uint8_t _osThreadFlagsWait(uint32_t* notif, uint32_t flags, uint32_t options, uint32_t timeout) {
+uint8_t _osThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout) {
 	*notif = osThreadFlagsWait(flags, options, timeout);
 
 	return _RTOS_ValidThreadFlag(*notif);

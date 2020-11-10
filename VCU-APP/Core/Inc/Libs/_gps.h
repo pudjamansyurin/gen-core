@@ -13,18 +13,18 @@
 #include "Drivers/_nmea.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define GPS_INTERVAL          (uint16_t) 3				// in second
+#define GPS_INTERVAL          (uint16_t) 1				// in second
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-    nmea_float_t dop_h;
-    nmea_float_t dop_v;
-    nmea_float_t altitude;
-    nmea_float_t latitude;
-    nmea_float_t longitude;
-    nmea_float_t heading;
-    nmea_float_t speed_kph;
-    nmea_float_t speed_mps;
+	nmea_float_t dop_h;
+	nmea_float_t dop_v;
+	nmea_float_t altitude;
+	nmea_float_t latitude;
+	nmea_float_t longitude;
+	nmea_float_t heading;
+	nmea_float_t speed_kph;
+	nmea_float_t speed_mps;
 } gps_t;
 
 /* Public functions prototype ------------------------------------------------*/

@@ -40,9 +40,8 @@ void HMI2_Init(void) {
 }
 
 void HMI2_Refresh(void) {
-	if ((_GetTickMS() - HMI2.d.tick) > 10000) {
+	if ((_GetTickMS() - HMI2.d.tick) > 10000)
 		HMI2.d.started = 0;
-	}
 }
 
 void HMI2_PowerOverCan(uint8_t state) {
