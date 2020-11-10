@@ -51,7 +51,7 @@ void BMS_Init(void) {
 void BMS_PowerOverCan(uint8_t on) {
 	if (on) {
 		if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE))
-			BMS_CAN_TX_Setting(1, BMS_STATE_DISCHARGE);
+			BMS_CAN_TX_Setting(1, BMS_STATE_FULL);
 		else
 			BMS.d.started = 1; // completely ON
 
@@ -208,7 +208,6 @@ uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
 	// set message
 	TxData.u8[0] = start;
 	TxData.u8[0] |= _L(state, 1);
-	TxData.u8[0] |= _L(start, 2);
 
 	// send message
 	return CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);
