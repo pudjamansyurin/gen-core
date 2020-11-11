@@ -537,6 +537,10 @@ void StartReporterTask(void *argument)
 
 		frame = Frame_Decider();
 
+    // TODO: FOR TESTING ONLY (OVERWRITTEN)
+    VCU.d.interval = 5;
+    frame = FR_FULL;
+
 		Report_Capture(frame, &report);
 
 		// Put report to log
@@ -551,8 +555,6 @@ void StartReporterTask(void *argument)
 		VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
 		VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
 
-		// TODO: DELETE_ME
-		VCU.d.interval = 5;
 		osDelayUntil(lastWake + (VCU.d.interval * 1000));
 	}
 	/* USER CODE END StartReporterTask */

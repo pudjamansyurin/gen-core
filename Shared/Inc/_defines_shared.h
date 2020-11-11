@@ -114,6 +114,10 @@
 #define EV_BMS_OVER_DISCHARGE_CAPACITY          BIT(39)
 #define EV_BMS_UNBALANCE                        BIT(40)
 #define EV_BMS_SYSTEM_FAILURE                   BIT(41)
+#define EV_BMS_WARNING_OVER_CURRENT             BIT(42)
+#define EV_BMS_WARNING_OVER_TEMPERATURE         BIT(43)
+#define EV_BMS_WARNING_UNDER_VOLTAGE            BIT(44)
+#define EV_BMS_WARNING_UNBALANCE                BIT(45)
 
 // Events (for Individual Thread)
 #define EVT_MASK                     (uint32_t) 0x7FFFFFFF
