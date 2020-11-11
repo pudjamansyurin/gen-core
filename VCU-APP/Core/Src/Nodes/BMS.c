@@ -53,7 +53,8 @@ void BMS_PowerOverCan(uint8_t on) {
 		if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE))
 			BMS_CAN_TX_Setting(1, BMS_STATE_FULL);
 		else
-			BMS.d.started = 1; // completely ON
+			// completely ON
+			BMS.d.started = 1;
 
 	} else {
 		if (!BMS.CheckRun(0) || !BMS.CheckState(BMS_STATE_IDLE))

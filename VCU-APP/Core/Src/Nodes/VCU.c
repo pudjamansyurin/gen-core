@@ -31,7 +31,7 @@ vcu_t VCU = {
 		VCU_Init,
 		VCU_SetEvent,
 		VCU_ReadEvent,
-		VCU_CheckMainPower,
+		VCU_CheckMain5vPower,
 };
 
 /* Public functions implementation --------------------------------------------*/
@@ -70,7 +70,7 @@ uint8_t VCU_ReadEvent(uint64_t event_id) {
 	return (VCU.d.events & event_id) == event_id;
 }
 
-void VCU_CheckMainPower(void) {
+void VCU_CheckMain5vPower(void) {
 	static TickType_t tick;
 	static int8_t lastState = -1;
 	uint8_t currentState;

@@ -16,7 +16,10 @@
 #include "Nodes/HMI2.h"
 #include "Nodes/HMI1.h"
 
-/* External variables ----------------------------------------------------------*/
+/* Private constants ---------------------------------------------------------*/
+#define ACTIVE_HIGH 				(uint8_t) 0
+
+/* External variables --------------------------------------------------------*/
 extern osThreadId_t Hmi2PowerTaskHandle;
 extern hmi1_t HMI1;
 
@@ -30,7 +33,9 @@ hmi2_t HMI2 = {
 		},
 		HMI2_Init,
 		HMI2_Refresh,
-		HMI2_PowerOverCan
+		HMI2_PowerOverCan,
+		HMI2_PowerOn,
+		HMI2_PowerOff
 };
 
 /* Public functions implementation --------------------------------------------*/
@@ -45,9 +50,34 @@ void HMI2_Refresh(void) {
 }
 
 void HMI2_PowerOverCan(uint8_t state) {
-	// past to thread handler
 	HMI2.d.power = state;
 	osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
+}
+
+void HMI2_PowerOn(void) {
+	TickType_t tick;
+
+	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !ACTIVE_HIGH);
+	_DelayMS(100);
+	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, ACTIVE_HIGH);
+
+	// wait until turned ON by CAN
+	tick = _GetTickMS();
+	while (_GetTickMS() - tick < (90 * 1000))
+		if (HMI2.d.started)
+			break;
+}
+
+void HMI2_PowerOff(void) {
+	TickType_t tick;
+
+	// wait until turned OFF by CAN
+	tick = _GetTickMS();
+	while (_GetTickMS() - tick < (30 * 1000))
+		if (!HMI2.d.started)
+			break;
+
+	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !ACTIVE_HIGH);
 }
 
 /* ====================================== CAN RX =================================== */

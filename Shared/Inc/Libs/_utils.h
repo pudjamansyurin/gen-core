@@ -24,8 +24,8 @@ uint32_t _ByteSwap32(uint32_t x);
 #if (!BOOTLOADER)
 void _BuzzerWrite(uint8_t state);
 void _RTOS_Debugger(uint32_t ms);
-void _DummyGenerator(void);
+void _DummyDataGenerator(void);
 int8_t _BitPosition(uint64_t event_id);
-uint8_t _osThreadFlagsWait(uint32_t* notif, uint32_t flags, uint32_t options, uint32_t timeout);
+uint8_t _osThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout);
 #endif
 #endif /* UTILS_H_ */

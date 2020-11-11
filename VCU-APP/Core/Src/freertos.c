@@ -332,7 +332,7 @@ void MX_FREERTOS_Init(void) {
 	ResponseQueueHandle = osMessageQueueNew(1, sizeof(response_t), &ResponseQueue_attributes);
 
 	/* creation of ReportQueue */
-	ReportQueueHandle = osMessageQueueNew(150, sizeof(report_t), &ReportQueue_attributes);
+	ReportQueueHandle = osMessageQueueNew(100, sizeof(report_t), &ReportQueue_attributes);
 
 	/* creation of DriverQueue */
 	DriverQueueHandle = osMessageQueueNew(1, sizeof(uint8_t), &DriverQueue_attributes);
@@ -416,15 +416,15 @@ void StartManagerTask(void *argument)
 	EEPROM_Init();
 
 	// Threads management:
-	//  osThreadSuspend(IotTaskHandle);
-	//  osThreadSuspend(ReporterTaskHandle);
-	//  osThreadSuspend(CommandTaskHandle);
-	//  osThreadSuspend(GpsTaskHandle);
-	//  osThreadSuspend(GyroTaskHandle);
+	//	osThreadSuspend(IotTaskHandle);
+	//	osThreadSuspend(ReporterTaskHandle);
+	//	osThreadSuspend(CommandTaskHandle);
+	//	osThreadSuspend(GpsTaskHandle);
+	//	osThreadSuspend(GyroTaskHandle);
 	//	osThreadSuspend(KeylessTaskHandle);
 	osThreadSuspend(FingerTaskHandle);
-	osThreadSuspend(AudioTaskHandle);
-	osThreadSuspend(SwitchTaskHandle);
+	//	osThreadSuspend(AudioTaskHandle);
+	//	osThreadSuspend(SwitchTaskHandle);
 	//	osThreadSuspend(CanRxTaskHandle);
 	//	osThreadSuspend(CanTxTaskHandle);
 	osThreadSuspend(Hmi2PowerTaskHandle);
@@ -436,16 +436,12 @@ void StartManagerTask(void *argument)
 	for (;;) {
 		lastWake = _GetTickMS();
 
-		// Feed the dog
 		MX_IWDG_Reset();
 
-		// Dummy data generator
-		_DummyGenerator();
+		// _DummyDataGenerator();
 
-		// Thread's Stack Monitor
 		// _RTOS_Debugger(1000);
 
-		// Battery Monitor
 		// BAT_Debugger();
 
 		// Other stuffs
@@ -453,7 +449,6 @@ void StartManagerTask(void *argument)
 		HMI1.d.status.warning = BMS.d.warning;
 		HMI1.d.status.overheat = BMS.d.overheat;
 
-		// Periodic interval
 		osDelayUntil(lastWake + 1000);
 	}
 	/* USER CODE END StartManagerTask */
@@ -470,14 +465,12 @@ void StartIotTask(void *argument)
 {
 	/* USER CODE BEGIN StartIotTask */
 	TickType_t lastWake;
-
 	report_t report;
 	payload_t pReport = {
 			.type = PAYLOAD_REPORT,
 			.pQueue = &ReportQueueHandle,
 			.pPayload = &report
 	};
-
 	response_t response;
 	payload_t pResponse = {
 			.type = PAYLOAD_RESPONSE,
@@ -497,29 +490,22 @@ void StartIotTask(void *argument)
 		lastWake = _GetTickMS();
 
 		// Upload Report
-		if (Packet_Pending(&pReport)) {
-			if (!Send_Payload(&pReport)) {
+		if (Packet_Pending(&pReport))
+			if (!Send_Payload(&pReport))
 				Simcom_SetState(SIM_STATE_SERVER_ON, 0);
-			}
-		}
 
 		// Upload Response
-		if (Packet_Pending(&pResponse)) {
-			if (!Send_Payload(&pResponse)) {
+		if (Packet_Pending(&pResponse))
+			if (!Send_Payload(&pResponse))
 				Simcom_SetState(SIM_STATE_SERVER_ON, 0);
-			}
-		}
 
 		// ================= SIMCOM Related Routines ================
-		if (RTC_NeedCalibration()) {
-			if (Simcom_SetState(SIM_STATE_READY, 0)) {
+		if (RTC_NeedCalibration())
+			if (Simcom_SetState(SIM_STATE_READY, 0))
 				RTC_CalibrateWithSimcom();
-			}
-		}
 
 		Simcom_UpdateSignalQuality();
 
-		// Periodic interval
 		osDelayUntil(lastWake + 1000);
 	}
 	/* USER CODE END StartIotTask */
@@ -543,26 +529,22 @@ void StartReporterTask(void *argument)
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-	// Initialize
 	Report_Init(FR_SIMPLE, &report);
 
 	/* Infinite loop */
 	for (;;) {
 		lastWake = _GetTickMS();
 
-		// Frame type decider
 		frame = Frame_Decider();
 
-		// Get current snapshot
 		Report_Capture(frame, &report);
 
 		// Put report to log
 		do {
 			status = osMessageQueuePut(ReportQueueHandle, &report, 0U, 0U);
 			// already full, remove oldest
-			if (status == osErrorResource) {
+			if (status == osErrorResource)
 				osThreadFlagsSet(IotTaskHandle, EVT_IOT_DISCARD);
-			}
 		} while (status != osOK);
 
 		// reset some events group
@@ -571,7 +553,6 @@ void StartReporterTask(void *argument)
 
 		// TODO: DELETE_ME
 		VCU.d.interval = 5;
-		// Report interval
 		osDelayUntil(lastWake + (VCU.d.interval * 1000));
 	}
 	/* USER CODE END StartReporterTask */
@@ -588,7 +569,6 @@ void StartCommandTask(void *argument)
 {
 	/* USER CODE BEGIN StartCommandTask */
 	uint8_t driver;
-	osStatus_t status;
 	command_t command;
 	response_t response;
 
@@ -604,9 +584,7 @@ void StartCommandTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		// get command in queue
-		status = osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever);
-
-		if (status == osOK) {
+		if (osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever) == osOK) {
 			Command_Debugger(&command);
 
 			// default command response
@@ -723,7 +701,6 @@ void StartCommandTask(void *argument)
 
 			// Get current snapshot
 			Response_Capture(&response);
-			// Send to Queue
 			osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
 		}
 	}
@@ -757,7 +734,6 @@ void StartGpsTask(void *argument)
 		GPS_CalculateOdometer();
 		// GPS_Debugger();
 
-		// Periodic interval
 		osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
 	}
 	/* USER CODE END StartGpsTask */
@@ -776,7 +752,6 @@ void StartGyroTask(void *argument)
 	uint32_t flag;
 	TickType_t lastWake;
 	mems_decision_t decider;
-	uint8_t crash = 0, fall = 0;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -793,30 +768,23 @@ void StartGyroTask(void *argument)
 		// Gyro_Debugger(&decider);
 
 		// Check accelerometer, happens when impact detected
-		if (crash != decider.crash.state) {
-			crash = decider.crash.state;
-
+		if (VCU.ReadEvent(EV_VCU_BIKE_CRASHED) != decider.crash.state)
 			VCU.SetEvent(EV_VCU_BIKE_CRASHED, decider.crash.state);
-		}
 
 		// Check gyroscope, happens when fall detected
-		if (fall != decider.fall.state) {
-			fall = decider.fall.state;
-
+		if (VCU.ReadEvent(EV_VCU_BIKE_FALLING) != decider.fall.state)
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, decider.fall.state);
 
+		// Handle for both event
+		if (decider.crash.state || decider.fall.state) {
+			// Turn OFF BMS (+ MCU)
+
+			// indicators
 			_LedWrite(decider.fall.state);
 			flag = decider.fall.state ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
 			osThreadFlagsSet(AudioTaskHandle, flag);
 		}
 
-		// Handle for both event
-		if (crash || fall) {
-			// Turn OFF BMS (+ MCU)
-
-		}
-
-		// Periodic interval
 		osDelayUntil(lastWake + 100);
 	}
 	/* USER CODE END StartGyroTask */
@@ -866,18 +834,17 @@ void StartKeylessTask(void *argument)
 
 				// process
 				if (RF_ValidateCommand(&command)) {
+					// response pairing command
+					if (tick_pairing > 0) {
+						if (_GetTickMS() - tick_pairing < 5000)
+							osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+						tick_pairing = 0;
+					}
+
 					// handle command
 					switch (command) {
 						case RF_CMD_PING:
 							LOG_StrLn("NRF:Command = PING");
-
-							// response pairing command
-							if (tick_pairing > 0) {
-								if (_GetTickMS() - tick_pairing < 5000) {
-									osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
-								}
-								tick_pairing = 0;
-							}
 
 							// update heart-beat
 							VCU.d.tick.keyless = _GetTickMS();
@@ -921,14 +888,10 @@ void StartKeylessTask(void *argument)
 					//					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
 				}
 			}
+			osThreadFlagsClear(EVT_MASK);
 		}
 
-		// reset pending flag
-		osThreadFlagsClear(EVT_MASK);
-		// Send ping
 		RF_SendPing(1);
-
-		// update state
 		RF_Refresh();
 	}
 	/* USER CODE END StartKeylessTask */
@@ -944,7 +907,6 @@ void StartKeylessTask(void *argument)
 void StartFingerTask(void *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
-	osStatus_t status;
 	uint32_t notif;
 	uint8_t driver, p;
 	int8_t id;
@@ -960,7 +922,6 @@ void StartFingerTask(void *argument)
 	for (;;) {
 		// check if user put finger
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
-			// Scan existing finger
 			if (notif & EVT_FINGER_PLACED) {
 				id = Finger_AuthFast();
 				// Finger is registered
@@ -981,9 +942,7 @@ void StartFingerTask(void *argument)
 
 			if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
 				// get driver value
-				status = osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U);
-
-				if (status == osOK) {
+				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
 					if (notif & EVT_FINGER_ADD)
 						p = Finger_Enroll(driver);
 					else if (notif & EVT_FINGER_DEL)
@@ -1020,8 +979,6 @@ void StartAudioTask(void *argument)
 
 	/* Initialize Wave player (Codec, DMA, I2C) */
 	AUDIO_Init();
-
-	// Play wave loop forever, hand-over to DMA, so CPU is free
 	AUDIO_Play();
 
 	/* Infinite loop */
@@ -1030,7 +987,6 @@ void StartAudioTask(void *argument)
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
 			// Beep command
 			if (notif & EVT_AUDIO_BEEP) {
-				// Beep
 				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
 				_DelayMS(250);
 				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
@@ -1076,7 +1032,7 @@ void StartSwitchTask(void *argument)
 	HBAR_ReadStates();
 
 	// Check GPIOs state
-	VCU.CheckMainPower();
+	VCU.CheckMain5vPower();
 	// VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
 	/* Infinite loop */
@@ -1089,11 +1045,8 @@ void StartSwitchTask(void *argument)
 
 			// Handle switch EXTI interrupt
 			if (notif & EVT_SWITCH_TRIGGERED) {
-				// Read all (to handle multiple switch change at the same time)
 				HBAR_ReadStates();
-				// handle select & set: timer
 				HBAR_TimerSelectSet();
-				// Only handle Select or Set
 				HBAR_RunSelectOrSet();
 			}
 
@@ -1116,7 +1069,7 @@ void StartSwitchTask(void *argument)
 		}
 
 		// Check REG_5V power state
-		VCU.CheckMainPower();
+		VCU.CheckMain5vPower();
 	}
 	/* USER CODE END StartSwitchTask */
 }
@@ -1132,17 +1085,13 @@ void StartCanRxTask(void *argument)
 {
 	/* USER CODE BEGIN StartCanRxTask */
 	can_rx_t Rx;
-	osStatus_t status;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
 	for (;;) {
-		// get can rx in queue
-		status = osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, osWaitForever);
-		// wait forever
-		if (status == osOK) {
+		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, osWaitForever) == osOK) {
 			// handle STD message
 			switch (CANBUS_ReadID(&(Rx.header))) {
 				case CAND_HMI1 :
@@ -1152,7 +1101,7 @@ void StartCanRxTask(void *argument)
 					HMI2.can.r.State(&Rx);
 					break;
 				default:
-					// BMS - Extendend id
+					// BMS - Extended ID
 					switch (_R(CANBUS_ReadID(&(Rx.header)), 20)) {
 						case CAND_BMS_PARAM_1 :
 							BMS.can.r.Param1(&Rx);
@@ -1192,7 +1141,6 @@ void StartCanTxTask(void *argument)
 	for (;;) {
 		lastWake = _GetTickMS();
 
-		// Send CAN data
 		// send every 20m
 		VCU.can.t.SwitchModeControl(&SW);
 
@@ -1202,6 +1150,7 @@ void StartCanTxTask(void *argument)
 
 			VCU.can.t.MixedData(&(SW.runner));
 		}
+
 		// send every 1000ms
 		if (lastWake - last1000ms > 1000) {
 			last1000ms = _GetTickMS();
@@ -1220,7 +1169,6 @@ void StartCanTxTask(void *argument)
 		HMI2.Refresh();
 		BMS.RefreshIndex();
 
-		// Periodic interval
 		osDelayUntil(lastWake + 20);
 	}
 	/* USER CODE END StartCanTxTask */
@@ -1237,46 +1185,22 @@ void StartHmi2PowerTask(void *argument)
 {
 	/* USER CODE BEGIN StartHmi2PowerTask */
 	uint32_t notif;
-	TickType_t tick;
-	uint8_t activeHigh = 0;
+
+	// wait until ManagerTask done
+	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
-	for (;;)
-			{
-		// wait forever until triggered
+	for (;;) {
 		if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
-			// Handle power control
-			if (HMI2.d.power) {
-				while (!HMI2.d.started) {
-					// turn ON
-					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !activeHigh);
-					_DelayMS(100);
-					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, activeHigh);
 
-					// wait until turned ON
-					tick = _GetTickMS();
-					while (_GetTickMS() - tick < (90 * 1000)) {
-						// already ON
-						if (HMI2.d.started) {
-							break;
-						}
-					}
-				}
-			} else {
-				while (HMI2.d.started) {
-					// wait until turned OFF by CAN
-					tick = _GetTickMS();
-					while (_GetTickMS() - tick < (30 * 1000)) {
-						// already OFF
-						if (!HMI2.d.started) {
-							break;
-						}
-					}
+			if (HMI2.d.power)
+				while (!HMI2.d.started)
+					HMI2.PowerOn();
 
-					// force turn OFF
-					HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !activeHigh);
-				}
-			}
+			else
+				while (HMI2.d.started)
+					HMI2.PowerOff();
+
 		}
 	}
 	/* USER CODE END StartHmi2PowerTask */
@@ -1287,33 +1211,32 @@ void StartHmi2PowerTask(void *argument)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (osKernelGetState() == osKernelRunning) {
 		// handle BMS_IRQ (is 5v exist?)
-		if (GPIO_Pin == EXT_REG_5V_IRQ_Pin) {
+		if (GPIO_Pin == EXT_REG_5V_IRQ_Pin)
 			osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_REG_5V_IRQ);
-		}
+
 		// handle Starter Button
-		if (GPIO_Pin == EXT_STARTER_IRQ_Pin) {
+		if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
 			osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_STARTER_IRQ);
-		}
+
 		// handle KNOB IRQ (Power control for HMI1 & HMI2)
-		if (GPIO_Pin == EXT_KNOB_IRQ_Pin) {
+		if (GPIO_Pin == EXT_KNOB_IRQ_Pin)
 			osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_KNOB_IRQ);
-		}
+
 		// handle Finger IRQ
-		if (GPIO_Pin == EXT_FINGER_IRQ_Pin) {
+		if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
 			osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
-		}
+
 		// handle NRF24 IRQ
-		if (GPIO_Pin == INT_KEYLESS_IRQ_Pin) {
+		if (GPIO_Pin == INT_KEYLESS_IRQ_Pin)
 			RF_IrqHandler();
-		}
+
 		// handle Switches EXTI
-		for (uint8_t i = 0; i < SW_K_TOTAL; i++) {
+		for (uint8_t i = 0; i < SW_K_TOTAL; i++)
 			if (GPIO_Pin == SW.list[i].pin) {
 				osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_TRIGGERED);
-
 				break;
 			}
-		}
+
 	}
 }
 /* USER CODE END Application */

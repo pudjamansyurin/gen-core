@@ -139,7 +139,7 @@ void _RTOS_Debugger(uint32_t ms) {
 	}
 }
 
-void _DummyGenerator(void) {
+void _DummyDataGenerator(void) {
 	uint8_t *pRange = &(SW.runner.mode.sub.report[SW_M_REPORT_RANGE]);
 	uint8_t *pAverage = &(SW.runner.mode.sub.report[SW_M_REPORT_AVERAGE]);
 

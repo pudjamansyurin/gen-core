@@ -16,8 +16,8 @@ extern ADC_HandleTypeDef hadc1;
 uint16_t BACKUP_VOLTAGE = 0;
 
 /* Private variables --------------------------------------------------------*/
-static uint16_t DMA_BUFFER[DMA_SZ];
-static uint16_t AVERAGE_BUFFER[AVERAGE_SZ] = { 0 };
+static uint16_t DMA_BUFFER[DMA_SZ ];
+static uint16_t AVERAGE_BUFFER[AVERAGE_SZ ] = { 0 };
 
 /* Private functions declaration --------------------------------------------*/
 static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value);
@@ -53,13 +53,13 @@ static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
 	pBuffer[pos] = value;
 	//Increment position
 	pos++;
-	if (pos >= len) {
+	if (pos >= len)
 		pos = 0;
-	}
+
 	// calculate filled array
-	if (length < len) {
+	if (length < len)
 		length++;
-	}
+
 	//return the average
 	return sum / length;
 }
@@ -68,9 +68,9 @@ static uint16_t AverageBuffer(uint16_t start, uint16_t stop) {
 	uint32_t temp = 0;
 
 	// sum all buffer sample
-	for (uint16_t i = start; i < stop; i++) {
+	for (uint16_t i = start; i < stop; i++)
 		temp += DMA_BUFFER[i];
-	}
+
 	// calculate the average
 	temp /= (stop - start);
 
@@ -78,6 +78,6 @@ static uint16_t AverageBuffer(uint16_t start, uint16_t stop) {
 	temp = MovingAverage(AVERAGE_BUFFER, AVERAGE_SZ, temp);
 
 	// change to battery value
-	return (temp * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
+	return (temp * BAT_MAX_VOLTAGE ) / ADC_MAX_VALUE ;
 }
 

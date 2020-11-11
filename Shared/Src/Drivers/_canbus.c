@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_canbus.h"
+#include "can.h"
 
 /* External variables ---------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan1;
@@ -22,27 +23,35 @@ uint8_t CAN_ACTIVE = 0;
 static void lock(void);
 static void unlock(void);
 static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC);
+static uint8_t CANBUS_IsActivated(void);
 
 /* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(void) {
 	uint8_t error = 0;
 
-	if (!CANBUS_Filter()) {
-		Error_Handler();
-		error = 1;
-	}
+	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 0);
+	_DelayMS(100);
+	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 1);
+	_DelayMS(500);
 
-	if (HAL_CAN_Start(&hcan1) != HAL_OK) {
-		Error_Handler();
+	MX_CAN1_Init();
+
+	if (!CANBUS_Filter())
 		error = 1;
-	}
+
+	if (!error)
+		if (HAL_CAN_Start(&hcan1) != HAL_OK)
+			error = 1;
 
 #if (!BOOTLOADER)
-	if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
-		Error_Handler();
-		error = 1;
-	}
+	if (!error)
+		if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+			error = 1;
+
 #endif
+
+	if (error)
+		Error_Handler();
 
 	CAN_ACTIVE = !error;
 }
@@ -75,10 +84,8 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 	CAN_TxHeaderTypeDef TxHeader;
 	HAL_StatusTypeDef status;
 
-	if (!CAN_ACTIVE) {
-		CANBUS_Init();
+	if (!CANBUS_IsActivated())
 		return 0;
-	}
 
 	lock();
 	CANBUS_Header(&TxHeader, address, DLC);
@@ -89,8 +96,8 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 	status = HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData->u8, NULL);
 
 	// debugging
-	//	if (status == HAL_OK)
-	//		CANBUS_TxDebugger(&TxHeader, TxData);
+	if (status == HAL_OK)
+		CANBUS_TxDebugger(&TxHeader, TxData);
 
 	unlock();
 	return (status == HAL_OK);
@@ -102,10 +109,8 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 uint8_t CANBUS_Read(can_rx_t *Rx) {
 	HAL_StatusTypeDef status = HAL_ERROR;
 
-	if (!CAN_ACTIVE) {
-		CANBUS_Init();
+	if (!CANBUS_IsActivated())
 		return 0;
-	}
 
 	lock();
 	/* Check FIFO */
@@ -113,8 +118,8 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
 		/* Get RX message */
 		status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
 		// debugging
-		//		if (status == HAL_OK)
-		//			CANBUS_RxDebugger(Rx);
+		if (status == HAL_OK)
+			CANBUS_RxDebugger(Rx);
 
 	}
 	unlock();
@@ -123,9 +128,8 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
 }
 
 uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef *RxHeader) {
-	if (RxHeader->IDE == CAN_ID_STD) {
+	if (RxHeader->IDE == CAN_ID_STD)
 		return RxHeader->StdId;
-	}
 	return RxHeader->ExtId;
 }
 
@@ -195,4 +199,12 @@ static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint3
 	TxHeader->RTR = (DLC ? CAN_RTR_DATA : CAN_RTR_REMOTE);
 	TxHeader->DLC = DLC;
 	TxHeader->TransmitGlobalTime = DISABLE;
+}
+
+static uint8_t CANBUS_IsActivated(void) {
+	if (!CAN_ACTIVE) {
+		CANBUS_Init();
+		_DelayMS(1000);
+	}
+	return CAN_ACTIVE;
 }
