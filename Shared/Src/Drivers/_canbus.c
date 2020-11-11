@@ -9,6 +9,9 @@
 #include "Drivers/_canbus.h"
 #include "can.h"
 
+/* Private constants ----------------------------------------------------------*/
+#define CANBUS_DEBUG			 0
+
 /* External variables ---------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan1;
 #if (!BOOTLOADER)
@@ -16,8 +19,8 @@ extern osMutexId_t CanTxMutexHandle;
 extern osMessageQueueId_t CanRxQueueHandle;
 #endif
 
-/* Exported variables ---------------------------------------------------------*/
-uint8_t CAN_ACTIVE = 0;
+/* Private variables ----------------------------------------------------------*/
+static uint8_t CAN_ACTIVE = 0;
 
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
@@ -95,9 +98,11 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 	/* Start the Transmission process */
 	status = HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData->u8, NULL);
 
+#if (CANBUS_DEBUG)
 	// debugging
 	if (status == HAL_OK)
 		CANBUS_TxDebugger(&TxHeader, TxData);
+#endif
 
 	unlock();
 	return (status == HAL_OK);
@@ -117,9 +122,12 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
 	if (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0)) {
 		/* Get RX message */
 		status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
+
+#if (CANBUS_DEBUG)
 		// debugging
 		if (status == HAL_OK)
 			CANBUS_RxDebugger(Rx);
+#endif
 
 	}
 	unlock();
