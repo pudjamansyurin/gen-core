@@ -189,7 +189,7 @@ void BMS_CAN_RX_Param1(can_rx_t *Rx) {
 	// read the content
 	BMS.d.pack[index].voltage = Rx->data.u16[0] * 0.01;
 	BMS.d.pack[index].current = (Rx->data.u16[1] * 0.01) - 50;
-	BMS.d.pack[index].soc = Rx->data.u16[2];
+  BMS.d.pack[index].soc = Rx->data.u16[2] * 0.01;
 	BMS.d.pack[index].temperature = (Rx->data.u16[3] * 0.1) - 40;
 
 	// read the id

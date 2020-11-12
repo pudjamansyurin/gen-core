@@ -99,7 +99,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
 		// BMS data
 		for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-			report->data.opt.bms.pack[i].soc = BMS.d.pack[i].soc;
+      report->data.opt.bms.pack[i].soc = BMS.d.pack[i].soc * 100;
 			report->data.opt.bms.pack[i].temperature = (BMS.d.pack[i].temperature + 40) * 10;
 		}
 	}
