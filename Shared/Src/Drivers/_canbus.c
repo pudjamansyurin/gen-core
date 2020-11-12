@@ -7,7 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_canbus.h"
-#include "can.h"
 
 /* Private constants ----------------------------------------------------------*/
 #define CANBUS_DEBUG			 0
@@ -32,9 +31,9 @@ static uint8_t CANBUS_IsActivated(void);
 void CANBUS_Init(void) {
 	uint8_t error = 0;
 
-	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 1);
-	_DelayMS(500);
 	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 0);
+	_DelayMS(500);
+	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 1);
 	_DelayMS(500);
 
 	if (!CANBUS_Filter())

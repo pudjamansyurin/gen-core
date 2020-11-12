@@ -700,7 +700,7 @@ static SIMCOM_RESULT Simcom_Power(void) {
 
 	// relay power control
 	HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
-	_DelayMS(5000);
+	_DelayMS(1000);
 	HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
 
 #if (!BOOTLOADER)
