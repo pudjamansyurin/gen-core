@@ -449,6 +449,9 @@ void StartManagerTask(void *argument)
 		HMI1.d.status.warning = BMS.d.warning;
 		HMI1.d.status.overheat = BMS.d.overheat;
 
+		// Handle overheat
+		HAL_GPIO_WritePin(EXT_BMS_FAN_PWR_GPIO_Port, EXT_BMS_FAN_PWR_Pin, BMS.d.overheat);
+
 		osDelayUntil(lastWake + 1000);
 	}
 	/* USER CODE END StartManagerTask */
@@ -537,9 +540,9 @@ void StartReporterTask(void *argument)
 
 		frame = Frame_Decider();
 
-    // TODO: FOR TESTING ONLY (OVERWRITTEN)
-    VCU.d.interval = 5;
-    frame = FR_FULL;
+		// TODO: FOR TESTING ONLY (OVERWRITTEN)
+		VCU.d.interval = 5;
+		frame = FR_FULL;
 
 		Report_Capture(frame, &report);
 

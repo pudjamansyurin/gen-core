@@ -166,7 +166,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 					p = AT_ConfigureSlowClock(ATW, &state);
 				}
 #if (!BOOTLOADER)
-	// Enable time reporting
+				// Enable time reporting
 				if (p > 0) {
 					AT_BOOL state = AT_ENABLE;
 					p = AT_EnableLocalTimestamp(ATW, &state);
@@ -684,7 +684,6 @@ static SIMCOM_RESULT Simcom_Ready(void) {
 
 static SIMCOM_RESULT Simcom_Power(void) {
 	LOG_StrLn("Simcom:Powered");
-	// reset buffer
 	SIMCOM_Reset_Buffer();
 
 	// simcom reset pin
@@ -692,25 +691,22 @@ static SIMCOM_RESULT Simcom_Power(void) {
 	HAL_Delay(1);
 	HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
-	// wait response
 	if (Simcom_Ready() == SIM_RESULT_OK) {
 #if (!BOOTLOADER)
-		// save event
 		VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 1);
 #endif
 		return SIM_RESULT_OK;
 	}
 
-	// power control
+	// relay power control
 	HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
-	_DelayMS(1000);
+	_DelayMS(5000);
 	HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
 
-	// wait response
 #if (!BOOTLOADER)
-	// save event
 	VCU.SetEvent(EV_VCU_NET_HARD_RESET, 1);
 #endif
+	// wait response
 	return Simcom_Ready();
 }
 
@@ -741,9 +737,9 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
 		if (Simcom_Response(res)
 				|| Simcom_Response(SIMCOM_RSP_ERROR)
 				|| Simcom_Response(SIMCOM_RSP_READY)
-#if (!BOOTLOADER)
+				#if (!BOOTLOADER)
 				|| Simcom_CommandoIRQ()
-#endif
+				#endif
 				|| (_GetTickMS() - tick) >= timeout) {
 
 			// check response
@@ -759,12 +755,12 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
 					SIM.state = SIM_STATE_DOWN;
 					LOG_StrLn("Simcom:NoResponse");
 				}
-#if (!BOOTLOADER)
+				#if (!BOOTLOADER)
 				// Handle command from server
 				else if (Simcom_CommandoIRQ()) {
 					p = SIM_RESULT_TIMEOUT;
 				}
-#endif
+				#endif
 				else {
 					// exception for auto reboot module
 					if (Simcom_Response(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {

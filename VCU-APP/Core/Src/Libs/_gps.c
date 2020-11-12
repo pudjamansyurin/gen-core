@@ -37,9 +37,9 @@ void GPS_Init(void) {
 		// set timeout guard
 		tick = _GetTickMS();
 		while ((_GetTickMS() - tick) < 5000) {
-			if (strlen(UBLOX_UART_RX) > 50) {
+			if (strlen(UBLOX_UART_RX) > 50)
 				break;
-			}
+
 			_DelayMS(10);
 		}
 	} while (strlen(UBLOX_UART_RX) <= 50);
