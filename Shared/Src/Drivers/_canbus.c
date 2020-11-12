@@ -32,9 +32,9 @@ void CANBUS_Init(void) {
 	uint8_t error = 0;
 
 	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 0);
-	_DelayMS(500);
+  _DelayMS(50);
 	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 1);
-	_DelayMS(500);
+  _DelayMS(50);
 
 	if (!CANBUS_Filter())
 		error = 1;
@@ -207,9 +207,8 @@ static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint3
 }
 
 static uint8_t CANBUS_IsActivated(void) {
-//	if (!CAN_ACTIVE) {
-//		CANBUS_Init();
-//		_DelayMS(1000);
-//	}
+  if (!CAN_ACTIVE)
+    CANBUS_Init();
+	
 	return CAN_ACTIVE;
 }
