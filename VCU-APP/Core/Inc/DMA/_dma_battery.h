@@ -13,10 +13,11 @@
 
 /* Constants -----------------------------------------------------------------*/
 #define DMA_SZ            (uint8_t) 50
-#define AVERAGE_SZ       (uint16_t) 1000
+#define AVERAGE_SZ       (uint16_t) 100
 #define ADC_MAX_VALUE       (float) 4095   // 12 bit
 #define REF_MAX_VOLTAGE     (float) 3300   // mV
-#define BAT_MAX_VOLTAGE     (float) 4200   // mV
+#define BAT_MAX_VOLTAGE     (float) 4150   // mV
+#define BAT_OFFSET_VOLTAGE	(float) 0		 // mV
 
 /* Public functions prototype ------------------------------------------------*/
 void BAT_DMA_Init(void);

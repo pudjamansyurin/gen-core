@@ -9,9 +9,6 @@
 #include "DMA/_dma_battery.h"
 #include "Nodes/VCU.h"
 
-/* Private macro ------------------------------------------------------------*/
-#define VOTLAGE_OFFSET_MV					(float) 400
-
 /* External variables -------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
 
@@ -32,11 +29,11 @@ void BAT_DMA_Init(void) {
 }
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
-	BACKUP_VOLTAGE = AverageBuffer(0, (DMA_SZ / 2)) + VOTLAGE_OFFSET_MV;
+	BACKUP_VOLTAGE = AverageBuffer(0, (DMA_SZ / 2)) + BAT_OFFSET_VOLTAGE;
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-	BACKUP_VOLTAGE = AverageBuffer(((DMA_SZ / 2) - 1), DMA_SZ) + VOTLAGE_OFFSET_MV;
+	BACKUP_VOLTAGE = AverageBuffer(((DMA_SZ / 2) - 1), DMA_SZ) + BAT_OFFSET_VOLTAGE;
 }
 
 void BAT_Debugger(void) {
