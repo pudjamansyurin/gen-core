@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_canbus.h"
+#include "can.h"
 
 /* Private constants ----------------------------------------------------------*/
 #define CANBUS_DEBUG			 0
@@ -32,9 +33,11 @@ void CANBUS_Init(void) {
 	uint8_t error = 0;
 
 	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 0);
-  _DelayMS(50);
+	_DelayMS(50);
 	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 1);
-  _DelayMS(50);
+	_DelayMS(50);
+
+	MX_CAN1_Init();
 
 	if (!CANBUS_Filter())
 		error = 1;
@@ -207,8 +210,8 @@ static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint3
 }
 
 static uint8_t CANBUS_IsActivated(void) {
-  if (!CAN_ACTIVE)
-    CANBUS_Init();
-	
+	if (!CAN_ACTIVE)
+		CANBUS_Init();
+
 	return CAN_ACTIVE;
 }
