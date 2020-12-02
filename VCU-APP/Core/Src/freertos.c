@@ -438,7 +438,7 @@ void StartManagerTask(void *argument)
 
 		MX_IWDG_Reset();
 
-		// _DummyDataGenerator();
+    _DummyDataGenerator();
 
 		// _RTOS_Debugger(1000);
 

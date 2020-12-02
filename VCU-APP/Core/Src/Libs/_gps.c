@@ -65,7 +65,6 @@ uint8_t GPS_Capture(void) {
 }
 
 void GPS_Debugger(void) {
-	// debug
 	LOG_StrLn("GPS:Buffer = ");
 	LOG_Buf(UBLOX_UART_RX, sizeof(UBLOX_UART_RX));
 	LOG_Enter();

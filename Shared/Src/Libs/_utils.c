@@ -56,9 +56,8 @@ void _LedToggle(void) {
 
 void _Error(char msg[50]) {
 #if RTOS_ENABLE
-	if (osKernelGetState() == osKernelRunning) {
+  if (osKernelGetState() == osKernelRunning)
 		LOG_StrLn(msg);
-	}
 #else
 	LOG_StrLn(msg);
 #endif
@@ -82,11 +81,10 @@ uint32_t _ByteSwap32(uint32_t x) {
 #if (!BOOTLOADER)
 void _BuzzerWrite(uint8_t state) {
 	// note: https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
-	if (state) {
+  if (state)
 		HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
-	} else {
+  else
 		HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
-	}
 }
 
 void _RTOS_Debugger(uint32_t ms) {
@@ -107,11 +105,9 @@ void _RTOS_Debugger(uint32_t ms) {
 		osThreadEnumerate(threads, thCount);
 
 		// Fill initial free stack
-		for (uint8_t i = 0; i < thCount; i++) {
-			if (threads[i] != NULL) {
+    for (uint8_t i = 0; i < thCount; i++)
+      if (threads[i] != NULL)
 				thLowestFreeStack[i] = osThreadGetStackSpace(threads[i]);
-			}
-		}
 	}
 
 	if ((osKernelGetTickCount() - lastDebug) >= ms) {
@@ -144,29 +140,27 @@ void _DummyDataGenerator(void) {
 	uint8_t *pAverage = &(SW.runner.mode.sub.report[SW_M_REPORT_AVERAGE]);
 
 	// Dummy Report Range
-	if (!(*pRange)) {
+  if (!(*pRange))
 		*pRange = 255;
-	} else {
+  else
 		(*pRange)--;
-	}
+	
 
 	// Dummy Report Average (Efficiency)
-	if (*pAverage >= 255) {
+  if (*pAverage >= 255)
 		*pAverage = 0;
-	} else {
+  else
 		(*pAverage)++;
-	}
 }
 
 int8_t _BitPosition(uint64_t event_id) {
 	uint8_t pos = -1;
 
-	for (int8_t i = 0; i < 64; i++) {
+  for (int8_t i = 0; i < 64; i++)
 		if (event_id & BIT(i)) {
 			pos = i;
 			break;
 		}
-	}
 
 	return pos;
 }
@@ -182,12 +176,8 @@ static uint8_t _RTOS_ValidThreadFlag(uint32_t flag) {
 	uint8_t ret = 1;
 
 	// check is empty
-	if (!flag) {
+  if (!flag || (flag & (~EVT_MASK )))
 		ret = 0;
-	} else if (flag & (~EVT_MASK )) {
-		// error
-		ret = 0;
-	}
 
 	return ret;
 }
@@ -196,12 +186,8 @@ static uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
 	uint8_t ret = 1;
 
 	// check is empty
-	if (!flag) {
+  if (!flag || (flag & (~EVENT_MASK )))
 		ret = 0;
-	} else if (flag & (~EVENT_MASK )) {
-		// error
-		ret = 0;
-	}
 
 	return ret;
 }
