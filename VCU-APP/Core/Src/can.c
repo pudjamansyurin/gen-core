@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : CAN.c
-  * Description        : This file provides code for the configuration
-  *                      of the CAN instances.
+  * @file    can.c
+  * @brief   This file provides code for the configuration
+  *          of the CAN instances.
   ******************************************************************************
   * @attention
   *

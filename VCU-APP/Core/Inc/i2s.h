@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : I2S.h
-  * Description        : This file provides code for the configuration
-  *                      of the I2S instances.
+  * @file    i2s.h
+  * @brief   This file contains all the function prototypes for
+  *          the i2s.c file
   ******************************************************************************
   * @attention
   *
@@ -17,10 +17,11 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __i2s_H
-#define __i2s_H
+#ifndef __I2S_H__
+#define __I2S_H__
+
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -45,14 +46,7 @@ void MX_I2S3_Init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ i2s_H */
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
+#endif /* __I2S_H__ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

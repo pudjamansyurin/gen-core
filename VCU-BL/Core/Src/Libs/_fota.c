@@ -34,6 +34,9 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
             .size = 0,
     };
 
+  // Turn ON HMI-Primary
+  HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, 1);
+
     /* Set current IAP type */
     *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
 

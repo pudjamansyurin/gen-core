@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : AES.c
-  * Description        : This file provides code for the configuration
-  *                      of the AES instances.
+  * @file    aes.c
+  * @brief   This file provides code for the configuration
+  *          of the AES instances.
   ******************************************************************************
   * @attention
   *

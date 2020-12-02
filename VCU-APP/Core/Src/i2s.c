@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : I2S.c
-  * Description        : This file provides code for the configuration
-  *                      of the I2S instances.
+  * @file    i2s.c
+  * @brief   This file provides code for the configuration
+  *          of the I2S instances.
   ******************************************************************************
   * @attention
   *

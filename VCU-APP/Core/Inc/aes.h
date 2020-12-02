@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : AES.h
-  * Description        : This file provides code for the configuration
-  *                      of the AES instances.
+  * @file    aes.h
+  * @brief   This file contains all the function prototypes for
+  *          the aes.c file
   ******************************************************************************
   * @attention
   *
@@ -17,10 +17,11 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __aes_H
-#define __aes_H
+#ifndef __AES_H__
+#define __AES_H__
+
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -45,14 +46,7 @@ void MX_AES_Init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ aes_H */
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
+#endif /* __AES_H__ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
