@@ -38,7 +38,7 @@ typedef struct {
 	uint64_t events;
 	struct {
 //		vehicle_state_t vehicle;
-//		uint8_t starter;
+    uint8_t start;
     uint8_t override;
     uint8_t run;
 		uint8_t knob;

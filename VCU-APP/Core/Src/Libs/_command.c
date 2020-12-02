@@ -39,9 +39,9 @@ void CMD_GenUpgrade(command_t *cmd, response_t *resp) {
 	IAP_TYPE type = IAP_HMI;
 
 	/* Enter IAP mode */
-	if (cmd->data.sub_code == CMD_GEN_UPGRADE_VCU) {
+  if (cmd->data.sub_code == CMD_GEN_UPGRADE_VCU)
 		type = IAP_VCU;
-	}
+
 	FW_EnterModeIAP(type, resp->data.message);
 
 	/* This line is never reached (if FOTA is activated) */
@@ -86,11 +86,9 @@ void CMD_Finger(uint8_t event, response_t *resp) {
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
-	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout)) {
-		if (notif & EVT_COMMAND_OK) {
+  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout))
+    if (notif & EVT_COMMAND_OK)
 			resp->data.code = RESPONSE_STATUS_OK;
-		}
-	}
 }
 
 void CMD_KeylessPairing(response_t *resp) {
@@ -100,9 +98,7 @@ void CMD_KeylessPairing(response_t *resp) {
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
-	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT)) {
-		if (notif & EVT_COMMAND_OK) {
-			resp->data.code = RESPONSE_STATUS_OK;
-		}
-	}
+  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT))
+    if (notif & EVT_COMMAND_OK)
+      resp->data.code = RESPONSE_STATUS_OK;
 }

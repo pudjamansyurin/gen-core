@@ -102,6 +102,7 @@
 #define EV_VCU_KEYLESS_MISSING                  BIT(4)
 #define EV_VCU_INDEPENDENT                      BIT(5)
 #define EV_VCU_UNAUTHORIZE_REMOVAL              BIT(6)
+#define EV_VCU_BIKE_FALLEN                      BIT(7)
 #define EV_BMS_DISCHARGE_OVER_CURRENT           BIT(30)
 #define EV_BMS_CHARGE_OVER_CURRENT              BIT(31)
 #define EV_BMS_SHORT_CIRCUIT                    BIT(32)
