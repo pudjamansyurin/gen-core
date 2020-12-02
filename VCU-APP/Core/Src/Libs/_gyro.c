@@ -29,15 +29,15 @@ void GYRO_Init(void) {
 	do {
 		LOG_StrLn("Gyro:Init");
 
+    // MOSFET Control
+    HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 0);
+    _DelayMS(500);
+    HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 1);
+    _DelayMS(500);
+
 		// Reset peripheral
 		MX_I2C3_DeInit();
 		MX_I2C3_Init();
-
-		// MOSFET Control
-		HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 0);
-		_DelayMS(2000);
-		HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 1);
-		_DelayMS(500);
 
 		// module initialization
 		result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);

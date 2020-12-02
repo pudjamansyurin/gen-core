@@ -26,7 +26,6 @@ void GPS_Init(void) {
 	uint32_t tick;
 
 	// Inititalize Module
-	_LedWrite(1);
 	do {
 		LOG_StrLn("GPS:Init");
 
@@ -43,7 +42,6 @@ void GPS_Init(void) {
 			_DelayMS(10);
 		}
 	} while (strlen(UBLOX_UART_RX) <= 50);
-	_LedWrite(0);
 
 	nmea_init(&nmea);
 }

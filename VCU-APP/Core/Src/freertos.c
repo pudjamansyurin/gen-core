@@ -426,7 +426,7 @@ void StartManagerTask(void *argument)
 	//	osThreadSuspend(GpsTaskHandle);
 	//	osThreadSuspend(GyroTaskHandle);
 	//	osThreadSuspend(KeylessTaskHandle);
-	osThreadSuspend(FingerTaskHandle);
+  //	osThreadSuspend(FingerTaskHandle);
 	//	osThreadSuspend(AudioTaskHandle);
 	//	osThreadSuspend(SwitchTaskHandle);
 	//	osThreadSuspend(CanRxTaskHandle);
@@ -450,8 +450,10 @@ void StartManagerTask(void *argument)
 
 		// Other stuffs
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
-		HMI1.d.status.warning = BMS.d.warning;
-		HMI1.d.status.overheat = BMS.d.overheat;
+    HMI1.d.status.overheat = BMS.d.overheat;
+    HMI1.d.status.warning = BMS.d.warning
+        | VCU.ReadEvent(EV_VCU_BIKE_CRASHED)
+        | VCU.ReadEvent(EV_VCU_BIKE_FALLING);
 
 		// Handle overheat
 		HAL_GPIO_WritePin(EXT_BMS_FAN_PWR_GPIO_Port, EXT_BMS_FAN_PWR_Pin, BMS.d.overheat);
@@ -761,6 +763,7 @@ void StartGyroTask(void *argument)
 	uint32_t flag;
 	TickType_t lastWake;
 	mems_decision_t decider;
+  uint8_t fallen;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -785,14 +788,15 @@ void StartGyroTask(void *argument)
 			VCU.SetEvent(EV_VCU_BIKE_FALLING, decider.fall.state);
 
 		// Handle for both event
-		if (decider.crash.state || decider.fall.state) {
-			// Turn OFF BMS (+ MCU)
-
-			// indicators
-			_LedWrite(decider.fall.state);
-			flag = decider.fall.state ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
+    fallen = (decider.crash.state || decider.fall.state);
+    {
+      // Indicators
+      _LedWrite(fallen);
+      flag = fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
 			osThreadFlagsSet(AudioTaskHandle, flag);
-		}
+
+      // Turn OFF BMS (+ MCU)
+    }
 
 		osDelayUntil(lastWake + 100);
 	}

@@ -132,7 +132,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
 	TxData.u8[2] |= _L(HBAR_ModeController(&(sw->runner)), 7);
 
 	// others
-	TxData.u8[3] = VCU.d.speed;
+  TxData.u8[3] = 100; //VCU.d.speed;
 
 	// send message
 	return CANBUS_Write(CAND_VCU_SWITCH, &TxData, 4);
