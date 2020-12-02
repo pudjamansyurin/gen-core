@@ -452,8 +452,14 @@ void StartManagerTask(void *argument)
 		HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
     HMI1.d.status.overheat = BMS.d.overheat;
     HMI1.d.status.warning = BMS.d.warning
-        | VCU.ReadEvent(EV_VCU_BIKE_CRASHED)
-        | VCU.ReadEvent(EV_VCU_BIKE_FALLING);
+        || VCU.ReadEvent(EV_VCU_BIKE_CRASHED)
+        || VCU.ReadEvent(EV_VCU_BIKE_FALLING);
+
+    // FIXME: use vehicle_state
+    VCU.d.state.run = VCU.d.state.knob
+        || (VCU.d.driver_id != DRIVER_ID_NONE )
+        || HMI1.d.status.keyless
+        || VCU.d.state.override;
 
 		// Handle overheat
 		HAL_GPIO_WritePin(EXT_BMS_FAN_PWR_GPIO_Port, EXT_BMS_FAN_PWR_Pin, BMS.d.overheat);
@@ -939,11 +945,8 @@ void StartFingerTask(void *argument)
 				id = Finger_AuthFast();
 				// Finger is registered
 				if (id >= 0) {
-					// FIXME: use vehicle_state
-					VCU.d.state.knob = !VCU.d.state.knob;
-
 					// Finger Heart-Beat
-					if (!VCU.d.state.knob)
+          if (VCU.d.driver_id != DRIVER_ID_NONE)
 						id = DRIVER_ID_NONE;
 
 					VCU.d.driver_id = id;
@@ -1046,7 +1049,7 @@ void StartSwitchTask(void *argument)
 
 	// Check GPIOs state
 	VCU.CheckMain5vPower();
-	// VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+  VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 
 	/* Infinite loop */
 	for (;;) {
@@ -1067,7 +1070,7 @@ void StartSwitchTask(void *argument)
 			// BMS Power IRQ
 			if (notif & EVT_SWITCH_REG_5V_IRQ) {
 				// independent mode activated
-
+        VCU.CheckMain5vPower();
 			}
 			// Starter Button IRQ
 			if (notif & EVT_SWITCH_STARTER_IRQ) {
@@ -1077,12 +1080,9 @@ void StartSwitchTask(void *argument)
 			// KNOB IRQ
 			if (notif & EVT_SWITCH_KNOB_IRQ) {
 				// get current state
-				// VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+        VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 			}
 		}
-
-		// Check REG_5V power state
-		VCU.CheckMain5vPower();
 	}
   /* USER CODE END StartSwitchTask */
 }
@@ -1173,9 +1173,9 @@ void StartCanTxTask(void *argument)
 		}
 
 		// Handle Knob Changes
-		HMI1.Power(VCU.d.state.knob);
-		HMI2.PowerOverCan(VCU.d.state.knob);
-		BMS.PowerOverCan(VCU.d.state.knob);
+    HMI1.Power(VCU.d.state.run);
+    HMI2.PowerOverCan(VCU.d.state.run);
+    BMS.PowerOverCan(VCU.d.state.run);
 
 		// Refresh state
 		HMI1.Refresh();

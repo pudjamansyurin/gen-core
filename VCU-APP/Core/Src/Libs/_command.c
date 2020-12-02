@@ -32,7 +32,7 @@ void CMD_GenLed(command_t *cmd) {
 }
 
 void CMD_GenKnob(command_t *cmd) {
-	VCU.d.state.knob = (uint8_t) cmd->data.value;
+  VCU.d.state.override = (uint8_t) cmd->data.value;
 }
 
 void CMD_GenUpgrade(command_t *cmd, response_t *resp) {

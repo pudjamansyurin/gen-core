@@ -37,8 +37,10 @@ typedef struct {
 	rtc_t rtc;
 	uint64_t events;
 	struct {
-		vehicle_state_t vehicle;
-		uint8_t starter;
+//		vehicle_state_t vehicle;
+//		uint8_t starter;
+    uint8_t override;
+    uint8_t run;
 		uint8_t knob;
 		uint8_t independent;
 	} state;

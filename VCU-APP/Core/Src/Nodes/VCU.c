@@ -37,8 +37,10 @@ vcu_t VCU = {
 /* Public functions implementation --------------------------------------------*/
 void VCU_Init(void) {
 	// reset VCU data
-	VCU.d.state.vehicle = VEHICLE_INDEPENDENT;
-	VCU.d.state.starter = 0;
+//	VCU.d.state.vehicle = VEHICLE_INDEPENDENT;
+//	VCU.d.state.starter = 0;
+  VCU.d.state.override = 0;
+  VCU.d.state.run = 0;
 	VCU.d.state.knob = 0;
 	VCU.d.state.independent = 1;
 
@@ -132,7 +134,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
 	TxData.u8[2] |= _L(HBAR_ModeController(&(sw->runner)), 7);
 
 	// others
-  TxData.u8[3] = 100; //VCU.d.speed;
+  TxData.u8[3] = VCU.d.speed;
 
 	// send message
 	return CANBUS_Write(CAND_VCU_SWITCH, &TxData, 4);
@@ -150,7 +152,7 @@ uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
 	TxData.u8[5] = timestamp->date.Year;
 	TxData.u8[6] = timestamp->date.WeekDay;
 	// HMI2 shutdown request
-	TxData.u8[7] = !VCU.d.state.knob;
+  TxData.u8[7] = !VCU.d.state.run;
 
 	// send message
 	return CANBUS_Write(CAND_VCU_DATETIME, &TxData, 8);
@@ -164,7 +166,7 @@ uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
 	TxData.u8[1] = BMS.d.soc;
 	TxData.u8[2] = runner->mode.sub.report[SW_M_REPORT_RANGE];
 	TxData.u8[3] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
-	TxData.u32[1] = VCU.d.odometer;
+  TxData.u32[1] = VCU.d.speed; //VCU.d.odometer;
 
 	// send message
 	return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 8);
