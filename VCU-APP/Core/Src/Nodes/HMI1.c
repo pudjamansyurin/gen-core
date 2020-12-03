@@ -27,12 +27,12 @@ void HMI1_Init(void) {
 	HMI1.d.started = 0;
 	HMI1.d.tick = 0;
 	HMI1.d.version = 0;
-	HMI1.d.status.mirroring = 0;
-	HMI1.d.status.warning = 0;
-	HMI1.d.status.overheat = 0;
-	HMI1.d.status.finger = 0;
-	HMI1.d.status.keyless = 0;
-	HMI1.d.status.daylight = 0;
+	HMI1.d.state.mirroring = 0;
+	HMI1.d.state.warning = 0;
+	HMI1.d.state.overheat = 0;
+	HMI1.d.state.finger = 0;
+	HMI1.d.state.keyless = 0;
+	HMI1.d.state.daylight = 0;
 }
 
 void HMI1_Refresh(void) {

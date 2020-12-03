@@ -143,13 +143,13 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
 
   // set message
   TxData.u8[0] = sw->list[SW_K_ABS].state;
-  TxData.u8[0] |= _L(HMI1.d.status.mirroring, 1);
+  TxData.u8[0] |= _L(HMI1.d.state.mirroring, 1);
   TxData.u8[0] |= _L(sw->list[SW_K_LAMP].state, 2);
-  TxData.u8[0] |= _L(HMI1.d.status.warning, 3);
-  TxData.u8[0] |= _L(HMI1.d.status.overheat, 4);
-  TxData.u8[0] |= _L(HMI1.d.status.finger, 5);
-  TxData.u8[0] |= _L(HMI1.d.status.keyless, 6);
-  TxData.u8[0] |= _L(HMI1.d.status.daylight, 7);
+  TxData.u8[0] |= _L(HMI1.d.state.warning, 3);
+  TxData.u8[0] |= _L(HMI1.d.state.overheat, 4);
+  TxData.u8[0] |= _L(HMI1.d.state.finger, 5);
+  TxData.u8[0] |= _L(HMI1.d.state.keyless, 6);
+  TxData.u8[0] |= _L(HMI1.d.state.daylight, 7);
 
   // sein value
   TxData.u8[1] = sein.left;

@@ -88,7 +88,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
 			// send command
 			_LedToggle();
-			HMI1.d.status.finger = !HMI1.d.status.finger;
+			HMI1.d.state.finger = !HMI1.d.state.finger;
 			p = fz3387_getImage();
 
 			// check response
@@ -186,7 +186,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 	}
 
 	// reset indicator
-	HMI1.d.status.finger = 0;
+	HMI1.d.state.finger = 0;
 	unlock();
 
 	return !error;

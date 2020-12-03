@@ -62,12 +62,6 @@ uint8_t GPS_Capture(void) {
 	return nmea.fix > 0;
 }
 
-void GPS_Debugger(void) {
-	LOG_StrLn("GPS:Buffer = ");
-	LOG_Buf(UBLOX_UART_RX, sizeof(UBLOX_UART_RX));
-	LOG_Enter();
-}
-
 void GPS_CalculateOdometer(void) {
   uint8_t increment;
 
@@ -85,4 +79,10 @@ void GPS_CalculateSpeed(void) {
   // FIXME: use real data
   VCU.d.speed = GPS.speed_kph;
   VCU.d.volume = VCU.d.speed * 100 / MCU_SPEED_KPH_MAX;
+}
+
+void GPS_Debugger(void) {
+  LOG_StrLn("GPS:Buffer = ");
+  LOG_Buf(UBLOX_UART_RX, sizeof(UBLOX_UART_RX));
+  LOG_Enter();
 }

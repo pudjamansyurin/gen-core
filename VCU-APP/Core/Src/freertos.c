@@ -449,9 +449,9 @@ void StartManagerTask(void *argument)
     // BAT_Debugger();
 
     // Other stuffs
-    HMI1.d.status.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
-    HMI1.d.status.overheat = BMS.d.overheat;
-    HMI1.d.status.warning = BMS.d.warning ||
+    HMI1.d.state.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
+    HMI1.d.state.overheat = BMS.d.overheat;
+    HMI1.d.state.warning = BMS.d.warning ||
         VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
 
     // FIXME: use vehicle_state
@@ -460,7 +460,7 @@ void StartManagerTask(void *argument)
     VCU.d.state.run = (
         VCU.d.state.start &&
             VCU.d.driver_id != DRIVER_ID_NONE &&
-            !HMI1.d.status.keyless
+            !HMI1.d.state.keyless
         ) ||
         VCU.d.state.override;
 

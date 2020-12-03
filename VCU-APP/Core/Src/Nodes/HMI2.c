@@ -83,7 +83,7 @@ void HMI2_PowerOff(void) {
 /* ====================================== CAN RX =================================== */
 void HMI2_CAN_RX_State(can_rx_t *Rx) {
 	// read message
-	HMI1.d.status.mirroring = _R1(Rx->data.u8[0], 0);
+	HMI1.d.state.mirroring = _R1(Rx->data.u8[0], 0);
 	// save state
 	HMI2.d.started = 1;
 	HMI2.d.tick = _GetTickMS();

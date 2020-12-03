@@ -26,7 +26,7 @@ typedef struct {
         uint8_t finger;
         uint8_t keyless;
         uint8_t daylight;
-    } status;
+  } state;
 } hmi1_data_t;
 
 typedef struct {
