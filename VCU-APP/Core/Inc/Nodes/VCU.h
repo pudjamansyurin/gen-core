@@ -67,14 +67,16 @@ typedef struct {
 	void (*Init)(void);
 	void (*SetEvent)(uint64_t, uint8_t);
 	uint8_t (*ReadEvent)(uint64_t);
-	void (*CheckMain5vPower)(void);
+  void (*CheckPower5v)(void);
+  void (*CheckKnob)(void);
 } vcu_t;
 
 /* Public functions implementation --------------------------------------------*/
 void VCU_Init(void);
 void VCU_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t VCU_ReadEvent(uint64_t event_id);
-void VCU_CheckMain5vPower(void);
+void VCU_CheckPower5v(void);
+void VCU_CheckKnob(void);
 
 uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw);
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp);

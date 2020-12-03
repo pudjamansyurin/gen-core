@@ -752,6 +752,7 @@ void StartGpsTask(void *argument)
 
     GPS_Capture();
     GPS_CalculateOdometer();
+    GPS_CalculateSpeed();
     // GPS_Debugger();
 
     osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
@@ -1051,10 +1052,8 @@ void StartSwitchTask(void *argument)
 
   // Initialise
   HBAR_ReadStates();
-
-  // Check GPIOs state
-  VCU.CheckMain5vPower();
-  VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+  VCU.CheckPower5v();
+  VCU.CheckKnob();
 
   /* Infinite loop */
   for (;;) {
@@ -1075,7 +1074,7 @@ void StartSwitchTask(void *argument)
       // BMS Power IRQ
       if (notif & EVT_SWITCH_REG_5V_IRQ) {
         // independent mode activated
-        VCU.CheckMain5vPower();
+        VCU.CheckPower5v();
       }
       // Starter Button IRQ
       if (notif & EVT_SWITCH_STARTER_IRQ) {
@@ -1084,8 +1083,7 @@ void StartSwitchTask(void *argument)
       }
       // KNOB IRQ
       if (notif & EVT_SWITCH_KNOB_IRQ) {
-        // get current state
-        VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+        VCU.CheckKnob();
       }
     }
   }

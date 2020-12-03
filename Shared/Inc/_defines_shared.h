@@ -181,9 +181,9 @@
 #define RESPONSE_STATUS_INVALID       (uint8_t) 2
 
 // Others Parameters
-#define MCU_SPEED_MAX                 (uint8_t) 150
 #define MCU_RPM_MAX                  (uint32_t) 99999
-#define VCU_ODOMETER_MAX             (uint32_t) 99999
+#define VCU_ODOMETER_KM_MAX          (uint32_t) 99999
+#define MCU_SPEED_KPH_MAX            (uint8_t) 150
 
 // CAN Message Address
 #define CAND_VCU_SWITCH              (uint32_t) 0x000

@@ -96,7 +96,7 @@ void HBAR_ReadStates(void);
 void HBAR_CheckReverse(void);
 void HBAR_TimerSelectSet(void);
 void HBAR_RunSelectOrSet(void);
-void HBAR_AccumulateSubTrip(void);
+void HBAR_AccumulateSubTrip(uint8_t increment);
 sein_t HBAR_SeinController(sw_t *sw);
 uint8_t HBAR_ModeController(sw_runner_t *runner);
 

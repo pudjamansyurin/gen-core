@@ -71,21 +71,37 @@ void GPS_Debugger(void) {
 
 void GPS_CalculateOdometer(void) {
   static uint32_t last_km = 0;
+  static uint8_t init = 1;
+  uint8_t increment;
 
-  if (GPS.speed_mps > 5)
-    VCU.d.odometer += (GPS.speed_mps * GPS_INTERVAL );
+  // init hook
+  if (init) {
+    init = 0;
+    last_km = (VCU.d.odometer / 1000);
+  }
 
-	// check if already > 1km
+  // calculate
+  if (GPS.speed_mps > 5) {
+    increment = (GPS.speed_mps * GPS_INTERVAL );
+    VCU.d.odometer += increment;
+    HBAR_AccumulateSubTrip(increment);
+  }
+
+  // check every 1km
   if (last_km < (VCU.d.odometer / 1000)) {
     last_km = (VCU.d.odometer / 1000);
 
-    // Accumulate (Save permanently)
+    // reset on overflow
+    if (last_km > VCU_ODOMETER_KM_MAX)
+      VCU.d.odometer = 0;
+
+    // accumulate (save permanently)
     EEPROM_Odometer(EE_CMD_W, VCU.d.odometer);
-
-		HBAR_AccumulateSubTrip();
 	}
+}
 
-	// FIXME: use real data
-	VCU.d.speed = GPS.speed_kph;
-	VCU.d.volume = VCU.d.speed * 100 / MCU_SPEED_MAX;
+void GPS_CalculateSpeed(void) {
+  // FIXME: use real data
+  VCU.d.speed = GPS.speed_kph;
+  VCU.d.volume = VCU.d.speed * 100 / MCU_SPEED_KPH_MAX;
 }

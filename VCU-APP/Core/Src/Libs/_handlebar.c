@@ -147,14 +147,13 @@ void HBAR_TimerSelectSet(void) {
 	}
 }
 
-void HBAR_AccumulateSubTrip(void) {
+void HBAR_AccumulateSubTrip(uint8_t increment) {
 	SW_MODE_TRIP mTrip = SW.runner.mode.sub.val[SW_M_TRIP];
 
-	if (SW.runner.mode.sub.trip[mTrip] >= VCU_ODOMETER_MAX) {
+  if ((SW.runner.mode.sub.trip[mTrip] / 1000) > VCU_ODOMETER_KM_MAX)
 		SW.runner.mode.sub.trip[mTrip] = 0;
-	} else {
-		SW.runner.mode.sub.trip[mTrip]++;
-	}
+  else
+    SW.runner.mode.sub.trip[mTrip] += increment;
 }
 
 sein_t HBAR_SeinController(sw_t *sw) {

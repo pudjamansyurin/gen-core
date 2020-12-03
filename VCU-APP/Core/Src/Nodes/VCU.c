@@ -31,7 +31,8 @@ vcu_t VCU = {
 		VCU_Init,
 		VCU_SetEvent,
 		VCU_ReadEvent,
-		VCU_CheckMain5vPower,
+    VCU_CheckPower5v,
+    VCU_CheckKnob,
 };
 
 /* Public functions implementation --------------------------------------------*/
@@ -71,7 +72,7 @@ uint8_t VCU_ReadEvent(uint64_t event_id) {
 	return (VCU.d.events & event_id) == event_id;
 }
 
-void VCU_CheckMain5vPower(void) {
+void VCU_CheckPower5v(void) {
 	static TickType_t tick;
 	static int8_t lastState = -1;
 	uint8_t currentState;
@@ -103,6 +104,10 @@ void VCU_CheckMain5vPower(void) {
 		VCU.SetEvent(EV_VCU_INDEPENDENT, 0);
 		VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
 	}
+}
+
+void VCU_CheckKnob(void) {
+  VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 }
 
 /* ====================================== CAN TX =================================== */
@@ -175,8 +180,8 @@ uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip) {
 	CAN_DATA TxData;
 
 	// set message
-	TxData.u32[0] = trip[SW_M_TRIP_A];
-	TxData.u32[1] = trip[SW_M_TRIP_B];
+  TxData.u32[0] = trip[SW_M_TRIP_A] / 1000;
+  TxData.u32[1] = trip[SW_M_TRIP_B] / 1000;
 
 	// send message
 	return CANBUS_Write(CAND_VCU_TRIP_MODE, &TxData, 8);

@@ -33,5 +33,6 @@ void GPS_Init(void);
 uint8_t GPS_Capture(void);
 void GPS_Debugger(void);
 void GPS_CalculateOdometer(void);
+void GPS_CalculateSpeed(void);
 
 #endif /* GPS_H_ */
