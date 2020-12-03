@@ -658,12 +658,13 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
 	nrf_write_tx_payload_noack(dev, data);
 	ce_set(dev);
 
-	uint32_t tick = _GetTickMS();
-	while (dev->tx_busy == 1) {
-		if (_GetTickMS() - tick > 1) {
-			break;
-		}
-	} // wait for end of transmition
+//	uint32_t tick = _GetTickMS();
+  while (dev->tx_busy == 1) {
+    _DelayMS(1);
+  };
+//    if (_GetTickMS() - tick > 2)
+//			break;
+  // wait for end of transmition
 
 	ce_reset(dev);
 	nrf_rx_tx_control(dev, NRF_STATE_RX);

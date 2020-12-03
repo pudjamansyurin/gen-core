@@ -114,6 +114,7 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
 uint8_t RF_Pairing(void) {
   NRF_RESULT p = NRF_ERROR;
   uint32_t aes[4];
+  //  uint8_t retry = 5;
 
   // Generate new AES Key
   RF_GenerateAesKey(aes);
@@ -125,7 +126,10 @@ uint8_t RF_Pairing(void) {
   memcpy(&RF.tx.payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
 
   RF_ChangeMode(RF_MODE_PAIRING);
+  //  do {
   p = nrf_send_packet_noack(&NRF, RF.tx.payload);
+  //    _DelayMS(50);
+  //  } while (p == NRF_OK && --retry);
 
   RF_Init();
 

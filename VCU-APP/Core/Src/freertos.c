@@ -84,7 +84,7 @@ extern uint16_t BACKUP_VOLTAGE;
 osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
     .name = "ManagerTask",
-    .priority = (osPriority_t) osPriorityRealtime7,
+    .priority = (osPriority_t) osPriorityRealtime,
     .stack_size = 288 * 4
 };
 /* Definitions for IotTask */
@@ -154,14 +154,14 @@ const osThreadAttr_t SwitchTask_attributes = {
 osThreadId_t CanRxTaskHandle;
 const osThreadAttr_t CanRxTask_attributes = {
     .name = "CanRxTask",
-    .priority = (osPriority_t) osPriorityRealtime,
+    .priority = (osPriority_t) osPriorityNormal,
     .stack_size = 224 * 4
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
     .name = "CanTxTask",
-    .priority = (osPriority_t) osPriorityHigh,
+    .priority = (osPriority_t) osPriorityNormal,
     .stack_size = 288 * 4
 };
 /* Definitions for Hmi2PowerTask */
@@ -420,17 +420,17 @@ void StartManagerTask(void *argument)
   EEPROM_Init();
 
   // Threads management:
-  //  osThreadSuspend(IotTaskHandle);
-  //  osThreadSuspend(ReporterTaskHandle);
-  //  osThreadSuspend(CommandTaskHandle);
-  //  osThreadSuspend(GpsTaskHandle);
-  //  osThreadSuspend(GyroTaskHandle);
-  //  osThreadSuspend(KeylessTaskHandle);
-  //  osThreadSuspend(FingerTaskHandle);
-  //  osThreadSuspend(AudioTaskHandle);
-  //  osThreadSuspend(SwitchTaskHandle);
-  //  osThreadSuspend(CanRxTaskHandle);
-  //  osThreadSuspend(CanTxTaskHandle);
+//  osThreadSuspend(IotTaskHandle);
+//  osThreadSuspend(ReporterTaskHandle);
+//  osThreadSuspend(CommandTaskHandle);
+//  osThreadSuspend(GpsTaskHandle);
+//  osThreadSuspend(GyroTaskHandle);
+//    osThreadSuspend(KeylessTaskHandle);
+//  osThreadSuspend(FingerTaskHandle);
+//  osThreadSuspend(AudioTaskHandle);
+//  osThreadSuspend(SwitchTaskHandle);
+//  osThreadSuspend(CanRxTaskHandle);
+//  osThreadSuspend(CanTxTaskHandle);
   osThreadSuspend(Hmi2PowerTaskHandle);
 
   // Release threads
@@ -442,7 +442,7 @@ void StartManagerTask(void *argument)
 
     MX_IWDG_Reset();
 
-    _DummyDataGenerator();
+    // _DummyDataGenerator();
 
     // _RTOS_Debugger(1000);
 
@@ -459,7 +459,7 @@ void StartManagerTask(void *argument)
 
     VCU.d.state.run = (
         VCU.d.state.start &&
-            VCU.d.driver_id != DRIVER_ID_NONE &&
+            //            VCU.d.driver_id != DRIVER_ID_NONE &&
             !HMI1.d.state.keyless
         ) ||
         VCU.d.state.override;
@@ -836,7 +836,7 @@ void StartKeylessTask(void *argument)
   AES_Init();
   RF_Init();
 
-  //  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+//  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
   /* Infinite loop */
   for (;;) {
     // Check response

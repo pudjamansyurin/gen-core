@@ -40,7 +40,11 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
   uint32_t address = CAND_SET_PROGRESS;
   uint32_t retry = 5;
   CAN_DATA TxData;
-  uint8_t p;
+  uint8_t p, knob;
+
+  // Turn ON HMI-Primary
+  knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+  HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, knob);
 
   // set message
   TxData.u32[0] = type;

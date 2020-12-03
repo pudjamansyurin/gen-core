@@ -34,12 +34,6 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       .size = 0,
   };
 
-  // Turn ON HMI-Primary
-  if (HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin)) {
-    HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, 1);
-    _DelayMS(1000);
-  }
-
   /* Set current IAP type */
   *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
   FOCAN_SetProgress(type, 0.0f);
