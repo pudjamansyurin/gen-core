@@ -86,7 +86,6 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
 		report->data.opt.vcu.speed = VCU.d.speed;
 		report->data.opt.vcu.odometer = VCU.d.odometer;
-		report->data.opt.vcu.odometer_m = VCU.d.odometer_m;
 		report->data.opt.vcu.motion.pitch = VCU.d.motion.pitch;
 		report->data.opt.vcu.motion.roll = VCU.d.motion.roll;
 

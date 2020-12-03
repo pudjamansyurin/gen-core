@@ -71,9 +71,8 @@ void FW_PostFota(response_t *response) {
 			} while (!versionNew && (_GetTickMS() - tick > 5000));
 
 			/* Handle empty firmware */
-			if (versionOld == 0xFFFF) {
+      if (versionOld == 0xFFFF)
 				versionOld = 0x0000;
-			}
 		}
 
 		// set default value

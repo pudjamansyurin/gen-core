@@ -49,7 +49,6 @@ void VCU_Init(void) {
 	VCU.d.volume = 0;
 	VCU.d.speed = 0;
 	VCU.d.odometer = 0;
-	VCU.d.odometer_m = 0;
 	VCU.d.motion.pitch = 0;
 	VCU.d.motion.roll = 0;
 	VCU.d.events = 0;
@@ -166,7 +165,7 @@ uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
 	TxData.u8[1] = BMS.d.soc;
 	TxData.u8[2] = runner->mode.sub.report[SW_M_REPORT_RANGE];
 	TxData.u8[3] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
-  TxData.u32[1] = VCU.d.odometer;
+  TxData.u32[1] = VCU.d.odometer / 1000;
 
 	// send message
 	return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 8);

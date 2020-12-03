@@ -29,7 +29,6 @@ typedef struct {
 	uint8_t volume;
 	uint8_t speed;
 	uint32_t odometer;
-	uint32_t odometer_m;
 	struct {
 		int8_t pitch;
 		int8_t roll;
