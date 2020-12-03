@@ -69,6 +69,9 @@ void Error_Handler(void);
 #define EXT_HMI1_PWR_GPIO_Port GPIOC
 #define BOOT1_Pin GPIO_PIN_2
 #define BOOT1_GPIO_Port GPIOB
+#define EXT_KNOB_IRQ_Pin GPIO_PIN_8
+#define EXT_KNOB_IRQ_GPIO_Port GPIOE
+#define EXT_KNOB_IRQ_EXTI_IRQn EXTI9_5_IRQn
 #define INT_EEPROM_SCL_Pin GPIO_PIN_10
 #define INT_EEPROM_SCL_GPIO_Port GPIOB
 #define INT_NET_RST_Pin GPIO_PIN_14
