@@ -165,9 +165,9 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
   ret = EE_Command(VADDR_AES_KEY, cmd, ptr, AesKey, 16);
 
   // apply the AES key
-//  if (cmd == EE_CMD_W) {
-//    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
-//  }
+  //  if (cmd == EE_CMD_W) {
+  //    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
+  //  }
 
   return ret;
 }

@@ -30,9 +30,8 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
     p = FOCAN_WriteAndWaitSqueezed(address, NULL, 0, &RxData, 20000, 1);
 
     // process response
-    if (p) {
+    if (p) 
         *checksum = RxData.u32[0];
-    }
 
     return p;
 }
@@ -85,14 +84,12 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
         p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, &TxData, 6, 500, 20);
 
         // flash
-        if (p) {
+        if (p) 
             p = FOCAN_FlashBlock(ptr, &tmpBlk);
-        }
 
         // wait final response
-        if (p) {
+        if (p) 
             p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 5000) == FOCAN_ACK);
-        }
 
         // update pointer
         if (p) {
@@ -145,15 +142,13 @@ static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, CAN_DATA *TxData, ui
         // send message
         p = CANBUS_Write(address, TxData, DLC);
         // wait response
-        if (p) {
+        if (p) 
             p = (FOCAN_WaitResponse(address, timeout) == FOCAN_ACK);
-        }
     } while (!p && --retry);
 
     // handle error
-    if (!p) {
+    if (!p) 
         *(uint32_t*) IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
-    }
 
     return p;
 }
@@ -166,15 +161,13 @@ static uint8_t FOCAN_WriteAndWaitSqueezed(uint32_t address, CAN_DATA *TxData, ui
         // send message
         p = CANBUS_Write(address, TxData, DLC);
         // wait response
-        if (p) {
+        if (p)
             p = FOCAN_WaitSqueezed(address, RxData, timeout);
-        }
     } while (!p && --retry);
 
     // handle error
-    if (!p) {
+    if (!p) 
         *(uint32_t*) IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
-    }
 
     return p;
 }
