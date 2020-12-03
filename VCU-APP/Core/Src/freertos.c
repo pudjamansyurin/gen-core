@@ -1118,7 +1118,7 @@ void StartCanRxTask(void *argument)
           break;
         default:
           // BMS - Extended ID
-          switch (_R(CANBUS_ReadID(&(Rx.header)), 20)) {
+          switch (CANBUS_ReadID(&(Rx.header)) >> 20) {
             case CAND_BMS_PARAM_1 :
               BMS.can.r.Param1(&Rx);
               break;
