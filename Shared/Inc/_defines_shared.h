@@ -157,9 +157,9 @@
 // Command Sub-Code List
 #define CMD_GEN_INFO                  (uint8_t) 0
 #define CMD_GEN_LED                   (uint8_t) 1
-#define CMD_GEN_KNOB                  (uint8_t) 2
-#define CMD_GEN_UPGRADE_VCU           (uint8_t) 3
-#define CMD_GEN_UPGRADE_HMI           (uint8_t) 4
+#define CMD_GEN_OVERRIDE              (uint8_t) 2
+#define CMD_GEN_FOTA_VCU              (uint8_t) 3
+#define CMD_GEN_FOTA_HMI              (uint8_t) 4
 
 #define CMD_REPORT_RTC                (uint8_t) 0
 #define CMD_REPORT_ODOM               (uint8_t) 1

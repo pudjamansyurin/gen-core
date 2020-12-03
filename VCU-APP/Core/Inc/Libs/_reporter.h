@@ -57,6 +57,7 @@ typedef struct __attribute__((packed)) {
                 uint8_t hdop;
                 uint8_t vdop;
                 uint8_t heading;
+        uint8_t sat_in_use;
             } gps;
             uint8_t speed;
             uint32_t odometer;

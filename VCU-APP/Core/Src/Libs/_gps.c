@@ -58,6 +58,7 @@ uint8_t GPS_Capture(void) {
 	GPS.heading = nmea.coarse;
 	GPS.speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
 	GPS.speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
+  GPS.sat_in_use = nmea.sats_in_use;
 
 	return nmea.fix > 0;
 }

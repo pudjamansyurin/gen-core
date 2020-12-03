@@ -82,6 +82,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 		report->data.opt.vcu.gps.hdop = (uint8_t) (GPS.dop_h * 10);
 		report->data.opt.vcu.gps.vdop = (uint8_t) (GPS.dop_v * 10);
 		report->data.opt.vcu.gps.heading = (uint8_t) (GPS.heading / 2);
+    report->data.opt.vcu.gps.sat_in_use = (uint8_t) GPS.sat_in_use;
 
 		report->data.opt.vcu.speed = VCU.d.speed;
 		report->data.opt.vcu.odometer = VCU.d.odometer;
@@ -152,9 +153,8 @@ FRAME_TYPE Frame_Decider(void) {
 		if (++frameDecider == (RPT_INTERVAL_FULL / RPT_INTERVAL_SIMPLE )) {
 			frame = FR_FULL;
 			frameDecider = 0;
-		} else {
+    } else
 			frame = FR_SIMPLE;
-		}
 	} else {
 		frame = FR_FULL;
 		frameDecider = 0;
@@ -168,11 +168,9 @@ uint8_t Packet_Pending(payload_t *payload) {
 	osStatus_t status;
 
 	// Handle Full Buffer
-	if (payload->type == PAYLOAD_REPORT) {
-		if (_osThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0)) {
+  if (payload->type == PAYLOAD_REPORT)
+    if (_osThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
 			payload->pending = 0;
-		}
-	}
 
 	// Check logs
 	if (!payload->pending) {
@@ -199,22 +197,19 @@ uint8_t Send_Payload(payload_t *payload) {
 	pHeader = (header_t*) (payload->pPayload);
 
 	// Re-calculate CRC
-	if (payload->type == PAYLOAD_REPORT) {
+  if (payload->type == PAYLOAD_REPORT)
 		Report_SetCRC((report_t*) payload->pPayload);
-	} else {
+  else
 		Response_SetCRC((response_t*) payload->pPayload);
-	}
 
 	// Send to server
 	p = Simcom_Upload(payload->pPayload, size + pHeader->size);
 
 	// Handle looping NACK
-	if (p == SIM_RESULT_NACK) {
+  if (p == SIM_RESULT_NACK)
 		// Probably  CRC not valid, cancel but force as success
-		if (!--payload->retry) {
+    if (!--payload->retry)
 			p = SIM_RESULT_OK;
-		}
-	}
 
 	// Release back
 	if (p == SIM_RESULT_OK) {

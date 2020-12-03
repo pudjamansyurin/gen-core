@@ -31,15 +31,15 @@ void CMD_GenLed(command_t *cmd) {
 	_LedWrite((uint8_t) cmd->data.value);
 }
 
-void CMD_GenKnob(command_t *cmd) {
+void CMD_GenOverride(command_t *cmd) {
   VCU.d.state.override = (uint8_t) cmd->data.value;
 }
 
-void CMD_GenUpgrade(command_t *cmd, response_t *resp) {
+void CMD_GenFota(command_t *cmd, response_t *resp) {
 	IAP_TYPE type = IAP_HMI;
 
 	/* Enter IAP mode */
-  if (cmd->data.sub_code == CMD_GEN_UPGRADE_VCU)
+  if (cmd->data.sub_code == CMD_GEN_FOTA_VCU)
 		type = IAP_VCU;
 
 	FW_EnterModeIAP(type, resp->data.message);

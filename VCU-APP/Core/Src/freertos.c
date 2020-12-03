@@ -622,16 +622,16 @@ void StartCommandTask(void *argument)
             CMD_GenLed(&command);
             break;
 
-          case CMD_GEN_KNOB :
-            CMD_GenKnob(&command);
+          case CMD_GEN_OVERRIDE :
+            CMD_GenOverride(&command);
             break;
 
-          case CMD_GEN_UPGRADE_VCU :
-            CMD_GenUpgrade(&command, &response);
+          case CMD_GEN_FOTA_VCU:
+            CMD_GenFota(&command, &response);
             break;
 
-          case CMD_GEN_UPGRADE_HMI :
-            CMD_GenUpgrade(&command, &response);
+          case CMD_GEN_FOTA_HMI:
+            CMD_GenFota(&command, &response);
             break;
 
           default:
