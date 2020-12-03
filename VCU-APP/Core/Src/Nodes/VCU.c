@@ -146,7 +146,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
 
   // set message
   TxData.u8[0] = sw->list[SW_K_ABS].state;
-  TxData.u8[0] |= (GPS.fix > 0) << 1; //HMI1.d.state.mirroring << 1;
+  TxData.u8[0] |= (GPS.fix == 0) << 1; //HMI1.d.state.mirroring << 1;
   TxData.u8[0] |= sw->list[SW_K_LAMP].state << 2;
   TxData.u8[0] |= HMI1.d.state.warning << 3;
   TxData.u8[0] |= HMI1.d.state.overheat << 4;
