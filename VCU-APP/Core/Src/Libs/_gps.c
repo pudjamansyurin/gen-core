@@ -58,8 +58,9 @@ uint8_t GPS_Capture(void) {
 	GPS.speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
 	GPS.speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
   GPS.sat_in_use = nmea.sats_in_use;
+  GPS.fix = nmea.fix;
 
-	return nmea.fix > 0;
+  return GPS.fix > 0;
 }
 
 void GPS_CalculateOdometer(void) {
@@ -72,7 +73,6 @@ void GPS_CalculateOdometer(void) {
     VCU.SetOdometer(increment);
     HBAR_AccumulateSubTrip(increment);
   }
-
 }
 
 void GPS_CalculateSpeed(void) {

@@ -26,6 +26,7 @@ typedef struct {
 	nmea_float_t speed_kph;
 	nmea_float_t speed_mps;
   uint8_t sat_in_use;
+  uint8_t fix;
 } gps_t;
 
 /* Public functions prototype ------------------------------------------------*/
