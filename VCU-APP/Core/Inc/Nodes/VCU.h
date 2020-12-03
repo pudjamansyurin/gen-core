@@ -69,6 +69,7 @@ typedef struct {
 	uint8_t (*ReadEvent)(uint64_t);
   void (*CheckPower5v)(void);
   void (*CheckKnob)(void);
+  void (*SetOdometer)(uint8_t);
 } vcu_t;
 
 /* Public functions implementation --------------------------------------------*/
@@ -77,6 +78,7 @@ void VCU_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t VCU_ReadEvent(uint64_t event_id);
 void VCU_CheckPower5v(void);
 void VCU_CheckKnob(void);
+void VCU_SetOdometer(uint8_t increment);
 
 uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw);
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp);

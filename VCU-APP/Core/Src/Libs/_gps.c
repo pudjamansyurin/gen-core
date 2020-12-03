@@ -7,7 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_gps.h"
-#include "Libs/_eeprom.h"
 #include "DMA/_dma_ublox.h"
 #include "Nodes/VCU.h"
 
@@ -70,34 +69,16 @@ void GPS_Debugger(void) {
 }
 
 void GPS_CalculateOdometer(void) {
-  static uint32_t last_km = 0;
-  static uint8_t init = 1;
   uint8_t increment;
-
-  // init hook
-  if (init) {
-    init = 0;
-    last_km = (VCU.d.odometer / 1000);
-  }
 
   // calculate
   if (GPS.speed_mps > 5) {
     increment = (GPS.speed_mps * GPS_INTERVAL );
-    VCU.d.odometer += increment;
+
+    VCU.SetOdometer(increment);
     HBAR_AccumulateSubTrip(increment);
   }
 
-  // check every 1km
-  if (last_km < (VCU.d.odometer / 1000)) {
-    last_km = (VCU.d.odometer / 1000);
-
-    // reset on overflow
-    if (last_km > VCU_ODOMETER_KM_MAX)
-      VCU.d.odometer = 0;
-
-    // accumulate (save permanently)
-    EEPROM_Odometer(EE_CMD_W, VCU.d.odometer);
-	}
 }
 
 void GPS_CalculateSpeed(void) {
