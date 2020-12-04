@@ -70,7 +70,7 @@
 
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 
-#define KEYLESS_TIMEOUT              (uint32_t) 5000                // in ms
+#define KEYLESS_TIMEOUT              (uint32_t) 10000                // in ms
 
 #define PREFIX_REPORT                           "@R"
 #define PREFIX_COMMAND                          "@C"

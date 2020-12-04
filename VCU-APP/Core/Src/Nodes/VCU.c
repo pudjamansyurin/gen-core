@@ -151,7 +151,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
   TxData.u8[0] |= HMI1.d.state.warning << 3;
   TxData.u8[0] |= HMI1.d.state.overheat << 4;
   TxData.u8[0] |= HMI1.d.state.finger << 5;
-  TxData.u8[0] |= HMI1.d.state.keyless << 6;
+  TxData.u8[0] |= HMI1.d.state.unkeyless << 6;
   TxData.u8[0] |= HMI1.d.state.daylight << 7;
 
   // sein value
@@ -197,9 +197,9 @@ uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner) {
   // set message
   TxData.u8[0] = SIM.signal;
   TxData.u8[1] = BMS.d.soc;
-  TxData.u8[2] = runner->mode.sub.report[SW_M_REPORT_RANGE];
+  TxData.u8[2] = VCU.d.speed; //runner->mode.sub.report[SW_M_REPORT_RANGE];
   TxData.u8[3] = runner->mode.sub.report[SW_M_REPORT_AVERAGE];
-  TxData.u32[1] = VCU.d.odometer / 1000;
+  TxData.u32[1] = VCU.d.odometer;
 
   // send message
   return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 8);

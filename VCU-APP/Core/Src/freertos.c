@@ -126,7 +126,7 @@ const osThreadAttr_t GyroTask_attributes = {
 osThreadId_t KeylessTaskHandle;
 const osThreadAttr_t KeylessTask_attributes = {
     .name = "KeylessTask",
-    .priority = (osPriority_t) osPriorityAboveNormal,
+    .priority = (osPriority_t) osPriorityNormal,
     .stack_size = 256 * 4
 };
 /* Definitions for FingerTask */
@@ -460,7 +460,7 @@ void StartManagerTask(void *argument)
     VCU.d.state.run = (
         VCU.d.state.start &&
             //            VCU.d.driver_id != DRIVER_ID_NONE &&
-            !HMI1.d.state.keyless
+            !HMI1.d.state.unkeyless
         ) ||
         VCU.d.state.override;
 
@@ -810,7 +810,7 @@ void StartGyroTask(void *argument)
       // Turn OFF BMS (+ MCU)
     }
 
-    osDelayUntil(lastWake + 100);
+    osDelayUntil(lastWake + 1000);
   }
   /* USER CODE END StartGyroTask */
 }
@@ -855,7 +855,7 @@ void StartKeylessTask(void *argument)
 
       // handle incoming payload
       if (notif & EVT_KEYLESS_RX_IT) {
-        RF_Debugger();
+        // RF_Debugger();
 
         // process
         if (RF_ValidateCommand(&command)) {
@@ -866,13 +866,14 @@ void StartKeylessTask(void *argument)
             tick_pairing = 0;
           }
 
+          // update heart-beat
+          VCU.d.tick.keyless = _GetTickMS();
+
           // handle command
           switch (command) {
             case RF_CMD_PING:
               LOG_StrLn("NRF:Command = PING");
 
-              // update heart-beat
-              VCU.d.tick.keyless = _GetTickMS();
               break;
 
             case RF_CMD_ALARM:
@@ -946,7 +947,7 @@ void StartFingerTask(void *argument)
   /* Infinite loop */
   for (;;) {
     // check if user put finger
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       if (notif & EVT_FINGER_PLACED) {
         id = Finger_AuthFast();
         // Finger is registered
@@ -1006,7 +1007,7 @@ void StartAudioTask(void *argument)
   /* Infinite loop */
   for (;;) {
     // wait with timeout
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       // Beep command
       if (notif & EVT_AUDIO_BEEP) {
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);

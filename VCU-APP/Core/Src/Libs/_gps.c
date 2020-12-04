@@ -67,7 +67,7 @@ void GPS_CalculateOdometer(void) {
   uint8_t increment;
 
   // calculate
-  if (GPS.speed_mps > 5) {
+  if (GPS.speed_mps > 0) {
     increment = (GPS.speed_mps * GPS_INTERVAL );
 
     VCU.SetOdometer(increment);
@@ -76,7 +76,6 @@ void GPS_CalculateOdometer(void) {
 }
 
 void GPS_CalculateSpeed(void) {
-  // FIXME: use real data
   VCU.d.speed = GPS.speed_kph;
   VCU.d.volume = VCU.d.speed * 100 / MCU_SPEED_KPH_MAX;
 }

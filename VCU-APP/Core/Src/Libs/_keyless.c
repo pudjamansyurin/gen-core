@@ -149,7 +149,7 @@ void RF_Debugger(void) {
 }
 
 void RF_Refresh(void) {
-  HMI1.d.state.keyless = ((_GetTickMS() - VCU.d.tick.keyless) > KEYLESS_TIMEOUT );
+  HMI1.d.state.unkeyless = ((_GetTickMS() - VCU.d.tick.keyless) < KEYLESS_TIMEOUT );
 }
 
 void RF_IrqHandler(void) {

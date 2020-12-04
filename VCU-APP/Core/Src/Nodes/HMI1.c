@@ -31,7 +31,7 @@ void HMI1_Init(void) {
 	HMI1.d.state.warning = 0;
 	HMI1.d.state.overheat = 0;
 	HMI1.d.state.finger = 0;
-	HMI1.d.state.keyless = 0;
+  HMI1.d.state.unkeyless = 0;
 	HMI1.d.state.daylight = 0;
 }
 
