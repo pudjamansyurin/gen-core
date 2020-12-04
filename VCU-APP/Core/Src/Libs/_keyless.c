@@ -58,11 +58,8 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 void RF_Init(void) {
-  // set more config
   nrf_set_config(&NRF, &(RF.config));
-  // initialization
   nrf_init(&NRF);
-  // apply config
   nrf_configure(&NRF);
   RF_ChangeMode(RF_MODE_NORMAL);
 }
@@ -72,9 +69,8 @@ uint8_t RF_SendPing(uint8_t retry) {
 
   GenRandomNumber32((uint32_t*) RF.tx.payload, NRF_DATA_LENGTH / 4);
 
-  while (retry--) {
+  while (retry--)
     p = nrf_send_packet_noack(&NRF, RF.tx.payload);
-  }
 
   return (p == NRF_OK);
 }
@@ -98,14 +94,11 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
     }
   }
   // Check is valid ping response
-  if (valid) {
-    if (*cmd == RF_CMD_PING || *cmd == RF_CMD_SEAT) {
-      // compare upper RNG
-      if (memcmp(&plain[rng], &payload[rng], rng) == 0) {
+  if (valid)
+    if (*cmd == RF_CMD_PING || *cmd == RF_CMD_SEAT)
+      if (memcmp(&plain[rng], &payload[rng], rng) == 0)
         valid = 1;
-      }
-    }
-  }
+
   unlock();
 
   return valid;
@@ -114,7 +107,6 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
 uint8_t RF_Pairing(void) {
   NRF_RESULT p = NRF_ERROR;
   uint32_t aes[4];
-  //  uint8_t retry = 5;
 
   // Generate new AES Key
   RF_GenerateAesKey(aes);
@@ -126,10 +118,8 @@ uint8_t RF_Pairing(void) {
   memcpy(&RF.tx.payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
 
   RF_ChangeMode(RF_MODE_PAIRING);
-  //  do {
+  
   p = nrf_send_packet_noack(&NRF, RF.tx.payload);
-  //    _DelayMS(50);
-  //  } while (p == NRF_OK && --retry);
 
   RF_Init();
 
@@ -149,7 +139,7 @@ void RF_Debugger(void) {
 }
 
 void RF_Refresh(void) {
-  HMI1.d.state.unkeyless = ((_GetTickMS() - VCU.d.tick.keyless) < KEYLESS_TIMEOUT );
+  HMI1.d.state.unkeyless = ((_GetTickMS() - VCU.d.tick.keyless) > KEYLESS_TIMEOUT );
 }
 
 void RF_IrqHandler(void) {
@@ -201,20 +191,19 @@ static uint8_t RF_Payload(RF_ACTION action, uint8_t *payload) {
 
   // Process Payload
   lock();
-  if (action == RF_ACTION_R) {
+  if (action == RF_ACTION_R)
     ret = AES_Decrypt(payload, RF.rx.payload, NRF_DATA_LENGTH);
-  } else {
+  else
     ret = AES_Encrypt(RF.tx.payload, payload, NRF_DATA_LENGTH);
-  }
+  
   unlock();
 
   return ret;
 }
 
 static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
-  for (uint8_t i = 0; i < size; i++) {
+  for (uint8_t i = 0; i < size; i++)
     HAL_RNG_GenerateRandomNumber(&hrng, payload++);
-  }
 }
 
 static void lock(void) {

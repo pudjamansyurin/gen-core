@@ -76,9 +76,6 @@ extern hmi1_t HMI1;
 extern hmi2_t HMI2;
 
 extern sw_t SW;
-extern sim_t SIM;
-extern uint32_t AesKey[4];
-extern uint16_t BACKUP_VOLTAGE;
 /* USER CODE END Variables */
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;

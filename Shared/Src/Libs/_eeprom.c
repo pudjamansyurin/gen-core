@@ -94,7 +94,6 @@ void EEPROM_ResetOrLoad(void) {
       EEPROM_SequentialID(EE_CMD_R, EE_NULL, type);
     // load aes key
     EEPROM_AesKey(EE_CMD_R, EE_NULL);
-
   } else {
     // save to EEPROM, first
     EEPROM_UnitID(EE_CMD_W, VCU_UNITID);
