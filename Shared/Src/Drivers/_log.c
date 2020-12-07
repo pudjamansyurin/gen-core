@@ -19,23 +19,9 @@ extern osMutexId_t LogMutexHandle;
 /* Private functions declarations ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
+static void LOG_Char(char ch);
 
 /* Public functions implementation ---------------------------------------------*/
-void LOG_Char(char ch) {
-	uint32_t tick;
-
-	tick = _GetTickMS();
-	// wait if busy
-	while (1) {
-		if (ITM->PORT[0].u32 != 0 || _GetTickMS() - tick >= 10) {
-			break;
-		}
-		_DelayMS(1);
-	}
-	// send to ITM0
-	ITM->PORT[0].u8 = (uint8_t) ch;
-}
-
 void LOG_Enter(void) {
 	lock();
 	LOG_Char('\n');
@@ -208,13 +194,29 @@ void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char sub
 
 /* Private functions implementations ----------------------------------------------*/
 static void lock(void) {
-#if (!BOOTLOADER)
+#if (!BOOTLOADER && !PRODUCTION)
 	osMutexAcquire(LogMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (!BOOTLOADER)
+#if (!BOOTLOADER && !PRODUCTION)
 	osMutexRelease(LogMutexHandle);
+#endif
+}
+
+static void LOG_Char(char ch) {
+#if (!PRODUCTION)
+  uint32_t tick;
+
+  // wait if busy
+  tick = _GetTickMS();
+  while (_GetTickMS() - tick <= 5) {
+    if (ITM->PORT[0].u32 != 0) {
+      ITM->PORT[0].u8 = (uint8_t) ch;
+      break;
+    }
+    HAL_Delay(1);
+  }
 #endif
 }

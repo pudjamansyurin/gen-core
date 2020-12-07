@@ -193,10 +193,10 @@
 #define CAND_VCU_TRIP_MODE           (uint32_t) 0x003
 #define CAND_BMS_PARAM_1             (uint32_t) 0x0B0
 #define CAND_BMS_PARAM_2             (uint32_t) 0x0B1
-#define CAND_BMS_SETTING             (uint32_t) 0x1B2
-#define CAND_HMI2                    (uint32_t) 0x7D0
 #endif
+#define CAND_BMS_SETTING             (uint32_t) 0x1B2
 #define CAND_HMI1                    (uint32_t) 0x7C0
+#define CAND_HMI2                    (uint32_t) 0x7D0
 
 #if (BOOTLOADER)
 // FOCAN Message Address

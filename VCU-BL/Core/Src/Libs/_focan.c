@@ -21,8 +21,13 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData, uint32_t t
 static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 
 /* Public functions implementation --------------------------------------------*/
-void FOCAN_RefreshPowerHMI(void) {
+void FOCAN_SetOtherNodes(void) {
   static uint8_t knob = 0, tmp;
+  CAN_DATA TxData;
+
+  // Turn OFF BMS
+  TxData.u8[0] = 0x00;
+  CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);
 
   // Turn ON HMI-Primary
   tmp = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
@@ -38,7 +43,7 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
   CAN_DATA TxData;
   uint8_t p;
 
-  FOCAN_RefreshPowerHMI();
+  FOCAN_SetOtherNodes();
 
   // set message
   TxData.u32[0] = type;

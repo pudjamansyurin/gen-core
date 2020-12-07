@@ -422,9 +422,9 @@ void StartManagerTask(void *argument)
   //  osThreadSuspend(CommandTaskHandle);
   //  osThreadSuspend(GpsTaskHandle);
   //  osThreadSuspend(GyroTaskHandle);
-  //    osThreadSuspend(KeylessTaskHandle);
-  //  osThreadSuspend(FingerTaskHandle);
-  //  osThreadSuspend(AudioTaskHandle);
+  //  osThreadSuspend(KeylessTaskHandle);
+  osThreadSuspend(FingerTaskHandle);
+  osThreadSuspend(AudioTaskHandle);
   //  osThreadSuspend(SwitchTaskHandle);
   //  osThreadSuspend(CanRxTaskHandle);
   //  osThreadSuspend(CanTxTaskHandle);
@@ -514,7 +514,7 @@ void StartIotTask(void *argument)
       if (!Send_Payload(&pResponse))
         Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 
-    // ================= SIMCOM Related Routines ================
+    // SIMCOM Related Routines
     if (RTC_NeedCalibration())
       if (Simcom_SetState(SIM_STATE_READY, 0))
         RTC_CalibrateWithSimcom();

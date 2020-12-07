@@ -12,7 +12,6 @@
 #include "Libs/_utils.h"
 
 /* Public functions prototype ------------------------------------------------*/
-void LOG_Char(char ch);
 void LOG_Enter(void);
 void LOG_Int(int32_t num);
 void LOG_Int0(int32_t num);

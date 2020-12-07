@@ -10,6 +10,7 @@
 
 /* Choose between VCU or Boot-loader mode */
 #define BOOTLOADER                              1
+#define PRODUCTION                              0
 
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"

@@ -40,7 +40,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   else {
     strcpy(ftp.path, "/hmi/");
 
-    FOCAN_RefreshPowerHMI();
+    FOCAN_SetOtherNodes();
     _DelayMS(1000);
   }
 
