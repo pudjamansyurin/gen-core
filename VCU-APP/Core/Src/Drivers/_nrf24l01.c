@@ -659,11 +659,11 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
   ce_set(dev);
 
   uint32_t tick = _GetTickMS();
-  while (dev->tx_busy == 1) {
-    _DelayMS(1);
-
-    if (_GetTickMS() - tick > 5000)
+  while (_GetTickMS() - tick < 10) {
+    if (!dev->tx_busy)
       break;
+
+    _DelayMS(1);
   }
   // wait for end of transmition
 

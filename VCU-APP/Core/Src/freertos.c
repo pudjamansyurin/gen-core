@@ -837,7 +837,7 @@ void StartKeylessTask(void *argument)
   /* Infinite loop */
   for (;;) {
     // Check response
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 3)) {
       // handle reset key & id
       if (notif & EVT_KEYLESS_RESET) {
         // AES_Init();
@@ -856,15 +856,14 @@ void StartKeylessTask(void *argument)
 
         // process
         if (RF_ValidateCommand(&command)) {
+          // update heart-beat
+          VCU.d.tick.keyless = _GetTickMS();
           // response pairing command
           if (tick_pairing > 0) {
             if (_GetTickMS() - tick_pairing < 5000)
               osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
             tick_pairing = 0;
           }
-
-          // update heart-beat
-          VCU.d.tick.keyless = _GetTickMS();
 
           // handle command
           switch (command) {
@@ -914,8 +913,8 @@ void StartKeylessTask(void *argument)
       osThreadFlagsClear(EVT_MASK);
     }
 
-    RF_SendPing(1);
     RF_Refresh();
+    RF_SendPing(1);
   }
   /* USER CODE END StartKeylessTask */
 }
