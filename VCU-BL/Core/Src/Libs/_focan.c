@@ -21,6 +21,37 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData, uint32_t t
 static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 
 /* Public functions implementation --------------------------------------------*/
+void FOCAN_RefreshPowerHMI(void) {
+  static uint8_t knob = 0, tmp;
+
+  // Turn ON HMI-Primary
+  tmp = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+  if (knob != tmp) {
+    knob = tmp;
+    HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, knob);
+  }
+}
+
+uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
+  uint32_t address = CAND_SET_PROGRESS;
+  uint32_t retry = 5;
+  CAN_DATA TxData;
+  uint8_t p;
+
+  FOCAN_RefreshPowerHMI();
+
+  // set message
+  TxData.u32[0] = type;
+  TxData.FLOAT[1] = percent;
+  // send message
+  do {
+    // send message
+    p = CANBUS_Write(address, &TxData, 8);
+  } while (!p && --retry);
+
+  return p;
+}
+
 uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
   uint32_t address = CAND_GET_CHECKSUM;
   CAN_DATA RxData;
@@ -32,28 +63,6 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
   // process response
   if (p)
     *checksum = RxData.u32[0];
-
-  return p;
-}
-
-uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
-  uint32_t address = CAND_SET_PROGRESS;
-  uint32_t retry = 5;
-  CAN_DATA TxData;
-  uint8_t p, knob;
-
-  // Turn ON HMI-Primary
-  knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
-  HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, knob);
-
-  // set message
-  TxData.u32[0] = type;
-  TxData.FLOAT[1] = percent;
-  // send message
-  do {
-    // send message
-    p = CANBUS_Write(address, &TxData, 8);
-  } while (!p && --retry);
 
   return p;
 }

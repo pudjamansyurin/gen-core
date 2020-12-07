@@ -19,10 +19,10 @@
 #if (!BOOTLOADER)
 extern osThreadId_t KeylessTaskHandle;
 extern osMutexId_t EepromMutexHandle;
+extern uint32_t AesKey[4];
 extern response_t RESPONSE;
 extern report_t REPORT;
 extern vcu_t VCU;
-extern uint32_t AesKey[4];
 #endif
 
 /* Exported variables ---------------------------------------------------------*/
@@ -84,15 +84,13 @@ uint8_t EEPROM_Init(void) {
 
 #if (!BOOTLOADER)
 void EEPROM_ResetOrLoad(void) {
-  uint32_t AesKeyNew[4];
-
   if (!EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
     // load from EEPROM
     EEPROM_UnitID(EE_CMD_R, EE_NULL);
     EEPROM_Odometer(EE_CMD_R, EE_NULL);
     for (uint8_t type = 0; type <= PAYLOAD_MAX; type++)
       EEPROM_SequentialID(EE_CMD_R, EE_NULL, type);
-    // load aes key
+
     EEPROM_AesKey(EE_CMD_R, EE_NULL);
   } else {
     // save to EEPROM, first
@@ -100,9 +98,11 @@ void EEPROM_ResetOrLoad(void) {
     EEPROM_Odometer(EE_CMD_W, 0);
     for (uint8_t type = 0; type <= PAYLOAD_MAX; type++)
       EEPROM_SequentialID(EE_CMD_W, 0, type);
+
     // generate aes key
-    RF_GenerateAesKey(AesKeyNew);
-    EEPROM_AesKey(EE_CMD_W, AesKeyNew);
+    // uint32_t AesKeyNew[4];
+    // RF_GenerateAesKey(AesKeyNew);
+    // EEPROM_AesKey(EE_CMD_W, AesKeyNew);
 
     // re-write eeprom
     EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
@@ -132,9 +132,8 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
   ret = EE_Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
 
   // update the NRF Address
-  //  if (cmd == EE_CMD_W) {
-  //    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
-  //  }
+  if (cmd == EE_CMD_W)
+    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
 
   return ret;
 }
@@ -162,11 +161,6 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
   // eeprom
   ptr = (cmd == EE_CMD_W ? value : tmp);
   ret = EE_Command(VADDR_AES_KEY, cmd, ptr, AesKey, 16);
-
-  // apply the AES key
-  //  if (cmd == EE_CMD_W) {
-  //    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
-  //  }
 
   return ret;
 }

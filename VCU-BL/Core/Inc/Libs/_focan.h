@@ -16,6 +16,7 @@
 #define FOCAN_RETRY                 (uint8_t) 5
 
 /* Public functions implementation --------------------------------------------*/
+void FOCAN_RefreshPowerHMI(void);
 uint8_t FOCAN_GetChecksum(uint32_t *checksum);
 uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent);
 uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data);

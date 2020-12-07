@@ -34,15 +34,19 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       .size = 0,
   };
 
-  /* Set current IAP type */
-  *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
-  FOCAN_SetProgress(type, 0.0f);
-
   /* Set FTP directory */
   if (type == IAP_VCU) 
     strcpy(ftp.path, "/vcu/");
-  else
+  else {
     strcpy(ftp.path, "/hmi/");
+
+    FOCAN_RefreshPowerHMI();
+    _DelayMS(1000);
+  }
+
+  /* Set current IAP type */
+  *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
+  FOCAN_SetProgress(type, 0.0f);
 
   /* Backup if needed */
   if (p > 0) 

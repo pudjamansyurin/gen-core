@@ -12,7 +12,7 @@
 #include "Libs/_utils.h"
 
 /* Public functions implementation -------------------------------------------*/
-void AES_Init(void);
+uint8_t AES_Init(void);
 uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz);
 uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz);
 void AES_Tester(void);

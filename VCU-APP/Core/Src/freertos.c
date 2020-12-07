@@ -417,17 +417,17 @@ void StartManagerTask(void *argument)
   EEPROM_Init();
 
   // Threads management:
-//  osThreadSuspend(IotTaskHandle);
-//  osThreadSuspend(ReporterTaskHandle);
-//  osThreadSuspend(CommandTaskHandle);
-//  osThreadSuspend(GpsTaskHandle);
-//  osThreadSuspend(GyroTaskHandle);
-//    osThreadSuspend(KeylessTaskHandle);
-//  osThreadSuspend(FingerTaskHandle);
-//  osThreadSuspend(AudioTaskHandle);
-//  osThreadSuspend(SwitchTaskHandle);
-//  osThreadSuspend(CanRxTaskHandle);
-//  osThreadSuspend(CanTxTaskHandle);
+  //  osThreadSuspend(IotTaskHandle);
+  //  osThreadSuspend(ReporterTaskHandle);
+  //  osThreadSuspend(CommandTaskHandle);
+  //  osThreadSuspend(GpsTaskHandle);
+  //  osThreadSuspend(GyroTaskHandle);
+  //    osThreadSuspend(KeylessTaskHandle);
+  //  osThreadSuspend(FingerTaskHandle);
+  //  osThreadSuspend(AudioTaskHandle);
+  //  osThreadSuspend(SwitchTaskHandle);
+  //  osThreadSuspend(CanRxTaskHandle);
+  //  osThreadSuspend(CanTxTaskHandle);
   osThreadSuspend(Hmi2PowerTaskHandle);
 
   // Release threads
@@ -833,14 +833,14 @@ void StartKeylessTask(void *argument)
   AES_Init();
   RF_Init();
 
-//  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+  //  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
   /* Infinite loop */
   for (;;) {
     // Check response
     if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
       if (notif & EVT_KEYLESS_RESET) {
-        AES_Init();
+        // AES_Init();
         RF_Init();
       }
 
@@ -1056,8 +1056,7 @@ void StartSwitchTask(void *argument)
   /* Infinite loop */
   for (;;) {
     // wait forever
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 500)) {
-      osThreadFlagsClear(EVT_MASK);
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
       // handle bounce effect
       _DelayMS(50);
 
@@ -1083,6 +1082,8 @@ void StartSwitchTask(void *argument)
       if (notif & EVT_SWITCH_KNOB_IRQ) {
         VCU.CheckKnob();
       }
+
+      osThreadFlagsClear(EVT_MASK);
     }
   }
   /* USER CODE END StartSwitchTask */
@@ -1177,7 +1178,7 @@ void StartCanTxTask(void *argument)
     HMI1.Power(VCU.d.state.start);
     HMI2.PowerOverCan(VCU.d.state.start);
     BMS.PowerOverCan(VCU.d.state.run &&
-            !VCU.ReadEvent(EV_VCU_BIKE_FALLEN)
+        !VCU.ReadEvent(EV_VCU_BIKE_FALLEN)
     );
 
     // Refresh state
