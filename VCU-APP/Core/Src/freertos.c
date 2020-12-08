@@ -837,7 +837,7 @@ void StartKeylessTask(void *argument)
   /* Infinite loop */
   for (;;) {
     // Check response
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
       if (notif & EVT_KEYLESS_RESET) {
         // AES_Init();
@@ -914,7 +914,7 @@ void StartKeylessTask(void *argument)
     }
 
     RF_Refresh();
-    RF_SendPing(1);
+    RF_SendPing();
   }
   /* USER CODE END StartKeylessTask */
 }

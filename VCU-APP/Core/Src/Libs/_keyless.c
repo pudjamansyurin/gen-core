@@ -64,13 +64,12 @@ void RF_Init(void) {
   RF_ChangeMode(RF_MODE_NORMAL);
 }
 
-uint8_t RF_SendPing(uint8_t retry) {
+uint8_t RF_SendPing(void) {
   NRF_RESULT p;
 
   GenRandomNumber32((uint32_t*) RF.tx.payload, NRF_DATA_LENGTH / 4);
 
-  while (retry--)
-    p = nrf_send_packet_noack(&NRF, RF.tx.payload);
+  p = nrf_send_packet_noack(&NRF, RF.tx.payload);
 
   return (p == NRF_OK);
 }
