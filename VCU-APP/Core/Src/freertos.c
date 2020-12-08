@@ -837,7 +837,7 @@ void StartKeylessTask(void *argument)
   /* Infinite loop */
   for (;;) {
     // Check response
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 3)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1)) {
       // handle reset key & id
       if (notif & EVT_KEYLESS_RESET) {
         // AES_Init();
@@ -910,7 +910,7 @@ void StartKeylessTask(void *argument)
           //					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
         }
       }
-      osThreadFlagsClear(EVT_MASK);
+      // osThreadFlagsClear(EVT_MASK);
     }
 
     RF_Refresh();
