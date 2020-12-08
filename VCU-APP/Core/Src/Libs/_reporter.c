@@ -102,6 +102,9 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
       report->data.opt.bms.pack[i].soc = BMS.d.pack[i].soc * 100;
 			report->data.opt.bms.pack[i].temperature = (BMS.d.pack[i].temperature + 40) * 10;
 		}
+
+    // RTOS data
+    memcpy(&(report->data.opt.vcu.task), &(VCU.d.task), sizeof(rtos_task_t));
 	}
 }
 

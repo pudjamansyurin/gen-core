@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Nodes/VCU.h"
 
 /* Exported enum ---------------------------------------------------------------*/
 typedef enum {
@@ -75,6 +76,7 @@ typedef struct __attribute__((packed)) {
         uint32_t a;
         uint32_t b;
       } trip;
+      rtos_task_t task;
     } vcu;
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {

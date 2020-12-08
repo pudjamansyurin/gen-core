@@ -329,7 +329,7 @@ void MX_FREERTOS_Init(void) {
   ResponseQueueHandle = osMessageQueueNew (1, sizeof(response_t), &ResponseQueue_attributes);
 
   /* creation of ReportQueue */
-  ReportQueueHandle = osMessageQueueNew (100, sizeof(report_t), &ReportQueue_attributes);
+  ReportQueueHandle = osMessageQueueNew(50, sizeof(report_t), &ReportQueue_attributes);
 
   /* creation of DriverQueue */
   DriverQueueHandle = osMessageQueueNew (1, sizeof(uint8_t), &DriverQueue_attributes);
@@ -423,8 +423,8 @@ void StartManagerTask(void *argument)
   //  osThreadSuspend(GpsTaskHandle);
   //  osThreadSuspend(GyroTaskHandle);
   //  osThreadSuspend(KeylessTaskHandle);
-  osThreadSuspend(FingerTaskHandle);
-  osThreadSuspend(AudioTaskHandle);
+  //  osThreadSuspend(FingerTaskHandle);
+  //  osThreadSuspend(AudioTaskHandle);
   //  osThreadSuspend(SwitchTaskHandle);
   //  osThreadSuspend(CanRxTaskHandle);
   //  osThreadSuspend(CanTxTaskHandle);
@@ -435,13 +435,27 @@ void StartManagerTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.manager.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
     MX_IWDG_Reset();
 
-    // _DummyDataGenerator();
-
     // _RTOS_Debugger(1000);
+    VCU.d.task.manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
+    VCU.d.task.iot.stack = osThreadGetStackSpace(IotTaskHandle);
+    VCU.d.task.reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
+    VCU.d.task.command.stack = osThreadGetStackSpace(CommandTaskHandle);
+    VCU.d.task.gps.stack = osThreadGetStackSpace(GpsTaskHandle);
+    VCU.d.task.gyro.stack = osThreadGetStackSpace(GyroTaskHandle);
+    VCU.d.task.keyless.stack = osThreadGetStackSpace(KeylessTaskHandle);
+    VCU.d.task.finger.stack = osThreadGetStackSpace(FingerTaskHandle);
+    VCU.d.task.audio.stack = osThreadGetStackSpace(AudioTaskHandle);
+    VCU.d.task.switches.stack = osThreadGetStackSpace(SwitchTaskHandle);
+    VCU.d.task.canRx.stack = osThreadGetStackSpace(CanRxTaskHandle);
+    VCU.d.task.canTx.stack = osThreadGetStackSpace(CanTxTaskHandle);
+    VCU.d.task.hmi2Power.stack = osThreadGetStackSpace(Hmi2PowerTaskHandle);
+
+    // _DummyDataGenerator();
 
     // BAT_Debugger();
 
@@ -502,6 +516,7 @@ void StartIotTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
     // Upload Report
@@ -548,6 +563,7 @@ void StartReporterTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
     frame = Frame_Decider();
@@ -600,6 +616,7 @@ void StartCommandTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.command.wakeup = _GetTickMS() / 1000;
     // get command in queue
     if (osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever) == osOK) {
       Command_Debugger(&command);
@@ -745,6 +762,7 @@ void StartGpsTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.gps.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
     GPS_Capture();
@@ -780,6 +798,7 @@ void StartGyroTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
     // Read all accelerometer, gyroscope (average)
@@ -836,6 +855,8 @@ void StartKeylessTask(void *argument)
   //  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.keyless.wakeup = _GetTickMS() / 1000;
+
     // Check response
     if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
@@ -942,6 +963,8 @@ void StartFingerTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.finger.wakeup = _GetTickMS() / 1000;
+
     // check if user put finger
     if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       if (notif & EVT_FINGER_PLACED) {
@@ -1002,6 +1025,8 @@ void StartAudioTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
+
     // wait with timeout
     if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       // Beep command
@@ -1054,6 +1079,8 @@ void StartSwitchTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.switches.wakeup = _GetTickMS() / 1000;
+
     // wait forever
     if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
       // handle bounce effect
@@ -1105,6 +1132,8 @@ void StartCanRxTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
+
     if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, osWaitForever) == osOK) {
       // handle STD message
       switch (CANBUS_ReadID(&(Rx.header))) {
@@ -1153,6 +1182,7 @@ void StartCanTxTask(void *argument)
   last500ms = _GetTickMS();
   last1000ms = _GetTickMS();
   for (;;) {
+    VCU.d.task.canTx.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
     // send every 20m
@@ -1207,6 +1237,8 @@ void StartHmi2PowerTask(void *argument)
 
   /* Infinite loop */
   for (;;) {
+    VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
+
     if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
 
       if (HMI2.d.power)
