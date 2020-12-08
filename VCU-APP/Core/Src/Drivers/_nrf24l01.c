@@ -27,14 +27,15 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
     LOG_StrLn("NRF:Init");
 
     // reset peripheral
-    //		HAL_SPI_MspDeInit(&hspi1);
-    //		HAL_SPI_MspInit(&hspi1);
+    HAL_SPI_MspDeInit(&hspi1);
 
     // turn on the mosfet
     HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 0);
     _DelayMS(1000);
     HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
     _DelayMS(1000);
+
+    HAL_SPI_MspInit(&hspi1);
 
     result = nrf_check(dev);
   } while (result == NRF_ERROR);
@@ -640,12 +641,20 @@ NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
   ce_set(dev);
 
   // wait for end of transmition
-  while (dev->tx_busy == 1)
-    ;
+  //  while (dev->tx_busy) {
+  //    _DelayMS(1);
+  //  };
+  uint32_t tick = _GetTickMS();
+  while (_GetTickMS() - tick < 3) {
+    if (!dev->tx_busy)
+      break;
 
-  //  ce_reset(dev);
-  //  nrf_rx_tx_control(dev, NRF_STATE_RX);
-  //  ce_set(dev);
+    _DelayMS(1);
+  }
+
+  ce_reset(dev);
+  nrf_rx_tx_control(dev, NRF_STATE_RX);
+  ce_set(dev);
 
   return dev->tx_result;
 }
@@ -659,15 +668,13 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
   ce_set(dev);
 
   // wait for end of transmition
-  //  uint32_t tick = _GetTickMS();
-  //  while (_GetTickMS() - tick < 3) {
-  //    if (!dev->tx_busy)
-  //      break;
-  //
-  //    _DelayMS(1);
-  //  }
-  while (dev->tx_busy)
-    ;
+  uint32_t tick = _GetTickMS();
+  while (_GetTickMS() - tick < 10) {
+    if (!dev->tx_busy)
+      break;
+
+    _DelayMS(1);
+  }
 
   //  ce_reset(dev);
   //  nrf_rx_tx_control(dev, NRF_STATE_RX);

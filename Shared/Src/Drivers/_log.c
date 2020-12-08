@@ -194,19 +194,19 @@ void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char sub
 
 /* Private functions implementations ----------------------------------------------*/
 static void lock(void) {
-#if (!BOOTLOADER && !PRODUCTION)
+#if (!BOOTLOADER && SWO_DEBUG)
 	osMutexAcquire(LogMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (!BOOTLOADER && !PRODUCTION)
+#if (!BOOTLOADER && SWO_DEBUG)
 	osMutexRelease(LogMutexHandle);
 #endif
 }
 
 static void LOG_Char(char ch) {
-#if (!PRODUCTION)
+#if (SWO_DEBUG)
   uint32_t tick;
 
   // wait if busy
@@ -216,7 +216,7 @@ static void LOG_Char(char ch) {
       ITM->PORT[0].u8 = (uint8_t) ch;
       break;
     }
-    HAL_Delay(1);
+    _DelayMS(1);
   }
 #endif
 }

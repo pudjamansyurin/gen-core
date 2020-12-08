@@ -107,18 +107,16 @@ uint8_t RF_Pairing(void) {
   NRF_RESULT p = NRF_ERROR;
   uint32_t aes[4];
 
-  // Generate new AES Key
-  RF_GenerateAesKey(aes);
-
   // Insert AES to payload
+  RF_GenerateAesKey(aes);
+  EEPROM_AesKey(EE_CMD_W, aes);
   RF_SetAesPayload(aes);
+
   // Insert VCU_ID to payload
   memcpy(&RF.tx.payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
 
   RF_ChangeMode(RF_MODE_PAIRING);
   p = nrf_send_packet_noack(&NRF, RF.tx.payload);
-
-  EEPROM_AesKey(EE_CMD_W, aes);
 
   RF_Init();
 

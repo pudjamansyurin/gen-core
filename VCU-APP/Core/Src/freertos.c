@@ -82,28 +82,28 @@ osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
     .name = "ManagerTask",
     .priority = (osPriority_t) osPriorityRealtime,
-    .stack_size = 288 * 4
+    .stack_size = 300 * 4
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
 const osThreadAttr_t IotTask_attributes = {
     .name = "IotTask",
     .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 416 * 4
+    .stack_size = 325 * 4
 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
 const osThreadAttr_t ReporterTask_attributes = {
     .name = "ReporterTask",
     .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 304 * 4
+    .stack_size = 256 * 4
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
 const osThreadAttr_t CommandTask_attributes = {
     .name = "CommandTask",
-    .priority = (osPriority_t) osPriorityAboveNormal,
-    .stack_size = 256 * 4
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = (256 + 32) * 4
 };
 /* Definitions for GpsTask */
 osThreadId_t GpsTaskHandle;
@@ -117,14 +117,14 @@ osThreadId_t GyroTaskHandle;
 const osThreadAttr_t GyroTask_attributes = {
     .name = "GyroTask",
     .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 304 * 4
+    .stack_size = 280 * 4
 };
 /* Definitions for KeylessTask */
 osThreadId_t KeylessTaskHandle;
 const osThreadAttr_t KeylessTask_attributes = {
     .name = "KeylessTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 256 * 4
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 280 * 4
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
@@ -329,13 +329,13 @@ void MX_FREERTOS_Init(void) {
   ResponseQueueHandle = osMessageQueueNew (1, sizeof(response_t), &ResponseQueue_attributes);
 
   /* creation of ReportQueue */
-  ReportQueueHandle = osMessageQueueNew(50, sizeof(report_t), &ReportQueue_attributes);
+  ReportQueueHandle = osMessageQueueNew(12, sizeof(report_t), &ReportQueue_attributes);
 
   /* creation of DriverQueue */
   DriverQueueHandle = osMessageQueueNew (1, sizeof(uint8_t), &DriverQueue_attributes);
 
   /* creation of CanRxQueue */
-  CanRxQueueHandle = osMessageQueueNew (10, sizeof(can_rx_t), &CanRxQueue_attributes);
+  CanRxQueueHandle = osMessageQueueNew(5, sizeof(can_rx_t), &CanRxQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
@@ -413,7 +413,7 @@ void StartManagerTask(void *argument)
 
   // Peripheral initialization
   CANBUS_Init();
-  BAT_DMA_Init();
+  //BAT_DMA_Init();
   EEPROM_Init();
 
   // Threads management:
@@ -931,7 +931,7 @@ void StartKeylessTask(void *argument)
           //					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
         }
       }
-      // osThreadFlagsClear(EVT_MASK);
+      osThreadFlagsClear(EVT_MASK);
     }
 
     RF_Refresh();
