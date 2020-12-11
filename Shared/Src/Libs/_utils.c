@@ -8,21 +8,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 #if (!BOOTLOADER)
+#include "Libs/_rtos_utils.h"
 #include "Libs/_handlebar.h"
-#include "Nodes/VCU.h"
 #endif
 
 /* External variables ---------------------------------------------------------*/
 #if (!BOOTLOADER)
 extern TIM_HandleTypeDef htim10;
-extern vcu_t VCU;
 extern sw_t SW;
-#endif
-
-/* Private functions declarations ---------------------------------------------*/
-#if (!BOOTLOADER)
-static uint8_t _RTOS_ValidThreadFlag(uint32_t flag);
-static uint8_t _RTOS_ValidEventFlag(uint32_t flag);
 #endif
 
 /* Public functions implementation --------------------------------------------*/
@@ -87,54 +80,6 @@ void _BuzzerWrite(uint8_t state) {
 		HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
 }
 
-void _RTOS_Debugger(uint32_t ms) {
-	static uint8_t init = 1, thCount;
-	static TickType_t lastDebug;
-	static osThreadId_t threads[20];
-	static uint32_t thLowestFreeStack[20];
-	uint32_t thFreeStack;
-	char thName[15];
-
-	// Initialize
-	if (init) {
-		init = 0;
-		lastDebug = osKernelGetTickCount();
-
-		// Get list of active threads
-		thCount = osThreadGetCount();
-		osThreadEnumerate(threads, thCount);
-
-		// Fill initial free stack
-    for (uint8_t i = 0; i < thCount; i++)
-      if (threads[i] != NULL)
-				thLowestFreeStack[i] = osThreadGetStackSpace(threads[i]);
-	}
-
-	if ((osKernelGetTickCount() - lastDebug) >= ms) {
-		lastDebug = osKernelGetTickCount();
-
-		// Debug each thread's Stack Space
-		LOG_StrLn("============ LOWEST FREE STACK ============");
-		for (uint8_t i = 0; i < thCount; i++) {
-			if (threads[i] != NULL) {
-				// check stack used
-				thFreeStack = osThreadGetStackSpace(threads[i]);
-				if (thFreeStack < thLowestFreeStack[i]) {
-					thLowestFreeStack[i] = thFreeStack;
-				}
-
-				// print
-				sprintf(thName, "%-14s", osThreadGetName(threads[i]));
-				LOG_Buf(thName, strlen(thName));
-				LOG_Str(" : ");
-				LOG_Int(thLowestFreeStack[i]);
-				LOG_StrLn(" Words");
-			}
-		}
-		LOG_StrLn("===========================================");
-	}
-}
-
 void _DummyDataGenerator(void) {
 	uint8_t *pRange = &(SW.runner.mode.sub.report[SW_M_REPORT_RANGE]);
 	uint8_t *pAverage = &(SW.runner.mode.sub.report[SW_M_REPORT_AVERAGE]);
@@ -163,32 +108,5 @@ int8_t _BitPosition(uint64_t event_id) {
 		}
 
 	return pos;
-}
-
-uint8_t _osThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout) {
-	*notif = osThreadFlagsWait(flags, options, timeout);
-
-	return _RTOS_ValidThreadFlag(*notif);
-}
-
-/* Private functions implementation --------------------------------------------*/
-static uint8_t _RTOS_ValidThreadFlag(uint32_t flag) {
-	uint8_t ret = 1;
-
-	// check is empty
-  if (!flag || (flag & (~EVT_MASK )))
-		ret = 0;
-
-	return ret;
-}
-
-static uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
-	uint8_t ret = 1;
-
-	// check is empty
-  if (!flag || (flag & (~EVENT_MASK )))
-		ret = 0;
-
-	return ret;
 }
 #endif

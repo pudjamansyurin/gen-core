@@ -6,6 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "Libs/_rtos_utils.h"
 #include "Libs/_command.h"
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
@@ -86,7 +87,7 @@ void CMD_Finger(uint8_t event, response_t *resp) {
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
-  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout))
+  if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout))
     if (notif & EVT_COMMAND_OK)
 			resp->data.code = RESPONSE_STATUS_OK;
 }
@@ -98,7 +99,7 @@ void CMD_KeylessPairing(response_t *resp) {
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
-  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT))
+  if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT))
     if (notif & EVT_COMMAND_OK)
       resp->data.code = RESPONSE_STATUS_OK;
 }

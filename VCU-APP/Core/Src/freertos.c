@@ -26,6 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "Libs/_rtos_utils.h"
 #include "Libs/_command.h"
 #include "Libs/_firmware.h"
 #include "Libs/_simcom.h"
@@ -858,7 +859,7 @@ void StartKeylessTask(void *argument)
     VCU.d.task.keyless.wakeup = _GetTickMS() / 1000;
 
     // Check response
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
+    if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
       if (notif & EVT_KEYLESS_RESET) {
         // AES_Init();
@@ -966,7 +967,7 @@ void StartFingerTask(void *argument)
     VCU.d.task.finger.wakeup = _GetTickMS() / 1000;
 
     // check if user put finger
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+    if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       if (notif & EVT_FINGER_PLACED) {
         id = Finger_AuthFast();
         // Finger is registered
@@ -976,10 +977,9 @@ void StartFingerTask(void *argument)
             id = DRIVER_ID_NONE;
 
           VCU.d.driver_id = id;
-
-          // Handle bounce effect
-          _DelayMS(5000);
         }
+        // Handle bounce effect
+        _DelayMS(5000);
       }
 
       if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
@@ -1028,7 +1028,7 @@ void StartAudioTask(void *argument)
     VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
 
     // wait with timeout
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+    if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       // Beep command
       if (notif & EVT_AUDIO_BEEP) {
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
@@ -1082,7 +1082,7 @@ void StartSwitchTask(void *argument)
     VCU.d.task.switches.wakeup = _GetTickMS() / 1000;
 
     // wait forever
-    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
+    if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
       // handle bounce effect
       _DelayMS(50);
 
@@ -1239,7 +1239,7 @@ void StartHmi2PowerTask(void *argument)
   for (;;) {
     VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
 
-    if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
+    if (_RTOS_ThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
 
       if (HMI2.d.power)
         while (!HMI2.d.started)

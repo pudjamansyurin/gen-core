@@ -6,6 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "Libs/_rtos_utils.h"
 #include "Libs/_reporter.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_simcom.h"
@@ -171,7 +172,7 @@ uint8_t Packet_Pending(payload_t *payload) {
 
 	// Handle Full Buffer
   if (payload->type == PAYLOAD_REPORT)
-    if (_osThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
+    if (_RTOS_ThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
 			payload->pending = 0;
 
 	// Check logs
