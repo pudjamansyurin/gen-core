@@ -77,7 +77,6 @@ void GPS_CalculateOdometer(void) {
 
 void GPS_CalculateSpeed(void) {
   VCU.d.speed = GPS.speed_kph;
-  VCU.d.volume = VCU.d.speed * 100 / MCU_SPEED_KPH_MAX;
 }
 
 void GPS_Debugger(void) {

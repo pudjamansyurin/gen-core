@@ -168,7 +168,6 @@
 
 #define CMD_AUDIO_BEEP                (uint8_t) 0
 #define CMD_AUDIO_MUTE                (uint8_t) 1
-#define CMD_AUDIO_VOL                 (uint8_t) 2
 
 #define CMD_FINGER_ADD                (uint8_t) 0
 #define CMD_FINGER_DEL                (uint8_t) 1

@@ -73,9 +73,6 @@ void CMD_AudioMute(command_t *cmd) {
 	osThreadFlagsSet(AudioTaskHandle, flag);
 }
 
-void CMD_AudioVol(command_t *cmd) {
-	VCU.d.volume = (uint8_t) cmd->data.value;
-}
 
 void CMD_Finger(uint8_t event, response_t *resp) {
 	uint32_t notif, timeout;

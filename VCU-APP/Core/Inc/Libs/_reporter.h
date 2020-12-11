@@ -63,7 +63,7 @@ typedef struct __attribute__((packed)) {
       uint8_t speed;
       uint32_t odometer;
       uint8_t signal;
-      uint8_t backup_voltage;
+      uint8_t bat;
       struct __attribute__((packed)) {
         int8_t pitch;
         int8_t roll;

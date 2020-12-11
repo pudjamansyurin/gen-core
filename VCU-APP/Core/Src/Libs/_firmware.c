@@ -8,23 +8,22 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
-#include "DMA/_dma_battery.h"
 #include "Nodes/HMI1.h"
 
 /* External variables ---------------------------------------------------------*/
-extern uint16_t BACKUP_VOLTAGE;
 extern uint16_t FOTA_VERSION;
 extern IAP_TYPE FOTA_TYPE;
 extern hmi1_t HMI1;
+extern vcu_t VCU;
 extern osMessageQueueId_t ResponseQueueHandle;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
   uint16_t version = VCU_VERSION;
 
-  if (BACKUP_VOLTAGE < FOTA_MIN_VOLTAGE)
+  if (VCU.d.bat < FOTA_MIN_VOLTAGE)
     sprintf(message, "Battery %u mV (< %u mV)",
-        BACKUP_VOLTAGE, FOTA_MIN_VOLTAGE - BACKUP_VOLTAGE);
+        VCU.d.bat, FOTA_MIN_VOLTAGE - VCU.d.bat);
   else {
     if (type == IAP_HMI) {
       if (HMI1.d.version == 0) {

@@ -14,7 +14,7 @@ static void FLASHER_ClearErrors(void);
 static uint8_t FLASHER_WriteByte(uint8_t *ptr, uint32_t size, uint32_t address, uint32_t end);
 static uint8_t FLASHER_Erase(uint32_t FirstSector, uint32_t NbOfSectors);
 static uint32_t FLASHER_GetSector(uint32_t Address);
-static uint32_t FLASHER_GetSectorSize(uint32_t Sector);
+//static uint32_t FLASHER_GetSectorSize(uint32_t Sector);
 
 /* Public functions implementation ---------------------------------------------*/
 static void FLASHER_ClearErrors(void) {
@@ -185,21 +185,21 @@ static uint32_t FLASHER_GetSector(uint32_t Address) {
  * @param  None
  * @retval The size of a given sector
  */
-static uint32_t FLASHER_GetSectorSize(uint32_t Sector) {
-    uint32_t sectorsize = 0x00;
-
-    if ((Sector == FLASH_SECTOR_0) || (Sector == FLASH_SECTOR_1) || (Sector == FLASH_SECTOR_2)
-            || (Sector == FLASH_SECTOR_3)) {
-        sectorsize = 16 * 1024;
-    }
-    else if (Sector == FLASH_SECTOR_4) {
-        sectorsize = 64 * 1024;
-    }
-    else {
-        sectorsize = 128 * 1024;
-    }
-    return sectorsize;
-}
+//static uint32_t FLASHER_GetSectorSize(uint32_t Sector) {
+//    uint32_t sectorsize = 0x00;
+//
+//    if ((Sector == FLASH_SECTOR_0) || (Sector == FLASH_SECTOR_1) || (Sector == FLASH_SECTOR_2)
+//            || (Sector == FLASH_SECTOR_3)) {
+//        sectorsize = 16 * 1024;
+//    }
+//    else if (Sector == FLASH_SECTOR_4) {
+//        sectorsize = 64 * 1024;
+//    }
+//    else {
+//        sectorsize = 128 * 1024;
+//    }
+//    return sectorsize;
+//}
 
 /* ============================================================= */
 uint8_t FLASHER_EraseBkpArea(void) {

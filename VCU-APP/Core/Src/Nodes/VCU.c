@@ -37,6 +37,7 @@ vcu_t VCU = {
     VCU_ReadEvent,
     VCU_CheckPower5v,
     VCU_CheckKnob,
+    VCU_SpeedToVolume,
     VCU_SetOdometer,
 };
 
@@ -52,7 +53,7 @@ void VCU_Init(void) {
 
   VCU.d.interval = RPT_INTERVAL_SIMPLE;
   VCU.d.driver_id = DRIVER_ID_NONE;
-  VCU.d.volume = 0;
+  VCU.d.bat = 0;
   VCU.d.speed = 0;
   VCU.d.odometer = 0;
   VCU.d.motion.pitch = 0;
@@ -126,6 +127,10 @@ void VCU_CheckPower5v(void) {
 
 void VCU_CheckKnob(void) {
   VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+}
+
+uint16_t VCU_SpeedToVolume(void) {
+  return VCU.d.speed * 100 / MCU_SPEED_KPH_MAX ;
 }
 
 void VCU_SetOdometer(uint8_t increment) {
