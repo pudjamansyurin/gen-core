@@ -26,8 +26,6 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
   do {
     LOG_StrLn("NRF:Init");
 
-    // reset peripheral
-    HAL_SPI_MspDeInit(&hspi1);
 
     // turn on the mosfet
     HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 0);
@@ -35,6 +33,8 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
     HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
     _DelayMS(1000);
 
+    // reset peripheral
+    HAL_SPI_MspDeInit(&hspi1);
     HAL_SPI_MspInit(&hspi1);
 
     result = nrf_check(dev);
@@ -74,7 +74,7 @@ NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config) {
   config->retransmit_delay = 0x0F; // 4000us, LSB:250us
   config->rf_channel = 110;
   config->spi = &hspi1;
-  config->spi_timeout = 100; // milliseconds
+  config->spi_timeout = 3; // milliseconds
   config->csn_port = INT_KEYLESS_CSN_GPIO_Port;
   config->csn_pin = INT_KEYLESS_CSN_Pin;
   config->ce_port = INT_KEYLESS_CE_GPIO_Port;
@@ -641,16 +641,9 @@ NRF_RESULT nrf_send_packet(nrf24l01 *dev, const uint8_t *data) {
   ce_set(dev);
 
   // wait for end of transmition
-  //  while (dev->tx_busy) {
-  //    _DelayMS(1);
-  //  };
-  uint32_t tick = _GetTickMS();
-  while (_GetTickMS() - tick < 3) {
-    if (!dev->tx_busy)
-      break;
-
+  while (dev->tx_busy) {
     _DelayMS(1);
-  }
+  };
 
   ce_reset(dev);
   nrf_rx_tx_control(dev, NRF_STATE_RX);
@@ -667,36 +660,23 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
   nrf_write_tx_payload_noack(dev, data);
   ce_set(dev);
 
+  _DelayMS(2);
   // wait for end of transmition
-  uint32_t tick = _GetTickMS();
-  while (_GetTickMS() - tick < 2) {
-    if (!dev->tx_busy)
-      break;
-
-    _DelayMS(1);
-  }
-
-  //  ce_reset(dev);
-  //  nrf_rx_tx_control(dev, NRF_STATE_RX);
-  //  ce_set(dev);
-
-  return dev->tx_result;
-}
-
-NRF_RESULT nrf_receive_packet(nrf24l01 *dev, uint8_t *data, uint16_t ms) {
-  dev->rx_busy = 1;
+//  uint32_t tick = _GetTickMS();
+//  while (_GetTickMS() - tick <= 2) {
+//    if (!dev->tx_busy)
+//      break;
+//    _DelayMS(1);
+//  }
+//
+  if (dev->tx_busy)
+    nrf_flush_tx(dev);
 
   ce_reset(dev);
   nrf_rx_tx_control(dev, NRF_STATE_RX);
   ce_set(dev);
 
-  // wait for reception
-  TickType_t tick = _GetTickMS();
-  while (_GetTickMS() - tick < ms)
-    if (!dev->rx_busy)
-      break;
-
-  return !dev->rx_busy;
+  return dev->tx_result;
 }
 
 NRF_RESULT nrf_push_packet(nrf24l01 *dev, const uint8_t *data) {
@@ -713,6 +693,24 @@ NRF_RESULT nrf_push_packet(nrf24l01 *dev, const uint8_t *data) {
   ce_set(dev);
 
   return NRF_OK;
+}
+
+NRF_RESULT nrf_receive_packet(nrf24l01 *dev, uint8_t *data, uint16_t ms) {
+  dev->rx_busy = 1;
+
+  ce_reset(dev);
+  nrf_rx_tx_control(dev, NRF_STATE_RX);
+  ce_set(dev);
+
+  // wait for reception
+  TickType_t tick = _GetTickMS();
+  while (_GetTickMS() - tick < ms) {
+    if (!dev->rx_busy)
+      break;
+    _DelayMS(1);
+  }
+
+  return !dev->rx_busy;
 }
 
 void nrf_irq_handler(nrf24l01 *dev) {
@@ -745,8 +743,8 @@ void nrf_irq_handler(nrf24l01 *dev) {
     status |= 1 << 5;      // clear the interrupt flag
 
     ce_reset(dev);
-    nrf_rx_tx_control(dev, NRF_STATE_RX);
-    dev->state = NRF_STATE_RX;
+    //    nrf_rx_tx_control(dev, NRF_STATE_RX);
+    //    dev->state = NRF_STATE_RX;
     nrf_write_register(dev, NRF_STATUS, &status);
     ce_set(dev);
 
@@ -761,8 +759,8 @@ void nrf_irq_handler(nrf24l01 *dev) {
     nrf_power_up(dev, 0); // power down
     nrf_power_up(dev, 1); // power up
 
-    nrf_rx_tx_control(dev, NRF_STATE_RX);
-    dev->state = NRF_STATE_RX;
+    //    nrf_rx_tx_control(dev, NRF_STATE_RX);
+    //    dev->state = NRF_STATE_RX;
     nrf_write_register(dev, NRF_STATUS, &status);
     ce_set(dev);
 

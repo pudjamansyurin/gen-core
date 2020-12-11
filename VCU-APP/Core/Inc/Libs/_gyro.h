@@ -20,11 +20,17 @@
 #define RAD2DEG(rad)                             ((rad) * 180.0 / M_PI)
 
 /* Exported struct ------------------------------------------------------------*/
-typedef struct {
-	float yaw;
-	float pitch;
-	float roll;
+typedef struct __attribute__((packed)) {
+  int8_t yaw;
+  int8_t pitch;
+  int8_t roll;
 } motion_t;
+
+typedef struct {
+  float yaw;
+  float pitch;
+  float roll;
+} motion_float_t;
 
 typedef struct {
 	int32_t x;
@@ -51,7 +57,7 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void GYRO_Init(void);
-mems_decision_t GYRO_Decision(uint16_t sample);
+mems_decision_t GYRO_Decision(uint16_t sample, motion_t *motion);
 void Gyro_Debugger(mems_decision_t *decider);
 
 #endif /* GYRO_H_ */

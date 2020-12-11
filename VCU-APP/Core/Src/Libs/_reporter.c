@@ -85,8 +85,6 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 
 		report->data.opt.vcu.speed = VCU.d.speed;
 		report->data.opt.vcu.odometer = VCU.d.odometer;
-		report->data.opt.vcu.motion.pitch = VCU.d.motion.pitch;
-		report->data.opt.vcu.motion.roll = VCU.d.motion.roll;
 
 		report->data.opt.vcu.trip.a = pSub->trip[SW_M_TRIP_A];
 		report->data.opt.vcu.trip.b = pSub->trip[SW_M_TRIP_B];
@@ -102,7 +100,8 @@ void Report_Capture(FRAME_TYPE frame, report_t *report) {
 			report->data.opt.bms.pack[i].temperature = (BMS.d.pack[i].temperature + 40) * 10;
 		}
 
-    // RTOS data
+    // Others data
+    memcpy(&(report->data.opt.vcu.motion), &(VCU.d.motion), sizeof(motion_t));
     memcpy(&(report->data.opt.vcu.task), &(VCU.d.task), sizeof(rtos_task_t));
 	}
 }

@@ -23,8 +23,8 @@ typedef enum {
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
-  uint32_t wakeup;
-  uint32_t stack;
+  uint8_t wakeup;
+  uint16_t stack;
 } task_t;
 
 typedef struct __attribute__((packed)) {
@@ -50,10 +50,7 @@ typedef struct {
   uint8_t speed;
   uint16_t bat;
   uint32_t odometer;
-  struct {
-    int8_t pitch;
-    int8_t roll;
-  } motion;
+  motion_t motion;
   rtc_t rtc;
   uint64_t events;
   struct {

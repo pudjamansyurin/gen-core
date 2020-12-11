@@ -12,7 +12,7 @@
 #include "_defines.h"
 
 /* Constants -----------------------------------------------------------------*/
-#define AVERAGE_SZ        (uint8_t) 10
+#define AVERAGE_SZ        (uint8_t) 100
 
 #define ADC_MAX_VALUE       (float) 4095   // 12 bit
 #define REF_MAX_VOLTAGE     (float) 3300   // mV

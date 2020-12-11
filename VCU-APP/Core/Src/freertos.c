@@ -79,176 +79,176 @@ extern sw_t SW;
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
-  .name = "ManagerTask",
-  .priority = (osPriority_t) osPriorityRealtime,
-  .stack_size = 288 * 4
+    .name = "ManagerTask",
+    .priority = (osPriority_t) osPriorityRealtime,
+    .stack_size = 256 * 4
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
 const osThreadAttr_t IotTask_attributes = {
-  .name = "IotTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 416 * 4
+    .name = "IotTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 416 * 4
 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
 const osThreadAttr_t ReporterTask_attributes = {
-  .name = "ReporterTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 304 * 4
+    .name = "ReporterTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 304 * 4
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
 const osThreadAttr_t CommandTask_attributes = {
-  .name = "CommandTask",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 256 * 4
+    .name = "CommandTask",
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 256 * 4
 };
 /* Definitions for GpsTask */
 osThreadId_t GpsTaskHandle;
 const osThreadAttr_t GpsTask_attributes = {
-  .name = "GpsTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+    .name = "GpsTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for GyroTask */
 osThreadId_t GyroTaskHandle;
 const osThreadAttr_t GyroTask_attributes = {
-  .name = "GyroTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 304 * 4
+    .name = "GyroTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 304 * 4
 };
 /* Definitions for KeylessTask */
 osThreadId_t KeylessTaskHandle;
 const osThreadAttr_t KeylessTask_attributes = {
-  .name = "KeylessTask",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 256 * 4
+    .name = "KeylessTask",
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 256 * 4
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
 const osThreadAttr_t FingerTask_attributes = {
-  .name = "FingerTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+    .name = "FingerTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for AudioTask */
 osThreadId_t AudioTaskHandle;
 const osThreadAttr_t AudioTask_attributes = {
-  .name = "AudioTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 240 * 4
+    .name = "AudioTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 240 * 4
 };
 /* Definitions for SwitchTask */
 osThreadId_t SwitchTaskHandle;
 const osThreadAttr_t SwitchTask_attributes = {
-  .name = "SwitchTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+    .name = "SwitchTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
 const osThreadAttr_t CanRxTask_attributes = {
-  .name = "CanRxTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+    .name = "CanRxTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 229 * 4
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
-  .name = "CanTxTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 288 * 4
+    .name = "CanTxTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 230 * 4
 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
 const osThreadAttr_t Hmi2PowerTask_attributes = {
-  .name = "Hmi2PowerTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 160 * 4
+    .name = "Hmi2PowerTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 160 * 4
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
 const osMessageQueueAttr_t CommandQueue_attributes = {
-  .name = "CommandQueue"
+    .name = "CommandQueue"
 };
 /* Definitions for ResponseQueue */
 osMessageQueueId_t ResponseQueueHandle;
 const osMessageQueueAttr_t ResponseQueue_attributes = {
-  .name = "ResponseQueue"
+    .name = "ResponseQueue"
 };
 /* Definitions for ReportQueue */
 osMessageQueueId_t ReportQueueHandle;
 const osMessageQueueAttr_t ReportQueue_attributes = {
-  .name = "ReportQueue"
+    .name = "ReportQueue"
 };
 /* Definitions for DriverQueue */
 osMessageQueueId_t DriverQueueHandle;
 const osMessageQueueAttr_t DriverQueue_attributes = {
-  .name = "DriverQueue"
+    .name = "DriverQueue"
 };
 /* Definitions for CanRxQueue */
 osMessageQueueId_t CanRxQueueHandle;
 const osMessageQueueAttr_t CanRxQueue_attributes = {
-  .name = "CanRxQueue"
+    .name = "CanRxQueue"
 };
 /* Definitions for AudioMutex */
 osMutexId_t AudioMutexHandle;
 const osMutexAttr_t AudioMutex_attributes = {
-  .name = "AudioMutex"
+    .name = "AudioMutex"
 };
 /* Definitions for LogMutex */
 osMutexId_t LogMutexHandle;
 const osMutexAttr_t LogMutex_attributes = {
-  .name = "LogMutex"
+    .name = "LogMutex"
 };
 /* Definitions for CanTxMutex */
 osMutexId_t CanTxMutexHandle;
 const osMutexAttr_t CanTxMutex_attributes = {
-  .name = "CanTxMutex"
+    .name = "CanTxMutex"
 };
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
 const osMutexAttr_t EepromMutex_attributes = {
-  .name = "EepromMutex"
+    .name = "EepromMutex"
 };
 /* Definitions for RtcMutex */
 osMutexId_t RtcMutexHandle;
 const osMutexAttr_t RtcMutex_attributes = {
-  .name = "RtcMutex"
+    .name = "RtcMutex"
 };
 /* Definitions for CrcMutex */
 osMutexId_t CrcMutexHandle;
 const osMutexAttr_t CrcMutex_attributes = {
-  .name = "CrcMutex"
+    .name = "CrcMutex"
 };
 /* Definitions for AesMutex */
 osMutexId_t AesMutexHandle;
 const osMutexAttr_t AesMutex_attributes = {
-  .name = "AesMutex"
+    .name = "AesMutex"
 };
 /* Definitions for SimcomRecMutex */
 osMutexId_t SimcomRecMutexHandle;
 const osMutexAttr_t SimcomRecMutex_attributes = {
-  .name = "SimcomRecMutex",
-  .attr_bits = osMutexRecursive,
+    .name = "SimcomRecMutex",
+    .attr_bits = osMutexRecursive,
 };
 /* Definitions for FingerRecMutex */
 osMutexId_t FingerRecMutexHandle;
 const osMutexAttr_t FingerRecMutex_attributes = {
-  .name = "FingerRecMutex",
-  .attr_bits = osMutexRecursive,
+    .name = "FingerRecMutex",
+    .attr_bits = osMutexRecursive,
 };
 /* Definitions for KlessRecMutex */
 osMutexId_t KlessRecMutexHandle;
 const osMutexAttr_t KlessRecMutex_attributes = {
-  .name = "KlessRecMutex",
-  .attr_bits = osMutexRecursive,
+    .name = "KlessRecMutex",
+    .attr_bits = osMutexRecursive,
 };
 /* Definitions for GlobalEvent */
 osEventFlagsId_t GlobalEventHandle;
 const osEventFlagsAttr_t GlobalEvent_attributes = {
-  .name = "GlobalEvent"
+    .name = "GlobalEvent"
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -278,17 +278,17 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName);
 /* USER CODE BEGIN 4 */
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName)
 {
-   /* Run time stack overflow checking is performed if
+  /* Run time stack overflow checking is performed if
    configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
    called if a stack overflow is detected. */
 }
 /* USER CODE END 4 */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
@@ -817,7 +817,7 @@ void StartGyroTask(void *argument)
     lastWake = _GetTickMS();
 
     // Read all accelerometer, gyroscope (average)
-    decider = GYRO_Decision(50);
+    decider = GYRO_Decision(50, &(VCU.d.motion));
     // Gyro_Debugger(&decider);
 
     // Check accelerometer, happens when impact detected
@@ -1066,7 +1066,6 @@ void StartAudioTask(void *argument)
 
     // update volume
     AUDIO_OUT_SetVolume(VCU.SpeedToVolume());
-    //        AUDIO_OUT_SetVolume(10);
   }
   /* USER CODE END StartAudioTask */
 }
@@ -1271,35 +1270,39 @@ void StartHmi2PowerTask(void *argument)
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  if (osKernelGetState() == osKernelRunning) {
-    // handle BMS_IRQ (is 5v exist?)
-    if (GPIO_Pin == EXT_REG_5V_IRQ_Pin)
-      osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_REG_5V_IRQ);
+  if (osKernelGetState() != osKernelRunning)
+    return;
 
-    // handle Starter Button
-    if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
-      osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_STARTER_IRQ);
+  if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY)
+    return;
 
-    // handle KNOB IRQ (Power control for HMI1 & HMI2)
-    if (GPIO_Pin == EXT_KNOB_IRQ_Pin)
-      osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_KNOB_IRQ);
+  // handle BMS_IRQ (is 5v exist?)
+  if (GPIO_Pin == EXT_REG_5V_IRQ_Pin)
+    osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_REG_5V_IRQ);
 
-    // handle Finger IRQ
-    if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
-      osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
+  // handle Starter Button
+  if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
+    osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_STARTER_IRQ);
 
-    // handle NRF24 IRQ
-    if (GPIO_Pin == INT_KEYLESS_IRQ_Pin)
-      RF_IrqHandler();
+  // handle KNOB IRQ (Power control for HMI1 & HMI2)
+  if (GPIO_Pin == EXT_KNOB_IRQ_Pin)
+    osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_KNOB_IRQ);
 
-    // handle Switches EXTI
-    for (uint8_t i = 0; i < SW_K_TOTAL; i++)
-      if (GPIO_Pin == SW.list[i].pin) {
-        osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_TRIGGERED);
-        break;
-      }
+  // handle Finger IRQ
+  if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
+    osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
 
-  }
+  // handle NRF24 IRQ
+  if (GPIO_Pin == INT_KEYLESS_IRQ_Pin)
+    RF_IrqHandler();
+
+  // handle Switches EXTI
+  for (uint8_t i = 0; i < SW_K_TOTAL; i++)
+    if (GPIO_Pin == SW.list[i].pin) {
+      osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_TRIGGERED);
+      break;
+    }
+
 }
 /* USER CODE END Application */
 

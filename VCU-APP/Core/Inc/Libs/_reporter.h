@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Libs/_gyro.h"
 #include "Nodes/VCU.h"
 
 /* Exported enum ---------------------------------------------------------------*/
@@ -64,10 +65,7 @@ typedef struct __attribute__((packed)) {
       uint32_t odometer;
       uint8_t signal;
       uint8_t bat;
-      struct __attribute__((packed)) {
-        int8_t pitch;
-        int8_t roll;
-      } motion;
+      motion_t motion;
       struct __attribute__((packed)) {
         uint8_t range;
         uint8_t efficiency;

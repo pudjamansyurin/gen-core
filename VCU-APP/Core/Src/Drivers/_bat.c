@@ -25,7 +25,7 @@ void BAT_Init(void) {
 void BAT_ScanValue(uint16_t *bat) {
   uint16_t value;
 
-  HAL_ADC_PollForConversion(&hadc1, 50);
+  HAL_ADC_PollForConversion(&hadc1, 10);
   value = HAL_ADC_GetValue(&hadc1);
 
   // change to battery value

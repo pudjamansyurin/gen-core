@@ -56,8 +56,11 @@ void VCU_Init(void) {
   VCU.d.bat = 0;
   VCU.d.speed = 0;
   VCU.d.odometer = 0;
+
+  VCU.d.motion.yaw = 0;
   VCU.d.motion.pitch = 0;
   VCU.d.motion.roll = 0;
+
   VCU.d.events = 0;
 
   VCU.d.tick.keyless = 0;
@@ -65,19 +68,6 @@ void VCU_Init(void) {
 
   VCU.d.seq_id.report = 0;
   VCU.d.seq_id.response = 0;
-
-  //  VCU.d.task.manager = 0;
-  //  VCU.d.task.iot = 0;
-  //  VCU.d.task.reporter = 0;
-  //  VCU.d.task.command = 0;
-  //  VCU.d.task.gps = 0;
-  //  VCU.d.task.gyro = 0;
-  //  VCU.d.task.keyless = 0;
-  //  VCU.d.task.finger = 0;
-  //  VCU.d.task.audio = 0;
-  //  VCU.d.task.canRx = 0;
-  //  VCU.d.task.canTx = 0;
-  //  VCU.d.task.hmi2Power = 0;
 }
 
 void VCU_SetEvent(uint64_t event_id, uint8_t value) {
