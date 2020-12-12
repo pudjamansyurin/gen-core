@@ -19,6 +19,8 @@ static nmea_t nmea;
 void GPS_Init(void) {
 	uint32_t tick;
 
+  UBLOX_DMA_Init();
+
 	// Inititalize Module
 	do {
 		LOG_StrLn("GPS:Init");
@@ -50,9 +52,9 @@ uint8_t GPS_Capture(gps_t *gps) {
 	gps->latitude = nmea.latitude;
 	gps->longitude = nmea.longitude;
 	gps->heading = nmea.coarse;
+  gps->sat_in_use = nmea.sats_in_use;
 	gps->speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
 	gps->speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
-  gps->sat_in_use = nmea.sats_in_use;
   gps->fix = nmea.fix;
 
   return gps->fix > 0;

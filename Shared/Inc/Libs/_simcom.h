@@ -71,6 +71,7 @@ typedef struct {
 } sim_t;
 
 /* Public functions prototype ------------------------------------------------*/
+void Simcom_Init(void);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Response(char *str);
 SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size);

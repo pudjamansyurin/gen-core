@@ -143,6 +143,8 @@ void VCU_SetOdometer(uint8_t increment) {
     // accumulate (save permanently)
     EEPROM_Odometer(EE_CMD_W, VCU.d.odometer);
   }
+
+  HBAR_AccumulateSubTrip(increment);
 }
 
 /* ====================================== CAN TX =================================== */

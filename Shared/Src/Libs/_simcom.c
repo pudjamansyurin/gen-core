@@ -48,6 +48,9 @@ static SIMCOM_RESULT Simcom_Power(void);
 static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char *res);
 static void Simcom_Sleep(uint8_t state);
 static void Simcom_BeforeTransmitHook(void);
+static uint8_t State_Timeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p);
+static uint8_t State_LockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState);
+static uint8_t State_PoorSignal(void);
 #if (!BOOTLOADER)
 static SIMCOM_RESULT Simcom_ProcessCommando(command_t *command);
 static uint8_t Simcom_CommandoIRQ(void);
@@ -70,64 +73,34 @@ char* Simcom_Response(char *str) {
 	return strstr(SIMCOM_UART_RX, str);
 }
 
+void Simcom_Init(void) {
+  SIMCOM_DMA_Init();
+  Simcom_SetState(SIM_STATE_READY, 0);
+}
+
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
 	uint32_t tick = _GetTickMS();
-	static uint8_t init = 1;
-	uint8_t depth = 3;
+	uint8_t depthState = 3;
 	SIMCOM_RESULT p;
 
 	Simcom_Lock();
 	// Handle SIMCOM state properly
 	do {
-		// Handle timeout
-		if (timeout) {
-			// Update tick
-			if (p == SIM_RESULT_OK)
-				tick = _GetTickMS();
-
-			// Timeout expired
-			if ((_GetTickMS() - tick) > timeout) {
-				LOG_StrLn("Simcom:StateTimeout");
-				break;
-			}
-		}
-		// Handle locked-loop
-		if (SIM.state < lastState) {
-			if (!--depth) {
-				SIM.state = SIM_STATE_DOWN;
-				break;
-			}
-			LOG_Str("Simcom:LockedLoop = ");
-			LOG_Int(depth);
-			LOG_Enter();
-		}
-		// Handle signal strength
-		if (SIM.state == SIM_STATE_DOWN)
-			SIM.signal = 0;
-		else {
-			Simcom_IdleJob(NULL);
-			if (SIM.state >= SIM_STATE_GPRS_ON) {
-				// Force to exit loop
-				if (SIM.signal < 15) {
-					LOG_StrLn("Simcom:PoorSignal");
-					break;
-				}
-			}
-		}
+    if (State_Timeout(&tick, timeout, p))
+      break;
+    if (State_LockedLoop(&lastState, &depthState))
+      break;
+    if (State_PoorSignal())
+      break;
 
 		// Set value
 		p = SIM_RESULT_OK;
-		lastState = SIM.state;
+
 		// Handle states
 		switch (SIM.state) {
 			case SIM_STATE_DOWN:
-				// only executed at power up
-				if (init) {
-					init = 0;
-					LOG_StrLn("Simcom:Init");
-				} else
-					LOG_StrLn("Simcom:Restarting...");
+				LOG_StrLn("Simcom:Init");
 
 				// power up the module
 				p = Simcom_Power();
@@ -437,7 +410,6 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
 
 	// Check IP Status
 	AT_ConnectionStatusSingle(&(SIM.ip_status));
-	// combine the size
 	sprintf(str, "AT+CIPSEND=%d\r", size);
 
 	Simcom_Lock();
@@ -731,4 +703,52 @@ static void Simcom_BeforeTransmitHook(void) {
 	//  LOG_Enter();
 	//  LOG_StrLn("======================================");
 
+}
+
+static uint8_t State_Timeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p) {
+	// Handle timeout
+	if (timeout) {
+		// Update tick
+		if (p == SIM_RESULT_OK)
+      *tick = _GetTickMS();
+
+		// Timeout expired
+    if ((_GetTickMS() - *tick) > timeout) {
+			LOG_StrLn("Simcom:StateTimeout");
+      return 1;
+		}
+	}
+  return 0;
+}
+
+static uint8_t State_LockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState) {
+	// Handle locked-loop
+	if (SIM.state < *lastState) {
+		*depthState -= 1;
+		if (!(*depthState)) {
+			SIM.state = SIM_STATE_DOWN;
+      return 1;
+		}
+		LOG_Str("Simcom:LockedLoop = ");
+		LOG_Int(*depthState);
+		LOG_Enter();
+	}
+	*lastState = SIM.state;
+  return 0;
+}
+
+static uint8_t State_PoorSignal(void) {
+	// Handle signal strength
+	if (SIM.state == SIM_STATE_DOWN)
+		SIM.signal = 0;
+	else {
+		Simcom_IdleJob(NULL);
+		if (SIM.state >= SIM_STATE_GPRS_ON) {
+			if (SIM.signal < 15) {
+				LOG_StrLn("Simcom:PoorSignal");
+        return 1;
+			}
+		}
+	}
+  return 0;
 }

@@ -73,7 +73,6 @@ extern vcu_t VCU;
 extern bms_t BMS;
 extern hmi1_t HMI1;
 extern hmi2_t HMI2;
-
 extern sw_t SW;
 /* USER CODE END Variables */
 /* Definitions for ManagerTask */
@@ -430,9 +429,9 @@ void StartManagerTask(void *argument)
   HMI2.Init();
 
   // Peripheral initialization
+  EEPROM_Init();
   CANBUS_Init();
   BAT_Init();
-  EEPROM_Init();
 
   // Threads management:
   //  osThreadSuspend(IotTaskHandle);
@@ -475,29 +474,27 @@ void StartManagerTask(void *argument)
 
     // _DummyDataGenerator();
 
-    // BAT_Debugger();
     BAT_ScanValue(&(VCU.d.bat));
 
     // Other stuffs
-    HMI1.d.state.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
     HMI1.d.state.overheat = BMS.d.overheat;
-    HMI1.d.state.warning = BMS.d.warning ||
-        VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
+    HMI1.d.state.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
+    HMI1.d.state.warning = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
 
     // FIXME: use vehicle_state
     VCU.d.state.start = VCU.d.state.knob;
 
-    VCU.d.state.run = (
-        VCU.d.state.start &&
+    VCU.d.state.run = VCU.d.state.override ||
+        (
+            VCU.d.state.start &&
             //            VCU.d.driver_id != DRIVER_ID_NONE &&
             !HMI1.d.state.unkeyless
-        ) ||
-        VCU.d.state.override;
+        );
 
     // Handle overheat
     HAL_GPIO_WritePin(EXT_BMS_FAN_PWR_GPIO_Port, EXT_BMS_FAN_PWR_Pin, BMS.d.overheat);
 
-    osDelayUntil(lastWake + 1000);
+    osDelayUntil(lastWake + 1111);
   }
   /* USER CODE END StartManagerTask */
 }
@@ -529,9 +526,8 @@ void StartIotTask(void *argument)
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-  // Start simcom module
-  SIMCOM_DMA_Init();
-  Simcom_SetState(SIM_STATE_SERVER_ON, 0);
+  // Initialize
+  Simcom_Init();
 
   /* Infinite loop */
   for (;;) {
@@ -578,6 +574,7 @@ void StartReporterTask(void *argument)
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
+  // Initialize
   Report_Init(FR_SIMPLE, &report, &(VCU.d.seq_id.report));
 
   /* Infinite loop */
@@ -638,7 +635,7 @@ void StartCommandTask(void *argument)
     VCU.d.task.command.wakeup = _GetTickMS() / 1000;
     // get command in queue
     if (osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever) == osOK) {
-      Command_Debugger(&command);
+      // Command_Debugger(&command);
 
       // default command response
       response.data.code = RESPONSE_STATUS_OK;
@@ -767,13 +764,12 @@ void StartGpsTask(void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   TickType_t lastWake;
-  uint8_t increment;
+  uint8_t movement;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
-  UBLOX_DMA_Init();
   GPS_Init();
 
   /* Infinite loop */
@@ -782,13 +778,13 @@ void StartGpsTask(void *argument)
     lastWake = _GetTickMS();
 
     GPS_Capture(&(VCU.d.gps));
-    VCU.d.speed = GPS_CalculateSpeed(&(VCU.d.gps));
-    increment = GPS_CalculateOdometer(&(VCU.d.gps));
-    if (increment) {
-      VCU.SetOdometer(increment);
-      HBAR_AccumulateSubTrip(increment);
-    }
     // GPS_Debugger();
+
+    VCU.d.speed = GPS_CalculateSpeed(&(VCU.d.gps));
+
+    movement = GPS_CalculateOdometer(&(VCU.d.gps));
+    if (movement)
+      VCU.SetOdometer(movement);
 
     osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
   }
@@ -806,9 +802,9 @@ void StartGyroTask(void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
   uint32_t flag;
+  uint8_t fallen;
   TickType_t lastWake;
   mems_decision_t decider;
-  uint8_t fallen;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -869,7 +865,6 @@ void StartKeylessTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // initialization
-  AES_Init();
   RF_Init(&(VCU.d.unit_id));
 
   //  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
@@ -880,10 +875,8 @@ void StartKeylessTask(void *argument)
     // Check response
     if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
-      if (notif & EVT_KEYLESS_RESET) {
-        AES_Init();
+      if (notif & EVT_KEYLESS_RESET)
         RF_Init(&(VCU.d.unit_id));
-      }
 
       // handle Pairing
       if (notif & EVT_KEYLESS_PAIRING) {
@@ -899,6 +892,7 @@ void StartKeylessTask(void *argument)
         if (RF_ValidateCommand(&command)) {
           // update heart-beat
           VCU.d.tick.keyless = _GetTickMS();
+
           // response pairing command
           if (tick_pairing > 0) {
             if (_GetTickMS() - tick_pairing < 5000)
@@ -970,15 +964,14 @@ void StartKeylessTask(void *argument)
 void StartFingerTask(void *argument)
 {
   /* USER CODE BEGIN StartFingerTask */
+  int8_t id;
   uint32_t notif;
   uint8_t driver, p;
-  int8_t id;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialisation
-  FINGER_DMA_Init();
   Finger_Init();
 
   /* Infinite loop */
@@ -991,7 +984,6 @@ void StartFingerTask(void *argument)
         id = Finger_AuthFast();
         // Finger is registered
         if (id >= 0) {
-          // Finger Heart-Beat
           if (VCU.d.driver_id != DRIVER_ID_NONE)
             id = DRIVER_ID_NONE;
 
@@ -1040,7 +1032,6 @@ void StartAudioTask(void *argument)
 
   /* Initialize Wave player (Codec, DMA, I2C) */
   AUDIO_Init();
-  AUDIO_Play();
 
   /* Infinite loop */
   for (;;) {
@@ -1117,11 +1108,12 @@ void StartSwitchTask(void *argument)
         // independent mode activated
         VCU.CheckPower5v();
       }
+
       // Starter Button IRQ
       if (notif & EVT_SWITCH_STARTER_IRQ) {
         // check KNOB, KickStand, Keyless, Fingerprint
-
       }
+
       // KNOB IRQ
       if (notif & EVT_SWITCH_KNOB_IRQ) {
         VCU.CheckKnob();
@@ -1173,7 +1165,6 @@ void StartCanRxTask(void *argument)
             default:
               break;
           }
-
           break;
       }
     }
@@ -1224,9 +1215,7 @@ void StartCanTxTask(void *argument)
     // Handle Knob Changes
     HMI1.Power(VCU.d.state.start);
     HMI2.PowerOverCan(VCU.d.state.start);
-    BMS.PowerOverCan(VCU.d.state.run &&
-        !VCU.ReadEvent(EV_VCU_BIKE_FALLEN)
-    );
+    BMS.PowerOverCan(VCU.d.state.run && !VCU.ReadEvent(EV_VCU_BIKE_FALLEN));
 
     // Refresh state
     HMI1.Refresh();

@@ -81,6 +81,8 @@ void AUDIO_Init(void) {
 
 		_DelayMS(500);
 	} while (ret != AUDIO_OK);
+
+  AUDIO_Play();
 }
 
 void AUDIO_Play(void) {
