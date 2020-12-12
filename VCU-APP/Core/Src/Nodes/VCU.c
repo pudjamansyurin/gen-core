@@ -12,14 +12,12 @@
 #include "Drivers/_canbus.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_simcom.h"
-#include "Libs/_gps.h"
 
 
 /* External variables ---------------------------------------------------------*/
 extern bms_t BMS;
 extern hmi1_t HMI1;
 extern sim_t SIM;
-extern gps_t GPS;
 
 /* Public variables -----------------------------------------------------------*/
 vcu_t VCU = {
@@ -154,7 +152,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw) {
 
   // set message
   TxData.u8[0] = sw->list[SW_K_ABS].state;
-  TxData.u8[0] |= (GPS.fix == 0) << 1; //HMI1.d.state.mirroring << 1;
+  TxData.u8[0] |= (VCU.d.gps.fix == 0) << 1; //HMI1.d.state.mirroring << 1;
   TxData.u8[0] |= sw->list[SW_K_LAMP].state << 2;
   TxData.u8[0] |= HMI1.d.state.warning << 3;
   TxData.u8[0] |= HMI1.d.state.overheat << 4;

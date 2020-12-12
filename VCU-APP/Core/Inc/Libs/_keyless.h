@@ -46,13 +46,13 @@ typedef struct {
 } kless_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RF_Init(void);
+void RF_Init(uint32_t *unit_id);
 void RF_Debugger(void);
 uint8_t RF_ValidateCommand(RF_CMD *cmd);
 void RF_GenerateAesKey(uint32_t *aes);
-uint8_t RF_Pairing(void);
+uint8_t RF_Pairing(uint32_t *unit_id);
 uint8_t RF_SendPing(void);
-void RF_Refresh(void);
+uint8_t RF_Refresh(uint8_t tick_keyless);
 void RF_IrqHandler(void);
 void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);
 

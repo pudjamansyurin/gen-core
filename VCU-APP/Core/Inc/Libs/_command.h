@@ -14,9 +14,9 @@
 /* Public functions implementation --------------------------------------------*/
 void CMD_GenInfo(response_t *resp);
 void CMD_GenLed(command_t *cmd);
-void CMD_GenOverride(command_t *cmd);
-void CMD_GenFota(command_t *cmd, response_t *resp);
-void CMD_ReportRTC(command_t *cmd);
+void CMD_GenOverride(command_t *cmd, uint8_t *override_state);
+void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_version);
+void CMD_ReportRTC(command_t *cmd, rtc_t *rtc);
 void CMD_ReportOdom(command_t *cmd);
 void CMD_ReportUnitID(command_t *cmd);
 void CMD_AudioBeep(void);

@@ -8,13 +8,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_finger.h"
 #include "DMA/_dma_finger.h"
-#include "Nodes/VCU.h"
-#include "Nodes/HMI1.h"
 
 /* External variables ---------------------------------------------------------*/
 extern osMutexId_t FingerRecMutexHandle;
-extern vcu_t VCU;
-extern hmi1_t HMI1;
 extern finger_t finger;
 
 /* Private functions ----------------------------------------------------------*/
@@ -44,7 +40,7 @@ void Finger_Init(void) {
 	} while (!verified);
 }
 
-uint8_t Finger_Enroll(uint8_t id) {
+uint8_t Finger_Enroll(uint8_t id, uint8_t *fingerState) {
 	const TickType_t scan_time = (FINGER_SCAN_TIMEOUT);
 	TickType_t tick;
 	int p;
@@ -88,7 +84,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 
 			// send command
 			_LedToggle();
-			HMI1.d.state.finger = !HMI1.d.state.finger;
+			*fingerState = !(*fingerState);
 			p = fz3387_getImage();
 
 			// check response
@@ -186,7 +182,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 	}
 
 	// reset indicator
-	HMI1.d.state.finger = 0;
+	*fingerState = 0;
 	unlock();
 
 	return !error;

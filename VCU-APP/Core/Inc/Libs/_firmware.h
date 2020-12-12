@@ -13,9 +13,9 @@
 #include "Libs/_reporter.h"
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message);
-void FW_PostFota(response_t *response);
-void FW_MakeResponseIAP(char *message);
+uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *hmi_version);
+void FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_version);
+void FW_MakeResponseIAP(char *message, uint16_t *hmi_version);
 uint8_t FW_ValidResponseIAP(void);
 
 #endif /* INC_LIBS__FIRMWARE_H_ */

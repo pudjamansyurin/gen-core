@@ -11,10 +11,8 @@
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
 #include "Drivers/_rtc.h"
-#include "Nodes/VCU.h"
 
 /* External variables ---------------------------------------------------------*/
-extern vcu_t VCU;
 extern osThreadId_t AudioTaskHandle;
 extern osThreadId_t FingerTaskHandle;
 extern osThreadId_t KeylessTaskHandle;
@@ -32,25 +30,19 @@ void CMD_GenLed(command_t *cmd) {
 	_LedWrite((uint8_t) cmd->data.value);
 }
 
-void CMD_GenOverride(command_t *cmd) {
-  VCU.d.state.override = (uint8_t) cmd->data.value;
+void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
+  *override_state = (uint8_t) cmd->data.value;
 }
 
-void CMD_GenFota(command_t *cmd, response_t *resp) {
-	IAP_TYPE type = IAP_HMI;
-
-	/* Enter IAP mode */
-  if (cmd->data.sub_code == CMD_GEN_FOTA_VCU)
-		type = IAP_VCU;
-
-	FW_EnterModeIAP(type, resp->data.message);
+void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_version) {
+	FW_EnterModeIAP(type, resp->data.message, bat, hmi_version);
 
 	/* This line is never reached (if FOTA is activated) */
 	resp->data.code = RESPONSE_STATUS_ERROR;
 }
 
-void CMD_ReportRTC(command_t *cmd) {
-	RTC_Write((uint64_t) cmd->data.value, &(VCU.d.rtc));
+void CMD_ReportRTC(command_t *cmd, rtc_t *rtc) {
+	RTC_Write((uint64_t) cmd->data.value, rtc);
 }
 
 void CMD_ReportOdom(command_t *cmd) {

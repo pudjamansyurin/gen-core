@@ -8,14 +8,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_gps.h"
 #include "DMA/_dma_ublox.h"
-#include "Nodes/VCU.h"
 
 /* External variables ---------------------------------------------------------*/
 extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ ];
-extern vcu_t VCU;
-
-/* Private variables -----------------------------------------------------------*/
-gps_t GPS;
 
 /* Private variables ----------------------------------------------------------*/
 static nmea_t nmea;
@@ -45,38 +40,32 @@ void GPS_Init(void) {
 	nmea_init(&nmea);
 }
 
-uint8_t GPS_Capture(void) {
+uint8_t GPS_Capture(gps_t *gps) {
 	nmea_process(&nmea, UBLOX_UART_RX, strlen(UBLOX_UART_RX));
 
 	// copy only necessary part
-	GPS.dop_h = nmea.dop_h;
-	GPS.dop_v = nmea.dop_v;
-	GPS.altitude = nmea.altitude;
-	GPS.latitude = nmea.latitude;
-	GPS.longitude = nmea.longitude;
-	GPS.heading = nmea.coarse;
-	GPS.speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
-	GPS.speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
-  GPS.sat_in_use = nmea.sats_in_use;
-  GPS.fix = nmea.fix;
+	gps->dop_h = nmea.dop_h;
+	gps->dop_v = nmea.dop_v;
+	gps->altitude = nmea.altitude;
+	gps->latitude = nmea.latitude;
+	gps->longitude = nmea.longitude;
+	gps->heading = nmea.coarse;
+	gps->speed_kph = nmea_to_speed(nmea.speed, nmea_speed_kph);
+	gps->speed_mps = nmea_to_speed(nmea.speed, nmea_speed_mps);
+  gps->sat_in_use = nmea.sats_in_use;
+  gps->fix = nmea.fix;
 
-  return GPS.fix > 0;
+  return gps->fix > 0;
 }
 
-void GPS_CalculateOdometer(void) {
-  uint8_t increment;
-
-  // calculate
-  if (GPS.speed_mps > 0) {
-    increment = (GPS.speed_mps * GPS_INTERVAL );
-
-    VCU.SetOdometer(increment);
-    HBAR_AccumulateSubTrip(increment);
-  }
+uint8_t GPS_CalculateOdometer(gps_t *gps) {
+  if (gps->speed_mps)
+    return (gps->speed_mps * GPS_INTERVAL );
+  return 0;
 }
 
-void GPS_CalculateSpeed(void) {
-  VCU.d.speed = GPS.speed_kph;
+uint8_t GPS_CalculateSpeed(gps_t *gps) {
+  return gps->speed_kph;
 }
 
 void GPS_Debugger(void) {

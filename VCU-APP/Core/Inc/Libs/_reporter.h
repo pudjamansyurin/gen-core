@@ -12,6 +12,7 @@
 #include "Libs/_utils.h"
 #include "Libs/_gyro.h"
 #include "Nodes/VCU.h"
+#include "Nodes/BMS.h"
 
 /* Exported enum ---------------------------------------------------------------*/
 typedef enum {
@@ -129,14 +130,14 @@ typedef struct {
 } payload_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void Report_Init(FRAME_TYPE frame, report_t *report);
-void Response_Init(response_t *response);
-void Report_Capture(FRAME_TYPE frame, report_t *report);
-void Response_Capture(response_t *response);
+void Report_Init(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report);
+void Response_Init(response_t *response, uint16_t *seq_id_response);
+void Report_Capture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, sw_sub_t *sw);
+void Response_Capture(response_t *response, uint32_t *unit_id);
 void Report_SetCRC(report_t *report);
 void Response_SetCRC(response_t *response);
 void Command_Debugger(command_t *cmd);
-FRAME_TYPE Frame_Decider(void);
+FRAME_TYPE Frame_Decider(uint8_t *independent_state);
 uint8_t Packet_Pending(payload_t *payload);
 uint8_t Send_Payload(payload_t *payload);
 #endif /* REPORTER_H_ */

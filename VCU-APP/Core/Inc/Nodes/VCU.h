@@ -12,6 +12,8 @@
 #include "Libs/_utils.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_gyro.h"
+#include "Libs/_gps.h"
+#include "Drivers/_rtc.h"
 
 /* Exported enums --------------------------------------------------------------*/
 typedef enum {
@@ -68,6 +70,7 @@ typedef struct {
     uint16_t report;
     uint16_t response;
   } seq_id;
+  gps_t gps;
   rtos_task_t task;
 } vcu_data_t;
 

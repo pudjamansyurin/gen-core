@@ -14,7 +14,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define BMS_COUNT                     (uint8_t) 2
-#define BMS_ID_NONE 	             (uint32_t) 0xFFFFFFFF
+#define BMS_ID_NONE 	               (uint32_t) 0xFFFFFFFF
 #define BMS_ID_MASK                  (uint32_t) 0xFFFFF
 
 /* Exported enum ---------------------------------------------------------------*/

@@ -549,9 +549,9 @@ void StartIotTask(void *argument)
         Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 
     // SIMCOM Related Routines
-    if (RTC_NeedCalibration())
+    if (RTC_NeedCalibration(&(VCU.d.rtc)))
       if (Simcom_SetState(SIM_STATE_READY, 0))
-        RTC_CalibrateWithSimcom();
+        RTC_CalibrateWithSimcom(&(VCU.d.rtc));
 
     Simcom_UpdateSignalQuality();
 
@@ -578,20 +578,20 @@ void StartReporterTask(void *argument)
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-  Report_Init(FR_SIMPLE, &report);
+  Report_Init(FR_SIMPLE, &report, &(VCU.d.seq_id.report));
 
   /* Infinite loop */
   for (;;) {
     VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
-    frame = Frame_Decider();
+    frame = Frame_Decider(&(VCU.d.state.independent));
 
     // TODO: FOR TESTING ONLY (OVERWRITTEN)
     VCU.d.interval = 5;
     frame = FR_FULL;
 
-    Report_Capture(frame, &report);
+    Report_Capture(frame, &report, &(VCU.d), &(BMS.d), &(SW.runner.mode.sub));
 
     // Put report to log
     do {
@@ -628,10 +628,10 @@ void StartCommandTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
-  Response_Init(&response);
+  Response_Init(&response, &(VCU.d.seq_id.response));
 
   // Handle Post-FOTA
-  FW_PostFota(&response);
+  FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version));
 
   /* Infinite loop */
   for (;;) {
@@ -656,15 +656,15 @@ void StartCommandTask(void *argument)
             break;
 
           case CMD_GEN_OVERRIDE :
-            CMD_GenOverride(&command);
+            CMD_GenOverride(&command, &(VCU.d.state.override));
             break;
 
           case CMD_GEN_FOTA_VCU:
-            CMD_GenFota(&command, &response);
+            CMD_GenFota(IAP_VCU, &response, &(VCU.d.bat), &(HMI1.d.version));
             break;
 
           case CMD_GEN_FOTA_HMI:
-            CMD_GenFota(&command, &response);
+            CMD_GenFota(IAP_HMI, &response, &(VCU.d.bat), &(HMI1.d.version));
             break;
 
           default:
@@ -676,7 +676,7 @@ void StartCommandTask(void *argument)
       else if (command.data.code == CMD_CODE_REPORT) {
         switch (command.data.sub_code) {
           case CMD_REPORT_RTC :
-            CMD_ReportRTC(&command);
+            CMD_ReportRTC(&command, &(VCU.d.rtc));
             break;
 
           case CMD_REPORT_ODOM :
@@ -749,7 +749,7 @@ void StartCommandTask(void *argument)
         response.data.code = RESPONSE_STATUS_INVALID;
 
       // Get current snapshot
-      Response_Capture(&response);
+      Response_Capture(&response, &(VCU.d.unit_id));
       osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
     }
   }
@@ -767,6 +767,7 @@ void StartGpsTask(void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
   TickType_t lastWake;
+  uint8_t increment;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -780,9 +781,13 @@ void StartGpsTask(void *argument)
     VCU.d.task.gps.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
-    GPS_Capture();
-    GPS_CalculateOdometer();
-    GPS_CalculateSpeed();
+    GPS_Capture(&(VCU.d.gps));
+    VCU.d.speed = GPS_CalculateSpeed(&(VCU.d.gps));
+    increment = GPS_CalculateOdometer(&(VCU.d.gps));
+    if (increment) {
+      VCU.SetOdometer(increment);
+      HBAR_AccumulateSubTrip(increment);
+    }
     // GPS_Debugger();
 
     osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
@@ -865,7 +870,7 @@ void StartKeylessTask(void *argument)
 
   // initialization
   AES_Init();
-  RF_Init();
+  RF_Init(&(VCU.d.unit_id));
 
   //  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
   /* Infinite loop */
@@ -876,13 +881,13 @@ void StartKeylessTask(void *argument)
     if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
       if (notif & EVT_KEYLESS_RESET) {
-        // AES_Init();
-        RF_Init();
+        AES_Init();
+        RF_Init(&(VCU.d.unit_id));
       }
 
       // handle Pairing
       if (notif & EVT_KEYLESS_PAIRING) {
-        RF_Pairing();
+        RF_Pairing(&(VCU.d.unit_id));
         tick_pairing = _GetTickMS();
       }
 
@@ -949,7 +954,7 @@ void StartKeylessTask(void *argument)
       osThreadFlagsClear(EVT_MASK);
     }
 
-    RF_Refresh();
+    HMI1.d.state.unkeyless = RF_Refresh(VCU.d.tick.keyless);
     RF_SendPing();
   }
   /* USER CODE END StartKeylessTask */
@@ -1000,7 +1005,7 @@ void StartFingerTask(void *argument)
         // get driver value
         if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
           if (notif & EVT_FINGER_ADD)
-            p = Finger_Enroll(driver);
+            p = Finger_Enroll(driver, &(HMI1.d.state.finger));
           else if (notif & EVT_FINGER_DEL)
             p = Finger_DeleteID(driver);
           else if (notif & EVT_FINGER_RST)

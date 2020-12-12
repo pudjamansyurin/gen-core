@@ -245,10 +245,5 @@ typedef struct {
   int8_t tzQuarterHour;
 } timestamp_t;
 
-typedef struct {
-  timestamp_t timestamp;
-  RTC_DateTypeDef calibration;
-} rtc_t;
-
 #endif
 #endif /* DEFINES_SHARED_H_ */

@@ -9,8 +9,6 @@
 #include "Libs/_keyless.h"
 #include "Libs/_eeprom.h"
 #include "Drivers/_aes.h"
-#include "Nodes/VCU.h"
-#include "Nodes/HMI1.h"
 
 /* External variables ----------------------------------------------------------*/
 extern SPI_HandleTypeDef hspi1;
@@ -19,8 +17,6 @@ extern RNG_HandleTypeDef hrng;
 extern osThreadId_t KeylessTaskHandle;
 extern osMutexId_t KlessRecMutexHandle;
 
-extern vcu_t VCU;
-extern hmi1_t HMI1;
 extern uint32_t AesKey[4];
 
 /* Public variables -----------------------------------------------------------*/
@@ -50,18 +46,18 @@ static const uint8_t COMMAND[3][8] = {
 
 /* Private functions declaration ---------------------------------------------*/
 static void RF_SetAesPayload(uint32_t *aes);
-static void RF_ChangeMode(RF_MODE mode);
+static void RF_ChangeMode(RF_MODE mode, uint32_t *unit_id);
 static uint8_t RF_Payload(RF_ACTION action, uint8_t *payload);
 static void GenRandomNumber32(uint32_t *payload, uint8_t size);
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
-void RF_Init(void) {
+void RF_Init(uint32_t *unit_id) {
   nrf_set_config(&NRF, &(RF.config));
   nrf_init(&NRF);
   nrf_configure(&NRF);
-  RF_ChangeMode(RF_MODE_NORMAL);
+  RF_ChangeMode(RF_MODE_NORMAL, unit_id);
 }
 
 uint8_t RF_SendPing(void) {
@@ -103,7 +99,7 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
   return valid;
 }
 
-uint8_t RF_Pairing(void) {
+uint8_t RF_Pairing(uint32_t *unit_id) {
   NRF_RESULT p = NRF_ERROR;
   uint32_t aes[4];
 
@@ -115,10 +111,10 @@ uint8_t RF_Pairing(void) {
   // Insert VCU_ID to payload
   memcpy(&RF.tx.payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
 
-  RF_ChangeMode(RF_MODE_PAIRING);
+  RF_ChangeMode(RF_MODE_PAIRING, NULL);
   p = nrf_send_packet_noack(&NRF, RF.tx.payload);
 
-  RF_Init();
+  RF_Init(unit_id);
 
   return (p == NRF_OK);
 }
@@ -135,8 +131,8 @@ void RF_Debugger(void) {
   unlock();
 }
 
-void RF_Refresh(void) {
-  HMI1.d.state.unkeyless = ((_GetTickMS() - VCU.d.tick.keyless) > KEYLESS_TIMEOUT );
+uint8_t RF_Refresh(uint8_t tick_keyless) {
+  return ((_GetTickMS() - tick_keyless) > KEYLESS_TIMEOUT );
 }
 
 void RF_IrqHandler(void) {
@@ -161,11 +157,11 @@ static void RF_SetAesPayload(uint32_t *aes) {
   }
 }
 
-static void RF_ChangeMode(RF_MODE mode) {
+static void RF_ChangeMode(RF_MODE mode, uint32_t *unit_id) {
   if (mode == RF_MODE_NORMAL) {
     // use VCU_ID as address
-    memcpy(RF.tx.address, &(VCU.d.unit_id), 4);
-    memcpy(RF.rx.address, &(VCU.d.unit_id), 4);
+    memcpy(RF.tx.address, unit_id, 4);
+    memcpy(RF.rx.address, unit_id, 4);
     RF.config.payload_length = NRF_DATA_LENGTH;
   } else {
     // Set Address (pairing mode)
@@ -192,7 +188,7 @@ static uint8_t RF_Payload(RF_ACTION action, uint8_t *payload) {
     ret = AES_Decrypt(payload, RF.rx.payload, NRF_DATA_LENGTH);
   else
     ret = AES_Encrypt(RF.tx.payload, payload, NRF_DATA_LENGTH);
-  
+
   unlock();
 
   return ret;
@@ -210,4 +206,3 @@ static void lock(void) {
 static void unlock(void) {
   osMutexRelease(KlessRecMutexHandle);
 }
-

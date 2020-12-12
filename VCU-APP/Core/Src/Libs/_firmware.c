@@ -8,31 +8,28 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
-#include "Nodes/HMI1.h"
 
 /* External variables ---------------------------------------------------------*/
 extern uint16_t FOTA_VERSION;
 extern IAP_TYPE FOTA_TYPE;
-extern hmi1_t HMI1;
-extern vcu_t VCU;
 extern osMessageQueueId_t ResponseQueueHandle;
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
+uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *hmi_version) {
   uint16_t version = VCU_VERSION;
 
-  if (VCU.d.bat < FOTA_MIN_VOLTAGE)
+  if (*bat < FOTA_MIN_VOLTAGE)
     sprintf(message, "Battery %u mV (< %u mV)",
-        VCU.d.bat, FOTA_MIN_VOLTAGE - VCU.d.bat);
+        *bat, FOTA_MIN_VOLTAGE - *bat);
   else {
     if (type == IAP_HMI) {
-      if (HMI1.d.version == 0) {
+      if (*hmi_version == 0) {
         /* HMI device not connected */
         sprintf(message, "HMI Device not connected");
 
         return 0;
       } else
-        version = HMI1.d.version;
+        version = *hmi_version;
     }
 
     /* Retain FOTA */
@@ -49,7 +46,7 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
   return 0;
 }
 
-void FW_PostFota(response_t *response) {
+void FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_version) {
   char node[4] = "VCU";
 
   if (FW_ValidResponseIAP()) {
@@ -82,7 +79,7 @@ void FW_PostFota(response_t *response) {
         break;
       case IAP_DFU_SUCCESS:
         sprintf(response->data.message, "%s Success", node);
-        FW_MakeResponseIAP(response->data.message);
+        FW_MakeResponseIAP(response->data.message, hmi_version);
 
         response->data.code = RESPONSE_STATUS_OK;
         break;
@@ -91,7 +88,7 @@ void FW_PostFota(response_t *response) {
     }
 
     /* Send Response */
-    Response_Capture(response);
+    Response_Capture(response, unit_id);
     osMessageQueuePut(ResponseQueueHandle, response, 0U, 0U);
 
     /* Reset after FOTA */
@@ -100,7 +97,7 @@ void FW_PostFota(response_t *response) {
   }
 }
 
-void FW_MakeResponseIAP(char *message) {
+void FW_MakeResponseIAP(char *message, uint16_t *hmi_version) {
   uint32_t tick;
   uint16_t versionNew = VCU_VERSION;
   uint16_t versionOld = FOTA_VERSION;
@@ -108,7 +105,7 @@ void FW_MakeResponseIAP(char *message) {
   if (FOTA_TYPE == IAP_HMI) {
     tick = _GetTickMS();
     do {
-      versionNew = HMI1.d.version;
+      versionNew = *hmi_version;
       _DelayMS(100);
     } while (!versionNew && (_GetTickMS() - tick > 5000));
 
