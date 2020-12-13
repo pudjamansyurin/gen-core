@@ -39,7 +39,7 @@ typedef struct __attribute__((packed)) {
   task_t keyless;
   task_t finger;
   task_t audio;
-  task_t switches;
+  task_t gate;
   task_t canRx;
   task_t canTx;
   task_t hmi2Power;
