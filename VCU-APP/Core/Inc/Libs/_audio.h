@@ -41,6 +41,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_cs43l22.h"
 
+/* Typedefs ------------------------------------------------------------------*/
+typedef struct {
+	uint8_t initial_volume;
+  struct {
+  	uint16_t played;
+  	uint32_t remaining;
+  } size;
+} audio_t;
+
 /* Exported constants --------------------------------------------------------*/
 #define AUDIO_I2C_ADDRESS               0x94
 #define AUDIO_RESET_PIN                 INT_AUDIO_RST_Pin

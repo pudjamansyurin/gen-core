@@ -76,7 +76,7 @@ void CMD_Finger(uint8_t event, response_t *resp) {
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
-  if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout))
+  if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout))
     if (notif & EVT_COMMAND_OK)
 			resp->data.code = RESPONSE_STATUS_OK;
 }
@@ -88,7 +88,7 @@ void CMD_RemotePairing(response_t *resp) {
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
-  if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT))
+  if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT))
     if (notif & EVT_COMMAND_OK)
       resp->data.code = RESPONSE_STATUS_OK;
 }

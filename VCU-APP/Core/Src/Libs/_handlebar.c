@@ -92,8 +92,8 @@ hbar_t HBAR = {
 };
 
 /* Private functions prototype -----------------------------------------------*/
-static void HBAR_RunSelect(void);
-static void HBAR_RunSet(void);
+static void RunSelect(void);
+static void RunSet(void);
 
 /* Public functions implementation --------------------------------------------*/
 void HBAR_ReadStates(void) {
@@ -225,14 +225,14 @@ void HBAR_RunSelectOrSet(void) {
 	 // Only handle Select & Set when in non-reverse
 	if (!HBAR.list[HBAR_K_REVERSE].state) {
 		if (HBAR.list[HBAR_K_SELECT].state)
-			HBAR_RunSelect();
+			RunSelect();
 		else if (HBAR.list[HBAR_K_SET].state)
-			HBAR_RunSet();
+			RunSet();
 	}
 }
 
 /* Private functions implementation -------------------------------------------*/
-static void HBAR_RunSelect(void) {
+static void RunSelect(void) {
 	if (HBAR.runner.listening) {
 		if (HBAR.runner.mode.sel == HBAR_M_MAX)
 			HBAR.runner.mode.sel = 0;
@@ -243,7 +243,7 @@ static void HBAR_RunSelect(void) {
 	HBAR.runner.listening = 1;
 }
 
-static void HBAR_RunSet(void) {
+static void RunSet(void) {
 	HBAR_MODE sMode = HBAR.runner.mode.sel;
 
 	// handle reset only if push more than n sec, and in trip mode

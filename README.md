@@ -81,16 +81,16 @@
 - [ ] E-Scooter Diagram:
   - [?] HMI.Primary Fingerprint indicator blink when Scanning
   - [?] Try to add more than 5 fingerprint user
-  - [ ] Handle keyless lost
+  - [ ] Handle  lost
   	- [ ] Only when knob ON
-    - [ ] HMI.Primary Keyless blink
+    - [ ] HMI.Primary Remote blink
     - [ ] Send event group to Server
   - [ ] Add finger throttle  and events, max 6 times failed within 30 second
-  - [?] Keyless.BEEP turn on Horn & Sein Lamp (toggle the HORN_PWR)
+  - [?] Remote.BEEP turn on Horn & Sein Lamp (toggle the HORN_PWR)
   - [ ] Handle Starter Button
   - [ ] Handle Gyroscope crash & fall to switched OFF BMS & MCU
   - [?] Handle BMS.Fan when BMS temperature is overheat	
-  - [?] Handle SOLENOID_PWR by Keyless.Seat
+  - [?] Handle SOLENOID_PWR by Remote.Seat
   - [?] VCU Lost Mode / Independent (NO BMS more thant 2 minutes)
     - [?] Send event "Unauthorized Battery Removal" 
     - [ ] Sleep every 1 hour, just wakeup to Send Data
@@ -105,7 +105,7 @@
 - [ ] Make routine to check SIMCOM internet package
 - [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
 - [ ] RTOS: give timeout for any osWaitForever
-- [ ] Keyless: Move RNG to VCU side, not FOB. It act as challenge code.
+- [ ] Remote: Move RNG to VCU side, not FOB. It act as challenge code.
 
 ## Hardware Progress:
 - [x] Add SMD Fuse 
@@ -232,7 +232,7 @@
   - [x] Give GND hole (un-isolated) bellow the chip.
   - [x] VL & VP pin should use its own 3v3 regulator (so add it), 
   - [x] and it must be controlled also using MOSFET or GPIO pin (directly)
-- [x] Keyless:
+- [x] Remote:
   - [x] Increase C91 value to 100uF (tantalum)
   - [x] Preserve on-board NRF chip
   - [x] Add uFL connector for on-board chip like GPS & SIMCOM
@@ -250,7 +250,7 @@
 |  1 | IoT                         | SIM5300e       | USART1	  | ✔  | ✔ | **Done**			|
 |  2 | GPS                         | Ublox NEO-6M   | USART2	  | ✔  | ✔ | **Done**			|
 |  3 | Gyroscope & Accelerometer   | MPU6050        | I2C3	  | ✔  | ✔ | **Done**			|
-|  4 | Keyless/RF                  | nRF24L01 	    | SPI1	  | ✔  | ✔ | **Done**: Semi module	|
+|  4 | Remote/RF                  | nRF24L01 	    | SPI1	  | ✔  | ✔ | **Done**: Semi module	|
 |  5 | Fingerprint                 | FZ3387         | UART4	  | ✔  | ✔ | **Done**			|
 |  6 | RTC                         | -		    | RTC	  | ✔  | ✔ | **Done**			|
 |  7 | Li-ION Charger & Protection | TP4056 & DW01A | -		  | ✔  | ✔ | **Done**			|

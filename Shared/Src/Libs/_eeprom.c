@@ -33,7 +33,7 @@ uint32_t DFU_FLAG = 0;
 #endif
 
 /* Private functions prototype ------------------------------------------------*/
-static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
+static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
 static void lock(void);
 static void unlock(void);
 
@@ -113,7 +113,7 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
   uint8_t ret;
   uint16_t tmp = value, temp;
 
-  ret = EE_Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
+  ret = Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
 
   if (ret)
     if (cmd == EE_CMD_R)
@@ -123,13 +123,13 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
 }
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
-  return EE_Command(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer), sizeof(value));
+  return Command(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer), sizeof(value));
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
   uint8_t ret;
 
-  ret = EE_Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
+  ret = Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
 
   // update the NRF Address
   if (cmd == EE_CMD_W)
@@ -151,7 +151,7 @@ uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE typ
     vaddr = VADDR_RESPONSE_SEQ_ID;
   }
 
-  return EE_Command(vaddr, cmd, &value, pSeqId, sizeof(value));
+  return Command(vaddr, cmd, &value, pSeqId, sizeof(value));
 }
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
@@ -160,24 +160,24 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 
   // eeprom
   ptr = (cmd == EE_CMD_W ? value : tmp);
-  ret = EE_Command(VADDR_AES_KEY, cmd, ptr, AesKey, 16);
+  ret = Command(VADDR_AES_KEY, cmd, ptr, AesKey, 16);
 
   return ret;
 }
 #else
 uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value) {
-  return EE_Command(VADDR_DFU_FLAG, cmd, &value, &DFU_FLAG, sizeof(value));
+  return Command(VADDR_DFU_FLAG, cmd, &value, &DFU_FLAG, sizeof(value));
 }
 #endif
 
 uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value) {
-  return EE_Command(VADDR_FOTA_VERSION, cmd, &value, &FOTA_VERSION, sizeof(value));
+  return Command(VADDR_FOTA_VERSION, cmd, &value, &FOTA_VERSION, sizeof(value));
 }
 
 uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value) {
   uint32_t result;
 
-  result = EE_Command(VADDR_FOTA_TYPE, cmd, &value, &FOTA_TYPE, sizeof(uint32_t));
+  result = Command(VADDR_FOTA_TYPE, cmd, &value, &FOTA_TYPE, sizeof(uint32_t));
 
   if (cmd == EE_CMD_R)
     if (!(FOTA_TYPE == IAP_VCU || FOTA_TYPE == IAP_HMI))
@@ -187,7 +187,7 @@ uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t EE_Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size) {
+static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size) {
   uint8_t ret = 0;
 
   lock();

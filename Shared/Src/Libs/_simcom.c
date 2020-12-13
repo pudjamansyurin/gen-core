@@ -43,18 +43,18 @@ sim_t SIM = {
 };
 
 /* Private functions prototype -----------------------------------------------*/
-static SIMCOM_RESULT Simcom_Ready(void);
-static SIMCOM_RESULT Simcom_Power(void);
-static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char *res);
-static void Simcom_Sleep(uint8_t state);
-static void Simcom_BeforeTransmitHook(void);
-static void Simcom_Debugger(void);
-static uint8_t State_Timeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p);
-static uint8_t State_LockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState);
-static uint8_t State_PoorSignal(void);
+static SIMCOM_RESULT Ready(void);
+static SIMCOM_RESULT Power(void);
+static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res);
+static void Sleep(uint8_t state);
+static void BeforeTransmitHook(void);
+static void Debugger(void);
+static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p);
+static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState);
+static uint8_t StatePoorSignal(void);
 #if (!BOOTLOADER)
-static SIMCOM_RESULT Simcom_ProcessCommando(command_t *command);
-static uint8_t Simcom_CommandoIRQ(void);
+static SIMCOM_RESULT ProcessCommando(command_t *command);
+static uint8_t CommandoIRQ(void);
 #endif
 
 /* Public functions implementation --------------------------------------------*/
@@ -88,11 +88,11 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
   Simcom_Lock();
   // Handle SIMCOM state properly
   do {
-    if (State_Timeout(&tick, timeout, p))
+    if (StateTimeout(&tick, timeout, p))
       break;
-    if (State_LockedLoop(&lastState, &depthState))
+    if (StateLockedLoop(&lastState, &depthState))
       break;
-    if (State_PoorSignal())
+    if (StatePoorSignal())
       break;
 
     // Set value
@@ -104,7 +104,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
         LOG_StrLn("Simcom:Init");
 
         // power up the module
-        p = Simcom_Power();
+        p = Power();
 
         // upgrade simcom state
         if (p > 0) {
@@ -463,7 +463,7 @@ SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size) 
     }
 
     // send command
-    p = Simcom_Execute(data, size, ms, res);
+    p = Execute(data, size, ms, res);
 
     // Debug: print response
     if (SIMCOM_DEBUG) {
@@ -513,7 +513,7 @@ SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
 
 /* Private functions implementation --------------------------------------------*/
 #if (!BOOTLOADER)
-static SIMCOM_RESULT Simcom_ProcessCommando(command_t *command) {
+static SIMCOM_RESULT ProcessCommando(command_t *command) {
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint32_t crcValue;
   char *str = NULL;
@@ -550,12 +550,12 @@ static SIMCOM_RESULT Simcom_ProcessCommando(command_t *command) {
   return p;
 }
 
-static uint8_t Simcom_CommandoIRQ(void) {
+static uint8_t CommandoIRQ(void) {
   return Simcom_Response(PREFIX_COMMAND) != NULL;
 }
 #endif
 
-static SIMCOM_RESULT Simcom_Ready(void) {
+static SIMCOM_RESULT Ready(void) {
   uint32_t tick;
 
   // wait until 1s response
@@ -576,7 +576,7 @@ static SIMCOM_RESULT Simcom_Ready(void) {
   return Simcom_Command(SIMCOM_CMD_BOOT, SIMCOM_RSP_READY, 1000, 0);
 }
 
-static SIMCOM_RESULT Simcom_Power(void) {
+static SIMCOM_RESULT Power(void) {
   LOG_StrLn("Simcom:Powered");
   SIMCOM_Reset_Buffer();
 
@@ -585,7 +585,7 @@ static SIMCOM_RESULT Simcom_Power(void) {
   HAL_Delay(1);
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
 
-  if (Simcom_Ready() == SIM_RESULT_OK) {
+  if (Ready() == SIM_RESULT_OK) {
 #if (!BOOTLOADER)
     VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 1);
 #endif
@@ -601,24 +601,24 @@ static SIMCOM_RESULT Simcom_Power(void) {
   VCU.SetEvent(EV_VCU_NET_HARD_RESET, 1);
 #endif
   // wait response
-  return Simcom_Ready();
+  return Ready();
 }
 
-static void Simcom_Sleep(uint8_t state) {
+static void Sleep(uint8_t state) {
   HAL_GPIO_WritePin(INT_NET_DTR_GPIO_Port, INT_NET_DTR_Pin, state);
   _DelayMS(50);
 }
 
-static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char *res) {
+static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res) {
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint32_t tick, timeout = 0;
 
   Simcom_Lock();
   // wake-up the SIMCOM
-  Simcom_Sleep(0);
+  Sleep(0);
 
   // transmit to serial (low-level)
-  Simcom_BeforeTransmitHook();
+  BeforeTransmitHook();
   SIMCOM_Transmit(data, size);
 
   // convert time to tick
@@ -632,7 +632,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
         || Simcom_Response(SIMCOM_RSP_ERROR)
         || Simcom_Response(SIMCOM_RSP_READY)
         #if (!BOOTLOADER)
-        || Simcom_CommandoIRQ()
+        || CommandoIRQ()
         #endif
         || (_GetTickMS() - tick) >= timeout) {
 
@@ -650,7 +650,7 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
         }
         #if (!BOOTLOADER)
         // Handle command from server
-        else if (Simcom_CommandoIRQ())
+        else if (CommandoIRQ())
           p = SIM_RESULT_TIMEOUT;
 #endif
         else {
@@ -682,16 +682,16 @@ static SIMCOM_RESULT Simcom_Execute(char *data, uint16_t size, uint32_t ms, char
   }
 
   // sleep the SIMCOM
-  Simcom_Sleep(1);
+  Sleep(1);
   Simcom_Unlock();
   return p;
 }
 
-static void Simcom_BeforeTransmitHook(void) {
+static void BeforeTransmitHook(void) {
 #if (!BOOTLOADER)
   command_t hCommand;
   // handle Commando (if any)
-  if (Simcom_ProcessCommando(&hCommand))
+  if (ProcessCommando(&hCommand))
     osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
 #else
   if (SIM.downloading == 0)
@@ -699,17 +699,17 @@ static void Simcom_BeforeTransmitHook(void) {
 #endif
 
   // handle things on every request
-  // Simcom_Debugger();
+  // Debugger();
 }
 
-static void Simcom_Debugger(void) {
+static void Debugger(void) {
   LOG_StrLn("============ SIMCOM DEBUG ============");
   LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
   LOG_Enter();
   LOG_StrLn("======================================");
 }
 
-static uint8_t State_Timeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p) {
+static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p) {
   // Handle timeout
   if (timeout) {
     // Update tick
@@ -725,7 +725,7 @@ static uint8_t State_Timeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p) 
   return 0;
 }
 
-static uint8_t State_LockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState) {
+static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState) {
   // Handle locked-loop
   if (SIM.state < *lastState) {
     *depthState -= 1;
@@ -741,7 +741,7 @@ static uint8_t State_LockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState) {
   return 0;
 }
 
-static uint8_t State_PoorSignal(void) {
+static uint8_t StatePoorSignal(void) {
   // Handle signal strength
   if (SIM.state == SIM_STATE_DOWN)
     SIM.signal = 0;

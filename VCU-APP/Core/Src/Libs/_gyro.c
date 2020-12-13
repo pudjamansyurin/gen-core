@@ -16,8 +16,8 @@ extern I2C_HandleTypeDef hi2c3;
 static MPU6050 mpu;
 
 /* Private functions prototype ------------------------------------------------*/
-static void GYRO_Average(mems_t *mems, uint16_t sample);
-static void GYRO_Readable(coordinate_t *gyro, motion_float_t *motion);
+static void Average(mems_t *mems, uint16_t sample);
+static void Convert(coordinate_t *gyro, motion_float_t *motion);
 //static void Gyro_RawDebugger(mems_t *mems);
 
 /* Public functions implementation --------------------------------------------*/
@@ -49,7 +49,8 @@ mems_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   mems_decision_t decider;
 
   // get mems data
-  GYRO_Average(&mems, sample);
+  Average(&mems, sample);
+  Convert(&(mems.gyroscope), &mot);
 
   // calculate g-force
   decider.crash.value = sqrt(
@@ -60,7 +61,6 @@ mems_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   decider.crash.state = (decider.crash.value > ACCELEROMETER_LIMIT );
 
   // calculate movement change
-  GYRO_Readable(&(mems.gyroscope), &mot);
   decider.fall.value = sqrt(pow(abs(mot.roll), 2) + pow(abs(mot.pitch), 2));
   decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT || mot.yaw < GYROSCOPE_LIMIT;
 
@@ -92,7 +92,7 @@ void Gyro_Debugger(mems_decision_t *decider) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static void GYRO_Average(mems_t *mems, uint16_t sample) {
+static void Average(mems_t *mems, uint16_t sample) {
   mems_t m = { 0 };
   MPU6050_Result status;
 
@@ -132,7 +132,7 @@ static void GYRO_Average(mems_t *mems, uint16_t sample) {
   *mems = m;
 }
 
-static void GYRO_Readable(coordinate_t *gyro, motion_float_t *motion) {
+static void Convert(coordinate_t *gyro, motion_float_t *motion) {
   // Calculating Roll and Pitch from the accelerometer data
   motion->yaw = sqrt(pow(gyro->x, 2) + pow(gyro->y, 2));
   motion->roll = sqrt(pow(gyro->x, 2) + pow(gyro->z, 2));

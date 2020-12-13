@@ -48,9 +48,11 @@ extern uint32_t AUDIO_SAMPLE_SIZE;
 extern uint16_t AUDIO_SAMPLE[];
 
 /* Private variables ---------------------------------------------------------*/
-static uint8_t AudioVolume = 100;
-static uint16_t AudioPlaySize;
-static uint32_t AudioRemSize;
+static audio_t Audio = {
+	.initial_volume = 10,
+	.size = { 0 }
+};
+
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
 const uint32_t I2SFreq[8] = { 8000, 11025, 16000, 22050, 32000, 44100, 48000, 96000 };
 const uint32_t I2SPLLN[8] = { 256, 429, 213, 429, 426, 271, 258, 344 };
@@ -77,7 +79,7 @@ void AUDIO_Init(void) {
 		_DelayMS(1000);
 
 		/* Initialize Wave player (Codec, DMA, I2C) */
-		ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AudioVolume, AUDIO_SAMPLE_FREQ);
+		ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, Audio.initial_volume, AUDIO_SAMPLE_FREQ);
 
 		_DelayMS(500);
 	} while (ret != AUDIO_OK);
@@ -87,16 +89,16 @@ void AUDIO_Init(void) {
 
 void AUDIO_Play(void) {
 	/* Get data size from audio file */
-	AudioRemSize = AUDIO_SAMPLE_SIZE;
+	Audio.size.remaining = AUDIO_SAMPLE_SIZE;
 	/* Get total data to be played */
-	if (AudioRemSize > AUDIO_BUFFER_SIZE) {
-		AudioPlaySize = AUDIO_BUFFER_SIZE;
+	if (Audio.size.remaining > AUDIO_BUFFER_SIZE) {
+		Audio.size.played = AUDIO_BUFFER_SIZE;
 	} else {
-		AudioPlaySize = AUDIO_SAMPLE_SIZE;
+		Audio.size.played = AUDIO_SAMPLE_SIZE;
 	}
 
 	/* Start playing Wave */
-	AUDIO_OUT_Play((uint16_t*) AUDIO_SAMPLE, AudioPlaySize);
+	AUDIO_OUT_Play((uint16_t*) AUDIO_SAMPLE, Audio.size.played);
 }
 
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
@@ -329,19 +331,19 @@ void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params) {
  */
 __weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
 	// decrease remaining buffer
-	AudioRemSize -= AudioPlaySize;
+	Audio.size.remaining -= Audio.size.played;
 
 	// done, repeat
-	if (AudioRemSize == 0) {
+	if (Audio.size.remaining == 0) {
 		/* Get data size from audio file */
-		AudioRemSize = AUDIO_SAMPLE_SIZE;
+		Audio.size.remaining = AUDIO_SAMPLE_SIZE;
 	}
 
 	// check remaining data
-	if (AudioRemSize > AUDIO_BUFFER_SIZE) {
-		AudioPlaySize = AUDIO_BUFFER_SIZE;
+	if (Audio.size.remaining > AUDIO_BUFFER_SIZE) {
+		Audio.size.played = AUDIO_BUFFER_SIZE;
 	} else {
-		AudioPlaySize = AudioRemSize;
+		Audio.size.played = Audio.size.remaining;
 	}
 }
 
@@ -350,7 +352,7 @@ __weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
  */
 __weak void AUDIO_OUT_TransferComplete_CallBack(void) {
 	// play it
-	AUDIO_OUT_ChangeBuffer((uint16_t*) (AUDIO_SAMPLE + ((AUDIO_SAMPLE_SIZE - AudioRemSize) / AUDIODATA_SIZE)), AudioPlaySize);
+	AUDIO_OUT_ChangeBuffer((uint16_t*) (AUDIO_SAMPLE + ((AUDIO_SAMPLE_SIZE - Audio.size.remaining) / AUDIODATA_SIZE)), Audio.size.played);
 }
 
 /**

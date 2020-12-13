@@ -19,14 +19,14 @@ extern sim_t SIM;
 
 /* Private functions prototype -----------------------------------------------*/
 #if (BOOTLOADER)
-static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *string, uint8_t size, uint8_t executor);
-static uint8_t AT_FindInBuffer(char *prefix, char **str);
+static SIMCOM_RESULT SingleString(char command[20], AT_MODE mode, char *string, uint8_t size, uint8_t executor);
+static uint8_t FindInBuffer(char *prefix, char **str);
 #endif
-static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *value, uint8_t executor);
-static SIMCOM_RESULT AT_CmdWrite(char *cmd, uint32_t ms, char *res);
-static SIMCOM_RESULT AT_CmdRead(char *cmd, uint32_t ms, char *prefix, char **str);
-static void AT_ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size);
-static int32_t AT_ParseNumber(const char *ptr, uint8_t *cnt);
+static SIMCOM_RESULT SingleInteger(char command[20], AT_MODE mode, int32_t *value, uint8_t executor);
+static SIMCOM_RESULT CmdWrite(char *cmd, uint32_t ms, char *res);
+static SIMCOM_RESULT CmdRead(char *cmd, uint32_t ms, char *prefix, char **str);
+static void ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size);
+static int32_t ParseNumber(const char *ptr, uint8_t *cnt);
 //static float AT_ParseFloat(const char *ptr, uint8_t *cnt);
 
 /* Public functions implementation --------------------------------------------*/
@@ -37,7 +37,7 @@ SIMCOM_RESULT AT_CommandEchoMode(uint8_t state) {
 	Simcom_Lock();
 	// Write
 	sprintf(cmd, "ATE%d\r", state);
-	p = AT_CmdWrite(cmd, 500, NULL);
+	p = CmdWrite(cmd, 500, NULL);
 	Simcom_Unlock();
 
 	return p;
@@ -50,13 +50,13 @@ SIMCOM_RESULT AT_QueryTransmittedData(at_cipack_t *info) {
 
 	Simcom_Lock();
 	// Read
-	p = AT_CmdRead("AT+CIPACK?\r", 500, "+CIPACK: ", &str);
+	p = CmdRead("AT+CIPACK?\r", 500, "+CIPACK: ", &str);
 	if (p > 0) {
-		info->txlen = AT_ParseNumber(&str[len], &cnt);
+		info->txlen = ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		info->acklen = AT_ParseNumber(&str[len], &cnt);
+		info->acklen = ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		info->nacklen = AT_ParseNumber(&str[len], NULL);
+		info->nacklen = ParseNumber(&str[len], NULL);
 	}
 	Simcom_Unlock();
 
@@ -71,11 +71,11 @@ SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
 
 	Simcom_Lock();
 	// Read
-	p = AT_CmdRead("AT+CSQ\r", 500, "+CSQ: ", &str);
+	p = CmdRead("AT+CSQ\r", 500, "+CSQ: ", &str);
 	if (p > 0) {
-		signal->rssi = AT_ParseNumber(&str[len], &cnt);
+		signal->rssi = ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		signal->ber = AT_ParseNumber(&str[len], NULL);
+		signal->ber = ParseNumber(&str[len], NULL);
 
 		// Formatting
 		{
@@ -107,9 +107,9 @@ SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state) {
 
 	Simcom_Lock();
 	// Read
-	p = AT_CmdRead("AT+CIPSTATUS\r", 500, "STATE: ", &str);
+	p = CmdRead("AT+CIPSTATUS\r", 500, "STATE: ", &str);
 	if (p > 0) {
-		AT_ParseText(&str[0], NULL, status, sizeof(status));
+		ParseText(&str[0], NULL, status, sizeof(status));
 
 		// decide
 		if (!strcmp(status, "IP INITIAL")) {
@@ -157,12 +157,12 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
 
 	Simcom_Lock();
 	// Read
-	p = AT_CmdRead("AT+CNMP?\r", 500, "+CNMP: ", &str);
+	p = CmdRead("AT+CNMP?\r", 500, "+CNMP: ", &str);
 	if (p > 0) {
-		param->mode = AT_ParseNumber(&str[len], &cnt);
+		param->mode = ParseNumber(&str[len], &cnt);
 		if (param->mode == CNMP_ACT_AUTO) {
 			len += cnt + 1;
-			param->preferred = AT_ParseNumber(&str[len], &cnt);
+			param->preferred = ParseNumber(&str[len], &cnt);
 		}
 
 		// Write
@@ -174,7 +174,7 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
 					sprintf(cmd, "AT+CNMP=%d\r", param->mode);
 				}
 
-				p = AT_CmdWrite(cmd, 10000, NULL);
+				p = CmdWrite(cmd, 10000, NULL);
 			}
 		} else {
 			*param = tmp;
@@ -195,21 +195,21 @@ SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param) {
 
 	Simcom_Lock();
 	// Read
-	p = AT_CmdRead("AT+CSACT?\r", 500, "+CSACT: ", &str);
+	p = CmdRead("AT+CSACT?\r", 500, "+CSACT: ", &str);
 	if (p > 0) {
-		tmp.act = AT_ParseNumber(&str[len], &cnt);
+		tmp.act = ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		AT_ParseText(&str[len], &cnt, tmp.rac, sizeof(tmp.rac));
+		ParseText(&str[len], &cnt, tmp.rac, sizeof(tmp.rac));
 		len += cnt + 1;
-		tmp.creg = AT_ParseNumber(&str[len], &cnt);
+		tmp.creg = ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		tmp.cgreg = AT_ParseNumber(&str[len], &cnt);
+		tmp.cgreg = ParseNumber(&str[len], &cnt);
 
 		// Write
 		if (mode == ATW) {
 			if (tmp.cgreg != param->creg || tmp.cgreg != param->cgreg) {
 				sprintf(cmd, "AT+CSACT=%d,%d\r", param->creg, param->cgreg);
-				p = AT_CmdWrite(cmd, 500, NULL);
+				p = CmdWrite(cmd, 500, NULL);
 			}
 		} else {
 			*param = tmp;
@@ -232,17 +232,17 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
 	// Read
 	sprintf(cmd, "AT+%s?\r", command);
 	sprintf(res, "+%s: ", command);
-	p = AT_CmdRead(cmd, 500, res, &str);
+	p = CmdRead(cmd, 500, res, &str);
 	if (p > 0) {
-		tmp.mode = AT_ParseNumber(&str[len], &cnt);
+		tmp.mode = ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		tmp.stat = AT_ParseNumber(&str[len], &cnt);
+		tmp.stat = ParseNumber(&str[len], &cnt);
 
 		// Write
 		if (mode == ATW) {
 			if (memcmp(&tmp, param, sizeof(tmp)) != 0) {
 				sprintf(cmd, "AT+%s=%d\r", command, param->mode);
-				p = AT_CmdWrite(cmd, 500, NULL);
+				p = CmdWrite(cmd, 500, NULL);
 			}
 		} else {
 			*param = tmp;
@@ -254,15 +254,15 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
 }
 
 SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state) {
-	return AT_SingleInteger("CSCLK", mode, (int32_t*) state, 0);
+	return SingleInteger("CSCLK", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state) {
-	return AT_SingleInteger("CMEE", mode, (int32_t*) state, 0);
+	return SingleInteger("CMEE", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate) {
-	return AT_SingleInteger("IPR", mode, (int32_t*) rate, 0);
+	return SingleInteger("IPR", mode, (int32_t*) rate, 0);
 }
 
 #if (!BOOTLOADER)
@@ -276,20 +276,20 @@ SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
 
 	Simcom_Lock();
 	// Read
-	p = AT_CmdRead("AT+CSTT?\r", 500, "+CSTT: ", &str);
+	p = CmdRead("AT+CSTT?\r", 500, "+CSTT: ", &str);
 	if (p > 0) {
-		AT_ParseText(&str[len], &cnt, tmp.apn, sizeof(tmp.apn));
+		ParseText(&str[len], &cnt, tmp.apn, sizeof(tmp.apn));
 		len += cnt + 1;
-		AT_ParseText(&str[len], &cnt, tmp.username, sizeof(tmp.username));
+		ParseText(&str[len], &cnt, tmp.username, sizeof(tmp.username));
 		len += cnt + 1;
-		AT_ParseText(&str[len], &cnt, tmp.password, sizeof(tmp.password));
+		ParseText(&str[len], &cnt, tmp.password, sizeof(tmp.password));
 
 		// Write
 		if (mode == ATW) {
 			if (memcmp(&tmp, param, sizeof(at_cstt_t)) != 0) {
 				sprintf(cmd, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r",
 						param->apn, param->username, param->password);
-				p = AT_CmdWrite(cmd, 1000, NULL);
+				p = CmdWrite(cmd, 1000, NULL);
 			}
 		} else {
 			*param = tmp;
@@ -306,9 +306,9 @@ SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param) {
 
 	Simcom_Lock();
 	// Read
-	p = AT_CmdRead("AT+CIFSR\r", 500, SIMCOM_RSP_NONE, &str);
+	p = CmdRead("AT+CIFSR\r", 500, SIMCOM_RSP_NONE, &str);
 	if (p > 0) {
-		AT_ParseText(&str[0], NULL, param->address, sizeof(param->address));
+		ParseText(&str[0], NULL, param->address, sizeof(param->address));
 	}
 	Simcom_Unlock();
 
@@ -323,7 +323,7 @@ SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
 	// Write
 	sprintf(cmd, "AT+CIPSTART=\"%s\",\"%s\",\"%d\"\r",
 			param->mode, param->ip, param->port);
-	p = AT_CmdWrite(cmd, 20000, "CONNECT");
+	p = CmdWrite(cmd, 20000, "CONNECT");
 
 	// check either connection ok / error
 	if (p > 0) {
@@ -356,26 +356,26 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
 				tm->time.Minutes,
 				tm->time.Seconds,
 				tm->tzQuarterHour);
-		p = AT_CmdWrite(cmd, 500, NULL);
+		p = CmdWrite(cmd, 500, NULL);
 
 	} else {
 		// Read
-		p = AT_CmdRead("AT+CCLK?\r", 500, "+CCLK: ", &str);
+		p = CmdRead("AT+CCLK?\r", 500, "+CCLK: ", &str);
 		if (p > 0) {
 			len = 1;
-			tm->date.Year = AT_ParseNumber(&str[len], &cnt);
+			tm->date.Year = ParseNumber(&str[len], &cnt);
 			len += cnt + 1;
-			tm->date.Month = AT_ParseNumber(&str[len], &cnt);
+			tm->date.Month = ParseNumber(&str[len], &cnt);
 			len += cnt + 1;
-			tm->date.Date = AT_ParseNumber(&str[len], &cnt);
+			tm->date.Date = ParseNumber(&str[len], &cnt);
 			len += cnt + 1;
-			tm->time.Hours = AT_ParseNumber(&str[len], &cnt);
+			tm->time.Hours = ParseNumber(&str[len], &cnt);
 			len += cnt + 1;
-			tm->time.Minutes = AT_ParseNumber(&str[len], &cnt);
+			tm->time.Minutes = ParseNumber(&str[len], &cnt);
 			len += cnt + 1;
-			tm->time.Seconds = AT_ParseNumber(&str[len], &cnt);
+			tm->time.Seconds = ParseNumber(&str[len], &cnt);
 			len += cnt + 1;
-			tm->tzQuarterHour = AT_ParseNumber(&str[len], NULL);
+			tm->tzQuarterHour = ParseNumber(&str[len], NULL);
 
 			// Formatting
 			tm->date.WeekDay = RTC_WEEKDAY_MONDAY;
@@ -387,31 +387,31 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
 }
 
 SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
-	return AT_SingleInteger("CGATT", mode, (int32_t*) state, 0);
+	return SingleInteger("CGATT", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state) {
-	return AT_SingleInteger("CIPRXGET", mode, (int32_t*) state, 0);
+	return SingleInteger("CIPRXGET", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state) {
-	return AT_SingleInteger("CIPMUX", mode, (int32_t*) state, 0);
+	return SingleInteger("CIPMUX", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state) {
-	return AT_SingleInteger("CIPMODE", mode, (int32_t*) state, 0);
+	return SingleInteger("CIPMODE", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state) {
-	return AT_SingleInteger("CIPSRIP", mode, (int32_t*) state, 0);
+	return SingleInteger("CIPSRIP", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state) {
-	return AT_SingleInteger("CIPHEAD", mode, (int32_t*) state, 0);
+	return SingleInteger("CIPHEAD", mode, (int32_t*) state, 0);
 }
 
 SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
-	return AT_SingleInteger("CLTS", mode, (int32_t*) state, 0);
+	return SingleInteger("CLTS", mode, (int32_t*) state, 0);
 }
 #else
 SIMCOM_RESULT AT_BearerInitialize(void) {
@@ -445,21 +445,21 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
 	SIMCOM_RESULT p;
 
 	Simcom_Lock();
-	p = AT_SingleInteger("FTPCID", ATW, &param->id, 0);
+	p = SingleInteger("FTPCID", ATW, &param->id, 0);
 
 	// set server & credential
 	if (p > 0) {
-		p = AT_SingleString("FTPSERV", ATW, param->server, sizeof(param->server), 0);
+		p = SingleString("FTPSERV", ATW, param->server, sizeof(param->server), 0);
 	}
 	if (p > 0) {
-		p = AT_SingleString("FTPUN", ATW, param->username, sizeof(param->username), 0);
+		p = SingleString("FTPUN", ATW, param->username, sizeof(param->username), 0);
 	}
 	if (p > 0) {
-		p = AT_SingleString("FTPPW", ATW, param->password, sizeof(param->password), 0);
+		p = SingleString("FTPPW", ATW, param->password, sizeof(param->password), 0);
 	}
 	// set path & file
 	if (p > 0) {
-		p = AT_SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
+		p = SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
 	}
 	if (p > 0) {
 		p = AT_FtpSetFile(param->file);
@@ -470,7 +470,7 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
 }
 
 SIMCOM_RESULT AT_FtpSetFile(char *file) {
-	return AT_SingleString("FTPGETNAME", ATW, file, sizeof(file), 0);
+	return SingleString("FTPGETNAME", ATW, file, sizeof(file), 0);
 }
 
 SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
@@ -480,16 +480,16 @@ SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
 
 	Simcom_Lock();
 	// Read
-	p = AT_CmdRead("AT+FTPSIZE\r", 60000, "+FTPSIZE: ", &str);
+	p = CmdRead("AT+FTPSIZE\r", 60000, "+FTPSIZE: ", &str);
 	if (p > 0) {
 		// parsing
-		AT_ParseNumber(&str[len], &cnt);
+		ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		param->response = AT_ParseNumber(&str[len], &cnt);
+		param->response = ParseNumber(&str[len], &cnt);
 
 		if (param->response == FTP_FINISH) {
 			len += cnt + 1;
-			param->size = AT_ParseNumber(&str[len], &cnt);
+			param->size = ParseNumber(&str[len], &cnt);
 		}
 	}
 	Simcom_Unlock();
@@ -511,16 +511,16 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 		sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
 	}
 
-	p = AT_CmdRead(cmd, 60000, "+FTPGET: ", &str);
+	p = CmdRead(cmd, 60000, "+FTPGET: ", &str);
 
 	if (p > 0) {
 		// parsing
-		AT_ParseNumber(&str[len], &cnt);
+		ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
 		if (param->mode == FTPGET_OPEN) {
-			param->response = AT_ParseNumber(&str[len], &cnt);
+			param->response = ParseNumber(&str[len], &cnt);
 		} else {
-			param->cnflength = AT_ParseNumber(&str[len], &cnt);
+			param->cnflength = ParseNumber(&str[len], &cnt);
 			len += cnt + 2;
 			// start of file content
 			param->ptr = &str[len];
@@ -543,7 +543,7 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 }
 
 SIMCOM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state) {
-	return AT_SingleInteger("FTPSTATE", ATR, (int32_t*) state, 1);
+	return SingleInteger("FTPSTATE", ATR, (int32_t*) state, 1);
 }
 
 SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
@@ -557,23 +557,23 @@ SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
 	Simcom_Lock();
 	// Read
 	sprintf(cmd, "AT+SAPBR=%d,1\r", SAPBR_BEARER_QUERY);
-	p = AT_CmdRead(cmd, 500, "+SAPBR: ", &str);
+	p = CmdRead(cmd, 500, "+SAPBR: ", &str);
 	if (p > 0) {
-		tmp.cmd_type = AT_ParseNumber(&str[len], &cnt);
+		tmp.cmd_type = ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		tmp.status = AT_ParseNumber(&str[len], &cnt);
+		tmp.status = ParseNumber(&str[len], &cnt);
 
 		// Read parameters
-		p = AT_CmdRead("AT+SAPBR=4,1\r", 500, "+SAPBR:", &str);
+		p = CmdRead("AT+SAPBR=4,1\r", 500, "+SAPBR:", &str);
 		if (p > 0) {
-			if (AT_FindInBuffer("APN: ", &str)) {
-				AT_ParseText(&str[0], NULL, tmp.con.apn, sizeof(tmp.con.apn));
+			if (FindInBuffer("APN: ", &str)) {
+				ParseText(&str[0], NULL, tmp.con.apn, sizeof(tmp.con.apn));
 			}
-			if (AT_FindInBuffer("USER: ", &str)) {
-				AT_ParseText(&str[0], NULL, tmp.con.username, sizeof(tmp.con.username));
+			if (FindInBuffer("USER: ", &str)) {
+				ParseText(&str[0], NULL, tmp.con.username, sizeof(tmp.con.username));
 			}
-			if (AT_FindInBuffer("PWD: ", &str)) {
-				AT_ParseText(&str[0], NULL, tmp.con.password, sizeof(tmp.con.password));
+			if (FindInBuffer("PWD: ", &str)) {
+				ParseText(&str[0], NULL, tmp.con.password, sizeof(tmp.con.password));
 			}
 		}
 
@@ -581,21 +581,21 @@ SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
 		if (mode == ATW) {
 			if (memcmp(tmp.con.apn, param->con.apn, strlen(param->con.apn)) != 0) {
 				sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", param->con.apn);
-				p = AT_CmdWrite(cmd, 500, NULL);
+				p = CmdWrite(cmd, 500, NULL);
 			}
 			if (memcmp(tmp.con.apn, param->con.username, strlen(param->con.username)) != 0) {
 				sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->con.username);
-				p = AT_CmdWrite(cmd, 500, NULL);
+				p = CmdWrite(cmd, 500, NULL);
 			}
 			if (memcmp(tmp.con.apn, param->con.password, strlen(param->con.password)) != 0) {
 				sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->con.password);
-				p = AT_CmdWrite(cmd, 500, NULL);
+				p = CmdWrite(cmd, 500, NULL);
 			}
 
 			// open or close
 			if (tmp.status != param->status) {
 				sprintf(cmd, "AT+SAPBR=%d,1\r", param->cmd_type);
-				p = AT_CmdWrite(cmd, 60000, NULL);
+				p = CmdWrite(cmd, 60000, NULL);
 			}
 		} else {
 			*param = tmp;
@@ -609,7 +609,7 @@ SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
 
 /* Private functions implementation --------------------------------------------*/
 #if (BOOTLOADER)
-static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *string, uint8_t size, uint8_t executor) {
+static SIMCOM_RESULT SingleString(char command[20], AT_MODE mode, char *string, uint8_t size, uint8_t executor) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 	char *str = NULL, cmd[20], res[20], tmp[size];
 
@@ -620,15 +620,15 @@ static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *strin
 	// Read
 	sprintf(cmd, "AT+%s%s", command, executor ? "\r" : "?\r");
 	sprintf(res, "+%s: ", command);
-	p = AT_CmdRead(cmd, 1000, res, &str);
+	p = CmdRead(cmd, 1000, res, &str);
 	if (p > 0) {
-		AT_ParseText(&str[0], NULL, tmp, sizeof(tmp));
+		ParseText(&str[0], NULL, tmp, sizeof(tmp));
 
 		// Write
 		if (mode == ATW) {
 			if (strcmp(tmp, string) != 0) {
 				sprintf(cmd, "AT+%s=\"%s\"\r", command, string);
-				p = AT_CmdWrite(cmd, 1000, NULL);
+				p = CmdWrite(cmd, 1000, NULL);
 			}
 		} else {
 			memcpy(string, tmp, size);
@@ -639,7 +639,7 @@ static SIMCOM_RESULT AT_SingleString(char command[20], AT_MODE mode, char *strin
 	return p;
 }
 
-static uint8_t AT_FindInBuffer(char *prefix, char **str) {
+static uint8_t FindInBuffer(char *prefix, char **str) {
 	*str = Simcom_Response(prefix);
 
 	if (*str != NULL) {
@@ -650,7 +650,7 @@ static uint8_t AT_FindInBuffer(char *prefix, char **str) {
 }
 #endif
 
-static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *value, uint8_t executor) {
+static SIMCOM_RESULT SingleInteger(char command[20], AT_MODE mode, int32_t *value, uint8_t executor) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 	char *str = NULL, cmd[20], res[20];
 
@@ -661,15 +661,15 @@ static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *v
 	// Read
 	sprintf(cmd, "AT+%s%s", command, executor ? "\r" : "?\r");
 	sprintf(res, "+%s: ", command);
-	p = AT_CmdRead(cmd, 1000, res, &str);
+	p = CmdRead(cmd, 1000, res, &str);
 	if (p > 0) {
-		tmp = AT_ParseNumber(&str[0], NULL);
+		tmp = ParseNumber(&str[0], NULL);
 
 		// Write
 		if (mode == ATW) {
 			if (tmp != *value) {
 				sprintf(cmd, "AT+%s=%d\r", command, (int) *value);
-				p = AT_CmdWrite(cmd, 500, NULL);
+				p = CmdWrite(cmd, 500, NULL);
 			}
 		} else {
 			*value = tmp;
@@ -680,7 +680,7 @@ static SIMCOM_RESULT AT_SingleInteger(char command[20], AT_MODE mode, int32_t *v
 	return p;
 }
 
-static SIMCOM_RESULT AT_CmdWrite(char *cmd, uint32_t ms, char *res) {
+static SIMCOM_RESULT CmdWrite(char *cmd, uint32_t ms, char *res) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
 	if (SIM.state >= SIM_STATE_READY) {
@@ -690,7 +690,7 @@ static SIMCOM_RESULT AT_CmdWrite(char *cmd, uint32_t ms, char *res) {
 	return p;
 }
 
-static SIMCOM_RESULT AT_CmdRead(char *cmd, uint32_t ms, char *prefix, char **str) {
+static SIMCOM_RESULT CmdRead(char *cmd, uint32_t ms, char *prefix, char **str) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
 	if (SIM.state >= SIM_STATE_READY) {
@@ -710,7 +710,7 @@ static SIMCOM_RESULT AT_CmdRead(char *cmd, uint32_t ms, char *prefix, char **str
 	return p;
 }
 
-static void AT_ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size) {
+static void ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size) {
 	uint8_t i = 0;
 
 	// check for double quote start
@@ -743,7 +743,7 @@ static void AT_ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size
 	}
 }
 
-static int32_t AT_ParseNumber(const char *ptr, uint8_t *cnt) {
+static int32_t ParseNumber(const char *ptr, uint8_t *cnt) {
 	uint8_t minus = 0, i = 0;
 	int32_t sum = 0;
 
@@ -770,12 +770,12 @@ static int32_t AT_ParseNumber(const char *ptr, uint8_t *cnt) {
 //  uint8_t i = 0, j = 0;
 //  float sum = 0.0f;
 //
-//  sum = (float) AT_ParseNumber(ptr, &i); /* Parse number */
+//  sum = (float) ParseNumber(ptr, &i); /* Parse number */
 //  j += i;
 //  ptr += i;
 //  if (*ptr == '.') { /* Check decimals */
 //      float dec;
-//      dec = (float) AT_ParseNumber(ptr + 1, &i);
+//      dec = (float) ParseNumber(ptr + 1, &i);
 //      dec /= (float) pow(10, i);
 //      if (sum >= 0) {
 //          sum += dec;

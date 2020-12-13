@@ -7,11 +7,11 @@
 #include "Libs/_rtos_utils.h"
 
 /* Private functions declarations ---------------------------------------------*/
-static uint8_t _RTOS_ValidThreadFlag(uint32_t flag);
-//static uint8_t _RTOS_ValidEventFlag(uint32_t flag);
+static uint8_t ValidThreadFlag(uint32_t flag);
+//static uint8_t ValidEventFlag(uint32_t flag);
 
 /* Public functions implementation --------------------------------------------*/
-void _RTOS_Debugger(uint32_t ms) {
+void RTOS_Debugger(uint32_t ms) {
   static uint8_t init = 1, thCount;
   static TickType_t lastDebug;
   static osThreadId_t threads[20];
@@ -59,25 +59,25 @@ void _RTOS_Debugger(uint32_t ms) {
   }
 }
 
-uint8_t _RTOS_ThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout) {
+uint8_t RTOS_ThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout) {
   *notif = osThreadFlagsWait(flags, options, timeout);
 
-  return _RTOS_ValidThreadFlag(*notif);
+  return ValidThreadFlag(*notif);
 }
 
-uint8_t _RTOS_CalculateStack(osThreadId_t thread_id) {
+uint8_t RTOS_CalculateStack(osThreadId_t thread_id) {
   return osThreadGetStackSpace(thread_id) * 100 / osThreadGetStackSize(thread_id);
 }
 
 /* Private functions implementation --------------------------------------------*/
-static uint8_t _RTOS_ValidThreadFlag(uint32_t flag) {
+static uint8_t ValidThreadFlag(uint32_t flag) {
   // check is empty
   if (!flag || (flag & (~EVT_MASK)))
     return 0;
   return 1;
 }
 
-//static uint8_t _RTOS_ValidEventFlag(uint32_t flag) {
+//static uint8_t ValidEventFlag(uint32_t flag) {
 //  uint8_t ret = 1;
 //
 //  // check is empty

@@ -457,7 +457,7 @@ void StartManagerTask(void *argument)
 
     MX_IWDG_Reset();
 
-    // _RTOS_Debugger(1000);
+    // RTOS_Debugger(1000);
     VCU.d.task.manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
     VCU.d.task.iot.stack = osThreadGetStackSpace(IotTaskHandle);
     VCU.d.task.reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
@@ -873,7 +873,7 @@ void StartRemoteTask(void *argument)
     VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
     // Check response
-    if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
+    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
       if (notif & EVT_REMOTE_RESET)
         RF_Init(&(VCU.d.unit_id));
@@ -979,7 +979,7 @@ void StartFingerTask(void *argument)
     VCU.d.task.finger.wakeup = _GetTickMS() / 1000;
 
     // check if user put finger
-    if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       if (notif & EVT_FINGER_PLACED) {
         id = Finger_AuthFast();
         // Finger is registered
@@ -1038,7 +1038,7 @@ void StartAudioTask(void *argument)
     VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
 
     // wait with timeout
-    if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       // Beep command
       if (notif & EVT_AUDIO_BEEP) {
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
@@ -1091,7 +1091,7 @@ void StartGateTask(void *argument)
     VCU.d.task.gate.wakeup = _GetTickMS() / 1000;
 
     // wait forever
-    if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
+    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
       // handle bounce effect
       _DelayMS(50);
 
@@ -1246,7 +1246,7 @@ void StartHmi2PowerTask(void *argument)
   for (;;) {
     VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
 
-    if (_RTOS_ThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
+    if (RTOS_ThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
 
       if (HMI2.d.power)
         while (!HMI2.d.started)

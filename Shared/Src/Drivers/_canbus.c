@@ -25,8 +25,8 @@ static uint8_t CAN_ACTIVE = 0;
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC);
-static uint8_t CANBUS_IsActivated(void);
+static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC);
+static uint8_t Activated(void);
 
 /* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(void) {
@@ -87,11 +87,11 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 	CAN_TxHeaderTypeDef TxHeader;
 	HAL_StatusTypeDef status;
 
-	if (!CANBUS_IsActivated())
+	if (!Activated())
 		return 0;
 
 	lock();
-	CANBUS_Header(&TxHeader, address, DLC);
+	Header(&TxHeader, address, DLC);
 	while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0)
 		;
 
@@ -114,7 +114,7 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 uint8_t CANBUS_Read(can_rx_t *Rx) {
 	HAL_StatusTypeDef status = HAL_ERROR;
 
-	if (!CANBUS_IsActivated())
+	if (!Activated())
 		return 0;
 
 	lock();
@@ -195,7 +195,7 @@ static void unlock(void) {
 #endif
 }
 
-static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC) {
+static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC) {
 	/* Configure Transmission process */
 	if (address > 0x7FF) {
 		TxHeader->IDE = CAN_ID_EXT;
@@ -209,7 +209,7 @@ static void CANBUS_Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint3
 	TxHeader->TransmitGlobalTime = DISABLE;
 }
 
-static uint8_t CANBUS_IsActivated(void) {
+static uint8_t Activated(void) {
 	if (!CAN_ACTIVE)
 		CANBUS_Init();
 
