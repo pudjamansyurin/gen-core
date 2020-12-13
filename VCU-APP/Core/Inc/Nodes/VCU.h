@@ -76,9 +76,9 @@ typedef struct {
 
 typedef struct {
   struct {
-    uint8_t (*SwitchModeControl)(sw_t*);
+    uint8_t (*SwitchModeControl)(hbar_t*);
     uint8_t (*Datetime)(timestamp_t*);
-    uint8_t (*MixedData)(sw_runner_t*);
+    uint8_t (*MixedData)(hbar_runner_t*);
     uint8_t (*SubTripData)(uint32_t*);
   } t;
 } vcu_can_t;
@@ -104,9 +104,9 @@ void VCU_CheckKnob(void);
 uint16_t VCU_SpeedToVolume(void);
 void VCU_SetOdometer(uint8_t increment);
 
-uint8_t VCU_CAN_TX_SwitchModeControl(sw_t *sw);
+uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar);
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp);
-uint8_t VCU_CAN_TX_MixedData(sw_runner_t *runner);
+uint8_t VCU_CAN_TX_MixedData(hbar_runner_t *runner);
 uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip);
 
 #endif /* INC_NODES_VCU_H_ */

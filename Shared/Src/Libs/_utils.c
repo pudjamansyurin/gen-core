@@ -15,7 +15,7 @@
 /* External variables ---------------------------------------------------------*/
 #if (!BOOTLOADER)
 extern TIM_HandleTypeDef htim10;
-extern sw_t SW;
+extern hbar_t HBAR;
 #endif
 
 /* Public functions implementation --------------------------------------------*/
@@ -81,15 +81,15 @@ void _BuzzerWrite(uint8_t state) {
 }
 
 void _DummyDataGenerator(void) {
-	uint8_t *pRange = &(SW.runner.mode.sub.report[SW_M_REPORT_RANGE]);
-	uint8_t *pAverage = &(SW.runner.mode.sub.report[SW_M_REPORT_AVERAGE]);
+	uint8_t *pRange = &(HBAR.runner.mode.data.report[HBAR_M_REPORT_RANGE]);
+	uint8_t *pAverage = &(HBAR.runner.mode.data.report[HBAR_M_REPORT_AVERAGE]);
 
 	// Dummy Report Range
   if (!(*pRange))
 		*pRange = 255;
   else
 		(*pRange)--;
-	
+
 
 	// Dummy Report Average (Efficiency)
   if (*pAverage >= 255)

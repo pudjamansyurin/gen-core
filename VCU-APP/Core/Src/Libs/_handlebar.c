@@ -10,7 +10,7 @@
 #include "_defines.h"
 
 /* Public variables -----------------------------------------------------------*/
-sw_t SW = {
+hbar_t HBAR = {
 		.list = {
 				{
 						.event = "SELECT",
@@ -72,17 +72,17 @@ sw_t SW = {
 				.hazard = 0,
 				.reverse = 0,
 				.mode = {
-						.sel = SW_M_DRIVE,
-						.sub = {
+						.sel = HBAR_M_DRIVE,
+						.data = {
 								.val = {
-										SW_M_DRIVE_STANDARD,
-										SW_M_TRIP_ODO,
-										SW_M_REPORT_RANGE
+										HBAR_M_DRIVE_STANDARD,
+										HBAR_M_TRIP_ODO,
+										HBAR_M_REPORT_RANGE
 								},
 								.max = {
-										SW_M_DRIVE_MAX,
-										SW_M_TRIP_MAX,
-										SW_M_REPORT_MAX
+										HBAR_M_DRIVE_MAX,
+										HBAR_M_TRIP_MAX,
+										HBAR_M_REPORT_MAX
 								},
 								.report = { 0, 0 },
 								.trip = { 0, 0 }
@@ -97,50 +97,49 @@ static void HBAR_RunSet(void);
 
 /* Public functions implementation --------------------------------------------*/
 void HBAR_ReadStates(void) {
+	hbar_list_t *list;
+
 	// Read all EXTI state
-	for (uint8_t i = 0; i < SW_K_TOTAL; i++) {
-		SW.list[i].state = HAL_GPIO_ReadPin(SW.list[i].port, SW.list[i].pin);
+	for (uint8_t i = 0; i < HBAR_K_MAX; i++) {
+		list = &(HBAR.list[i]);
+		list->state = HAL_GPIO_ReadPin(list->port, list->pin);
 	}
 
-	// check is reverse mode active
 	HBAR_CheckReverse();
 }
 
 void HBAR_CheckReverse(void) {
-	// set reverse
-	SW.runner.reverse = SW.list[SW_K_REVERSE].state;
-	// set hazard
-	SW.runner.hazard = SW.list[SW_K_REVERSE].state;
+	HBAR.runner.reverse = HBAR.list[HBAR_K_REVERSE].state;
+	HBAR.runner.hazard = HBAR.list[HBAR_K_REVERSE].state;
 }
 
 void HBAR_TimerSelectSet(void) {
-	for (uint8_t i = 0; i < SW_K_TOTAL; i++) {
-		if (i == SW_K_SELECT || i == SW_K_SET) {
-			// reset SET timer
-			SW.timer[i].time = 0;
+	hbar_list_t *list;
+	hbar_timer_t *timer;
+
+	for (uint8_t i = 0; i < HBAR_K_MAX; i++) {
+		list = &(HBAR.list[i]);
+		timer = &(HBAR.timer[i]);
+
+		if (i == HBAR_K_SELECT || i == HBAR_K_SET) {
+			timer->time = 0;
 
 			// next job
-			if (SW.list[i].state) {
-				if (i == SW_K_SELECT || (i == SW_K_SET && SW.runner.listening)) {
-					// start timer if not running
-					if (!SW.timer[i].running) {
-						// set flag
-						SW.timer[i].running = 1;
-						// start timer for SET
-						SW.timer[i].start = _GetTickMS();
+			if (list->state) {
+				if (i == HBAR_K_SELECT || (i == HBAR_K_SET && HBAR.runner.listening)) {
+					if (!timer->running) {
+						timer->running = 1;
+						timer->start = _GetTickMS();
 					}
 				}
 				// reverse it
-				SW.list[i].state = 0;
+				list->state = 0;
 			} else {
-				// stop timer if running
-				if (SW.timer[i].running) {
-					// set flag
-					SW.timer[i].running = 0;
-					// stop SET
-					SW.timer[i].time = (_GetTickMS() - SW.timer[i].start) / 1000;
+				if (timer->running) {
+					timer->running = 0;
+					timer->time = (_GetTickMS() - timer->start) / 1000;
 					// reverse it
-					SW.list[i].state = 1;
+					list->state = 1;
 				}
 			}
 		}
@@ -148,30 +147,31 @@ void HBAR_TimerSelectSet(void) {
 }
 
 void HBAR_AccumulateSubTrip(uint8_t increment) {
-	SW_MODE_TRIP mTrip = SW.runner.mode.sub.val[SW_M_TRIP];
+	HBAR_MODE_TRIP mTrip = HBAR.runner.mode.data.val[HBAR_M_TRIP];
+	uint32_t *trip = &(HBAR.runner.mode.data.trip[mTrip]);
 
-  if ((SW.runner.mode.sub.trip[mTrip] / 1000) > VCU_ODOMETER_KM_MAX)
-		SW.runner.mode.sub.trip[mTrip] = 0;
+  if ((*trip / 1000) > VCU_ODOMETER_KM_MAX)
+		*trip = 0;
   else
-    SW.runner.mode.sub.trip[mTrip] += increment;
+    *trip += increment;
 }
 
-sein_t HBAR_SeinController(sw_t *sw) {
+sein_t HBAR_SeinController(hbar_t *hbar) {
 	static sein_t sein = { 0, 0 };
 	static TickType_t tickSein;
 
 	if ((_GetTickMS() - tickSein) >= 500) {
-		if (sw->runner.hazard) {
+		if (hbar->runner.hazard) {
 			// hazard
 			tickSein = _GetTickMS();
 			sein.left = !sein.left;
 			sein.right = !sein.right;
-		} else if (sw->list[SW_K_SEIN_LEFT].state) {
+		} else if (hbar->list[HBAR_K_SEIN_LEFT].state) {
 			// left sein
 			tickSein = _GetTickMS();
 			sein.left = !sein.left;
 			sein.right = 0;
-		} else if (sw->list[SW_K_SEIN_RIGHT].state) {
+		} else if (hbar->list[HBAR_K_SEIN_RIGHT].state) {
 			// right sein
 			tickSein = _GetTickMS();
 			sein.left = 0;
@@ -185,7 +185,7 @@ sein_t HBAR_SeinController(sw_t *sw) {
 	return sein;
 }
 
-uint8_t HBAR_ModeController(sw_runner_t *runner) {
+uint8_t HBAR_ModeController(hbar_runner_t *runner) {
 	static int8_t iName = -1, iValue = -1;
 	static TickType_t tick, tickPeriod;
 	static uint8_t iHide = 0;
@@ -198,8 +198,8 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
 			tickPeriod = _GetTickMS();
 		}
 		// value changed
-		else if (iValue != runner->mode.sub.val[runner->mode.sel]) {
-			iValue = runner->mode.sub.val[runner->mode.sel];
+    else if (iValue != runner->mode.data.val[runner->mode.sel]) {
+      iValue = runner->mode.data.val[runner->mode.sel];
 			tickPeriod = _GetTickMS();
 		}
 
@@ -215,55 +215,46 @@ uint8_t HBAR_ModeController(sw_runner_t *runner) {
 			tick = _GetTickMS();
 			iHide = !iHide;
 		}
-	} else {
+	} else
 		iHide = 0;
-	}
 
 	return iHide;
 }
 
 void HBAR_RunSelectOrSet(void) {
 	 // Only handle Select & Set when in non-reverse
-	if (!SW.list[SW_K_REVERSE].state) {
-		// handle Select & Set
-		if (SW.list[SW_K_SELECT].state) {
+	if (!HBAR.list[HBAR_K_REVERSE].state) {
+		if (HBAR.list[HBAR_K_SELECT].state)
 			HBAR_RunSelect();
-		} else if (SW.list[SW_K_SET].state) {
+		else if (HBAR.list[HBAR_K_SET].state)
 			HBAR_RunSet();
-		}
 	}
 }
 
 /* Private functions implementation -------------------------------------------*/
 static void HBAR_RunSelect(void) {
-	if (SW.runner.listening) {
-		// change mode position
-		if (SW.runner.mode.sel == SW_M_MAX) {
-			SW.runner.mode.sel = 0;
-		} else {
-			SW.runner.mode.sel++;
-		}
+	if (HBAR.runner.listening) {
+		if (HBAR.runner.mode.sel == HBAR_M_MAX)
+			HBAR.runner.mode.sel = 0;
+		else
+			HBAR.runner.mode.sel++;
 	}
 	// Listening on option
-	SW.runner.listening = 1;
+	HBAR.runner.listening = 1;
 }
 
 static void HBAR_RunSet(void) {
-	SW_MODE sMode = SW.runner.mode.sel;
+	HBAR_MODE sMode = HBAR.runner.mode.sel;
 
 	// handle reset only if push more than n sec, and in trip mode
-	if (SW.runner.listening || (SW.timer[SW_K_SET].time >= 3 && sMode == SW_M_TRIP)) {
-		if (!SW.runner.listening) {
-			// reset value
-			SW.runner.mode.sub.trip[SW.runner.mode.sub.val[sMode]] = 0;
-		} else {
-			// if less than n sec
-			if (SW.runner.mode.sub.val[sMode] == SW.runner.mode.sub.max[sMode]) {
-				SW.runner.mode.sub.val[sMode] = 0;
-			} else {
-				SW.runner.mode.sub.val[sMode]++;
-			}
+	if (HBAR.runner.listening || (HBAR.timer[HBAR_K_SET].time >= 3 && sMode == HBAR_M_TRIP)) {
+		if (!HBAR.runner.listening)
+			HBAR.runner.mode.data.trip[HBAR.runner.mode.data.val[sMode]] = 0;
+		else {
+			if (HBAR.runner.mode.data.val[sMode] == HBAR.runner.mode.data.max[sMode])
+				HBAR.runner.mode.data.val[sMode] = 0;
+			else
+				HBAR.runner.mode.data.val[sMode]++;
 		}
 	}
 }
-

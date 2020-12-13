@@ -42,7 +42,7 @@ void Response_Init(response_t *response, uint16_t *seq_id_response) {
 	response->header.seq_id = *seq_id_response;
 }
 
-void Report_Capture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, sw_sub_t *sw) {
+void Report_Capture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar) {
 	// Reconstruct the header
 	report->header.seq_id++;
 	report->header.unit_id = vcu->unit_id;
@@ -78,10 +78,10 @@ void Report_Capture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_dat
 		report->data.opt.vcu.speed = vcu->speed;
 		report->data.opt.vcu.odometer = vcu->odometer;
 
-		report->data.opt.vcu.trip.a = sw->trip[SW_M_TRIP_A];
-		report->data.opt.vcu.trip.b = sw->trip[SW_M_TRIP_B];
-		report->data.opt.vcu.report.range = sw->report[SW_M_REPORT_RANGE];
-		report->data.opt.vcu.report.efficiency = sw->report[SW_M_REPORT_AVERAGE];
+		report->data.opt.vcu.trip.a = hbar->trip[HBAR_M_TRIP_A];
+		report->data.opt.vcu.trip.b = hbar->trip[HBAR_M_TRIP_B];
+		report->data.opt.vcu.report.range = hbar->report[HBAR_M_REPORT_RANGE];
+		report->data.opt.vcu.report.efficiency = hbar->report[HBAR_M_REPORT_AVERAGE];
 
 		report->data.opt.vcu.signal = SIM.signal;
     report->data.opt.vcu.bat = vcu->bat / 18;

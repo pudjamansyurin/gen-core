@@ -14,77 +14,82 @@
 /* Exported constants --------------------------------------------------------*/
 #define MODE_TIME_GUARD              (uint16_t) 3000
 
-// EXTI list
-#define SW_K_TOTAL                              7
-#define SW_K_SELECT                             0
-#define SW_K_SET                                1
-#define SW_K_SEIN_LEFT                          2
-#define SW_K_SEIN_RIGHT                         3
-#define SW_K_REVERSE                            4
-#define SW_K_ABS                                5
-#define SW_K_LAMP                               6
-
 /* Exported enum ----------------------------------------------------------------*/
 typedef enum {
-    SW_M_DRIVE = 0,
-    SW_M_TRIP,
-    SW_M_REPORT,
-    SW_M_MAX = 2
-} SW_MODE;
+  HBAR_K_SELECT = 0,
+  HBAR_K_SET,
+  HBAR_K_SEIN_LEFT,
+  HBAR_K_SEIN_RIGHT,
+  HBAR_K_REVERSE,
+  HBAR_K_ABS,
+  HBAR_K_LAMP,
+  HBAR_K_MAX = 7
+} HBAR_KEY;
 
 typedef enum {
-    SW_M_DRIVE_ECONOMY = 0,
-    SW_M_DRIVE_STANDARD,
-    SW_M_DRIVE_SPORT,
-    SW_M_DRIVE_PERFORMANCE,
-    SW_M_DRIVE_MAX = 3
-} SW_MODE_DRIVE;
+    HBAR_M_DRIVE = 0,
+    HBAR_M_TRIP,
+    HBAR_M_REPORT,
+    HBAR_M_MAX = 2
+} HBAR_MODE;
 
 typedef enum {
-    SW_M_TRIP_ODO = 0,
-    SW_M_TRIP_A,
-    SW_M_TRIP_B,
-    SW_M_TRIP_MAX = 2
-} SW_MODE_TRIP;
+    HBAR_M_DRIVE_ECONOMY = 0,
+    HBAR_M_DRIVE_STANDARD,
+    HBAR_M_DRIVE_SPORT,
+    HBAR_M_DRIVE_PERFORMANCE,
+    HBAR_M_DRIVE_MAX = 3
+} HBAR_MODE_DRIVE;
 
 typedef enum {
-    SW_M_REPORT_RANGE = 0,
-    SW_M_REPORT_AVERAGE,
-    SW_M_REPORT_MAX = 1
-} SW_MODE_REPORT;
+    HBAR_M_TRIP_ODO = 0,
+    HBAR_M_TRIP_A,
+    HBAR_M_TRIP_B,
+    HBAR_M_TRIP_MAX = 2
+} HBAR_MODE_TRIP;
+
+typedef enum {
+    HBAR_M_REPORT_RANGE = 0,
+    HBAR_M_REPORT_AVERAGE,
+    HBAR_M_REPORT_MAX = 1
+} HBAR_MODE_REPORT;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
-    uint8_t max[SW_M_MAX + 1];
-    uint8_t val[SW_M_MAX + 1];
-    uint8_t report[SW_M_REPORT_MAX + 1];
-    uint32_t trip[SW_M_TRIP_MAX + 1];
-} sw_sub_t;
+    uint8_t max[HBAR_M_MAX + 1];
+    uint8_t val[HBAR_M_MAX + 1];
+    uint8_t report[HBAR_M_REPORT_MAX + 1];
+    uint32_t trip[HBAR_M_TRIP_MAX + 1];
+} hbar_data_t;
 
 typedef struct {
     uint8_t listening;
     uint8_t hazard;
     uint8_t reverse;
     struct {
-        SW_MODE sel;
-        sw_sub_t sub;
+        HBAR_MODE sel;
+        hbar_data_t data;
     } mode;
-} sw_runner_t;
+} hbar_runner_t;
 
 typedef struct {
-    struct {
-        GPIO_TypeDef *port;
-        char event[20];
-        uint16_t pin;
-        uint8_t state;
-    } list[SW_K_TOTAL];
-    struct {
-        uint32_t start;
-        uint8_t running;
-        uint8_t time;
-    } timer[2];
-    sw_runner_t runner;
-} sw_t;
+    GPIO_TypeDef *port;
+    char event[20];
+    uint16_t pin;
+    uint8_t state;
+} hbar_list_t;
+
+typedef struct {
+    uint32_t start;
+    uint8_t running;
+    uint8_t time;
+} hbar_timer_t;
+
+typedef struct {
+    hbar_list_t list[HBAR_K_MAX];
+    hbar_timer_t timer[2];
+    hbar_runner_t runner;
+} hbar_t;
 
 typedef struct {
     uint8_t left;
@@ -97,7 +102,7 @@ void HBAR_CheckReverse(void);
 void HBAR_TimerSelectSet(void);
 void HBAR_RunSelectOrSet(void);
 void HBAR_AccumulateSubTrip(uint8_t increment);
-sein_t HBAR_SeinController(sw_t *sw);
-uint8_t HBAR_ModeController(sw_runner_t *runner);
+sein_t HBAR_SeinController(hbar_t *hbar);
+uint8_t HBAR_ModeController(hbar_runner_t *runner);
 
 #endif /* LIBS__HANDLEBAR_H_ */

@@ -73,7 +73,7 @@ extern vcu_t VCU;
 extern bms_t BMS;
 extern hmi1_t HMI1;
 extern hmi2_t HMI2;
-extern sw_t SW;
+extern hbar_t HBAR;
 /* USER CODE END Variables */
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
@@ -588,7 +588,7 @@ void StartReporterTask(void *argument)
     VCU.d.interval = 5;
     frame = FR_FULL;
 
-    Report_Capture(frame, &report, &(VCU.d), &(BMS.d), &(SW.runner.mode.sub));
+    Report_Capture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.runner.mode.data));
 
     // Put report to log
     do {
@@ -912,10 +912,10 @@ void StartKeylessTask(void *argument)
 
               // toggle Hazard & HORN (+ Sein Lamp)
               //							for (uint8_t i = 0; i < 2; i++) {
-              //								SW.runner.hazard = 1;
+              //								HBAR.runner.hazard = 1;
               //								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
               //								_DelayMS(200);
-              //								SW.runner.hazard = 0;
+              //								HBAR.runner.hazard = 0;
               //								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
               //								_DelayMS(100);
               //							}
@@ -1195,13 +1195,13 @@ void StartCanTxTask(void *argument)
     lastWake = _GetTickMS();
 
     // send every 20m
-    VCU.can.t.SwitchModeControl(&SW);
+    VCU.can.t.SwitchModeControl(&HBAR);
 
     // send every 500ms
     if (lastWake - last500ms > 500) {
       last500ms = _GetTickMS();
 
-      VCU.can.t.MixedData(&(SW.runner));
+      VCU.can.t.MixedData(&(HBAR.runner));
     }
 
     // send every 1000ms
@@ -1209,7 +1209,7 @@ void StartCanTxTask(void *argument)
       last1000ms = _GetTickMS();
 
       VCU.can.t.Datetime(&(VCU.d.rtc.timestamp));
-      VCU.can.t.SubTripData(&(SW.runner.mode.sub.trip[0]));
+      VCU.can.t.SubTripData(&(HBAR.runner.mode.data.trip[0]));
     }
 
     // Handle Knob Changes
@@ -1291,8 +1291,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     RF_IrqHandler();
 
   // handle Switches EXTI
-  for (uint8_t i = 0; i < SW_K_TOTAL; i++)
-    if (GPIO_Pin == SW.list[i].pin) {
+  for (uint8_t i = 0; i < HBAR_K_MAX; i++)
+    if (GPIO_Pin == HBAR.list[i].pin) {
       osThreadFlagsSet(SwitchTaskHandle, EVT_SWITCH_TRIGGERED);
       break;
     }
