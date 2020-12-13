@@ -42,9 +42,6 @@
 
 /* Exported constants --------------------------------------------------------*/
 // #define VERIFY_WRITTENDATA
-/* Audio Reset Pin definition */
-#define AUDIO_RESET_PIN                 INT_AUDIO_RST_Pin
-#define AUDIO_RESET_GPIO                INT_AUDIO_RST_GPIO_Port
 
 /* Maximum Timeout values for flags waiting loops. These timeouts are not based
  // on accurate values, they just guarantee that the application will not remain

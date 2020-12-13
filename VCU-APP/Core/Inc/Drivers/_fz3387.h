@@ -89,8 +89,6 @@ typedef struct {
 } finger_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void fz3387_SET_POWER(uint8_t state);
-
 void fz3387_writeStructuredPacket(void);
 uint8_t fz3387_getStructuredPacket(void);
 uint8_t fz3387_SendCmdPacket(uint8_t *data, uint8_t size);

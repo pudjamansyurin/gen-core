@@ -28,10 +28,7 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
 
 
     // turn on the mosfet
-    HAL_GPIO_WritePin(INT_REMOTE_PWR_GPIO_Port, INT_REMOTE_PWR_Pin, 0);
-    _DelayMS(1000);
-    HAL_GPIO_WritePin(INT_REMOTE_PWR_GPIO_Port, INT_REMOTE_PWR_Pin, 1);
-    _DelayMS(1000);
+    GATE_RemoteReset();
 
     // reset peripheral
     HAL_SPI_MspDeInit(&hspi1);
@@ -75,12 +72,6 @@ NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config) {
   config->rf_channel = 110;
   config->spi = &hspi1;
   config->spi_timeout = 3; // milliseconds
-  config->csn_port = INT_REMOTE_CSN_GPIO_Port;
-  config->csn_pin = INT_REMOTE_CSN_Pin;
-  config->ce_port = INT_REMOTE_CE_GPIO_Port;
-  config->ce_pin = INT_REMOTE_CE_Pin;
-  config->irq_port = INT_REMOTE_IRQ_GPIO_Port;
-  config->irq_pin = INT_REMOTE_IRQ_Pin;
 
   // apply
   dev->config = *config;
@@ -776,18 +767,17 @@ __weak void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
 
 /* Private functions implementation --------------------------------------------*/
 static void csn_set(nrf24l01 *dev) {
-  HAL_GPIO_WritePin(dev->config.csn_port, dev->config.csn_pin, GPIO_PIN_SET);
+  GATE_RemoteCSN(GPIO_PIN_SET);
 }
 
 static void csn_reset(nrf24l01 *dev) {
-  HAL_GPIO_WritePin(dev->config.csn_port, dev->config.csn_pin,
-      GPIO_PIN_RESET);
+  GATE_RemoteCSN(GPIO_PIN_RESET);
 }
 
 static void ce_set(nrf24l01 *dev) {
-  HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_SET);
+  GATE_RemoteCE(GPIO_PIN_SET);
 }
 
 static void ce_reset(nrf24l01 *dev) {
-  HAL_GPIO_WritePin(dev->config.ce_port, dev->config.ce_pin, GPIO_PIN_RESET);
+  GATE_RemoteCE(GPIO_PIN_RESET);
 }

@@ -22,16 +22,13 @@ void Finger_Init(void) {
 	uint8_t verified = 0;
 
 	FINGER_DMA_Init();
-	
+
 	// Inititalize Module
 	do {
 		LOG_StrLn("Finger:Init");
 
 		// mosfet control
-		HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, 0);
-		_DelayMS(500);
-		HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, 1);
-		_DelayMS(500);
+		GATE_FingerReset();
 
 		// verify password and check hardware
 		lock();
@@ -85,7 +82,7 @@ uint8_t Finger_Enroll(uint8_t id, uint8_t *fingerState) {
 			timeout = ((_GetTickMS() - tick) > scan_time);
 
 			// send command
-			_LedToggle();
+			GATE_LedToggle();
 			*fingerState = !(*fingerState);
 			p = fz3387_getImage();
 
@@ -358,11 +355,10 @@ int8_t Finger_AuthFast(void) {
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
 	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
-	fz3387_SET_POWER(1);
+	GATE_FingerPower(GPIO_PIN_SET);
 }
 
 static void unlock(void) {
-	fz3387_SET_POWER(0);
-	_DelayMS(50);
+	GATE_FingerPower(GPIO_PIN_RESET);
 	osMutexRelease(FingerRecMutexHandle);
 }

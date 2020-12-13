@@ -34,7 +34,6 @@ vcu_t VCU = {
     VCU_SetEvent,
     VCU_ReadEvent,
     VCU_CheckPower5v,
-    VCU_CheckKnob,
     VCU_SpeedToVolume,
     VCU_SetOdometer,
 };
@@ -85,11 +84,10 @@ void VCU_CheckPower5v(void) {
   uint8_t currentState;
 
   // read state
-  currentState = HAL_GPIO_ReadPin(EXT_REG_5V_IRQ_GPIO_Port, EXT_REG_5V_IRQ_Pin);
+  currentState = GATE_ReadPower5v();
   // handle only when changed
   if (lastState != currentState) {
     lastState = currentState;
-    // update tick
     tick = _GetTickMS();
   }
 
@@ -111,10 +109,6 @@ void VCU_CheckPower5v(void) {
     VCU.SetEvent(EV_VCU_INDEPENDENT, 0);
     VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
   }
-}
-
-void VCU_CheckKnob(void) {
-  VCU.d.state.knob = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
 }
 
 uint16_t VCU_SpeedToVolume(void) {

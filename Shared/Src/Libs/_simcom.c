@@ -46,9 +46,8 @@ sim_t SIM = {
 static SIMCOM_RESULT Ready(void);
 static SIMCOM_RESULT Power(void);
 static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res);
-static void Sleep(uint8_t state);
 static void BeforeTransmitHook(void);
-static void Debugger(void);
+static void SimcomDebugger(void);
 static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p);
 static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState);
 static uint8_t StatePoorSignal(void);
@@ -581,9 +580,7 @@ static SIMCOM_RESULT Power(void) {
   SIMCOM_Reset_Buffer();
 
   // simcom reset pin
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 1);
-  HAL_Delay(1);
-  HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, 0);
+  GATE_SimcomSoftReset();
 
   if (Ready() == SIM_RESULT_OK) {
 #if (!BOOTLOADER)
@@ -593,9 +590,7 @@ static SIMCOM_RESULT Power(void) {
   }
 
   // relay power control
-  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 1);
-  _DelayMS(1000);
-  HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, 0);
+  GATE_SimcomReset();
 
 #if (!BOOTLOADER)
   VCU.SetEvent(EV_VCU_NET_HARD_RESET, 1);
@@ -604,18 +599,13 @@ static SIMCOM_RESULT Power(void) {
   return Ready();
 }
 
-static void Sleep(uint8_t state) {
-  HAL_GPIO_WritePin(INT_NET_DTR_GPIO_Port, INT_NET_DTR_Pin, state);
-  _DelayMS(50);
-}
-
 static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res) {
   SIMCOM_RESULT p = SIM_RESULT_ERROR;
   uint32_t tick, timeout = 0;
 
   Simcom_Lock();
   // wake-up the SIMCOM
-  Sleep(0);
+  GATE_SimcomSleep(GPIO_PIN_RESET);
 
   // transmit to serial (low-level)
   BeforeTransmitHook();
@@ -682,7 +672,7 @@ static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res) 
   }
 
   // sleep the SIMCOM
-  Sleep(1);
+  GATE_SimcomSleep(GPIO_PIN_SET);
   Simcom_Unlock();
   return p;
 }
@@ -699,10 +689,10 @@ static void BeforeTransmitHook(void) {
 #endif
 
   // handle things on every request
-  // Debugger();
+  // SimcomDebugger();
 }
 
-static void Debugger(void) {
+static void SimcomDebugger(void) {
   LOG_StrLn("============ SIMCOM DEBUG ============");
   LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
   LOG_Enter();

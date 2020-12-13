@@ -28,10 +28,7 @@ void GYRO_Init(void) {
     LOG_StrLn("Gyro:Init");
 
     // MOSFET Control
-    HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 0);
-    _DelayMS(500);
-    HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, 1);
-    _DelayMS(500);
+    GATE_GyroReset();
 
     // Reset peripheral
     MX_I2C3_DeInit();

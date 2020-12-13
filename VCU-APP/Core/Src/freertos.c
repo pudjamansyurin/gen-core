@@ -78,176 +78,176 @@ extern hbar_t HBAR;
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
-  .name = "ManagerTask",
-  .priority = (osPriority_t) osPriorityRealtime,
-  .stack_size = 256 * 4
+    .name = "ManagerTask",
+    .priority = (osPriority_t) osPriorityRealtime,
+    .stack_size = 256 * 4
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
 const osThreadAttr_t IotTask_attributes = {
-  .name = "IotTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 416 * 4
+    .name = "IotTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 416 * 4
 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
 const osThreadAttr_t ReporterTask_attributes = {
-  .name = "ReporterTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 304 * 4
+    .name = "ReporterTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 304 * 4
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
 const osThreadAttr_t CommandTask_attributes = {
-  .name = "CommandTask",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 256 * 4
+    .name = "CommandTask",
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 256 * 4
 };
 /* Definitions for GpsTask */
 osThreadId_t GpsTaskHandle;
 const osThreadAttr_t GpsTask_attributes = {
-  .name = "GpsTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+    .name = "GpsTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for GyroTask */
 osThreadId_t GyroTaskHandle;
 const osThreadAttr_t GyroTask_attributes = {
-  .name = "GyroTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 304 * 4
+    .name = "GyroTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 304 * 4
 };
 /* Definitions for RemoteTask */
 osThreadId_t RemoteTaskHandle;
 const osThreadAttr_t RemoteTask_attributes = {
-  .name = "RemoteTask",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 256 * 4
+    .name = "RemoteTask",
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 256 * 4
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
 const osThreadAttr_t FingerTask_attributes = {
-  .name = "FingerTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+    .name = "FingerTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for AudioTask */
 osThreadId_t AudioTaskHandle;
 const osThreadAttr_t AudioTask_attributes = {
-  .name = "AudioTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 240 * 4
+    .name = "AudioTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 240 * 4
 };
 /* Definitions for GateTask */
 osThreadId_t GateTaskHandle;
 const osThreadAttr_t GateTask_attributes = {
-  .name = "GateTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+    .name = "GateTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
 const osThreadAttr_t CanRxTask_attributes = {
-  .name = "CanRxTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 229 * 4
+    .name = "CanRxTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 229 * 4
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
-  .name = "CanTxTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 230 * 4
+    .name = "CanTxTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 230 * 4
 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
 const osThreadAttr_t Hmi2PowerTask_attributes = {
-  .name = "Hmi2PowerTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 160 * 4
+    .name = "Hmi2PowerTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 160 * 4
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
 const osMessageQueueAttr_t CommandQueue_attributes = {
-  .name = "CommandQueue"
+    .name = "CommandQueue"
 };
 /* Definitions for ResponseQueue */
 osMessageQueueId_t ResponseQueueHandle;
 const osMessageQueueAttr_t ResponseQueue_attributes = {
-  .name = "ResponseQueue"
+    .name = "ResponseQueue"
 };
 /* Definitions for ReportQueue */
 osMessageQueueId_t ReportQueueHandle;
 const osMessageQueueAttr_t ReportQueue_attributes = {
-  .name = "ReportQueue"
+    .name = "ReportQueue"
 };
 /* Definitions for DriverQueue */
 osMessageQueueId_t DriverQueueHandle;
 const osMessageQueueAttr_t DriverQueue_attributes = {
-  .name = "DriverQueue"
+    .name = "DriverQueue"
 };
 /* Definitions for CanRxQueue */
 osMessageQueueId_t CanRxQueueHandle;
 const osMessageQueueAttr_t CanRxQueue_attributes = {
-  .name = "CanRxQueue"
+    .name = "CanRxQueue"
 };
 /* Definitions for AudioMutex */
 osMutexId_t AudioMutexHandle;
 const osMutexAttr_t AudioMutex_attributes = {
-  .name = "AudioMutex"
+    .name = "AudioMutex"
 };
 /* Definitions for LogMutex */
 osMutexId_t LogMutexHandle;
 const osMutexAttr_t LogMutex_attributes = {
-  .name = "LogMutex"
+    .name = "LogMutex"
 };
 /* Definitions for CanTxMutex */
 osMutexId_t CanTxMutexHandle;
 const osMutexAttr_t CanTxMutex_attributes = {
-  .name = "CanTxMutex"
+    .name = "CanTxMutex"
 };
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
 const osMutexAttr_t EepromMutex_attributes = {
-  .name = "EepromMutex"
+    .name = "EepromMutex"
 };
 /* Definitions for RtcMutex */
 osMutexId_t RtcMutexHandle;
 const osMutexAttr_t RtcMutex_attributes = {
-  .name = "RtcMutex"
+    .name = "RtcMutex"
 };
 /* Definitions for CrcMutex */
 osMutexId_t CrcMutexHandle;
 const osMutexAttr_t CrcMutex_attributes = {
-  .name = "CrcMutex"
+    .name = "CrcMutex"
 };
 /* Definitions for AesMutex */
 osMutexId_t AesMutexHandle;
 const osMutexAttr_t AesMutex_attributes = {
-  .name = "AesMutex"
+    .name = "AesMutex"
 };
 /* Definitions for SimcomRecMutex */
 osMutexId_t SimcomRecMutexHandle;
 const osMutexAttr_t SimcomRecMutex_attributes = {
-  .name = "SimcomRecMutex",
-  .attr_bits = osMutexRecursive,
+    .name = "SimcomRecMutex",
+    .attr_bits = osMutexRecursive,
 };
 /* Definitions for FingerRecMutex */
 osMutexId_t FingerRecMutexHandle;
 const osMutexAttr_t FingerRecMutex_attributes = {
-  .name = "FingerRecMutex",
-  .attr_bits = osMutexRecursive,
+    .name = "FingerRecMutex",
+    .attr_bits = osMutexRecursive,
 };
 /* Definitions for RemoteRecMutex */
 osMutexId_t RemoteRecMutexHandle;
 const osMutexAttr_t RemoteRecMutex_attributes = {
-  .name = "RemoteRecMutex",
-  .attr_bits = osMutexRecursive,
+    .name = "RemoteRecMutex",
+    .attr_bits = osMutexRecursive,
 };
 /* Definitions for GlobalEvent */
 osEventFlagsId_t GlobalEventHandle;
 const osEventFlagsAttr_t GlobalEvent_attributes = {
-  .name = "GlobalEvent"
+    .name = "GlobalEvent"
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -284,10 +284,10 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName)
 /* USER CODE END 4 */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
@@ -492,7 +492,7 @@ void StartManagerTask(void *argument)
         );
 
     // Handle overheat
-    HAL_GPIO_WritePin(EXT_BMS_FAN_PWR_GPIO_Port, EXT_BMS_FAN_PWR_Pin, BMS.d.overheat);
+    GATE_FanBMS(BMS.d.overheat);
 
     osDelayUntil(lastWake + 1111);
   }
@@ -835,7 +835,7 @@ void StartGyroTask(void *argument)
 
     {
       // Indicators
-      _LedWrite(fallen);
+      GATE_LedWrite(fallen);
       flag = fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
       osThreadFlagsSet(AudioTaskHandle, flag);
 
@@ -849,10 +849,10 @@ void StartGyroTask(void *argument)
 
 /* USER CODE BEGIN Header_StartRemoteTask */
 /**
-* @brief Function implementing the RemoteTask thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the RemoteTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartRemoteTask */
 void StartRemoteTask(void *argument)
 {
@@ -911,23 +911,19 @@ void StartRemoteTask(void *argument)
               LOG_StrLn("NRF:Command = ALARM");
 
               // toggle Hazard & HORN (+ Sein Lamp)
-              //              for (uint8_t i = 0; i < 2; i++) {
-              //                HBAR.runner.hazard = 1;
-              //                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
-              //                _DelayMS(200);
-              //                HBAR.runner.hazard = 0;
-              //                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
-              //                _DelayMS(100);
-              //              }
+              for (uint8_t i = 0; i < 2; i++) {
+                HBAR.runner.hazard = 1;
+                GATE_HornToggle();
+                HBAR.runner.hazard = 0;
+              }
               break;
 
             case RF_CMD_SEAT:
               LOG_StrLn("NRF:Command = SEAT");
 
-              //              // open the seat via solenoid
-              //              HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
-              //              _DelayMS(100);
-              //              HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
+              // open the seat via solenoid
+              GATE_SolenoidToggle();
+
               break;
 
             default:
@@ -937,11 +933,11 @@ void StartRemoteTask(void *argument)
           // valid command indicator
           //          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
           //          for (uint8_t i = 0; i < (command + 1); i++) {
-          //            _LedToggle();
+          //            GATE_LedToggle();
           //
           //            _DelayMS((command + 1) * 50);
           //          }
-          //          _LedWrite(0);
+          //          GATE_LedWrite(GPIO_PIN_RESET);
           //          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
         }
       }
@@ -1068,10 +1064,10 @@ void StartAudioTask(void *argument)
 
 /* USER CODE BEGIN Header_StartGateTask */
 /**
-* @brief Function implementing the GateTask thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the GateTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartGateTask */
 void StartGateTask(void *argument)
 {
@@ -1084,7 +1080,7 @@ void StartGateTask(void *argument)
   // Initialise
   HBAR_ReadStates();
   VCU.CheckPower5v();
-  VCU.CheckKnob();
+  VCU.d.state.knob = GATE_ReadKnobState();
 
   /* Infinite loop */
   for (;;) {
@@ -1116,7 +1112,7 @@ void StartGateTask(void *argument)
 
       // KNOB IRQ
       if (notif & EVT_GATE_KNOB_IRQ) {
-        VCU.CheckKnob();
+        VCU.d.state.knob = GATE_ReadKnobState();
       }
 
       osThreadFlagsClear(EVT_MASK);

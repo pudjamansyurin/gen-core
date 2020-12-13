@@ -25,16 +25,13 @@ void GPS_Init(void) {
 	do {
 		LOG_StrLn("GPS:Init");
 
-		HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 0);
-		_DelayMS(500);
-		HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, 1);
+		GATE_GpsReset();
 
 		// set timeout guard
 		tick = _GetTickMS();
 		while ((_GetTickMS() - tick) < 5000) {
 			if (strlen(UBLOX_UART_RX) > 50)
 				break;
-
 			_DelayMS(10);
 		}
 	} while (strlen(UBLOX_UART_RX) <= 50);

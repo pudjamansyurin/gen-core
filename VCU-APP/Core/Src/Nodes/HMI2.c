@@ -16,9 +16,6 @@
 #include "Nodes/HMI2.h"
 #include "Nodes/HMI1.h"
 
-/* Private constants ---------------------------------------------------------*/
-#define ACTIVE_HIGH 				(uint8_t) 0
-
 /* External variables --------------------------------------------------------*/
 extern osThreadId_t Hmi2PowerTaskHandle;
 extern hmi1_t HMI1;
@@ -57,9 +54,7 @@ void HMI2_PowerOverCan(uint8_t state) {
 void HMI2_PowerOn(void) {
 	TickType_t tick;
 
-	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !ACTIVE_HIGH);
-	_DelayMS(100);
-	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, ACTIVE_HIGH);
+	GATE_Hmi2Reset();
 
 	// wait until turned ON by CAN
 	tick = _GetTickMS();
@@ -77,7 +72,7 @@ void HMI2_PowerOff(void) {
 		if (!HMI2.d.started)
 			break;
 
-	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !ACTIVE_HIGH);
+	GATE_Hmi2Stop();
 }
 
 /* ====================================== CAN RX =================================== */

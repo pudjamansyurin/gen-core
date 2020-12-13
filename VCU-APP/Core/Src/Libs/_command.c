@@ -27,7 +27,7 @@ void CMD_GenInfo(response_t *resp) {
 }
 
 void CMD_GenLed(command_t *cmd) {
-	_LedWrite((uint8_t) cmd->data.value);
+	GATE_LedWrite((uint8_t) cmd->data.value);
 }
 
 void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {

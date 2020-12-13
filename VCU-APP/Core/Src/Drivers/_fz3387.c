@@ -34,11 +34,6 @@ static void FINGER_IO_WRITE(uint8_t c);
 static void FINGER_IO_WRITE_U16(uint16_t cc);
 
 /* Public functions implementation ---------------------------------------------*/
-void fz3387_SET_POWER(uint8_t state) {
-	HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin, !state);
-	_DelayMS(500);
-}
-
 /**************************************************************************/
 /*!
  @brief   Helper function to process a packet and send it over UART to the sensor
@@ -409,4 +404,3 @@ static void FINGER_IO_WRITE_U16(uint16_t cc) {
 	FINGER_IO_WRITE((uint8_t) (cc >> 8));
 	FINGER_IO_WRITE((uint8_t) (cc & 0xFF));
 }
-

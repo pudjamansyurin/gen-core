@@ -73,10 +73,7 @@ void AUDIO_Init(void) {
 		LOG_StrLn("Audio:Init");
 
 		// Mosftet control
-		HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 0);
-		_DelayMS(500);
-		HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, 1);
-		_DelayMS(1000);
+    GATE_AudioReset();
 
 		/* Initialize Wave player (Codec, DMA, I2C) */
 		ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, Audio.initial_volume, AUDIO_SAMPLE_FREQ);
@@ -195,7 +192,7 @@ uint8_t AUDIO_OUT_Stop(uint32_t Option) {
 			_DelayMS(1);
 
 			/* Reset the pin */
-			HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
+      GATE_AudioCodecStop();
 		}
 
 		/* Return AUDIO_OK when all operations are correctly done */

@@ -32,10 +32,7 @@ static uint8_t Activated(void);
 void CANBUS_Init(void) {
 	uint8_t error = 0;
 
-	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 0);
-	_DelayMS(50);
-	HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, 1);
-	_DelayMS(50);
+	GATE_CanbusReset();
 
 	MX_CAN1_Init();
 

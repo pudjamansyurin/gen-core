@@ -52,8 +52,6 @@ typedef struct {
 
 /* Exported constants --------------------------------------------------------*/
 #define AUDIO_I2C_ADDRESS               0x94
-#define AUDIO_RESET_PIN                 INT_AUDIO_RST_Pin
-#define AUDIO_RESET_GPIO                INT_AUDIO_RST_GPIO_Port
 
 /* I2S peripheral configuration defines */
 #define I2S                            	SPI3

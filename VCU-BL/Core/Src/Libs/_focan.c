@@ -30,10 +30,10 @@ void FOCAN_SetOtherNodes(void) {
   CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);
 
   // Turn ON HMI-Primary
-  tmp = HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
+  tmp = GATE_ReadKnobState();
   if (knob != tmp) {
     knob = tmp;
-    HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, knob);
+    GATE_Hmi1Power(knob);
   }
 }
 

@@ -40,13 +40,12 @@ typedef struct {
   hmi1_can_t can;
   void (*Init)(void);
   void (*Refresh)(void);
-  void (*Power)(uint8_t);
+  void (*Power)(GPIO_PinState);
 } hmi1_t;
 
 /* Public functions implementation --------------------------------------------*/
 void HMI1_Init(void);
 void HMI1_Refresh(void);
-void HMI1_Power(uint8_t state);
 void HMI1_CAN_RX_State(can_rx_t *Rx);
 
 #endif /* INC_NODES_HMI1_H_ */

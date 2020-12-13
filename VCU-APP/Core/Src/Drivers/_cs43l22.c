@@ -403,14 +403,7 @@ uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix) {
  * @brief  Initializes Audio low level.
  */
 static void AUDIO_IO_Init(void) {
-	/* Power Down the codec */
-	HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
-	/* Wait for a delay to insure registers erasing */
-	_DelayMS(500);
-	/* Power on the codec */
-	HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_SET);
-	/* Wait for a delay to insure registers erasing */
-	_DelayMS(500);
+  GATE_AudioCodecReset();
 }
 
 /**

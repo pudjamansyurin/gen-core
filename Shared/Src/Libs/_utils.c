@@ -35,18 +35,6 @@ uint32_t _GetTickMS(void) {
 #endif
 }
 
-uint8_t _LedRead(void) {
-	return HAL_GPIO_ReadPin(SYS_LED_GPIO_Port, SYS_LED_Pin);
-}
-
-void _LedWrite(uint8_t state) {
-	HAL_GPIO_WritePin(SYS_LED_GPIO_Port, SYS_LED_Pin, state);
-}
-
-void _LedToggle(void) {
-	HAL_GPIO_TogglePin(SYS_LED_GPIO_Port, SYS_LED_Pin);
-}
-
 void _Error(char msg[50]) {
 #if RTOS_ENABLE
   if (osKernelGetState() == osKernelRunning)
@@ -57,7 +45,7 @@ void _Error(char msg[50]) {
 
 	// indicator error
 	//	while (1) {
-	//		_LedToggle();
+	//		GATE_LedToggle();
 	//		HAL_Delay(50);
 	//	}
 }
