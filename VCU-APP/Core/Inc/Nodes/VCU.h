@@ -36,7 +36,7 @@ typedef struct __attribute__((packed)) {
   task_t command;
   task_t gps;
   task_t gyro;
-  task_t keyless;
+  task_t remote;
   task_t finger;
   task_t audio;
   task_t gate;
@@ -64,7 +64,7 @@ typedef struct {
     uint8_t independent;
   } state;
   struct {
-    uint32_t keyless;
+    uint32_t remote;
   } tick;
   struct {
     uint16_t report;

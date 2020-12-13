@@ -1,12 +1,12 @@
 /*
- * keyless.c
+ * .c
  *
  *  Created on: Mar 4, 2020
  *      Author: pudja
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_keyless.h"
+#include "Libs/_remote.h"
 #include "Libs/_eeprom.h"
 #include "Drivers/_aes.h"
 
@@ -14,14 +14,14 @@
 extern SPI_HandleTypeDef hspi1;
 extern RNG_HandleTypeDef hrng;
 
-extern osThreadId_t KeylessTaskHandle;
-extern osMutexId_t KlessRecMutexHandle;
+extern osThreadId_t RemoteTaskHandle;
+extern osMutexId_t RemoteRecMutexHandle;
 
 extern uint32_t AesKey[4];
 
 /* Public variables -----------------------------------------------------------*/
 nrf24l01 NRF;
-kless_t RF = {
+rf_t RF = {
     .config = {
         .addr_width = NRF_ADDR_LENGTH - 2,
         .payload_length = NRF_DATA_LENGTH,
@@ -45,9 +45,9 @@ static const uint8_t COMMAND[3][8] = {
 };
 
 /* Private functions declaration ---------------------------------------------*/
-static void RF_SetAesPayload(uint32_t *aes);
-static void RF_ChangeMode(RF_MODE mode, uint32_t *unit_id);
-static uint8_t RF_Payload(RF_ACTION action, uint8_t *payload);
+static void SetAesPayload(uint32_t *aes);
+static void ChangeMode(RF_MODE mode, uint32_t *unit_id);
+static uint8_t Payload(RF_ACTION action, uint8_t *payload);
 static void GenRandomNumber32(uint32_t *payload, uint8_t size);
 static void lock(void);
 static void unlock(void);
@@ -59,7 +59,7 @@ void RF_Init(uint32_t *unit_id) {
   nrf_set_config(&NRF, &(RF.config));
   nrf_init(&NRF);
   nrf_configure(&NRF);
-  RF_ChangeMode(RF_MODE_NORMAL, unit_id);
+  ChangeMode(RF_MODE_NORMAL, unit_id);
 }
 
 uint8_t RF_SendPing(void) {
@@ -79,7 +79,7 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
 
   lock();
   // Read Payload
-  if (RF_Payload(RF_ACTION_R, plain)) {
+  if (Payload(RF_ACTION_R, plain)) {
     // Check Payload Command
     for (uint8_t i = 0; i < (sizeof(COMMAND) / sizeof(COMMAND[0])); i++) {
       // check command
@@ -108,12 +108,12 @@ uint8_t RF_Pairing(uint32_t *unit_id) {
   // Insert AES to payload
   RF_GenerateAesKey(aes);
   EEPROM_AesKey(EE_CMD_W, aes);
-  RF_SetAesPayload(aes);
+  SetAesPayload(aes);
 
   // Insert VCU_ID to payload
   memcpy(&RF.tx.payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
 
-  RF_ChangeMode(RF_MODE_PAIRING, NULL);
+  ChangeMode(RF_MODE_PAIRING, NULL);
   p = nrf_send_packet_noack(&NRF, RF.tx.payload);
 
   RF_Init(unit_id);
@@ -133,8 +133,8 @@ void RF_Debugger(void) {
   unlock();
 }
 
-uint8_t RF_Refresh(uint8_t tick_keyless) {
-  return ((_GetTickMS() - tick_keyless) > KEYLESS_TIMEOUT );
+uint8_t RF_Refresh(uint8_t tick_) {
+  return ((_GetTickMS() - tick_) > REMOTE_TIMEOUT );
 }
 
 void RF_IrqHandler(void) {
@@ -145,11 +145,11 @@ void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
   // used in favor of nrf_receive_packet
   dev->rx_busy = 0;
 
-  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RX_IT);
+  osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_RX_IT);
 }
 
 /* Private functions implementation --------------------------------------------*/
-static void RF_SetAesPayload(uint32_t *aes) {
+static void SetAesPayload(uint32_t *aes) {
   uint32_t swapped;
 
   // insert to payload & swap byte order
@@ -159,7 +159,7 @@ static void RF_SetAesPayload(uint32_t *aes) {
   }
 }
 
-static void RF_ChangeMode(RF_MODE mode, uint32_t *unit_id) {
+static void ChangeMode(RF_MODE mode, uint32_t *unit_id) {
   if (mode == RF_MODE_NORMAL) {
     // use VCU_ID as address
     memcpy(RF.tx.address, unit_id, 4);
@@ -181,7 +181,7 @@ static void RF_ChangeMode(RF_MODE mode, uint32_t *unit_id) {
   nrf_change_mode(&NRF, &(RF.config));
 }
 
-static uint8_t RF_Payload(RF_ACTION action, uint8_t *payload) {
+static uint8_t Payload(RF_ACTION action, uint8_t *payload) {
   uint8_t ret = 0;
 
   // Process Payload
@@ -202,9 +202,9 @@ static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
 }
 
 static void lock(void) {
-  osMutexAcquire(KlessRecMutexHandle, osWaitForever);
+  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
 }
 
 static void unlock(void) {
-  osMutexRelease(KlessRecMutexHandle);
+  osMutexRelease(RemoteRecMutexHandle);
 }

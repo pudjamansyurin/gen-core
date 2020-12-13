@@ -24,7 +24,7 @@ typedef struct {
     uint8_t warning;
     uint8_t overheat;
     uint8_t finger;
-    uint8_t unkeyless;
+    uint8_t unremote;
     uint8_t daylight;
   } state;
 } hmi1_data_t;

@@ -10,14 +10,14 @@
 #include "Drivers/_ee24xx.h"
 #if (!BOOTLOADER)
 #include "Libs/_reporter.h"
-#include "Libs/_keyless.h"
+#include "Libs/_remote.h"
 #include "Drivers/_aes.h"
 #include "Nodes/VCU.h"
 #endif
 
 /* External variables -------------------------------------------------------*/
 #if (!BOOTLOADER)
-extern osThreadId_t KeylessTaskHandle;
+extern osThreadId_t RemoteTaskHandle;
 extern osMutexId_t EepromMutexHandle;
 extern uint32_t AesKey[4];
 extern response_t RESPONSE;
@@ -133,7 +133,7 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
 
   // update the NRF Address
   if (cmd == EE_CMD_W)
-    osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_RESET);
+    osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_RESET);
 
   return ret;
 }

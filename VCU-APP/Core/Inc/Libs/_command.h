@@ -22,6 +22,6 @@ void CMD_ReportUnitID(command_t *cmd);
 void CMD_AudioBeep(void);
 void CMD_AudioMute(command_t *cmd);
 void CMD_Finger(uint8_t event, response_t *resp);
-void CMD_KeylessPairing(response_t *resp);
+void CMD_RemotePairing(response_t *resp);
 
 #endif /* INC_LIBS__COMMAND_H_ */

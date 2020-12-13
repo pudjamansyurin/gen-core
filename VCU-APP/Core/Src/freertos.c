@@ -35,7 +35,7 @@
 #include "Libs/_gps.h"
 #include "Libs/_finger.h"
 #include "Libs/_audio.h"
-#include "Libs/_keyless.h"
+#include "Libs/_remote.h"
 #include "Libs/_reporter.h"
 #include "Libs/_handlebar.h"
 #include "Drivers/_canbus.h"
@@ -117,10 +117,10 @@ const osThreadAttr_t GyroTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 304 * 4
 };
-/* Definitions for KeylessTask */
-osThreadId_t KeylessTaskHandle;
-const osThreadAttr_t KeylessTask_attributes = {
-  .name = "KeylessTask",
+/* Definitions for RemoteTask */
+osThreadId_t RemoteTaskHandle;
+const osThreadAttr_t RemoteTask_attributes = {
+  .name = "RemoteTask",
   .priority = (osPriority_t) osPriorityAboveNormal,
   .stack_size = 256 * 4
 };
@@ -238,10 +238,10 @@ const osMutexAttr_t FingerRecMutex_attributes = {
   .name = "FingerRecMutex",
   .attr_bits = osMutexRecursive,
 };
-/* Definitions for KlessRecMutex */
-osMutexId_t KlessRecMutexHandle;
-const osMutexAttr_t KlessRecMutex_attributes = {
-  .name = "KlessRecMutex",
+/* Definitions for RemoteRecMutex */
+osMutexId_t RemoteRecMutexHandle;
+const osMutexAttr_t RemoteRecMutex_attributes = {
+  .name = "RemoteRecMutex",
   .attr_bits = osMutexRecursive,
 };
 /* Definitions for GlobalEvent */
@@ -261,7 +261,7 @@ void StartReporterTask(void *argument);
 void StartCommandTask(void *argument);
 void StartGpsTask(void *argument);
 void StartGyroTask(void *argument);
-void StartKeylessTask(void *argument);
+void StartRemoteTask(void *argument);
 void StartFingerTask(void *argument);
 void StartAudioTask(void *argument);
 void StartGateTask(void *argument);
@@ -321,8 +321,8 @@ void MX_FREERTOS_Init(void) {
   /* creation of FingerRecMutex */
   FingerRecMutexHandle = osMutexNew(&FingerRecMutex_attributes);
 
-  /* creation of KlessRecMutex */
-  KlessRecMutexHandle = osMutexNew(&KlessRecMutex_attributes);
+  /* creation of RemoteRecMutex */
+  RemoteRecMutexHandle = osMutexNew(&RemoteRecMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -375,8 +375,8 @@ void MX_FREERTOS_Init(void) {
   /* creation of GyroTask */
   GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
 
-  /* creation of KeylessTask */
-  KeylessTaskHandle = osThreadNew(StartKeylessTask, NULL, &KeylessTask_attributes);
+  /* creation of RemoteTask */
+  RemoteTaskHandle = osThreadNew(StartRemoteTask, NULL, &RemoteTask_attributes);
 
   /* creation of FingerTask */
   FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
@@ -439,7 +439,7 @@ void StartManagerTask(void *argument)
   //  osThreadSuspend(CommandTaskHandle);
   //  osThreadSuspend(GpsTaskHandle);
   //  osThreadSuspend(GyroTaskHandle);
-  //  osThreadSuspend(KeylessTaskHandle);
+  //  osThreadSuspend(RemoteTaskHandle);
   //  osThreadSuspend(FingerTaskHandle);
   //  osThreadSuspend(AudioTaskHandle);
   //  osThreadSuspend(GateTaskHandle);
@@ -464,7 +464,7 @@ void StartManagerTask(void *argument)
     VCU.d.task.command.stack = osThreadGetStackSpace(CommandTaskHandle);
     VCU.d.task.gps.stack = osThreadGetStackSpace(GpsTaskHandle);
     VCU.d.task.gyro.stack = osThreadGetStackSpace(GyroTaskHandle);
-    VCU.d.task.keyless.stack = osThreadGetStackSpace(KeylessTaskHandle);
+    VCU.d.task.remote.stack = osThreadGetStackSpace(RemoteTaskHandle);
     VCU.d.task.finger.stack = osThreadGetStackSpace(FingerTaskHandle);
     VCU.d.task.audio.stack = osThreadGetStackSpace(AudioTaskHandle);
     VCU.d.task.gate.stack = osThreadGetStackSpace(GateTaskHandle);
@@ -488,7 +488,7 @@ void StartManagerTask(void *argument)
         (
             VCU.d.state.start &&
             //            VCU.d.driver_id != DRIVER_ID_NONE &&
-            !HMI1.d.state.unkeyless
+            !HMI1.d.state.unremote
         );
 
     // Handle overheat
@@ -730,10 +730,10 @@ void StartCommandTask(void *argument)
         }
       }
 
-      else if (command.data.code == CMD_CODE_KEYLESS) {
+      else if (command.data.code == CMD_CODE_REMOTE) {
         switch (command.data.sub_code) {
-          case CMD_KEYLESS_PAIRING :
-            CMD_KeylessPairing(&response);
+          case CMD_REMOTE_PAIRING :
+            CMD_RemotePairing(&response);
             break;
 
           default:
@@ -847,16 +847,16 @@ void StartGyroTask(void *argument)
   /* USER CODE END StartGyroTask */
 }
 
-/* USER CODE BEGIN Header_StartKeylessTask */
+/* USER CODE BEGIN Header_StartRemoteTask */
 /**
- * @brief Function implementing the KeylessTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartKeylessTask */
-void StartKeylessTask(void *argument)
+* @brief Function implementing the RemoteTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartRemoteTask */
+void StartRemoteTask(void *argument)
 {
-  /* USER CODE BEGIN StartKeylessTask */
+  /* USER CODE BEGIN StartRemoteTask */
   uint32_t notif;
   RF_CMD command;
   uint32_t tick_pairing = 0;
@@ -867,31 +867,31 @@ void StartKeylessTask(void *argument)
   // initialization
   RF_Init(&(VCU.d.unit_id));
 
-  //  osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+  //  osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
   /* Infinite loop */
   for (;;) {
-    VCU.d.task.keyless.wakeup = _GetTickMS() / 1000;
+    VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
     // Check response
     if (_RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
-      if (notif & EVT_KEYLESS_RESET)
+      if (notif & EVT_REMOTE_RESET)
         RF_Init(&(VCU.d.unit_id));
 
       // handle Pairing
-      if (notif & EVT_KEYLESS_PAIRING) {
+      if (notif & EVT_REMOTE_PAIRING) {
         RF_Pairing(&(VCU.d.unit_id));
         tick_pairing = _GetTickMS();
       }
 
       // handle incoming payload
-      if (notif & EVT_KEYLESS_RX_IT) {
+      if (notif & EVT_REMOTE_RX_IT) {
         // RF_Debugger();
 
         // process
         if (RF_ValidateCommand(&command)) {
           // update heart-beat
-          VCU.d.tick.keyless = _GetTickMS();
+          VCU.d.tick.remote = _GetTickMS();
 
           // response pairing command
           if (tick_pairing > 0) {
@@ -911,23 +911,23 @@ void StartKeylessTask(void *argument)
               LOG_StrLn("NRF:Command = ALARM");
 
               // toggle Hazard & HORN (+ Sein Lamp)
-              //							for (uint8_t i = 0; i < 2; i++) {
-              //								HBAR.runner.hazard = 1;
-              //								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
-              //								_DelayMS(200);
-              //								HBAR.runner.hazard = 0;
-              //								HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
-              //								_DelayMS(100);
-              //							}
+              //              for (uint8_t i = 0; i < 2; i++) {
+              //                HBAR.runner.hazard = 1;
+              //                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 1);
+              //                _DelayMS(200);
+              //                HBAR.runner.hazard = 0;
+              //                HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, 0);
+              //                _DelayMS(100);
+              //              }
               break;
 
             case RF_CMD_SEAT:
               LOG_StrLn("NRF:Command = SEAT");
 
-              //							// open the seat via solenoid
-              //							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
-              //							_DelayMS(100);
-              //							HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
+              //              // open the seat via solenoid
+              //              HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 1);
+              //              _DelayMS(100);
+              //              HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, 0);
               break;
 
             default:
@@ -935,23 +935,23 @@ void StartKeylessTask(void *argument)
           }
 
           // valid command indicator
-          //					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-          //					for (uint8_t i = 0; i < (command + 1); i++) {
-          //						_LedToggle();
+          //          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
+          //          for (uint8_t i = 0; i < (command + 1); i++) {
+          //            _LedToggle();
           //
-          //						_DelayMS((command + 1) * 50);
-          //					}
-          //					_LedWrite(0);
-          //					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
+          //            _DelayMS((command + 1) * 50);
+          //          }
+          //          _LedWrite(0);
+          //          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
         }
       }
       osThreadFlagsClear(EVT_MASK);
     }
 
-    HMI1.d.state.unkeyless = RF_Refresh(VCU.d.tick.keyless);
+    HMI1.d.state.unremote = RF_Refresh(VCU.d.tick.remote);
     RF_SendPing();
   }
-  /* USER CODE END StartKeylessTask */
+  /* USER CODE END StartRemoteTask */
 }
 
 /* USER CODE BEGIN Header_StartFingerTask */
@@ -1111,7 +1111,7 @@ void StartGateTask(void *argument)
 
       // Starter Button IRQ
       if (notif & EVT_GATE_STARTER_IRQ) {
-        // check KNOB, KickStand, Keyless, Fingerprint
+        // check KNOB, KickStand, Remote, Fingerprint
       }
 
       // KNOB IRQ
@@ -1287,7 +1287,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
 
   // handle NRF24 IRQ
-  if (GPIO_Pin == INT_KEYLESS_IRQ_Pin)
+  if (GPIO_Pin == INT_REMOTE_IRQ_Pin)
     RF_IrqHandler();
 
   // handle Switches EXTI

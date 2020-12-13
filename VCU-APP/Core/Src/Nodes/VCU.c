@@ -61,7 +61,7 @@ void VCU_Init(void) {
 
   VCU.d.events = 0;
 
-  VCU.d.tick.keyless = 0;
+  VCU.d.tick.remote = 0;
   //  VCU.d.tick.finger = 0;
 
   VCU.d.seq_id.report = 0;
@@ -159,7 +159,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar) {
   TxData.u8[0] |= HMI1.d.state.warning << 3;
   TxData.u8[0] |= HMI1.d.state.overheat << 4;
   TxData.u8[0] |= HMI1.d.state.finger << 5;
-  TxData.u8[0] |= HMI1.d.state.unkeyless << 6;
+  TxData.u8[0] |= HMI1.d.state.unremote << 6;
   TxData.u8[0] |= HMI1.d.state.daylight << 7;
 
   // sein value

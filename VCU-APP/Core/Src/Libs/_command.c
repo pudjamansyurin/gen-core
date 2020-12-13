@@ -15,7 +15,7 @@
 /* External variables ---------------------------------------------------------*/
 extern osThreadId_t AudioTaskHandle;
 extern osThreadId_t FingerTaskHandle;
-extern osThreadId_t KeylessTaskHandle;
+extern osThreadId_t RemoteTaskHandle;
 
 /* Public functions implementation --------------------------------------------*/
 void CMD_GenInfo(response_t *resp) {
@@ -81,10 +81,10 @@ void CMD_Finger(uint8_t event, response_t *resp) {
 			resp->data.code = RESPONSE_STATUS_OK;
 }
 
-void CMD_KeylessPairing(response_t *resp) {
+void CMD_RemotePairing(response_t *resp) {
 	uint32_t notif;
 
-	osThreadFlagsSet(KeylessTaskHandle, EVT_KEYLESS_PAIRING);
+	osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;

@@ -70,7 +70,7 @@
 
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 
-#define KEYLESS_TIMEOUT              (uint32_t) 10000                // in ms
+#define REMOTE_TIMEOUT              (uint32_t) 10000                // in ms
 
 #define PREFIX_REPORT                           "@R"
 #define PREFIX_COMMAND                          "@C"
@@ -90,17 +90,17 @@
 #define RPT_INTERVAL_LOST            (uint16_t) 60                 // in second
 #define VCU_ACTIVATE_LOST_MODE       (uint16_t) 120                // in second
 
-// Payload list (Keyless)
-#define KEYLESS_MSG_BROADCAST                   BIT(0)
-#define KEYLESS_MSG_FINDER                      BIT(1)
-#define KEYLESS_MSG_SEAT                        BIT(2)
+// Payload list (Remote)
+#define REMOTE_MSG_BROADCAST                   BIT(0)
+#define REMOTE_MSG_FINDER                      BIT(1)
+#define REMOTE_MSG_SEAT                        BIT(2)
 
 // Events group (for Frame Report)
 #define EV_VCU_NET_SOFT_RESET                   BIT(0)
 #define EV_VCU_NET_HARD_RESET                   BIT(1)
 #define EV_VCU_BIKE_FALLING                     BIT(2)
 #define EV_VCU_BIKE_CRASHED                     BIT(3)
-#define EV_VCU_KEYLESS_MISSING                  BIT(4)
+#define EV_VCU_REMOTE_MISSING                  BIT(4)
 #define EV_VCU_INDEPENDENT                      BIT(5)
 #define EV_VCU_UNAUTHORIZE_REMOVAL              BIT(6)
 #define EV_VCU_BIKE_FALLEN                      BIT(7)
@@ -135,9 +135,9 @@
 #define EVT_FINGER_RST                          BIT(3)
 #define EVT_COMMAND_ERROR                       BIT(0)
 #define EVT_COMMAND_OK                          BIT(1)
-#define EVT_KEYLESS_RX_IT                       BIT(0)
-#define EVT_KEYLESS_PAIRING                     BIT(1)
-#define EVT_KEYLESS_RESET                       BIT(2)
+#define EVT_REMOTE_RX_IT                       BIT(0)
+#define EVT_REMOTE_PAIRING                     BIT(1)
+#define EVT_REMOTE_RESET                       BIT(2)
 #define EVT_GATE_TRIGGERED                      BIT(0)
 #define EVT_GATE_REG_5V_IRQ                     BIT(1)
 #define EVT_GATE_STARTER_IRQ                    BIT(2)
@@ -153,7 +153,7 @@
 #define CMD_CODE_REPORT               (uint8_t) 1
 #define CMD_CODE_AUDIO                (uint8_t) 2
 #define CMD_CODE_FINGER               (uint8_t) 3
-#define CMD_CODE_KEYLESS              (uint8_t) 4
+#define CMD_CODE_REMOTE              (uint8_t) 4
 
 // Command Sub-Code List
 #define CMD_GEN_INFO                  (uint8_t) 0
@@ -173,7 +173,7 @@
 #define CMD_FINGER_DEL                (uint8_t) 1
 #define CMD_FINGER_RST                (uint8_t) 2
 
-#define CMD_KEYLESS_PAIRING           (uint8_t) 0
+#define CMD_REMOTE_PAIRING           (uint8_t) 0
 
 // Response Status List
 #define RESPONSE_STATUS_ERROR         (uint8_t) 0

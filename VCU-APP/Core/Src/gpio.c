@@ -54,7 +54,7 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, INT_KEYLESS_CE_Pin|INT_NET_PWR_Pin|INT_GPS_PWR_Pin|EXT_FINGER_SENSING_PWR_Pin
+  HAL_GPIO_WritePin(GPIOC, INT_REMOTE_CE_Pin|INT_NET_PWR_Pin|INT_GPS_PWR_Pin|EXT_FINGER_SENSING_PWR_Pin
                           |EXT_HMI1_PWR_Pin|INT_GPS_SLEEP_Pin|EXT_HORN_PWR_Pin|INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -62,13 +62,13 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin|INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_GYRO_PWR_Pin
-                          |INT_KEYLESS_PWR_Pin, GPIO_PIN_RESET);
+                          |INT_REMOTE_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, EXT_GPIO_OUT1_Pin|SYS_LED_Pin|INT_CAN_PWR_Pin|INT_AUDIO_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(INT_KEYLESS_CSN_GPIO_Port, INT_KEYLESS_CSN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(INT_REMOTE_CSN_GPIO_Port, INT_REMOTE_CSN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, EXT_BMS_WAKEUP_Pin|EXT_BMS_FAN_PWR_Pin, GPIO_PIN_SET);
@@ -91,7 +91,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PCPin PCPin PCPin PCPin
                            PCPin PCPin */
-  GPIO_InitStruct.Pin = INT_KEYLESS_CE_Pin|INT_NET_PWR_Pin|INT_GPS_PWR_Pin|EXT_FINGER_SENSING_PWR_Pin
+  GPIO_InitStruct.Pin = INT_REMOTE_CE_Pin|INT_NET_PWR_Pin|INT_GPS_PWR_Pin|EXT_FINGER_SENSING_PWR_Pin
                           |EXT_HMI1_PWR_Pin|INT_AUDIO_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
@@ -131,10 +131,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(INT_GYRO_IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = INT_KEYLESS_IRQ_Pin;
+  GPIO_InitStruct.Pin = INT_REMOTE_IRQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(INT_KEYLESS_IRQ_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(INT_REMOTE_IRQ_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB12 PB13 */
   GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13;
@@ -143,7 +143,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_GYRO_PWR_Pin|INT_KEYLESS_PWR_Pin;
+  GPIO_InitStruct.Pin = INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_GYRO_PWR_Pin|INT_REMOTE_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -178,11 +178,11 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = INT_KEYLESS_CSN_Pin;
+  GPIO_InitStruct.Pin = INT_REMOTE_CSN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(INT_KEYLESS_CSN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(INT_REMOTE_CSN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = INT_CAN_PWR_Pin;

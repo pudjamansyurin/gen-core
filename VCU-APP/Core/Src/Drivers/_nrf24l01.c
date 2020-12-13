@@ -6,7 +6,7 @@
  */
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_nrf24l01.h"
-#include "Libs/_keyless.h"
+#include "Libs/_remote.h"
 #include "spi.h"
 
 /* External variables ---------------------------------------------------------*/
@@ -28,9 +28,9 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
 
 
     // turn on the mosfet
-    HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 0);
+    HAL_GPIO_WritePin(INT_REMOTE_PWR_GPIO_Port, INT_REMOTE_PWR_Pin, 0);
     _DelayMS(1000);
-    HAL_GPIO_WritePin(INT_KEYLESS_PWR_GPIO_Port, INT_KEYLESS_PWR_Pin, 1);
+    HAL_GPIO_WritePin(INT_REMOTE_PWR_GPIO_Port, INT_REMOTE_PWR_Pin, 1);
     _DelayMS(1000);
 
     // reset peripheral
@@ -75,12 +75,12 @@ NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config) {
   config->rf_channel = 110;
   config->spi = &hspi1;
   config->spi_timeout = 3; // milliseconds
-  config->csn_port = INT_KEYLESS_CSN_GPIO_Port;
-  config->csn_pin = INT_KEYLESS_CSN_Pin;
-  config->ce_port = INT_KEYLESS_CE_GPIO_Port;
-  config->ce_pin = INT_KEYLESS_CE_Pin;
-  config->irq_port = INT_KEYLESS_IRQ_GPIO_Port;
-  config->irq_pin = INT_KEYLESS_IRQ_Pin;
+  config->csn_port = INT_REMOTE_CSN_GPIO_Port;
+  config->csn_pin = INT_REMOTE_CSN_Pin;
+  config->ce_port = INT_REMOTE_CE_GPIO_Port;
+  config->ce_pin = INT_REMOTE_CE_Pin;
+  config->irq_port = INT_REMOTE_IRQ_GPIO_Port;
+  config->irq_pin = INT_REMOTE_IRQ_Pin;
 
   // apply
   dev->config = *config;
