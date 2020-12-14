@@ -859,7 +859,7 @@ void StartRemoteTask(void *argument)
   /* USER CODE BEGIN StartRemoteTask */
   uint32_t notif;
   RF_CMD command;
-  uint32_t tick_pairing = 0;
+  uint32_t tick_beat = 0, tick_pairing = 0, tick_reinit = 0;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -871,6 +871,16 @@ void StartRemoteTask(void *argument)
   /* Infinite loop */
   for (;;) {
     VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
+
+    HMI1.d.state.unremote = RF_Refresh(tick_beat);
+    if (HMI1.d.state.unremote) {
+      if ((_GetTickMS() - tick_reinit) > 10000) {
+        tick_reinit = _GetTickMS();
+        RF_Init(&(VCU.d.unit_id));
+      }
+    }
+
+    RF_Ping();
 
     // Check response
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
@@ -891,7 +901,7 @@ void StartRemoteTask(void *argument)
         // process
         if (RF_ValidateCommand(&command)) {
           // update heart-beat
-          VCU.d.tick.remote = _GetTickMS();
+          tick_beat = _GetTickMS();
 
           // response pairing command
           if (tick_pairing > 0) {
@@ -910,18 +920,17 @@ void StartRemoteTask(void *argument)
             case RF_CMD_ALARM:
               LOG_StrLn("NRF:Command = ALARM");
 
-              // toggle Hazard & HORN (+ Sein Lamp)
               for (uint8_t i = 0; i < 2; i++) {
                 HBAR.runner.hazard = 1;
                 GATE_HornToggle();
                 HBAR.runner.hazard = 0;
+                _DelayMS(100);
               }
               break;
 
             case RF_CMD_SEAT:
               LOG_StrLn("NRF:Command = SEAT");
 
-              // open the seat via solenoid
               GATE_SolenoidToggle();
 
               break;
@@ -929,23 +938,10 @@ void StartRemoteTask(void *argument)
             default:
               break;
           }
-
-          // valid command indicator
-          //          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_START);
-          //          for (uint8_t i = 0; i < (command + 1); i++) {
-          //            GATE_LedToggle();
-          //
-          //            _DelayMS((command + 1) * 50);
-          //          }
-          //          GATE_LedWrite(GPIO_PIN_RESET);
-          //          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP_STOP);
         }
       }
       osThreadFlagsClear(EVT_MASK);
     }
-
-    HMI1.d.state.unremote = RF_Refresh(VCU.d.tick.remote);
-    RF_SendPing();
   }
   /* USER CODE END StartRemoteTask */
 }
@@ -1288,11 +1284,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
   // handle Switches EXTI
   for (uint8_t i = 0; i < HBAR_K_MAX; i++)
-    if (GPIO_Pin == HBAR.list[i].pin) {
+    if (GPIO_Pin == HBAR.list[i].pin)
       osThreadFlagsSet(GateTaskHandle, EVT_GATE_TRIGGERED);
-      break;
-    }
-
 }
 /* USER CODE END Application */
 

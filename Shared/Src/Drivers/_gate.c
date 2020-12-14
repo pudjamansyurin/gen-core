@@ -123,7 +123,6 @@ void GATE_HornToggle(void) {
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(200);
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_RESET);
-  _DelayMS(100);
 }
 
 void GATE_SolenoidToggle(void) {

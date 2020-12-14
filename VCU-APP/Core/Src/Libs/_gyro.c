@@ -17,7 +17,7 @@ static MPU6050 mpu;
 
 /* Private functions prototype ------------------------------------------------*/
 static void Average(mems_t *mems, uint16_t sample);
-static void Convert(coordinate_t *gyro, motion_float_t *motion);
+static void Convert(coordinate_t *gyro, motion_t *motion);
 //static void Gyro_RawDebugger(mems_t *mems);
 
 /* Public functions implementation --------------------------------------------*/
@@ -42,12 +42,13 @@ void GYRO_Init(void) {
 
 mems_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   mems_t mems;
-  motion_float_t mot;
+  motion_t mot;
   mems_decision_t decider;
 
   // get mems data
   Average(&mems, sample);
   Convert(&(mems.gyroscope), &mot);
+  memcpy(motion, &mot, sizeof(motion_t));
 
   // calculate g-force
   decider.crash.value = sqrt(
@@ -61,9 +62,6 @@ mems_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   decider.fall.value = sqrt(pow(abs(mot.roll), 2) + pow(abs(mot.pitch), 2));
   decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT || mot.yaw < GYROSCOPE_LIMIT;
 
-  motion->yaw = (int8_t) mot.yaw;
-  motion->roll = (int8_t) mot.roll;
-  motion->pitch = (int8_t) mot.pitch;
 
   //	Gyro_RawDebugger(&mems);
 
@@ -129,15 +127,17 @@ static void Average(mems_t *mems, uint16_t sample) {
   *mems = m;
 }
 
-static void Convert(coordinate_t *gyro, motion_float_t *motion) {
-  // Calculating Roll and Pitch from the accelerometer data
-  motion->yaw = sqrt(pow(gyro->x, 2) + pow(gyro->y, 2));
-  motion->roll = sqrt(pow(gyro->x, 2) + pow(gyro->z, 2));
-  motion->pitch = sqrt(pow(gyro->y, 2) + pow(gyro->z, 2));
+static void Convert(coordinate_t *gyro, motion_t *motion) {
+  motion_float_t mot;
 
-  motion->yaw = motion->yaw == 0 ? 0 : RAD2DEG(atan(gyro->z / motion->yaw));
-  motion->roll = motion->roll == 0 ? 0 : RAD2DEG(atan(gyro->y / motion->roll));
-  motion->pitch = motion->pitch == 0 ? 0 : RAD2DEG(atan(gyro->x / motion->pitch));
+  // Calculating Roll and Pitch from the accelerometer data
+  mot.yaw = sqrt(pow(gyro->x, 2) + pow(gyro->y, 2));
+  mot.roll = sqrt(pow(gyro->x, 2) + pow(gyro->z, 2));
+  mot.pitch = sqrt(pow(gyro->y, 2) + pow(gyro->z, 2));
+
+  motion->yaw = mot.yaw == 0 ? 0 : RAD2DEG(atan(gyro->z / mot.yaw));
+  motion->roll = mot.roll == 0 ? 0 : RAD2DEG(atan(gyro->y / mot.roll));
+  motion->pitch = mot.pitch == 0 ? 0 : RAD2DEG(atan(gyro->x / mot.pitch));
 }
 
 //static void Gyro_RawDebugger(mems_t *mems) {

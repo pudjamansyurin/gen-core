@@ -47,13 +47,13 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void RF_Init(uint32_t *unit_id);
+uint8_t RF_Ping(void);
+uint8_t RF_Pairing(uint32_t *unit_id);
 void RF_Debugger(void);
 uint8_t RF_ValidateCommand(RF_CMD *cmd);
 void RF_GenerateAesKey(uint32_t *aes);
-uint8_t RF_Pairing(uint32_t *unit_id);
-uint8_t RF_SendPing(void);
-uint8_t RF_Refresh(uint8_t tick_);
+uint8_t RF_Refresh(uint32_t tick_);
 void RF_IrqHandler(void);
-void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data);
+void RF_PacketReceived(uint8_t *data);
 
 #endif /* REMOTE_H_ */

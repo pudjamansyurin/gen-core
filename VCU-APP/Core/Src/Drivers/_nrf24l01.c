@@ -26,7 +26,6 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
   do {
     LOG_StrLn("NRF:Init");
 
-
     // turn on the mosfet
     GATE_RemoteReset();
 
@@ -653,13 +652,13 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
 
   _DelayMS(2);
   // wait for end of transmition
-//  uint32_t tick = _GetTickMS();
-//  while (_GetTickMS() - tick <= 2) {
-//    if (!dev->tx_busy)
-//      break;
-//    _DelayMS(1);
-//  }
-//
+  //  uint32_t tick = _GetTickMS();
+  //  while (_GetTickMS() - tick <= 2) {
+  //    if (!dev->tx_busy)
+  //      break;
+  //    _DelayMS(1);
+  //  }
+
   if (dev->tx_busy)
     nrf_flush_tx(dev);
 
@@ -667,7 +666,7 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01 *dev, const uint8_t *data) {
   nrf_rx_tx_control(dev, NRF_STATE_RX);
   ce_set(dev);
 
-  return dev->tx_result;
+  return dev->tx_busy;
 }
 
 NRF_RESULT nrf_push_packet(nrf24l01 *dev, const uint8_t *data) {
@@ -694,12 +693,14 @@ NRF_RESULT nrf_receive_packet(nrf24l01 *dev, uint8_t *data, uint16_t ms) {
   ce_set(dev);
 
   // wait for reception
-  TickType_t tick = _GetTickMS();
-  while (_GetTickMS() - tick < ms) {
-    if (!dev->rx_busy)
-      break;
-    _DelayMS(1);
-  }
+  while (dev->rx_busy) {
+  };
+  //  TickType_t tick = _GetTickMS();
+  //  while (_GetTickMS() - tick < ms) {
+  //    if (!dev->rx_busy)
+  //      break;
+  //    _DelayMS(1);
+  //  }
 
   return !dev->rx_busy;
 }
@@ -734,8 +735,8 @@ void nrf_irq_handler(nrf24l01 *dev) {
     status |= 1 << 5;      // clear the interrupt flag
 
     ce_reset(dev);
-    //    nrf_rx_tx_control(dev, NRF_STATE_RX);
-    //    dev->state = NRF_STATE_RX;
+//    nrf_rx_tx_control(dev, NRF_STATE_RX);
+//    dev->state = NRF_STATE_RX;
     nrf_write_register(dev, NRF_STATUS, &status);
     ce_set(dev);
 
@@ -750,8 +751,8 @@ void nrf_irq_handler(nrf24l01 *dev) {
     nrf_power_up(dev, 0); // power down
     nrf_power_up(dev, 1); // power up
 
-    //    nrf_rx_tx_control(dev, NRF_STATE_RX);
-    //    dev->state = NRF_STATE_RX;
+    nrf_rx_tx_control(dev, NRF_STATE_RX);
+    dev->state = NRF_STATE_RX;
     nrf_write_register(dev, NRF_STATUS, &status);
     ce_set(dev);
 
@@ -763,6 +764,8 @@ void nrf_irq_handler(nrf24l01 *dev) {
 __weak void nrf_packet_received_callback(nrf24l01 *dev, uint8_t *data) {
   // default implementation (__weak) is used in favor of nrf_receive_packet
   dev->rx_busy = 0;
+
+  RF_PacketReceived(data);
 }
 
 /* Private functions implementation --------------------------------------------*/

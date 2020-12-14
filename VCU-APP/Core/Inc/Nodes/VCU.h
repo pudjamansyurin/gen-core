@@ -64,9 +64,6 @@ typedef struct {
     uint8_t independent;
   } state;
   struct {
-    uint32_t remote;
-  } tick;
-  struct {
     uint16_t report;
     uint16_t response;
   } seq_id;

@@ -47,7 +47,7 @@ static SIMCOM_RESULT Ready(void);
 static SIMCOM_RESULT Power(void);
 static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res);
 static void BeforeTransmitHook(void);
-static void SimcomDebugger(void);
+//static void SimcomDebugger(void);
 static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p);
 static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState);
 static uint8_t StatePoorSignal(void);
@@ -692,12 +692,12 @@ static void BeforeTransmitHook(void) {
   // SimcomDebugger();
 }
 
-static void SimcomDebugger(void) {
-  LOG_StrLn("============ SIMCOM DEBUG ============");
-  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-  LOG_Enter();
-  LOG_StrLn("======================================");
-}
+//static void SimcomDebugger(void) {
+//  LOG_StrLn("============ SIMCOM DEBUG ============");
+//  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
+//  LOG_Enter();
+//  LOG_StrLn("======================================");
+//}
 
 static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p) {
   // Handle timeout

@@ -60,9 +60,6 @@ void VCU_Init(void) {
 
   VCU.d.events = 0;
 
-  VCU.d.tick.remote = 0;
-  //  VCU.d.tick.finger = 0;
-
   VCU.d.seq_id.report = 0;
   VCU.d.seq_id.response = 0;
 }

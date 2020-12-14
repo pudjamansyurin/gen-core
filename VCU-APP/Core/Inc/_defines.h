@@ -15,6 +15,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION                  (uint16_t) 366
+#define VCU_VERSION                  (uint16_t) 368
 
 #endif /* DEFINES_H_ */
