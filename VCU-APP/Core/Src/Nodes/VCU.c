@@ -75,13 +75,10 @@ uint8_t VCU_ReadEvent(uint64_t event_id) {
   return (VCU.d.events & event_id) == event_id;
 }
 
-void VCU_CheckPower5v(void) {
+void VCU_CheckPower5v(uint8_t currentState) {
   static TickType_t tick;
   static int8_t lastState = -1;
-  uint8_t currentState;
 
-  // read state
-  currentState = GATE_ReadPower5v();
   // handle only when changed
   if (lastState != currentState) {
     lastState = currentState;

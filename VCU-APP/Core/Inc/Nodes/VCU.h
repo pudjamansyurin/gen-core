@@ -86,7 +86,7 @@ typedef struct {
   void (*Init)(void);
   void (*SetEvent)(uint64_t, uint8_t);
   uint8_t (*ReadEvent)(uint64_t);
-  void (*CheckPower5v)(void);
+  void (*CheckPower5v)(uint8_t);
   uint16_t (*SpeedToVolume)(void);
   void (*SetOdometer)(uint8_t);
 } vcu_t;
@@ -95,7 +95,7 @@ typedef struct {
 void VCU_Init(void);
 void VCU_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t VCU_ReadEvent(uint64_t event_id);
-void VCU_CheckPower5v(void);
+void VCU_CheckPower5v(uint8_t currentState);
 uint16_t VCU_SpeedToVolume(void);
 void VCU_SetOdometer(uint8_t increment);
 

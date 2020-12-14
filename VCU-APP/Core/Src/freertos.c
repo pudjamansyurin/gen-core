@@ -763,7 +763,7 @@ void StartCommandTask(void *argument)
 void StartGpsTask(void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
-  TickType_t lastWake;
+  uint32_t notif;
   uint8_t movement;
 
   // wait until ManagerTask done
@@ -775,7 +775,11 @@ void StartGpsTask(void *argument)
   /* Infinite loop */
   for (;;) {
     VCU.d.task.gps.wakeup = _GetTickMS() / 1000;
-    lastWake = _GetTickMS();
+
+    // Check notifications
+    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, (GPS_INTERVAL * 1000)))
+      if (notif & EVT_GPS_REINIT)
+        GPS_Init();
 
     GPS_Capture(&(VCU.d.gps));
     // GPS_Debugger();
@@ -786,7 +790,6 @@ void StartGpsTask(void *argument)
     if (movement)
       VCU.SetOdometer(movement);
 
-    osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
   }
   /* USER CODE END StartGpsTask */
 }
@@ -801,9 +804,8 @@ void StartGpsTask(void *argument)
 void StartGyroTask(void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
-  uint32_t flag;
+  uint32_t notif, flag;
   uint8_t fallen;
-  TickType_t lastWake;
   mems_decision_t decider;
 
   // wait until ManagerTask done
@@ -815,7 +817,11 @@ void StartGyroTask(void *argument)
   /* Infinite loop */
   for (;;) {
     VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
-    lastWake = _GetTickMS();
+
+    // Check notifications
+    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000))
+      if (notif & EVT_GYRO_REINIT)
+        GYRO_Init();
 
     // Read all accelerometer, gyroscope (average)
     decider = GYRO_Decision(50, &(VCU.d.motion));
@@ -841,8 +847,6 @@ void StartGyroTask(void *argument)
 
       // Turn OFF BMS (+ MCU)
     }
-
-    osDelayUntil(lastWake + 1000);
   }
   /* USER CODE END StartGyroTask */
 }
@@ -859,7 +863,7 @@ void StartRemoteTask(void *argument)
   /* USER CODE BEGIN StartRemoteTask */
   uint32_t notif;
   RF_CMD command;
-  uint32_t tick_beat = 0, tick_pairing = 0, tick_reinit = 0;
+  uint32_t tick_beat = 0, tick_pairing = 0;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -873,19 +877,13 @@ void StartRemoteTask(void *argument)
     VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
     HMI1.d.state.unremote = RF_Refresh(tick_beat);
-    if (HMI1.d.state.unremote) {
-      if ((_GetTickMS() - tick_reinit) > 10000) {
-        tick_reinit = _GetTickMS();
-        RF_Init(&(VCU.d.unit_id));
-      }
-    }
 
     RF_Ping();
 
     // Check response
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
-      if (notif & EVT_REMOTE_RESET)
+      if (notif & EVT_REMOTE_REINIT)
         RF_Init(&(VCU.d.unit_id));
 
       // handle Pairing
@@ -972,6 +970,10 @@ void StartFingerTask(void *argument)
 
     // check if user put finger
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+      // handle reset
+      if (notif & EVT_FINGER_REINIT)
+        Finger_Init();
+
       if (notif & EVT_FINGER_PLACED) {
         id = Finger_AuthFast();
         // Finger is registered
@@ -1075,7 +1077,7 @@ void StartGateTask(void *argument)
 
   // Initialise
   HBAR_ReadStates();
-  VCU.CheckPower5v();
+  VCU.CheckPower5v(GATE_ReadPower5v());
   VCU.d.state.knob = GATE_ReadKnobState();
 
   /* Infinite loop */
@@ -1097,8 +1099,16 @@ void StartGateTask(void *argument)
       // Handle other EXTI interrupt
       // BMS Power IRQ
       if (notif & EVT_GATE_REG_5V_IRQ) {
-        // independent mode activated
-        VCU.CheckPower5v();
+        VCU.CheckPower5v(GATE_ReadPower5v());
+
+        GYRO_Init();
+        GPS_Init();
+        if (GATE_ReadPower5v()) {
+          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_REINIT);
+          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_REINIT);
+          osThreadFlagsSet(GpsTaskHandle, EVT_GPS_REINIT);
+          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_REINIT);
+        }
       }
 
       // Starter Button IRQ
