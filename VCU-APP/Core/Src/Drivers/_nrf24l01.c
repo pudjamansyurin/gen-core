@@ -19,8 +19,10 @@ static void ce_set(nrf24l01 *dev);
 static void ce_reset(nrf24l01 *dev);
 
 /* Public functions implementation ---------------------------------------------*/
-NRF_RESULT nrf_init(nrf24l01 *dev) {
+NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
   NRF_RESULT result;
+
+  nrf_set_config(dev, config);
 
   // check hardware
   do {

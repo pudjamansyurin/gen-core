@@ -54,11 +54,10 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 void RF_Init(uint32_t *unit_id) {
-  AES_Init();
 
-  nrf_set_config(&NRF, &(RF.config));
-  nrf_init(&NRF);
+  nrf_init(&NRF, &(RF.config));
   nrf_configure(&NRF);
+
   ChangeMode(RF_MODE_NORMAL, unit_id);
 }
 

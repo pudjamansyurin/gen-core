@@ -19,8 +19,6 @@ static nmea_t nmea;
 void GPS_Init(void) {
 	uint32_t tick;
 
-  UBLOX_DMA_Init();
-
 	// Inititalize Module
 	do {
 		LOG_StrLn("GPS:Init");
@@ -64,7 +62,9 @@ uint8_t GPS_CalculateOdometer(gps_t *gps) {
 }
 
 uint8_t GPS_CalculateSpeed(gps_t *gps) {
-  return gps->speed_kph;
+  if (gps->speed_kph > 8)
+    return gps->speed_kph + 8;
+  return gps->speed_kph * 2;
 }
 
 void GPS_Debugger(void) {

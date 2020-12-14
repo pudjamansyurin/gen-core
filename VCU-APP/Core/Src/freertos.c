@@ -138,13 +138,6 @@ const osThreadAttr_t AudioTask_attributes = {
     .priority = (osPriority_t) osPriorityNormal,
     .stack_size = 240 * 4
 };
-/* Definitions for GateTask */
-osThreadId_t GateTaskHandle;
-const osThreadAttr_t GateTask_attributes = {
-    .name = "GateTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 224 * 4
-};
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
 const osThreadAttr_t CanRxTask_attributes = {
@@ -165,6 +158,13 @@ const osThreadAttr_t Hmi2PowerTask_attributes = {
     .name = "Hmi2PowerTask",
     .priority = (osPriority_t) osPriorityNormal,
     .stack_size = 160 * 4
+};
+/* Definitions for GateTask */
+osThreadId_t GateTaskHandle;
+const osThreadAttr_t GateTask_attributes = {
+    .name = "GateTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
@@ -264,10 +264,10 @@ void StartGyroTask(void *argument);
 void StartRemoteTask(void *argument);
 void StartFingerTask(void *argument);
 void StartAudioTask(void *argument);
-void StartGateTask(void *argument);
 void StartCanRxTask(void *argument);
 void StartCanTxTask(void *argument);
 void StartHmi2PowerTask(void *argument);
+void StartGateTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -384,9 +384,6 @@ void MX_FREERTOS_Init(void) {
   /* creation of AudioTask */
   AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
 
-  /* creation of GateTask */
-  GateTaskHandle = osThreadNew(StartGateTask, NULL, &GateTask_attributes);
-
   /* creation of CanRxTask */
   CanRxTaskHandle = osThreadNew(StartCanRxTask, NULL, &CanRxTask_attributes);
 
@@ -395,6 +392,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of Hmi2PowerTask */
   Hmi2PowerTaskHandle = osThreadNew(StartHmi2PowerTask, NULL, &Hmi2PowerTask_attributes);
+
+  /* creation of GateTask */
+  GateTaskHandle = osThreadNew(StartGateTask, NULL, &GateTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -770,6 +770,7 @@ void StartGpsTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
+  UBLOX_DMA_Init();
   GPS_Init();
 
   /* Infinite loop */
@@ -777,9 +778,8 @@ void StartGpsTask(void *argument)
     VCU.d.task.gps.wakeup = _GetTickMS() / 1000;
 
     // Check notifications
-    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, (GPS_INTERVAL * 1000)))
-      if (notif & EVT_GPS_REINIT)
-        GPS_Init();
+    if (RTOS_ThreadFlagsWait(&notif, EVT_GPS_REINIT, osFlagsWaitAny, (GPS_INTERVAL * 1000)))
+      GPS_Init();
 
     GPS_Capture(&(VCU.d.gps));
     // GPS_Debugger();
@@ -819,9 +819,8 @@ void StartGyroTask(void *argument)
     VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
 
     // Check notifications
-    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000))
-      if (notif & EVT_GYRO_REINIT)
-        GYRO_Init();
+    if (RTOS_ThreadFlagsWait(&notif, EVT_GYRO_REINIT, osFlagsWaitAny, 1000))
+      GYRO_Init();
 
     // Read all accelerometer, gyroscope (average)
     decider = GYRO_Decision(50, &(VCU.d.motion));
@@ -869,6 +868,7 @@ void StartRemoteTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // initialization
+  AES_Init();
   RF_Init(&(VCU.d.unit_id));
 
   //  osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
@@ -938,7 +938,7 @@ void StartRemoteTask(void *argument)
           }
         }
       }
-      osThreadFlagsClear(EVT_MASK);
+      // osThreadFlagsClear(EVT_MASK);
     }
   }
   /* USER CODE END StartRemoteTask */
@@ -962,6 +962,7 @@ void StartFingerTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialisation
+  FINGER_DMA_Init();
   Finger_Init();
 
   /* Infinite loop */
@@ -1003,7 +1004,7 @@ void StartFingerTask(void *argument)
       }
 
       // reset pending flag
-      osThreadFlagsClear(EVT_MASK);
+      // osThreadFlagsClear(EVT_MASK);
     }
   }
   /* USER CODE END StartFingerTask */
@@ -1061,72 +1062,6 @@ void StartAudioTask(void *argument)
     AUDIO_OUT_SetVolume(VCU.SpeedToVolume());
   }
   /* USER CODE END StartAudioTask */
-}
-
-/* USER CODE BEGIN Header_StartGateTask */
-/**
- * @brief Function implementing the GateTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartGateTask */
-void StartGateTask(void *argument)
-{
-  /* USER CODE BEGIN StartGateTask */
-  uint32_t notif;
-
-  // wait until ManagerTask done
-  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-
-  // Initialise
-  HBAR_ReadStates();
-  VCU.CheckPower5v(GATE_ReadPower5v());
-  VCU.d.state.knob = GATE_ReadKnobState();
-
-  /* Infinite loop */
-  for (;;) {
-    VCU.d.task.gate.wakeup = _GetTickMS() / 1000;
-
-    // wait forever
-    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
-      // handle bounce effect
-      _DelayMS(50);
-
-      // Handle switch EXTI interrupt
-      if (notif & EVT_GATE_HBAR) {
-        HBAR_ReadStates();
-        HBAR_TimerSelectSet();
-        HBAR_RunSelectOrSet();
-      }
-
-      // Handle other EXTI interrupt
-      // BMS Power IRQ
-      if (notif & EVT_GATE_REG_5V_IRQ) {
-        VCU.CheckPower5v(GATE_ReadPower5v());
-
-        if (GATE_ReadPower5v()) {
-          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_REINIT);
-          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_REINIT);
-          osThreadFlagsSet(GpsTaskHandle, EVT_GPS_REINIT);
-          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_REINIT);
-          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_REINIT);
-        }
-      }
-
-      // Starter Button IRQ
-      if (notif & EVT_GATE_STARTER_IRQ) {
-        // check KNOB, KickStand, Remote, Fingerprint
-      }
-
-      // KNOB IRQ
-      if (notif & EVT_GATE_KNOB_IRQ) {
-        VCU.d.state.knob = GATE_ReadKnobState();
-      }
-
-      osThreadFlagsClear(EVT_MASK);
-    }
-  }
-  /* USER CODE END StartGateTask */
 }
 
 /* USER CODE BEGIN Header_StartCanRxTask */
@@ -1265,6 +1200,71 @@ void StartHmi2PowerTask(void *argument)
   /* USER CODE END StartHmi2PowerTask */
 }
 
+/* USER CODE BEGIN Header_StartGateTask */
+/**
+ * @brief Function implementing the GateTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartGateTask */
+void StartGateTask(void *argument)
+{
+  /* USER CODE BEGIN StartGateTask */
+  uint32_t notif;
+
+  // wait until ManagerTask done
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+
+  // Initialise
+  HBAR_ReadStates();
+  VCU.CheckPower5v(GATE_ReadPower5v());
+  VCU.d.state.knob = GATE_ReadKnobState();
+
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.gate.wakeup = _GetTickMS() / 1000;
+
+    // wait forever
+    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
+      // handle bounce effect
+      _DelayMS(50);
+      //      osThreadFlagsClear(EVT_MASK);
+
+      // Starter Button IRQ
+      if (notif & EVT_GATE_STARTER_IRQ) {
+        // check KNOB, KickStand, Remote, Fingerprint
+      }
+
+      // KNOB IRQ
+      if (notif & EVT_GATE_KNOB_IRQ) {
+        VCU.d.state.knob = GATE_ReadKnobState();
+      }
+
+      // Handle switch EXTI interrupt
+      if (notif & EVT_GATE_HBAR) {
+        HBAR_ReadStates();
+        HBAR_TimerSelectSet();
+        HBAR_RunSelectOrSet();
+      }
+
+      // Handle other EXTI interrupt
+      // BMS Power IRQ
+      if (notif & EVT_GATE_REG_5V_IRQ) {
+        VCU.CheckPower5v(GATE_ReadPower5v());
+
+        if (GATE_ReadPower5v()) {
+          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_REINIT);
+          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_REINIT);
+          osThreadFlagsSet(GpsTaskHandle, EVT_GPS_REINIT);
+          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_REINIT);
+          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_REINIT);
+        }
+      }
+    }
+  }
+  /* USER CODE END StartGateTask */
+}
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -1274,27 +1274,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY)
     return;
 
-  // handle BMS_IRQ (is 5v exist?)
   if (GPIO_Pin == EXT_REG_5V_IRQ_Pin)
     osThreadFlagsSet(GateTaskHandle, EVT_GATE_REG_5V_IRQ);
 
-  // handle Starter Button
   if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
     osThreadFlagsSet(GateTaskHandle, EVT_GATE_STARTER_IRQ);
 
-  // handle KNOB IRQ (Power control for HMI1 & HMI2)
   if (GPIO_Pin == EXT_KNOB_IRQ_Pin)
     osThreadFlagsSet(GateTaskHandle, EVT_GATE_KNOB_IRQ);
 
-  // handle Finger IRQ
   if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
     osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
 
-  // handle NRF24 IRQ
   if (GPIO_Pin == INT_REMOTE_IRQ_Pin)
     RF_IrqHandler();
 
-  // handle Switches EXTI
   for (uint8_t i = 0; i < HBAR_K_MAX; i++)
     if (GPIO_Pin == HBAR.list[i].pin)
       osThreadFlagsSet(GateTaskHandle, EVT_GATE_HBAR);

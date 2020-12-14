@@ -86,7 +86,7 @@ void VCU_CheckPower5v(uint8_t currentState) {
   }
 
   // set things
-  VCU.d.state.independent = !currentState;
+  VCU.d.state.independent = currentState == 0;
 
   // handle when REG_5V is OFF
   if (currentState == 0) {
