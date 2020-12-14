@@ -1033,6 +1033,9 @@ void StartAudioTask(void *argument)
 
     // wait with timeout
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+      if (notif & EVT_AUDIO_REINIT)
+        AUDIO_Init();
+
       // Beep command
       if (notif & EVT_AUDIO_BEEP) {
         AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
@@ -1090,7 +1093,7 @@ void StartGateTask(void *argument)
       _DelayMS(50);
 
       // Handle switch EXTI interrupt
-      if (notif & EVT_GATE_TRIGGERED) {
+      if (notif & EVT_GATE_HBAR) {
         HBAR_ReadStates();
         HBAR_TimerSelectSet();
         HBAR_RunSelectOrSet();
@@ -1101,13 +1104,12 @@ void StartGateTask(void *argument)
       if (notif & EVT_GATE_REG_5V_IRQ) {
         VCU.CheckPower5v(GATE_ReadPower5v());
 
-        GYRO_Init();
-        GPS_Init();
         if (GATE_ReadPower5v()) {
           osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_REINIT);
           osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_REINIT);
           osThreadFlagsSet(GpsTaskHandle, EVT_GPS_REINIT);
           osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_REINIT);
+          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_REINIT);
         }
       }
 
@@ -1295,7 +1297,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   // handle Switches EXTI
   for (uint8_t i = 0; i < HBAR_K_MAX; i++)
     if (GPIO_Pin == HBAR.list[i].pin)
-      osThreadFlagsSet(GateTaskHandle, EVT_GATE_TRIGGERED);
+      osThreadFlagsSet(GateTaskHandle, EVT_GATE_HBAR);
 }
 /* USER CODE END Application */
 
