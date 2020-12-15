@@ -136,7 +136,6 @@
 #define EVT_FINGER_RST                          BIT(3)
 #define EVT_FINGER_REINIT                       BIT(4)
 #define EVT_COMMAND_ERROR                       BIT(0)
-#define EVT_GPS_REINIT                          BIT(0)
 #define EVT_GYRO_REINIT                         BIT(0)
 #define EVT_COMMAND_OK                          BIT(1)
 #define EVT_REMOTE_RX_IT                        BIT(0)
