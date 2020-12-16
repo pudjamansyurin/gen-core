@@ -802,8 +802,8 @@ void StartGpsTask(void *argument)
 void StartGyroTask(void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
-  uint32_t notif, flag;
   uint8_t fallen;
+  uint32_t notif, flag;
   mems_decision_t decider;
 
   // wait until ManagerTask done
