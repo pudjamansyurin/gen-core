@@ -442,10 +442,10 @@ void StartManagerTask(void *argument)
   //  osThreadSuspend(RemoteTaskHandle);
   //  osThreadSuspend(FingerTaskHandle);
   //  osThreadSuspend(AudioTaskHandle);
-  //  osThreadSuspend(GateTaskHandle);
   //  osThreadSuspend(CanRxTaskHandle);
   //  osThreadSuspend(CanTxTaskHandle);
   osThreadSuspend(Hmi2PowerTaskHandle);
+  //  osThreadSuspend(GateTaskHandle);
 
   // Release threads
   osEventFlagsSet(GlobalEventHandle, EVENT_READY);
@@ -981,6 +981,7 @@ void StartFingerTask(void *argument)
         }
         // Handle bounce effect
         _DelayMS(5000);
+        osThreadFlagsClear(EVT_MASK);
       }
 
       if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
@@ -998,8 +999,6 @@ void StartFingerTask(void *argument)
         }
       }
 
-      // reset pending flag
-      // osThreadFlagsClear(EVT_MASK);
     }
   }
   /* USER CODE END StartFingerTask */

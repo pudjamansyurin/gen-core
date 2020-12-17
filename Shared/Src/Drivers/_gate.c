@@ -93,7 +93,7 @@ void GATE_FingerReset(void) {
   _DelayMS(500);
 }
 
-void GATE_FingerPower(GPIO_PinState state) {
+void GATE_FingerDigitalPower(GPIO_PinState state) {
   HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin, !state);
   _DelayMS(500);
 }
