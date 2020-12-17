@@ -34,7 +34,7 @@ void GATE_AudioReset(void);
 void GATE_AudioCodecStop(void);
 void GATE_AudioCodecReset(void);
 void GATE_FanBMS(GPIO_PinState state);
-void GATE_HornToggle(void);
+void GATE_HornToggle(uint8_t *hazard);
 void GATE_SolenoidToggle(void);
 
 GPIO_PinState GATE_ReadPower5v(void);

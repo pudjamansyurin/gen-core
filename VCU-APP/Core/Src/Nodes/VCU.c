@@ -156,10 +156,10 @@ uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar) {
   TxData.u8[1] |= hbar->runner.reverse << 2;
 
   // mode
-  TxData.u8[2] = hbar->runner.mode.data.val[HBAR_M_DRIVE];
-  TxData.u8[2] |= hbar->runner.mode.data.val[HBAR_M_TRIP] << 2;
-  TxData.u8[2] |= hbar->runner.mode.data.val[HBAR_M_REPORT] << 4;
-  TxData.u8[2] |= hbar->runner.mode.sel << 5;
+  TxData.u8[2] = hbar->runner.mode.d.val[HBAR_M_DRIVE];
+  TxData.u8[2] |= hbar->runner.mode.d.val[HBAR_M_TRIP] << 2;
+  TxData.u8[2] |= hbar->runner.mode.d.val[HBAR_M_REPORT] << 4;
+  TxData.u8[2] |= hbar->runner.mode.m << 5;
   TxData.u8[2] |= HBAR_ModeController(&(hbar->runner)) << 7;
 
   // others
@@ -193,9 +193,9 @@ uint8_t VCU_CAN_TX_MixedData(hbar_runner_t *runner) {
   // set message
   TxData.u8[0] = SIM.signal;
   TxData.u8[1] = BMS.d.soc;
-  TxData.u8[2] = VCU.d.speed; //runner->HBAR.report[HBAR_M_REPORT_RANGE];
-  TxData.u8[3] = runner->mode.data.report[HBAR_M_REPORT_AVERAGE];
-  TxData.u32[1] = VCU.d.odometer;
+  TxData.u8[2] = VCU.d.speed; //runner->mode.d.report[HBAR_M_REPORT_RANGE];
+  TxData.u8[3] = runner->mode.d.report[HBAR_M_REPORT_AVERAGE];
+  TxData.u32[1] = (uint32_t) VCU.d.gps.dop_h; // VCU.d.odometer;
 
   // send message
   return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 8);

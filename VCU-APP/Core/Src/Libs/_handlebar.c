@@ -72,8 +72,8 @@ hbar_t HBAR = {
 				.hazard = 0,
 				.reverse = 0,
 				.mode = {
-						.sel = HBAR_M_DRIVE,
-						.data = {
+            .m = HBAR_M_DRIVE,
+            .d = {
 								.val = {
 										HBAR_M_DRIVE_STANDARD,
 										HBAR_M_TRIP_ODO,
@@ -147,8 +147,8 @@ void HBAR_TimerSelectSet(void) {
 }
 
 void HBAR_AccumulateSubTrip(uint8_t increment) {
-	HBAR_MODE_TRIP mTrip = HBAR.runner.mode.data.val[HBAR_M_TRIP];
-	uint32_t *trip = &(HBAR.runner.mode.data.trip[mTrip]);
+  HBAR_MODE_TRIP mTrip = HBAR.runner.mode.d.val[HBAR_M_TRIP];
+  uint32_t *trip = &(HBAR.runner.mode.d.trip[mTrip]);
 
   if ((*trip / 1000) > VCU_ODOMETER_KM_MAX)
 		*trip = 0;
@@ -193,13 +193,13 @@ uint8_t HBAR_ModeController(hbar_runner_t *runner) {
 	// MODE Show/Hide Manipulator
 	if (runner->listening) {
 		// mode changed
-		if (iName != runner->mode.sel) {
-			iName = runner->mode.sel;
+    if (iName != runner->mode.m) {
+      iName = runner->mode.m;
 			tickPeriod = _GetTickMS();
 		}
 		// value changed
-    else if (iValue != runner->mode.data.val[runner->mode.sel]) {
-      iValue = runner->mode.data.val[runner->mode.sel];
+    else if (iValue != runner->mode.d.val[runner->mode.m]) {
+      iValue = runner->mode.d.val[runner->mode.m];
 			tickPeriod = _GetTickMS();
 		}
 
@@ -234,27 +234,27 @@ void HBAR_RunSelectOrSet(void) {
 /* Private functions implementation -------------------------------------------*/
 static void RunSelect(void) {
 	if (HBAR.runner.listening) {
-		if (HBAR.runner.mode.sel == HBAR_M_MAX)
-			HBAR.runner.mode.sel = 0;
+    if (HBAR.runner.mode.m == HBAR_M_MAX)
+      HBAR.runner.mode.m = 0;
 		else
-			HBAR.runner.mode.sel++;
+      HBAR.runner.mode.m++;
 	}
 	// Listening on option
 	HBAR.runner.listening = 1;
 }
 
 static void RunSet(void) {
-	HBAR_MODE sMode = HBAR.runner.mode.sel;
+  HBAR_MODE sMode = HBAR.runner.mode.m;
 
 	// handle reset only if push more than n sec, and in trip mode
 	if (HBAR.runner.listening || (HBAR.timer[HBAR_K_SET].time >= 3 && sMode == HBAR_M_TRIP)) {
 		if (!HBAR.runner.listening)
-			HBAR.runner.mode.data.trip[HBAR.runner.mode.data.val[sMode]] = 0;
+      HBAR.runner.mode.d.trip[HBAR.runner.mode.d.val[sMode]] = 0;
 		else {
-			if (HBAR.runner.mode.data.val[sMode] == HBAR.runner.mode.data.max[sMode])
-				HBAR.runner.mode.data.val[sMode] = 0;
+      if (HBAR.runner.mode.d.val[sMode] == HBAR.runner.mode.d.max[sMode])
+        HBAR.runner.mode.d.val[sMode] = 0;
 			else
-				HBAR.runner.mode.data.val[sMode]++;
+        HBAR.runner.mode.d.val[sMode]++;
 		}
 	}
 }

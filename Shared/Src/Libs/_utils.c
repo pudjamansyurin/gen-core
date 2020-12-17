@@ -69,8 +69,8 @@ void _BuzzerWrite(uint8_t state) {
 }
 
 void _DummyDataGenerator(void) {
-	uint8_t *pRange = &(HBAR.runner.mode.data.report[HBAR_M_REPORT_RANGE]);
-	uint8_t *pAverage = &(HBAR.runner.mode.data.report[HBAR_M_REPORT_AVERAGE]);
+  uint8_t *pRange = &(HBAR.runner.mode.d.report[HBAR_M_REPORT_RANGE]);
+  uint8_t *pAverage = &(HBAR.runner.mode.d.report[HBAR_M_REPORT_AVERAGE]);
 
 	// Dummy Report Range
   if (!(*pRange))

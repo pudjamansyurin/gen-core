@@ -588,7 +588,7 @@ void StartReporterTask(void *argument)
     VCU.d.interval = 5;
     frame = FR_FULL;
 
-    Report_Capture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.runner.mode.data));
+    Report_Capture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.runner.mode.d));
 
     // Put report to log
     do {
@@ -783,10 +783,9 @@ void StartGpsTask(void *argument)
 
     VCU.d.speed = GPS_CalculateSpeed(&(VCU.d.gps));
 
-    //    movement = GPS_CalculateOdometer(&(VCU.d.gps));
-    //    if (movement)
-    //      VCU.SetOdometer(movement);
-    VCU.d.odometer = (uint32_t) VCU.d.gps.dop_h;
+    movement = GPS_CalculateOdometer(&(VCU.d.gps));
+    if (movement)
+      VCU.SetOdometer(movement);
 
     osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
   }
@@ -917,12 +916,9 @@ void StartRemoteTask(void *argument)
             case RF_CMD_ALARM:
               LOG_StrLn("NRF:Command = ALARM");
 
-              for (uint8_t i = 0; i < 2; i++) {
-                HBAR.runner.hazard = 1;
-                GATE_HornToggle();
-                HBAR.runner.hazard = 0;
-                _DelayMS(100);
-              }
+              for (uint8_t i = 0; i < 2; i++)
+                GATE_HornToggle(&(HBAR.runner.hazard));
+
               break;
 
             case RF_CMD_SEAT:
@@ -1147,7 +1143,7 @@ void StartCanTxTask(void *argument)
       last1000ms = _GetTickMS();
 
       VCU.can.t.Datetime(&(VCU.d.rtc.timestamp));
-      VCU.can.t.SubTripData(&(HBAR.runner.mode.data.trip[0]));
+      VCU.can.t.SubTripData(&(HBAR.runner.mode.d.trip[0]));
     }
 
     // Handle Knob Changes
