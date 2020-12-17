@@ -487,7 +487,7 @@ void StartManagerTask(void *argument)
     VCU.d.state.run = VCU.d.state.override ||
         (
             VCU.d.state.start &&
-            //            VCU.d.driver_id != DRIVER_ID_NONE &&
+            VCU.d.driver_id != DRIVER_ID_NONE &&
             !HMI1.d.state.unremote
         );
 
@@ -981,7 +981,6 @@ void StartFingerTask(void *argument)
         }
         // Handle bounce effect
         _DelayMS(5000);
-        osThreadFlagsClear(EVT_MASK);
       }
 
       if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
@@ -998,6 +997,8 @@ void StartFingerTask(void *argument)
           osThreadFlagsSet(CommandTaskHandle, p ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
         }
       }
+
+      osThreadFlagsClear(EVT_MASK);
 
     }
   }
