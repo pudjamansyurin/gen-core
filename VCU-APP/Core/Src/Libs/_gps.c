@@ -9,9 +9,6 @@
 #include "Libs/_gps.h"
 #include "DMA/_dma_ublox.h"
 
-/* External variables ---------------------------------------------------------*/
-extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ ];
-
 /* Private variables ----------------------------------------------------------*/
 static nmea_t nmea;
 

@@ -11,12 +11,11 @@
 
 /* External variables ---------------------------------------------------------*/
 extern osMutexId_t FingerRecMutexHandle;
-extern finger_t finger;
 
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static void ConvertImageTaken(uint8_t *error);
+static void ConvertImage(uint8_t *error);
 static void GetImage(uint8_t *error, uint8_t enroll);
 
 /* Public functions implementation --------------------------------------------*/
@@ -39,7 +38,7 @@ void Finger_Init(void) {
 	} while (!verified);
 }
 
-uint8_t Finger_Enroll(uint8_t id, uint8_t *fingerState) {
+uint8_t Finger_Enroll(uint8_t id) {
 	const TickType_t scan_time = (FINGER_SCAN_TIMEOUT);
   uint8_t timeout, error = 0;
 	TickType_t tick;
@@ -83,7 +82,6 @@ uint8_t Finger_Enroll(uint8_t id, uint8_t *fingerState) {
 
 			// send command
 			GATE_LedToggle();
-			*fingerState = !(*fingerState);
 
 			// check response
       GetImage(&error, 1);
@@ -94,7 +92,7 @@ uint8_t Finger_Enroll(uint8_t id, uint8_t *fingerState) {
 
   if (!error)
 		//	put image to buffer 1
-    ConvertImageTaken(&error);
+    ConvertImage(&error);
 
 	if (!error) {
 		//	Create Register model
@@ -138,8 +136,6 @@ uint8_t Finger_Enroll(uint8_t id, uint8_t *fingerState) {
 		error = (p != FINGERPRINT_OK);
 	}
 
-	// reset indicator
-	*fingerState = 0;
 	unlock();
 
 	return !error;
@@ -199,7 +195,7 @@ int8_t Finger_Auth(void) {
 
   if (!error)
 		// OK success!, convert the image taken
-    ConvertImageTaken(&error);
+    ConvertImage(&error);
 
 	if (!error) {
 		// Find in the model
@@ -298,7 +294,7 @@ static void GetImage(uint8_t *error, uint8_t enroll) {
   *error = (p != FINGERPRINT_OK);
 }
 
-static void ConvertImageTaken(uint8_t *error) {
+static void ConvertImage(uint8_t *error) {
   int p;
 
   p = fz3387_image2Tz(1);

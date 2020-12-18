@@ -22,12 +22,11 @@
 #include "Drivers/_fz3387.h"
 #include "DMA/_dma_finger.h"
 
-/* External variables ----------------------------------------------------------*/
-extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
-
 /* Public variables -----------------------------------------------------------*/
-packet_t packet;
 finger_t finger;
+
+/* Private variables -----------------------------------------------------------*/
+static packet_t packet;
 
 /* Private functions implementation --------------------------------------------*/
 static void FINGER_IO_WRITE(uint8_t c);

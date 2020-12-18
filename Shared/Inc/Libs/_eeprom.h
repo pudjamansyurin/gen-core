@@ -35,8 +35,16 @@ typedef enum {
     EE_CMD_W = 1
 } EEPROM_COMMAND;
 
+/* Exported variables ---------------------------------------------------------*/
+extern uint16_t FOTA_VERSION;
+extern IAP_TYPE FOTA_TYPE;
+#if (BOOTLOADER)
+extern uint32_t DFU_FLAG;
+#endif
+
+
 /* Public functions prototype ------------------------------------------------*/
-uint8_t EEPROM_Init(void);
+uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c);
 #if (!BOOTLOADER)
 void EEPROM_ResetOrLoad(void);
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);

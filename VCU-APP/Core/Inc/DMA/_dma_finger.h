@@ -15,8 +15,11 @@
 #define FINGER_UART_RX_SZ    (uint16_t) 256
 #define FINGER_DMA_RX_SZ     (uint16_t) (FINGER_UART_RX_SZ/(FINGER_UART_RX_SZ/128))
 
+/* Exported variables --------------------------------------------------------*/
+extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
+
 /* Public functions prototype ------------------------------------------------*/
-void FINGER_DMA_Init(void);
+void FINGER_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 void FINGER_DMA_IrqHandler(void);
 void FINGER_USART_IrqHandler(void);
 void FINGER_Reset_Buffer(void);

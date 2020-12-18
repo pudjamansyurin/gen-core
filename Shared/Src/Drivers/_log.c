@@ -8,13 +8,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_log.h"
 
-#if (!BOOTLOADER)
 /* External variables ----------------------------------------------------------*/
+#if (!BOOTLOADER)
 extern osMutexId_t LogMutexHandle;
 #endif
-
-/* Private constants -----------------------------------------------------------*/
-#define HEX_CHARS                                "0123456789ABCDEF"
 
 /* Private functions declarations ----------------------------------------------*/
 static void lock(void);

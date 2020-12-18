@@ -9,15 +9,21 @@
 #include "Drivers/_rtc.h"
 #include "Drivers/_at.h"
 
-/* External variables ----------------------------------------------------------*/
-extern RTC_HandleTypeDef hrtc;
+/* Private variables ----------------------------------------------------------*/
 extern osMutexId_t RtcMutexHandle;
+
+/* Private variables ----------------------------------------------------------*/
+static rtc_handler_t hRTC;
 
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
+void RTC_Init(RTC_HandleTypeDef *hrtc) {
+	hRTC.hrtc = hrtc;
+}
+
 timestamp_t RTC_Decode(uint64_t dateTime) {
 	// format dateTime: YYMMDDHHmmssE
 	uint8_t dt[7];
@@ -85,8 +91,8 @@ uint64_t RTC_Read(void) {
 void RTC_ReadRaw(timestamp_t *timestamp) {
 	// get the RTC
 	lock();
-	HAL_RTC_GetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(hRTC.hrtc, &timestamp->time, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hRTC.hrtc, &timestamp->date, RTC_FORMAT_BIN);
 	timestamp->tzQuarterHour = 0;
 	unlock();
 }
@@ -108,8 +114,8 @@ void RTC_WriteRaw(timestamp_t *timestamp, rtc_t *rtc) {
 
 	// set the RTC
 	lock();
-	HAL_RTC_SetTime(&hrtc, &timestamp->time, RTC_FORMAT_BIN);
-	HAL_RTC_SetDate(&hrtc, &timestamp->date, RTC_FORMAT_BIN);
+	HAL_RTC_SetTime(hRTC.hrtc, &timestamp->time, RTC_FORMAT_BIN);
+	HAL_RTC_SetDate(hRTC.hrtc, &timestamp->date, RTC_FORMAT_BIN);
 	unlock();
 
 	// save calibration date

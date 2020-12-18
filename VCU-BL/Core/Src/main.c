@@ -55,7 +55,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-extern IAP_TYPE FOTA_TYPE;
+extern DMA_HandleTypeDef hdma_usart1_rx;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,9 +101,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-  SIMCOM_DMA_Init();
-  EEPROM_Init();
-  CANBUS_Init();
+  EEPROM_Init(&hi2c2);
+  CANBUS_Init(&hcan1);
+  Simcom_Init(&huart1, &hdma_usart1_rx);
   /* USER CODE END 2 */
 
   /* Infinite loop */

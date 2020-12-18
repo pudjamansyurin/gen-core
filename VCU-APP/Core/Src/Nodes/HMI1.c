@@ -30,7 +30,7 @@ void HMI1_Init(void) {
 	HMI1.d.state.mirroring = 0;
 	HMI1.d.state.warning = 0;
 	HMI1.d.state.overheat = 0;
-	HMI1.d.state.finger = 0;
+  HMI1.d.state.unfinger = 1;
   HMI1.d.state.unremote = 1;
 	HMI1.d.state.daylight = 0;
 }

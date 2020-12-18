@@ -15,9 +15,6 @@
 #include "Drivers/_rtc.h"
 #include "Drivers/_crc.h"
 
-/* External variables --------------------------------------------------------*/
-extern sim_t SIM;
-
 /* Public functions implementation -------------------------------------------*/
 void Report_Init(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
 	// set default data

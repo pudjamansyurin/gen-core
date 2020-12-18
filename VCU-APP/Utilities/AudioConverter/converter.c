@@ -80,11 +80,11 @@ int main(int argc, char *argv[]) {
   
   // print c code
   fprintf(fDst, "#include <stdint.h>\n\n");
-  fprintf(fDst, "const uint32_t AUDIO_SAMPLE_FREQ = %d;\n", wave.SampleRate);
-  fprintf(fDst, "const uint32_t AUDIO_SAMPLE_SIZE = %d;\n", (wave.NbrChannels == 1 ? size * 2 : size));
+  fprintf(fDst, "const uint32_t SOUND_FREQ = %d;\n", wave.SampleRate);
+  fprintf(fDst, "const uint32_t SOUND_SIZE = %d;\n", (wave.NbrChannels == 1 ? size * 2 : size));
   
   fprintf(fDst, "// @formatter:off\n");
-  fprintf(fDst, "const uint8_t AUDIO_SAMPLE[] = {\n  ");
+  fprintf(fDst, "const uint8_t SOUND_SAMPLE[] = {\n  ");
 
   // iterate each 2 bytes
   for (byte = start; byte < end; byte += 2) {

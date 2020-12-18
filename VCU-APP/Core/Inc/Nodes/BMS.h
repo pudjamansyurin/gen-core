@@ -68,6 +68,9 @@ typedef struct {
     void (*MergeData)(void);
 } bms_t;
 
+/* Exported variables ---------------------------------------------------------*/
+extern bms_t BMS;
+
 /* Public functions implementation --------------------------------------------*/
 void BMS_Init(void);
 void BMS_PowerOverCan(uint8_t on);

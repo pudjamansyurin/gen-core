@@ -8,9 +8,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_crc.h"
+#include "crc.h"
 
-/* External variables ----------------------------------------------------------*/
-extern CRC_HandleTypeDef hcrc;
+/* External variables ---------------------------------------------------------*/
 #if (!BOOTLOADER)
 extern osMutexId_t CrcMutexHandle;
 #endif

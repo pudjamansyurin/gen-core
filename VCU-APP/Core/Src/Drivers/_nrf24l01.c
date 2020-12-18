@@ -9,9 +9,6 @@
 #include "Libs/_remote.h"
 #include "spi.h"
 
-/* External variables ---------------------------------------------------------*/
-extern SPI_HandleTypeDef hspi1;
-
 /* Private functions prototype ------------------------------------------------*/
 static void csn_set(nrf24l01 *dev);
 static void csn_reset(nrf24l01 *dev);
@@ -19,10 +16,8 @@ static void ce_set(nrf24l01 *dev);
 static void ce_reset(nrf24l01 *dev);
 
 /* Public functions implementation ---------------------------------------------*/
-NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
+NRF_RESULT nrf_init(nrf24l01 *dev) {
   NRF_RESULT result;
-
-  nrf_set_config(dev, config);
 
   // check hardware
   do {
@@ -32,8 +27,8 @@ NRF_RESULT nrf_init(nrf24l01 *dev, nrf24l01_config *config) {
     GATE_RemoteReset();
 
     // reset peripheral
-    HAL_SPI_MspDeInit(&hspi1);
-    HAL_SPI_MspInit(&hspi1);
+    HAL_SPI_MspDeInit(dev->config.spi);
+    HAL_SPI_MspInit(dev->config.spi);
 
     result = nrf_check(dev);
   } while (result == NRF_ERROR);
@@ -64,25 +59,7 @@ NRF_RESULT nrf_check(nrf24l01 *dev) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_config(nrf24l01 *dev, nrf24l01_config *config) {
-  config->data_rate = NRF_DATA_RATE_250KBPS;
-  config->tx_power = NRF_TX_PWR_M18dBm;
-  config->crc_width = NRF_CRC_WIDTH_1B;
-  config->retransmit_count = 0x0F;   // maximum is 15 times
-  config->retransmit_delay = 0x0F; // 4000us, LSB:250us
-  config->rf_channel = 110;
-  config->spi = &hspi1;
-  config->spi_timeout = 3; // milliseconds
-
-  // apply
-  dev->config = *config;
-  return NRF_OK;
-}
-
-NRF_RESULT nrf_change_mode(nrf24l01 *dev, nrf24l01_config *config){
-  // apply
-  dev->config = *config;
-
+NRF_RESULT nrf_change_mode(nrf24l01 *dev){
   ce_reset(dev);
   nrf_set_tx_address(dev, dev->config.tx_address);
   nrf_set_rx_address_p0(dev, dev->config.rx_address);
@@ -164,7 +141,7 @@ NRF_RESULT nrf_send_command(nrf24l01 *dev, NRF_COMMAND cmd, const uint8_t *tx,
   csn_reset(dev);
 
   /* Wait for SPIx Busy flag */
-  while (__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_BSY))
+  while (__HAL_SPI_GET_FLAG(dev->config.spi, SPI_FLAG_BSY))
     ;
 
   if (HAL_SPI_TransmitReceive(dev->config.spi, myTX, myRX, 1 + len,
@@ -184,10 +161,10 @@ NRF_RESULT nrf_send_command(nrf24l01 *dev, NRF_COMMAND cmd, const uint8_t *tx,
 uint8_t nrf_send_command_single(nrf24l01 *dev, uint8_t data) {
   uint8_t rx;
   /* Wait for SPIx Busy flag */
-  while (__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_BSY) != RESET)
+  while (__HAL_SPI_GET_FLAG(dev->config.spi, SPI_FLAG_BSY) != RESET)
     ;
   //	Tx buffer empty flag
-  while (__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE) == RESET)
+  while (__HAL_SPI_GET_FLAG(dev->config.spi, SPI_FLAG_TXE) == RESET)
     ;
 
   HAL_SPI_TransmitReceive(dev->config.spi, &data, &rx, 1,

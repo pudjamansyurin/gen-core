@@ -14,10 +14,10 @@
 
 #include <stdint.h>
 
-const uint32_t AUDIO_SAMPLE_FREQ = 8000;
-const uint32_t AUDIO_SAMPLE_SIZE = 73656;
+const uint32_t SOUND_FREQ = 8000;
+const uint32_t SOUND_SIZE = 73656;
 // @formatter:off
-const uint8_t AUDIO_SAMPLE[] = {
+const uint8_t SOUND_SAMPLE[] = {
   0xFF, 0xB6, 0xFF, 0xB6,
   0x01, 0xCD, 0x01, 0xCD,
   0xFC, 0x92, 0xFC, 0x92,

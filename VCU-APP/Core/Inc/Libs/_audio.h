@@ -41,16 +41,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_cs43l22.h"
 
-/* Typedefs ------------------------------------------------------------------*/
-typedef struct {
-	uint8_t initial_volume;
-  struct {
-  	uint16_t played;
-  	uint32_t remaining;
-  } size;
-} audio_t;
-
 /* Exported constants --------------------------------------------------------*/
+#define AUDIO_BUFFER_SIZE         		4096
 #define AUDIO_I2C_ADDRESS               0x94
 
 /* I2S peripheral configuration defines */
@@ -66,8 +58,19 @@ typedef struct {
 /* Exported macro functions ---------------------------------------------------*/
 #define DMA_MAX(_X_)                		(((_X_) <= DMA_MAX_SZE)? (_X_):DMA_MAX_SZE)
 
+/* Structs --------------------------------------------------------------------*/
+typedef struct {
+	I2S_HandleTypeDef *hi2s;
+	uint8_t initial_volume;
+  struct {
+  	uint16_t played;
+  	uint32_t remaining;
+  } size;
+} audio_t;
+
+
 /* Public functions prototype -------------------------------------------------*/
-void AUDIO_Init(void);
+void AUDIO_Init(I2C_HandleTypeDef *hi2c, I2S_HandleTypeDef *hi2s);
 void AUDIO_Play(void);
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS);
 void AUDIO_BeepStop(void);

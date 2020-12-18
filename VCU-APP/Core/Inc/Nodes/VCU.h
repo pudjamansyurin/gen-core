@@ -91,6 +91,9 @@ typedef struct {
   void (*SetOdometer)(uint8_t);
 } vcu_t;
 
+/* Exported variables ---------------------------------------------------------*/
+extern vcu_t VCU;
+
 /* Public functions implementation --------------------------------------------*/
 void VCU_Init(void);
 void VCU_SetEvent(uint64_t event_id, uint8_t value);

@@ -44,7 +44,7 @@ void GATE_SimcomSleep(GPIO_PinState state) {
 
 void GATE_Hmi1Power(GPIO_PinState state) {
   //  HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, state);
-  HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, !state);
+  HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, state);
 }
 
 #if (!BOOTLOADER)

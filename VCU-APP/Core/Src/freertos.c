@@ -26,6 +26,25 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "adc.h"
+#include "i2c.h"
+#include "i2s.h"
+#include "spi.h"
+#include "rtc.h"
+#include "iwdg.h"
+#include "can.h"
+#include "aes.h"
+#include "usart.h"
+
+#include "DMA/_dma_simcom.h"
+#include "DMA/_dma_ublox.h"
+#include "DMA/_dma_finger.h"
+
+#include "Drivers/_canbus.h"
+#include "Drivers/_rtc.h"
+#include "Drivers/_aes.h"
+#include "Drivers/_bat.h"
+
 #include "Libs/_rtos_utils.h"
 #include "Libs/_command.h"
 #include "Libs/_firmware.h"
@@ -38,18 +57,11 @@
 #include "Libs/_remote.h"
 #include "Libs/_reporter.h"
 #include "Libs/_handlebar.h"
-#include "Drivers/_canbus.h"
-#include "Drivers/_rtc.h"
-#include "Drivers/_aes.h"
-#include "Drivers/_bat.h"
-#include "DMA/_dma_simcom.h"
-#include "DMA/_dma_ublox.h"
-#include "DMA/_dma_finger.h"
+
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/HMI2.h"
-#include "iwdg.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -69,11 +81,10 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-extern vcu_t VCU;
-extern bms_t BMS;
-extern hmi1_t HMI1;
-extern hmi2_t HMI2;
-extern hbar_t HBAR;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_uart4_rx;
+
 /* USER CODE END Variables */
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
@@ -429,9 +440,10 @@ void StartManagerTask(void *argument)
   HMI2.Init();
 
   // Peripheral initialization
-  EEPROM_Init();
-  CANBUS_Init();
-  BAT_Init();
+  RTC_Init(&hrtc);
+  EEPROM_Init(&hi2c2);
+  CANBUS_Init(&hcan1);
+  BAT_Init(&hadc1);
 
   // Threads management:
   //  osThreadSuspend(IotTaskHandle);
@@ -480,15 +492,14 @@ void StartManagerTask(void *argument)
     HMI1.d.state.overheat = BMS.d.overheat;
     HMI1.d.state.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
     HMI1.d.state.warning = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
+    HMI1.d.state.unfinger = VCU.d.driver_id == DRIVER_ID_NONE;
 
     // FIXME: use vehicle_state
     VCU.d.state.start = VCU.d.state.knob;
 
-    VCU.d.state.run = VCU.d.state.override ||
-        (
-            VCU.d.state.start &&
-            VCU.d.driver_id != DRIVER_ID_NONE &&
-            !HMI1.d.state.unremote
+    VCU.d.state.run = !VCU.ReadEvent(EV_VCU_BIKE_FALLEN) &&
+        (VCU.d.state.override ||
+            (VCU.d.state.start && !HMI1.d.state.unfinger && !HMI1.d.state.unremote)
         );
 
     // Handle overheat
@@ -527,7 +538,7 @@ void StartIotTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
-  Simcom_Init();
+  Simcom_Init(&huart1, &hdma_usart1_rx);
 
   /* Infinite loop */
   for (;;) {
@@ -770,7 +781,7 @@ void StartGpsTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
-  UBLOX_DMA_Init();
+  UBLOX_DMA_Init(&huart2, &hdma_usart2_rx);
   GPS_Init();
 
   /* Infinite loop */
@@ -804,13 +815,13 @@ void StartGyroTask(void *argument)
   /* USER CODE BEGIN StartGyroTask */
   uint8_t fallen;
   uint32_t notif, flag;
-  mems_decision_t decider;
+  gyro_decision_t decider;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   /* MPU6050 Initialization*/
-  GYRO_Init();
+  GYRO_Init(&hi2c3);
 
   /* Infinite loop */
   for (;;) {
@@ -818,7 +829,7 @@ void StartGyroTask(void *argument)
 
     // Check notifications
     if (RTOS_ThreadFlagsWait(&notif, EVT_GYRO_REINIT, osFlagsWaitAny, 1000))
-      GYRO_Init();
+      GYRO_Init(&hi2c3);
 
     // Read all accelerometer, gyroscope (average)
     decider = GYRO_Decision(50, &(VCU.d.motion));
@@ -866,8 +877,8 @@ void StartRemoteTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // initialization
-  AES_Init();
-  RF_Init(&(VCU.d.unit_id));
+  AES_Init(&hcryp);
+  RF_Init(&(VCU.d.unit_id), &hspi1);
 
   //  osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
   /* Infinite loop */
@@ -882,7 +893,7 @@ void StartRemoteTask(void *argument)
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle reset key & id
       if (notif & EVT_REMOTE_REINIT)
-        RF_Init(&(VCU.d.unit_id));
+        RF_Init(&(VCU.d.unit_id), &hspi1);
 
       // handle Pairing
       if (notif & EVT_REMOTE_PAIRING) {
@@ -957,7 +968,7 @@ void StartFingerTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialisation
-  FINGER_DMA_Init();
+  FINGER_DMA_Init(&huart4, &hdma_uart4_rx);
   Finger_Init();
 
   /* Infinite loop */
@@ -980,14 +991,14 @@ void StartFingerTask(void *argument)
           VCU.d.driver_id = id;
         }
         // Handle bounce effect
-        _DelayMS(5000);
+        _DelayMS(2000);
       }
 
       if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
         // get driver value
         if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
           if (notif & EVT_FINGER_ADD)
-            p = Finger_Enroll(driver, &(HMI1.d.state.finger));
+            p = Finger_Enroll(driver);
           else if (notif & EVT_FINGER_DEL)
             p = Finger_DeleteID(driver);
           else if (notif & EVT_FINGER_RST)
@@ -1021,7 +1032,7 @@ void StartAudioTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   /* Initialize Wave player (Codec, DMA, I2C) */
-  AUDIO_Init();
+  AUDIO_Init(&hi2c1, &hi2s3);
 
   /* Infinite loop */
   for (;;) {
@@ -1030,7 +1041,7 @@ void StartAudioTask(void *argument)
     // wait with timeout
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       if (notif & EVT_AUDIO_REINIT)
-        AUDIO_Init();
+        AUDIO_Init(&hi2c1, &hi2s3);
 
       // Beep command
       if (notif & EVT_AUDIO_BEEP) {
@@ -1149,7 +1160,7 @@ void StartCanTxTask(void *argument)
     // Handle Knob Changes
     HMI1.Power(VCU.d.state.start);
     HMI2.PowerOverCan(VCU.d.state.start);
-    BMS.PowerOverCan(VCU.d.state.run && !VCU.ReadEvent(EV_VCU_BIKE_FALLEN));
+    BMS.PowerOverCan(VCU.d.state.run);
 
     // Refresh state
     HMI1.Refresh();

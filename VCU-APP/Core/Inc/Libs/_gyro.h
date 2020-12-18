@@ -1,5 +1,5 @@
 /*
- * mems.h
+ * gyro.h
  *
  *  Created on: Aug 23, 2019
  *      Author: Puja
@@ -42,7 +42,7 @@ typedef struct {
 	coordinate_t accelerometer;
 	coordinate_t gyroscope;
 	float temperature;
-} mems_t;
+} gyro_t;
 
 typedef struct {
 	struct {
@@ -53,11 +53,15 @@ typedef struct {
 		uint8_t state;
 		int32_t value;
 	} crash;
-} mems_decision_t;
+} gyro_decision_t;
+
+typedef struct {
+	I2C_HandleTypeDef *hi2c;
+} gyro_handler_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void GYRO_Init(void);
-mems_decision_t GYRO_Decision(uint16_t sample, motion_t *motion);
-void Gyro_Debugger(mems_decision_t *decider);
+void GYRO_Init(I2C_HandleTypeDef *hi2c);
+gyro_decision_t GYRO_Decision(uint16_t sample, motion_t *motion);
+void Gyro_Debugger(gyro_decision_t *decider);
 
 #endif /* GYRO_H_ */

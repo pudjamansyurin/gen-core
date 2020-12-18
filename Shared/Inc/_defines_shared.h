@@ -78,7 +78,7 @@
 #define PREFIX_NACK                             "@N"
 
 #define FINGER_CONFIDENCE_MIN        (uint8_t)  50
-#define FINGER_SCAN_TIMEOUT          (uint32_t) 10000               // in ms
+#define FINGER_SCAN_TIMEOUT          (uint32_t) 5000               // in ms
 #define FINGER_USER_MAX              (uint8_t)  5
 
 #define DRIVER_ID_NONE               (uint8_t)  0xFF

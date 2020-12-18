@@ -9,18 +9,16 @@
 #include "Drivers/_canbus.h"
 #include "can.h"
 
-/* Private constants ----------------------------------------------------------*/
-#define CANBUS_DEBUG			 0
-
-/* External variables ---------------------------------------------------------*/
-extern CAN_HandleTypeDef hcan1;
+/* External variables ----------------------------------------------------------*/
 #if (!BOOTLOADER)
-extern osMutexId_t CanTxMutexHandle;
-extern osMessageQueueId_t CanRxQueueHandle;
+    extern osMutexId_t CanTxMutexHandle;
+    extern osMessageQueueId_t CanRxQueueHandle;
 #endif
 
 /* Private variables ----------------------------------------------------------*/
-static uint8_t CAN_ACTIVE = 0;
+static can_handler_t hCAN = {
+    .active = 0,
+};
 
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
@@ -29,23 +27,24 @@ static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC
 static uint8_t Activated(void);
 
 /* Public functions implementation ---------------------------------------------*/
-void CANBUS_Init(void) {
+void CANBUS_Init(CAN_HandleTypeDef *hcan) {
 	uint8_t error = 0;
 
-	GATE_CanbusReset();
+	hCAN.hcan = hcan;
 
+	GATE_CanbusReset();
 	MX_CAN1_Init();
 
 	if (!CANBUS_Filter())
 		error = 1;
 
 	if (!error)
-		if (HAL_CAN_Start(&hcan1) != HAL_OK)
+		if (HAL_CAN_Start(hCAN.hcan) != HAL_OK)
 			error = 1;
 
 #if (!BOOTLOADER)
 	if (!error)
-		if (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+		if (HAL_CAN_ActivateNotification(hCAN.hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
 			error = 1;
 
 #endif
@@ -53,7 +52,7 @@ void CANBUS_Init(void) {
 	if (error)
 		Error_Handler();
 
-	CAN_ACTIVE = !error;
+	hCAN.active = !error;
 }
 
 uint8_t CANBUS_Filter(void) {
@@ -74,7 +73,7 @@ uint8_t CANBUS_Filter(void) {
 	// activate filter
 	sFilterConfig.FilterActivation = ENABLE;
 
-	return (HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) == HAL_OK);
+	return (HAL_CAN_ConfigFilter(hCAN.hcan, &sFilterConfig) == HAL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -89,11 +88,11 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 
 	lock();
 	Header(&TxHeader, address, DLC);
-	while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0)
+	while (HAL_CAN_GetTxMailboxesFreeLevel(hCAN.hcan) == 0)
 		;
 
 	/* Start the Transmission process */
-	status = HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData->u8, NULL);
+	status = HAL_CAN_AddTxMessage(hCAN.hcan, &TxHeader, TxData->u8, NULL);
 
 #if (CANBUS_DEBUG)
 	// debugging
@@ -116,9 +115,9 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
 
 	lock();
 	/* Check FIFO */
-	if (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0)) {
+	if (HAL_CAN_GetRxFifoFillLevel(hCAN.hcan, CAN_RX_FIFO0)) {
 		/* Get RX message */
-		status = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
+		status = HAL_CAN_GetRxMessage(hCAN.hcan, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
 
 #if (CANBUS_DEBUG)
 		// debugging
@@ -174,7 +173,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	// signal only when RTOS started
 	if (CANBUS_Read(&Rx))
 		if (osKernelGetState() == osKernelRunning)
-			osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
+      osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
 
 }
 #endif
@@ -182,13 +181,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
 #if (!BOOTLOADER)
-	osMutexAcquire(CanTxMutexHandle, osWaitForever);
+  osMutexAcquire(CanTxMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
 #if (!BOOTLOADER)
-	osMutexRelease(CanTxMutexHandle);
+  osMutexRelease(CanTxMutexHandle);
 #endif
 }
 
@@ -207,8 +206,8 @@ static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC
 }
 
 static uint8_t Activated(void) {
-	if (!CAN_ACTIVE)
-		CANBUS_Init();
+	if (!hCAN.active)
+		CANBUS_Init(hCAN.hcan);
 
-	return CAN_ACTIVE;
+	return hCAN.active;
 }

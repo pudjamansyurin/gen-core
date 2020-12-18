@@ -8,30 +8,32 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_aes.h"
 
-/* External variables --------------------------------------------------------*/
-extern CRYP_HandleTypeDef hcryp;
+/* External variable ---------------------------------------------------------*/
 extern osMutexId_t AesMutexHandle;
 
 /* Public variable -----------------------------------------------------------*/
 __ALIGN_BEGIN uint32_t AesKey[4] __ALIGN_END;
 
 /* Private variable ----------------------------------------------------------*/
-static CRYP_ConfigTypeDef config;
+static aes_handler_t hAES;
 
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
-uint8_t AES_Init(void) {
+uint8_t AES_Init(CRYP_HandleTypeDef *hcryp) {
   HAL_StatusTypeDef ret;
+  CRYP_ConfigTypeDef config;
+
+  hAES.hcryp = hcryp;
 
   do {
     lock();
-    ret = HAL_CRYP_GetConfig(&hcryp, &config);
+    ret = HAL_CRYP_GetConfig(hAES.hcryp, &config);
     if (ret == HAL_OK) {
       config.pKey = AesKey;
-      HAL_CRYP_SetConfig(&hcryp, &config);
+      HAL_CRYP_SetConfig(hAES.hcryp, &config);
     }
     unlock();
     _DelayMS(100);
@@ -44,7 +46,7 @@ uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
   uint8_t ret;
 
   lock();
-  ret = (HAL_CRYP_Encrypt(&hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+  ret = (HAL_CRYP_Encrypt(hAES.hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
   unlock();
 
   return ret;
@@ -54,7 +56,7 @@ uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
   uint8_t ret;
 
   lock();
-  ret = (HAL_CRYP_Decrypt(&hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+  ret = (HAL_CRYP_Decrypt(hAES.hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
   unlock();
 
   return ret;
@@ -71,17 +73,15 @@ void AES_Tester(void) {
   uint8_t Decryptedtext[sizeof(Plaintext)] = { 0 };
 
   // Encrypt & Decrypt
-  if (AES_Encrypt(Encryptedtext, Plaintext, sizeof(Plaintext))) {
+  if (AES_Encrypt(Encryptedtext, Plaintext, sizeof(Plaintext)))
     LOG_StrLn("AES:EncryptOK");
-  }
-  if (AES_Decrypt(Decryptedtext, Encryptedtext, sizeof(Encryptedtext))) {
+
+  if (AES_Decrypt(Decryptedtext, Encryptedtext, sizeof(Encryptedtext)))
     LOG_StrLn("AES:DecryptOK");
-  }
 
   // result
-  if (memcmp(Plaintext, Decryptedtext, sizeof(Plaintext)) == 0) {
+  if (memcmp(Plaintext, Decryptedtext, sizeof(Plaintext)) == 0) 
     LOG_StrLn("AES:ItWorks!");
-  }
 }
 
 /* Private functions implementation --------------------------------------------*/

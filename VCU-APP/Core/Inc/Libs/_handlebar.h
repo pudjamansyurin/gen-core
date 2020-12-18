@@ -96,6 +96,9 @@ typedef struct {
   uint8_t right;
 } sein_t;
 
+/* Exported variables ---------------------------------------------------------*/
+extern hbar_t HBAR;
+
 /* Public functions prototype ------------------------------------------------*/
 void HBAR_ReadStates(void);
 void HBAR_CheckReverse(void);

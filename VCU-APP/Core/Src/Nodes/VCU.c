@@ -13,12 +13,6 @@
 #include "Libs/_eeprom.h"
 #include "Libs/_simcom.h"
 
-
-/* External variables ---------------------------------------------------------*/
-extern bms_t BMS;
-extern hmi1_t HMI1;
-extern sim_t SIM;
-
 /* Public variables -----------------------------------------------------------*/
 vcu_t VCU = {
     .d = { 0 },
@@ -87,10 +81,10 @@ void VCU_CheckPower5v(uint8_t currentState) {
 
   // set things
   VCU.d.state.independent = currentState == 0;
+  VCU.SetEvent(EV_VCU_INDEPENDENT, currentState == 0);
 
   // handle when REG_5V is OFF
   if (currentState == 0) {
-    VCU.SetEvent(EV_VCU_INDEPENDENT, 1);
     if (_GetTickMS() - tick > (VCU_ACTIVATE_LOST_MODE * 1000)) {
       VCU.d.interval = RPT_INTERVAL_LOST;
       VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
@@ -100,7 +94,6 @@ void VCU_CheckPower5v(uint8_t currentState) {
     }
   } else {
     VCU.d.interval = RPT_INTERVAL_SIMPLE;
-    VCU.SetEvent(EV_VCU_INDEPENDENT, 0);
     VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
   }
 }
@@ -146,7 +139,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar) {
   TxData.u8[0] |= hbar->list[HBAR_K_LAMP].state << 2;
   TxData.u8[0] |= HMI1.d.state.warning << 3;
   TxData.u8[0] |= HMI1.d.state.overheat << 4;
-  TxData.u8[0] |= HMI1.d.state.finger << 5;
+  TxData.u8[0] |= HMI1.d.state.unfinger << 5;
   TxData.u8[0] |= HMI1.d.state.unremote << 6;
   TxData.u8[0] |= HMI1.d.state.daylight << 7;
 

@@ -17,21 +17,11 @@
 #include "Libs/_reporter.h"
 #include "Nodes/VCU.h"
 #else
+#include "iwdg.h"
+#include "Libs/_eeprom.h"
 #include "Libs/_fota.h"
 #include "Libs/_focan.h"
 #include "Drivers/_flasher.h"
-#endif
-
-/* External variables ---------------------------------------------------------*/
-extern UART_HandleTypeDef huart1;
-extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ ];
-#if (!BOOTLOADER)
-extern osMutexId_t SimcomRecMutexHandle;
-extern osMessageQueueId_t CommandQueueHandle;
-extern vcu_t VCU;
-#else
-extern IWDG_HandleTypeDef hiwdg;
-extern IAP_TYPE FOTA_TYPE;
 #endif
 
 /* Public variables ----------------------------------------------------------*/
@@ -41,6 +31,12 @@ sim_t SIM = {
     .signal = 0,
     .downloading = 0,
 };
+
+/* Private variables ---------------------------------------------------------*/
+#if (!BOOTLOADER)
+extern osMutexId_t SimcomRecMutexHandle;
+extern osMessageQueueId_t CommandQueueHandle;
+#endif
 
 /* Private functions prototype -----------------------------------------------*/
 static SIMCOM_RESULT Ready(void);
@@ -73,8 +69,8 @@ char* Simcom_Response(char *str) {
   return strstr(SIMCOM_UART_RX, str);
 }
 
-void Simcom_Init(void) {
-  SIMCOM_DMA_Init();
+void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+  SIMCOM_DMA_Init(huart, hdma);
   Simcom_SetState(SIM_STATE_READY, 0);
 }
 
@@ -264,8 +260,8 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
         if (p > 0)
           SIM.state++;
         else
-        if (SIM.state == SIM_STATE_GPRS_ON)
-          SIM.state--;
+          if (SIM.state == SIM_STATE_GPRS_ON)
+            SIM.state--;
 
         _DelayMS(500);
         break;
@@ -623,7 +619,7 @@ static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res) 
         || Simcom_Response(SIMCOM_RSP_READY)
         #if (!BOOTLOADER)
         || CommandoIRQ()
-        #endif
+#endif
         || (_GetTickMS() - tick) >= timeout) {
 
       // check response
@@ -664,8 +660,8 @@ static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res) 
       // exit loop
       break;
     }
+
 #if (BOOTLOADER)
-    // reset watchdog
     HAL_IWDG_Refresh(&hiwdg);
 #endif
     _DelayMS(10);

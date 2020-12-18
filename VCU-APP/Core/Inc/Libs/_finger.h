@@ -13,10 +13,8 @@
 #include "Drivers/_fz3387.h"
 
 /* Public functions prototype ------------------------------------------------*/
-void Finger_On(void);
-void Finger_Off(void);
 void Finger_Init(void);
-uint8_t Finger_Enroll(uint8_t id, uint8_t *fingerState);
+uint8_t Finger_Enroll(uint8_t id);
 uint8_t Finger_DeleteID(uint8_t id);
 uint8_t Finger_EmptyDatabase(void);
 uint8_t Finger_SetPassword(uint32_t password);

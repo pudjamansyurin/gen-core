@@ -15,7 +15,6 @@
 /* External variables ---------------------------------------------------------*/
 #if (!BOOTLOADER)
 extern TIM_HandleTypeDef htim10;
-extern hbar_t HBAR;
 #endif
 
 /* Public functions implementation --------------------------------------------*/

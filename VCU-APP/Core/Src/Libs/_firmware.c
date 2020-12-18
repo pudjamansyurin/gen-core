@@ -10,8 +10,6 @@
 #include "Libs/_eeprom.h"
 
 /* External variables ---------------------------------------------------------*/
-extern uint16_t FOTA_VERSION;
-extern IAP_TYPE FOTA_TYPE;
 extern osMessageQueueId_t ResponseQueueHandle;
 
 /* Public functions implementation --------------------------------------------*/

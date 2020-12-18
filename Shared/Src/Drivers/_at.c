@@ -7,15 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_at.h"
-#include "DMA/_dma_simcom.h"
-
-/* External variables --------------------------------------------------------*/
-extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ ];
-extern sim_t SIM;
-
-/* Private constants ---------------------------------------------------------*/
-#define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')
-#define CHARTONUM(x)                            ((x) - '0')
 
 /* Private functions prototype -----------------------------------------------*/
 #if (BOOTLOADER)
@@ -80,9 +71,8 @@ SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
 		// Formatting
 		{
 			// Handle not detectable value
-			if (signal->rssi > 31) {
+			if (signal->rssi > 31) 
 				signal->rssi = 0;
-			}
 
 			// Scale RSSI to dBm
 			dBm = (signal->rssi * 63.0 / 31.0) - 115.0;
@@ -139,9 +129,8 @@ SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state) {
 		} else {
 			*state = CIPSTAT_UNKNOWN;
 		}
-	} else {
+	} else 
 		*state = CIPSTAT_UNKNOWN;
-	}
 	Simcom_Unlock();
 
 	return p;
@@ -168,17 +157,15 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
 		// Write
 		if (mode == ATW) {
 			if (memcmp(&tmp, param, sizeof(at_cnmp_t)) != 0) {
-				if (tmp.mode == CNMP_ACT_AUTO) {
+				if (tmp.mode == CNMP_ACT_AUTO) 
 					sprintf(cmd, "AT+CNMP=%d%d\r", param->mode, param->preferred);
-				} else {
+				else 
 					sprintf(cmd, "AT+CNMP=%d\r", param->mode);
-				}
 
 				p = CmdWrite(cmd, 10000, NULL);
 			}
-		} else {
+		} else 
 			*param = tmp;
-		}
 	}
 	Simcom_Unlock();
 
@@ -211,9 +198,8 @@ SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param) {
 				sprintf(cmd, "AT+CSACT=%d,%d\r", param->creg, param->cgreg);
 				p = CmdWrite(cmd, 500, NULL);
 			}
-		} else {
+		} else 
 			*param = tmp;
-		}
 	}
 	Simcom_Unlock();
 
@@ -244,9 +230,8 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
 				sprintf(cmd, "AT+%s=%d\r", command, param->mode);
 				p = CmdWrite(cmd, 500, NULL);
 			}
-		} else {
+		} else 
 			*param = tmp;
-		}
 	}
 	Simcom_Unlock();
 
@@ -291,9 +276,8 @@ SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
 						param->apn, param->username, param->password);
 				p = CmdWrite(cmd, 1000, NULL);
 			}
-		} else {
+		} else 
 			*param = tmp;
-		}
 	}
 	Simcom_Unlock();
 
@@ -307,9 +291,9 @@ SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param) {
 	Simcom_Lock();
 	// Read
 	p = CmdRead("AT+CIFSR\r", 500, SIMCOM_RSP_NONE, &str);
-	if (p > 0) {
+	if (p > 0) 
 		ParseText(&str[0], NULL, param->address, sizeof(param->address));
-	}
+
 	Simcom_Unlock();
 
 	return p;
@@ -331,9 +315,8 @@ SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
 				|| Simcom_Response("ALREADY CONNECT")
 				|| Simcom_Response("TCP CLOSED")) {
 			p = SIM_RESULT_OK;
-		} else {
+		} else 
 			p = SIM_RESULT_ERROR;
-		}
 	}
 	Simcom_Unlock();
 
@@ -430,13 +413,11 @@ SIMCOM_RESULT AT_BearerInitialize(void) {
 	p = AT_BearerSettings(ATW, &setBEARER);
 
 	// BEARER init
-	if (p > 0) {
+	if (p > 0) 
 		p = AT_BearerSettings(ATR, &getBEARER);
-	}
 
-	if (p > 0 && getBEARER.status != SAPBR_CONNECTED) {
+	if (p > 0 && getBEARER.status != SAPBR_CONNECTED) 
 		p = SIM_RESULT_ERROR;
-	}
 
 	return p;
 }
@@ -448,22 +429,21 @@ SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
 	p = SingleInteger("FTPCID", ATW, &param->id, 0);
 
 	// set server & credential
-	if (p > 0) {
+	if (p > 0) 
 		p = SingleString("FTPSERV", ATW, param->server, sizeof(param->server), 0);
-	}
-	if (p > 0) {
+
+	if (p > 0) 
 		p = SingleString("FTPUN", ATW, param->username, sizeof(param->username), 0);
-	}
-	if (p > 0) {
+	
+	if (p > 0) 
 		p = SingleString("FTPPW", ATW, param->password, sizeof(param->password), 0);
-	}
+	
 	// set path & file
-	if (p > 0) {
+	if (p > 0) 
 		p = SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
-	}
-	if (p > 0) {
+	
+	if (p > 0) 
 		p = AT_FtpSetFile(param->file);
-	}
 
 	Simcom_Unlock();
 	return p;
@@ -505,11 +485,10 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 
 	Simcom_Lock();
 	// Open or Read
-	if (param->mode == FTPGET_OPEN) {
+	if (param->mode == FTPGET_OPEN) 
 		sprintf(cmd, "AT+FTPGET=%d\r", param->mode);
-	} else {
+	else 
 		sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
-	}
 
 	p = CmdRead(cmd, 60000, "+FTPGET: ", &str);
 
@@ -517,9 +496,9 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 		// parsing
 		ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		if (param->mode == FTPGET_OPEN) {
+		if (param->mode == FTPGET_OPEN) 
 			param->response = ParseNumber(&str[len], &cnt);
-		} else {
+		else {
 			param->cnflength = ParseNumber(&str[len], &cnt);
 			len += cnt + 2;
 			// start of file content
@@ -566,15 +545,14 @@ SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
 		// Read parameters
 		p = CmdRead("AT+SAPBR=4,1\r", 500, "+SAPBR:", &str);
 		if (p > 0) {
-			if (FindInBuffer("APN: ", &str)) {
+			if (FindInBuffer("APN: ", &str)) 
 				ParseText(&str[0], NULL, tmp.con.apn, sizeof(tmp.con.apn));
-			}
-			if (FindInBuffer("USER: ", &str)) {
+			
+			if (FindInBuffer("USER: ", &str)) 
 				ParseText(&str[0], NULL, tmp.con.username, sizeof(tmp.con.username));
-			}
-			if (FindInBuffer("PWD: ", &str)) {
+			
+			if (FindInBuffer("PWD: ", &str)) 
 				ParseText(&str[0], NULL, tmp.con.password, sizeof(tmp.con.password));
-			}
 		}
 
 		// Write
@@ -597,9 +575,8 @@ SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
 				sprintf(cmd, "AT+SAPBR=%d,1\r", param->cmd_type);
 				p = CmdWrite(cmd, 60000, NULL);
 			}
-		} else {
+		} else 
 			*param = tmp;
-		}
 	}
 	Simcom_Unlock();
 
@@ -630,9 +607,8 @@ static SIMCOM_RESULT SingleString(char command[20], AT_MODE mode, char *string, 
 				sprintf(cmd, "AT+%s=\"%s\"\r", command, string);
 				p = CmdWrite(cmd, 1000, NULL);
 			}
-		} else {
+		} else 
 			memcpy(string, tmp, size);
-		}
 	}
 	Simcom_Unlock();
 
@@ -642,9 +618,8 @@ static SIMCOM_RESULT SingleString(char command[20], AT_MODE mode, char *string, 
 static uint8_t FindInBuffer(char *prefix, char **str) {
 	*str = Simcom_Response(prefix);
 
-	if (*str != NULL) {
+	if (*str != NULL) 
 		*str += strlen(prefix);
-	}
 
 	return *str != NULL;
 }
@@ -671,9 +646,8 @@ static SIMCOM_RESULT SingleInteger(char command[20], AT_MODE mode, int32_t *valu
 				sprintf(cmd, "AT+%s=%d\r", command, (int) *value);
 				p = CmdWrite(cmd, 500, NULL);
 			}
-		} else {
+		} else 
 			*value = tmp;
-		}
 	}
 	Simcom_Unlock();
 
@@ -683,9 +657,8 @@ static SIMCOM_RESULT SingleInteger(char command[20], AT_MODE mode, int32_t *valu
 static SIMCOM_RESULT CmdWrite(char *cmd, uint32_t ms, char *res) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
-	if (SIM.state >= SIM_STATE_READY) {
+	if (SIM.state >= SIM_STATE_READY) 
 		p = Simcom_Command(cmd, res, ms, 0);
-	}
 
 	return p;
 }
@@ -729,18 +702,16 @@ static void ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size) {
 		size--;
 
 		// handle overflow
-		if (size <= 1) {
+		if (size <= 1) 
 			break;
-		}
 	}
 	// end of parsing for : double-quote, tab, new-line
 	*text = '\0';
 	ptr++;
 	i++;
 	// Save number of characters used for number
-	if (cnt != NULL) {
+	if (cnt != NULL) 
 		*cnt = i;
-	}
 }
 
 static int32_t ParseNumber(const char *ptr, uint8_t *cnt) {
@@ -757,12 +728,12 @@ static int32_t ParseNumber(const char *ptr, uint8_t *cnt) {
 		ptr++;
 		i++;
 	}
-	if (cnt != NULL) { /* Save number of characters used for number */
+	if (cnt != NULL) /* Save number of characters used for number */
 		*cnt = i;
-	}
-	if (minus) { /* Minus detected */
+	
+	if (minus) /* Minus detected */
 		return 0 - sum;
-	}
+	
 	return sum; /* Return number */
 }
 

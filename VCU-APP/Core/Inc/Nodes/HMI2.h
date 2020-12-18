@@ -35,6 +35,9 @@ typedef struct {
 	void (*PowerOff)(void);
 } hmi2_t;
 
+/* Exported variables ---------------------------------------------------------*/
+extern hmi2_t HMI2;
+
 /* Public functions implementation --------------------------------------------*/
 void HMI2_Init(void);
 void HMI2_Refresh(void);

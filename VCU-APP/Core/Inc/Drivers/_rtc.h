@@ -17,7 +17,12 @@ typedef struct {
   RTC_DateTypeDef calibration;
 } rtc_t;
 
+typedef struct {
+  RTC_HandleTypeDef *hrtc;
+} rtc_handler_t;
+
 /* Public functions prototype ------------------------------------------------*/
+void RTC_Init(RTC_HandleTypeDef *hrtc);
 timestamp_t RTC_Decode(uint64_t dateTime);
 uint64_t RTC_Encode(timestamp_t timestamp);
 uint64_t RTC_Read(void);

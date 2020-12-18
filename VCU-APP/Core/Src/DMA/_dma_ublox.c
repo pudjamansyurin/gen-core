@@ -9,18 +9,12 @@
 #include <Libs/_usart_ring.h>
 #include "DMA/_dma_ublox.h"
 
-/* External variables ---------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_usart2_rx;
-extern UART_HandleTypeDef huart2;
-
 /* Public variables -----------------------------------------------------------*/
 char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
 
 /* Private variables ----------------------------------------------------------*/
 static char UBLOX_DMA_RX[UBLOX_DMA_RX_SZ];
 static usart_ring_t GPS_RING = {
-		.huart = &huart2,
-		.hdma = &hdma_usart2_rx,
 		.rx_only = 1,
 		.usart = {
 				.idx = 0,
@@ -38,7 +32,9 @@ static usart_ring_t GPS_RING = {
 };
 
 /* Public functions implementation ---------------------------------------------*/
-void UBLOX_DMA_Init(void) {
+void UBLOX_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+	GPS_RING.huart = huart;
+	GPS_RING.hdma = hdma;
 	USART_DMA_Init(&GPS_RING);
 }
 

@@ -12,7 +12,7 @@
 #include "Drivers/_nrf24l01.h"
 
 /* Exported define -----------------------------------------------------------*/
-#define NRF_DATA_LENGTH		      (uint8_t) 16									// Max: 32 bytes
+#define NRF_DATA_LENGTH		    (uint8_t) 16									// Max: 32 bytes
 #define NRF_ADDR_LENGTH         (uint8_t) 5                                    // Range 3:5
 #define NRF_DATA_PAIR_LENGTH    (uint8_t) (NRF_DATA_LENGTH + NRF_ADDR_LENGTH)
 
@@ -34,7 +34,6 @@ typedef enum {
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-    nrf24l01_config config;
     struct {
         uint8_t address[NRF_ADDR_LENGTH ];
         uint8_t payload[NRF_DATA_PAIR_LENGTH ];
@@ -46,7 +45,7 @@ typedef struct {
 } rf_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RF_Init(uint32_t *unit_id);
+void RF_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi);
 uint8_t RF_Ping(void);
 uint8_t RF_Pairing(uint32_t *unit_id);
 void RF_Debugger(void);

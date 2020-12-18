@@ -1,5 +1,5 @@
 /*
- * mems.c
+ * gyro.c
  *
  *  Created on: Aug 23, 2019
  *      Author: Puja
@@ -9,20 +9,20 @@
 #include "Drivers/_mpu6050.h"
 #include "i2c.h"
 
-/* External variables ---------------------------------------------------------*/
-extern I2C_HandleTypeDef hi2c3;
-
 /* Private variables ----------------------------------------------------------*/
+static gyro_handler_t hGYRO;
 static MPU6050 mpu;
 
 /* Private functions prototype ------------------------------------------------*/
-static void Average(mems_t *mems, uint16_t sample);
+static void Average(gyro_t *gyro, uint16_t sample);
 static void Convert(coordinate_t *gyro, motion_t *motion);
-//static void Gyro_RawDebugger(mems_t *mems);
+//static void Gyro_RawDebugger(gyro_t *gyro);
 
 /* Public functions implementation --------------------------------------------*/
-void GYRO_Init(void) {
+void GYRO_Init(I2C_HandleTypeDef *hi2c) {
   MPU6050_Result result;
+
+  hGYRO.hi2c = hi2c;
 
   do {
     LOG_StrLn("Gyro:Init");
@@ -35,26 +35,26 @@ void GYRO_Init(void) {
     MX_I2C3_Init();
 
     // module initialization
-    result = MPU6050_Init(&hi2c3, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
+    result = MPU6050_Init(hGYRO.hi2c, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
 
   } while (result != MPU6050_Result_Ok);
 }
 
-mems_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
-  mems_t mems;
+gyro_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
+  gyro_t gyro;
   motion_t mot;
-  mems_decision_t decider;
+  gyro_decision_t decider;
 
-  // get mems data
-  Average(&mems, sample);
-  Convert(&(mems.gyroscope), &mot);
+  // get gyro data
+  Average(&gyro, sample);
+  Convert(&(gyro.gyroscope), &mot);
   memcpy(motion, &mot, sizeof(motion_t));
 
   // calculate g-force
   decider.crash.value = sqrt(
-      pow(mems.accelerometer.x, 2) +
-          pow(mems.accelerometer.y, 2) +
-          pow(mems.accelerometer.z, 2)
+      pow(gyro.accelerometer.x, 2) +
+          pow(gyro.accelerometer.y, 2) +
+          pow(gyro.accelerometer.z, 2)
               ) / GRAVITY_FORCE;
   decider.crash.state = (decider.crash.value > ACCELEROMETER_LIMIT );
 
@@ -63,12 +63,12 @@ mems_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT || mot.yaw < GYROSCOPE_LIMIT;
 
 
-  //	Gyro_RawDebugger(&mems);
+  //	Gyro_RawDebugger(&gyro);
 
   return decider;
 }
 
-void Gyro_Debugger(mems_decision_t *decider) {
+void Gyro_Debugger(gyro_decision_t *decider) {
   // calculated data
   LOG_Str("IMU:Accel[");
   LOG_Int(decider->crash.value * 100 / ACCELEROMETER_LIMIT);
@@ -87,18 +87,18 @@ void Gyro_Debugger(mems_decision_t *decider) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static void Average(mems_t *mems, uint16_t sample) {
-  mems_t m = { 0 };
+static void Average(gyro_t *gyro, uint16_t sample) {
+  gyro_t m = { 0 };
   MPU6050_Result status;
 
   // sampling
   for (uint16_t i = 0; i < sample; i++) {
     // read sensor
     do {
-      status = MPU6050_ReadAll(&hi2c3, &mpu);
+      status = MPU6050_ReadAll(hGYRO.hi2c, &mpu);
 
       if (status != MPU6050_Result_Ok)
-        GYRO_Init();
+        GYRO_Init(hGYRO.hi2c);
     } while (status != MPU6050_Result_Ok);
 
     // sum all value
@@ -124,7 +124,7 @@ static void Average(mems_t *mems, uint16_t sample) {
   m.temperature /= sample;
 
   // save the result
-  *mems = m;
+  *gyro = m;
 }
 
 static void Convert(coordinate_t *gyro, motion_t *motion) {
@@ -140,16 +140,16 @@ static void Convert(coordinate_t *gyro, motion_t *motion) {
   motion->pitch = mot.pitch == 0 ? 0 : RAD2DEG(atan(gyro->x / mot.pitch));
 }
 
-//static void Gyro_RawDebugger(mems_t *mems) {
+//static void Gyro_RawDebugger(gyro_t *gyro) {
 //	// raw data
 //	char str[100];
 //	sprintf(str,
 //			"Accelerometer\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
 //			"Gyroscope\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
 //			"Temperature: %d\n\n",
-//			mems->accelerometer.x, mems->accelerometer.y, mems->accelerometer.z,
-//			mems->gyroscope.x, mems->gyroscope.y, mems->gyroscope.z,
-//			(int8_t) mems->temperature
+//			gyro->accelerometer.x, gyro->accelerometer.y, gyro->accelerometer.z,
+//			gyro->gyroscope.x, gyro->gyroscope.y, gyro->gyroscope.z,
+//			(int8_t) gyro->temperature
 //	);
 //	LOG_Str(str);
 //}

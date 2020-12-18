@@ -18,7 +18,6 @@
 
 /* External variables --------------------------------------------------------*/
 extern osThreadId_t Hmi2PowerTaskHandle;
-extern hmi1_t HMI1;
 
 /* Public variables -----------------------------------------------------------*/
 hmi2_t HMI2 = {

@@ -62,7 +62,7 @@ typedef enum {
     CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CIPSTATUS;
 
-/* Exported struct -----------------------------------------------------------*/
+/* Struct -------------------------------------------------------------------*/
 typedef struct {
     SIMCOM_STATE state;
     AT_CIPSTATUS ip_status;
@@ -70,8 +70,11 @@ typedef struct {
     uint8_t downloading;
 } sim_t;
 
+/* Exported variables --------------------------------------------------------*/
+extern sim_t SIM;
+
 /* Public functions prototype ------------------------------------------------*/
-void Simcom_Init(void);
+void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Response(char *str);
 SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size);

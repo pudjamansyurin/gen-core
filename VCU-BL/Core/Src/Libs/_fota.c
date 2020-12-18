@@ -17,8 +17,6 @@ extern CAN_HandleTypeDef hcan1;
 extern CRC_HandleTypeDef hcrc;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart1;
-extern uint32_t DFU_FLAG;
-extern sim_t SIM;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type) {

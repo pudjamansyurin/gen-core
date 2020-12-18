@@ -9,18 +9,12 @@
 #include <Libs/_usart_ring.h>
 #include "DMA/_dma_finger.h"
 
-/* External variables ---------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_uart4_rx;
-extern UART_HandleTypeDef huart4;
-
 /* Public variables -----------------------------------------------------------*/
 char FINGER_UART_RX[FINGER_UART_RX_SZ];
 
 /* Private variables ----------------------------------------------------------*/
 static char FINGER_DMA_RX[FINGER_DMA_RX_SZ];
 static usart_ring_t FINGER_RING = {
-		.huart = &huart4,
-		.hdma = &hdma_uart4_rx,
 		.rx_only = 0,
 		.usart = {
 				.idx = 0,
@@ -38,7 +32,9 @@ static usart_ring_t FINGER_RING = {
 };
 
 /* Public functions implementation ---------------------------------------------*/
-void FINGER_DMA_Init(void) {
+void FINGER_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+	FINGER_RING.huart = huart;
+	FINGER_RING.hdma = hdma;
 	USART_DMA_Init(&FINGER_RING);
 }
 

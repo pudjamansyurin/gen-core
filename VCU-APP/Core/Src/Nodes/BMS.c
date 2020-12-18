@@ -10,10 +10,6 @@
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
 
-/* External variables ---------------------------------------------------------*/
-extern vcu_t VCU;
-extern hmi1_t HMI1;
-
 /* Public variables -----------------------------------------------------------*/
 bms_t BMS = {
     .d = { 0 },

@@ -19,10 +19,8 @@
 #if (!BOOTLOADER)
 extern osThreadId_t RemoteTaskHandle;
 extern osMutexId_t EepromMutexHandle;
-extern uint32_t AesKey[4];
 extern response_t RESPONSE;
 extern report_t REPORT;
-extern vcu_t VCU;
 #endif
 
 /* Exported variables ---------------------------------------------------------*/
@@ -38,7 +36,7 @@ static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t EEPROM_Init(void) {
+uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c) {
   uint8_t retry, ret = 0;
   const uint8_t MAX_RETRY = 5;
   const EEPROM24_DEVICE EEPROMS[2] = {
@@ -52,7 +50,7 @@ uint8_t EEPROM_Init(void) {
   for (uint8_t i = 0; i < EE_DEV_TOTAL ; i++) {
     if (!ret) {
       retry = MAX_RETRY;
-      EEPROM24XX_SetDevice(EEPROMS[i]);
+      EEPROM24XX_SetDevice(hi2c, EEPROMS[i]);
       do {
         if (EEPROM24XX_IsConnected()) {
           LOG_Str("EEPROM:Device = ");
