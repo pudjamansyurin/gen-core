@@ -11,12 +11,11 @@
 #include "Libs/_eeprom.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_crc.h"
+#include "can.h"
+#include "crc.h"
+#include "i2c.h"
+#include "usart.h"
 
-/* External variables ---------------------------------------------------------*/
-extern CAN_HandleTypeDef hcan1;
-extern CRC_HandleTypeDef hcrc;
-extern I2C_HandleTypeDef hi2c2;
-extern UART_HandleTypeDef huart1;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type) {

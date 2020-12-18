@@ -8,9 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_focan.h"
 #include "Drivers/_canbus.h"
-
-/* External variables ---------------------------------------------------------*/
-extern IWDG_HandleTypeDef hiwdg;
+#include "iwdg.h"
 
 /* Private functions prototypes -----------------------------------------------*/
 static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, CAN_DATA *TxData, uint32_t DLC, uint32_t timeout, uint32_t retry);

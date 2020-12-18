@@ -10,11 +10,7 @@
 #if (!BOOTLOADER)
 #include "Libs/_rtos_utils.h"
 #include "Libs/_handlebar.h"
-#endif
-
-/* External variables ---------------------------------------------------------*/
-#if (!BOOTLOADER)
-extern TIM_HandleTypeDef htim10;
+#include "tim.h"
 #endif
 
 /* Public functions implementation --------------------------------------------*/

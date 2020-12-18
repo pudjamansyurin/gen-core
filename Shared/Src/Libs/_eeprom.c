@@ -19,8 +19,6 @@
 #if (!BOOTLOADER)
 extern osThreadId_t RemoteTaskHandle;
 extern osMutexId_t EepromMutexHandle;
-extern response_t RESPONSE;
-extern report_t REPORT;
 #endif
 
 /* Exported variables ---------------------------------------------------------*/
