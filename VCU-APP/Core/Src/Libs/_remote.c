@@ -12,7 +12,7 @@
 #include "rng.h"
 
 /* Private variables -----------------------------------------------------------*/
-extern osMutexId_t RemoteRecMutexHandle;
+//extern osMutexId_t RemoteRecMutexHandle;
 extern osThreadId_t RemoteTaskHandle;
 
 /* Private variables -----------------------------------------------------------*/
@@ -201,9 +201,9 @@ static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
 }
 
 static void lock(void) {
-  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
+//  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
 }
 
 static void unlock(void) {
-  osMutexRelease(RemoteRecMutexHandle);
+//  osMutexRelease(RemoteRecMutexHandle);
 }

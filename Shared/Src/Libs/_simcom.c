@@ -34,7 +34,7 @@ sim_t SIM = {
 
 /* Private variables ---------------------------------------------------------*/
 #if (!BOOTLOADER)
-extern osMutexId_t SimcomRecMutexHandle;
+//extern osMutexId_t SimcomRecMutexHandle;
 extern osMessageQueueId_t CommandQueueHandle;
 #endif
 
@@ -54,15 +54,15 @@ static uint8_t CommandoIRQ(void);
 
 /* Public functions implementation --------------------------------------------*/
 void Simcom_Lock(void) {
-#if (!BOOTLOADER)
-  osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
-#endif
+//#if (!BOOTLOADER)
+//  osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
+//#endif
 }
 
 void Simcom_Unlock(void) {
-#if (!BOOTLOADER)
-  osMutexRelease(SimcomRecMutexHandle);
-#endif
+//#if (!BOOTLOADER)
+//  osMutexRelease(SimcomRecMutexHandle);
+//#endif
 }
 
 char* Simcom_Response(char *str) {

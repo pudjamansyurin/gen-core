@@ -10,7 +10,7 @@
 #include "DMA/_dma_finger.h"
 
 /* External variables ---------------------------------------------------------*/
-extern osMutexId_t FingerRecMutexHandle;
+//extern osMutexId_t FingerRecMutexHandle;
 
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);
@@ -257,13 +257,13 @@ int8_t Finger_AuthFast(void) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
+//	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
   GATE_FingerDigitalPower(GPIO_PIN_SET);
 }
 
 static void unlock(void) {
   GATE_FingerDigitalPower(GPIO_PIN_RESET);
-	osMutexRelease(FingerRecMutexHandle);
+//	osMutexRelease(FingerRecMutexHandle);
 }
 
 static void GetImage(uint8_t *error, uint8_t enroll) {

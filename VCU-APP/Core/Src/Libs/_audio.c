@@ -38,7 +38,7 @@
 #include "Libs/_audio.h"
 
 /* External variables --------------------------------------------------------*/
-extern osMutexId_t AudioMutexHandle;
+//extern osMutexId_t AudioMutexHandle;
 extern uint32_t SOUND_FREQ;
 extern uint32_t SOUND_SIZE;
 extern uint16_t SOUND_SAMPLE[];
@@ -453,10 +453,10 @@ static uint8_t I2S3_Init(uint32_t AudioFreq) {
 }
 
 static void lock(void) {
-  osMutexAcquire(AudioMutexHandle, osWaitForever);
+//  osMutexAcquire(AudioMutexHandle, osWaitForever);
 }
 
 static void unlock(void) {
-  osMutexRelease(AudioMutexHandle);
+//  osMutexRelease(AudioMutexHandle);
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
