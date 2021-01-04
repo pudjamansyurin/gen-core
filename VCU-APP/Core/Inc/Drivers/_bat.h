@@ -9,7 +9,7 @@
 #define INC_LIBS__BAT_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "_defines.h"
+#include "Libs/_utils.h"
 
 /* Constants -----------------------------------------------------------------*/
 #define AVERAGE_SZ        (uint8_t) 100

@@ -9,8 +9,8 @@
 #define INC_NODES_HMI2_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
 #include "Drivers/_canbus.h"
+#include "Libs/_utils.h"
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {

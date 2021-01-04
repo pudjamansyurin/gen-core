@@ -129,12 +129,11 @@ void GATE_HornToggle(uint8_t *hazard) {
   _DelayMS(100);
 }
 
-void GATE_SolenoidToggle(void) {
-  HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, GPIO_PIN_SET);
+void GATE_SeatToggle(void) {
+  HAL_GPIO_WritePin(EXT_SEAT_PWR_GPIO_Port, EXT_SEAT_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(100);
-  HAL_GPIO_WritePin(EXT_SOLENOID_PWR_GPIO_Port, EXT_SOLENOID_PWR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(EXT_SEAT_PWR_GPIO_Port, EXT_SEAT_PWR_Pin, GPIO_PIN_RESET);
 }
-
 
 GPIO_PinState GATE_ReadPower5v(void) {
   return HAL_GPIO_ReadPin(EXT_REG_5V_IRQ_GPIO_Port, EXT_REG_5V_IRQ_Pin);

@@ -9,8 +9,8 @@
 #define GPS_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
 #include "Drivers/_nmea.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define GPS_INTERVAL          (uint16_t) 1				// in second

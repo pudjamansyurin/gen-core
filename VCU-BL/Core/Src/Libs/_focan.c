@@ -21,11 +21,11 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 /* Public functions implementation --------------------------------------------*/
 void FOCAN_SetOtherNodes(void) {
   static uint8_t knob = 0, tmp;
-  CAN_DATA TxData;
+  //  CAN_DATA TxData;
 
-  // Turn OFF BMS
-  TxData.u8[0] = 0x00;
-  CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);
+  //  // Turn OFF BMS
+  //  TxData.u8[0] = 0x00;
+  //  CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);
 
   // Turn ON HMI-Primary
   tmp = GATE_ReadKnobState();

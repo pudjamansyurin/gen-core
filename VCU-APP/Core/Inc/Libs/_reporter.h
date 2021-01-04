@@ -42,6 +42,7 @@ typedef struct __attribute__((packed)) {
       } rtc;
       uint8_t driver_id;
       uint64_t events_group;
+      vehicle_t vehicle;
     } vcu;
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {
@@ -130,14 +131,12 @@ typedef struct {
 } payload_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void Report_Init(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report);
-void Response_Init(response_t *response, uint16_t *seq_id_response);
-void Report_Capture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar);
-void Response_Capture(response_t *response, uint32_t *unit_id);
-void Report_SetCRC(report_t *report);
-void Response_SetCRC(response_t *response);
-void Command_Debugger(command_t *cmd);
-FRAME_TYPE Frame_Decider(uint8_t *independent_state);
-uint8_t Packet_Pending(payload_t *payload);
-uint8_t Send_Payload(payload_t *payload);
+void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report);
+void RPT_ResponseInit(response_t *response, uint16_t *seq_id_response);
+void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar);
+void RPT_ResponseCapture(response_t *response, uint32_t *unit_id);
+void RPT_CommandDebugger(command_t *cmd);
+FRAME_TYPE RPT_FrameDecider(uint8_t backup);
+uint8_t RPT_PacketPending(payload_t *payload);
+uint8_t RPT_SendPayload(payload_t *payload);
 #endif /* REPORTER_H_ */

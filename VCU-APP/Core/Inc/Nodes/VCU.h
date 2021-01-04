@@ -9,19 +9,22 @@
 #define INC_NODES_VCU_H_
 
 /* Includes ------------------------------------------------------------------*/
+#include "Drivers/_rtc.h"
 #include "Libs/_utils.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_gyro.h"
 #include "Libs/_gps.h"
-#include "Drivers/_rtc.h"
 
 /* Exported enums --------------------------------------------------------------*/
 typedef enum {
-  VEHICLE_INDEPENDENT = 0,
-  VEHICLE_DOWN,
-  VEHICLE_POWERED,
-  VEHICLE_RUNNING,
-} vehicle_state_t;
+  VEHICLE_UNKNOWN = 0,
+  VEHICLE_LOST,
+  VEHICLE_BACKUP,
+  VEHICLE_NORMAL,
+  VEHICLE_STANDBY,
+  VEHICLE_READY,
+  VEHICLE_RUN,
+} vehicle_t;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
@@ -56,17 +59,22 @@ typedef struct {
   rtc_t rtc;
   uint64_t events;
   struct {
-    //		vehicle_state_t vehicle;
-    uint8_t start;
+    uint8_t error;
     uint8_t override;
-    uint8_t run;
-    uint8_t knob;
-    uint8_t independent;
+    vehicle_t vehicle;
   } state;
   struct {
     uint16_t report;
     uint16_t response;
   } seq_id;
+  struct {
+    uint8_t knob;
+    uint8_t power5v;
+    uint8_t starter;
+  } gpio;
+  struct {
+    uint32_t independent;
+  } tick;
   gps_t gps;
   rtos_task_t task;
 } vcu_data_t;
@@ -86,8 +94,9 @@ typedef struct {
   void (*Init)(void);
   void (*SetEvent)(uint64_t, uint8_t);
   uint8_t (*ReadEvent)(uint64_t);
-  void (*CheckPower5v)(uint8_t);
+  //  void (*CheckPower5v)(uint8_t);
   uint16_t (*SpeedToVolume)(void);
+  uint8_t (*SetDriver)(uint8_t);
   void (*SetOdometer)(uint8_t);
 } vcu_t;
 
@@ -100,6 +109,7 @@ void VCU_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t VCU_ReadEvent(uint64_t event_id);
 void VCU_CheckPower5v(uint8_t currentState);
 uint16_t VCU_SpeedToVolume(void);
+uint8_t VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t increment);
 
 uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar);

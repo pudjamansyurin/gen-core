@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_gps.h"
 #include "DMA/_dma_ublox.h"
+#include "Libs/_gps.h"
 
 /* Private variables ----------------------------------------------------------*/
 static nmea_t nmea;

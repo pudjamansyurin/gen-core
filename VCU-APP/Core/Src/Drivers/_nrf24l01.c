@@ -5,9 +5,9 @@
  *      Author: Puja
  */
 /* Includes ------------------------------------------------------------------*/
+#include "spi.h"
 #include "Drivers/_nrf24l01.h"
 #include "Libs/_remote.h"
-#include "spi.h"
 
 /* Private functions prototype ------------------------------------------------*/
 static void csn_set(nrf24l01 *dev);

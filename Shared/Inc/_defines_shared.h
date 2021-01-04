@@ -83,12 +83,11 @@
 
 #define DRIVER_ID_NONE               (uint8_t)  0xFF
 
-#define REPORT_INTERVAL				 (uint16_t) 5
-#define RPT_INTERVAL_SIMPLE          (uint16_t) 5                  // in second
-#define RPT_INTERVAL_FULL            (uint16_t) 20                 // in second
-#define RPT_INTERVAL_INDEPENDENT     (uint16_t) 10                 // in second
+#define RPT_INTERVAL_NORMAL          (uint16_t) 5                  // in second
+#define RPT_INTERVAL_BACKUP          (uint16_t) 20                 // in second
 #define RPT_INTERVAL_LOST            (uint16_t) 60                 // in second
-#define VCU_ACTIVATE_LOST_MODE       (uint16_t) 120                // in second
+
+#define VCU_ACTIVATE_LOST            (uint16_t) (5*60)             // in second
 
 // Payload list (Remote)
 #define REMOTE_MSG_BROADCAST                   BIT(0)
@@ -100,7 +99,7 @@
 #define EV_VCU_NET_HARD_RESET                   BIT(1)
 #define EV_VCU_BIKE_FALLING                     BIT(2)
 #define EV_VCU_BIKE_CRASHED                     BIT(3)
-#define EV_VCU_REMOTE_MISSING                  BIT(4)
+#define EV_VCU_REMOTE_MISSING                   BIT(4)
 #define EV_VCU_INDEPENDENT                      BIT(5)
 #define EV_VCU_UNAUTHORIZE_REMOVAL              BIT(6)
 #define EV_VCU_BIKE_FALLEN                      BIT(7)

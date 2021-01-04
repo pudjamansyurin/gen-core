@@ -14,32 +14,26 @@ extern osMessageQueueId_t ResponseQueueHandle;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *hmi_version) {
-  uint16_t version = VCU_VERSION;
-
-  if (*bat < FOTA_MIN_VOLTAGE)
-    sprintf(message, "Battery %u mV (< %u mV)",
-        *bat, FOTA_MIN_VOLTAGE - *bat);
-  else {
-    if (type == IAP_HMI) {
-      if (*hmi_version == 0) {
-        /* HMI device not connected */
-        sprintf(message, "HMI Device not connected");
-
-        return 0;
-      } else
-        version = *hmi_version;
-    }
-
-    /* Retain FOTA */
-    EEPROM_FotaType(EE_CMD_W, type);
-    EEPROM_FotaVersion(EE_CMD_W, version);
-
-    /* Set flag to SRAM */
-    *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
-
-    /* Reset */
-    HAL_NVIC_SystemReset();
+  if (*bat < FOTA_MIN_VOLTAGE) {
+    sprintf(message, "Battery %u mV (< %u mV)", *bat, FOTA_MIN_VOLTAGE - *bat);
+    return 0;
   }
+
+  if (type == IAP_HMI && *hmi_version == 0) {
+    sprintf(message, "HMI Device not connected");
+    return 0;
+  }
+
+  /* Retain FOTA */
+  EEPROM_FotaType(EE_CMD_W, type);
+  EEPROM_FotaVersion(EE_CMD_W, (type == IAP_HMI) ? *hmi_version : VCU_VERSION);
+
+  /* Set flag to SRAM */
+  *(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
+
+  /* Reset */
+  HAL_NVIC_SystemReset();
+
   /* Never reached if FOTA executed */
   return 0;
 }
@@ -86,7 +80,7 @@ void FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_version)
     }
 
     /* Send Response */
-    Response_Capture(response, unit_id);
+    RPT_ResponseCapture(response, unit_id);
     osMessageQueuePut(ResponseQueueHandle, response, 0U, 0U);
 
     /* Reset after FOTA */

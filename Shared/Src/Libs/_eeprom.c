@@ -6,12 +6,12 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_eeprom.h"
 #include "Drivers/_ee24xx.h"
+#include "Libs/_eeprom.h"
 #if (!BOOTLOADER)
+#include "Drivers/_aes.h"
 #include "Libs/_reporter.h"
 #include "Libs/_remote.h"
-#include "Drivers/_aes.h"
 #include "Nodes/VCU.h"
 #endif
 

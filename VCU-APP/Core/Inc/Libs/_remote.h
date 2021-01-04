@@ -51,7 +51,7 @@ uint8_t RF_Pairing(uint32_t *unit_id);
 void RF_Debugger(void);
 uint8_t RF_ValidateCommand(RF_CMD *cmd);
 void RF_GenerateAesKey(uint32_t *aes);
-uint8_t RF_Refresh(uint32_t tick_);
+uint8_t RF_IsTimeout(uint32_t tick_);
 void RF_IrqHandler(void);
 void RF_PacketReceived(uint8_t *data);
 

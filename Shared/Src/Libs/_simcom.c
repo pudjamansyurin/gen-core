@@ -9,19 +9,19 @@
 // https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/transport.c
 // https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/pub0sub1.c
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_simcom.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_at.h"
+#include "Libs/_simcom.h"
 #if (!BOOTLOADER)
 #include "Libs/_reporter.h"
 #include "Nodes/VCU.h"
 #else
 #include "iwdg.h"
+#include "Drivers/_flasher.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_fota.h"
 #include "Libs/_focan.h"
-#include "Drivers/_flasher.h"
 #endif
 
 /* Public variables ----------------------------------------------------------*/

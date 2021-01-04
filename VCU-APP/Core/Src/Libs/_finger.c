@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_finger.h"
 #include "DMA/_dma_finger.h"
+#include "Libs/_finger.h"
 
 /* External variables ---------------------------------------------------------*/
 //extern osMutexId_t FingerRecMutexHandle;

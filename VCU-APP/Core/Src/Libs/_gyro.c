@@ -5,9 +5,9 @@
  *      Author: Puja
  */
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_gyro.h"
-#include "Drivers/_mpu6050.h"
 #include "i2c.h"
+#include "Drivers/_mpu6050.h"
+#include "Libs/_gyro.h"
 
 /* Private variables ----------------------------------------------------------*/
 static gyro_handler_t hGYRO;
@@ -68,7 +68,7 @@ gyro_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   return decider;
 }
 
-void Gyro_Debugger(gyro_decision_t *decider) {
+void GYRO_Debugger(gyro_decision_t *decider) {
   // calculated data
   LOG_Str("IMU:Accel[");
   LOG_Int(decider->crash.value * 100 / ACCELEROMETER_LIMIT);

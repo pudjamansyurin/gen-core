@@ -6,17 +6,21 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "Drivers/_rtc.h"
+#include "Drivers/_crc.h"
 #include "Libs/_rtos_utils.h"
 #include "Libs/_reporter.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_simcom.h"
 #include "Libs/_eeprom.h"
 #include "Nodes/BMS.h"
-#include "Drivers/_rtc.h"
-#include "Drivers/_crc.h"
+
+/* Private functions declarations -------------------------------------------*/
+static void Report_SetCRC(report_t *report);
+static void Response_SetCRC(response_t *response);
 
 /* Public functions implementation -------------------------------------------*/
-void Report_Init(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
+void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
 	// set default data
 	LOG_StrLn("Reporter:ReportInit");
 	// =============== REPORT ==============
@@ -29,7 +33,7 @@ void Report_Init(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
 	// body optional
 }
 
-void Response_Init(response_t *response, uint16_t *seq_id_response) {
+void RPT_ResponseInit(response_t *response, uint16_t *seq_id_response) {
 	// set default data
 	LOG_StrLn("Reporter:ResponseInit");
 	// =============== REPORT ==============
@@ -39,7 +43,7 @@ void Response_Init(response_t *response, uint16_t *seq_id_response) {
 	response->header.seq_id = *seq_id_response;
 }
 
-void Report_Capture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar) {
+void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar) {
 	// Reconstruct the header
 	report->header.seq_id++;
 	report->header.unit_id = vcu->unit_id;
@@ -52,6 +56,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_dat
 	// Reconstruct the body
 	report->data.req.vcu.driver_id = vcu->driver_id;
 	report->data.req.vcu.events_group = vcu->events;
+  report->data.req.vcu.vehicle = vcu->state.vehicle;
 	report->data.req.vcu.rtc.log = RTC_Read();
 	// BMS data
 	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
@@ -95,7 +100,7 @@ void Report_Capture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_dat
 	}
 }
 
-void Response_Capture(response_t *response, uint32_t *unit_id) {
+void RPT_ResponseCapture(response_t *response, uint32_t *unit_id) {
 	//Reconstruct the header
 	response->header.seq_id++;
 	response->header.unit_id = *unit_id;
@@ -107,24 +112,7 @@ void Response_Capture(response_t *response, uint32_t *unit_id) {
 			strlen(response->data.message);
 }
 
-void Report_SetCRC(report_t *report) {
-	// get current sending date-time
-	report->data.req.vcu.rtc.send = RTC_Read();
-	// recalculate the CRC
-	report->header.crc = CRC_Calculate8(
-			(uint8_t*) &(report->header.size),
-			report->header.size + sizeof(report->header.size),
-			0);
-}
-
-void Response_SetCRC(response_t *response) {
-	response->header.crc = CRC_Calculate8(
-			(uint8_t*) &(response->header.size),
-			response->header.size + sizeof(response->header.size),
-			0);
-}
-
-void Command_Debugger(command_t *cmd) {
+void RPT_CommandDebugger(command_t *cmd) {
 	LOG_Str("\nCommand:Payload [");
 	LOG_Int(cmd->data.code);
 	LOG_Str("-");
@@ -134,25 +122,26 @@ void Command_Debugger(command_t *cmd) {
 	LOG_Enter();
 }
 
-FRAME_TYPE Frame_Decider(uint8_t *independent_state) {
-	FRAME_TYPE frame;
+FRAME_TYPE RPT_FrameDecider(uint8_t backup) {
 	static uint8_t frameDecider = 0;
+  FRAME_TYPE frame;
 
-	if (!(*independent_state)) {
-		if (++frameDecider == (RPT_INTERVAL_FULL / RPT_INTERVAL_SIMPLE )) {
-			frame = FR_FULL;
-			frameDecider = 0;
-    } else
-			frame = FR_SIMPLE;
-	} else {
-		frame = FR_FULL;
-		frameDecider = 0;
-	}
+  if (backup) {
+    frame = FR_FULL;
+    frameDecider = 0;
+  } else {
+    if (++frameDecider < (RPT_INTERVAL_NORMAL * 4))
+      frame = FR_SIMPLE;
+    else {
+      frame = FR_FULL;
+      frameDecider = 0;
+    }
+  }
 
 	return frame;
 }
 
-uint8_t Packet_Pending(payload_t *payload) {
+uint8_t RPT_PacketPending(payload_t *payload) {
 	uint32_t notif;
 	osStatus_t status;
 
@@ -174,7 +163,7 @@ uint8_t Packet_Pending(payload_t *payload) {
 	return payload->pending;
 }
 
-uint8_t Send_Payload(payload_t *payload) {
+uint8_t RPT_SendPayload(payload_t *payload) {
 	SIMCOM_RESULT p;
 	report_t reporter;
 	header_t *pHeader;
@@ -207,4 +196,22 @@ uint8_t Send_Payload(payload_t *payload) {
 	}
 
 	return (p == SIM_RESULT_OK);
+}
+
+/* Private functions implementation -------------------------------------------*/
+static void Report_SetCRC(report_t *report) {
+  // get current sending date-time
+  report->data.req.vcu.rtc.send = RTC_Read();
+  // recalculate the CRC
+  report->header.crc = CRC_Calculate8(
+      (uint8_t*) &(report->header.size),
+      report->header.size + sizeof(report->header.size),
+      0);
+}
+
+static void Response_SetCRC(response_t *response) {
+  response->header.crc = CRC_Calculate8(
+      (uint8_t*) &(response->header.size),
+      response->header.size + sizeof(response->header.size),
+      0);
 }

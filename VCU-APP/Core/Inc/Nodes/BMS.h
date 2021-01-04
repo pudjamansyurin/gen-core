@@ -9,8 +9,8 @@
 #define INC_NODES_BMS_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
 #include "Drivers/_canbus.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define BMS_COUNT                     (uint8_t) 2

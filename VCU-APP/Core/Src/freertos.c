@@ -36,7 +36,6 @@
 #include "aes.h"
 #include "usart.h"
 
-#include "DMA/_dma_simcom.h"
 #include "DMA/_dma_ublox.h"
 #include "DMA/_dma_finger.h"
 
@@ -89,148 +88,148 @@ extern DMA_HandleTypeDef hdma_uart4_rx;
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
-  .name = "ManagerTask",
-  .priority = (osPriority_t) osPriorityRealtime,
-  .stack_size = 256 * 4
+    .name = "ManagerTask",
+    .priority = (osPriority_t) osPriorityRealtime,
+    .stack_size = 256 * 4
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
 const osThreadAttr_t IotTask_attributes = {
-  .name = "IotTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 416 * 4
+    .name = "IotTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 416 * 4
 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
 const osThreadAttr_t ReporterTask_attributes = {
-  .name = "ReporterTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 304 * 4
+    .name = "ReporterTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 304 * 4
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
 const osThreadAttr_t CommandTask_attributes = {
-  .name = "CommandTask",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 256 * 4
+    .name = "CommandTask",
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 256 * 4
 };
 /* Definitions for GpsTask */
 osThreadId_t GpsTaskHandle;
 const osThreadAttr_t GpsTask_attributes = {
-  .name = "GpsTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+    .name = "GpsTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 256 * 4
 };
 /* Definitions for GyroTask */
 osThreadId_t GyroTaskHandle;
 const osThreadAttr_t GyroTask_attributes = {
-  .name = "GyroTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 304 * 4
+    .name = "GyroTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 304 * 4
 };
 /* Definitions for RemoteTask */
 osThreadId_t RemoteTaskHandle;
 const osThreadAttr_t RemoteTask_attributes = {
-  .name = "RemoteTask",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 256 * 4
+    .name = "RemoteTask",
+    .priority = (osPriority_t) osPriorityAboveNormal,
+    .stack_size = 256 * 4
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
 const osThreadAttr_t FingerTask_attributes = {
-  .name = "FingerTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+    .name = "FingerTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for AudioTask */
 osThreadId_t AudioTaskHandle;
 const osThreadAttr_t AudioTask_attributes = {
-  .name = "AudioTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 240 * 4
+    .name = "AudioTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 240 * 4
 };
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
 const osThreadAttr_t CanRxTask_attributes = {
-  .name = "CanRxTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 229 * 4
+    .name = "CanRxTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 229 * 4
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
-  .name = "CanTxTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 230 * 4
+    .name = "CanTxTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 230 * 4
 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
 const osThreadAttr_t Hmi2PowerTask_attributes = {
-  .name = "Hmi2PowerTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 176 * 4
+    .name = "Hmi2PowerTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 176 * 4
 };
 /* Definitions for GateTask */
 osThreadId_t GateTaskHandle;
 const osThreadAttr_t GateTask_attributes = {
-  .name = "GateTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+    .name = "GateTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 224 * 4
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
 const osMessageQueueAttr_t CommandQueue_attributes = {
-  .name = "CommandQueue"
+    .name = "CommandQueue"
 };
 /* Definitions for ResponseQueue */
 osMessageQueueId_t ResponseQueueHandle;
 const osMessageQueueAttr_t ResponseQueue_attributes = {
-  .name = "ResponseQueue"
+    .name = "ResponseQueue"
 };
 /* Definitions for ReportQueue */
 osMessageQueueId_t ReportQueueHandle;
 const osMessageQueueAttr_t ReportQueue_attributes = {
-  .name = "ReportQueue"
+    .name = "ReportQueue"
 };
 /* Definitions for DriverQueue */
 osMessageQueueId_t DriverQueueHandle;
 const osMessageQueueAttr_t DriverQueue_attributes = {
-  .name = "DriverQueue"
+    .name = "DriverQueue"
 };
 /* Definitions for CanRxQueue */
 osMessageQueueId_t CanRxQueueHandle;
 const osMessageQueueAttr_t CanRxQueue_attributes = {
-  .name = "CanRxQueue"
+    .name = "CanRxQueue"
 };
 /* Definitions for LogMutex */
 osMutexId_t LogMutexHandle;
 const osMutexAttr_t LogMutex_attributes = {
-  .name = "LogMutex"
+    .name = "LogMutex"
 };
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
 const osMutexAttr_t EepromMutex_attributes = {
-  .name = "EepromMutex"
+    .name = "EepromMutex"
 };
 /* Definitions for RtcMutex */
 osMutexId_t RtcMutexHandle;
 const osMutexAttr_t RtcMutex_attributes = {
-  .name = "RtcMutex"
+    .name = "RtcMutex"
 };
 /* Definitions for CrcMutex */
 osMutexId_t CrcMutexHandle;
 const osMutexAttr_t CrcMutex_attributes = {
-  .name = "CrcMutex"
+    .name = "CrcMutex"
 };
 /* Definitions for AesMutex */
 osMutexId_t AesMutexHandle;
 const osMutexAttr_t AesMutex_attributes = {
-  .name = "AesMutex"
+    .name = "AesMutex"
 };
 /* Definitions for GlobalEvent */
 osEventFlagsId_t GlobalEventHandle;
 const osEventFlagsAttr_t GlobalEvent_attributes = {
-  .name = "GlobalEvent"
+    .name = "GlobalEvent"
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -255,10 +254,10 @@ void StartGateTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
@@ -376,6 +375,7 @@ void StartManagerTask(void *argument)
 {
   /* USER CODE BEGIN StartManagerTask */
   TickType_t lastWake;
+  vehicle_t lastMode = VEHICLE_UNKNOWN;
 
   // Initialization, this task get executed first!
   VCU.Init();
@@ -411,7 +411,103 @@ void StartManagerTask(void *argument)
     VCU.d.task.manager.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
-    MX_IWDG_Reset();
+    // Other stuffs
+    HMI1.d.state.overheat = BMS.d.overheat;
+    HMI1.d.state.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
+    HMI1.d.state.warning = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
+    VCU.d.state.error = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
+
+    // Vehicle modes
+    switch (VCU.d.state.vehicle) {
+      case VEHICLE_LOST:
+        if (lastMode != VEHICLE_LOST) {
+          lastMode = VEHICLE_LOST;
+
+          VCU.d.interval = RPT_INTERVAL_LOST;
+          VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
+        }
+
+        if (VCU.d.gpio.power5v)
+          VCU.d.state.vehicle += 2;
+        break;
+
+      case VEHICLE_BACKUP:
+        if (lastMode != VEHICLE_BACKUP) {
+          lastMode = VEHICLE_BACKUP;
+
+          VCU.d.tick.independent = _GetTickMS();
+          VCU.d.interval = RPT_INTERVAL_BACKUP;
+          VCU.SetEvent(EV_VCU_INDEPENDENT, 1);
+          VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
+        }
+
+        if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.gpio.power5v)
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_NORMAL:
+        if (lastMode != VEHICLE_NORMAL) {
+          lastMode = VEHICLE_NORMAL;
+          VCU.d.state.override = 0;
+          VCU.d.interval = RPT_INTERVAL_NORMAL;
+          VCU.SetEvent(EV_VCU_INDEPENDENT, 0);
+        }
+
+        if (!VCU.d.gpio.power5v)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.gpio.knob)
+          if (VCU.d.state.override >= 1 || HMI1.d.state.unremote == 0)
+            VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_STANDBY:
+        if (lastMode != VEHICLE_STANDBY) {
+          lastMode = VEHICLE_STANDBY;
+          VCU.d.state.override = 1;
+          HMI1.d.state.unfinger = VCU.SetDriver(DRIVER_ID_NONE);
+        }
+
+        if (!VCU.d.gpio.knob)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.state.override >= 2 || HMI1.d.state.unfinger == 0)
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_READY:
+        if (lastMode != VEHICLE_READY) {
+          lastMode = VEHICLE_READY;
+          VCU.d.state.override = 2;
+          VCU.d.gpio.starter = 0;
+        }
+
+        if (!VCU.d.gpio.knob)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.state.override == 1 || HMI1.d.state.unfinger == 1)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.gpio.starter && !VCU.d.state.error)
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_RUN:
+        if (lastMode != VEHICLE_RUN) {
+          lastMode = VEHICLE_RUN;
+          VCU.d.state.override = 3;
+          VCU.d.gpio.starter = 0;
+        }
+
+        if (!VCU.d.gpio.knob)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.state.override == 2 || VCU.d.state.error)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.state.override == 1 || (VCU.d.gpio.starter && VCU.d.speed == 0))
+          VCU.d.state.vehicle -= 2;
+        break;
+
+      default:
+        break;
+    }
 
     // RTOS_Debugger(1000);
     VCU.d.task.manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
@@ -429,27 +525,10 @@ void StartManagerTask(void *argument)
     VCU.d.task.hmi2Power.stack = osThreadGetStackSpace(Hmi2PowerTaskHandle);
 
     // _DummyDataGenerator();
-
     BAT_ScanValue(&(VCU.d.bat));
+    MX_IWDG_Reset();
 
-    // Other stuffs
-    HMI1.d.state.overheat = BMS.d.overheat;
-    HMI1.d.state.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
-    HMI1.d.state.warning = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
-    HMI1.d.state.unfinger = VCU.d.driver_id == DRIVER_ID_NONE;
-
-    // FIXME: use vehicle_state
-    VCU.d.state.start = VCU.d.state.knob;
-
-    VCU.d.state.run = !VCU.ReadEvent(EV_VCU_BIKE_FALLEN) &&
-        (VCU.d.state.override ||
-            (VCU.d.state.start && !HMI1.d.state.unfinger && !HMI1.d.state.unremote)
-        );
-
-    // Handle overheat
-    GATE_FanBMS(BMS.d.overheat);
-
-    osDelayUntil(lastWake + 1111);
+    osDelayUntil(lastWake + 111);
   }
   /* USER CODE END StartManagerTask */
 }
@@ -490,13 +569,13 @@ void StartIotTask(void *argument)
     lastWake = _GetTickMS();
 
     // Upload Report
-    if (Packet_Pending(&pReport))
-      if (!Send_Payload(&pReport))
+    if (RPT_PacketPending(&pReport))
+      if (!RPT_SendPayload(&pReport))
         Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 
     // Upload Response
-    if (Packet_Pending(&pResponse))
-      if (!Send_Payload(&pResponse))
+    if (RPT_PacketPending(&pResponse))
+      if (!RPT_SendPayload(&pResponse))
         Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 
     // SIMCOM Related Routines
@@ -530,20 +609,16 @@ void StartReporterTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
-  Report_Init(FR_SIMPLE, &report, &(VCU.d.seq_id.report));
+  RPT_ReportInit(FR_SIMPLE, &report, &(VCU.d.seq_id.report));
 
   /* Infinite loop */
   for (;;) {
     VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
-    frame = Frame_Decider(&(VCU.d.state.independent));
+    frame = RPT_FrameDecider(!VCU.d.gpio.power5v);
 
-    // TODO: FOR TESTING ONLY (OVERWRITTEN)
-    VCU.d.interval = 5;
-    frame = FR_FULL;
-
-    Report_Capture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.runner.mode.d));
+    RPT_ReportCapture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.runner.mode.d));
 
     // Put report to log
     do {
@@ -580,7 +655,7 @@ void StartCommandTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
-  Response_Init(&response, &(VCU.d.seq_id.response));
+  RPT_ResponseInit(&response, &(VCU.d.seq_id.response));
 
   // Handle Post-FOTA
   FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version));
@@ -701,7 +776,7 @@ void StartCommandTask(void *argument)
         response.data.code = RESPONSE_STATUS_INVALID;
 
       // Get current snapshot
-      Response_Capture(&response, &(VCU.d.unit_id));
+      RPT_ResponseCapture(&response, &(VCU.d.unit_id));
       osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
     }
   }
@@ -777,7 +852,7 @@ void StartGyroTask(void *argument)
 
     // Read all accelerometer, gyroscope (average)
     decider = GYRO_Decision(50, &(VCU.d.motion));
-    // Gyro_Debugger(&decider);
+    // GYRO_Debugger(&decider);
 
     // Check accelerometer, happens when impact detected
     if (VCU.ReadEvent(EV_VCU_BIKE_CRASHED) != decider.crash.state)
@@ -829,7 +904,7 @@ void StartRemoteTask(void *argument)
   for (;;) {
     VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
-    HMI1.d.state.unremote = RF_Refresh(tick_beat);
+    HMI1.d.state.unremote = RF_IsTimeout(tick_beat);
 
     RF_Ping();
 
@@ -879,7 +954,7 @@ void StartRemoteTask(void *argument)
             case RF_CMD_SEAT:
               LOG_StrLn("NRF:Command = SEAT");
 
-              GATE_SolenoidToggle();
+              GATE_SeatToggle();
 
               break;
 
@@ -928,12 +1003,9 @@ void StartFingerTask(void *argument)
       if (notif & EVT_FINGER_PLACED) {
         id = Finger_AuthFast();
         // Finger is registered
-        if (id >= 0) {
-          if (VCU.d.driver_id != DRIVER_ID_NONE)
-            id = DRIVER_ID_NONE;
+        if (id >= 0)
+          HMI1.d.state.unfinger = VCU.SetDriver(id);
 
-          VCU.d.driver_id = id;
-        }
         // Handle bounce effect
         _DelayMS(2000);
       }
@@ -1101,10 +1173,11 @@ void StartCanTxTask(void *argument)
       VCU.can.t.SubTripData(&(HBAR.runner.mode.d.trip[0]));
     }
 
-    // Handle Knob Changes
-    HMI1.Power(VCU.d.state.start);
-    HMI2.PowerOverCan(VCU.d.state.start);
-    BMS.PowerOverCan(VCU.d.state.run);
+    // Handle State Changes
+    HMI1.Power(VCU.d.state.vehicle >= VEHICLE_STANDBY);
+    HMI2.PowerOverCan(VCU.d.state.vehicle >= VEHICLE_STANDBY);
+    BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
+    GATE_FanBMS(BMS.d.overheat);
 
     // Refresh state
     HMI1.Refresh();
@@ -1167,8 +1240,9 @@ void StartGateTask(void *argument)
 
   // Initialise
   HBAR_ReadStates();
-  VCU.CheckPower5v(GATE_ReadPower5v());
-  VCU.d.state.knob = GATE_ReadKnobState();
+  //  VCU.CheckPower5v(GATE_ReadPower5v());
+  VCU.d.gpio.power5v = GATE_ReadPower5v();
+  VCU.d.gpio.knob = GATE_ReadKnobState();
 
   /* Infinite loop */
   for (;;) {
@@ -1183,11 +1257,12 @@ void StartGateTask(void *argument)
       // Starter Button IRQ
       if (notif & EVT_GATE_STARTER_IRQ) {
         // check KNOB, KickStand, Remote, Fingerprint
+        VCU.d.gpio.starter = 1;
       }
 
       // KNOB IRQ
       if (notif & EVT_GATE_KNOB_IRQ) {
-        VCU.d.state.knob = GATE_ReadKnobState();
+        VCU.d.gpio.knob = GATE_ReadKnobState();
       }
 
       // Handle switch EXTI interrupt
@@ -1200,9 +1275,10 @@ void StartGateTask(void *argument)
       // Handle other EXTI interrupt
       // BMS Power IRQ
       if (notif & EVT_GATE_REG_5V_IRQ) {
-        VCU.CheckPower5v(GATE_ReadPower5v());
+        VCU.d.gpio.power5v = GATE_ReadPower5v();
+        //        VCU.CheckPower5v(GATE_ReadPower5v());
 
-        if (GATE_ReadPower5v()) {
+        if (VCU.d.gpio.power5v) {
           osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_REINIT);
           osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_REINIT);
           osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_REINIT);

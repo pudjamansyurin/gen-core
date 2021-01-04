@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_handlebar.h"
 #include "_defines.h"
+#include "Libs/_handlebar.h"
 
 /* Public variables -----------------------------------------------------------*/
 hbar_t HBAR = {

@@ -6,10 +6,10 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "rng.h"
+#include "Drivers/_aes.h"
 #include "Libs/_remote.h"
 #include "Libs/_eeprom.h"
-#include "Drivers/_aes.h"
-#include "rng.h"
 
 /* Private variables -----------------------------------------------------------*/
 //extern osMutexId_t RemoteRecMutexHandle;
@@ -135,7 +135,7 @@ void RF_Debugger(void) {
   unlock();
 }
 
-uint8_t RF_Refresh(uint32_t tick_) {
+uint8_t RF_IsTimeout(uint32_t tick_) {
   return ((_GetTickMS() - tick_) > REMOTE_TIMEOUT );
 }
 

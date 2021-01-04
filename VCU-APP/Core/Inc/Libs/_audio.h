@@ -40,9 +40,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_cs43l22.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define AUDIO_BUFFER_SIZE         		4096
+#define AUDIO_BUFFER_SIZE         		  4096
 #define AUDIO_I2C_ADDRESS               0x94
 
 /* I2S peripheral configuration defines */
@@ -67,7 +68,6 @@ typedef struct {
   	uint32_t remaining;
   } size;
 } audio_t;
-
 
 /* Public functions prototype -------------------------------------------------*/
 void AUDIO_Init(I2C_HandleTypeDef *hi2c, I2S_HandleTypeDef *hi2s);

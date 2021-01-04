@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include <Libs/_usart_ring.h>
 #include "DMA/_dma_finger.h"
+#include "Libs/_usart_ring.h"
 
 /* Public variables -----------------------------------------------------------*/
 char FINGER_UART_RX[FINGER_UART_RX_SZ];

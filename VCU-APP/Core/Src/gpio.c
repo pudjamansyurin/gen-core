@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -61,7 +61,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, EXT_FINGER_MCU_PWR_Pin|EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, EXT_SOLENOID_PWR_Pin|INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_GYRO_PWR_Pin
+  HAL_GPIO_WritePin(GPIOB, EXT_SEAT_PWR_Pin|INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_GYRO_PWR_Pin
                           |INT_REMOTE_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -104,11 +104,11 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = EXT_SOLENOID_PWR_Pin;
+  GPIO_InitStruct.Pin = EXT_SEAT_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(EXT_SOLENOID_PWR_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(EXT_SEAT_PWR_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = BOOT1_Pin;

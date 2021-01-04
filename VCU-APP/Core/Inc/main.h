@@ -108,8 +108,8 @@ void Error_Handler(void);
 #define EXT_HMI1_PWR_GPIO_Port GPIOC
 #define EXT_HMI2_PWR_Pin GPIO_PIN_5
 #define EXT_HMI2_PWR_GPIO_Port GPIOC
-#define EXT_SOLENOID_PWR_Pin GPIO_PIN_0
-#define EXT_SOLENOID_PWR_GPIO_Port GPIOB
+#define EXT_SEAT_PWR_Pin GPIO_PIN_0
+#define EXT_SEAT_PWR_GPIO_Port GPIOB
 #define INT_ADC_VBAT_Pin GPIO_PIN_1
 #define INT_ADC_VBAT_GPIO_Port GPIOB
 #define BOOT1_Pin GPIO_PIN_2

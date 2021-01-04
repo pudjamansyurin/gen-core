@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include <Libs/_usart_ring.h>
 #include "DMA/_dma_ublox.h"
+#include "Libs/_usart_ring.h"
 
 /* Public variables -----------------------------------------------------------*/
 char UBLOX_UART_RX[UBLOX_UART_RX_SZ];

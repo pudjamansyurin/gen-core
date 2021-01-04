@@ -8,9 +8,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 #if (!BOOTLOADER)
+#include "tim.h"
 #include "Libs/_rtos_utils.h"
 #include "Libs/_handlebar.h"
-#include "tim.h"
 #endif
 
 /* Public functions implementation --------------------------------------------*/

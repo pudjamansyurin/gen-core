@@ -6,12 +6,12 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Nodes/VCU.h"
-#include "Nodes/BMS.h"
-#include "Nodes/HMI1.h"
 #include "Drivers/_canbus.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_simcom.h"
+#include "Nodes/VCU.h"
+#include "Nodes/BMS.h"
+#include "Nodes/HMI1.h"
 
 /* Public variables -----------------------------------------------------------*/
 vcu_t VCU = {
@@ -27,30 +27,28 @@ vcu_t VCU = {
     VCU_Init,
     VCU_SetEvent,
     VCU_ReadEvent,
-    VCU_CheckPower5v,
+    //    VCU_CheckPower5v,
     VCU_SpeedToVolume,
+    VCU_SetDriver,
     VCU_SetOdometer,
 };
 
 /* Public functions implementation --------------------------------------------*/
 void VCU_Init(void) {
   // reset VCU data
-  //	VCU.d.state.vehicle = VEHICLE_INDEPENDENT;
-  VCU.d.state.start = 0;
+  VCU.d.state.error = 0;
   VCU.d.state.override = 0;
-  VCU.d.state.run = 0;
-  VCU.d.state.knob = 0;
-  VCU.d.state.independent = 1;
+  VCU.d.state.vehicle = VEHICLE_LOST;
 
-  VCU.d.interval = RPT_INTERVAL_SIMPLE;
+  VCU.d.interval = RPT_INTERVAL_LOST;
   VCU.d.driver_id = DRIVER_ID_NONE;
   VCU.d.bat = 0;
   VCU.d.speed = 0;
   VCU.d.odometer = 0;
 
   VCU.d.motion.yaw = 0;
-  VCU.d.motion.pitch = 0;
   VCU.d.motion.roll = 0;
+  VCU.d.motion.pitch = 0;
 
   VCU.d.events = 0;
 
@@ -69,37 +67,43 @@ uint8_t VCU_ReadEvent(uint64_t event_id) {
   return (VCU.d.events & event_id) == event_id;
 }
 
-void VCU_CheckPower5v(uint8_t currentState) {
-  static TickType_t tick;
-  static int8_t lastState = -1;
-
-  // handle only when changed
-  if (lastState != currentState) {
-    lastState = currentState;
-    tick = _GetTickMS();
-  }
-
-  // set things
-  VCU.d.state.independent = currentState == 0;
-  VCU.SetEvent(EV_VCU_INDEPENDENT, currentState == 0);
-
-  // handle when REG_5V is OFF
-  if (currentState == 0) {
-    if (_GetTickMS() - tick > (VCU_ACTIVATE_LOST_MODE * 1000)) {
-      VCU.d.interval = RPT_INTERVAL_LOST;
-      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
-    } else {
-      VCU.d.interval = RPT_INTERVAL_INDEPENDENT;
-      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
-    }
-  } else {
-    VCU.d.interval = RPT_INTERVAL_SIMPLE;
-    VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
-  }
-}
+//void VCU_CheckPower5v(uint8_t currentState) {
+//  static TickType_t tick;
+//  static int8_t lastState = -1;
+//
+//  // handle only when changed
+//  if (lastState != currentState) {
+//    lastState = currentState;
+//    tick = _GetTickMS();
+//  }
+//
+//  // set things
+//  VCU.d.state.independent = currentState == 0;
+//  VCU.SetEvent(EV_VCU_INDEPENDENT, currentState == 0);
+//
+//  // handle when REG_5V is OFF
+//  if (currentState == 0) {
+//    if (_GetTickMS() - tick > (VCU_ACTIVATE_LOST_MODE * 1000)) {
+//      VCU.d.interval = RPT_INTERVAL_LOST;
+//      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
+//    } else {
+//      VCU.d.interval = RPT_INTERVAL_INDEPENDENT;
+//      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
+//    }
+//  } else {
+//    VCU.d.interval = RPT_INTERVAL_SIMPLE;
+//    VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
+//  }
+//}
 
 uint16_t VCU_SpeedToVolume(void) {
   return VCU.d.speed * 100 / MCU_SPEED_KPH_MAX ;
+}
+
+uint8_t VCU_SetDriver(uint8_t driver_id) {
+  VCU.d.driver_id = driver_id;
+
+  return VCU.d.driver_id == DRIVER_ID_NONE ;
 }
 
 void VCU_SetOdometer(uint8_t increment) {
@@ -174,7 +178,7 @@ uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
   TxData.u8[5] = timestamp->date.Year;
   TxData.u8[6] = timestamp->date.WeekDay;
   // HMI2 shutdown request
-  TxData.u8[7] = !VCU.d.state.start;
+  TxData.u8[7] = VCU.d.state.vehicle < VEHICLE_STANDBY;
 
   // send message
   return CANBUS_Write(CAND_VCU_DATETIME, &TxData, 8);
