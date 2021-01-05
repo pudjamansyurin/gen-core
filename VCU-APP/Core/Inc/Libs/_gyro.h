@@ -53,7 +53,8 @@ typedef struct {
 		uint8_t state;
 		int32_t value;
 	} crash;
-} gyro_decision_t;
+  uint8_t fallen;
+} movement_t;
 
 typedef struct {
 	I2C_HandleTypeDef *hi2c;
@@ -61,7 +62,7 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void GYRO_Init(I2C_HandleTypeDef *hi2c);
-gyro_decision_t GYRO_Decision(uint16_t sample, motion_t *motion);
-void GYRO_Debugger(gyro_decision_t *decider);
+movement_t GYRO_Decision(uint16_t sample, motion_t *motion);
+void GYRO_Debugger(movement_t *movement);
 
 #endif /* GYRO_H_ */

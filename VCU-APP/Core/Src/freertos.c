@@ -375,7 +375,6 @@ void StartManagerTask(void *argument)
 {
   /* USER CODE BEGIN StartManagerTask */
   TickType_t lastWake;
-  vehicle_t lastMode = VEHICLE_UNKNOWN;
 
   // Initialization, this task get executed first!
   VCU.Init();
@@ -417,97 +416,8 @@ void StartManagerTask(void *argument)
     HMI1.d.state.warning = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
     VCU.d.state.error = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
 
-    // Vehicle modes
-    switch (VCU.d.state.vehicle) {
-      case VEHICLE_LOST:
-        if (lastMode != VEHICLE_LOST) {
-          lastMode = VEHICLE_LOST;
-
-          VCU.d.interval = RPT_INTERVAL_LOST;
-          VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
-        }
-
-        if (VCU.d.gpio.power5v)
-          VCU.d.state.vehicle += 2;
-        break;
-
-      case VEHICLE_BACKUP:
-        if (lastMode != VEHICLE_BACKUP) {
-          lastMode = VEHICLE_BACKUP;
-
-          VCU.d.tick.independent = _GetTickMS();
-          VCU.d.interval = RPT_INTERVAL_BACKUP;
-          VCU.SetEvent(EV_VCU_INDEPENDENT, 1);
-          VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
-        }
-
-        if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.gpio.power5v)
-          VCU.d.state.vehicle++;
-        break;
-
-      case VEHICLE_NORMAL:
-        if (lastMode != VEHICLE_NORMAL) {
-          lastMode = VEHICLE_NORMAL;
-          VCU.d.state.override = 0;
-          VCU.d.interval = RPT_INTERVAL_NORMAL;
-          VCU.SetEvent(EV_VCU_INDEPENDENT, 0);
-        }
-
-        if (!VCU.d.gpio.power5v)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.gpio.knob)
-          if (VCU.d.state.override >= 1 || HMI1.d.state.unremote == 0)
-            VCU.d.state.vehicle++;
-        break;
-
-      case VEHICLE_STANDBY:
-        if (lastMode != VEHICLE_STANDBY) {
-          lastMode = VEHICLE_STANDBY;
-          VCU.d.state.override = 1;
-          HMI1.d.state.unfinger = VCU.SetDriver(DRIVER_ID_NONE);
-        }
-
-        if (!VCU.d.gpio.knob)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.state.override >= 2 || HMI1.d.state.unfinger == 0)
-          VCU.d.state.vehicle++;
-        break;
-
-      case VEHICLE_READY:
-        if (lastMode != VEHICLE_READY) {
-          lastMode = VEHICLE_READY;
-          VCU.d.state.override = 2;
-          VCU.d.gpio.starter = 0;
-        }
-
-        if (!VCU.d.gpio.knob)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.state.override == 1 || HMI1.d.state.unfinger == 1)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.gpio.starter && !VCU.d.state.error)
-          VCU.d.state.vehicle++;
-        break;
-
-      case VEHICLE_RUN:
-        if (lastMode != VEHICLE_RUN) {
-          lastMode = VEHICLE_RUN;
-          VCU.d.state.override = 3;
-          VCU.d.gpio.starter = 0;
-        }
-
-        if (!VCU.d.gpio.knob)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.state.override == 2 || VCU.d.state.error)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.state.override == 1 || (VCU.d.gpio.starter && VCU.d.speed == 0))
-          VCU.d.state.vehicle -= 2;
-        break;
-
-      default:
-        break;
-    }
+    // Vehicle states
+    VCU_CheckVehicleState();
 
     // RTOS_Debugger(1000);
     VCU.d.task.manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
@@ -528,7 +438,7 @@ void StartManagerTask(void *argument)
     BAT_ScanValue(&(VCU.d.bat));
     MX_IWDG_Reset();
 
-    osDelayUntil(lastWake + 111);
+    osDelayUntil(lastWake + 1111);
   }
   /* USER CODE END StartManagerTask */
 }
@@ -832,9 +742,8 @@ void StartGpsTask(void *argument)
 void StartGyroTask(void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
-  uint8_t fallen;
   uint32_t notif, flag;
-  gyro_decision_t decider;
+  movement_t movement;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -851,28 +760,15 @@ void StartGyroTask(void *argument)
       GYRO_Init(&hi2c3);
 
     // Read all accelerometer, gyroscope (average)
-    decider = GYRO_Decision(50, &(VCU.d.motion));
-    // GYRO_Debugger(&decider);
+    movement = GYRO_Decision(50, &(VCU.d.motion));
+    // GYRO_Debugger(&movement);
 
-    // Check accelerometer, happens when impact detected
-    if (VCU.ReadEvent(EV_VCU_BIKE_CRASHED) != decider.crash.state)
-      VCU.SetEvent(EV_VCU_BIKE_CRASHED, decider.crash.state);
-
-    // Check gyroscope, happens when fall detected
-    if (VCU.ReadEvent(EV_VCU_BIKE_FALLING) != decider.fall.state)
-      VCU.SetEvent(EV_VCU_BIKE_FALLING, decider.fall.state);
-
-    // Handle for both event
-    fallen = (decider.crash.state || decider.fall.state);
-    VCU.SetEvent(EV_VCU_BIKE_FALLEN, fallen);
-
+    VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
     {
       // Indicators
-      GATE_LedWrite(fallen);
-      flag = fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
+      GATE_LedWrite(movement.fallen);
+      flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
       osThreadFlagsSet(AudioTaskHandle, flag);
-
-      // Turn OFF BMS (+ MCU)
     }
   }
   /* USER CODE END StartGyroTask */
@@ -890,7 +786,6 @@ void StartRemoteTask(void *argument)
   /* USER CODE BEGIN StartRemoteTask */
   uint32_t notif;
   RF_CMD command;
-  uint32_t tick_beat = 0, tick_pairing = 0;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -904,9 +799,8 @@ void StartRemoteTask(void *argument)
   for (;;) {
     VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
-    HMI1.d.state.unremote = RF_IsTimeout(tick_beat);
-
     RF_Ping();
+    HMI1.d.state.unremote = RF_IsTimeout();
 
     // Check response
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
@@ -915,27 +809,19 @@ void StartRemoteTask(void *argument)
         RF_Init(&(VCU.d.unit_id), &hspi1);
 
       // handle Pairing
-      if (notif & EVT_REMOTE_PAIRING) {
+      if (notif & EVT_REMOTE_PAIRING)
         RF_Pairing(&(VCU.d.unit_id));
-        tick_pairing = _GetTickMS();
-      }
 
       // handle incoming payload
       if (notif & EVT_REMOTE_RX_IT) {
         // RF_Debugger();
+        RF_Refresh();
+
+        if (RF_GotPairedResponse())
+          osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
 
         // process
         if (RF_ValidateCommand(&command)) {
-          // update heart-beat
-          tick_beat = _GetTickMS();
-
-          // response pairing command
-          if (tick_pairing > 0) {
-            if (_GetTickMS() - tick_pairing < 5000)
-              osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
-            tick_pairing = 0;
-          }
-
           // handle command
           switch (command) {
             case RF_CMD_PING:
@@ -1173,11 +1059,9 @@ void StartCanTxTask(void *argument)
       VCU.can.t.SubTripData(&(HBAR.runner.mode.d.trip[0]));
     }
 
-    // Handle State Changes
-    HMI1.Power(VCU.d.state.vehicle >= VEHICLE_STANDBY);
+    // Handle CAN-Powered Nodes
     HMI2.PowerOverCan(VCU.d.state.vehicle >= VEHICLE_STANDBY);
     BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
-    GATE_FanBMS(BMS.d.overheat);
 
     // Refresh state
     HMI1.Refresh();
@@ -1286,6 +1170,10 @@ void StartGateTask(void *argument)
         }
       }
     }
+
+    // GATE Output Control
+    HMI1.Power(VCU.d.state.vehicle >= VEHICLE_STANDBY);
+    GATE_FanBMS(BMS.d.overheat);
   }
   /* USER CODE END StartGateTask */
 }

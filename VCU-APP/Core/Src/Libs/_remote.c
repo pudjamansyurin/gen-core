@@ -11,7 +11,7 @@
 #include "Libs/_remote.h"
 #include "Libs/_eeprom.h"
 
-/* Private variables -----------------------------------------------------------*/
+/* External variables -----------------------------------------------------------*/
 //extern osMutexId_t RemoteRecMutexHandle;
 extern osThreadId_t RemoteTaskHandle;
 
@@ -26,6 +26,10 @@ static rf_t RF = {
         .address = { 0x00, 0x00, 0x00, 0x00, 0xCD },
         .payload = { 0 },
     },
+  .tick = {
+    .heartbeat = 0,
+    .pairing = 0,
+    }
 };
 static const uint8_t COMMAND[3][8] = {
     { 0x5e, 0x6c, 0xa7, 0x74, 0xfd, 0xe3, 0xdf, 0xbc },
@@ -75,6 +79,8 @@ uint8_t RF_Pairing(uint32_t *unit_id) {
   NRF_RESULT p = NRF_ERROR;
   uint32_t aes[4];
 
+  RF.tick.pairing = _GetTickMS();
+
   // Insert AES to payload
   RF_GenerateAesKey(aes);
   EEPROM_AesKey(EE_CMD_W, aes);
@@ -117,7 +123,6 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
     if (*cmd == RF_CMD_PING || *cmd == RF_CMD_SEAT)
       if (memcmp(&plain[rng], &payload[rng], rng) == 0)
         valid = 1;
-
   unlock();
 
   return valid;
@@ -135,8 +140,24 @@ void RF_Debugger(void) {
   unlock();
 }
 
-uint8_t RF_IsTimeout(uint32_t tick_) {
-  return ((_GetTickMS() - tick_) > REMOTE_TIMEOUT );
+void RF_Refresh(void) {
+  RF.tick.heartbeat = _GetTickMS();
+}
+
+uint8_t RF_IsTimeout(void) {
+  return ((_GetTickMS() - RF.tick.heartbeat) > REMOTE_TIMEOUT );
+}
+
+uint8_t RF_GotPairedResponse(void) {
+  uint8_t paired = 0;
+
+  if (RF.tick.pairing > 0) {
+    if (_GetTickMS() - RF.tick.pairing < REMOTE_PAIRING_TIMEOUT)
+      paired = 1;
+    RF.tick.pairing = 0;
+  }
+
+  return paired;
 }
 
 void RF_IrqHandler(void) {
@@ -201,9 +222,9 @@ static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
 }
 
 static void lock(void) {
-//  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
+  //  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
 }
 
 static void unlock(void) {
-//  osMutexRelease(RemoteRecMutexHandle);
+  //  osMutexRelease(RemoteRecMutexHandle);
 }

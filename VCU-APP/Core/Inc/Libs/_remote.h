@@ -42,6 +42,10 @@ typedef struct {
         uint8_t address[NRF_ADDR_LENGTH ];
         uint8_t payload[NRF_DATA_PAIR_LENGTH ];
     } rx;
+  struct {
+    uint32_t heartbeat;
+    uint32_t pairing;
+  } tick;
 } rf_t;
 
 /* Public functions prototype ------------------------------------------------*/
@@ -51,7 +55,9 @@ uint8_t RF_Pairing(uint32_t *unit_id);
 void RF_Debugger(void);
 uint8_t RF_ValidateCommand(RF_CMD *cmd);
 void RF_GenerateAesKey(uint32_t *aes);
-uint8_t RF_IsTimeout(uint32_t tick_);
+void RF_Refresh(void);
+uint8_t RF_IsTimeout(void);
+uint8_t RF_GotPairedResponse(void);
 void RF_IrqHandler(void);
 void RF_PacketReceived(uint8_t *data);
 

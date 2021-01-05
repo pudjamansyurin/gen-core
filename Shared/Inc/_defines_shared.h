@@ -71,6 +71,7 @@
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 
 #define REMOTE_TIMEOUT              (uint32_t) 10000                // in ms
+#define REMOTE_PAIRING_TIMEOUT      (uint32_t) 5000                 // in ms
 
 #define PREFIX_REPORT                           "@R"
 #define PREFIX_COMMAND                          "@C"
@@ -97,12 +98,8 @@
 // Events group (for Frame Report)
 #define EV_VCU_NET_SOFT_RESET                   BIT(0)
 #define EV_VCU_NET_HARD_RESET                   BIT(1)
-#define EV_VCU_BIKE_FALLING                     BIT(2)
-#define EV_VCU_BIKE_CRASHED                     BIT(3)
-#define EV_VCU_REMOTE_MISSING                   BIT(4)
-#define EV_VCU_INDEPENDENT                      BIT(5)
-#define EV_VCU_UNAUTHORIZE_REMOVAL              BIT(6)
-#define EV_VCU_BIKE_FALLEN                      BIT(7)
+#define EV_VCU_BIKE_FALLEN                      BIT(2)
+#define EV_VCU_REMOTE_MISSING                   BIT(3)
 #define EV_BMS_DISCHARGE_OVER_CURRENT           BIT(30)
 #define EV_BMS_CHARGE_OVER_CURRENT              BIT(31)
 #define EV_BMS_SHORT_CIRCUIT                    BIT(32)

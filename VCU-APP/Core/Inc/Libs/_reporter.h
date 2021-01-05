@@ -42,7 +42,7 @@ typedef struct __attribute__((packed)) {
       } rtc;
       uint8_t driver_id;
       uint64_t events_group;
-      vehicle_t vehicle;
+      vehicle_state_t vehicle;
     } vcu;
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {

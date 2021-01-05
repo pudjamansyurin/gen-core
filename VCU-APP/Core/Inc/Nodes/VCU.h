@@ -17,14 +17,14 @@
 
 /* Exported enums --------------------------------------------------------------*/
 typedef enum {
-  VEHICLE_UNKNOWN = 0,
-  VEHICLE_LOST,
-  VEHICLE_BACKUP,
-  VEHICLE_NORMAL,
-  VEHICLE_STANDBY,
-  VEHICLE_READY,
-  VEHICLE_RUN,
-} vehicle_t;
+  VEHICLE_UNKNOWN = -3,
+  VEHICLE_LOST = -2,
+  VEHICLE_BACKUP = -1,
+  VEHICLE_NORMAL = 0,
+  VEHICLE_STANDBY = 1,
+  VEHICLE_READY = 2,
+  VEHICLE_RUN = 3,
+} vehicle_state_t;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
@@ -61,7 +61,7 @@ typedef struct {
   struct {
     uint8_t error;
     uint8_t override;
-    vehicle_t vehicle;
+    vehicle_state_t vehicle;
   } state;
   struct {
     uint16_t report;
@@ -111,6 +111,7 @@ void VCU_CheckPower5v(uint8_t currentState);
 uint16_t VCU_SpeedToVolume(void);
 uint8_t VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t increment);
+void VCU_CheckVehicleState(void);
 
 uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar);
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp);

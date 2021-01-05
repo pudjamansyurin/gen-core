@@ -40,10 +40,10 @@ void GYRO_Init(I2C_HandleTypeDef *hi2c) {
   } while (result != MPU6050_Result_Ok);
 }
 
-gyro_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
+movement_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   gyro_t gyro;
   motion_t mot;
-  gyro_decision_t decider;
+  movement_t movement;
 
   // get gyro data
   Average(&gyro, sample);
@@ -51,36 +51,36 @@ gyro_decision_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   memcpy(motion, &mot, sizeof(motion_t));
 
   // calculate g-force
-  decider.crash.value = sqrt(
+  movement.crash.value = sqrt(
       pow(gyro.accelerometer.x, 2) +
           pow(gyro.accelerometer.y, 2) +
           pow(gyro.accelerometer.z, 2)
               ) / GRAVITY_FORCE;
-  decider.crash.state = (decider.crash.value > ACCELEROMETER_LIMIT );
+  movement.crash.state = (movement.crash.value > ACCELEROMETER_LIMIT );
 
   // calculate movement change
-  decider.fall.value = sqrt(pow(abs(mot.roll), 2) + pow(abs(mot.pitch), 2));
-  decider.fall.state = decider.fall.value > GYROSCOPE_LIMIT || mot.yaw < GYROSCOPE_LIMIT;
+  movement.fall.value = sqrt(pow(abs(mot.roll), 2) + pow(abs(mot.pitch), 2));
+  movement.fall.state = movement.fall.value > GYROSCOPE_LIMIT || mot.yaw < GYROSCOPE_LIMIT;
 
+  movement.fallen = movement.crash.state || movement.fall.state;
 
   //	Gyro_RawDebugger(&gyro);
-
-  return decider;
+  return movement;
 }
 
-void GYRO_Debugger(gyro_decision_t *decider) {
+void GYRO_Debugger(movement_t *movement) {
   // calculated data
   LOG_Str("IMU:Accel[");
-  LOG_Int(decider->crash.value * 100 / ACCELEROMETER_LIMIT);
+  LOG_Int(movement->crash.value * 100 / ACCELEROMETER_LIMIT);
   LOG_Str(" %] = ");
-  LOG_Int(decider->crash.value);
+  LOG_Int(movement->crash.value);
   LOG_Str(" / ");
   LOG_Int(ACCELEROMETER_LIMIT);
   LOG_Enter();
   LOG_Str("IMU:Gyros[");
-  LOG_Int(decider->fall.value * 100 / GYROSCOPE_LIMIT);
+  LOG_Int(movement->fall.value * 100 / GYROSCOPE_LIMIT);
   LOG_Str(" %] = ");
-  LOG_Int(decider->fall.value);
+  LOG_Int(movement->fall.value);
   LOG_Str(" / ");
   LOG_Int(GYROSCOPE_LIMIT);
   LOG_Enter();

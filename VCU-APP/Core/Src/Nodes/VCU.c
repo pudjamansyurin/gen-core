@@ -67,35 +67,6 @@ uint8_t VCU_ReadEvent(uint64_t event_id) {
   return (VCU.d.events & event_id) == event_id;
 }
 
-//void VCU_CheckPower5v(uint8_t currentState) {
-//  static TickType_t tick;
-//  static int8_t lastState = -1;
-//
-//  // handle only when changed
-//  if (lastState != currentState) {
-//    lastState = currentState;
-//    tick = _GetTickMS();
-//  }
-//
-//  // set things
-//  VCU.d.state.independent = currentState == 0;
-//  VCU.SetEvent(EV_VCU_INDEPENDENT, currentState == 0);
-//
-//  // handle when REG_5V is OFF
-//  if (currentState == 0) {
-//    if (_GetTickMS() - tick > (VCU_ACTIVATE_LOST_MODE * 1000)) {
-//      VCU.d.interval = RPT_INTERVAL_LOST;
-//      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
-//    } else {
-//      VCU.d.interval = RPT_INTERVAL_INDEPENDENT;
-//      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
-//    }
-//  } else {
-//    VCU.d.interval = RPT_INTERVAL_SIMPLE;
-//    VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
-//  }
-//}
-
 uint16_t VCU_SpeedToVolume(void) {
   return VCU.d.speed * 100 / MCU_SPEED_KPH_MAX ;
 }
@@ -130,6 +101,122 @@ void VCU_SetOdometer(uint8_t increment) {
   }
 
   HBAR_AccumulateSubTrip(increment);
+}
+
+//void VCU_CheckPower5v(uint8_t currentState) {
+//  static TickType_t tick;
+//  static int8_t lastState = -1;
+//
+//  // handle only when changed
+//  if (lastState != currentState) {
+//    lastState = currentState;
+//    tick = _GetTickMS();
+//  }
+//
+//  // set things
+//  VCU.d.state.independent = currentState == 0;
+//  VCU.SetEvent(EV_VCU_INDEPENDENT, currentState == 0);
+//
+//  // handle when REG_5V is OFF
+//  if (currentState == 0) {
+//    if (_GetTickMS() - tick > (VCU_ACTIVATE_LOST_MODE * 1000)) {
+//      VCU.d.interval = RPT_INTERVAL_LOST;
+//      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
+//    } else {
+//      VCU.d.interval = RPT_INTERVAL_INDEPENDENT;
+//      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
+//    }
+//  } else {
+//    VCU.d.interval = RPT_INTERVAL_SIMPLE;
+//    VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
+//  }
+//}
+
+void VCU_CheckVehicleState(void) {
+  static vehicle_state_t lastState = VEHICLE_UNKNOWN;
+  vehicle_state_t initialState;
+
+  do {
+    initialState = VCU.d.state.vehicle;
+
+    switch (VCU.d.state.vehicle) {
+      case VEHICLE_LOST:
+        if (lastState != VEHICLE_LOST) {
+          lastState = VEHICLE_LOST;
+
+          VCU.d.interval = RPT_INTERVAL_LOST;
+        }
+
+        if (VCU.d.gpio.power5v)
+          VCU.d.state.vehicle += 2;
+        break;
+
+      case VEHICLE_BACKUP:
+        if (lastState != VEHICLE_BACKUP) {
+          lastState = VEHICLE_BACKUP;
+
+          VCU.d.tick.independent = _GetTickMS();
+          VCU.d.interval = RPT_INTERVAL_BACKUP;
+        }
+
+        if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.gpio.power5v)
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_NORMAL:
+        if (lastState != VEHICLE_NORMAL) {
+          lastState = VEHICLE_NORMAL;
+          VCU.d.interval = RPT_INTERVAL_NORMAL;
+        }
+
+        if (!VCU.d.gpio.power5v)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.gpio.knob && (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY))
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_STANDBY:
+        if (lastState != VEHICLE_STANDBY) {
+          lastState = VEHICLE_STANDBY;
+          HMI1.d.state.unfinger = VCU.SetDriver(DRIVER_ID_NONE);
+        }
+
+        if (!VCU.d.gpio.knob)
+          VCU.d.state.vehicle--;
+        else if (!HMI1.d.state.unfinger || VCU.d.state.override >= VEHICLE_READY)
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_READY:
+        if (lastState != VEHICLE_READY) {
+          lastState = VEHICLE_READY;
+          VCU.d.gpio.starter = 0;
+        }
+
+        if (!VCU.d.gpio.knob || (HMI1.d.state.unfinger || VCU.d.state.override == VEHICLE_STANDBY))
+          VCU.d.state.vehicle--;
+        else if (!VCU.d.state.error && (VCU.d.gpio.starter || VCU.d.state.override >= VEHICLE_RUN))
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_RUN:
+        if (lastState != VEHICLE_RUN) {
+          lastState = VEHICLE_RUN;
+          VCU.d.gpio.starter = 0;
+        }
+
+        if (!VCU.d.gpio.knob || (VCU.d.state.error || VCU.d.state.override == VEHICLE_READY))
+          VCU.d.state.vehicle--;
+        else if ((VCU.d.gpio.starter && VCU.d.speed == 0) || HMI1.d.state.unfinger || VCU.d.state.override == VEHICLE_STANDBY)
+          VCU.d.state.vehicle -= 2;
+        break;
+
+      default:
+        break;
+    }
+  } while (initialState != VCU.d.state.vehicle);
 }
 
 /* ====================================== CAN TX =================================== */
