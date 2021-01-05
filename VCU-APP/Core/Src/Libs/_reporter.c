@@ -56,7 +56,6 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 	// Reconstruct the body
 	report->data.req.vcu.driver_id = vcu->driver_id;
 	report->data.req.vcu.events_group = vcu->events;
-  report->data.req.vcu.vehicle = vcu->state.vehicle;
 	report->data.req.vcu.rtc.log = RTC_Read();
 	// BMS data
 	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
@@ -69,6 +68,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 	if (frame == FR_FULL) {
 		report->header.size += sizeof(report->data.opt);
 		// set parameter
+    report->data.opt.vcu.vehicle = (int8_t) vcu->state.vehicle;
+
 		report->data.opt.vcu.gps.latitude = (int32_t) (vcu->gps.latitude * 10000000);
 		report->data.opt.vcu.gps.longitude = (int32_t) (vcu->gps.longitude * 10000000);
 		report->data.opt.vcu.gps.altitude = (uint32_t) vcu->gps.altitude;

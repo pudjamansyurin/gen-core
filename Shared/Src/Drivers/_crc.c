@@ -47,9 +47,8 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
 
 	if (cnt) {
 		/* Calculate */
-		while (cnt--) {
+		while (cnt--) 
 			remaining[index++] = *arr++;
-		}
 		/* Set new value */
 		value = *(uint32_t*) remaining;
 		hcrc.Instance->DR = swapped ? _ByteSwap32(value) : value;

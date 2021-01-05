@@ -11,7 +11,6 @@
 
 /* External variables ----------------------------------------------------------*/
 #if (!BOOTLOADER)
-//    extern osMutexId_t CanTxMutexHandle;
 extern osMessageQueueId_t CanRxQueueHandle;
 #endif
 
@@ -170,7 +169,7 @@ void CANBUS_RxDebugger(can_rx_t *Rx) {
 #if (!BOOTLOADER)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
   can_rx_t Rx;
-  // signal only when RTOS started
+  
   if (CANBUS_Read(&Rx))
     if (osKernelGetState() == osKernelRunning)
       osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);

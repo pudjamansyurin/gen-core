@@ -34,7 +34,6 @@ sim_t SIM = {
 
 /* Private variables ---------------------------------------------------------*/
 #if (!BOOTLOADER)
-//extern osMutexId_t SimcomRecMutexHandle;
 extern osMessageQueueId_t CommandQueueHandle;
 #endif
 

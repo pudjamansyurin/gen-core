@@ -568,7 +568,8 @@ void StartCommandTask(void *argument)
   RPT_ResponseInit(&response, &(VCU.d.seq_id.response));
 
   // Handle Post-FOTA
-  FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version));
+  if (FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version)))
+    osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
 
   /* Infinite loop */
   for (;;) {
@@ -764,12 +765,10 @@ void StartGyroTask(void *argument)
     // GYRO_Debugger(&movement);
 
     VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
-    {
-      // Indicators
-      GATE_LedWrite(movement.fallen);
-      flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
-      osThreadFlagsSet(AudioTaskHandle, flag);
-    }
+    // Indicators
+    GATE_LedWrite(movement.fallen);
+    flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
+    osThreadFlagsSet(AudioTaskHandle, flag);
   }
   /* USER CODE END StartGyroTask */
 }
@@ -820,32 +819,19 @@ void StartRemoteTask(void *argument)
         if (RF_GotPairedResponse())
           osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
 
-        // process
+        // process command
         if (RF_ValidateCommand(&command)) {
-          // handle command
-          switch (command) {
-            case RF_CMD_PING:
-              LOG_StrLn("NRF:Command = PING");
+          if (command == RF_CMD_PING)
+            LOG_StrLn("NRF:Command = PING");
+          else if (command == RF_CMD_SEAT) {
+            LOG_StrLn("NRF:Command = SEAT");
+            GATE_SeatToggle();
+          }
+          else if (command == RF_CMD_ALARM) {
+            LOG_StrLn("NRF:Command = ALARM");
+            for (uint8_t i = 0; i < 2; i++)
+              GATE_HornToggle(&(HBAR.runner.hazard));
 
-              break;
-
-            case RF_CMD_ALARM:
-              LOG_StrLn("NRF:Command = ALARM");
-
-              for (uint8_t i = 0; i < 2; i++)
-                GATE_HornToggle(&(HBAR.runner.hazard));
-
-              break;
-
-            case RF_CMD_SEAT:
-              LOG_StrLn("NRF:Command = SEAT");
-
-              GATE_SeatToggle();
-
-              break;
-
-            default:
-              break;
           }
         }
       }
@@ -1060,10 +1046,11 @@ void StartCanTxTask(void *argument)
     }
 
     // Handle CAN-Powered Nodes
-    HMI2.PowerOverCan(VCU.d.state.vehicle >= VEHICLE_STANDBY);
     BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
+    if (HMI2.PowerOverCan(VCU.d.state.vehicle >= VEHICLE_STANDBY))
+		  osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
 
-    // Refresh state
+    // Refresh CAN-Signaled Nodes
     HMI1.Refresh();
     HMI2.Refresh();
     BMS.RefreshIndex();
@@ -1122,7 +1109,7 @@ void StartGateTask(void *argument)
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-  // Initialise
+  // Initiate
   HBAR_ReadStates();
   //  VCU.CheckPower5v(GATE_ReadPower5v());
   VCU.d.gpio.power5v = GATE_ReadPower5v();

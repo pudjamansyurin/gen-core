@@ -38,7 +38,6 @@
 #include "Libs/_audio.h"
 
 /* External variables --------------------------------------------------------*/
-//extern osMutexId_t AudioMutexHandle;
 extern uint32_t SOUND_FREQ;
 extern uint32_t SOUND_SIZE;
 extern uint16_t SOUND_SAMPLE[];

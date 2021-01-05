@@ -10,7 +10,6 @@
 #include "Libs/_eeprom.h"
 
 /* External variables ---------------------------------------------------------*/
-extern osMessageQueueId_t ResponseQueueHandle;
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *hmi_version) {
@@ -38,8 +37,9 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *h
   return 0;
 }
 
-void FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_version) {
+uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_version) {
   char node[4] = "VCU";
+  uint8_t valid = 0;
 
   if (FW_ValidResponseIAP()) {
     if (FOTA_TYPE == IAP_HMI)
@@ -81,12 +81,14 @@ void FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_version)
 
     /* Send Response */
     RPT_ResponseCapture(response, unit_id);
-    osMessageQueuePut(ResponseQueueHandle, response, 0U, 0U);
+    valid = 1;
 
     /* Reset after FOTA */
     EEPROM_FotaVersion(EE_CMD_W, 0);
     EEPROM_FotaType(EE_CMD_W, 0);
   }
+
+  return valid;
 }
 
 void FW_MakeResponseIAP(char *message, uint16_t *hmi_version) {

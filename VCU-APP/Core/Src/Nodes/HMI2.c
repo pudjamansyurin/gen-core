@@ -17,7 +17,6 @@
 #include "Nodes/HMI1.h"
 
 /* External variables --------------------------------------------------------*/
-extern osThreadId_t Hmi2PowerTaskHandle;
 
 /* Public variables -----------------------------------------------------------*/
 hmi2_t HMI2 = {
@@ -45,9 +44,14 @@ void HMI2_Refresh(void) {
 		HMI2.d.started = 0;
 }
 
-void HMI2_PowerOverCan(uint8_t state) {
-	HMI2.d.power = state;
-	osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
+uint8_t HMI2_PowerOverCan(uint8_t state) {
+	uint8_t changed;
+
+	changed = HMI2.d.power != state;
+	if (changed) 
+		HMI2.d.power = state;
+	
+	return changed;
 }
 
 void HMI2_PowerOn(void) {

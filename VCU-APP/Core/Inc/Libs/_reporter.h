@@ -42,7 +42,6 @@ typedef struct __attribute__((packed)) {
       } rtc;
       uint8_t driver_id;
       uint64_t events_group;
-      vehicle_state_t vehicle;
     } vcu;
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {
@@ -54,6 +53,7 @@ typedef struct __attribute__((packed)) {
   } req;
   struct __attribute__((packed)) {
     struct __attribute__((packed)) {
+      int8_t vehicle;
       struct __attribute__((packed)) {
         int32_t longitude;
         int32_t latitude;

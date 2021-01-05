@@ -50,9 +50,15 @@
 #define NET_BOOT_TIMEOUT             (uint32_t) 8000                // in ms
 #define NET_EXTRA_TIME               (uint32_t) 1000                // in ms
 
-#define NET_CON_APN                             "3gprs"             // "telkomsel"
-#define NET_CON_USERNAME                        "3gprs"             // "wap"
-#define NET_CON_PASSWORD                        "3gprs"             // "wap123"
+#define NET_CON_APN                             "3gprs"
+#define NET_CON_USERNAME                        "3gprs"
+#define NET_CON_PASSWORD                        "3gprs"
+//#define NET_CON_APN                             "telkomsel"
+//#define NET_CON_USERNAME                        "wap"
+//#define NET_CON_PASSWORD                        "wap123"
+//#define NET_CON_APN                             "indosatgprs"
+//#define NET_CON_USERNAME                        "indosat"
+//#define NET_CON_PASSWORD                        "indosat"
 
 #define NET_FTP_SERVER                          "ftp.genmotorcycles.com"
 #define NET_FTP_USERNAME                        "fota@genmotorcycles.com"
@@ -70,8 +76,8 @@
 
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 
-#define REMOTE_TIMEOUT              (uint32_t) 10000                // in ms
-#define REMOTE_PAIRING_TIMEOUT      (uint32_t) 5000                 // in ms
+#define REMOTE_TIMEOUT               (uint32_t) 5000                // in ms
+#define REMOTE_PAIRING_TIMEOUT       (uint32_t) 5000                 // in ms
 
 #define PREFIX_REPORT                           "@R"
 #define PREFIX_COMMAND                          "@C"
