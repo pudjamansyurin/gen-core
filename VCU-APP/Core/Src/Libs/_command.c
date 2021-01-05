@@ -35,7 +35,7 @@ void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
 }
 
 void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_version) {
-  if (VCU.d.state.vehicle >= VEHICLE_BACKUP && VCU.d.state.vehicle <= VEHICLE_READY)
+  if (VCU.d.state.vehicle >= VEHICLE_STANDBY && VCU.d.state.vehicle <= VEHICLE_READY)
     FW_EnterModeIAP(type, resp->data.message, bat, hmi_version);
   else
     sprintf(resp->data.message, "Current vehicle mode is not allowed.");

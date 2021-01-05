@@ -37,7 +37,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   else {
     strcpy(ftp.path, "/hmi/");
 
-    FOCAN_SetOtherNodes();
+    // Turn ON HMI-Primary, based on knob state.
+    GATE_Hmi1Power(GATE_ReadKnobState());
     _DelayMS(1000);
   }
 

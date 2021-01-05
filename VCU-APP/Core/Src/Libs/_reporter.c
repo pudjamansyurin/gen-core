@@ -131,7 +131,7 @@ FRAME_TYPE RPT_FrameDecider(uint8_t backup) {
     frame = FR_FULL;
     frameDecider = 0;
   } else {
-    if (++frameDecider < (RPT_INTERVAL_NORMAL * 4))
+    if (++frameDecider < (RPT_FRAME_FULL / RPT_INTERVAL_NORMAL ))
       frame = FR_SIMPLE;
     else {
       frame = FR_FULL;

@@ -495,7 +495,7 @@ void StartIotTask(void *argument)
 
     Simcom_UpdateSignalQuality();
 
-    osDelayUntil(lastWake + 1000);
+    osDelayUntil(lastWake + 500);
   }
   /* USER CODE END StartIotTask */
 }
@@ -1111,7 +1111,6 @@ void StartGateTask(void *argument)
 
   // Initiate
   HBAR_ReadStates();
-  //  VCU.CheckPower5v(GATE_ReadPower5v());
   VCU.d.gpio.power5v = GATE_ReadPower5v();
   VCU.d.gpio.knob = GATE_ReadKnobState();
 
@@ -1127,7 +1126,6 @@ void StartGateTask(void *argument)
 
       // Starter Button IRQ
       if (notif & EVT_GATE_STARTER_IRQ) {
-        // check KNOB, KickStand, Remote, Fingerprint
         VCU.d.gpio.starter = 1;
       }
 
@@ -1147,7 +1145,6 @@ void StartGateTask(void *argument)
       // BMS Power IRQ
       if (notif & EVT_GATE_REG_5V_IRQ) {
         VCU.d.gpio.power5v = GATE_ReadPower5v();
-        //        VCU.CheckPower5v(GATE_ReadPower5v());
 
         if (VCU.d.gpio.power5v) {
           osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_REINIT);

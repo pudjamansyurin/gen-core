@@ -27,7 +27,6 @@ vcu_t VCU = {
     VCU_Init,
     VCU_SetEvent,
     VCU_ReadEvent,
-    //    VCU_CheckPower5v,
     VCU_SpeedToVolume,
     VCU_SetDriver,
     VCU_SetOdometer,
@@ -103,35 +102,6 @@ void VCU_SetOdometer(uint8_t increment) {
   HBAR_AccumulateSubTrip(increment);
 }
 
-//void VCU_CheckPower5v(uint8_t currentState) {
-//  static TickType_t tick;
-//  static int8_t lastState = -1;
-//
-//  // handle only when changed
-//  if (lastState != currentState) {
-//    lastState = currentState;
-//    tick = _GetTickMS();
-//  }
-//
-//  // set things
-//  VCU.d.state.independent = currentState == 0;
-//  VCU.SetEvent(EV_VCU_INDEPENDENT, currentState == 0);
-//
-//  // handle when REG_5V is OFF
-//  if (currentState == 0) {
-//    if (_GetTickMS() - tick > (VCU_ACTIVATE_LOST_MODE * 1000)) {
-//      VCU.d.interval = RPT_INTERVAL_LOST;
-//      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 1);
-//    } else {
-//      VCU.d.interval = RPT_INTERVAL_INDEPENDENT;
-//      VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
-//    }
-//  } else {
-//    VCU.d.interval = RPT_INTERVAL_SIMPLE;
-//    VCU.SetEvent(EV_VCU_UNAUTHORIZE_REMOVAL, 0);
-//  }
-//}
-
 void VCU_CheckVehicleState(void) {
   static vehicle_state_t lastState = VEHICLE_UNKNOWN;
   vehicle_state_t initialState;
@@ -169,11 +139,13 @@ void VCU_CheckVehicleState(void) {
         if (lastState != VEHICLE_NORMAL) {
           lastState = VEHICLE_NORMAL;
           VCU.d.interval = RPT_INTERVAL_NORMAL;
+          VCU.d.state.override = VEHICLE_NORMAL;
         }
 
         if (!VCU.d.gpio.power5v)
           VCU.d.state.vehicle--;
-        else if (VCU.d.gpio.knob && (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY))
+        else if (VCU.d.gpio.knob
+            && (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY))
           VCU.d.state.vehicle++;
         break;
 
@@ -195,9 +167,12 @@ void VCU_CheckVehicleState(void) {
           VCU.d.gpio.starter = 0;
         }
 
-        if (!VCU.d.gpio.knob || (HMI1.d.state.unfinger || VCU.d.state.override == VEHICLE_STANDBY))
+        if (!VCU.d.gpio.knob
+            || (HMI1.d.state.unfinger && !VCU.d.state.override)
+            || VCU.d.state.override == VEHICLE_STANDBY)
           VCU.d.state.vehicle--;
-        else if (!VCU.d.state.error && (VCU.d.gpio.starter || VCU.d.state.override >= VEHICLE_RUN))
+        else if (!VCU.d.state.error
+            && (VCU.d.gpio.starter || VCU.d.state.override >= VEHICLE_RUN))
           VCU.d.state.vehicle++;
         break;
 
@@ -207,9 +182,13 @@ void VCU_CheckVehicleState(void) {
           VCU.d.gpio.starter = 0;
         }
 
-        if (!VCU.d.gpio.knob || (VCU.d.state.error || VCU.d.state.override == VEHICLE_READY))
+        if (!VCU.d.gpio.knob
+            || VCU.d.state.error
+            || VCU.d.state.override == VEHICLE_READY)
           VCU.d.state.vehicle--;
-        else if ((VCU.d.gpio.starter && VCU.d.speed == 0) || HMI1.d.state.unfinger || VCU.d.state.override == VEHICLE_STANDBY)
+        else if ((VCU.d.gpio.starter && VCU.d.speed == 0)
+            || (HMI1.d.state.unfinger && !VCU.d.state.override)
+            || VCU.d.state.override == VEHICLE_STANDBY)
           VCU.d.state.vehicle -= 2;
         break;
 
@@ -230,8 +209,8 @@ uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar) {
   TxData.u8[0] |= hbar->list[HBAR_K_LAMP].state << 2;
   TxData.u8[0] |= HMI1.d.state.warning << 3;
   TxData.u8[0] |= HMI1.d.state.overheat << 4;
-  TxData.u8[0] |= HMI1.d.state.unfinger << 5;
-  TxData.u8[0] |= HMI1.d.state.unremote << 6;
+  TxData.u8[0] |= (VCU.d.state.override < VEHICLE_READY && HMI1.d.state.unfinger) << 5;
+  TxData.u8[0] |= (VCU.d.state.override < VEHICLE_STANDBY && HMI1.d.state.unremote) << 6;
   TxData.u8[0] |= HMI1.d.state.daylight << 7;
 
   // sein value

@@ -90,6 +90,7 @@
 
 #define DRIVER_ID_NONE               (uint8_t)  0xFF
 
+#define RPT_FRAME_FULL               (uint16_t) 20                  // in second
 #define RPT_INTERVAL_NORMAL          (uint16_t) 5                  // in second
 #define RPT_INTERVAL_BACKUP          (uint16_t) 20                 // in second
 #define RPT_INTERVAL_LOST            (uint16_t) 60                 // in second
