@@ -43,7 +43,7 @@ void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_v
   if (VCU.d.state.vehicle >= minState && VCU.d.state.vehicle <= maxState)
     FW_EnterModeIAP(type, resp->data.message, bat, hmi_version);
   else
-    sprintf(resp->data.message, "Allowed vehicle state are %d - %d.", minState, maxState);
+    sprintf(resp->data.message, "Allowed vehicle state are (%d) - (%d).", minState, maxState);
 
   /* This line is never reached (if FOTA is activated) */
   resp->data.code = RESPONSE_STATUS_ERROR;

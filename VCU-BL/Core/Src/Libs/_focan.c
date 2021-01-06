@@ -39,7 +39,7 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
 
 uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
   uint32_t address = CAND_GET_CHECKSUM;
-  CAN_DATA RxData;
+  CAN_DATA RxData = { 0 };
   uint8_t p;
 
   // send message

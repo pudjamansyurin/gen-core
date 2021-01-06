@@ -854,7 +854,7 @@ void StartFingerTask(void *argument)
   /* USER CODE BEGIN StartFingerTask */
   int8_t id;
   uint32_t notif;
-  uint8_t driver, p;
+  uint8_t driver, p = 0;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);

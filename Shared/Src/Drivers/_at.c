@@ -23,7 +23,7 @@ static int32_t ParseNumber(const char *ptr, uint8_t *cnt);
 /* Public functions implementation --------------------------------------------*/
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
-	char cmd[6];
+  char cmd[8];
 
 	Simcom_Lock();
 	// Write
@@ -175,7 +175,7 @@ SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
 SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 	uint8_t cnt, len = 0;
-	char *str = NULL, cmd[14];
+  char *str = NULL, cmd[20];
 
 	// Copy by value
 	at_csact_t tmp = *param;
@@ -326,7 +326,7 @@ SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
 SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 	uint8_t cnt, len = 0;
-	char *str = NULL, cmd[32];
+  char *str = NULL, cmd[39];
 
 	Simcom_Lock();
 	if (mode == ATW) {

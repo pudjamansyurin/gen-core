@@ -191,19 +191,23 @@ void LOG_BufHexFancy(char *buf, uint16_t bufsize, uint8_t column_width, char sub
 
 /* Private functions implementations ----------------------------------------------*/
 static void lock(void) {
-#if (!BOOTLOADER && SWO_DEBUG)
+#ifdef DEBUG
+#if (!BOOTLOADER)
 	osMutexAcquire(LogMutexHandle, osWaitForever);
+#endif
 #endif
 }
 
 static void unlock(void) {
-#if (!BOOTLOADER && SWO_DEBUG)
+#ifdef DEBUG
+#if (!BOOTLOADER)
 	osMutexRelease(LogMutexHandle);
+#endif
 #endif
 }
 
 static void WriteChar(char ch) {
-#if (SWO_DEBUG)
+#ifdef DEBUG
   uint32_t tick;
 
   // wait if busy

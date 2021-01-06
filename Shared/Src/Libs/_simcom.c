@@ -77,7 +77,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
   SIMCOM_STATE lastState = SIM_STATE_DOWN;
   uint32_t tick = _GetTickMS();
   uint8_t depthState = 3;
-  SIMCOM_RESULT p;
+  SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
   Simcom_Lock();
   // Handle SIMCOM state properly

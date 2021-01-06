@@ -70,8 +70,7 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
         sprintf(response->data.message, "%s DFU Error", node);
         break;
       case IAP_DFU_SUCCESS:
-        sprintf(response->data.message, "%s Success", node);
-        FW_MakeResponseIAP(response->data.message, hmi_version);
+        FW_MakeResponseIAP(response->data.message, node, hmi_version);
 
         response->data.code = RESPONSE_STATUS_OK;
         break;
@@ -91,7 +90,7 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
   return valid;
 }
 
-void FW_MakeResponseIAP(char *message, uint16_t *hmi_version) {
+void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version) {
   uint32_t tick;
   uint16_t versionNew = VCU_VERSION;
   uint16_t versionOld = FOTA_VERSION;
@@ -108,15 +107,16 @@ void FW_MakeResponseIAP(char *message, uint16_t *hmi_version) {
       versionOld = 0x0000;
   }
 
+
   if (versionNew && (versionOld != versionNew)) {
     sprintf(message,
-        "%s v%d.%d (> v%d.%d)",
-        message,
-        _R8(versionOld, 8),
-        _R8(versionOld, 0),
-        _R8(versionNew, 8),
-        _R8(versionNew, 0));
-  }
+        "%s Upgraded %d -> %d",
+        node,
+        versionOld,
+        versionNew
+        );
+  } else
+    sprintf(message, "%s Success", node);
 }
 
 uint8_t FW_ValidResponseIAP(void) {

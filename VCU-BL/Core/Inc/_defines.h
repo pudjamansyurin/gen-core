@@ -10,7 +10,6 @@
 
 /* Choose between VCU or Boot-loader mode */
 #define BOOTLOADER                              1
-#define SWO_DEBUG                               0
 
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
