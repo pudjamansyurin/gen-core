@@ -458,13 +458,15 @@ void StartIotTask(void *argument)
   payload_t pReport = {
       .type = PAYLOAD_REPORT,
       .pQueue = &ReportQueueHandle,
-      .pPayload = &report
+      .pPayload = &report,
+      .pending = 0
   };
   response_t response;
   payload_t pResponse = {
       .type = PAYLOAD_RESPONSE,
       .pQueue = &ResponseQueueHandle,
-      .pPayload = &response
+      .pPayload = &response,
+      .pending = 0
   };
 
   // wait until ManagerTask done
@@ -478,14 +480,14 @@ void StartIotTask(void *argument)
     VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
-    // Upload Report
-    if (RPT_PacketPending(&pReport))
-      if (!RPT_SendPayload(&pReport))
-        Simcom_SetState(SIM_STATE_SERVER_ON, 0);
-
     // Upload Response
     if (RPT_PacketPending(&pResponse))
       if (!RPT_SendPayload(&pResponse))
+        Simcom_SetState(SIM_STATE_SERVER_ON, 0);
+
+    // Upload Report
+    if (RPT_PacketPending(&pReport))
+      if (!RPT_SendPayload(&pReport))
         Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 
     // SIMCOM Related Routines
@@ -527,7 +529,6 @@ void StartReporterTask(void *argument)
     lastWake = _GetTickMS();
 
     frame = RPT_FrameDecider(!VCU.d.gpio.power5v);
-
     RPT_ReportCapture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.runner.mode.d));
 
     // Put report to log
@@ -876,7 +877,7 @@ void StartFingerTask(void *argument)
         id = Finger_AuthFast();
         // Finger is registered
         if (id >= 0)
-          HMI1.d.state.unfinger = VCU.SetDriver(id);
+          VCU.SetDriver(id);
 
         // Handle bounce effect
         _DelayMS(2000);

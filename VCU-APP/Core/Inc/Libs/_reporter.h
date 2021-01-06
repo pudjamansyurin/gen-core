@@ -67,7 +67,6 @@ typedef struct __attribute__((packed)) {
       uint32_t odometer;
       uint8_t signal;
       uint8_t bat;
-      motion_t motion;
       struct __attribute__((packed)) {
         uint8_t range;
         uint8_t efficiency;
@@ -76,7 +75,6 @@ typedef struct __attribute__((packed)) {
         uint32_t a;
         uint32_t b;
       } trip;
-      rtos_task_t task;
     } vcu;
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {
@@ -85,6 +83,10 @@ typedef struct __attribute__((packed)) {
       } pack[2];
     } bms;
   } opt;
+  struct __attribute__((packed)) {
+    rtos_task_t task;
+    motion_t motion;
+  } test;
 } report_data_t;
 
 typedef struct __attribute__((packed)) {

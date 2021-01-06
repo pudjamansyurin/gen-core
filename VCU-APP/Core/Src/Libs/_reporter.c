@@ -16,48 +16,35 @@
 #include "Nodes/BMS.h"
 
 /* Private functions declarations -------------------------------------------*/
+static void RPT_ReportCaptureHeader(FRAME_TYPE frame, report_t *report, uint32_t unit_id);
 static void Report_SetCRC(report_t *report);
 static void Response_SetCRC(response_t *response);
 
 /* Public functions implementation -------------------------------------------*/
 void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
-	// set default data
 	LOG_StrLn("Reporter:ReportInit");
-	// =============== REPORT ==============
-	// header report
+
 	report->header.prefix[0] = PREFIX_REPORT[1];
 	report->header.prefix[1] = PREFIX_REPORT[0];
 	report->header.seq_id = *seq_id_report;
-	// (already set)
-	// body required
-	// body optional
 }
 
 void RPT_ResponseInit(response_t *response, uint16_t *seq_id_response) {
-	// set default data
 	LOG_StrLn("Reporter:ResponseInit");
-	// =============== REPORT ==============
-	// header report
+
 	response->header.prefix[0] = PREFIX_REPORT[1];
 	response->header.prefix[1] = PREFIX_REPORT[0];
 	response->header.seq_id = *seq_id_response;
 }
 
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar) {
-	// Reconstruct the header
-	report->header.seq_id++;
-	report->header.unit_id = vcu->unit_id;
-	report->header.frame_id = frame;
-	report->header.size = sizeof(report->header.frame_id) +
-			sizeof(report->header.unit_id) +
-			sizeof(report->header.seq_id) +
-			sizeof(report->data.req);
-
+    RPT_ReportCaptureHeader(frame, report, vcu->unit_id);
+  
 	// Reconstruct the body
 	report->data.req.vcu.driver_id = vcu->driver_id;
 	report->data.req.vcu.events_group = vcu->events;
 	report->data.req.vcu.rtc.log = RTC_Read();
-	// BMS data
+
 	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
 		report->data.req.bms.pack[i].id = bms->pack[i].id;
 		report->data.req.bms.pack[i].voltage = bms->pack[i].voltage * 100;
@@ -66,9 +53,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 
 	// Add more (if full frame)
 	if (frame == FR_FULL) {
-		report->header.size += sizeof(report->data.opt);
-		// set parameter
-    report->data.opt.vcu.vehicle = (int8_t) vcu->state.vehicle;
+      report->data.opt.vcu.vehicle = (int8_t) vcu->state.vehicle;
 
 		report->data.opt.vcu.gps.latitude = (int32_t) (vcu->gps.latitude * 10000000);
 		report->data.opt.vcu.gps.longitude = (int32_t) (vcu->gps.longitude * 10000000);
@@ -89,15 +74,14 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 		report->data.opt.vcu.signal = SIM.signal;
     report->data.opt.vcu.bat = vcu->bat / 18;
 
-		// BMS data
 		for (uint8_t i = 0; i < BMS_COUNT ; i++) {
       report->data.opt.bms.pack[i].soc = bms->pack[i].soc * 100;
 			report->data.opt.bms.pack[i].temperature = (bms->pack[i].temperature + 40) * 10;
 		}
 
-    // Others data
-    memcpy(&(report->data.opt.vcu.motion), &(vcu->motion), sizeof(motion_t));
-    memcpy(&(report->data.opt.vcu.task), &(vcu->task), sizeof(rtos_task_t));
+    // debug data
+    memcpy(&(report->data.test.motion), &(vcu->motion), sizeof(motion_t));
+    memcpy(&(report->data.test.task), &(vcu->task), sizeof(rtos_task_t));
 	}
 }
 
@@ -200,6 +184,19 @@ uint8_t RPT_SendPayload(payload_t *payload) {
 }
 
 /* Private functions implementation -------------------------------------------*/
+static void RPT_ReportCaptureHeader(FRAME_TYPE frame, report_t *report, uint32_t unit_id) {
+  report->header.seq_id++;
+  report->header.unit_id = unit_id;
+  report->header.frame_id = frame;
+  report->header.size = sizeof(report->header.frame_id) +
+      sizeof(report->header.unit_id) +
+      sizeof(report->header.seq_id) +
+      sizeof(report->data.req);
+
+  if (frame == FR_FULL)
+    report->header.size += sizeof(report->data.opt) + sizeof(report->data.test);
+}
+
 static void Report_SetCRC(report_t *report) {
   // get current sending date-time
   report->data.req.vcu.rtc.send = RTC_Read();

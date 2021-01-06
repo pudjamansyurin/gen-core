@@ -37,9 +37,9 @@ void VCU_Init(void) {
   // reset VCU data
   VCU.d.state.error = 0;
   VCU.d.state.override = 0;
-  VCU.d.state.vehicle = VEHICLE_LOST;
+  VCU.d.state.vehicle = VEHICLE_NORMAL;
 
-  VCU.d.interval = RPT_INTERVAL_LOST;
+  VCU.d.interval = RPT_INTERVAL_NORMAL;
   VCU.d.driver_id = DRIVER_ID_NONE;
   VCU.d.bat = 0;
   VCU.d.speed = 0;
@@ -70,10 +70,9 @@ uint16_t VCU_SpeedToVolume(void) {
   return VCU.d.speed * 100 / MCU_SPEED_KPH_MAX ;
 }
 
-uint8_t VCU_SetDriver(uint8_t driver_id) {
+void VCU_SetDriver(uint8_t driver_id) {
   VCU.d.driver_id = driver_id;
-
-  return VCU.d.driver_id == DRIVER_ID_NONE ;
+  HMI1.d.state.unfinger = driver_id == DRIVER_ID_NONE;
 }
 
 void VCU_SetOdometer(uint8_t increment) {
@@ -152,7 +151,7 @@ void VCU_CheckVehicleState(void) {
       case VEHICLE_STANDBY:
         if (lastState != VEHICLE_STANDBY) {
           lastState = VEHICLE_STANDBY;
-          HMI1.d.state.unfinger = VCU.SetDriver(DRIVER_ID_NONE);
+          VCU.SetDriver(DRIVER_ID_NONE);
         }
 
         if (!VCU.d.gpio.knob)

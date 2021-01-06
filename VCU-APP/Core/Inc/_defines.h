@@ -10,11 +10,11 @@
 
 /* Choose between VCU or Boot-loader mode */
 #define BOOTLOADER                              0
-#define SWO_DEBUG                               0
+#define SWO_DEBUG                               1
 
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION                  (uint16_t) 402
+#define VCU_VERSION                  (uint16_t) 403
 
 #endif /* DEFINES_H_ */

@@ -19,8 +19,8 @@ typedef struct {
   uint16_t version;
   struct {
     //	uint8_t abs;
-    uint8_t mirroring;
     //  uint8_t lamp;
+    uint8_t mirroring;
     uint8_t warning;
     uint8_t overheat;
     uint8_t unfinger;

@@ -41,7 +41,7 @@ typedef struct {
         BMS_STATE state;
         uint8_t started;
         uint32_t tick;
-    } pack[BMS_COUNT ];
+  } pack[BMS_COUNT ];
 } bms_data_t;
 
 typedef struct {
