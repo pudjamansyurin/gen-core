@@ -19,7 +19,7 @@ static void ConvertImage(uint8_t *error);
 static void GetImage(uint8_t *error, uint8_t enroll);
 
 /* Public functions implementation --------------------------------------------*/
-void Finger_Init(void) {
+void FINGER_Init(void) {
 	uint8_t verified = 0;
 
 	// Inititalize Module
@@ -38,7 +38,11 @@ void Finger_Init(void) {
 	} while (!verified);
 }
 
-uint8_t Finger_Enroll(uint8_t id) {
+void FINGER_DeInit(void) {
+  GATE_FingerShutdown();
+}
+
+uint8_t FINGER_Enroll(uint8_t id) {
 	const TickType_t scan_time = (FINGER_SCAN_TIMEOUT);
   uint8_t timeout, error = 0;
 	TickType_t tick;
@@ -141,7 +145,7 @@ uint8_t Finger_Enroll(uint8_t id) {
 	return !error;
 }
 
-uint8_t Finger_DeleteID(uint8_t id) {
+uint8_t FINGER_DeleteID(uint8_t id) {
 	int8_t p;
 
 	lock();
@@ -164,7 +168,7 @@ uint8_t Finger_DeleteID(uint8_t id) {
 	return (p == FINGERPRINT_OK);
 }
 
-uint8_t Finger_EmptyDatabase(void) {
+uint8_t FINGER_EmptyDatabase(void) {
 	int8_t p;
 
 	lock();
@@ -174,7 +178,7 @@ uint8_t Finger_EmptyDatabase(void) {
 	return (p == FINGERPRINT_OK);
 }
 
-uint8_t Finger_SetPassword(uint32_t password) {
+uint8_t FINGER_SetPassword(uint32_t password) {
 	int8_t p;
 
 	lock();
@@ -184,7 +188,7 @@ uint8_t Finger_SetPassword(uint32_t password) {
 	return (p == FINGERPRINT_OK);
 }
 
-int8_t Finger_Auth(void) {
+int8_t FINGER_Auth(void) {
 	int8_t p, id = -1;
 	uint8_t error = 0;
 
@@ -229,7 +233,7 @@ int8_t Finger_Auth(void) {
 	return id;
 }
 
-int8_t Finger_AuthFast(void) {
+int8_t FINGER_AuthFast(void) {
 	int8_t p, id = -1;
 
 	lock();

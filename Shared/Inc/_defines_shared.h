@@ -126,29 +126,44 @@
 
 // Events (for Individual Thread)
 #define EVT_MASK                     (uint32_t) 0x7FFFFFFF
+
 #define EVT_IOT_DISCARD                         BIT(0)
-#define EVT_AUDIO_BEEP                          BIT(0)
-#define EVT_AUDIO_BEEP_START                    BIT(1)
-#define EVT_AUDIO_BEEP_STOP                     BIT(2)
-#define EVT_AUDIO_MUTE_ON                       BIT(3)
-#define EVT_AUDIO_MUTE_OFF                      BIT(4)
-#define EVT_AUDIO_REINIT                        BIT(5)
-#define EVT_FINGER_PLACED                       BIT(0)
-#define EVT_FINGER_ADD                          BIT(1)
-#define EVT_FINGER_DEL                          BIT(2)
-#define EVT_FINGER_RST                          BIT(3)
-#define EVT_FINGER_REINIT                       BIT(4)
+
 #define EVT_COMMAND_ERROR                       BIT(0)
-#define EVT_GYRO_REINIT                         BIT(0)
 #define EVT_COMMAND_OK                          BIT(1)
-#define EVT_REMOTE_RX_IT                        BIT(0)
-#define EVT_REMOTE_PAIRING                      BIT(1)
-#define EVT_REMOTE_REINIT                       BIT(2)
+
+#define EVT_GPS_TASK_START                      BIT(0)
+#define EVT_GPS_TASK_STOP                       BIT(1)
+
+#define EVT_GYRO_TASK_START                     BIT(0)
+#define EVT_GYRO_TASK_STOP                      BIT(1)
+
+#define EVT_REMOTE_TASK_START                   BIT(0)
+#define EVT_REMOTE_TASK_STOP                    BIT(1)
+#define EVT_REMOTE_RX_IT                        BIT(2)
+#define EVT_REMOTE_PAIRING                      BIT(3)
+
+#define EVT_FINGER_TASK_START                   BIT(0)
+#define EVT_FINGER_TASK_STOP                    BIT(1)
+#define EVT_FINGER_PLACED                       BIT(2)
+#define EVT_FINGER_ADD                          BIT(3)
+#define EVT_FINGER_DEL                          BIT(4)
+#define EVT_FINGER_RST                          BIT(5)
+
+#define EVT_AUDIO_TASK_START                    BIT(0)
+#define EVT_AUDIO_TASK_STOP                     BIT(1)
+#define EVT_AUDIO_BEEP                          BIT(2)
+#define EVT_AUDIO_BEEP_START                    BIT(3)
+#define EVT_AUDIO_BEEP_STOP                     BIT(4)
+#define EVT_AUDIO_MUTE_ON                       BIT(5)
+#define EVT_AUDIO_MUTE_OFF                      BIT(6)
+
+#define EVT_HMI2POWER_CHANGED                   BIT(0)
+
 #define EVT_GATE_HBAR                           BIT(0)
 #define EVT_GATE_REG_5V_IRQ                     BIT(1)
 #define EVT_GATE_STARTER_IRQ                    BIT(2)
 #define EVT_GATE_KNOB_IRQ                       BIT(3)
-#define EVT_HMI2POWER_CHANGED                   BIT(0)
 
 // Events group (for All Threads)
 #define EVENT_MASK                   (uint32_t) 0xFFFFFF

@@ -115,6 +115,7 @@ typedef struct {
 
 /* Initialization routine */
 NRF_RESULT nrf_init(nrf24l01 *dev);
+void nrf_deinit(nrf24l01 *dev);
 NRF_RESULT nrf_change_mode(nrf24l01 *dev);
 NRF_RESULT nrf_configure(nrf24l01 *dev);
 NRF_RESULT nrf_check(nrf24l01 *dev);

@@ -13,6 +13,12 @@
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 
+/* External variables ---------------------------------------------------------*/
+extern osThreadId_t RemoteTaskHandle;
+extern osThreadId_t FingerTaskHandle;
+extern osThreadId_t GyroTaskHandle;
+extern osThreadId_t AudioTaskHandle;
+
 /* Public variables -----------------------------------------------------------*/
 vcu_t VCU = {
     .d = { 0 },
@@ -37,9 +43,9 @@ void VCU_Init(void) {
   // reset VCU data
   VCU.d.state.error = 0;
   VCU.d.state.override = 0;
-  VCU.d.state.vehicle = VEHICLE_NORMAL;
+  VCU.d.state.vehicle = VEHICLE_BACKUP;
 
-  VCU.d.interval = RPT_INTERVAL_NORMAL;
+  VCU.d.interval = RPT_INTERVAL_BACKUP;
   VCU.d.driver_id = DRIVER_ID_NONE;
   VCU.d.bat = 0;
   VCU.d.speed = 0;
@@ -126,6 +132,13 @@ void VCU_CheckVehicleState(void) {
 
           VCU.d.tick.independent = _GetTickMS();
           VCU.d.interval = RPT_INTERVAL_BACKUP;
+
+          //          if (osThreadGetState(RemoteTaskHandle) != osThreadBlocked)
+          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
+          //          if (osThreadGetState(AudioTaskHandle) != osThreadBlocked)
+          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
+          //          if (osThreadGetState(GyroTaskHandle) != osThreadBlocked)
+          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
         }
 
         if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
@@ -139,6 +152,15 @@ void VCU_CheckVehicleState(void) {
           lastState = VEHICLE_NORMAL;
           VCU.d.interval = RPT_INTERVAL_NORMAL;
           VCU.d.state.override = VEHICLE_NORMAL;
+
+          //          if (osThreadGetState(RemoteTaskHandle) == osThreadBlocked)
+          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
+          //          if (osThreadGetState(AudioTaskHandle) == osThreadBlocked)
+          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
+          //          if (osThreadGetState(GyroTaskHandle) == osThreadBlocked)
+          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_START);
+          //          if (osThreadGetState(FingerTaskHandle) != osThreadBlocked)
+          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
         }
 
         if (!VCU.d.gpio.power5v)
@@ -152,9 +174,12 @@ void VCU_CheckVehicleState(void) {
         if (lastState != VEHICLE_STANDBY) {
           lastState = VEHICLE_STANDBY;
           VCU.SetDriver(DRIVER_ID_NONE);
+
+          //          if (osThreadGetState(FingerTaskHandle) == osThreadBlocked)
+          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_START);
         }
 
-        if (!VCU.d.gpio.knob)
+        if (!VCU.d.gpio.power5v || !VCU.d.gpio.knob)
           VCU.d.state.vehicle--;
         else if (!HMI1.d.state.unfinger || VCU.d.state.override >= VEHICLE_READY)
           VCU.d.state.vehicle++;
@@ -166,7 +191,8 @@ void VCU_CheckVehicleState(void) {
           VCU.d.gpio.starter = 0;
         }
 
-        if (!VCU.d.gpio.knob
+        if (!VCU.d.gpio.power5v
+            || !VCU.d.gpio.knob
             || (HMI1.d.state.unfinger && !VCU.d.state.override)
             || VCU.d.state.override == VEHICLE_STANDBY)
           VCU.d.state.vehicle--;
@@ -181,7 +207,8 @@ void VCU_CheckVehicleState(void) {
           VCU.d.gpio.starter = 0;
         }
 
-        if (!VCU.d.gpio.knob
+        if (!VCU.d.gpio.power5v
+            || !VCU.d.gpio.knob
             || VCU.d.state.error
             || VCU.d.state.override == VEHICLE_READY)
           VCU.d.state.vehicle--;

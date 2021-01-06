@@ -13,12 +13,13 @@
 #include "Libs/_utils.h"
 
 /* Public functions prototype ------------------------------------------------*/
-void Finger_Init(void);
-uint8_t Finger_Enroll(uint8_t id);
-uint8_t Finger_DeleteID(uint8_t id);
-uint8_t Finger_EmptyDatabase(void);
-uint8_t Finger_SetPassword(uint32_t password);
-int8_t Finger_Auth(void);
-int8_t Finger_AuthFast(void);
+void FINGER_Init(void);
+void FINGER_DeInit(void);
+uint8_t FINGER_Enroll(uint8_t id);
+uint8_t FINGER_DeleteID(uint8_t id);
+uint8_t FINGER_EmptyDatabase(void);
+uint8_t FINGER_SetPassword(uint32_t password);
+int8_t FINGER_Auth(void);
+int8_t FINGER_AuthFast(void);
 
 #endif /* FINGER_H_ */

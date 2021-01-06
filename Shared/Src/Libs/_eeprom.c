@@ -129,7 +129,7 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
 
   // update the NRF Address
   if (cmd == EE_CMD_W)
-    osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_REINIT);
+    osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
 
   return ret;
 }

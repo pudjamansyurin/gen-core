@@ -40,6 +40,11 @@ void GYRO_Init(I2C_HandleTypeDef *hi2c) {
   } while (result != MPU6050_Result_Ok);
 }
 
+void GYRO_DeInit(void) {
+  GATE_GyroShutdown();
+  MX_I2C3_DeInit();
+}
+
 movement_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   gyro_t gyro;
   motion_t mot;

@@ -65,6 +65,10 @@ void RF_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi) {
   ChangeMode(RF_MODE_NORMAL, unit_id);
 }
 
+void RF_DeInit(void) {
+  nrf_deinit(&NRF);
+}
+
 uint8_t RF_Ping(void) {
   NRF_RESULT p;
 

@@ -23,13 +23,17 @@ void GATE_Hmi1Power(GPIO_PinState state);
 #if (!BOOTLOADER)
 void GATE_Hmi2Reset(void);
 void GATE_Hmi2Stop(void);
+void GATE_GyroShutdown(void);
 void GATE_GyroReset(void);
 void GATE_GpsReset(void);
+void GATE_RemoteShutdown(void);
 void GATE_RemoteReset(void);
 void GATE_RemoteCSN(GPIO_PinState state);
 void GATE_RemoteCE(GPIO_PinState state);
+void GATE_FingerShutdown(void);
 void GATE_FingerReset(void);
 void GATE_FingerDigitalPower(GPIO_PinState state);
+void GATE_AudioShutdown(void);
 void GATE_AudioReset(void);
 void GATE_AudioCodecStop(void);
 void GATE_AudioCodecReset(void);

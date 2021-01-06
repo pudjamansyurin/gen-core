@@ -71,6 +71,7 @@ typedef struct {
 
 /* Public functions prototype -------------------------------------------------*/
 void AUDIO_Init(I2C_HandleTypeDef *hi2c, I2S_HandleTypeDef *hi2s);
+void AUDIO_DeInit(void);
 void AUDIO_Play(void);
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS);
 void AUDIO_BeepStop(void);

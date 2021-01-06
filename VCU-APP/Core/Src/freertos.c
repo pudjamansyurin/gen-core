@@ -749,6 +749,8 @@ void StartGyroTask(void *argument)
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  RTOS_ThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+  osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   /* MPU6050 Initialization*/
   GYRO_Init(&hi2c3);
@@ -758,8 +760,11 @@ void StartGyroTask(void *argument)
     VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
 
     // Check notifications
-    if (RTOS_ThreadFlagsWait(&notif, EVT_GYRO_REINIT, osFlagsWaitAny, 1000))
+    if (RTOS_ThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
+      GYRO_DeInit();
+      RTOS_ThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
       GYRO_Init(&hi2c3);
+    }
 
     // Read all accelerometer, gyroscope (average)
     movement = GYRO_Decision(50, &(VCU.d.motion));
@@ -787,26 +792,27 @@ void StartRemoteTask(void *argument)
   uint32_t notif;
   RF_CMD command;
 
-  // wait until ManagerTask done
+  // wait until needed
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  RTOS_ThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
+  osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   // initialization
   AES_Init(&hcryp);
   RF_Init(&(VCU.d.unit_id), &hspi1);
 
-  //  osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
   /* Infinite loop */
   for (;;) {
     VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
-    RF_Ping();
-    HMI1.d.state.unremote = RF_IsTimeout();
-
     // Check response
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
-      // handle reset key & id
-      if (notif & EVT_REMOTE_REINIT)
+      // handle threads management
+      if (notif & EVT_REMOTE_TASK_STOP) {
+        RF_DeInit();
+        RTOS_ThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
         RF_Init(&(VCU.d.unit_id), &hspi1);
+      }
 
       // handle Pairing
       if (notif & EVT_REMOTE_PAIRING)
@@ -838,6 +844,9 @@ void StartRemoteTask(void *argument)
       }
       // osThreadFlagsClear(EVT_MASK);
     }
+
+    RF_Ping();
+    HMI1.d.state.unremote = RF_IsTimeout();
   }
   /* USER CODE END StartRemoteTask */
 }
@@ -858,10 +867,12 @@ void StartFingerTask(void *argument)
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  RTOS_ThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
+  osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   // Initialisation
   FINGER_DMA_Init(&huart4, &hdma_uart4_rx);
-  Finger_Init();
+  FINGER_Init();
 
   /* Infinite loop */
   for (;;) {
@@ -870,11 +881,14 @@ void StartFingerTask(void *argument)
     // check if user put finger
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       // handle reset
-      if (notif & EVT_FINGER_REINIT)
-        Finger_Init();
+      if (notif & EVT_FINGER_TASK_STOP) {
+        FINGER_DeInit();
+        RTOS_ThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
+        FINGER_Init();
+      }
 
       if (notif & EVT_FINGER_PLACED) {
-        id = Finger_AuthFast();
+        id = FINGER_AuthFast();
         // Finger is registered
         if (id >= 0)
           VCU.SetDriver(id);
@@ -887,11 +901,11 @@ void StartFingerTask(void *argument)
         // get driver value
         if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
           if (notif & EVT_FINGER_ADD)
-            p = Finger_Enroll(driver);
+            p = FINGER_Enroll(driver);
           else if (notif & EVT_FINGER_DEL)
-            p = Finger_DeleteID(driver);
+            p = FINGER_DeleteID(driver);
           else if (notif & EVT_FINGER_RST)
-            p = Finger_EmptyDatabase();
+            p = FINGER_EmptyDatabase();
 
           // handle response
           osThreadFlagsSet(CommandTaskHandle, p ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
@@ -919,6 +933,8 @@ void StartAudioTask(void *argument)
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  RTOS_ThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
+  osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   /* Initialize Wave player (Codec, DMA, I2C) */
   AUDIO_Init(&hi2c1, &hi2s3);
@@ -929,8 +945,11 @@ void StartAudioTask(void *argument)
 
     // wait with timeout
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
-      if (notif & EVT_AUDIO_REINIT)
+      if (notif & EVT_AUDIO_TASK_STOP) {
+        AUDIO_DeInit();
+        RTOS_ThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
         AUDIO_Init(&hi2c1, &hi2s3);
+      }
 
       // Beep command
       if (notif & EVT_AUDIO_BEEP) {
@@ -1144,16 +1163,9 @@ void StartGateTask(void *argument)
 
       // Handle other EXTI interrupt
       // BMS Power IRQ
-      if (notif & EVT_GATE_REG_5V_IRQ) {
+      if (notif & EVT_GATE_REG_5V_IRQ)
         VCU.d.gpio.power5v = GATE_ReadPower5v();
 
-        if (VCU.d.gpio.power5v) {
-          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_REINIT);
-          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_REINIT);
-          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_REINIT);
-          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_REINIT);
-        }
-      }
     }
 
     // GATE Output Control

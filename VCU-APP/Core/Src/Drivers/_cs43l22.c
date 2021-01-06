@@ -43,10 +43,10 @@ static cs43l22_handler_t hCS = {
 };
 
 /* Private functions prototype ------------------------------------------------*/
-static void AUDIO_IO_Init(void);
-static void AUDIO_IO_DeInit(void);
-static void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
-static uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg);
+static void CODEC_Init(void);
+static void CODEC_DeInit(void);
+static void CODEC_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
+static uint8_t CODEC_Read(uint8_t Addr, uint8_t Reg);
 static void I2Cx_Error(uint8_t Addr);
 static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 static uint8_t VOLUME_CONVERT(uint8_t Volume);
@@ -66,7 +66,7 @@ uint32_t cs43l22_Init(I2C_HandleTypeDef *hi2c, uint16_t DeviceAddr, uint16_t Out
 	hCS.hi2c = hi2c;
 
 	/* Initialize the Control interface of the Audio Codec */
-	AUDIO_IO_Init();
+  CODEC_Init();
 
 	/* Keep Codec powered OFF */
 	counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL1, 0x01);
@@ -142,7 +142,7 @@ uint32_t cs43l22_Init(I2C_HandleTypeDef *hi2c, uint16_t DeviceAddr, uint16_t Out
  */
 void cs43l22_DeInit(void) {
 	/* Deinitialize Audio Codec interface */
-	AUDIO_IO_DeInit();
+  CODEC_DeInit();
 }
 
 /**
@@ -156,9 +156,9 @@ uint32_t cs43l22_ReadID(I2C_HandleTypeDef *hi2c, uint16_t DeviceAddr) {
 	hCS.hi2c = hi2c;
 
 	/* Initialize the Control interface of the Audio Codec */
-	AUDIO_IO_Init();
+  CODEC_Init();
 
-	Value = AUDIO_IO_Read(DeviceAddr, CS43L22_CHIPID_ADDR);
+  Value = CODEC_Read(DeviceAddr, CS43L22_CHIPID_ADDR);
 	Value = (Value & CS43L22_ID_MASK);
 
 	return ((uint32_t) Value);
@@ -403,15 +403,15 @@ uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix) {
 /**
  * @brief  Initializes Audio low level.
  */
-static void AUDIO_IO_Init(void) {
+static void CODEC_Init(void) {
   GATE_AudioCodecReset();
 }
 
 /**
  * @brief  DeInitializes Audio low level.
  */
-static void AUDIO_IO_DeInit(void) {
-
+static void CODEC_DeInit(void) {
+  GATE_AudioCodecStop();
 }
 
 /**
@@ -420,7 +420,7 @@ static void AUDIO_IO_DeInit(void) {
  * @param  Reg: Reg address
  * @param  Value: Data to be written
  */
-static void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
+static void CODEC_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
 	HAL_StatusTypeDef status = HAL_OK;
 
 	status = HAL_I2C_Mem_Write(hCS.hi2c, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &Value, 1, I2Cx_TIMEOUT_MAX);
@@ -437,7 +437,7 @@ static void AUDIO_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
  * @param  Reg: Reg address
  * @retval Data to be read
  */
-static uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
+static uint8_t CODEC_Read(uint8_t Addr, uint8_t Reg) {
 	HAL_StatusTypeDef status = HAL_OK;
 	uint8_t value = 0;
 
@@ -461,11 +461,11 @@ static uint8_t AUDIO_IO_Read(uint8_t Addr, uint8_t Reg) {
 static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
 	uint32_t result = 0;
 
-	AUDIO_IO_Write(Addr, Reg, Value);
+  CODEC_Write(Addr, Reg, Value);
 
 #ifdef VERIFY_WRITTENDATA
 	/* Verify that the data has been correctly written */
-	result = (AUDIO_IO_Read(Addr, Reg) == Value)? 0:1;
+	result = (CODEC_Read(Addr, Reg) == Value)? 0:1;
 #endif /* VERIFY_WRITTENDATA */
 
 	return result;

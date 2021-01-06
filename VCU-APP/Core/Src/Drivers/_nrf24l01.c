@@ -36,6 +36,11 @@ NRF_RESULT nrf_init(nrf24l01 *dev) {
   return NRF_OK;
 }
 
+void nrf_deinit(nrf24l01 *dev) {
+  GATE_RemoteShutdown();
+  HAL_SPI_MspDeInit(dev->config.spi);
+}
+
 // Checks the presence of the nRF24L01
 NRF_RESULT nrf_check(nrf24l01 *dev) {
   char *nRF24_TEST_ADDR = "nRF24";

@@ -58,9 +58,13 @@ void GATE_Hmi2Stop(void) {
   HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
 }
 
-void GATE_GyroReset(void) {
+void GATE_GyroShutdown(void) {
   HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(500);
+}
+
+void GATE_GyroReset(void) {
+  GATE_GyroShutdown();
   HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(500);
 }
@@ -71,9 +75,13 @@ void GATE_GpsReset(void) {
   HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_SET);
 }
 
-void GATE_RemoteReset(void) {
+void GATE_RemoteShutdown(void) {
   HAL_GPIO_WritePin(INT_REMOTE_PWR_GPIO_Port, INT_REMOTE_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(1000);
+}
+
+void GATE_RemoteReset(void) {
+  GATE_RemoteShutdown();
   HAL_GPIO_WritePin(INT_REMOTE_PWR_GPIO_Port, INT_REMOTE_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(1000);
 }
@@ -86,9 +94,12 @@ void GATE_RemoteCE(GPIO_PinState state) {
   HAL_GPIO_WritePin(INT_REMOTE_CE_GPIO_Port, INT_REMOTE_CE_Pin, state);
 }
 
-void GATE_FingerReset(void) {
+void GATE_FingerShutdown(void) {
   HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(500);
+}
+void GATE_FingerReset(void) {
+  GATE_FingerShutdown();
   HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(500);
 }
@@ -98,20 +109,24 @@ void GATE_FingerDigitalPower(GPIO_PinState state) {
   _DelayMS(500);
 }
 
-void GATE_AudioReset(void) {
+void GATE_AudioShutdown(void) {
   HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(500);
+}
+
+void GATE_AudioReset(void) {
+  GATE_AudioShutdown();
   HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(1000);
 }
 
 void GATE_AudioCodecStop(void) {
   HAL_GPIO_WritePin(INT_AUDIO_RST_GPIO_Port, INT_AUDIO_RST_Pin, GPIO_PIN_RESET);
+  _DelayMS(500);
 }
 
 void GATE_AudioCodecReset(void) {
   GATE_AudioCodecStop();
-  _DelayMS(500);
   HAL_GPIO_WritePin(INT_AUDIO_RST_GPIO_Port, INT_AUDIO_RST_Pin, GPIO_PIN_SET);
   _DelayMS(500);
 }

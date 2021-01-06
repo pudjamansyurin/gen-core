@@ -62,6 +62,7 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void GYRO_Init(I2C_HandleTypeDef *hi2c);
+void GYRO_DeInit(void);
 movement_t GYRO_Decision(uint16_t sample, motion_t *motion);
 void GYRO_Debugger(movement_t *movement);
 
