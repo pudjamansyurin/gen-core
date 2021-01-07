@@ -16,8 +16,7 @@
 extern osThreadId_t RemoteTaskHandle;
 
 /* Private variables -----------------------------------------------------------*/
-static nrf24l01 NRF;
-static rf_t RF = {
+static remote_t RF = {
     .tx = {
         .address = { 0x00, 0x00, 0x00, 0x00, 0xAB },
         .payload = { 0 },
@@ -26,9 +25,9 @@ static rf_t RF = {
         .address = { 0x00, 0x00, 0x00, 0x00, 0xCD },
         .payload = { 0 },
     },
-  .tick = {
-    .heartbeat = 0,
-    .pairing = 0,
+    .tick = {
+        .heartbeat = 0,
+        .pairing = 0,
     }
 };
 static const uint8_t COMMAND[3][8] = {
@@ -47,26 +46,14 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 void RF_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi) {
-  NRF.config.addr_width = NRF_ADDR_LENGTH - 2;
-  NRF.config.payload_length = NRF_DATA_LENGTH;
-  NRF.config.rx_buffer = NULL;
-
-  NRF.config.data_rate = NRF_DATA_RATE_250KBPS;
-  NRF.config.tx_power = NRF_TX_PWR_M18dBm;
-  NRF.config.crc_width = NRF_CRC_WIDTH_1B;
-  NRF.config.retransmit_count = 0x0F;   // maximum is 15 times
-  NRF.config.retransmit_delay = 0x0F; // 4000us, LSB:250us
-  NRF.config.rf_channel = 110;
-  NRF.config.spi = hspi;
-  NRF.config.spi_timeout = 3; // milliseconds
-
-  nrf_init(&NRF);
-  nrf_configure(&NRF);
+  nrf_param(hspi, RF.rx.payload);
+  nrf_init();
+  nrf_configure();
   ChangeMode(RF_MODE_NORMAL, unit_id);
 }
 
 void RF_DeInit(void) {
-  nrf_deinit(&NRF);
+  nrf_deinit();
 }
 
 uint8_t RF_Ping(void) {
@@ -74,7 +61,7 @@ uint8_t RF_Ping(void) {
 
   GenRandomNumber32((uint32_t*) RF.tx.payload, NRF_DATA_LENGTH / 4);
 
-  p = nrf_send_packet_noack(&NRF, RF.tx.payload);
+  p = nrf_send_packet_noack(RF.tx.payload);
 
   return (p == NRF_OK);
 }
@@ -94,11 +81,11 @@ uint8_t RF_Pairing(uint32_t *unit_id) {
   memcpy(&RF.tx.payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
 
   ChangeMode(RF_MODE_PAIRING, NULL);
-  p = nrf_send_packet_noack(&NRF, RF.tx.payload);
+  p = nrf_send_packet_noack(RF.tx.payload);
 
   // back to normal
-  nrf_init(&NRF);
-  nrf_configure(&NRF);
+  nrf_init();
+  nrf_configure();
   ChangeMode(RF_MODE_NORMAL, unit_id);
 
   return (p == NRF_OK);
@@ -165,7 +152,7 @@ uint8_t RF_GotPairedResponse(void) {
 }
 
 void RF_IrqHandler(void) {
-  nrf_irq_handler(&NRF);
+  nrf_irq_handler();
 }
 
 void RF_PacketReceived(uint8_t *data) {
@@ -184,25 +171,22 @@ static void SetAesPayload(uint32_t *aes) {
 }
 
 static void ChangeMode(RF_MODE mode, uint32_t *unit_id) {
+  uint8_t payload_width;
+
   if (mode == RF_MODE_NORMAL) {
     // use VCU_ID as address
     memcpy(RF.tx.address, unit_id, 4);
     memcpy(RF.rx.address, unit_id, 4);
-    NRF.config.payload_length = NRF_DATA_LENGTH;
+    payload_width = NRF_DATA_LENGTH;
   } else {
     // Set Address (pairing mode)
     memset(RF.tx.address, 0x00, 4);
     memset(RF.rx.address, 0x00, 4);
-    NRF.config.payload_length = NRF_DATA_PAIR_LENGTH;
+    payload_width = NRF_DATA_PAIR_LENGTH;
   }
 
-  // set configuration
-  NRF.config.tx_address = RF.tx.address;
-  NRF.config.rx_address = RF.rx.address;
-  NRF.config.rx_buffer = RF.rx.payload;
-
   // Set NRF Config (pairing mode)
-  nrf_change_mode(&NRF);
+  nrf_change_mode(RF.tx.address, RF.rx.address, payload_width);
 }
 
 static uint8_t Payload(RF_ACTION action, uint8_t *payload) {

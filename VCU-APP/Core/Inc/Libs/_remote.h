@@ -12,41 +12,41 @@
 #include "Drivers/_nrf24l01.h"
 
 /* Exported define -----------------------------------------------------------*/
-#define NRF_DATA_LENGTH		    (uint8_t) 16									// Max: 32 bytes
+#define NRF_DATA_LENGTH	  	    (uint8_t) 16									// Max: 32 bytes
 #define NRF_ADDR_LENGTH         (uint8_t) 5                                    // Range 3:5
 #define NRF_DATA_PAIR_LENGTH    (uint8_t) (NRF_DATA_LENGTH + NRF_ADDR_LENGTH)
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-    RF_CMD_PING = 0,
-    RF_CMD_ALARM,
-    RF_CMD_SEAT
+  RF_CMD_PING = 0,
+  RF_CMD_ALARM,
+  RF_CMD_SEAT
 } RF_CMD;
 
 typedef enum {
-    RF_ACTION_R = 0, RF_ACTION_W
+  RF_ACTION_R = 0, RF_ACTION_W
 } RF_ACTION;
 
 typedef enum {
-	RF_MODE_NORMAL = 0,
-	RF_MODE_PAIRING
+  RF_MODE_NORMAL = 0,
+  RF_MODE_PAIRING
 } RF_MODE;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-    struct {
-        uint8_t address[NRF_ADDR_LENGTH ];
-        uint8_t payload[NRF_DATA_PAIR_LENGTH ];
-    } tx;
-    struct {
-        uint8_t address[NRF_ADDR_LENGTH ];
-        uint8_t payload[NRF_DATA_PAIR_LENGTH ];
-    } rx;
+  struct {
+    uint8_t address[NRF_ADDR_LENGTH ];
+    uint8_t payload[NRF_DATA_PAIR_LENGTH ];
+  } tx;
+  struct {
+    uint8_t address[NRF_ADDR_LENGTH ];
+    uint8_t payload[NRF_DATA_PAIR_LENGTH ];
+  } rx;
   struct {
     uint32_t heartbeat;
     uint32_t pairing;
   } tick;
-} rf_t;
+} remote_t;
 
 /* Public functions prototype ------------------------------------------------*/
 void RF_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi);

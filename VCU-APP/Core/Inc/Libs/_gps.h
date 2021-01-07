@@ -17,14 +17,14 @@
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-	nmea_float_t dop_h;
-	nmea_float_t dop_v;
-	nmea_float_t altitude;
-	nmea_float_t latitude;
-	nmea_float_t longitude;
-	nmea_float_t heading;
-	nmea_float_t speed_kph;
-	nmea_float_t speed_mps;
+  float dop_h;
+  float dop_v;
+  float altitude;
+  float latitude;
+  float longitude;
+  float heading;
+  float speed_kph;
+  float speed_mps;
   uint8_t sat_in_use;
   uint8_t fix;
 } gps_t;
