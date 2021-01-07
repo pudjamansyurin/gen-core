@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+source ./credential.env
 
 SRC_BIN_FILE="../VCU-APP/Release/VCU-APP.bin"
 APP_BIN_FILE="APP.bin"
@@ -21,7 +23,7 @@ echo "Combine checksum to binary file..."
 cat $CRC_BIN_FILE $APP_BIN_FILE > $CRC_APP_FILE
 
 echo "FTP binary uploading..."
-curl -T $CRC_APP_FILE ftp://ftp.genmotorcycles.com/vcu/ --user 'fota@genmotorcycles.com:@Garda313' || exit 1
+curl -T $CRC_APP_FILE ftp://ftp.genmotorcycles.com/vcu/ --user "$USERNAME:$PASSWORD" || exit 1
 
 echo "FTP done, ready for FOTA."
 
