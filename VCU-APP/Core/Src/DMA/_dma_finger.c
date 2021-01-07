@@ -7,7 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "DMA/_dma_finger.h"
-#include "Libs/_usart_ring.h"
 
 /* Public variables -----------------------------------------------------------*/
 char FINGER_UART_RX[FINGER_UART_RX_SZ];
@@ -36,6 +35,10 @@ void FINGER_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	FINGER_RING.huart = huart;
 	FINGER_RING.hdma = hdma;
 	USART_DMA_Init(&FINGER_RING);
+}
+
+void FINGER_DMA_DeInit(void) {
+  USART_DMA_DeInit(&FINGER_RING);
 }
 
 void FINGER_DMA_IrqHandler(void) {

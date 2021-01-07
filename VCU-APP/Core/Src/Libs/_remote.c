@@ -57,17 +57,12 @@ void RF_DeInit(void) {
 }
 
 uint8_t RF_Ping(void) {
-  NRF_RESULT p;
-
   GenRandomNumber32((uint32_t*) RF.tx.payload, NRF_DATA_LENGTH / 4);
 
-  p = nrf_send_packet_noack(RF.tx.payload);
-
-  return (p == NRF_OK);
+  return (nrf_send_packet_noack(RF.tx.payload) == NRF_OK);
 }
 
-uint8_t RF_Pairing(uint32_t *unit_id) {
-  NRF_RESULT p = NRF_ERROR;
+void RF_Pairing(uint32_t *unit_id) {
   uint32_t aes[4];
 
   RF.tick.pairing = _GetTickMS();
@@ -81,14 +76,12 @@ uint8_t RF_Pairing(uint32_t *unit_id) {
   memcpy(&RF.tx.payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
 
   ChangeMode(RF_MODE_PAIRING, NULL);
-  p = nrf_send_packet_noack(RF.tx.payload);
+  nrf_send_packet_noack(RF.tx.payload);
 
   // back to normal
   nrf_init();
   nrf_configure();
   ChangeMode(RF_MODE_NORMAL, unit_id);
-
-  return (p == NRF_OK);
 }
 
 uint8_t RF_ValidateCommand(RF_CMD *cmd) {

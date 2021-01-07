@@ -712,8 +712,7 @@ void StartGpsTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Initialize
-  UBLOX_DMA_Init(&huart2, &hdma_usart2_rx);
-  GPS_Init();
+  GPS_Init(&huart2, &hdma_usart2_rx);
 
   /* Infinite loop */
   for (;;) {
@@ -871,8 +870,7 @@ void StartFingerTask(void *argument)
   osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   // Initialisation
-  FINGER_DMA_Init(&huart4, &hdma_uart4_rx);
-  FINGER_Init();
+  FINGER_Init(&huart4, &hdma_uart4_rx);
 
   /* Infinite loop */
   for (;;) {
@@ -884,7 +882,7 @@ void StartFingerTask(void *argument)
       if (notif & EVT_FINGER_TASK_STOP) {
         FINGER_DeInit();
         RTOS_ThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
-        FINGER_Init();
+        FINGER_Init(&huart4, &hdma_uart4_rx);
       }
 
       if (notif & EVT_FINGER_PLACED) {

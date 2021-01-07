@@ -45,8 +45,8 @@ NRF_RESULT nrf_init(void) {
     GATE_RemoteReset();
 
     // reset peripheral
-    HAL_SPI_MspDeInit(NRF.config.spi);
-    HAL_SPI_MspInit(NRF.config.spi);
+    HAL_SPI_DeInit(NRF.config.spi);
+    HAL_SPI_Init(NRF.config.spi);
 
     result = nrf_check();
   } while (result == NRF_ERROR);
@@ -56,7 +56,7 @@ NRF_RESULT nrf_init(void) {
 
 void nrf_deinit(void) {
   GATE_RemoteShutdown();
-  HAL_SPI_MspDeInit(NRF.config.spi);
+  HAL_SPI_DeInit(NRF.config.spi);
 }
 
 // Checks the presence of the nRF24L01
@@ -71,12 +71,10 @@ NRF_RESULT nrf_check(void) {
   nrf_read_register_mb(NRF_TX_ADDR, rxbuf, sizeof(nRF24_TEST_ADDR) - 1U);
 
   // Compare transmitted and received data...
-  for (uint8_t idx = 0U; idx < sizeof(nRF24_TEST_ADDR) - 1U; idx++) {
-    if (rxbuf[idx] != *ptr++) {
+  for (uint8_t idx = 0U; idx < sizeof(nRF24_TEST_ADDR) - 1U; idx++)
+    if (rxbuf[idx] != *ptr++)
       // The transceiver is absent
       return NRF_ERROR;
-    }
-  }
 
   // The transceiver is present
   return NRF_OK;
@@ -100,9 +98,8 @@ NRF_RESULT nrf_configure(void) {
   nrf_power_up(1);
 
   // wait for powerup
-  while ((config_reg & 2) == 0) {
+  while ((config_reg & 2) == 0)
     nrf_read_register(NRF_CONFIG, &config_reg);
-  }
 
   // address width
   nrf_set_address_width(NRF.config.addr_width);

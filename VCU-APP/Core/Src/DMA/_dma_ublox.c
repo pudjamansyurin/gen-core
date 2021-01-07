@@ -7,7 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "DMA/_dma_ublox.h"
-#include "Libs/_usart_ring.h"
 
 /* Public variables -----------------------------------------------------------*/
 char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
@@ -36,6 +35,10 @@ void UBLOX_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	GPS_RING.huart = huart;
 	GPS_RING.hdma = hdma;
 	USART_DMA_Init(&GPS_RING);
+}
+
+void UBLOX_DMA_DeInit(void) {
+  USART_DMA_DeInit(&GPS_RING);
 }
 
 void UBLOX_DMA_IrqHandler(void) {

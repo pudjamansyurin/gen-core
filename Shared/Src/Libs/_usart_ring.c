@@ -20,6 +20,10 @@ void USART_DMA_Init(usart_ring_t *ring) {
 	HAL_UART_Receive_DMA(ring->huart, (uint8_t*) (ring->dma.buf), ring->dma.sz);
 }
 
+void USART_DMA_DeInit(usart_ring_t *ring) {
+  HAL_UART_DMAStop(ring->huart);
+}
+
 void USART_DMA_IrqHandler(usart_ring_t *ring) {
 	// if the source is HT
 	if (__HAL_DMA_GET_IT_SOURCE(ring->hdma, DMA_IT_HT)) {

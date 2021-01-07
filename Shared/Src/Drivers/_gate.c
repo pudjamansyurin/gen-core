@@ -18,10 +18,15 @@ void GATE_LedToggle(void) {
   HAL_GPIO_TogglePin(SYS_LED_GPIO_Port, SYS_LED_Pin);
 }
 
-void GATE_SimcomReset(void) {
+void GATE_SimcomShutdown(void) {
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(1000);
+}
+
+void GATE_SimcomReset(void) {
+  GATE_SimcomShutdown();
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, GPIO_PIN_RESET);
+  _DelayMS(50);
 }
 
 void GATE_SimcomSoftReset(void) {
@@ -69,10 +74,15 @@ void GATE_GyroReset(void) {
   _DelayMS(500);
 }
 
-void GATE_GpsReset(void) {
+void GATE_GpsShutdown(void) {
   HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(500);
+}
+
+void GATE_GpsReset(void) {
+  GATE_GpsShutdown();
   HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_SET);
+  _DelayMS(50);
 }
 
 void GATE_RemoteShutdown(void) {

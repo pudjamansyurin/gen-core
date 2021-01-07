@@ -33,13 +33,15 @@ sim_t SIM = {
 };
 
 /* Private variables ---------------------------------------------------------*/
+static UART_HandleTypeDef *uart;
+
 #if (!BOOTLOADER)
 extern osMessageQueueId_t CommandQueueHandle;
 #endif
 
 /* Private functions prototype -----------------------------------------------*/
 static SIMCOM_RESULT Ready(void);
-static SIMCOM_RESULT Power(void);
+static SIMCOM_RESULT PowerUp(void);
 static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res);
 static void BeforeTransmitHook(void);
 //static void SimcomDebugger(void);
@@ -69,8 +71,17 @@ char* Simcom_Response(char *str) {
 }
 
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+  uart = huart;
+  HAL_UART_Init(huart);
   SIMCOM_DMA_Init(huart, hdma);
+
   Simcom_SetState(SIM_STATE_READY, 0);
+}
+
+void Simcom_DeInit(void) {
+  GATE_SimcomShutdown();
+  SIMCOM_DMA_DeInit();
+  HAL_UART_DeInit(uart);
 }
 
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
@@ -98,7 +109,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
         LOG_StrLn("Simcom:Init");
 
         // power up the module
-        p = Power();
+        p = PowerUp();
 
         // upgrade simcom state
         if (p > 0) {
@@ -570,7 +581,7 @@ static SIMCOM_RESULT Ready(void) {
   return Simcom_Command(SIMCOM_CMD_BOOT, SIMCOM_RSP_READY, 1000, 0);
 }
 
-static SIMCOM_RESULT Power(void) {
+static SIMCOM_RESULT PowerUp(void) {
   LOG_StrLn("Simcom:Powered");
   SIMCOM_Reset_Buffer();
 

@@ -34,6 +34,7 @@ typedef struct {
 
 /* Public functions implementation --------------------------------------------*/
 void USART_DMA_Init(usart_ring_t *ring);
+void USART_DMA_DeInit(usart_ring_t *ring);
 void USART_DMA_IrqHandler(usart_ring_t *ring);
 void USART_IrqHandler(usart_ring_t *ring);
 void USART_Check_Buffer(usart_ring_t *ring);

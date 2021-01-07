@@ -40,6 +40,10 @@ void SIMCOM_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	USART_DMA_Init(&SIMCOM_RING);
 }
 
+void SIMCOM_DMA_DeInit(void) {
+  USART_DMA_DeInit(&SIMCOM_RING);
+}
+
 void SIMCOM_DMA_IrqHandler(void) {
 	USART_DMA_IrqHandler(&SIMCOM_RING);
 }

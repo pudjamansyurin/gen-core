@@ -20,6 +20,7 @@ extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 
 /* Public functions prototype ------------------------------------------------*/
 void SIMCOM_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
+void SIMCOM_DMA_DeInit(void);
 void SIMCOM_USART_IrqHandler(void);
 void SIMCOM_DMA_IrqHandler(void);
 void SIMCOM_Reset_Buffer(void);

@@ -30,7 +30,7 @@ typedef struct {
 } gps_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void GPS_Init(void);
+void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 uint8_t GPS_Capture(gps_t *gps);
 uint8_t GPS_CalculateOdometer(gps_t *gps);
 uint8_t GPS_CalculateSpeed(gps_t *gps);

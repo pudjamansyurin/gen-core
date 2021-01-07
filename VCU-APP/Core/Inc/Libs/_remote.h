@@ -52,7 +52,7 @@ typedef struct {
 void RF_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi);
 void RF_DeInit(void);
 uint8_t RF_Ping(void);
-uint8_t RF_Pairing(uint32_t *unit_id);
+void RF_Pairing(uint32_t *unit_id);
 void RF_Debugger(void);
 uint8_t RF_ValidateCommand(RF_CMD *cmd);
 void RF_GenerateAesKey(uint32_t *aes);

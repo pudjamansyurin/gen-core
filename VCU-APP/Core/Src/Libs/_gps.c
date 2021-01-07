@@ -11,10 +11,15 @@
 
 /* Private variables ----------------------------------------------------------*/
 static nmea_t nmea;
+static UART_HandleTypeDef *uart;
 
 /* Public functions implementation --------------------------------------------*/
-void GPS_Init(void) {
+void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	uint32_t tick;
+
+  uart = huart;
+  HAL_UART_Init(huart);
+  UBLOX_DMA_Init(huart, hdma);
 
 	// Inititalize Module
 	do {
@@ -32,6 +37,12 @@ void GPS_Init(void) {
 	} while (strlen(UBLOX_UART_RX) <= 50);
 
 	nmea_init(&nmea);
+}
+
+void GPS_DeInit(void) {
+  GATE_GpsShutdown();
+  UBLOX_DMA_DeInit();
+  HAL_UART_DeInit(uart);
 }
 
 uint8_t GPS_Capture(gps_t *gps) {

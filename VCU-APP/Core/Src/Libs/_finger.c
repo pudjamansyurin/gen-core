@@ -12,6 +12,9 @@
 /* External variables ---------------------------------------------------------*/
 //extern osMutexId_t FingerRecMutexHandle;
 
+/* Private variables ----------------------------------------------------------*/
+static UART_HandleTypeDef *uart;
+
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);
 static void unlock(void);
@@ -19,8 +22,12 @@ static void ConvertImage(uint8_t *error);
 static void GetImage(uint8_t *error, uint8_t enroll);
 
 /* Public functions implementation --------------------------------------------*/
-void FINGER_Init(void) {
+void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	uint8_t verified = 0;
+
+  uart = huart;
+  HAL_UART_Init(huart);
+  FINGER_DMA_Init(huart, hdma);
 
 	// Inititalize Module
 	do {
@@ -40,6 +47,8 @@ void FINGER_Init(void) {
 
 void FINGER_DeInit(void) {
   GATE_FingerShutdown();
+  FINGER_DMA_DeInit();
+  HAL_UART_DeInit(uart);
 }
 
 uint8_t FINGER_Enroll(uint8_t id) {

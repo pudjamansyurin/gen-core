@@ -14,6 +14,7 @@
 /* Public functions prototype ------------------------------------------------*/
 void GATE_LedWrite(GPIO_PinState state);
 void GATE_LedToggle(void);
+void GATE_SimcomShutdown(void);
 void GATE_SimcomReset(void);
 void GATE_SimcomSoftReset(void);
 void GATE_SimcomSleep(GPIO_PinState state);
@@ -25,6 +26,7 @@ void GATE_Hmi2Reset(void);
 void GATE_Hmi2Stop(void);
 void GATE_GyroShutdown(void);
 void GATE_GyroReset(void);
+void GATE_GpsShutdown(void);
 void GATE_GpsReset(void);
 void GATE_RemoteShutdown(void);
 void GATE_RemoteReset(void);

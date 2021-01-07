@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Libs/_usart_ring.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define FINGER_UART_RX_SZ    (uint16_t) 256
@@ -20,6 +21,7 @@ extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
 
 /* Public functions prototype ------------------------------------------------*/
 void FINGER_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
+void FINGER_DMA_DeInit(void);
 void FINGER_DMA_IrqHandler(void);
 void FINGER_USART_IrqHandler(void);
 void FINGER_Reset_Buffer(void);

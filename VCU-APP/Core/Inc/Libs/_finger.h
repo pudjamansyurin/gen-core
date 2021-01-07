@@ -13,7 +13,7 @@
 #include "Libs/_utils.h"
 
 /* Public functions prototype ------------------------------------------------*/
-void FINGER_Init(void);
+void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 void FINGER_DeInit(void);
 uint8_t FINGER_Enroll(uint8_t id);
 uint8_t FINGER_DeleteID(uint8_t id);
