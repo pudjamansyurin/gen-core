@@ -133,11 +133,8 @@ void VCU_CheckVehicleState(void) {
           VCU.d.tick.independent = _GetTickMS();
           VCU.d.interval = RPT_INTERVAL_BACKUP;
 
-          //          if (osThreadGetState(RemoteTaskHandle) != osThreadBlocked)
           osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
-          //          if (osThreadGetState(AudioTaskHandle) != osThreadBlocked)
           osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
-          //          if (osThreadGetState(GyroTaskHandle) != osThreadBlocked)
           osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
         }
 
@@ -153,13 +150,9 @@ void VCU_CheckVehicleState(void) {
           VCU.d.interval = RPT_INTERVAL_NORMAL;
           VCU.d.state.override = VEHICLE_NORMAL;
 
-          //          if (osThreadGetState(RemoteTaskHandle) == osThreadBlocked)
           osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
-          //          if (osThreadGetState(AudioTaskHandle) == osThreadBlocked)
           osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
-          //          if (osThreadGetState(GyroTaskHandle) == osThreadBlocked)
           osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_START);
-          //          if (osThreadGetState(FingerTaskHandle) != osThreadBlocked)
           osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
         }
 
@@ -175,7 +168,6 @@ void VCU_CheckVehicleState(void) {
           lastState = VEHICLE_STANDBY;
           VCU.SetDriver(DRIVER_ID_NONE);
 
-          //          if (osThreadGetState(FingerTaskHandle) == osThreadBlocked)
           osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_START);
         }
 
@@ -213,7 +205,7 @@ void VCU_CheckVehicleState(void) {
             || VCU.d.state.override == VEHICLE_READY)
           VCU.d.state.vehicle--;
         else if ((VCU.d.gpio.starter && VCU.d.speed == 0)
-            || (HMI1.d.state.unfinger && !VCU.d.state.override)
+            || (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY)
             || VCU.d.state.override == VEHICLE_STANDBY)
           VCU.d.state.vehicle -= 2;
         break;
@@ -284,7 +276,7 @@ uint8_t VCU_CAN_TX_MixedData(hbar_runner_t *runner) {
   TxData.u8[1] = BMS.d.soc;
   TxData.u8[2] = VCU.d.speed; //runner->mode.d.report[HBAR_M_REPORT_RANGE];
   TxData.u8[3] = runner->mode.d.report[HBAR_M_REPORT_AVERAGE];
-  TxData.u32[1] = VCU.d.gps.dop_h; // VCU.d.odometer;
+  TxData.u32[1] = VCU.d.odometer;
 
   // send message
   return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 8);

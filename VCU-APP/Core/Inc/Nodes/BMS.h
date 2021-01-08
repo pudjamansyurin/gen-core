@@ -31,6 +31,7 @@ typedef struct {
     uint8_t soc;
     uint8_t overheat;
     uint8_t warning;
+  uint8_t error;
     struct {
         uint32_t id;
         float voltage;

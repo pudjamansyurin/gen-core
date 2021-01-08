@@ -148,10 +148,10 @@ void GATE_FanBMS(GPIO_PinState state) {
 void GATE_HornToggle(uint8_t *hazard) {
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_SET);
   *hazard = GPIO_PIN_SET;
-  _DelayMS(200);
+  _DelayMS(1000);
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_RESET);
   *hazard = GPIO_PIN_RESET;
-  _DelayMS(100);
+  _DelayMS(1000);
 }
 
 void GATE_SeatToggle(void) {

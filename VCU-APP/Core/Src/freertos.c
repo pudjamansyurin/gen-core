@@ -414,7 +414,7 @@ void StartManagerTask(void *argument)
     HMI1.d.state.overheat = BMS.d.overheat;
     HMI1.d.state.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
     HMI1.d.state.warning = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
-    VCU.d.state.error = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
+    VCU.d.state.error = BMS.d.error || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
 
     // Vehicle states
     VCU_CheckVehicleState();
@@ -831,6 +831,7 @@ void StartRemoteTask(void *argument)
             LOG_StrLn("NRF:Command = PING");
           else if (command == RF_CMD_SEAT) {
             LOG_StrLn("NRF:Command = SEAT");
+            VCU.d.gpio.starter = 1;         // FIXME: use real starter button
             GATE_SeatToggle();
           }
           else if (command == RF_CMD_ALARM) {
@@ -888,8 +889,12 @@ void StartFingerTask(void *argument)
       if (notif & EVT_FINGER_PLACED) {
         id = FINGER_AuthFast();
         // Finger is registered
-        if (id >= 0)
-          VCU.SetDriver(id);
+        if (id >= 0) {
+          if (HMI1.d.state.unfinger)
+            VCU.SetDriver(id);
+          else
+            VCU.SetDriver(DRIVER_ID_NONE);
+        }
 
         // Handle bounce effect
         _DelayMS(2000);

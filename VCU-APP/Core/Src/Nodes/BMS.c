@@ -37,6 +37,7 @@ bms_t BMS = {
 void BMS_Init(void) {
   BMS.d.started = 0;
   BMS.d.soc = 0;
+  BMS.d.error = 0;
   BMS.d.overheat = 0;
   BMS.d.warning = 0;
 
@@ -129,16 +130,18 @@ void BMS_SetEvents(uint16_t flag) {
   BMS.d.overheat = VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
       VCU.ReadEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE) ||
       VCU.ReadEvent(EV_BMS_CHARGE_OVER_TEMPERATURE) ||
-      VCU.ReadEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE) ||
-      VCU.ReadEvent(EV_BMS_WARNING_OVER_TEMPERATURE);
-  BMS.d.warning = VCU.ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
+      VCU.ReadEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE);
+  BMS.d.error = BMS.d.overheat ||
+      VCU.ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
       VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_CURRENT) ||
       VCU.ReadEvent(EV_BMS_CHARGE_OVER_CURRENT) ||
       VCU.ReadEvent(EV_BMS_UNBALANCE) ||
       VCU.ReadEvent(EV_BMS_UNDER_VOLTAGE) ||
       VCU.ReadEvent(EV_BMS_OVER_VOLTAGE) ||
       VCU.ReadEvent(EV_BMS_OVER_DISCHARGE_CAPACITY) ||
-      VCU.ReadEvent(EV_BMS_SYSTEM_FAILURE) ||
+      VCU.ReadEvent(EV_BMS_SYSTEM_FAILURE);
+  BMS.d.warning = VCU.ReadEvent(EV_BMS_WARNING_OVER_TEMPERATURE) ||
+      VCU.ReadEvent(EV_BMS_WARNING_OVER_TEMPERATURE) ||
       VCU.ReadEvent(EV_BMS_WARNING_OVER_CURRENT) ||
       VCU.ReadEvent(EV_BMS_WARNING_UNDER_VOLTAGE) ||
       VCU.ReadEvent(EV_BMS_WARNING_UNBALANCE);

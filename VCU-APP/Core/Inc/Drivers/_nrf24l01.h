@@ -11,6 +11,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
+/* Exported define -----------------------------------------------------------*/
+#define NRF_DATA_LENGTH         (uint8_t) 16                  // Max: 32 bytes
+#define NRF_ADDR_LENGTH         (uint8_t) 5                                    // Range 3:5
+#define NRF_DATA_PAIR_LENGTH    (uint8_t) (NRF_DATA_LENGTH + NRF_ADDR_LENGTH)
+
 /* Exported enum ---------------------------------------------------------------*/
 /* Registers */
 typedef enum {
