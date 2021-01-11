@@ -110,7 +110,7 @@ void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version) {
 
   if (versionNew && (versionOld != versionNew)) {
     sprintf(message,
-        "%s Upgraded %d -> %d",
+        "%s Upgraded v.%d -> v.%d",
         node,
         versionOld,
         versionNew

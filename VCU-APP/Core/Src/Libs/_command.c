@@ -20,9 +20,8 @@ extern osThreadId_t RemoteTaskHandle;
 /* Public functions implementation --------------------------------------------*/
 void CMD_GenInfo(response_t *resp) {
   sprintf(resp->data.message,
-      "VCU v%d.%d, "VCU_VENDOR" @ 20%d",
-      _R8(VCU_VERSION, 8),
-      _R8(VCU_VERSION, 0),
+      "VCU v.%d, "VCU_VENDOR" @ 20%d",
+      VCU_VERSION,
       VCU_BUILD_YEAR);
 }
 
