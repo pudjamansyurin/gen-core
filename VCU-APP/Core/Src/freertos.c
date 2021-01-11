@@ -234,7 +234,7 @@ const osEventFlagsAttr_t GlobalEvent_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+static void CheckWakeupRTOS(rtos_task_t *rtos);
 /* USER CODE END FunctionPrototypes */
 
 void StartManagerTask(void *argument);
@@ -411,28 +411,16 @@ void StartManagerTask(void *argument)
     lastWake = _GetTickMS();
 
     // Other stuffs
+    VCU.d.state.error = BMS.d.error || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
     HMI1.d.state.overheat = BMS.d.overheat;
     HMI1.d.state.daylight = RTC_IsDaylight(VCU.d.rtc.timestamp);
-    HMI1.d.state.warning = BMS.d.warning || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
-    VCU.d.state.error = BMS.d.error || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
+    HMI1.d.state.warning = BMS.d.warning || VCU.d.state.error;
 
     // Vehicle states
     VCU_CheckVehicleState();
 
     // RTOS_Debugger(1000);
-    VCU.d.task.manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
-    VCU.d.task.iot.stack = osThreadGetStackSpace(IotTaskHandle);
-    VCU.d.task.reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
-    VCU.d.task.command.stack = osThreadGetStackSpace(CommandTaskHandle);
-    VCU.d.task.gps.stack = osThreadGetStackSpace(GpsTaskHandle);
-    VCU.d.task.gyro.stack = osThreadGetStackSpace(GyroTaskHandle);
-    VCU.d.task.remote.stack = osThreadGetStackSpace(RemoteTaskHandle);
-    VCU.d.task.finger.stack = osThreadGetStackSpace(FingerTaskHandle);
-    VCU.d.task.audio.stack = osThreadGetStackSpace(AudioTaskHandle);
-    VCU.d.task.gate.stack = osThreadGetStackSpace(GateTaskHandle);
-    VCU.d.task.canRx.stack = osThreadGetStackSpace(CanRxTaskHandle);
-    VCU.d.task.canTx.stack = osThreadGetStackSpace(CanTxTaskHandle);
-    VCU.d.task.hmi2Power.stack = osThreadGetStackSpace(Hmi2PowerTaskHandle);
+    CheckWakeupRTOS(&(VCU.d.task));
 
     // _DummyDataGenerator();
     BAT_ScanValue(&(VCU.d.bat));
@@ -1180,6 +1168,22 @@ void StartGateTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+static void CheckWakeupRTOS(rtos_task_t *rtos) {
+  rtos->manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
+  rtos->iot.stack = osThreadGetStackSpace(IotTaskHandle);
+  rtos->reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
+  rtos->command.stack = osThreadGetStackSpace(CommandTaskHandle);
+  rtos->gps.stack = osThreadGetStackSpace(GpsTaskHandle);
+  rtos->gyro.stack = osThreadGetStackSpace(GyroTaskHandle);
+  rtos->remote.stack = osThreadGetStackSpace(RemoteTaskHandle);
+  rtos->finger.stack = osThreadGetStackSpace(FingerTaskHandle);
+  rtos->audio.stack = osThreadGetStackSpace(AudioTaskHandle);
+  rtos->gate.stack = osThreadGetStackSpace(GateTaskHandle);
+  rtos->canRx.stack = osThreadGetStackSpace(CanRxTaskHandle);
+  rtos->canTx.stack = osThreadGetStackSpace(CanTxTaskHandle);
+  rtos->hmi2Power.stack = osThreadGetStackSpace(Hmi2PowerTaskHandle);
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (osKernelGetState() != osKernelRunning)
     return;
