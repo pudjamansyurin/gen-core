@@ -234,7 +234,8 @@ const osEventFlagsAttr_t GlobalEvent_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-static void CheckWakeupRTOS(rtos_task_t *rtos);
+static void CheckTaskState(rtos_task_t *rtos);
+static void CheckVehicleState(void);
 /* USER CODE END FunctionPrototypes */
 
 void StartManagerTask(void *argument);
@@ -417,10 +418,10 @@ void StartManagerTask(void *argument)
     HMI1.d.state.warning = BMS.d.warning || VCU.d.state.error;
 
     // Vehicle states
-    VCU_CheckVehicleState();
+    CheckVehicleState();
 
     // RTOS_Debugger(1000);
-    CheckWakeupRTOS(&(VCU.d.task));
+    CheckTaskState(&(VCU.d.task));
 
     // _DummyDataGenerator();
     BAT_ScanValue(&(VCU.d.bat));
@@ -1168,22 +1169,6 @@ void StartGateTask(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-static void CheckWakeupRTOS(rtos_task_t *rtos) {
-  rtos->manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
-  rtos->iot.stack = osThreadGetStackSpace(IotTaskHandle);
-  rtos->reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
-  rtos->command.stack = osThreadGetStackSpace(CommandTaskHandle);
-  rtos->gps.stack = osThreadGetStackSpace(GpsTaskHandle);
-  rtos->gyro.stack = osThreadGetStackSpace(GyroTaskHandle);
-  rtos->remote.stack = osThreadGetStackSpace(RemoteTaskHandle);
-  rtos->finger.stack = osThreadGetStackSpace(FingerTaskHandle);
-  rtos->audio.stack = osThreadGetStackSpace(AudioTaskHandle);
-  rtos->gate.stack = osThreadGetStackSpace(GateTaskHandle);
-  rtos->canRx.stack = osThreadGetStackSpace(CanRxTaskHandle);
-  rtos->canTx.stack = osThreadGetStackSpace(CanTxTaskHandle);
-  rtos->hmi2Power.stack = osThreadGetStackSpace(Hmi2PowerTaskHandle);
-}
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (osKernelGetState() != osKernelRunning)
     return;
@@ -1210,6 +1195,132 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == HBAR.list[i].pin)
       osThreadFlagsSet(GateTaskHandle, EVT_GATE_HBAR);
 }
+
+static void CheckVehicleState(void) {
+  static vehicle_state_t lastState = VEHICLE_UNKNOWN;
+  vehicle_state_t initialState;
+
+  do {
+    initialState = VCU.d.state.vehicle;
+
+    switch (VCU.d.state.vehicle) {
+      case VEHICLE_LOST:
+        if (lastState != VEHICLE_LOST) {
+          lastState = VEHICLE_LOST;
+
+          VCU.d.interval = RPT_INTERVAL_LOST;
+        }
+
+        if (VCU.d.gpio.power5v)
+          VCU.d.state.vehicle += 2;
+        break;
+
+      case VEHICLE_BACKUP:
+        if (lastState != VEHICLE_BACKUP) {
+          lastState = VEHICLE_BACKUP;
+
+          VCU.d.tick.independent = _GetTickMS();
+          VCU.d.interval = RPT_INTERVAL_BACKUP;
+
+          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
+          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
+          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
+        }
+
+        if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.gpio.power5v)
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_NORMAL:
+        if (lastState != VEHICLE_NORMAL) {
+          lastState = VEHICLE_NORMAL;
+          VCU.d.interval = RPT_INTERVAL_NORMAL;
+          VCU.d.state.override = VEHICLE_NORMAL;
+
+          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
+          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
+          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_START);
+          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
+        }
+
+        if (!VCU.d.gpio.power5v)
+          VCU.d.state.vehicle--;
+        else if (VCU.d.gpio.knob
+            && (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY))
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_STANDBY:
+        if (lastState != VEHICLE_STANDBY) {
+          lastState = VEHICLE_STANDBY;
+          VCU.SetDriver(DRIVER_ID_NONE);
+
+          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_START);
+        }
+
+        if (!VCU.d.gpio.power5v || !VCU.d.gpio.knob)
+          VCU.d.state.vehicle--;
+        else if (!HMI1.d.state.unfinger || VCU.d.state.override >= VEHICLE_READY)
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_READY:
+        if (lastState != VEHICLE_READY) {
+          lastState = VEHICLE_READY;
+          VCU.d.gpio.starter = 0;
+        }
+
+        if (!VCU.d.gpio.power5v
+            || !VCU.d.gpio.knob
+            || (HMI1.d.state.unfinger && !VCU.d.state.override)
+            || VCU.d.state.override == VEHICLE_STANDBY)
+          VCU.d.state.vehicle--;
+        else if (!VCU.d.state.error
+            && (VCU.d.gpio.starter || VCU.d.state.override >= VEHICLE_RUN))
+          VCU.d.state.vehicle++;
+        break;
+
+      case VEHICLE_RUN:
+        if (lastState != VEHICLE_RUN) {
+          lastState = VEHICLE_RUN;
+          VCU.d.gpio.starter = 0;
+        }
+
+        if (!VCU.d.gpio.power5v
+            || !VCU.d.gpio.knob
+            || VCU.d.state.error
+            || VCU.d.state.override == VEHICLE_READY)
+          VCU.d.state.vehicle--;
+        else if ((VCU.d.gpio.starter && VCU.d.speed == 0)
+            || (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY)
+            || VCU.d.state.override == VEHICLE_STANDBY)
+          VCU.d.state.vehicle -= 2;
+        break;
+
+      default:
+        break;
+    }
+  } while (initialState != VCU.d.state.vehicle);
+}
+
+static void CheckTaskState(rtos_task_t *rtos) {
+  rtos->manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
+  rtos->iot.stack = osThreadGetStackSpace(IotTaskHandle);
+  rtos->reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
+  rtos->command.stack = osThreadGetStackSpace(CommandTaskHandle);
+  rtos->gps.stack = osThreadGetStackSpace(GpsTaskHandle);
+  rtos->gyro.stack = osThreadGetStackSpace(GyroTaskHandle);
+  rtos->remote.stack = osThreadGetStackSpace(RemoteTaskHandle);
+  rtos->finger.stack = osThreadGetStackSpace(FingerTaskHandle);
+  rtos->audio.stack = osThreadGetStackSpace(AudioTaskHandle);
+  rtos->gate.stack = osThreadGetStackSpace(GateTaskHandle);
+  rtos->canRx.stack = osThreadGetStackSpace(CanRxTaskHandle);
+  rtos->canTx.stack = osThreadGetStackSpace(CanTxTaskHandle);
+  rtos->hmi2Power.stack = osThreadGetStackSpace(Hmi2PowerTaskHandle);
+}
+
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

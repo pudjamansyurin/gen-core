@@ -109,7 +109,6 @@ uint8_t VCU_ReadEvent(uint64_t event_id);
 uint16_t VCU_SpeedToVolume(void);
 void VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t increment);
-void VCU_CheckVehicleState(void);
 
 uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar);
 uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp);

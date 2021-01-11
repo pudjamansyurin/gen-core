@@ -13,12 +13,6 @@
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 
-/* External variables ---------------------------------------------------------*/
-extern osThreadId_t RemoteTaskHandle;
-extern osThreadId_t FingerTaskHandle;
-extern osThreadId_t GyroTaskHandle;
-extern osThreadId_t AudioTaskHandle;
-
 /* Public variables -----------------------------------------------------------*/
 vcu_t VCU = {
     .d = { 0 },
@@ -105,115 +99,6 @@ void VCU_SetOdometer(uint8_t increment) {
   }
 
   HBAR_AccumulateSubTrip(increment);
-}
-
-void VCU_CheckVehicleState(void) {
-  static vehicle_state_t lastState = VEHICLE_UNKNOWN;
-  vehicle_state_t initialState;
-
-  do {
-    initialState = VCU.d.state.vehicle;
-
-    switch (VCU.d.state.vehicle) {
-      case VEHICLE_LOST:
-        if (lastState != VEHICLE_LOST) {
-          lastState = VEHICLE_LOST;
-
-          VCU.d.interval = RPT_INTERVAL_LOST;
-        }
-
-        if (VCU.d.gpio.power5v)
-          VCU.d.state.vehicle += 2;
-        break;
-
-      case VEHICLE_BACKUP:
-        if (lastState != VEHICLE_BACKUP) {
-          lastState = VEHICLE_BACKUP;
-
-          VCU.d.tick.independent = _GetTickMS();
-          VCU.d.interval = RPT_INTERVAL_BACKUP;
-
-          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
-          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
-          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
-        }
-
-        if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.gpio.power5v)
-          VCU.d.state.vehicle++;
-        break;
-
-      case VEHICLE_NORMAL:
-        if (lastState != VEHICLE_NORMAL) {
-          lastState = VEHICLE_NORMAL;
-          VCU.d.interval = RPT_INTERVAL_NORMAL;
-          VCU.d.state.override = VEHICLE_NORMAL;
-
-          osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
-          osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
-          osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_START);
-          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
-        }
-
-        if (!VCU.d.gpio.power5v)
-          VCU.d.state.vehicle--;
-        else if (VCU.d.gpio.knob
-            && (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY))
-          VCU.d.state.vehicle++;
-        break;
-
-      case VEHICLE_STANDBY:
-        if (lastState != VEHICLE_STANDBY) {
-          lastState = VEHICLE_STANDBY;
-          VCU.SetDriver(DRIVER_ID_NONE);
-
-          osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_START);
-        }
-
-        if (!VCU.d.gpio.power5v || !VCU.d.gpio.knob)
-          VCU.d.state.vehicle--;
-        else if (!HMI1.d.state.unfinger || VCU.d.state.override >= VEHICLE_READY)
-          VCU.d.state.vehicle++;
-        break;
-
-      case VEHICLE_READY:
-        if (lastState != VEHICLE_READY) {
-          lastState = VEHICLE_READY;
-          VCU.d.gpio.starter = 0;
-        }
-
-        if (!VCU.d.gpio.power5v
-            || !VCU.d.gpio.knob
-            || (HMI1.d.state.unfinger && !VCU.d.state.override)
-            || VCU.d.state.override == VEHICLE_STANDBY)
-          VCU.d.state.vehicle--;
-        else if (!VCU.d.state.error
-            && (VCU.d.gpio.starter || VCU.d.state.override >= VEHICLE_RUN))
-          VCU.d.state.vehicle++;
-        break;
-
-      case VEHICLE_RUN:
-        if (lastState != VEHICLE_RUN) {
-          lastState = VEHICLE_RUN;
-          VCU.d.gpio.starter = 0;
-        }
-
-        if (!VCU.d.gpio.power5v
-            || !VCU.d.gpio.knob
-            || VCU.d.state.error
-            || VCU.d.state.override == VEHICLE_READY)
-          VCU.d.state.vehicle--;
-        else if ((VCU.d.gpio.starter && VCU.d.speed == 0)
-            || (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY)
-            || VCU.d.state.override == VEHICLE_STANDBY)
-          VCU.d.state.vehicle -= 2;
-        break;
-
-      default:
-        break;
-    }
-  } while (initialState != VCU.d.state.vehicle);
 }
 
 /* ====================================== CAN TX =================================== */
