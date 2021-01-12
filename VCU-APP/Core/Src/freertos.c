@@ -595,6 +595,11 @@ void StartCommandTask(void *argument)
             CMD_GenFota(IAP_HMI, &response, &(VCU.d.bat), &(HMI1.d.version));
             break;
 
+          case CMD_GEN_FAKE_HBAR :
+            CMD_GenFakeHbar(&command);
+            break;
+
+
           default:
             response.data.code = RESPONSE_STATUS_INVALID;
             break;
@@ -820,13 +825,24 @@ void StartRemoteTask(void *argument)
             LOG_StrLn("NRF:Command = PING");
           else if (command == RF_CMD_SEAT) {
             LOG_StrLn("NRF:Command = SEAT");
-            VCU.d.gpio.starter = 1;         // FIXME: use real starter button
-            GATE_SeatToggle();
+
+            if (!VCU.d.fake_hbar.active) {
+              GATE_SeatToggle();
+              // FIXME: use real starter button
+              VCU.d.gpio.starter = 1;
+            } else {
+
+            }
           }
           else if (command == RF_CMD_ALARM) {
             LOG_StrLn("NRF:Command = ALARM");
-            for (uint8_t i = 0; i < 2; i++)
-              GATE_HornToggle(&(HBAR.runner.hazard));
+
+            if (!VCU.d.fake_hbar.active) {
+              for (uint8_t i = 0; i < 2; i++)
+                GATE_HornToggle(&(HBAR.runner.hazard));
+            } else {
+
+            }
 
           }
         }
@@ -1060,7 +1076,7 @@ void StartCanTxTask(void *argument)
     // Handle CAN-Powered Nodes
     BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
     if (HMI2.PowerOverCan(VCU.d.state.vehicle >= VEHICLE_STANDBY))
-		  osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
+      osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
 
     // Refresh CAN-Signaled Nodes
     HMI1.Refresh();

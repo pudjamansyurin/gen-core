@@ -48,6 +48,10 @@ void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_v
   resp->data.code = RESPONSE_STATUS_ERROR;
 }
 
+void CMD_GenFakeHbar(command_t *cmd) {
+  VCU.d.fake_hbar.active = (uint8_t) cmd->data.value;
+}
+
 void CMD_ReportRTC(command_t *cmd, rtc_t *rtc) {
   RTC_Write((uint64_t) cmd->data.value, rtc);
 }

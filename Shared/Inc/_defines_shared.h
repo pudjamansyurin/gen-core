@@ -20,6 +20,8 @@
 #include <math.h>
 
 /* Exported macro functions --------------------------------------------------*/
+#define RTOS_ENABLE                             !BOOTLOADER
+
 #define BIT(x)                                  (1ULL << x)
 #define BV(var, x)                              (var |= (1ULL << x))
 #define BC(var, x)                              (var &= ~(1ULL << x))
@@ -44,7 +46,6 @@
 #define IS_VALID_SP(a)                          ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
 
 /* Exported constants --------------------------------------------------------*/
-#define RTOS_ENABLE                             !BOOTLOADER
 #define EEPROM_RESET                 (uint16_t) 53
 
 #define NET_BOOT_TIMEOUT             (uint32_t) 8000                // in ms
@@ -182,6 +183,7 @@
 #define CMD_GEN_OVERRIDE              (uint8_t) 2
 #define CMD_GEN_FOTA_VCU              (uint8_t) 3
 #define CMD_GEN_FOTA_HMI              (uint8_t) 4
+#define CMD_GEN_FAKE_HBAR             (uint8_t) 5
 
 #define CMD_REPORT_RTC                (uint8_t) 0
 #define CMD_REPORT_ODOM               (uint8_t) 1

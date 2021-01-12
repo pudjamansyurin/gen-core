@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./credential.env
+source .env
 
 SRC_BIN_FILE="../VCU-APP/Release/VCU-APP.bin"
 APP_BIN_FILE="APP.bin"

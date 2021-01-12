@@ -75,6 +75,11 @@ typedef struct {
   struct {
     uint32_t independent;
   } tick;
+  struct {
+    uint8_t active;
+    uint8_t select;
+    uint8_t set;
+  } fake_hbar;
   gps_t gps;
   rtos_task_t task;
 } vcu_data_t;
