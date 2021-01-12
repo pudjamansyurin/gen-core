@@ -56,7 +56,9 @@ void RF_DeInit(void) {
   nrf_deinit();
 }
 
-uint8_t RF_Ping(void) {
+uint8_t RF_Ping(uint8_t *unremote) {
+  *unremote =  ((_GetTickMS() - RF.tick.heartbeat) > REMOTE_TIMEOUT );
+
   GenRandomNumber32((uint32_t*) RF.tx.payload, NRF_DATA_LENGTH / 4);
 
   return (nrf_send_packet_noack(RF.tx.payload) == NRF_OK);
@@ -124,14 +126,6 @@ void RF_Debugger(void) {
   unlock();
 }
 
-void RF_Refresh(void) {
-  RF.tick.heartbeat = _GetTickMS();
-}
-
-uint8_t RF_IsTimeout(void) {
-  return ((_GetTickMS() - RF.tick.heartbeat) > REMOTE_TIMEOUT );
-}
-
 uint8_t RF_GotPairedResponse(void) {
   uint8_t paired = 0;
 
@@ -149,7 +143,12 @@ void RF_IrqHandler(void) {
 }
 
 void RF_PacketReceived(uint8_t *data) {
+  RF.tick.heartbeat = _GetTickMS();
   osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_RX_IT);
+}
+
+uint32_t RF_Heartbeat(void) {
+  return RF.tick.heartbeat;
 }
 
 /* Private functions implementation --------------------------------------------*/

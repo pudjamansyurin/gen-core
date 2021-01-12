@@ -595,11 +595,6 @@ void StartCommandTask(void *argument)
             CMD_GenFota(IAP_HMI, &response, &(VCU.d.bat), &(HMI1.d.version));
             break;
 
-          case CMD_GEN_FAKE_HBAR :
-            CMD_GenFakeHbar(&command);
-            break;
-
-
           default:
             response.data.code = RESPONSE_STATUS_INVALID;
             break;
@@ -814,7 +809,6 @@ void StartRemoteTask(void *argument)
       // handle incoming payload
       if (notif & EVT_REMOTE_RX_IT) {
         // RF_Debugger();
-        RF_Refresh();
 
         if (RF_GotPairedResponse())
           osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
@@ -826,32 +820,26 @@ void StartRemoteTask(void *argument)
           else if (command == RF_CMD_SEAT) {
             LOG_StrLn("NRF:Command = SEAT");
 
-            if (!VCU.d.fake_hbar.active) {
-              GATE_SeatToggle();
-              // FIXME: use real starter button
-              VCU.d.gpio.starter = 1;
-            } else {
-
-            }
+            GATE_SeatToggle();
+            // FIXME: use real starter button
+            VCU.d.gpio.starter = 1;
           }
           else if (command == RF_CMD_ALARM) {
             LOG_StrLn("NRF:Command = ALARM");
 
-            if (!VCU.d.fake_hbar.active) {
-              for (uint8_t i = 0; i < 2; i++)
-                GATE_HornToggle(&(HBAR.runner.hazard));
-            } else {
-
-            }
-
+            for (uint8_t i = 0; i < 2; i++)
+              GATE_HornToggle(&(HBAR.runner.hazard));
           }
         }
       }
       // osThreadFlagsClear(EVT_MASK);
     }
 
-    RF_Ping();
-    HMI1.d.state.unremote = RF_IsTimeout();
+    RF_Ping(&(HMI1.d.state.unremote));
+    if (HMI1.d.state.unremote && VCU.d.state.vehicle >= VEHICLE_NORMAL)
+      if (_GetTickMS() - RF_Heartbeat() > REMOTE_RESET)
+        RF_Init(&(VCU.d.unit_id), &hspi1);
+
   }
   /* USER CODE END StartRemoteTask */
 }

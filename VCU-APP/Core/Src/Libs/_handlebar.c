@@ -104,16 +104,7 @@ void HBAR_ReadStates(void) {
   for (uint8_t i = 0; i < HBAR_K_MAX; i++) {
     list = &(HBAR.list[i]);
 
-    if ((i == HBAR_K_SELECT || i == HBAR_K_SET) && VCU.d.fake_hbar.active) {
-      if (i == HBAR_K_SELECT) {
-        list->state = HAL_GPIO_ReadPin(list->port, list->pin) | VCU.d.fake_hbar.select;
-        VCU.d.fake_hbar.select = 0;
-      } else {
-        list->state = HAL_GPIO_ReadPin(list->port, list->pin) | VCU.d.fake_hbar.set;
-        VCU.d.fake_hbar.set = 0;
-      }
-    } else
-      list->state = HAL_GPIO_ReadPin(list->port, list->pin);
+    list->state = HAL_GPIO_ReadPin(list->port, list->pin);
   }
 
   HBAR_CheckReverse();

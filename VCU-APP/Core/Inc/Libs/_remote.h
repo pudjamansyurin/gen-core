@@ -46,15 +46,14 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void RF_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi);
 void RF_DeInit(void);
-uint8_t RF_Ping(void);
+uint8_t RF_Ping(uint8_t *unremote);
 void RF_Pairing(uint32_t *unit_id);
 void RF_Debugger(void);
 uint8_t RF_ValidateCommand(RF_CMD *cmd);
 void RF_GenerateAesKey(uint32_t *aes);
-void RF_Refresh(void);
-uint8_t RF_IsTimeout(void);
 uint8_t RF_GotPairedResponse(void);
 void RF_IrqHandler(void);
 void RF_PacketReceived(uint8_t *data);
+uint32_t RF_Heartbeat(void);
 
 #endif /* REMOTE_H_ */

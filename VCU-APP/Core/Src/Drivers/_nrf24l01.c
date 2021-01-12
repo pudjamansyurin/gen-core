@@ -41,12 +41,12 @@ NRF_RESULT nrf_init(void) {
   do {
     LOG_StrLn("NRF:Init");
 
-    // turn on the mosfet
-    GATE_RemoteReset();
-
     // reset peripheral
     HAL_SPI_DeInit(NRF.config.spi);
     HAL_SPI_Init(NRF.config.spi);
+
+    // turn on the mosfet
+    GATE_RemoteReset();
 
     result = nrf_check();
   } while (result == NRF_ERROR);
@@ -734,8 +734,8 @@ void nrf_irq_handler(void) {
     status |= 1 << 5;      // clear the interrupt flag
 
     ce_reset();
-//    nrf_rx_tx_control(NRF_STATE_RX);
-//    NRF.state = NRF_STATE_RX;
+    nrf_rx_tx_control(NRF_STATE_RX);
+    NRF.state = NRF_STATE_RX;
     nrf_write_register(NRF_STATUS, &status);
     ce_set();
 

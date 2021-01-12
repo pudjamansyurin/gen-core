@@ -78,6 +78,7 @@
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 
 #define REMOTE_TIMEOUT               (uint32_t) 5000                // in ms
+#define REMOTE_RESET                 (uint32_t) 10000               // in ms
 #define REMOTE_PAIRING_TIMEOUT       (uint32_t) 5000                 // in ms
 
 #define PREFIX_REPORT                           "@R"
@@ -183,7 +184,6 @@
 #define CMD_GEN_OVERRIDE              (uint8_t) 2
 #define CMD_GEN_FOTA_VCU              (uint8_t) 3
 #define CMD_GEN_FOTA_HMI              (uint8_t) 4
-#define CMD_GEN_FAKE_HBAR             (uint8_t) 5
 
 #define CMD_REPORT_RTC                (uint8_t) 0
 #define CMD_REPORT_ODOM               (uint8_t) 1
