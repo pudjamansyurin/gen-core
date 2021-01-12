@@ -85,6 +85,7 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
     /* Reset after FOTA */
     EEPROM_FotaVersion(EE_CMD_W, 0);
     EEPROM_FotaType(EE_CMD_W, 0);
+    *(uint32_t*) IAP_RESPONSE_ADDR = 0;
   }
 
   return valid;
@@ -106,7 +107,6 @@ void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version) {
     if (versionOld == 0xFFFF)
       versionOld = 0x0000;
   }
-
 
   if (versionNew && (versionOld != versionNew)) {
     sprintf(message,
