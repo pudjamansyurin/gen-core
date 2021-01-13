@@ -68,6 +68,10 @@ typedef struct {
     AT_CIPSTATUS ip_status;
     uint8_t signal;
     uint8_t downloading;
+    struct {
+      UART_HandleTypeDef *uart;
+      DMA_HandleTypeDef *dma;
+    } handle;
 } sim_t;
 
 /* Exported variables --------------------------------------------------------*/

@@ -26,14 +26,14 @@ void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	uint8_t verified = 0;
 
   uart = huart;
-  HAL_UART_Init(huart);
-  FINGER_DMA_Init(huart, hdma);
 
 	// Inititalize Module
 	do {
 		LOG_StrLn("Finger:Init");
 
-		// mosfet control
+		// control
+	  HAL_UART_Init(huart);
+	  FINGER_DMA_Init(huart, hdma);
 		GATE_FingerReset();
 
 		// verify password and check hardware

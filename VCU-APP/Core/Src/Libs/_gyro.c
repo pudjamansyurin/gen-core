@@ -27,12 +27,8 @@ void GYRO_Init(I2C_HandleTypeDef *hi2c) {
   do {
     LOG_StrLn("Gyro:Init");
 
-    // MOSFET Control
-    GATE_GyroReset();
-
-    // Reset peripheral
-    MX_I2C3_DeInit();
     MX_I2C3_Init();
+    GATE_GyroReset();
 
     // module initialization
     result = MPU6050_Init(hGYRO.hi2c, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);

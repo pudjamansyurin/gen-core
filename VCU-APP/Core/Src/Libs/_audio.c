@@ -49,9 +49,9 @@ static audio_t hAudio = {
 };
 
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
-const uint32_t I2SFreq[8] = { 8000, 11025, 16000, 22050, 32000, 44100, 48000, 96000 };
-const uint32_t I2SPLLN[8] = { 256, 429, 213, 429, 426, 271, 258, 344 };
-const uint32_t I2SPLLR[8] = { 5, 4, 4, 4, 4, 6, 3, 1 };
+static const uint32_t I2SFreq[8] = { 8000, 11025, 16000, 22050, 32000, 44100, 48000, 96000 };
+static const uint32_t I2SPLLN[8] = { 256, 429, 213, 429, 426, 271, 258, 344 };
+static const uint32_t I2SPLLR[8] = { 5, 4, 4, 4, 4, 6, 3, 1 };
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t I2S3_Init(uint32_t AudioFreq);

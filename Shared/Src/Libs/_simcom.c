@@ -24,16 +24,13 @@
 #include "Libs/_focan.h"
 #endif
 
-/* Public variables ----------------------------------------------------------*/
+/* Public variables ---------------------------------------------------------*/
 sim_t SIM = {
     .state = SIM_STATE_DOWN,
     .ip_status = CIPSTAT_UNKNOWN,
     .signal = 0,
     .downloading = 0,
 };
-
-/* Private variables ---------------------------------------------------------*/
-static UART_HandleTypeDef *uart;
 
 #if (!BOOTLOADER)
 extern osMessageQueueId_t CommandQueueHandle;
@@ -48,22 +45,30 @@ static void BeforeTransmitHook(void);
 static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p);
 static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *depthState);
 static uint8_t StatePoorSignal(void);
+static void SetStateDown(SIMCOM_RESULT *p, SIMCOM_STATE *state);
+static void SetStateReady(SIMCOM_RESULT *p, SIMCOM_STATE *state);
+static void SetStateConfigured(SIMCOM_RESULT *p, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
+static void SetStateNetworkOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
+static void SetStateNetworkOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
 #if (!BOOTLOADER)
+static void SetStateGprsOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
+static void SetStatePdpOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus);
+static void SetStateInternetOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus, uint32_t tick, uint32_t timeout);
 static SIMCOM_RESULT ProcessCommando(command_t *command);
 static uint8_t CommandoIRQ(void);
 #endif
 
 /* Public functions implementation --------------------------------------------*/
 void Simcom_Lock(void) {
-//#if (!BOOTLOADER)
-//  osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
-//#endif
+  //#if (!BOOTLOADER)
+  //  osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
+  //#endif
 }
 
 void Simcom_Unlock(void) {
-//#if (!BOOTLOADER)
-//  osMutexRelease(SimcomRecMutexHandle);
-//#endif
+  //#if (!BOOTLOADER)
+  //  osMutexRelease(SimcomRecMutexHandle);
+  //#endif
 }
 
 char* Simcom_Response(char *str) {
@@ -71,17 +76,17 @@ char* Simcom_Response(char *str) {
 }
 
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
-  uart = huart;
+  SIM.handle.uart = huart;
+  SIM.handle.dma = hdma;
+
   HAL_UART_Init(huart);
   SIMCOM_DMA_Init(huart, hdma);
-
-  Simcom_SetState(SIM_STATE_READY, 0);
 }
 
 void Simcom_DeInit(void) {
   GATE_SimcomShutdown();
   SIMCOM_DMA_DeInit();
-  HAL_UART_DeInit(uart);
+  HAL_UART_DeInit(SIM.handle.uart);
 }
 
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
@@ -106,300 +111,51 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
     // Handle states
     switch (SIM.state) {
       case SIM_STATE_DOWN:
-        LOG_StrLn("Simcom:Init");
-
-        // power up the module
-        p = PowerUp();
-
-        // upgrade simcom state
-        if (p > 0) {
-          SIM.state++;
-          LOG_StrLn("Simcom:ON");
-        } else
-          LOG_StrLn("Simcom:Error");
-
+        SetStateDown(&p, &(SIM.state));
         _DelayMS(500);
         break;
+
       case SIM_STATE_READY:
-        // =========== BASIC CONFIGURATION
-        // disable command echo
-        if (p > 0)
-          p = AT_CommandEchoMode(0);
-
-        // Set serial baud-rate
-        if (p > 0) {
-          uint32_t rate = 0;
-          p = AT_FixedLocalRate(ATW, &rate);
-        }
-        // Error report format: 0, 1(Numeric), 2(verbose)
-        if (p > 0) {
-          AT_CMEE state = CMEE_VERBOSE;
-          p = AT_ReportMobileEquipmentError(ATW, &state);
-        }
-        // Use pin DTR as sleep control
-        if (p > 0) {
-          AT_CSCLK state = CSCLK_EN_DTR;
-          p = AT_ConfigureSlowClock(ATW, &state);
-        }
-#if (!BOOTLOADER)
-        // Enable time reporting
-        if (p > 0) {
-          AT_BOOL state = AT_ENABLE;
-          p = AT_EnableLocalTimestamp(ATW, &state);
-        }
-        // Enable “+IPD” header
-        if (p > 0) {
-          AT_BOOL state = AT_ENABLE;
-          p = AT_IpPackageHeader(ATW, &state);
-        }
-        // Disable “RECV FROM” header
-        if (p > 0) {
-          AT_BOOL state = AT_DISABLE;
-          p = AT_ShowRemoteIp(ATW, &state);
-        }
-#endif
-        // =========== NETWORK CONFIGURATION
-        // Check SIM Card
-        if (p > 0)
-          p = Simcom_Command("AT+CPIN?\r", "READY", 500, 0);
-
-        // Disable presentation of <AcT>&<rac> at CREG and CGREG
-        if (p > 0) {
-          at_csact_t param = {
-              .creg = 0,
-              .cgreg = 0,
-          };
-          p = AT_NetworkAttachedStatus(ATW, &param);
-        }
-
-        // upgrade simcom state
-        if (p > 0)
-          SIM.state++;
-
+        SetStateReady(&p, &(SIM.state));
         _DelayMS(500);
         break;
+
       case SIM_STATE_CONFIGURED:
-        // =========== NETWORK ATTACH
-        // Set signal Generation 2G(13)/3G(14)/AUTO(2)
-        if (p > 0) {
-          at_cnmp_t param = {
-              .mode = CNMP_ACT_AUTO,
-              .preferred = CNMP_ACT_P_UMTS
-          };
-          p = AT_RadioAccessTechnology(ATW, &param);
-        }
-        // Network Registration Status
-        if (p > 0) {
-          at_c_greg_t read, param = {
-              .mode = CREG_MODE_DISABLE,
-              .stat = CREG_STAT_REG_HOME
-          };
-          // wait until attached
-          do {
-            p = AT_NetworkRegistration("CREG", ATW, &param);
-            if (p > 0)
-              p = AT_NetworkRegistration("CREG", ATR, &read);
-
-            // Handle timeout
-            if (timeout && (_GetTickMS() - tick) > timeout) {
-              LOG_StrLn("Simcom:StateTimeout");
-              break;
-            }
-            _DelayMS(1000);
-          } while (p && read.stat != param.stat);
-        }
-
-        // upgrade simcom state
-        if (p > 0)
-          SIM.state++;
-
+        SetStateConfigured(&p, &(SIM.state), tick, timeout);
         _DelayMS(500);
         break;
+
       case SIM_STATE_NETWORK_ON:
-        // =========== GPRS ATTACH
-        // GPRS Registration Status
-        if (p > 0) {
-          at_c_greg_t read, param = {
-              .mode = CREG_MODE_DISABLE,
-              .stat = CREG_STAT_REG_HOME
-          };
-          // wait until attached
-          do {
-            p = AT_NetworkRegistration("CGREG", ATW, &param);
-            if (p > 0)
-              p = AT_NetworkRegistration("CGREG", ATR, &read);
-
-            // Handle timeout
-            if (timeout && (_GetTickMS() - tick) > timeout) {
-              LOG_StrLn("Simcom:StateTimeout");
-              break;
-            }
-            _DelayMS(1000);
-          } while (p && read.stat != param.stat);
-        }
-
-        // upgrade simcom state
-        if (p > 0)
-          SIM.state++;
-        else
-        if (SIM.state == SIM_STATE_NETWORK_ON)
-          SIM.state--;
-
+        SetStateNetworkOn(&p, &(SIM.state), tick, timeout);
         _DelayMS(500);
         break;
+
 #if (!BOOTLOADER)
       case SIM_STATE_GPRS_ON:
-        // =========== PDP CONFIGURATION
-        // Attach to GPRS service
-        if (p > 0) {
-          AT_CGATT state;
-          // wait until attached
-          do {
-            p = AT_GprsAttachment(ATR, &state);
-
-            // Handle timeout
-            if (timeout && (_GetTickMS() - tick) > timeout) {
-              LOG_StrLn("Simcom:StateTimeout");
-              break;
-            }
-            _DelayMS(1000);
-          } while (p && !state);
-        }
-
-        // upgrade simcom state
-        if (p > 0)
-          SIM.state++;
-        else
-          if (SIM.state == SIM_STATE_GPRS_ON)
-            SIM.state--;
-
+        SetStateGprsOn(&p, &(SIM.state), tick, timeout);
         _DelayMS(500);
         break;
+
       case SIM_STATE_PDP_ON:
-        // =========== PDP ATTACH
-        // Set type of authentication for PDP connections of socket
-        AT_ConnectionStatusSingle(&(SIM.ip_status));
-        if (p > 0 && (SIM.ip_status == CIPSTAT_IP_INITIAL || SIM.ip_status == CIPSTAT_PDP_DEACT)) {
-          at_cstt_t param = {
-              .apn = NET_CON_APN,
-              .username = NET_CON_USERNAME,
-              .password = NET_CON_PASSWORD,
-          };
-          p = AT_ConfigureAPN(ATW, &param);
-        }
-        // Select TCPIP application mode:
-        // (0: Non Transparent (command mode), 1: Transparent (data mode))
-        if (p > 0) {
-          AT_CIPMODE state = CIPMODE_NORMAL;
-          p = AT_TcpApllicationMode(ATW, &state);
-        }
-        // Set to Single IP Connection (Backend)
-        if (p > 0) {
-          AT_CIPMUX state = CIPMUX_SINGLE_IP;
-          p = AT_MultiIpConnection(ATW, &state);
-        }
-        // Get data from network automatically
-        if (p > 0) {
-          AT_CIPRXGET state = CIPRXGET_DISABLE;
-          p = AT_ManuallyReceiveData(ATW, &state);
-        }
-
-        // =========== IP ATTACH
-        // Bring Up IP Connection
-        AT_ConnectionStatusSingle(&(SIM.ip_status));
-        if (p > 0 && SIM.ip_status == CIPSTAT_IP_START)
-          p = Simcom_Command("AT+CIICR\r", NULL, 10000, 0);
-
-        // Check IP Address
-        AT_ConnectionStatusSingle(&(SIM.ip_status));
-        if (p > 0 && (SIM.ip_status == CIPSTAT_IP_CONFIG || SIM.ip_status == CIPSTAT_IP_GPRSACT)) {
-          at_cifsr_t param;
-          p = AT_GetLocalIpAddress(&param);
-        }
-
-        // upgrade simcom state
-        if (p > 0)
-          SIM.state++;
-        else {
-          // Check IP Status
-          AT_ConnectionStatusSingle(&(SIM.ip_status));
-
-          // Close PDP
-          if (SIM.ip_status != CIPSTAT_IP_INITIAL &&
-              SIM.ip_status != CIPSTAT_PDP_DEACT)
-            p = Simcom_Command("AT+CIPSHUT\r", NULL, 1000, 0);
-
-          if (SIM.state == SIM_STATE_PDP_ON)
-            SIM.state--;
-        }
-
+        SetStatePdpOn(&p, &(SIM.state), &(SIM.ip_status));
         _DelayMS(500);
         break;
+
       case SIM_STATE_INTERNET_ON:
         AT_ConnectionStatusSingle(&(SIM.ip_status));
-        // ============ SOCKET CONFIGURATION
-        // Establish connection with server
-        if (p > 0 && (SIM.ip_status != CIPSTAT_CONNECT_OK || SIM.ip_status != CIPSTAT_CONNECTING)) {
-          at_cipstart_t param = {
-              .mode = "TCP",
-              .ip = NET_TCP_SERVER,
-              .port = NET_TCP_PORT
-          };
-          p = AT_StartConnectionSingle(&param);
-
-          // wait until attached
-          do {
-            AT_ConnectionStatusSingle(&(SIM.ip_status));
-
-            // Handle timeout
-            if (timeout && (_GetTickMS() - tick) > timeout) {
-              LOG_StrLn("Simcom:StateTimeout");
-              break;
-            }
-            _DelayMS(1000);
-          } while (SIM.ip_status == CIPSTAT_CONNECTING);
-        }
-
-        // upgrade simcom state
-        if (p > 0)
-          SIM.state++;
-        else {
-          // Check IP Status
-          AT_ConnectionStatusSingle(&(SIM.ip_status));
-
-          // Close IP
-          if (SIM.ip_status == CIPSTAT_CONNECT_OK) {
-            p = Simcom_Command("AT+CIPCLOSE\r", NULL, 1000, 0);
-
-            // wait until closed
-            do {
-              AT_ConnectionStatusSingle(&(SIM.ip_status));
-
-              // Handle timeout
-              if (timeout && (_GetTickMS() - tick) > timeout) {
-                LOG_StrLn("Simcom:StateTimeout");
-                break;
-              }
-              _DelayMS(1000);
-            } while (SIM.ip_status == CIPSTAT_CLOSING);
-          }
-
-          if (SIM.state == SIM_STATE_INTERNET_ON)
-            SIM.state--;
-        }
-
+        SetStateInternetOn(&p, &(SIM.state), &(SIM.ip_status), tick, timeout);
         _DelayMS(500);
         break;
+
       case SIM_STATE_SERVER_ON:
-        // Check IP Status
         AT_ConnectionStatusSingle(&(SIM.ip_status));
 
         if (SIM.ip_status != CIPSTAT_CONNECT_OK)
           if (SIM.state == SIM_STATE_SERVER_ON)
             SIM.state--;
-
         break;
 #endif
+
       default:
         break;
     }
@@ -596,6 +352,7 @@ static SIMCOM_RESULT PowerUp(void) {
   }
 
   // relay power control
+  Simcom_Init(SIM.handle.uart, SIM.handle.dma);
   GATE_SimcomReset();
 
 #if (!BOOTLOADER)
@@ -627,7 +384,7 @@ static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res) 
     if (Simcom_Response(res)
         || Simcom_Response(SIMCOM_RSP_ERROR)
         || Simcom_Response(SIMCOM_RSP_READY)
-        #if (!BOOTLOADER)
+#if (!BOOTLOADER)
         || CommandoIRQ()
 #endif
         || (_GetTickMS() - tick) >= timeout) {
@@ -644,7 +401,7 @@ static SIMCOM_RESULT Execute(char *data, uint16_t size, uint32_t ms, char *res) 
           SIM.state = SIM_STATE_DOWN;
           LOG_StrLn("Simcom:NoResponse");
         }
-        #if (!BOOTLOADER)
+#if (!BOOTLOADER)
         // Handle command from server
         else if (CommandoIRQ())
           p = SIM_RESULT_TIMEOUT;
@@ -752,3 +509,281 @@ static uint8_t StatePoorSignal(void) {
   }
   return 0;
 }
+
+static void SetStateDown(SIMCOM_RESULT *p, SIMCOM_STATE *state) {
+  LOG_StrLn("Simcom:Init");
+
+  // power up the module
+  *p = PowerUp();
+
+  // upgrade simcom state
+  if (*p > 0) {
+    (*state)++;
+    LOG_StrLn("Simcom:ON");
+  } else
+    LOG_StrLn("Simcom:Error");
+}
+
+static void SetStateReady(SIMCOM_RESULT *p, SIMCOM_STATE *state) {
+  // =========== BASIC CONFIGURATION
+  // disable command echo
+  if (*p > 0)
+    *p = AT_CommandEchoMode(0);
+  // Set serial baud-rate
+  if (*p > 0) {
+    uint32_t rate = 0;
+    *p = AT_FixedLocalRate(ATW, &rate);
+  }
+  // Error report format: 0, 1(Numeric), 2(verbose)
+  if (*p > 0) {
+    AT_CMEE param = CMEE_VERBOSE;
+    *p = AT_ReportMobileEquipmentError(ATW, &param);
+  }
+  // Use pin DTR as sleep control
+  if (*p > 0) {
+    AT_CSCLK param = CSCLK_EN_DTR;
+    *p = AT_ConfigureSlowClock(ATW, &param);
+  }
+#if (!BOOTLOADER)
+  // Enable time reporting
+  if (*p > 0) {
+    AT_BOOL param = AT_ENABLE;
+    *p = AT_EnableLocalTimestamp(ATW, &param);
+  }
+  // Enable “+IPD” header
+  if (*p > 0) {
+    AT_BOOL param = AT_ENABLE;
+    *p = AT_IpPackageHeader(ATW, &param);
+  }
+  // Disable “RECV FROM” header
+  if (*p > 0) {
+    AT_BOOL param = AT_DISABLE;
+    *p = AT_ShowRemoteIp(ATW, &param);
+  }
+#endif
+  // =========== NETWORK CONFIGURATION
+  // Check SIM Card
+  if (*p > 0)
+    *p = Simcom_Command("AT+CPIN?\r", "READY", 500, 0);
+
+  // Disable presentation of <AcT>&<rac> at CREG and CGREG
+  if (*p > 0) {
+    at_csact_t param = {
+        .creg = 0,
+        .cgreg = 0,
+    };
+    *p = AT_NetworkAttachedStatus(ATW, &param);
+  }
+
+  // upgrade simcom state
+  if (*p > 0)
+    (*state)++;
+}
+
+static void SetStateConfigured(SIMCOM_RESULT *p, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
+  // =========== NETWORK ATTACH
+  // Set signal Generation 2G(13)/3G(14)/AUTO(2)
+  if (*p > 0) {
+    at_cnmp_t param = {
+        .mode = CNMP_ACT_AUTO,
+        .preferred = CNMP_ACT_P_UMTS
+    };
+    *p = AT_RadioAccessTechnology(ATW, &param);
+  }
+  // Network Registration Status
+  if (*p > 0) {
+    at_c_greg_t read, param = {
+        .mode = CREG_MODE_DISABLE,
+        .stat = CREG_STAT_REG_HOME
+    };
+    // wait until attached
+    do {
+      *p = AT_NetworkRegistration("CREG", ATW, &param);
+      if (*p > 0)
+        *p = AT_NetworkRegistration("CREG", ATR, &read);
+
+      // Handle timeout
+      if (timeout && (_GetTickMS() - tick) > timeout) {
+        LOG_StrLn("Simcom:StateTimeout");
+        break;
+      }
+      _DelayMS(1000);
+    } while (*p && read.stat != param.stat);
+  }
+
+  // upgrade simcom state
+  if (*p > 0)
+    (*state)++;
+}
+
+static void SetStateNetworkOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
+  // =========== GPRS ATTACH
+  // GPRS Registration Status
+  if (*p > 0) {
+    at_c_greg_t read, param = {
+        .mode = CREG_MODE_DISABLE,
+        .stat = CREG_STAT_REG_HOME
+    };
+    // wait until attached
+    do {
+      *p = AT_NetworkRegistration("CGREG", ATW, &param);
+      if (*p > 0)
+        *p = AT_NetworkRegistration("CGREG", ATR, &read);
+
+      // Handle timeout
+      if (timeout && (_GetTickMS() - tick) > timeout) {
+        LOG_StrLn("Simcom:StateTimeout");
+        break;
+      }
+      _DelayMS(1000);
+    } while (*p && read.stat != param.stat);
+  }
+
+  // upgrade simcom state
+  if (*p > 0)
+    (*state)++;
+  else
+    if (*state == SIM_STATE_NETWORK_ON)
+      (*state)--;
+}
+
+#if (!BOOTLOADER)
+static void SetStateGprsOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
+  // =========== PDP CONFIGURATION
+  // Attach to GPRS service
+  if (*p > 0) {
+    AT_CGATT param;
+    // wait until attached
+    do {
+      *p = AT_GprsAttachment(ATR, &param);
+
+      // Handle timeout
+      if (timeout && (_GetTickMS() - tick) > timeout) {
+        LOG_StrLn("Simcom:StateTimeout");
+        break;
+      }
+      _DelayMS(1000);
+    } while (*p && !param);
+  }
+
+  // upgrade simcom state
+  if (*p > 0)
+    (*state)++;
+  else
+    if (*state == SIM_STATE_GPRS_ON)
+      (*state)--;
+}
+
+static void SetStatePdpOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
+  // =========== PDP ATTACH
+  // Set type of authentication for PDP connections of socket
+  AT_ConnectionStatusSingle(ipStatus);
+  if (*p > 0 && (*ipStatus == CIPSTAT_IP_INITIAL || *ipStatus == CIPSTAT_PDP_DEACT)) {
+    at_cstt_t param = {
+        .apn = NET_CON_APN,
+        .username = NET_CON_USERNAME,
+        .password = NET_CON_PASSWORD,
+    };
+    *p = AT_ConfigureAPN(ATW, &param);
+  }
+  // Select TCPIP application mode:
+  // (0: Non Transparent (command mode), 1: Transparent (data mode))
+  if (*p > 0) {
+    AT_CIPMODE param = CIPMODE_NORMAL;
+    *p = AT_TcpApllicationMode(ATW, &param);
+  }
+  // Set to Single IP Connection (Backend)
+  if (*p > 0) {
+    AT_CIPMUX param = CIPMUX_SINGLE_IP;
+    *p = AT_MultiIpConnection(ATW, &param);
+  }
+  // Get data from network automatically
+  if (*p > 0) {
+    AT_CIPRXGET param = CIPRXGET_DISABLE;
+    *p = AT_ManuallyReceiveData(ATW, &param);
+  }
+
+  // =========== IP ATTACH
+  // Bring Up IP Connection
+  AT_ConnectionStatusSingle(ipStatus);
+  if (*p > 0 && *ipStatus == CIPSTAT_IP_START)
+    *p = Simcom_Command("AT+CIICR\r", NULL, 10000, 0);
+
+  // Check IP Address
+  AT_ConnectionStatusSingle(ipStatus);
+  if (*p > 0 && (*ipStatus == CIPSTAT_IP_CONFIG || *ipStatus == CIPSTAT_IP_GPRSACT)) {
+    at_cifsr_t param;
+    *p = AT_GetLocalIpAddress(&param);
+  }
+
+  // upgrade simcom state
+  if (*p > 0)
+    (*state)++;
+  else {
+    // Check IP Status
+    AT_ConnectionStatusSingle(ipStatus);
+
+    // Close PDP
+    if (*ipStatus != CIPSTAT_IP_INITIAL &&
+        *ipStatus != CIPSTAT_PDP_DEACT)
+      *p = Simcom_Command("AT+CIPSHUT\r", NULL, 1000, 0);
+
+    if ((*state) == SIM_STATE_PDP_ON)
+      (*state)--;
+  }
+}
+
+static void SetStateInternetOn(SIMCOM_RESULT *p, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus, uint32_t tick, uint32_t timeout) {
+  // ============ SOCKET CONFIGURATION
+  // Establish connection with server
+  if (*p > 0 && (*ipStatus != CIPSTAT_CONNECT_OK || *ipStatus != CIPSTAT_CONNECTING)) {
+    at_cipstart_t param = {
+        .mode = "TCP",
+        .ip = NET_TCP_SERVER,
+        .port = NET_TCP_PORT
+    };
+    *p = AT_StartConnectionSingle(&param);
+
+    // wait until attached
+    do {
+      AT_ConnectionStatusSingle(ipStatus);
+
+      // Handle timeout
+      if (timeout && (_GetTickMS() - tick) > timeout) {
+        LOG_StrLn("Simcom:StateTimeout");
+        break;
+      }
+      _DelayMS(1000);
+    } while (*ipStatus == CIPSTAT_CONNECTING);
+  }
+
+  // upgrade simcom state
+  if (*p > 0)
+    (*state)++;
+  else {
+    // Check IP Status
+    AT_ConnectionStatusSingle(ipStatus);
+
+    // Close IP
+    if (*ipStatus == CIPSTAT_CONNECT_OK) {
+      *p = Simcom_Command("AT+CIPCLOSE\r", NULL, 1000, 0);
+
+      // wait until closed
+      do {
+        AT_ConnectionStatusSingle(ipStatus);
+
+        // Handle timeout
+        if (timeout && (_GetTickMS() - tick) > timeout) {
+          LOG_StrLn("Simcom:StateTimeout");
+          break;
+        }
+        _DelayMS(1000);
+      } while (*ipStatus == CIPSTAT_CLOSING);
+    }
+
+    if (*state == SIM_STATE_INTERNET_ON)
+      (*state)--;
+  }
+}
+#endif
+

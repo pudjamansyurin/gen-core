@@ -31,6 +31,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       .size = 0,
   };
 
+  Simcom_SetState(SIM_STATE_READY, 0);
+
   /* Set FTP directory */
   if (type == IAP_VCU)
     strcpy(ftp.path, "/vcu/");

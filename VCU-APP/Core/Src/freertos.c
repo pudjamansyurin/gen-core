@@ -463,6 +463,7 @@ void StartIotTask(void *argument)
 
   // Initialize
   Simcom_Init(&huart1, &hdma_usart1_rx);
+  Simcom_SetState(SIM_STATE_READY, 0);
 
   /* Infinite loop */
   for (;;) {
@@ -836,9 +837,9 @@ void StartRemoteTask(void *argument)
     }
 
     RF_Ping(&(HMI1.d.state.unremote));
-    if (HMI1.d.state.unremote && VCU.d.state.vehicle >= VEHICLE_NORMAL)
-      if (_GetTickMS() - RF_Heartbeat() > REMOTE_RESET)
-        RF_Init(&(VCU.d.unit_id), &hspi1);
+//    if (HMI1.d.state.unremote && VCU.d.state.vehicle >= VEHICLE_NORMAL)
+//      if (_GetTickMS() - RF_Heartbeat() > REMOTE_RESET)
+//        RF_Init(&(VCU.d.unit_id), &hspi1);
 
   }
   /* USER CODE END StartRemoteTask */

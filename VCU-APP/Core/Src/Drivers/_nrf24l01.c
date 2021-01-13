@@ -24,7 +24,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
   NRF.config.payload_length = NRF_DATA_LENGTH;
   NRF.config.rx_buffer = rx_buffer;
 
-  NRF.config.data_rate = NRF_DATA_RATE_250KBPS;
+  NRF.config.data_rate = NRF_DATA_RATE_1MBPS;
   NRF.config.tx_power = NRF_TX_PWR_M18dBm;
   NRF.config.crc_width = NRF_CRC_WIDTH_1B;
   NRF.config.retransmit_count = 0x0F;   // maximum is 15 times
@@ -41,11 +41,7 @@ NRF_RESULT nrf_init(void) {
   do {
     LOG_StrLn("NRF:Init");
 
-    // reset peripheral
-    HAL_SPI_DeInit(NRF.config.spi);
     HAL_SPI_Init(NRF.config.spi);
-
-    // turn on the mosfet
     GATE_RemoteReset();
 
     result = nrf_check();
@@ -734,8 +730,8 @@ void nrf_irq_handler(void) {
     status |= 1 << 5;      // clear the interrupt flag
 
     ce_reset();
-    nrf_rx_tx_control(NRF_STATE_RX);
-    NRF.state = NRF_STATE_RX;
+    //    nrf_rx_tx_control(NRF_STATE_RX);
+    //    NRF.state = NRF_STATE_RX;
     nrf_write_register(NRF_STATUS, &status);
     ce_set();
 
@@ -750,8 +746,8 @@ void nrf_irq_handler(void) {
     nrf_power_up(0); // power down
     nrf_power_up(1); // power up
 
-    nrf_rx_tx_control(NRF_STATE_RX);
-    NRF.state = NRF_STATE_RX;
+    //    nrf_rx_tx_control(NRF_STATE_RX);
+    //    NRF.state = NRF_STATE_RX;
     nrf_write_register(NRF_STATUS, &status);
     ce_set();
 
