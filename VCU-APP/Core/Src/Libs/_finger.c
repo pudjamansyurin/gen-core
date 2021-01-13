@@ -13,7 +13,7 @@
 //extern osMutexId_t FingerRecMutexHandle;
 
 /* Private variables ----------------------------------------------------------*/
-static UART_HandleTypeDef *uart;
+static finger_t finger;
 
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);
@@ -25,7 +25,9 @@ static void GetImage(uint8_t *error, uint8_t enroll);
 void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	uint8_t verified = 0;
 
-  uart = huart;
+  finger.handle.uart = huart;
+  finger.handle.dma = hdma;
+  fz3387_init(&(finger.scanner));
 
 	// Inititalize Module
 	do {
@@ -48,7 +50,7 @@ void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 void FINGER_DeInit(void) {
   GATE_FingerShutdown();
   FINGER_DMA_DeInit();
-  HAL_UART_DeInit(uart);
+  HAL_UART_DeInit(finger.handle.uart);
 }
 
 uint8_t FINGER_Enroll(uint8_t id) {
@@ -75,10 +77,10 @@ uint8_t FINGER_Enroll(uint8_t id) {
 		}
 
 		LOG_Str("TemplateCount = ");
-		LOG_Int(finger.templateCount);
+		LOG_Int(finger.scanner.templateCount);
 		LOG_Enter();
 
-		error = (p != FINGERPRINT_OK) || (finger.templateCount >= FINGER_USER_MAX);
+		error = (p != FINGERPRINT_OK) || (finger.scanner.templateCount >= FINGER_USER_MAX);
 	}
 
 	if (!error) {
@@ -228,14 +230,14 @@ int8_t FINGER_Auth(void) {
 	if (!error) {
 		// found a match!
 		LOG_Str("\nFound ID #");
-		LOG_Int(finger.id);
+		LOG_Int(finger.scanner.id);
 		LOG_Str(" with confidence of ");
-		LOG_Int(finger.confidence);
+		LOG_Int(finger.scanner.confidence);
 		LOG_Enter();
 
 		// compare the tolerance
-    if (finger.confidence > FINGER_CONFIDENCE_MIN)
-			id = finger.id;
+    if (finger.scanner.confidence > FINGER_CONFIDENCE_MIN)
+			id = finger.scanner.id;
 	}
 	unlock();
 
@@ -260,8 +262,8 @@ int8_t FINGER_AuthFast(void) {
 
 	// found a match!
   if (p == FINGERPRINT_OK)
-    if (finger.confidence > FINGER_CONFIDENCE_MIN) 
-			id = finger.id;
+    if (finger.scanner.confidence > FINGER_CONFIDENCE_MIN)
+			id = finger.scanner.id;
 	
 	unlock();
 

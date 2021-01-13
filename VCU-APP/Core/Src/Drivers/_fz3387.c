@@ -22,10 +22,8 @@
 #include "DMA/_dma_finger.h"
 #include "Drivers/_fz3387.h"
 
-/* Public variables -----------------------------------------------------------*/
-finger_t finger;
-
 /* Private variables -----------------------------------------------------------*/
+static scanner_t *scanner;
 static packet_t packet;
 
 /* Private functions implementation --------------------------------------------*/
@@ -39,6 +37,9 @@ static void FINGER_IO_WRITE_U16(uint16_t cc);
  @param   packet A structure containing the bytes to transmit
  */
 /**************************************************************************/
+void fz3387_init(scanner_t *scan) {
+  scanner = scan;
+}
 
 void fz3387_writeStructuredPacket(void) {
 	FINGER_Reset_Buffer();
@@ -341,16 +342,16 @@ uint8_t fz3387_fingerFastSearch(void) {
 	};
 	// high speed search of slot #1 starting at page 0x0000 and page #0x00A3
 	fz3387_SendCmdPacket(data, sizeof(data));
-	finger.id = 0xFFFF;
-	finger.confidence = 0xFFFF;
+	scanner->id = 0xFFFF;
+	scanner->confidence = 0xFFFF;
 
-	finger.id = packet.data[1];
-	finger.id <<= 8;
-	finger.id |= packet.data[2];
+	scanner->id = packet.data[1];
+	scanner->id <<= 8;
+	scanner->id |= packet.data[2];
 
-	finger.confidence = packet.data[3];
-	finger.confidence <<= 8;
-	finger.confidence |= packet.data[4];
+	scanner->confidence = packet.data[3];
+	scanner->confidence <<= 8;
+	scanner->confidence |= packet.data[4];
 
 	return packet.data[0];
 }
@@ -368,9 +369,9 @@ uint8_t fz3387_getTemplateCount(void) {
 	};
 	fz3387_SendCmdPacket(data, sizeof(data));
 
-	finger.templateCount = packet.data[1];
-	finger.templateCount <<= 8;
-	finger.templateCount |= packet.data[2];
+	scanner->templateCount = packet.data[1];
+	scanner->templateCount <<= 8;
+	scanner->templateCount |= packet.data[2];
 
 	return packet.data[0];
 }

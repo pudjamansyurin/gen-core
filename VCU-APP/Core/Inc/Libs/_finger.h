@@ -12,6 +12,15 @@
 #include "Drivers/_fz3387.h"
 #include "Libs/_utils.h"
 
+/* Structs --------------------------------------------------------------------*/
+typedef struct {
+  scanner_t scanner;
+  struct {
+    UART_HandleTypeDef *uart;
+    DMA_HandleTypeDef *dma;
+  } handle;
+} finger_t;
+
 /* Public functions prototype ------------------------------------------------*/
 void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 void FINGER_DeInit(void);

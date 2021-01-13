@@ -10,19 +10,19 @@
 #include "Libs/_gyro.h"
 
 /* Private variables ----------------------------------------------------------*/
-static gyro_handler_t hGYRO;
+static gyro_t gyro;
 static MPU6050 mpu;
 
 /* Private functions prototype ------------------------------------------------*/
-static void Average(gyro_t *gyro, uint16_t sample);
+static void Average(mems_t *mems, uint16_t sample);
 static void Convert(coordinate_t *gyro, motion_t *motion);
-//static void Gyro_RawDebugger(gyro_t *gyro);
+//static void Gyro_RawDebugger(mems_t *mems);
 
 /* Public functions implementation --------------------------------------------*/
 void GYRO_Init(I2C_HandleTypeDef *hi2c) {
   MPU6050_Result result;
 
-  hGYRO.hi2c = hi2c;
+  gyro.handle.i2c = hi2c;
 
   do {
     LOG_StrLn("Gyro:Init");
@@ -31,7 +31,7 @@ void GYRO_Init(I2C_HandleTypeDef *hi2c) {
     GATE_GyroReset();
 
     // module initialization
-    result = MPU6050_Init(hGYRO.hi2c, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
+    result = MPU6050_Init(gyro.handle.i2c, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
 
   } while (result != MPU6050_Result_Ok);
 }
@@ -42,20 +42,20 @@ void GYRO_DeInit(void) {
 }
 
 movement_t GYRO_Decision(uint16_t sample, motion_t *motion) {
-  gyro_t gyro;
+  mems_t mems;
   motion_t mot;
   movement_t movement;
 
   // get gyro data
-  Average(&gyro, sample);
-  Convert(&(gyro.gyroscope), &mot);
+  Average(&mems, sample);
+  Convert(&(mems.gyroscope), &mot);
   memcpy(motion, &mot, sizeof(motion_t));
 
   // calculate g-force
   movement.crash.value = sqrt(
-      pow(gyro.accelerometer.x, 2) +
-          pow(gyro.accelerometer.y, 2) +
-          pow(gyro.accelerometer.z, 2)
+      pow(mems.accelerometer.x, 2) +
+          pow(mems.accelerometer.y, 2) +
+          pow(mems.accelerometer.z, 2)
               ) / GRAVITY_FORCE;
   movement.crash.state = (movement.crash.value > ACCELEROMETER_LIMIT );
 
@@ -88,18 +88,18 @@ void GYRO_Debugger(movement_t *movement) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static void Average(gyro_t *gyro, uint16_t sample) {
-  gyro_t m = { 0 };
+static void Average(mems_t *mems, uint16_t sample) {
+  mems_t m = { 0 };
   MPU6050_Result status;
 
   // sampling
   for (uint16_t i = 0; i < sample; i++) {
     // read sensor
     do {
-      status = MPU6050_ReadAll(hGYRO.hi2c, &mpu);
+      status = MPU6050_ReadAll(gyro.handle.i2c, &mpu);
 
       if (status != MPU6050_Result_Ok)
-        GYRO_Init(hGYRO.hi2c);
+        GYRO_Init(gyro.handle.i2c);
     } while (status != MPU6050_Result_Ok);
 
     // sum all value
@@ -125,7 +125,7 @@ static void Average(gyro_t *gyro, uint16_t sample) {
   m.temperature /= sample;
 
   // save the result
-  *gyro = m;
+  *mems = m;
 }
 
 static void Convert(coordinate_t *gyro, motion_t *motion) {
@@ -141,16 +141,16 @@ static void Convert(coordinate_t *gyro, motion_t *motion) {
   motion->pitch = mot.pitch == 0 ? 0 : RAD2DEG(atan(gyro->x / mot.pitch));
 }
 
-//static void Gyro_RawDebugger(gyro_t *gyro) {
+//static void Gyro_RawDebugger(mems_t *mems) {
 //	// raw data
 //	char str[100];
 //	sprintf(str,
 //			"Accelerometer\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
 //			"Gyroscope\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
 //			"Temperature: %d\n\n",
-//			gyro->accelerometer.x, gyro->accelerometer.y, gyro->accelerometer.z,
-//			gyro->gyroscope.x, gyro->gyroscope.y, gyro->gyroscope.z,
-//			(int8_t) gyro->temperature
+//			mems->accelerometer.x, mems->accelerometer.y, mems->accelerometer.z,
+//			mems->gyroscope.x, mems->gyroscope.y, mems->gyroscope.z,
+//			(int8_t) mems->temperature
 //	);
 //	LOG_Str(str);
 //}

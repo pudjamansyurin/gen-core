@@ -61,12 +61,15 @@
 
 /* Structs --------------------------------------------------------------------*/
 typedef struct {
-	I2S_HandleTypeDef *hi2s;
 	uint8_t initial_volume;
   struct {
   	uint16_t played;
   	uint32_t remaining;
   } size;
+  struct {
+    I2C_HandleTypeDef *i2c;
+    I2S_HandleTypeDef *i2s;
+  } handle;
 } audio_t;
 
 /* Public functions prototype -------------------------------------------------*/

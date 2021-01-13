@@ -33,32 +33,34 @@ typedef struct {
 } motion_float_t;
 
 typedef struct {
-	int32_t x;
-	int32_t y;
-	int32_t z;
+  int32_t x;
+  int32_t y;
+  int32_t z;
 } coordinate_t;
 
 typedef struct {
-	coordinate_t accelerometer;
-	coordinate_t gyroscope;
-	float temperature;
-} gyro_t;
+  coordinate_t accelerometer;
+  coordinate_t gyroscope;
+  float temperature;
+} mems_t;
 
 typedef struct {
-	struct {
-		uint8_t state;
-		uint32_t value;
-	} fall;
-	struct {
-		uint8_t state;
-		int32_t value;
-	} crash;
+  struct {
+    uint8_t state;
+    uint32_t value;
+  } fall;
+  struct {
+    uint8_t state;
+    int32_t value;
+  } crash;
   uint8_t fallen;
 } movement_t;
 
 typedef struct {
-	I2C_HandleTypeDef *hi2c;
-} gyro_handler_t;
+  struct {
+    I2C_HandleTypeDef *i2c;
+  } handle;
+} gyro_t;
 
 /* Public functions prototype ------------------------------------------------*/
 void GYRO_Init(I2C_HandleTypeDef *hi2c);

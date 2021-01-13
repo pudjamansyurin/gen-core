@@ -86,12 +86,10 @@ typedef struct {
     uint16_t id;
     uint16_t confidence;
     uint16_t templateCount;
-} finger_t;
-
-/* Exporeted variables -------------------------------------------------------*/
-extern finger_t finger;
+} scanner_t;
 
 /* Public functions prototype ------------------------------------------------*/
+void fz3387_init(scanner_t *scan);
 void fz3387_writeStructuredPacket(void);
 uint8_t fz3387_getStructuredPacket(void);
 uint8_t fz3387_SendCmdPacket(uint8_t *data, uint8_t size);
