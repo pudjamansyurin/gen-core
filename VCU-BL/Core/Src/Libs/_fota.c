@@ -16,7 +16,6 @@
 #include "i2c.h"
 #include "usart.h"
 
-
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
   SIMCOM_RESULT p = SIM_RESULT_OK;
@@ -33,14 +32,14 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   Simcom_SetState(SIM_STATE_READY, 0);
 
+  // Turn ON HMI-Primary, based on knob state.
+  GATE_Hmi1Power(GATE_ReadKnobState());
+
   /* Set FTP directory */
   if (type == IAP_VCU)
     strcpy(ftp.path, "/vcu/");
   else {
     strcpy(ftp.path, "/hmi/");
-
-    // Turn ON HMI-Primary, based on knob state.
-    GATE_Hmi1Power(GATE_ReadKnobState());
     _DelayMS(1000);
   }
 
