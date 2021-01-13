@@ -88,148 +88,148 @@ extern DMA_HandleTypeDef hdma_uart4_rx;
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
-    .name = "ManagerTask",
-    .priority = (osPriority_t) osPriorityRealtime,
-    .stack_size = 256 * 4
+  .name = "ManagerTask",
+  .priority = (osPriority_t) osPriorityRealtime,
+  .stack_size = 256 * 4
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
 const osThreadAttr_t IotTask_attributes = {
-    .name = "IotTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 416 * 4
+  .name = "IotTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 416 * 4
 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
 const osThreadAttr_t ReporterTask_attributes = {
-    .name = "ReporterTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 304 * 4
+  .name = "ReporterTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 304 * 4
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
 const osThreadAttr_t CommandTask_attributes = {
-    .name = "CommandTask",
-    .priority = (osPriority_t) osPriorityAboveNormal,
-    .stack_size = 256 * 4
+  .name = "CommandTask",
+  .priority = (osPriority_t) osPriorityAboveNormal,
+  .stack_size = 256 * 4
 };
 /* Definitions for GpsTask */
 osThreadId_t GpsTaskHandle;
 const osThreadAttr_t GpsTask_attributes = {
-    .name = "GpsTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 256 * 4
+  .name = "GpsTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 256 * 4
 };
 /* Definitions for GyroTask */
 osThreadId_t GyroTaskHandle;
 const osThreadAttr_t GyroTask_attributes = {
-    .name = "GyroTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 304 * 4
+  .name = "GyroTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 304 * 4
 };
 /* Definitions for RemoteTask */
 osThreadId_t RemoteTaskHandle;
 const osThreadAttr_t RemoteTask_attributes = {
-    .name = "RemoteTask",
-    .priority = (osPriority_t) osPriorityAboveNormal,
-    .stack_size = 256 * 4
+  .name = "RemoteTask",
+  .priority = (osPriority_t) osPriorityAboveNormal,
+  .stack_size = 256 * 4
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
 const osThreadAttr_t FingerTask_attributes = {
-    .name = "FingerTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 224 * 4
+  .name = "FingerTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 224 * 4
 };
 /* Definitions for AudioTask */
 osThreadId_t AudioTaskHandle;
 const osThreadAttr_t AudioTask_attributes = {
-    .name = "AudioTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 240 * 4
+  .name = "AudioTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 240 * 4
 };
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
 const osThreadAttr_t CanRxTask_attributes = {
-    .name = "CanRxTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 229 * 4
+  .name = "CanRxTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 229 * 4
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
-    .name = "CanTxTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 230 * 4
+  .name = "CanTxTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 230 * 4
 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
 const osThreadAttr_t Hmi2PowerTask_attributes = {
-    .name = "Hmi2PowerTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 176 * 4
+  .name = "Hmi2PowerTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 176 * 4
 };
 /* Definitions for GateTask */
 osThreadId_t GateTaskHandle;
 const osThreadAttr_t GateTask_attributes = {
-    .name = "GateTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 224 * 4
+  .name = "GateTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 224 * 4
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
 const osMessageQueueAttr_t CommandQueue_attributes = {
-    .name = "CommandQueue"
+  .name = "CommandQueue"
 };
 /* Definitions for ResponseQueue */
 osMessageQueueId_t ResponseQueueHandle;
 const osMessageQueueAttr_t ResponseQueue_attributes = {
-    .name = "ResponseQueue"
+  .name = "ResponseQueue"
 };
 /* Definitions for ReportQueue */
 osMessageQueueId_t ReportQueueHandle;
 const osMessageQueueAttr_t ReportQueue_attributes = {
-    .name = "ReportQueue"
+  .name = "ReportQueue"
 };
 /* Definitions for DriverQueue */
 osMessageQueueId_t DriverQueueHandle;
 const osMessageQueueAttr_t DriverQueue_attributes = {
-    .name = "DriverQueue"
+  .name = "DriverQueue"
 };
 /* Definitions for CanRxQueue */
 osMessageQueueId_t CanRxQueueHandle;
 const osMessageQueueAttr_t CanRxQueue_attributes = {
-    .name = "CanRxQueue"
+  .name = "CanRxQueue"
 };
 /* Definitions for LogMutex */
 osMutexId_t LogMutexHandle;
 const osMutexAttr_t LogMutex_attributes = {
-    .name = "LogMutex"
+  .name = "LogMutex"
 };
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
 const osMutexAttr_t EepromMutex_attributes = {
-    .name = "EepromMutex"
+  .name = "EepromMutex"
 };
 /* Definitions for RtcMutex */
 osMutexId_t RtcMutexHandle;
 const osMutexAttr_t RtcMutex_attributes = {
-    .name = "RtcMutex"
+  .name = "RtcMutex"
 };
 /* Definitions for CrcMutex */
 osMutexId_t CrcMutexHandle;
 const osMutexAttr_t CrcMutex_attributes = {
-    .name = "CrcMutex"
+  .name = "CrcMutex"
 };
 /* Definitions for AesMutex */
 osMutexId_t AesMutexHandle;
 const osMutexAttr_t AesMutex_attributes = {
-    .name = "AesMutex"
+  .name = "AesMutex"
 };
 /* Definitions for GlobalEvent */
 osEventFlagsId_t GlobalEventHandle;
 const osEventFlagsAttr_t GlobalEvent_attributes = {
-    .name = "GlobalEvent"
+  .name = "GlobalEvent"
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -255,10 +255,10 @@ void StartGateTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
- * @brief  FreeRTOS initialization
- * @param  None
- * @retval None
- */
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 

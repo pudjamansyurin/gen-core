@@ -9,12 +9,14 @@
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
 
-/* External variables ---------------------------------------------------------*/
+/* Private functions prototypes -----------------------------------------------*/
+static void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version);
+static uint8_t FW_ValidResponseIAP(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *hmi_version) {
   if (*bat < FOTA_MIN_VOLTAGE) {
-    sprintf(message, "Battery %u mV (< %u mV)", *bat, FOTA_MIN_VOLTAGE - *bat);
+    sprintf(message, "Battery %u mV (-%u mV)", *bat, FOTA_MIN_VOLTAGE - *bat);
     return 0;
   }
 
@@ -38,12 +40,11 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *h
 }
 
 uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_version) {
-  char node[4] = "VCU";
+  char node[4];
   uint8_t valid = 0;
 
   if (FW_ValidResponseIAP()) {
-    if (FOTA_TYPE == IAP_HMI)
-      sprintf(node, "HMI");
+    sprintf(node, FOTA_TYPE == IAP_VCU ? "VCU":"HMI");
 
     // set default value
     response->data.code = RESPONSE_STATUS_ERROR;
@@ -91,35 +92,32 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
   return valid;
 }
 
-void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version) {
+/* Private functions implementation --------------------------------------------*/
+static void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version) {
   uint32_t tick;
-  uint16_t versionNew = VCU_VERSION;
-  uint16_t versionOld = FOTA_VERSION;
+  uint16_t vNew = VCU_VERSION;
+  uint16_t vOld = FOTA_VERSION;
 
   if (FOTA_TYPE == IAP_HMI) {
     tick = _GetTickMS();
     do {
-      versionNew = *hmi_version;
+      vNew = *hmi_version;
       _DelayMS(100);
-    } while (!versionNew && (_GetTickMS() - tick > 5000));
+    } while (!vNew && (_GetTickMS() - tick < COMMAND_HMI_FOTA_TIMEOUT));
 
     /* Handle empty firmware */
-    if (versionOld == 0xFFFF)
-      versionOld = 0x0000;
+    if (vOld == 0xFFFF)
+      vOld = 0x0000;
+
   }
 
-  if (versionNew && (versionOld != versionNew)) {
-    sprintf(message,
-        "%s Upgraded v.%d -> v.%d",
-        node,
-        versionOld,
-        versionNew
-        );
-  } else
+  if (vNew && (vOld != vNew))
+    sprintf(message, "%s Upgraded v.%d -> v.%d", node, vOld, vNew);
+  else
     sprintf(message, "%s Success", node);
 }
 
-uint8_t FW_ValidResponseIAP(void) {
+static uint8_t FW_ValidResponseIAP(void) {
   uint8_t valid = 1;
 
   switch (*(uint32_t*) IAP_RESPONSE_ADDR) {

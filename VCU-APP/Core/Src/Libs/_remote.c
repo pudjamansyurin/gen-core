@@ -57,7 +57,8 @@ void RF_DeInit(void) {
 }
 
 uint8_t RF_Ping(uint8_t *unremote) {
-  *unremote =  ((_GetTickMS() - RF.tick.heartbeat) > REMOTE_TIMEOUT );
+  if (RF.tick.heartbeat)
+    *unremote =  ((_GetTickMS() - RF.tick.heartbeat) > REMOTE_TIMEOUT );
 
   GenRandomNumber32((uint32_t*) RF.tx.payload, NRF_DATA_LENGTH / 4);
 
