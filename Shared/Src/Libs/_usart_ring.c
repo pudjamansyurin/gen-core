@@ -9,7 +9,7 @@
 #include "Libs/_usart_ring.h"
 
 /* Public functions implementation --------------------------------------------*/
-void USART_DMA_Init(usart_ring_t *ring) {
+void USART_DMA_Start(usart_ring_t *ring) {
 	// enable idle line interrupt
 	__HAL_UART_ENABLE_IT(ring->huart, UART_IT_IDLE);
 	// enable DMA Tx cplt interrupt
@@ -20,7 +20,7 @@ void USART_DMA_Init(usart_ring_t *ring) {
 	HAL_UART_Receive_DMA(ring->huart, (uint8_t*) (ring->dma.buf), ring->dma.sz);
 }
 
-void USART_DMA_DeInit(usart_ring_t *ring) {
+void USART_DMA_Stop(usart_ring_t *ring) {
   HAL_UART_DMAStop(ring->huart);
 }
 

@@ -15,6 +15,5 @@
 /* Functions prototypes -------------------------------------------------------*/
 void RTOS_Debugger(uint32_t ms);
 uint8_t RTOS_ThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout);
-uint8_t RTOS_CalculateStack(osThreadId_t thread_id);
 
 #endif /* INC_LIBS_RTOS_UTILS_H_ */

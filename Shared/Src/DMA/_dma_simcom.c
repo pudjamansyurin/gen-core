@@ -34,14 +34,14 @@ static usart_ring_t SIMCOM_RING = {
 
 
 /* Public functions implementation ---------------------------------------------*/
-void SIMCOM_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+void SIMCOM_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	SIMCOM_RING.huart = huart;
 	SIMCOM_RING.hdma = hdma;
-	USART_DMA_Init(&SIMCOM_RING);
+	USART_DMA_Start(&SIMCOM_RING);
 }
 
-void SIMCOM_DMA_DeInit(void) {
-  USART_DMA_DeInit(&SIMCOM_RING);
+void SIMCOM_DMA_Stop(void) {
+  USART_DMA_Stop(&SIMCOM_RING);
 }
 
 void SIMCOM_DMA_IrqHandler(void) {

@@ -31,14 +31,14 @@ static usart_ring_t FINGER_RING = {
 };
 
 /* Public functions implementation ---------------------------------------------*/
-void FINGER_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+void FINGER_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	FINGER_RING.huart = huart;
 	FINGER_RING.hdma = hdma;
-	USART_DMA_Init(&FINGER_RING);
+	USART_DMA_Start(&FINGER_RING);
 }
 
-void FINGER_DMA_DeInit(void) {
-  USART_DMA_DeInit(&FINGER_RING);
+void FINGER_DMA_Stop(void) {
+  USART_DMA_Stop(&FINGER_RING);
 }
 
 void FINGER_DMA_IrqHandler(void) {

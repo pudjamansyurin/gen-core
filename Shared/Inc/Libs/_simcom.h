@@ -71,7 +71,7 @@ typedef struct {
     struct {
       UART_HandleTypeDef *uart;
       DMA_HandleTypeDef *dma;
-    } handle;
+    } h;
 } sim_t;
 
 /* Exported variables --------------------------------------------------------*/

@@ -6,12 +6,10 @@
  */
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
-#include "Drivers/_mpu6050.h"
 #include "Libs/_gyro.h"
 
 /* Private variables ----------------------------------------------------------*/
 static gyro_t gyro;
-static MPU6050 mpu;
 
 /* Private functions prototype ------------------------------------------------*/
 static void Average(mems_t *mems, uint16_t sample);
@@ -22,7 +20,7 @@ static void Convert(coordinate_t *gyro, motion_t *motion);
 void GYRO_Init(I2C_HandleTypeDef *hi2c) {
   MPU6050_Result result;
 
-  gyro.handle.i2c = hi2c;
+  gyro.h.i2c = hi2c;
 
   do {
     LOG_StrLn("Gyro:Init");
@@ -31,14 +29,14 @@ void GYRO_Init(I2C_HandleTypeDef *hi2c) {
     GATE_GyroReset();
 
     // module initialization
-    result = MPU6050_Init(gyro.handle.i2c, &mpu, MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
+    result = MPU6050_Init(gyro.h.i2c, &(gyro.mpu), MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
 
   } while (result != MPU6050_Result_Ok);
 }
 
 void GYRO_DeInit(void) {
   GATE_GyroShutdown();
-  MX_I2C3_DeInit();
+  HAL_I2C_DeInit(gyro.h.i2c);
 }
 
 movement_t GYRO_Decision(uint16_t sample, motion_t *motion) {
@@ -96,23 +94,23 @@ static void Average(mems_t *mems, uint16_t sample) {
   for (uint16_t i = 0; i < sample; i++) {
     // read sensor
     do {
-      status = MPU6050_ReadAll(gyro.handle.i2c, &mpu);
+      status = MPU6050_ReadAll(gyro.h.i2c, &(gyro.mpu));
 
       if (status != MPU6050_Result_Ok)
-        GYRO_Init(gyro.handle.i2c);
+        GYRO_Init(gyro.h.i2c);
     } while (status != MPU6050_Result_Ok);
 
     // sum all value
     // convert the RAW values into dps (deg/s)
-    m.accelerometer.x += mpu.Gyroscope_X / mpu.Gyro_Mult;
-    m.accelerometer.y += mpu.Gyroscope_Y / mpu.Gyro_Mult;
-    m.accelerometer.z += mpu.Gyroscope_Z / mpu.Gyro_Mult;
+    m.accelerometer.x += gyro.mpu.Gyroscope_X / gyro.mpu.Gyro_Mult;
+    m.accelerometer.y += gyro.mpu.Gyroscope_Y / gyro.mpu.Gyro_Mult;
+    m.accelerometer.z += gyro.mpu.Gyroscope_Z / gyro.mpu.Gyro_Mult;
     // convert the RAW values into acceleration in 'g'
-    m.gyroscope.x += mpu.Accelerometer_X / mpu.Acce_Mult;
-    m.gyroscope.y += mpu.Accelerometer_Y / mpu.Acce_Mult;
-    m.gyroscope.z += mpu.Accelerometer_Z / mpu.Acce_Mult;
+    m.gyroscope.x += gyro.mpu.Accelerometer_X / gyro.mpu.Acce_Mult;
+    m.gyroscope.y += gyro.mpu.Accelerometer_Y / gyro.mpu.Acce_Mult;
+    m.gyroscope.z += gyro.mpu.Accelerometer_Z / gyro.mpu.Acce_Mult;
     // temperature
-    m.temperature += mpu.Temperature;
+    m.temperature += gyro.mpu.Temperature;
   }
 
   // calculate the average

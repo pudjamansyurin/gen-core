@@ -20,8 +20,8 @@
 extern char UBLOX_UART_RX[UBLOX_UART_RX_SZ];
 
 /* Public functions prototype ------------------------------------------------*/
-void UBLOX_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
-void UBLOX_DMA_DeInit(void);
+void UBLOX_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
+void UBLOX_DMA_Stop(void);
 void UBLOX_DMA_IrqHandler(void);
 void UBLOX_USART_IrqHandler(void);
 

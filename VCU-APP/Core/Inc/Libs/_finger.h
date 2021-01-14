@@ -18,7 +18,7 @@ typedef struct {
   struct {
     UART_HandleTypeDef *uart;
     DMA_HandleTypeDef *dma;
-  } handle;
+  } h;
 } finger_t;
 
 /* Public functions prototype ------------------------------------------------*/

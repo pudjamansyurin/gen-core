@@ -20,12 +20,16 @@
 
 /* Structs -------------------------------------------------------------------*/
 typedef struct {
-    ADC_HandleTypeDef *hadc;
     uint16_t buffer[AVERAGE_SZ];
-} bat_handler_t;
+    struct {
+      ADC_HandleTypeDef *adc;
+    } h;
+} bat_t;
 
 /* Public functions prototypes ------------------------------------------*/
 void BAT_Init(ADC_HandleTypeDef *hadc);
-void BAT_ScanValue(uint16_t *bat);
+void BAT_DeInit(void);
+void BAT_ReInit(void);
+void BAT_ScanValue(uint16_t *voltage);
 
 #endif /* INC_LIBS__BAT_H_ */

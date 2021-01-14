@@ -31,14 +31,14 @@ static usart_ring_t GPS_RING = {
 };
 
 /* Public functions implementation ---------------------------------------------*/
-void UBLOX_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+void UBLOX_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	GPS_RING.huart = huart;
 	GPS_RING.hdma = hdma;
-	USART_DMA_Init(&GPS_RING);
+	USART_DMA_Start(&GPS_RING);
 }
 
-void UBLOX_DMA_DeInit(void) {
-  USART_DMA_DeInit(&GPS_RING);
+void UBLOX_DMA_Stop(void) {
+  USART_DMA_Stop(&GPS_RING);
 }
 
 void UBLOX_DMA_IrqHandler(void) {

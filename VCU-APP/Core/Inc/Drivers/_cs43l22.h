@@ -211,12 +211,14 @@
 
 /* Structs -------------------------------------------------------------------*/
 typedef struct {
-    I2C_HandleTypeDef *hi2c;
     uint8_t volume;
     uint8_t stopDevice;
     uint8_t outputDev;
     uint16_t outputDevice;
-} cs43l22_handler_t;
+    struct {
+      I2C_HandleTypeDef *i2c;
+    } h;
+} cs43l22_t;
 
 /* Public functions prototype ------------------------------------------------*/
 uint32_t cs43l22_Init(I2C_HandleTypeDef *hi2c, uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);

@@ -779,7 +779,7 @@ void StartRemoteTask(void *argument)
 {
   /* USER CODE BEGIN StartRemoteTask */
   uint32_t notif;
-  RF_CMD command;
+  RMT_CMD command;
 
   // wait until needed
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -788,7 +788,7 @@ void StartRemoteTask(void *argument)
 
   // initialization
   AES_Init(&hcryp);
-  RF_Init(&(VCU.d.unit_id), &hspi1);
+  RMT_Init(&(VCU.d.unit_id), &hspi1);
 
   /* Infinite loop */
   for (;;) {
@@ -798,34 +798,34 @@ void StartRemoteTask(void *argument)
     if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle threads management
       if (notif & EVT_REMOTE_TASK_STOP) {
-        RF_DeInit();
+        RMT_DeInit();
         RTOS_ThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
-        RF_Init(&(VCU.d.unit_id), &hspi1);
+        RMT_Init(&(VCU.d.unit_id), &hspi1);
       }
 
       // handle Pairing
       if (notif & EVT_REMOTE_PAIRING)
-        RF_Pairing(&(VCU.d.unit_id));
+        RMT_Pairing(&(VCU.d.unit_id));
 
       // handle incoming payload
       if (notif & EVT_REMOTE_RX_IT) {
-        // RF_Debugger();
+        // RMT_Debugger();
 
-        if (RF_GotPairedResponse())
+        if (RMT_GotPairedResponse())
           osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
 
         // process command
-        if (RF_ValidateCommand(&command)) {
-          if (command == RF_CMD_PING)
+        if (RMT_ValidateCommand(&command)) {
+          if (command == RMT_CMD_PING)
             LOG_StrLn("NRF:Command = PING");
-          else if (command == RF_CMD_SEAT) {
+          else if (command == RMT_CMD_SEAT) {
             LOG_StrLn("NRF:Command = SEAT");
 
             GATE_SeatToggle();
             // FIXME: use real starter button
             VCU.d.gpio.starter = 1;
           }
-          else if (command == RF_CMD_ALARM) {
+          else if (command == RMT_CMD_ALARM) {
             LOG_StrLn("NRF:Command = ALARM");
 
             for (uint8_t i = 0; i < 2; i++)
@@ -836,10 +836,10 @@ void StartRemoteTask(void *argument)
       // osThreadFlagsClear(EVT_MASK);
     }
 
-    RF_Ping(&(HMI1.d.state.unremote));
-//    if (HMI1.d.state.unremote && VCU.d.state.vehicle >= VEHICLE_NORMAL)
-//      if (_GetTickMS() - RF_Heartbeat() > REMOTE_RESET)
-//        RF_Init(&(VCU.d.unit_id), &hspi1);
+    RMT_Ping(&(HMI1.d.state.unremote));
+    if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
+      if (RMT_NeedReset())
+        RMT_Init(&(VCU.d.unit_id), &hspi1);
 
   }
   /* USER CODE END StartRemoteTask */
@@ -1142,14 +1142,16 @@ void StartGateTask(void *argument)
       //      osThreadFlagsClear(EVT_MASK);
 
       // Starter Button IRQ
-      if (notif & EVT_GATE_STARTER_IRQ) {
+      if (notif & EVT_GATE_STARTER_IRQ)
         VCU.d.gpio.starter = 1;
-      }
 
       // KNOB IRQ
-      if (notif & EVT_GATE_KNOB_IRQ) {
+      if (notif & EVT_GATE_KNOB_IRQ)
         VCU.d.gpio.knob = GATE_ReadKnobState();
-      }
+
+      // BMS Power IRQ
+      if (notif & EVT_GATE_REG_5V_IRQ)
+        VCU.d.gpio.power5v = GATE_ReadPower5v();
 
       // Handle switch EXTI interrupt
       if (notif & EVT_GATE_HBAR) {
@@ -1157,11 +1159,6 @@ void StartGateTask(void *argument)
         HBAR_TimerSelectSet();
         HBAR_RunSelectOrSet();
       }
-
-      // Handle other EXTI interrupt
-      // BMS Power IRQ
-      if (notif & EVT_GATE_REG_5V_IRQ)
-        VCU.d.gpio.power5v = GATE_ReadPower5v();
 
     }
 
@@ -1194,7 +1191,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
 
   if (GPIO_Pin == INT_REMOTE_IRQ_Pin)
-    RF_IrqHandler();
+    RMT_IrqHandler();
 
   for (uint8_t i = 0; i < HBAR_K_MAX; i++)
     if (GPIO_Pin == HBAR.list[i].pin)
@@ -1243,6 +1240,8 @@ static void CheckVehicleState(void) {
           lastState = VEHICLE_NORMAL;
           VCU.d.interval = RPT_INTERVAL_NORMAL;
           VCU.d.state.override = VEHICLE_NORMAL;
+
+          BAT_ReInit();
 
           osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
           osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);

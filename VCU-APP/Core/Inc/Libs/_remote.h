@@ -13,19 +13,19 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-  RF_CMD_PING = 0,
-  RF_CMD_ALARM,
-  RF_CMD_SEAT
-} RF_CMD;
+  RMT_CMD_PING = 0,
+  RMT_CMD_ALARM,
+  RMT_CMD_SEAT
+} RMT_CMD;
 
 typedef enum {
-  RF_ACTION_R = 0, RF_ACTION_W
-} RF_ACTION;
+  RMT_ACTION_R = 0, RMT_ACTION_W
+} RMT_ACTION;
 
 typedef enum {
-  RF_MODE_NORMAL = 0,
-  RF_MODE_PAIRING
-} RF_MODE;
+  RMT_MODE_NORMAL = 0,
+  RMT_MODE_PAIRING
+} RMT_MODE;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
@@ -41,19 +41,22 @@ typedef struct {
     uint32_t heartbeat;
     uint32_t pairing;
   } tick;
+  struct {
+    SPI_HandleTypeDef *spi;
+  } h;
 } remote_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RF_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi);
-void RF_DeInit(void);
-uint8_t RF_Ping(uint8_t *unremote);
-void RF_Pairing(uint32_t *unit_id);
-void RF_Debugger(void);
-uint8_t RF_ValidateCommand(RF_CMD *cmd);
-void RF_GenerateAesKey(uint32_t *aes);
-uint8_t RF_GotPairedResponse(void);
-void RF_IrqHandler(void);
-void RF_PacketReceived(uint8_t *data);
-uint32_t RF_Heartbeat(void);
+void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi);
+void RMT_DeInit(void);
+uint8_t RMT_Ping(uint8_t *unremote);
+void RMT_Pairing(uint32_t *unit_id);
+void RMT_Debugger(void);
+uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
+void RMT_GenerateAesKey(uint32_t *aes);
+uint8_t RMT_GotPairedResponse(void);
+void RMT_IrqHandler(void);
+void RMT_PacketReceived(uint8_t *data);
+uint8_t RMT_NeedReset(void);
 
 #endif /* REMOTE_H_ */

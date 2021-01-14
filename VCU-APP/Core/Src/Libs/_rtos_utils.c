@@ -65,10 +65,6 @@ uint8_t RTOS_ThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, 
   return ValidThreadFlag(*notif);
 }
 
-uint8_t RTOS_CalculateStack(osThreadId_t thread_id) {
-  return osThreadGetStackSpace(thread_id) * 100 / osThreadGetStackSize(thread_id);
-}
-
 /* Private functions implementation --------------------------------------------*/
 static uint8_t ValidThreadFlag(uint32_t flag) {
   // check is empty

@@ -47,7 +47,6 @@
 #define AUDIO_I2C_ADDRESS               0x94
 
 /* I2S peripheral configuration defines */
-#define I2S                            	SPI3
 #define DMA_MAX_SZE                     0xFFFF
 #define AUDIODATA_SIZE                  2   /* 16-bits audio data size */
 
@@ -69,7 +68,7 @@ typedef struct {
   struct {
     I2C_HandleTypeDef *i2c;
     I2S_HandleTypeDef *i2s;
-  } handle;
+  } h;
 } audio_t;
 
 /* Public functions prototype -------------------------------------------------*/

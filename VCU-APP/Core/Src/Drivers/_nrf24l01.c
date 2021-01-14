@@ -5,7 +5,6 @@
  *      Author: Puja
  */
 /* Includes ------------------------------------------------------------------*/
-#include "spi.h"
 #include "Drivers/_nrf24l01.h"
 #include "Libs/_remote.h"
 
@@ -32,27 +31,6 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
   NRF.config.rf_channel = 110;
   NRF.config.spi = hspi;
   NRF.config.spi_timeout = 3; // milliseconds
-}
-
-NRF_RESULT nrf_init(void) {
-  NRF_RESULT result;
-
-  // check hardware
-  do {
-    LOG_StrLn("NRF:Init");
-
-    HAL_SPI_Init(NRF.config.spi);
-    GATE_RemoteReset();
-
-    result = nrf_check();
-  } while (result == NRF_ERROR);
-
-  return NRF_OK;
-}
-
-void nrf_deinit(void) {
-  GATE_RemoteShutdown();
-  HAL_SPI_DeInit(NRF.config.spi);
 }
 
 // Checks the presence of the nRF24L01
@@ -760,7 +738,7 @@ __weak void nrf_packet_received_callback(uint8_t *data) {
   // default implementation (__weak) is used in favor of nrf_receive_packet
   NRF.rx_busy = 0;
 
-  RF_PacketReceived(data);
+  RMT_PacketReceived(data);
 }
 
 /* Private functions implementation --------------------------------------------*/

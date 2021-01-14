@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "rng.h"
+#include "spi.h"
 #include "Drivers/_aes.h"
 #include "Libs/_remote.h"
 #include "Libs/_eeprom.h"
@@ -16,7 +17,7 @@
 extern osThreadId_t RemoteTaskHandle;
 
 /* Private variables -----------------------------------------------------------*/
-static remote_t RF = {
+static remote_t RMT = {
     .tx = {
         .address = { 0x00, 0x00, 0x00, 0x00, 0xAB },
         .payload = { 0 },
@@ -37,64 +38,70 @@ static const uint8_t COMMAND[3][8] = {
 };
 
 /* Private functions declaration ---------------------------------------------*/
+static void ReInit(void);
 static void SetAesPayload(uint32_t *aes);
-static void ChangeMode(RF_MODE mode, uint32_t *unit_id);
-static uint8_t Payload(RF_ACTION action, uint8_t *payload);
+static void ChangeMode(RMT_MODE mode, uint32_t *unit_id);
+static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
 static void GenRandomNumber32(uint32_t *payload, uint8_t size);
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
-void RF_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi) {
-  nrf_param(hspi, RF.rx.payload);
-  nrf_init();
+void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi) {
+  RMT.h.spi = hspi;
+
+  nrf_param(hspi, RMT.rx.payload);
+
+  ReInit();
+
   nrf_configure();
-  ChangeMode(RF_MODE_NORMAL, unit_id);
+  ChangeMode(RMT_MODE_NORMAL, unit_id);
 }
 
-void RF_DeInit(void) {
-  nrf_deinit();
+void RMT_DeInit(void) {
+  GATE_RemoteShutdown();
+  HAL_SPI_DeInit(RMT.h.spi);
 }
 
-uint8_t RF_Ping(uint8_t *unremote) {
-  if (RF.tick.heartbeat)
-    *unremote =  ((_GetTickMS() - RF.tick.heartbeat) > REMOTE_TIMEOUT );
+uint8_t RMT_Ping(uint8_t *unremote) {
+  if (RMT.tick.heartbeat)
+    *unremote =  ((_GetTickMS() - RMT.tick.heartbeat) > REMOTE_TIMEOUT );
 
-  GenRandomNumber32((uint32_t*) RF.tx.payload, NRF_DATA_LENGTH / 4);
+  GenRandomNumber32((uint32_t*) RMT.tx.payload, NRF_DATA_LENGTH / 4);
 
-  return (nrf_send_packet_noack(RF.tx.payload) == NRF_OK);
+  return (nrf_send_packet_noack(RMT.tx.payload) == NRF_OK);
 }
 
-void RF_Pairing(uint32_t *unit_id) {
+void RMT_Pairing(uint32_t *unit_id) {
   uint32_t aes[4];
 
-  RF.tick.pairing = _GetTickMS();
+  RMT.tick.pairing = _GetTickMS();
 
   // Insert AES to payload
-  RF_GenerateAesKey(aes);
+  RMT_GenerateAesKey(aes);
   EEPROM_AesKey(EE_CMD_W, aes);
   SetAesPayload(aes);
 
   // Insert VCU_ID to payload
-  memcpy(&RF.tx.payload[NRF_DATA_LENGTH ], RF.tx.address, NRF_ADDR_LENGTH);
+  memcpy(&RMT.tx.payload[NRF_DATA_LENGTH ], RMT.tx.address, NRF_ADDR_LENGTH);
 
-  ChangeMode(RF_MODE_PAIRING, NULL);
-  nrf_send_packet_noack(RF.tx.payload);
+  ChangeMode(RMT_MODE_PAIRING, NULL);
+  nrf_send_packet_noack(RMT.tx.payload);
 
   // back to normal
-  nrf_init();
+  ReInit();
   nrf_configure();
-  ChangeMode(RF_MODE_NORMAL, unit_id);
+  ChangeMode(RMT_MODE_NORMAL, unit_id);
 }
 
-uint8_t RF_ValidateCommand(RF_CMD *cmd) {
-  uint8_t *payload = RF.tx.payload;
+uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
+  uint8_t *payload = RMT.tx.payload;
   uint8_t valid = 0, plain[NRF_DATA_LENGTH ];
   const uint8_t rng = NRF_DATA_LENGTH / 2;
 
   lock();
   // Read Payload
-  if (Payload(RF_ACTION_R, plain)) {
+  if (Payload(RMT_ACTION_R, plain)) {
     // Check Payload Command
     for (uint8_t i = 0; i < (sizeof(COMMAND) / sizeof(COMMAND[0])); i++) {
       // check command
@@ -107,7 +114,7 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
   }
   // Check is valid ping response
   if (valid)
-    if (*cmd == RF_CMD_PING || *cmd == RF_CMD_SEAT)
+    if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT)
       if (memcmp(&plain[rng], &payload[rng], rng) == 0)
         valid = 1;
   unlock();
@@ -115,82 +122,92 @@ uint8_t RF_ValidateCommand(RF_CMD *cmd) {
   return valid;
 }
 
-void RF_GenerateAesKey(uint32_t *aes) {
+void RMT_GenerateAesKey(uint32_t *aes) {
   GenRandomNumber32(aes, NRF_DATA_LENGTH / 4);
 }
 
-void RF_Debugger(void) {
+void RMT_Debugger(void) {
   lock();
   LOG_Str("NRF:Receive = ");
-  LOG_BufHex((char*) RF.rx.payload, NRF_DATA_LENGTH);
+  LOG_BufHex((char*) RMT.rx.payload, NRF_DATA_LENGTH);
   LOG_Enter();
   unlock();
 }
 
-uint8_t RF_GotPairedResponse(void) {
+uint8_t RMT_GotPairedResponse(void) {
   uint8_t paired = 0;
 
-  if (RF.tick.pairing > 0) {
-    if (_GetTickMS() - RF.tick.pairing < REMOTE_PAIRING_TIMEOUT)
+  if (RMT.tick.pairing > 0) {
+    if (_GetTickMS() - RMT.tick.pairing < REMOTE_PAIRING_TIMEOUT)
       paired = 1;
-    RF.tick.pairing = 0;
+    RMT.tick.pairing = 0;
   }
 
   return paired;
 }
 
-void RF_IrqHandler(void) {
+void RMT_IrqHandler(void) {
   nrf_irq_handler();
 }
 
-void RF_PacketReceived(uint8_t *data) {
-  RF.tick.heartbeat = _GetTickMS();
+void RMT_PacketReceived(uint8_t *data) {
+  RMT.tick.heartbeat = _GetTickMS();
   osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_RX_IT);
 }
 
-uint32_t RF_Heartbeat(void) {
-  return RF.tick.heartbeat;
+uint8_t RMT_NeedReset(void) {
+  return (_GetTickMS() - RMT.tick.heartbeat) > REMOTE_NEED_RESET;
 }
 
 /* Private functions implementation --------------------------------------------*/
+static void ReInit(void) {
+  do {
+    LOG_StrLn("NRF:Init");
+
+    //    HAL_SPI_Init(hspi);
+    MX_SPI1_Init();
+    GATE_RemoteReset();
+  } while (nrf_check() == NRF_ERROR);
+}
+
 static void SetAesPayload(uint32_t *aes) {
   uint32_t swapped;
 
   // insert to payload & swap byte order
   for (uint8_t i = 0; i < (NRF_DATA_LENGTH / 4); i++) {
     swapped = _ByteSwap32(*(aes + i));
-    memcpy(&RF.tx.payload[i * 4], &swapped, 4);
+    memcpy(&RMT.tx.payload[i * 4], &swapped, 4);
   }
 }
 
-static void ChangeMode(RF_MODE mode, uint32_t *unit_id) {
+static void ChangeMode(RMT_MODE mode, uint32_t *unit_id) {
   uint8_t payload_width;
 
-  if (mode == RF_MODE_NORMAL) {
+  if (mode == RMT_MODE_NORMAL) {
     // use VCU_ID as address
-    memcpy(RF.tx.address, unit_id, 4);
-    memcpy(RF.rx.address, unit_id, 4);
+    memcpy(RMT.tx.address, unit_id, 4);
+    memcpy(RMT.rx.address, unit_id, 4);
     payload_width = NRF_DATA_LENGTH;
   } else {
     // Set Address (pairing mode)
-    memset(RF.tx.address, 0x00, 4);
-    memset(RF.rx.address, 0x00, 4);
+    memset(RMT.tx.address, 0x00, 4);
+    memset(RMT.rx.address, 0x00, 4);
     payload_width = NRF_DATA_PAIR_LENGTH;
   }
 
   // Set NRF Config (pairing mode)
-  nrf_change_mode(RF.tx.address, RF.rx.address, payload_width);
+  nrf_change_mode(RMT.tx.address, RMT.rx.address, payload_width);
 }
 
-static uint8_t Payload(RF_ACTION action, uint8_t *payload) {
+static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
   uint8_t ret = 0;
 
   // Process Payload
   lock();
-  if (action == RF_ACTION_R)
-    ret = AES_Decrypt(payload, RF.rx.payload, NRF_DATA_LENGTH);
+  if (action == RMT_ACTION_R)
+    ret = AES_Decrypt(payload, RMT.rx.payload, NRF_DATA_LENGTH);
   else
-    ret = AES_Encrypt(RF.tx.payload, payload, NRF_DATA_LENGTH);
+    ret = AES_Encrypt(RMT.tx.payload, payload, NRF_DATA_LENGTH);
 
   unlock();
 

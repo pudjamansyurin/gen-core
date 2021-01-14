@@ -9,6 +9,7 @@
 // https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/transport.c
 // https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/pub0sub1.c
 /* Includes ------------------------------------------------------------------*/
+#include "usart.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_at.h"
@@ -76,17 +77,18 @@ char* Simcom_Response(char *str) {
 }
 
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
-  SIM.handle.uart = huart;
-  SIM.handle.dma = hdma;
+  SIM.h.uart = huart;
+  SIM.h.dma = hdma;
 
-  HAL_UART_Init(huart);
-  SIMCOM_DMA_Init(huart, hdma);
+  //  HAL_UART_Init(huart);
+  MX_USART1_UART_Init();
+  SIMCOM_DMA_Start(huart, hdma);
 }
 
 void Simcom_DeInit(void) {
   GATE_SimcomShutdown();
-  SIMCOM_DMA_DeInit();
-  HAL_UART_DeInit(SIM.handle.uart);
+  SIMCOM_DMA_Stop();
+  HAL_UART_DeInit(SIM.h.uart);
 }
 
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
@@ -352,7 +354,7 @@ static SIMCOM_RESULT PowerUp(void) {
   }
 
   // relay power control
-  Simcom_Init(SIM.handle.uart, SIM.handle.dma);
+  Simcom_Init(SIM.h.uart, SIM.h.dma);
   GATE_SimcomReset();
 
 #if (!BOOTLOADER)

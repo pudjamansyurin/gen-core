@@ -27,13 +27,21 @@ typedef struct {
   float speed_mps;
   uint8_t sat_in_use;
   uint8_t fix;
+} gps_data_t;
+
+typedef struct {
+  nmea_t nmea;
+  struct {
+    UART_HandleTypeDef *uart;
+    DMA_HandleTypeDef *dma;
+  } h;
 } gps_t;
 
 /* Public functions prototype ------------------------------------------------*/
 void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
-uint8_t GPS_Capture(gps_t *gps);
-uint8_t GPS_CalculateOdometer(gps_t *gps);
-uint8_t GPS_CalculateSpeed(gps_t *gps);
+uint8_t GPS_Capture(gps_data_t *data);
+uint8_t GPS_CalculateOdometer(gps_data_t *data);
+uint8_t GPS_CalculateSpeed(gps_data_t *data);
 void GPS_Debugger(void);
 
 #endif /* GPS_H_ */

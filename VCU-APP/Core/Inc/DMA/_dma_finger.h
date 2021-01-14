@@ -20,8 +20,8 @@
 extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
 
 /* Public functions prototype ------------------------------------------------*/
-void FINGER_DMA_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
-void FINGER_DMA_DeInit(void);
+void FINGER_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
+void FINGER_DMA_Stop(void);
 void FINGER_DMA_IrqHandler(void);
 void FINGER_USART_IrqHandler(void);
 void FINGER_Reset_Buffer(void);

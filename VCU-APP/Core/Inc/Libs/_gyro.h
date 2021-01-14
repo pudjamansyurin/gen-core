@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Drivers/_mpu6050.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define GRAVITY_FORCE                    (float) 9.8
@@ -57,9 +58,10 @@ typedef struct {
 } movement_t;
 
 typedef struct {
+  MPU6050 mpu;
   struct {
     I2C_HandleTypeDef *i2c;
-  } handle;
+  } h;
 } gyro_t;
 
 /* Public functions prototype ------------------------------------------------*/

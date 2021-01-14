@@ -120,8 +120,6 @@ typedef struct {
 
 /* Initialization routine */
 void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer);
-NRF_RESULT nrf_init(void);
-void nrf_deinit(void);
 NRF_RESULT nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address, uint8_t payload_width);
 NRF_RESULT nrf_configure(void);
 NRF_RESULT nrf_check(void);

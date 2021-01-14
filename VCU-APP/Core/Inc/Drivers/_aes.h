@@ -13,8 +13,10 @@
 
 /* Typedef -------------------------------------------------------------------*/
 typedef struct {
-    CRYP_HandleTypeDef *hcryp;
-} aes_handler_t;
+  struct {
+    CRYP_HandleTypeDef *cryp;
+  } h;
+} aes_t;
 
 /* Exported variables -------------------------------------------------------*/
 extern uint32_t AesKey[4];
