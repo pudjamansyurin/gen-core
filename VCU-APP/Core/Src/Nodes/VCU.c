@@ -113,7 +113,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar) {
   TxData.u8[0] |= HMI1.d.state.warning << 3;
   TxData.u8[0] |= HMI1.d.state.overheat << 4;
   TxData.u8[0] |= (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY) << 5;
-  TxData.u8[0] |= (HMI1.d.state.unremote && VCU.d.state.override < VEHICLE_STANDBY) << 6;
+  TxData.u8[0] |= HMI1.d.state.unremote << 6;
   TxData.u8[0] |= HMI1.d.state.daylight << 7;
 
   // sein value

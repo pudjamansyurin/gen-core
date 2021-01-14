@@ -51,12 +51,12 @@
 #define NET_BOOT_TIMEOUT             (uint32_t) 8000                // in ms
 #define NET_EXTRA_TIME               (uint32_t) 1000                // in ms
 
-#define NET_CON_APN                             "3gprs"
-#define NET_CON_USERNAME                        "3gprs"
-#define NET_CON_PASSWORD                        "3gprs"
-//#define NET_CON_APN                             "telkomsel"
-//#define NET_CON_USERNAME                        "wap"
-//#define NET_CON_PASSWORD                        "wap123"
+//#define NET_CON_APN                             "3gprs"
+//#define NET_CON_USERNAME                        "3gprs"
+//#define NET_CON_PASSWORD                        "3gprs"
+#define NET_CON_APN                             "telkomsel"
+#define NET_CON_USERNAME                        "wap"
+#define NET_CON_PASSWORD                        "wap123"
 //#define NET_CON_APN                             "indosatgprs"
 //#define NET_CON_USERNAME                        "indosat"
 //#define NET_CON_PASSWORD                        "indosat"

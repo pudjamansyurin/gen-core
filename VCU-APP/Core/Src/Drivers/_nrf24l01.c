@@ -23,7 +23,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
   NRF.config.payload_length = NRF_DATA_LENGTH;
   NRF.config.rx_buffer = rx_buffer;
 
-  NRF.config.data_rate = NRF_DATA_RATE_1MBPS;
+  NRF.config.data_rate = NRF_DATA_RATE_250KBPS;
   NRF.config.tx_power = NRF_TX_PWR_M18dBm;
   NRF.config.crc_width = NRF_CRC_WIDTH_1B;
   NRF.config.retransmit_count = 0x0F;   // maximum is 15 times
@@ -96,11 +96,12 @@ NRF_RESULT nrf_configure(void) {
   nrf_set_tx_power(NRF.config.tx_power);
 
   // retransmission (auto-ack ON)
-  nrf_set_retransmittion_count(NRF.config.retransmit_count);
-  nrf_set_retransmittion_delay(NRF.config.retransmit_delay);
+  // nrf_set_retransmittion_count(NRF.config.retransmit_count);
+  // nrf_set_retransmittion_delay(NRF.config.retransmit_delay);
+
   // auto ack (Enhanced ShockBurst) on pipe0
   nrf_enable_auto_ack(0x00);
-  //	nrf_disable_auto_ack();
+  //  nrf_disable_auto_ack();
 
   // clear interrupt
   nrf_clear_interrupts();

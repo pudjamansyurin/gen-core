@@ -837,9 +837,9 @@ void StartRemoteTask(void *argument)
     }
 
     RMT_Ping(&(HMI1.d.state.unremote));
-    if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
-      if (RMT_NeedReset())
-        RMT_Init(&(VCU.d.unit_id), &hspi1);
+//    if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
+//      if (RMT_NeedReset())
+//        RMT_Init(&(VCU.d.unit_id), &hspi1);
 
   }
   /* USER CODE END StartRemoteTask */

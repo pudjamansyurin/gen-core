@@ -61,6 +61,7 @@ void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi) {
 void RMT_DeInit(void) {
   GATE_RemoteShutdown();
   HAL_SPI_DeInit(RMT.h.spi);
+  _DelayMS(1000);
 }
 
 uint8_t RMT_Ping(uint8_t *unremote) {
@@ -161,12 +162,13 @@ uint8_t RMT_NeedReset(void) {
 
 /* Private functions implementation --------------------------------------------*/
 static void ReInit(void) {
+  MX_SPI1_Init();
   do {
     LOG_StrLn("NRF:Init");
 
     //    HAL_SPI_Init(hspi);
-    MX_SPI1_Init();
     GATE_RemoteReset();
+    _DelayMS(1000);
   } while (nrf_check() == NRF_ERROR);
 }
 
