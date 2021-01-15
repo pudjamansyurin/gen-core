@@ -9,8 +9,8 @@
 #define INC_LIBS__FOTA_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_simcom.h"
-#include "Drivers/_at.h"
+#include "Drivers/_simcom.h"
+#include "Libs/_at.h"
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type);

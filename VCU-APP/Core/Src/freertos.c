@@ -45,7 +45,6 @@
 #include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 
-#include "Libs/_rtos_utils.h"
 #include "Libs/_command.h"
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
@@ -738,7 +737,7 @@ void StartGyroTask(void *argument)
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-  RTOS_ThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
   osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   /* MPU6050 Initialization*/
@@ -749,9 +748,9 @@ void StartGyroTask(void *argument)
     VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
 
     // Check notifications
-    if (RTOS_ThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
+    if (_osThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
       GYRO_DeInit();
-      RTOS_ThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+      _osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
       GYRO_Init(&hi2c3);
     }
 
@@ -783,7 +782,7 @@ void StartRemoteTask(void *argument)
 
   // wait until needed
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-  RTOS_ThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
   osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   // initialization
@@ -795,11 +794,11 @@ void StartRemoteTask(void *argument)
     VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
     // Check response
-    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
       // handle threads management
       if (notif & EVT_REMOTE_TASK_STOP) {
         RMT_DeInit();
-        RTOS_ThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
+        _osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
         RMT_Init(&(VCU.d.unit_id), &hspi1);
       }
 
@@ -861,7 +860,7 @@ void StartFingerTask(void *argument)
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-  RTOS_ThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
   osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   // Initialisation
@@ -872,11 +871,11 @@ void StartFingerTask(void *argument)
     VCU.d.task.finger.wakeup = _GetTickMS() / 1000;
 
     // check if user put finger
-    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       // handle reset
       if (notif & EVT_FINGER_TASK_STOP) {
         FINGER_DeInit();
-        RTOS_ThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
+        _osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
         FINGER_Init(&huart4, &hdma_uart4_rx);
       }
 
@@ -930,7 +929,7 @@ void StartAudioTask(void *argument)
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-  RTOS_ThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
   osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
   /* Initialize Wave player (Codec, DMA, I2C) */
@@ -941,10 +940,10 @@ void StartAudioTask(void *argument)
     VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
 
     // wait with timeout
-    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       if (notif & EVT_AUDIO_TASK_STOP) {
         AUDIO_DeInit();
-        RTOS_ThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
+        _osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
         AUDIO_Init(&hi2c1, &hi2s3);
       }
 
@@ -1096,7 +1095,7 @@ void StartHmi2PowerTask(void *argument)
   for (;;) {
     VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
 
-    if (RTOS_ThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
+    if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
 
       if (HMI2.d.power)
         while (!HMI2.d.started)
@@ -1136,7 +1135,7 @@ void StartGateTask(void *argument)
     VCU.d.task.gate.wakeup = _GetTickMS() / 1000;
 
     // wait forever
-    if (RTOS_ThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
       // handle bounce effect
       _DelayMS(50);
       //      osThreadFlagsClear(EVT_MASK);

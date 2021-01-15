@@ -9,7 +9,6 @@
 #include "Drivers/_rtc.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_simcom.h"
-#include "Libs/_rtos_utils.h"
 #include "Libs/_reporter.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_eeprom.h"
@@ -132,7 +131,7 @@ uint8_t RPT_PacketPending(payload_t *payload) {
 
 	// Handle Full Buffer
   if (payload->type == PAYLOAD_REPORT)
-    if (RTOS_ThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
+    if (_osThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
 			payload->pending = 0;
 
 	// Check logs
