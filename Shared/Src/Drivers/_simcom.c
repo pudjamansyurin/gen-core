@@ -5,15 +5,12 @@
  *      Author: Puja
  */
 
-// FIXME: if you want to use MQTT
-// https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/transport.c
-// https://github.com/eclipse/paho.mqtt.embedded-c/blob/master/MQTTPacket/samples/pub0sub1.c
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_crc.h"
-#include "Drivers/_at.h"
-#include "Libs/_simcom.h"
+#include "Drivers/_simcom.h"
+#include "Libs/_at.h"
 #if (!BOOTLOADER)
 #include "Libs/_reporter.h"
 #include "Nodes/VCU.h"

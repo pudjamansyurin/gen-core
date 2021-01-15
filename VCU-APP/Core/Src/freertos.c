@@ -43,11 +43,11 @@
 #include "Drivers/_rtc.h"
 #include "Drivers/_aes.h"
 #include "Drivers/_bat.h"
+#include "Drivers/_simcom.h"
 
 #include "Libs/_rtos_utils.h"
 #include "Libs/_command.h"
 #include "Libs/_firmware.h"
-#include "Libs/_simcom.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_gyro.h"
 #include "Libs/_gps.h"

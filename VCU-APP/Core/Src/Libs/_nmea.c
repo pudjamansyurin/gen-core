@@ -38,7 +38,7 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  */
 /* Includes ------------------------------------------------------------------*/
-#include "Drivers/_nmea.h"
+#include "Libs/_nmea.h"
 
 /* Private constants ---------------------------------------------------------*/
 #define STAT_UNKNOWN        0

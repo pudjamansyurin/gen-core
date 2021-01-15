@@ -7,8 +7,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_canbus.h"
+#include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
-#include "Libs/_simcom.h"
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"

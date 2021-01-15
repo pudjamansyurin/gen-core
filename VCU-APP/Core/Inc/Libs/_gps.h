@@ -9,7 +9,7 @@
 #define GPS_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Drivers/_nmea.h"
+#include "Libs/_nmea.h"
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/

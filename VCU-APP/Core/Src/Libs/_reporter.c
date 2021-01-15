@@ -8,10 +8,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_rtc.h"
 #include "Drivers/_crc.h"
+#include "Drivers/_simcom.h"
 #include "Libs/_rtos_utils.h"
 #include "Libs/_reporter.h"
 #include "Libs/_handlebar.h"
-#include "Libs/_simcom.h"
 #include "Libs/_eeprom.h"
 #include "Nodes/BMS.h"
 
