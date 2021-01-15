@@ -13,6 +13,9 @@
 /* Private variables ----------------------------------------------------------*/
 static gps_t gps;
 
+/* Private functions protoypes -----------------------------------------------*/
+static void Debugger(void);
+
 /* Public functions implementation --------------------------------------------*/
 void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	uint32_t tick;
@@ -26,7 +29,7 @@ void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 
 	// Inititalize Module
 	do {
-		LOG_StrLn("GPS:Init");
+		Log("GPS:Init\n");
 
 		GATE_GpsReset();
 
@@ -63,6 +66,8 @@ uint8_t GPS_Capture(gps_data_t *data) {
 	data->speed_mps = nmea_to_speed(gps.nmea.speed, nmea_speed_mps);
   data->fix = gps.nmea.fix;
 
+  Debugger();
+
   return data->fix > 0;
 }
 
@@ -78,8 +83,7 @@ uint8_t GPS_CalculateSpeed(gps_data_t *data) {
   return data->speed_kph * 2;
 }
 
-void GPS_Debugger(void) {
-  LOG_StrLn("GPS:Buffer = ");
-  LOG_Buf(UBLOX_UART_RX, sizeof(UBLOX_UART_RX));
-  LOG_Enter();
+/* Private functions implementation --------------------------------------------*/
+static void Debugger(void) {
+  Log("GPS:Buffer = %.s\n", sizeof(UBLOX_UART_RX), UBLOX_UART_RX);
 }

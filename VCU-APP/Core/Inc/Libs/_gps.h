@@ -42,6 +42,5 @@ void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 uint8_t GPS_Capture(gps_data_t *data);
 uint8_t GPS_CalculateOdometer(gps_data_t *data);
 uint8_t GPS_CalculateSpeed(gps_data_t *data);
-void GPS_Debugger(void);
 
 #endif /* GPS_H_ */

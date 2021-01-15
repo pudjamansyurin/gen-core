@@ -38,13 +38,14 @@ static const uint8_t COMMAND[3][8] = {
 };
 
 /* Private functions declaration ---------------------------------------------*/
+static void lock(void);
+static void unlock(void);
 static void ReInit(void);
 static void SetAesPayload(uint32_t *aes);
 static void ChangeMode(RMT_MODE mode, uint32_t *unit_id);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
 static void GenRandomNumber32(uint32_t *payload, uint8_t size);
-static void lock(void);
-static void unlock(void);
+static void Debugger(void);
 
 /* Public functions implementation --------------------------------------------*/
 void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi) {
@@ -127,14 +128,6 @@ void RMT_GenerateAesKey(uint32_t *aes) {
   GenRandomNumber32(aes, NRF_DATA_LENGTH / 4);
 }
 
-void RMT_Debugger(void) {
-  lock();
-  LOG_Str("NRF:Receive = ");
-  LOG_BufHex((char*) RMT.rx.payload, NRF_DATA_LENGTH);
-  LOG_Enter();
-  unlock();
-}
-
 uint8_t RMT_GotPairedResponse(void) {
   uint8_t paired = 0;
 
@@ -153,6 +146,7 @@ void RMT_IrqHandler(void) {
 
 void RMT_PacketReceived(uint8_t *data) {
   RMT.tick.heartbeat = _GetTickMS();
+  // Debugger();
   osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_RX_IT);
 }
 
@@ -161,10 +155,18 @@ uint8_t RMT_NeedReset(void) {
 }
 
 /* Private functions implementation --------------------------------------------*/
+static void lock(void) {
+  //  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
+}
+
+static void unlock(void) {
+  //  osMutexRelease(RemoteRecMutexHandle);
+}
+
 static void ReInit(void) {
   MX_SPI1_Init();
   do {
-    LOG_StrLn("NRF:Init");
+    Log("NRF:Init\n");
 
     //    HAL_SPI_Init(hspi);
     GATE_RemoteReset();
@@ -221,10 +223,6 @@ static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
     HAL_RNG_GenerateRandomNumber(&hrng, payload++);
 }
 
-static void lock(void) {
-  //  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
-}
-
-static void unlock(void) {
-  //  osMutexRelease(RemoteRecMutexHandle);
+static void Debugger(void) {
+  Log("NRF:Receive = %.s\n", NRF_DATA_LENGTH, (char*) RMT.rx.payload);
 }

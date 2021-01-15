@@ -46,7 +46,8 @@ static void BeforeTransmitHook(void);
 static SIMCOM_RESULT GotServerCommand(command_t *command);
 #endif
 
-static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT p);
+static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay);
+static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT res);
 static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *retry);
 static uint8_t StatePoorSignal(void);
 
@@ -220,12 +221,10 @@ SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size) {
 
   // Debug: print payload
   if (SIMCOM_DEBUG) {
-    if (!upload) {
-      LOG_Str("\n=> ");
-      LOG_Buf(data, size);
-    } else
-      LOG_BufHex(data, size);
-    LOG_Enter();
+    if (!upload) 
+      Log("\n=> %.*s\n", size, data);
+    else
+      Log("\n=> %.*x\n", size, data);
   }
 
   // execute payload
@@ -236,10 +235,9 @@ SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size) {
   Simcom_Unlock();
 
   // Debug: print response (ignore FTPGET command)
-  if (SIMCOM_DEBUG && strncmp(data, SIMCOM_CMD_FTPGET, strlen(SIMCOM_CMD_FTPGET)) != 0) {
-    LOG_Buf(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX));
-    LOG_Enter();
-  }
+  if (SIMCOM_DEBUG)
+    if (strncmp(data, SIMCOM_CMD_FTPGET, strlen(SIMCOM_CMD_FTPGET)) != 0) 
+      Log("%.*s\n", sizeof(SIMCOM_UART_RX), SIMCOM_UART_RX);
 
   return res;
 }
@@ -260,11 +258,8 @@ SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration) {
   SIMCOM_RESULT res = SIM_RESULT_ERROR;
 
   // debug
-  if (iteration != NULL) {
-    LOG_Str("Simcom:Iteration = ");
-    LOG_Int((*iteration)++);
-    LOG_Enter();
-  }
+  if (iteration != NULL) 
+    Log("Simcom:Iteration = %u\n", (*iteration)++);
 
   // other routines
   res = Simcom_UpdateSignalQuality();
@@ -300,7 +295,7 @@ static SIMCOM_RESULT PowerUp(void) {
 }
 
 static SIMCOM_RESULT SoftReset(void) {
-  LOG_StrLn("Simcom:SoftReset");
+  Log("Simcom:SoftReset\n");
   SIMCOM_Reset_Buffer();
 
   GATE_SimcomSoftReset();
@@ -312,7 +307,7 @@ static SIMCOM_RESULT SoftReset(void) {
 }
 
 static SIMCOM_RESULT HardReset(void) {
-  LOG_StrLn("Simcom:HardReset");
+  Log("Simcom:HardReset\n");
   SIMCOM_Reset_Buffer();
 
   Simcom_Init(SIM.h.uart, SIM.h.dma);
@@ -357,14 +352,14 @@ static SIMCOM_RESULT ExecCommand(char *data, uint16_t size, uint32_t ms, char *r
       else {
         // exception for no response
         if (strlen(SIMCOM_UART_RX) == 0) {
+          Log("Simcom:NoResponse\n");
           res = SIM_RESULT_NO_RESPONSE;
           SIM.state = SIM_STATE_DOWN;
-          LOG_StrLn("Simcom:NoResponse");
         }
 
         // exception for accidentally reboot
         else if (Simcom_Resp(SIMCOM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {
-          LOG_StrLn("Simcom:Restarted");
+          Log("Simcom:Restarted\n");
           res = SIM_RESULT_RESTARTED;
           SIM.state = SIM_STATE_READY;
 #if (!BOOTLOADER)
@@ -380,7 +375,7 @@ static SIMCOM_RESULT ExecCommand(char *data, uint16_t size, uint32_t ms, char *r
 
         // exception for timeout
         else if ((_GetTickMS() - tick) > timeout) {
-          LOG_StrLn("Simcom:Timeout");
+          Log("Simcom:Timeout\n");
           res = SIM_RESULT_TIMEOUT;
         }
       }
@@ -441,25 +436,29 @@ static void BeforeTransmitHook(void) {
     osMessageQueuePut(CommandQueueHandle, &hCommand, 0U, 0U);
 
   // handle things on every request
-  //  LOG_StrLn("============ SIMCOM DEBUG ============");
-  //  LOG_Buf(SIMCOM_UART_RX, strlen(SIMCOM_UART_RX));
-  //  LOG_Enter();
-  //  LOG_StrLn("======================================");
+  Log("============ SIMCOM DEBUG ============\n");
+  Log("%.s\n", strlen(SIMCOM_UART_RX), SIMCOM_UART_RX);
+  Log("======================================\n");
 }
 #endif
 
+static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay) {
+  if (timeout && (_GetTickMS() - tick) > timeout) {
+    Log("Simcom:StateTimeout\n");
+    return 1;
+  }
+
+  _DelayMS(delay);
+  return 0;
+}
+
 static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT res) {
-  // Handle timeout
   if (timeout) {
-    // Update tick
     if (res == SIM_RESULT_OK)
       *tick = _GetTickMS();
 
-    // Timeout expired
-    if ((_GetTickMS() - *tick) > timeout) {
-      LOG_StrLn("Simcom:StateTimeout");
+    if (TimeoutReached(*tick, timeout, 0))
       return 1;
-    }
   }
   return 0;
 }
@@ -472,9 +471,7 @@ static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *retry) {
       SIM.state = SIM_STATE_DOWN;
       return 1;
     }
-    LOG_Str("Simcom:LockedLoop = ");
-    LOG_Int(*retry);
-    LOG_Enter();
+    Log("Simcom:LockedLoop = %u\n", *retry);
   }
   *lastState = SIM.state;
   return 0;
@@ -488,7 +485,7 @@ static uint8_t StatePoorSignal(void) {
     Simcom_IdleJob(NULL);
     if (SIM.state >= SIM_STATE_GPRS_ON) {
       if (SIM.signal < 15) {
-        LOG_StrLn("Simcom:PoorSignal");
+        Log("Simcom:PoorSignal\n");
         return 1;
       }
     }
@@ -497,7 +494,7 @@ static uint8_t StatePoorSignal(void) {
 }
 
 static void SetStateDown(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
-  LOG_StrLn("Simcom:Init");
+  Log("Simcom:Init\n");
 
   // power up the module
   *res = PowerUp();
@@ -505,9 +502,9 @@ static void SetStateDown(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
   // upgrade simcom state
   if (*res > 0) {
     (*state)++;
-    LOG_StrLn("Simcom:ON");
+    Log("Simcom:ON\n");
   } else
-    LOG_StrLn("Simcom:Error");
+    Log("Simcom:Error\n");
 }
 
 static void SetStateReady(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
@@ -588,12 +585,9 @@ static void SetStateConfigured(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t
       if (*res > 0)
         *res = AT_NetworkRegistration("CREG", ATR, &read);
 
-      // Handle timeout
-      if (timeout && (_GetTickMS() - tick) > timeout) {
-        LOG_StrLn("Simcom:StateTimeout");
+      if (TimeoutReached(tick, timeout, 1000))
         break;
-      }
-      _DelayMS(1000);
+        
     } while (*res && read.stat != param.stat);
   }
 
@@ -616,12 +610,9 @@ static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t 
       if (*res > 0)
         *res = AT_NetworkRegistration("CGREG", ATR, &read);
 
-      // Handle timeout
-      if (timeout && (_GetTickMS() - tick) > timeout) {
-        LOG_StrLn("Simcom:StateTimeout");
+      if (TimeoutReached(tick, timeout, 1000))
         break;
-      }
-      _DelayMS(1000);
+
     } while (*res && read.stat != param.stat);
   }
 
@@ -643,12 +634,9 @@ static void SetStateGprsOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tic
     do {
       *res = AT_GprsAttachment(ATR, &param);
 
-      // Handle timeout
-      if (timeout && (_GetTickMS() - tick) > timeout) {
-        LOG_StrLn("Simcom:StateTimeout");
+      if (TimeoutReached(tick, timeout, 1000))
         break;
-      }
-      _DelayMS(1000);
+
     } while (*res && !param);
   }
 
@@ -734,12 +722,9 @@ static void SetStateInternetOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPST
     do {
       AT_ConnectionStatusSingle(ipStatus);
 
-      // Handle timeout
-      if (timeout && (_GetTickMS() - tick) > timeout) {
-        LOG_StrLn("Simcom:StateTimeout");
+      if (TimeoutReached(tick, timeout, 1000))
         break;
-      }
-      _DelayMS(1000);
+
     } while (*ipStatus == CIPSTAT_CONNECTING);
   }
 
@@ -758,12 +743,9 @@ static void SetStateInternetOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPST
       do {
         AT_ConnectionStatusSingle(ipStatus);
 
-        // Handle timeout
-        if (timeout && (_GetTickMS() - tick) > timeout) {
-          LOG_StrLn("Simcom:StateTimeout");
-          break;
-        }
-        _DelayMS(1000);
+      if (TimeoutReached(tick, timeout, 1000))
+        break;
+
       } while (*ipStatus == CIPSTAT_CLOSING);
     }
 

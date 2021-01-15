@@ -23,80 +23,80 @@ uint8_t _osThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, ui
 
 void _DelayMS(uint32_t ms) {
 #if RTOS_ENABLE
-	osDelay(ms);
+  osDelay(ms);
 #else
-	HAL_Delay(ms);
+  HAL_Delay(ms);
 #endif
 }
 
 uint32_t _GetTickMS(void) {
 #if RTOS_ENABLE
-	return osKernelGetTickCount();
+  return osKernelGetTickCount();
 #else
-	return HAL_GetTick();
+  return HAL_GetTick();
 #endif
 }
 
 void _Error(char msg[50]) {
 #if RTOS_ENABLE
   if (osKernelGetState() == osKernelRunning)
-		LOG_StrLn(msg);
+    Log(msg);
 #else
-	LOG_StrLn(msg);
+  Log(msg);
 #endif
 
-	// indicator error
-	//	while (1) {
-	//		GATE_LedToggle();
-	//		HAL_Delay(50);
-	//	}
+  // indicator error
+  //	while (1) {
+  //		GATE_LedToggle();
+  //		HAL_Delay(50);
+  //	}
 }
 
 uint32_t _ByteSwap32(uint32_t x) {
-	uint32_t y = (x >> 24) & 0xff;
-	y |= ((x >> 16) & 0xff) << 8;
-	y |= ((x >> 8) & 0xff) << 16;
-	y |= (x & 0xff) << 24;
+  uint32_t y = (x >> 24) & 0xff;
+  y |= ((x >> 16) & 0xff) << 8;
+  y |= ((x >> 8) & 0xff) << 16;
+  y |= (x & 0xff) << 24;
 
-	return y;
+  return y;
 }
 
 #if (!BOOTLOADER)
 void _BuzzerWrite(uint8_t state) {
-	// note: https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
+  // note: https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
   if (state)
-		HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
   else
-		HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
 }
 
 void _DummyDataGenerator(void) {
   uint8_t *pRange = &(HBAR.runner.mode.d.report[HBAR_M_REPORT_RANGE]);
   uint8_t *pAverage = &(HBAR.runner.mode.d.report[HBAR_M_REPORT_AVERAGE]);
 
-	// Dummy Report Range
+  // Dummy Report Range
   if (!(*pRange))
-		*pRange = 255;
+    *pRange = 255;
   else
-		(*pRange)--;
+    (*pRange)--;
 
 
-	// Dummy Report Average (Efficiency)
+  // Dummy Report Average (Efficiency)
   if (*pAverage >= 255)
-		*pAverage = 0;
+    *pAverage = 0;
   else
-		(*pAverage)++;
+    (*pAverage)++;
 }
 
 int8_t _BitPosition(uint64_t event_id) {
-	uint8_t pos = -1;
+  uint8_t pos = -1;
 
   for (int8_t i = 0; i < 64; i++)
-		if (event_id & BIT(i)) {
-			pos = i;
-			break;
-		}
+    if (event_id & BIT(i)) {
+      pos = i;
+      break;
+    }
 
-	return pos;
+  return pos;
 }
 #endif

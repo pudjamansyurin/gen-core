@@ -101,6 +101,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
+  LogInit();
   EEPROM_Init(&hi2c2);
   CANBUS_Init(&hcan1);
   Simcom_Init(&huart1, &hdma_usart1_rx);
@@ -113,7 +114,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
   /* IAP flag has been set, initiate firmware download procedure */
   if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
-    LOG_StrLn("IAP set, do DFU.");
+    Log("IAP set, do DFU.\n");
     /* Everything went well */
     if (FOTA_Upgrade(FOTA_TYPE)) {
       /* Reset IAP flag */
@@ -128,14 +129,14 @@ int main(void)
   }
   /* Jump to application if it exist and DFU finished */
   else if (FOTA_ValidImage(APP_START_ADDR) && !FOTA_InProgressDFU()) {
-    LOG_StrLn("Jump to application.");
+    Log("Jump to application.\n");
     /* Jump sequence */
     FOTA_JumpToApplication();
   }
   /* Power reset during DFU, try once more */
   else if (FOTA_InProgressDFU()) {
     if (FOTA_TYPE == IAP_VCU) {
-      LOG_StrLn("DFU set, do DFU once more.");
+      Log("DFU set, do DFU once more.\n");
       /* Everything went well, boot form new image */
       if (FOTA_Upgrade(IAP_VCU)) {
         /* Take branching decision on next reboot */
@@ -152,14 +153,14 @@ int main(void)
   else {
     /* Check is the backup image valid */
     if (FOTA_ValidImage(BKP_START_ADDR)) {
-      LOG_StrLn("Has backed-up image, roll-back.");
+      Log("Has backed-up image, roll-back.\n");
       /* Restore back old image to application area */
       if (FLASHER_RestoreApp()) {
         /* Take branching decision on next reboot */
         FOTA_Reboot(FOTA_TYPE);
       }
     } else {
-      LOG_StrLn("No image at all, do DFU.");
+      Log("No image at all, do DFU.\n");
       /* Download new firmware for the first time */
       if (FOTA_Upgrade(IAP_VCU)) {
         /* Take branching decision on next reboot */

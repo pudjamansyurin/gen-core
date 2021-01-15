@@ -69,7 +69,7 @@ void AUDIO_Init(I2C_HandleTypeDef *hi2c, I2S_HandleTypeDef *hi2s) {
   audio.h.i2s = hi2s;
 
   do {
-    LOG_StrLn("Audio:Init");
+    Log("Audio:Init\n");
 
     // Mosftet control
     GATE_AudioReset();

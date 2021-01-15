@@ -121,7 +121,7 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
 #if (CANBUS_DEBUG)
     // debugging
     if (status == HAL_OK)
-      CANBUS_RxDebugger(Rx);
+      CANBUS_RxDebugger(&(Rx->header), &(Rx->data));
 #endif
 
   }
@@ -137,39 +137,25 @@ uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef *RxHeader) {
 }
 
 void CANBUS_TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
-  // debugging
-  LOG_Str("\n[TX] ");
-  if (TxHeader->IDE == CAN_ID_STD)
-    LOG_Hex32(TxHeader->StdId);
-  else
-    LOG_Hex32(TxHeader->ExtId);
-
-  LOG_Str(" => ");
-  if (TxHeader->RTR == CAN_RTR_DATA)
-    LOG_BufHex((char*) TxData, TxHeader->DLC);
-  else
-    LOG_Str("RTR");
-
-  LOG_Enter();
+  Log("\n[TX] 0x%08X => %.*s\n", 
+      (TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId : TxHeader->ExtId,
+          (TxHeader->RTR == CAN_RTR_DATA) ? TxHeader->DLC : strlen("RTR"),
+              (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR"
+  );
 }
 
-void CANBUS_RxDebugger(can_rx_t *Rx) {
-  // debugging
-  LOG_Str("\n[RX] ");
-  LOG_Hex32(CANBUS_ReadID(&(Rx->header)));
-  LOG_Str(" <= ");
-  if (Rx->header.RTR == CAN_RTR_DATA)
-    LOG_BufHex(Rx->data.CHAR, Rx->header.DLC);
-  else
-    LOG_Str("RTR");
-
-  LOG_Enter();
+void CANBUS_RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData) {
+  Log("\n[RX] 0x%08X <=  %.*s\n",
+      CANBUS_ReadID(RxHeader),
+      (RxHeader->RTR == CAN_RTR_DATA) ? RxHeader->DLC : strlen("RTR"),
+          (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR"
+  );
 }
 
 #if (!BOOTLOADER)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
   can_rx_t Rx;
-  
+
   if (CANBUS_Read(&Rx))
     if (osKernelGetState() == osKernelRunning)
       osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);

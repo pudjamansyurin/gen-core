@@ -21,7 +21,7 @@ static void Response_SetCRC(response_t *response);
 
 /* Public functions implementation -------------------------------------------*/
 void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
-	LOG_StrLn("Reporter:ReportInit");
+	Log("Reporter:ReportInit\n");
 
 	report->header.prefix[0] = PREFIX_REPORT[1];
 	report->header.prefix[1] = PREFIX_REPORT[0];
@@ -29,7 +29,7 @@ void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report)
 }
 
 void RPT_ResponseInit(response_t *response, uint16_t *seq_id_response) {
-	LOG_StrLn("Reporter:ResponseInit");
+	Log("Reporter:ResponseInit\n");
 
 	response->header.prefix[0] = PREFIX_REPORT[1];
 	response->header.prefix[1] = PREFIX_REPORT[0];
@@ -97,13 +97,12 @@ void RPT_ResponseCapture(response_t *response, uint32_t *unit_id) {
 }
 
 void RPT_CommandDebugger(command_t *cmd) {
-	LOG_Str("\nCommand:Payload [");
-	LOG_Int(cmd->data.code);
-	LOG_Str("-");
-	LOG_Int(cmd->data.sub_code);
-	LOG_Str("] = ");
-	LOG_BufHex((char*) &(cmd->data.value), sizeof(cmd->data.value));
-	LOG_Enter();
+	Log("\nCommand:Payload [%u-%u] = %.s\n",
+		cmd->data.code,
+		cmd->data.sub_code,
+		sizeof(cmd->data.value),
+		(char*) &(cmd->data.value)
+	);
 }
 
 FRAME_TYPE RPT_FrameDecider(uint8_t backup) {
@@ -148,7 +147,7 @@ uint8_t RPT_PacketPending(payload_t *payload) {
 }
 
 uint8_t RPT_SendPayload(payload_t *payload) {
-	SIMCOM_RESULT p;
+	SIMCOM_RESULT res;
 	report_t reporter;
 	header_t *pHeader;
 	const uint8_t size = sizeof(reporter.header.prefix)
@@ -165,21 +164,21 @@ uint8_t RPT_SendPayload(payload_t *payload) {
 		Response_SetCRC((response_t*) payload->pPayload);
 
 	// Send to server
-	p = Simcom_Upload(payload->pPayload, size + pHeader->size);
+	res = Simcom_Upload(payload->pPayload, size + pHeader->size);
 
 	// Handle looping NACK
-  if (p == SIM_RESULT_NACK)
+  if (res == SIM_RESULT_NACK)
 		// Probably  CRC not valid, cancel but force as success
     if (!--payload->retry)
-			p = SIM_RESULT_OK;
+			res = SIM_RESULT_OK;
 
 	// Release back
-	if (p == SIM_RESULT_OK) {
+	if (res == SIM_RESULT_OK) {
 		EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, payload->type);
 		payload->pending = 0;
 	}
 
-	return (p == SIM_RESULT_OK);
+	return (res == SIM_RESULT_OK);
 }
 
 /* Private functions implementation -------------------------------------------*/

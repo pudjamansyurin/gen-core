@@ -18,7 +18,7 @@
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
-  SIMCOM_RESULT p = SIM_RESULT_OK;
+  SIMCOM_RESULT res = SIM_RESULT_OK;
   uint32_t cksumOld, cksumNew = 0, len = 0;
   at_ftpget_t ftpget;
   at_ftp_t ftp = {
@@ -48,130 +48,125 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   FOCAN_SetProgress(type, 0.0f);
 
   /* Backup if needed */
-  if (p > 0)
+  if (res > 0)
     if (!FOTA_InProgressDFU())
       FOTA_SetDFU();
 
   /* Get the stored checksum information */
-  if (p > 0) {
+  if (res > 0) {
     if (type == IAP_VCU)
       FOTA_GetChecksum(&cksumOld);
     else
-      p = FOCAN_GetChecksum(&cksumOld);
+      res = FOCAN_GetChecksum(&cksumOld);
   }
 
-
   // Initialise SIMCOM
-  if (p > 0) {
-    p = Simcom_SetState(SIM_STATE_GPRS_ON, 60000);
+  if (res > 0) {
+    res = Simcom_SetState(SIM_STATE_GPRS_ON, 60000);
 
     // Initialise Bearer &  FTP
-    if (p > 0) {
+    if (res > 0) {
       // Initialise bearer for TCP based applications.
-      p = AT_BearerInitialize();
+      res = AT_BearerInitialize();
 
       // Initialise FTP
-      if (p > 0)
-        p = AT_FtpInitialize(&ftp);
+      if (res > 0)
+        res = AT_FtpInitialize(&ftp);
     }
 
     // Handle error
-    if (p <= 0)
+    if (res <= 0)
       *(uint32_t*) IAP_RESPONSE_ADDR = IAP_SIMCOM_TIMEOUT;
   }
 
   // Get file size
-  if (p > 0)
-    p = AT_FtpFileSize(&ftp);
+  if (res > 0)
+    res = AT_FtpFileSize(&ftp);
 
   // Open FTP Session
-  if (p > 0) {
+  if (res > 0) {
     ftpget.mode = FTPGET_OPEN;
-    p = AT_FtpDownload(&ftpget);
+    res = AT_FtpDownload(&ftpget);
 
-    if (p > 0)
-      p = ftpget.response == FTP_READY;
+    if (res > 0)
+      res = ftpget.response == FTP_READY;
   }
 
   // Get checksum of new firmware
-  if (p > 0) {
-    p = FOTA_DownloadChecksum(&ftp, &ftpget, &cksumNew);
+  if (res > 0) {
+    res = FOTA_DownloadChecksum(&ftp, &ftpget, &cksumNew);
 
     // Only download when image is different
-    if (p > 0) {
-      p = (cksumOld != cksumNew);
+    if (res > 0) {
+      res = (cksumOld != cksumNew);
 
       // Handle error
-      if (p <= 0)
+      if (res <= 0)
         *(uint32_t*) IAP_RESPONSE_ADDR = IAP_FIRMWARE_SAME;
     }
 
     // Decrease the total size
-    if (p > 0)
+    if (res > 0)
       ftp.size -= 4;
   }
 
   // Download & Program new firmware
-  if (p > 0) {
-    p = FOTA_DownloadFirmware(&ftp, &ftpget, &len, type);
+  if (res > 0) {
+    res = FOTA_DownloadFirmware(&ftp, &ftpget, &len, type);
 
     // Handle error
-    if (p <= 0)
+    if (res <= 0)
       if ((*(uint32_t*) IAP_RESPONSE_ADDR) != IAP_CANBUS_FAILED)
         *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DOWNLOAD_ERROR;
   }
 
   // Buffer filled, compare the checksum
-  if (p > 0) {
+  if (res > 0) {
     if (type == IAP_VCU) {
-      p = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
+      res = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
       // Glue related information to new image
-      if (p > 0) {
+      if (res > 0) {
         FOTA_GlueInfo32(CHECKSUM_OFFSET, &cksumNew);
         FOTA_GlueInfo32(SIZE_OFFSET, &len);
       }
     } else
-      p = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew);
+      res = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew);
 
     // Handle error
-    if (p <= 0)
+    if (res <= 0)
       *(uint32_t*) IAP_RESPONSE_ADDR = IAP_CHECKSUM_INVALID;
   }
 
   // Reset DFU flag only when FOTA success
-  if (p > 0) {
+  if (res > 0) {
     FOTA_ResetDFU();
 
     // Handle success
     *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_SUCCESS;
   }
 
-  return (p > 0);
+  return (res > 0);
 }
 
 uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t *checksum) {
-  SIMCOM_RESULT p;
+  SIMCOM_RESULT res;
 
   // Initiate Download
   setFTPGET->mode = FTPGET_READ;
   setFTPGET->reqlength = 4;
-  p = AT_FtpDownload(setFTPGET);
+  res = AT_FtpDownload(setFTPGET);
 
-  if (p > 0) {
-    // Copy to Buffer
+  if (res > 0) {
     memcpy(checksum, setFTPGET->ptr, sizeof(uint32_t));
 
-    // Indicator
-    LOG_Str("FOTA:ChecksumOrigin = ");
-    LOG_Hex32(*checksum);
-    LOG_Enter();
+    Log("FOTA:ChecksumOrigin = 0x%08X\n", *checksum);
   }
 
-  return (p == SIM_RESULT_OK);
+  return (res == SIM_RESULT_OK);
 }
 
 uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t *len, IAP_TYPE type) {
-  SIMCOM_RESULT p = SIM_RESULT_OK;
+  SIMCOM_RESULT res = SIM_RESULT_OK;
   AT_FTP_STATE state;
   uint32_t timer;
   float percent;
@@ -180,12 +175,12 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
   if (type == IAP_VCU)
     FLASHER_BackupApp();
   else
-    p = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size));
+    res = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size));
 
   // Read FTP File
-  if (p > 0) {
+  if (res > 0) {
     // Prepare, start timer
-    LOG_StrLn("FOTA:Start");
+    Log("FOTA:Start\n");
     timer = _GetTickMS();
     SIM.downloading = 1;
 
@@ -194,44 +189,38 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
     setFTPGET->reqlength = 1460;
     do {
       // Initiate Download
-      p = AT_FtpDownload(setFTPGET);
+      res = AT_FtpDownload(setFTPGET);
 
       // Copy buffer to flash
-      if (p > 0 && setFTPGET->cnflength) {
+      if (res > 0 && setFTPGET->cnflength) {
         if (type == IAP_VCU)
-          p = FLASHER_WriteAppArea((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len);
+          res = FLASHER_WriteAppArea((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len);
         else
-          p = FOCAN_DownloadFlash((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len, setFTP->size);
+          res = FOCAN_DownloadFlash((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len, setFTP->size);
       } else
         // failure
         break;
 
       // Check after flashing
-      if (p > 0) {
+      if (res > 0) {
         // Update pointer position
         *len += setFTPGET->cnflength;
 
         // Indicator
         percent = (float) (*len * 100.0f / setFTP->size);
         GATE_LedToggle();
-        LOG_Str("FOTA:Progress = ");
-        LOG_Int(*len);
-        LOG_Str(" Bytes (");
-        LOG_Int((uint8_t) percent);
-        LOG_StrLn("%)");
+        Log("FOTA:Progress = %u Bytes (%u%%)\n", *len, (uint8_t) percent);
 
         FOCAN_SetProgress(type, percent);
       }
-    } while ((p > 0) && (*len < setFTP->size));
+    } while ((res > 0) && (*len < setFTP->size));
 
     // Check, stop timer
-    if (*len == setFTP->size) {
-      LOG_Str("FOTA:End = ");
-      LOG_Int(_GetTickMS() - timer);
-      LOG_StrLn("ms");
-    } else {
-      LOG_StrLn("FOTA:Failed");
-      p = SIM_RESULT_ERROR;
+    if (*len == setFTP->size) 
+      Log("FOTA:End = %u ms\n", _GetTickMS() - timer);
+    else {
+      Log("FOTA:Failed\n");
+      res = SIM_RESULT_ERROR;
     }
   }
 
@@ -240,7 +229,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
   if (state == FTP_STATE_ESTABLISHED)
     Simcom_Cmd("AT+FTPQUIT\r", NULL, 500, 0);
 
-  return (p == SIM_RESULT_OK);
+  return (res == SIM_RESULT_OK);
 }
 
 uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address) {
@@ -251,16 +240,11 @@ uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address)
   crc = CRC_Calculate8(addr, len, 1);
 
   // Indicator
-  LOG_Str("FOTA:Checksum = ");
+  Log("FOTA:Checksum = ");
   if (crc == checksum)
-    LOG_StrLn("MATCH");
-  else {
-    LOG_StrLn("NOT MATCH");
-    LOG_Hex32(checksum);
-    LOG_Str(" != ");
-    LOG_Hex32(crc);
-    LOG_Enter();
-  }
+    Log("MATCH\n");
+  else
+    Log("DIFF (0x%08X != 0x%08X)\n", checksum, crc);
 
   return (crc == checksum);
 }

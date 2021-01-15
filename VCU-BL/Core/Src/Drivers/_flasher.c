@@ -45,13 +45,10 @@ static uint8_t FLASHER_WriteByte(uint8_t *ptr, uint32_t size, uint32_t address, 
     }
 
     /* Indicator */
-    if (!errors) {
-        LOG_StrLn("HAL_FLASH_Program = OK");
-    } else {
-        LOG_Str("HAL_FLASH_Program = ERROR:");
-        LOG_Int(errors);
-        LOG_Enter();
-    }
+    if (errors)
+        Log("HAL_FLASH_Program = ERROR:%u\n", errors);
+    else 
+        Log("HAL_FLASH_Program = OK\n");
 
     /* Lock the Flash to disable the flash control register access (recommended
      to protect the FLASH memory against possible unwanted operation) *********/
@@ -93,12 +90,9 @@ static uint8_t FLASHER_Erase(uint32_t FirstSector, uint32_t NbOfSectors) {
          HAL_FLASH_ERROR_WRP          0x00000010U    !< Write protection error
          HAL_FLASH_ERROR_OPERATION    0x00000020U    !< Operation Error
          */
-        LOG_Str("HAL_FLASHEx_Erase = ERROR:0x");
-        LOG_Hex32(HAL_FLASH_GetError());
-        LOG_Enter();
-    } else {
-        LOG_StrLn("HAL_FLASHEx_Erase = OK");
-    }
+        Log("HAL_FLASHEx_Erase = ERROR:0x%08X\n", HAL_FLASH_GetError());
+    } else 
+        Log("HAL_FLASHEx_Erase = OK\n");
 
     /* Note: If an erase operation in Flash memory also concerns data in the data or instruction cache,
      you have to make sure that these data are rewritten before they are accessed during code

@@ -419,7 +419,6 @@ void StartManagerTask(void *argument)
     // Vehicle states
     CheckVehicleState();
 
-    // RTOS_Debugger(1000);
     CheckTaskState(&(VCU.d.task));
 
     // _DummyDataGenerator();
@@ -709,7 +708,6 @@ void StartGpsTask(void *argument)
     lastWake = _GetTickMS();
 
     GPS_Capture(&(VCU.d.gps));
-    // GPS_Debugger();
 
     VCU.d.speed = GPS_CalculateSpeed(&(VCU.d.gps));
 
@@ -755,8 +753,7 @@ void StartGyroTask(void *argument)
     }
 
     // Read all accelerometer, gyroscope (average)
-    movement = GYRO_Decision(50, &(VCU.d.motion));
-    // GYRO_Debugger(&movement);
+    GYRO_Decision(&movement, &(VCU.d.motion), 50);
 
     VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
     // Indicators
@@ -808,24 +805,23 @@ void StartRemoteTask(void *argument)
 
       // handle incoming payload
       if (notif & EVT_REMOTE_RX_IT) {
-        // RMT_Debugger();
-
         if (RMT_GotPairedResponse())
           osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
 
         // process command
         if (RMT_ValidateCommand(&command)) {
+          Log("NRF:Command = ");
           if (command == RMT_CMD_PING)
-            LOG_StrLn("NRF:Command = PING");
+            Log("PING\n");
           else if (command == RMT_CMD_SEAT) {
-            LOG_StrLn("NRF:Command = SEAT");
+            Log("SEAT\n");
 
             GATE_SeatToggle();
             // FIXME: use real starter button
             VCU.d.gpio.starter = 1;
           }
           else if (command == RMT_CMD_ALARM) {
-            LOG_StrLn("NRF:Command = ALARM");
+            Log("ALARM\n");
 
             for (uint8_t i = 0; i < 2; i++)
               GATE_HornToggle(&(HBAR.runner.hazard));

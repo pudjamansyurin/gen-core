@@ -51,7 +51,6 @@ void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi);
 void RMT_DeInit(void);
 uint8_t RMT_Ping(uint8_t *unremote);
 void RMT_Pairing(uint32_t *unit_id);
-void RMT_Debugger(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
 void RMT_GenerateAesKey(uint32_t *aes);
 uint8_t RMT_GotPairedResponse(void);

@@ -14,7 +14,8 @@ static gyro_t gyro;
 /* Private functions prototype ------------------------------------------------*/
 static void Average(mems_t *mems, uint16_t sample);
 static void Convert(coordinate_t *gyro, motion_t *motion);
-//static void Gyro_RawDebugger(mems_t *mems);
+static void Debugger(movement_t *movement);
+static void RawDebugger(mems_t *mems);
 
 /* Public functions implementation --------------------------------------------*/
 void GYRO_Init(I2C_HandleTypeDef *hi2c) {
@@ -23,7 +24,7 @@ void GYRO_Init(I2C_HandleTypeDef *hi2c) {
   gyro.h.i2c = hi2c;
 
   do {
-    LOG_StrLn("Gyro:Init");
+    Log("Gyro:Init\n");
 
     MX_I2C3_Init();
     GATE_GyroReset();
@@ -39,10 +40,9 @@ void GYRO_DeInit(void) {
   HAL_I2C_DeInit(gyro.h.i2c);
 }
 
-movement_t GYRO_Decision(uint16_t sample, motion_t *motion) {
+void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample) {
   mems_t mems;
   motion_t mot;
-  movement_t movement;
 
   // get gyro data
   Average(&mems, sample);
@@ -50,39 +50,21 @@ movement_t GYRO_Decision(uint16_t sample, motion_t *motion) {
   memcpy(motion, &mot, sizeof(motion_t));
 
   // calculate g-force
-  movement.crash.value = sqrt(
+  movement->crash.value = sqrt(
       pow(mems.accelerometer.x, 2) +
-          pow(mems.accelerometer.y, 2) +
-          pow(mems.accelerometer.z, 2)
-              ) / GRAVITY_FORCE;
-  movement.crash.state = (movement.crash.value > ACCELEROMETER_LIMIT );
+      pow(mems.accelerometer.y, 2) +
+      pow(mems.accelerometer.z, 2)
+  ) / GRAVITY_FORCE;
+  movement->crash.state = (movement->crash.value > ACCELEROMETER_LIMIT );
 
   // calculate movement change
-  movement.fall.value = sqrt(pow(abs(mot.roll), 2) + pow(abs(mot.pitch), 2));
-  movement.fall.state = movement.fall.value > GYROSCOPE_LIMIT || mot.yaw < GYROSCOPE_LIMIT;
+  movement->fall.value = sqrt(pow(abs(mot.roll), 2) + pow(abs(mot.pitch), 2));
+  movement->fall.state = movement->fall.value > GYROSCOPE_LIMIT || mot.yaw < GYROSCOPE_LIMIT;
 
-  movement.fallen = movement.crash.state || movement.fall.state;
+  movement->fallen = movement->crash.state || movement->fall.state;
 
-  //	Gyro_RawDebugger(&gyro);
-  return movement;
-}
-
-void GYRO_Debugger(movement_t *movement) {
-  // calculated data
-  LOG_Str("IMU:Accel[");
-  LOG_Int(movement->crash.value * 100 / ACCELEROMETER_LIMIT);
-  LOG_Str(" %] = ");
-  LOG_Int(movement->crash.value);
-  LOG_Str(" / ");
-  LOG_Int(ACCELEROMETER_LIMIT);
-  LOG_Enter();
-  LOG_Str("IMU:Gyros[");
-  LOG_Int(movement->fall.value * 100 / GYROSCOPE_LIMIT);
-  LOG_Str(" %] = ");
-  LOG_Int(movement->fall.value);
-  LOG_Str(" / ");
-  LOG_Int(GYROSCOPE_LIMIT);
-  LOG_Enter();
+  //  RawDebugger(&mems);
+  //  Debugger(movement);
 }
 
 /* Private functions implementation --------------------------------------------*/
@@ -139,16 +121,26 @@ static void Convert(coordinate_t *gyro, motion_t *motion) {
   motion->pitch = mot.pitch == 0 ? 0 : RAD2DEG(atan(gyro->x / mot.pitch));
 }
 
-//static void Gyro_RawDebugger(mems_t *mems) {
-//	// raw data
-//	char str[100];
-//	sprintf(str,
-//			"Accelerometer\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-//			"Gyroscope\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-//			"Temperature: %d\n\n",
-//			mems->accelerometer.x, mems->accelerometer.y, mems->accelerometer.z,
-//			mems->gyroscope.x, mems->gyroscope.y, mems->gyroscope.z,
-//			(int8_t) mems->temperature
-//	);
-//	LOG_Str(str);
-//}
+static void Debugger(movement_t *movement) {
+  Log("IMU:Accel[%u %%] = %u / %u\n",
+      movement->crash.value * 100 / ACCELEROMETER_LIMIT,
+      movement->crash.value,
+      ACCELEROMETER_LIMIT
+  );
+  Log("IMU:Gyros[%u %%] = %u / %u\n",
+      movement->fall.value * 100 / GYROSCOPE_LIMIT,
+      movement->fall.value,
+      GYROSCOPE_LIMIT
+  );
+}
+
+static void RawDebugger(mems_t *mems) {
+  Log(
+      "Accelerometer:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+      "Gyroscope:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+      "Temperature: %d\n\n",
+      mems->accelerometer.x, mems->accelerometer.y, mems->accelerometer.z,
+      mems->gyroscope.x, mems->gyroscope.y, mems->gyroscope.z,
+      (int8_t) mems->temperature
+  );
+}

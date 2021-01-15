@@ -115,6 +115,7 @@ int main(void)
   MX_RNG_Init();
   MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
+  LogInit();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -248,7 +249,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 	sprintf(str, "Wrong parameters value: file %s on line %lu\r\n", file, line) ;
-	LOG_Str(str);
+
 	while(1);
   /* USER CODE END 6 */
 }
