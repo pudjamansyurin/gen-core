@@ -20,6 +20,7 @@
 #define SIMCOM_RSP_READY                "RDY"
 #define SIMCOM_RSP_IPD                  "+IPD,"
 #define SIMCOM_CMD_BOOT                 "AT\r"
+#define SIMCOM_CMD_FTPGET               "AT+FTPGET=2"
 #define SIMCOM_DEBUG                    (uint8_t) 1
 #define SIMCOM_MAX_UPLOAD_RETRY         (uint8_t) 3
 
@@ -80,8 +81,8 @@ extern sim_t SIM;
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
-char* Simcom_Response(char *str);
-SIMCOM_RESULT Simcom_Command(char *data, char *res, uint32_t ms, uint16_t size);
+char* Simcom_Resp(char *str);
+SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size);
 SIMCOM_RESULT Simcom_UpdateSignalQuality(void);
 SIMCOM_RESULT Simcom_IdleJob(uint8_t *iteration);
 void Simcom_Lock(void);

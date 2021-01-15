@@ -238,7 +238,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
   // Check state
   AT_FtpCurrentState(&state);
   if (state == FTP_STATE_ESTABLISHED)
-    Simcom_Command("AT+FTPQUIT\r", NULL, 500, 0);
+    Simcom_Cmd("AT+FTPQUIT\r", NULL, 500, 0);
 
   return (p == SIM_RESULT_OK);
 }

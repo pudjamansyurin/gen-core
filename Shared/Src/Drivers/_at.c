@@ -311,9 +311,9 @@ SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
 
 	// check either connection ok / error
 	if (p > 0) {
-		if (Simcom_Response("CONNECT OK")
-				|| Simcom_Response("ALREADY CONNECT")
-				|| Simcom_Response("TCP CLOSED")) {
+		if (Simcom_Resp("CONNECT OK")
+				|| Simcom_Resp("ALREADY CONNECT")
+				|| Simcom_Resp("TCP CLOSED")) {
 			p = SIM_RESULT_OK;
 		} else 
 			p = SIM_RESULT_ERROR;
@@ -616,7 +616,7 @@ static SIMCOM_RESULT SingleString(char command[20], AT_MODE mode, char *string, 
 }
 
 static uint8_t FindInBuffer(char *prefix, char **str) {
-	*str = Simcom_Response(prefix);
+	*str = Simcom_Resp(prefix);
 
 	if (*str != NULL) 
 		*str += strlen(prefix);
@@ -658,7 +658,7 @@ static SIMCOM_RESULT CmdWrite(char *cmd, uint32_t ms, char *res) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
 	if (SIM.state >= SIM_STATE_READY) 
-		p = Simcom_Command(cmd, res, ms, 0);
+		p = Simcom_Cmd(cmd, res, ms, 0);
 
 	return p;
 }
@@ -667,10 +667,10 @@ static SIMCOM_RESULT CmdRead(char *cmd, uint32_t ms, char *prefix, char **str) {
 	SIMCOM_RESULT p = SIM_RESULT_ERROR;
 
 	if (SIM.state >= SIM_STATE_READY) {
-		p = Simcom_Command(cmd, prefix, ms, 0);
+		p = Simcom_Cmd(cmd, prefix, ms, 0);
 
 		if (p > 0) {
-			*str = Simcom_Response(prefix);
+			*str = Simcom_Resp(prefix);
 
 			if (*str != NULL) {
 				*str += strlen(prefix);

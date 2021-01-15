@@ -30,7 +30,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
   NRF.config.retransmit_delay = 0x0F; // 4000us, LSB:250us
   NRF.config.rf_channel = 110;
   NRF.config.spi = hspi;
-  NRF.config.spi_timeout = 3; // milliseconds
+  NRF.config.spi_timeout = 10; // milliseconds
 }
 
 // Checks the presence of the nRF24L01

@@ -118,11 +118,11 @@ typedef struct __attribute__((packed)) {
 } command_t;
 
 // ACK frame (from server)
-typedef struct __attribute__((packed)) {
-  char prefix[2];
-  uint8_t frame_id;
-  uint16_t seq_id;
-} ack_t;
+// typedef struct __attribute__((packed)) {
+//   char prefix[2];
+//   uint8_t frame_id;
+//   uint16_t seq_id;
+// } ack_t;
 
 typedef struct {
   PAYLOAD_TYPE type;
