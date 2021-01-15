@@ -15,21 +15,23 @@ extern osMessageQueueId_t CanRxQueueHandle;
 #endif
 
 /* Private variables ----------------------------------------------------------*/
-static can_handler_t hCAN = {
+static can_t can = {
     .active = 0,
 };
 
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC);
 static uint8_t Activated(void);
+static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC);
+static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData);
+static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData);
 
 /* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(CAN_HandleTypeDef *hcan) {
   uint8_t error = 0;
 
-  hCAN.hcan = hcan;
+  can.h.can = hcan;
 
   GATE_CanbusReset();
   MX_CAN1_Init();
@@ -38,20 +40,19 @@ void CANBUS_Init(CAN_HandleTypeDef *hcan) {
     error = 1;
 
   if (!error)
-    if (HAL_CAN_Start(hCAN.hcan) != HAL_OK)
+    if (HAL_CAN_Start(can.h.can) != HAL_OK)
       error = 1;
 
 #if (!BOOTLOADER)
   if (!error)
-    if (HAL_CAN_ActivateNotification(hCAN.hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+    if (HAL_CAN_ActivateNotification(can.h.can, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
       error = 1;
-
 #endif
 
   if (error)
     Error_Handler();
 
-  hCAN.active = !error;
+  can.active = !error;
 }
 
 uint8_t CANBUS_Filter(void) {
@@ -72,7 +73,7 @@ uint8_t CANBUS_Filter(void) {
   // activate filter
   sFilterConfig.FilterActivation = ENABLE;
 
-  return (HAL_CAN_ConfigFilter(hCAN.hcan, &sFilterConfig) == HAL_OK);
+  return (HAL_CAN_ConfigFilter(can.h.can, &sFilterConfig) == HAL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -87,17 +88,13 @@ uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
 
   lock();
   Header(&TxHeader, address, DLC);
-  while (HAL_CAN_GetTxMailboxesFreeLevel(hCAN.hcan) == 0)
-    ;
+  while (HAL_CAN_GetTxMailboxesFreeLevel(can.h.can) == 0);
 
   /* Start the Transmission process */
-  status = HAL_CAN_AddTxMessage(hCAN.hcan, &TxHeader, TxData->u8, NULL);
+  status = HAL_CAN_AddTxMessage(can.h.can, &TxHeader, TxData->u8, NULL);
 
-#if (CANBUS_DEBUG)
-  // debugging
-  if (status == HAL_OK)
-    CANBUS_TxDebugger(&TxHeader, TxData);
-#endif
+  // if (status == HAL_OK)
+  //   TxDebugger(&TxHeader, TxData);
 
   unlock();
   return (status == HAL_OK);
@@ -113,16 +110,11 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
     return 0;
 
   lock();
-  /* Check FIFO */
-  if (HAL_CAN_GetRxFifoFillLevel(hCAN.hcan, CAN_RX_FIFO0)) {
-    /* Get RX message */
-    status = HAL_CAN_GetRxMessage(hCAN.hcan, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
+  if (HAL_CAN_GetRxFifoFillLevel(can.h.can, CAN_RX_FIFO0)) {
+    status = HAL_CAN_GetRxMessage(can.h.can, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
 
-#if (CANBUS_DEBUG)
-    // debugging
-    if (status == HAL_OK)
-      CANBUS_RxDebugger(&(Rx->header), &(Rx->data));
-#endif
+    // if (status == HAL_OK)
+    //   RxDebugger(&(Rx->header), &(Rx->data));
 
   }
   unlock();
@@ -134,22 +126,6 @@ uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef *RxHeader) {
   if (RxHeader->IDE == CAN_ID_STD)
     return RxHeader->StdId;
   return RxHeader->ExtId;
-}
-
-void CANBUS_TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
-  Log("\n[TX] 0x%08X => %.*s\n", 
-      (TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId : TxHeader->ExtId,
-          (TxHeader->RTR == CAN_RTR_DATA) ? TxHeader->DLC : strlen("RTR"),
-              (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR"
-  );
-}
-
-void CANBUS_RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData) {
-  Log("\n[RX] 0x%08X <=  %.*s\n",
-      CANBUS_ReadID(RxHeader),
-      (RxHeader->RTR == CAN_RTR_DATA) ? RxHeader->DLC : strlen("RTR"),
-          (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR"
-  );
 }
 
 #if (!BOOTLOADER)
@@ -191,8 +167,25 @@ static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC
 }
 
 static uint8_t Activated(void) {
-  if (!hCAN.active)
-    CANBUS_Init(hCAN.hcan);
+  if (!can.active)
+    CANBUS_Init(can.h.can);
 
-  return hCAN.active;
+  return can.active;
 }
+
+static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
+  Log("\n[TX] 0x%08X => %.*s\n", 
+      (TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId : TxHeader->ExtId,
+          (TxHeader->RTR == CAN_RTR_DATA) ? TxHeader->DLC : strlen("RTR"),
+              (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR"
+  );
+}
+
+static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData) {
+  Log("\n[RX] 0x%08X <=  %.*s\n",
+      CANBUS_ReadID(RxHeader),
+      (RxHeader->RTR == CAN_RTR_DATA) ? RxHeader->DLC : strlen("RTR"),
+          (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR"
+  );
+}
+
