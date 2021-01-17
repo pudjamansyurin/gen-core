@@ -1,5 +1,5 @@
 /*
- * _logger.h
+ * _log.h
  *
  *  Created on: Jan 15, 2021
  *      Author: pudja
@@ -13,6 +13,6 @@
 
 /* Public functions prototype ------------------------------------------------*/
 void LogInit(void);
-void Log(const char *fmt, ...);
+// void Log(const char *fmt, ...);
 
 #endif /* INC_LIBS__LOGGER_H_ */

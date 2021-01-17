@@ -810,18 +810,17 @@ void StartRemoteTask(void *argument)
 
         // process command
         if (RMT_ValidateCommand(&command)) {
-          Log("NRF:Command = ");
           if (command == RMT_CMD_PING)
-            Log("PING\n");
+            printf("NRF:Command = PING\n");
           else if (command == RMT_CMD_SEAT) {
-            Log("SEAT\n");
+            printf("NRF:Command = SEAT\n");
 
             GATE_SeatToggle();
             // FIXME: use real starter button
             VCU.d.gpio.starter = 1;
           }
           else if (command == RMT_CMD_ALARM) {
-            Log("ALARM\n");
+            printf("NRF:Command = ALARM\n");
 
             for (uint8_t i = 0; i < 2; i++)
               GATE_HornToggle(&(HBAR.runner.hazard));

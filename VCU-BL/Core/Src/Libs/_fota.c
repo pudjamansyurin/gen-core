@@ -159,7 +159,7 @@ uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
   if (res > 0) {
     memcpy(checksum, setFTPGET->ptr, sizeof(uint32_t));
 
-    Log("FOTA:ChecksumOrigin = 0x%08X\n", *checksum);
+    printf("FOTA:ChecksumOrigin = 0x%08X\n", (unsigned int) *checksum);
   }
 
   return (res == SIM_RESULT_OK);
@@ -180,7 +180,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
   // Read FTP File
   if (res > 0) {
     // Prepare, start timer
-    Log("FOTA:Start\n");
+    printf("FOTA:Start\n");
     timer = _GetTickMS();
     SIM.downloading = 1;
 
@@ -209,7 +209,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
         // Indicator
         percent = (float) (*len * 100.0f / setFTP->size);
         GATE_LedToggle();
-        Log("FOTA:Progress = %u Bytes (%u%%)\n", *len, (uint8_t) percent);
+        printf("FOTA:Progress = %lu Bytes (%u%%)\n", *len, (uint8_t) percent);
 
         FOCAN_SetProgress(type, percent);
       }
@@ -217,9 +217,9 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
 
     // Check, stop timer
     if (*len == setFTP->size) 
-      Log("FOTA:End = %u ms\n", _GetTickMS() - timer);
+      printf("FOTA:End = %lu ms\n", _GetTickMS() - timer);
     else {
-      Log("FOTA:Failed\n");
+      printf("FOTA:Failed\n");
       res = SIM_RESULT_ERROR;
     }
   }
@@ -240,11 +240,11 @@ uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address)
   crc = CRC_Calculate8(addr, len, 1);
 
   // Indicator
-  Log("FOTA:Checksum = ");
   if (crc == checksum)
-    Log("MATCH\n");
+    printf("FOTA:Checksum = MATCH\n");
   else
-    Log("DIFF (0x%08X != 0x%08X)\n", checksum, crc);
+    printf("FOTA:Checksum = DIFF (0x%08X != 0x%08X)\n",
+        (unsigned int) checksum, (unsigned int) crc);
 
   return (crc == checksum);
 }

@@ -21,7 +21,7 @@ static void Response_SetCRC(response_t *response);
 
 /* Public functions implementation -------------------------------------------*/
 void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
-	Log("Reporter:ReportInit\n");
+	printf("Reporter:ReportInit\n");
 
 	report->header.prefix[0] = PREFIX_REPORT[1];
 	report->header.prefix[1] = PREFIX_REPORT[0];
@@ -29,7 +29,7 @@ void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report)
 }
 
 void RPT_ResponseInit(response_t *response, uint16_t *seq_id_response) {
-	Log("Reporter:ResponseInit\n");
+	printf("Reporter:ResponseInit\n");
 
 	response->header.prefix[0] = PREFIX_REPORT[1];
 	response->header.prefix[1] = PREFIX_REPORT[0];
@@ -97,7 +97,7 @@ void RPT_ResponseCapture(response_t *response, uint32_t *unit_id) {
 }
 
 void RPT_CommandDebugger(command_t *cmd) {
-	Log("\nCommand:Payload [%u-%u] = %.s\n",
+	printf("Command:Payload [%u-%u] = %*s\n",
 		cmd->data.code,
 		cmd->data.sub_code,
 		sizeof(cmd->data.value),

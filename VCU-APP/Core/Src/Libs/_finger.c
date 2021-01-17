@@ -19,9 +19,9 @@ static finger_t finger;
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static void ConvertImage(uint8_t *error);
-static void GetImage(uint8_t *error, uint8_t enroll);
-static void DebugResponse(int8_t res, char *msg);
+static uint8_t ConvertImage(void);
+static uint8_t GetImage(uint8_t enroll);
+static void DebugResponse(uint8_t res, char *msg);
 
 /* Public functions implementation --------------------------------------------*/
 void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
@@ -33,7 +33,7 @@ void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 
   // Inititalize Module
   do {
-    Log("Finger:Init\n");
+    printf("Finger:Init\n");
 
     // control
     //	  HAL_UART_Init(huart);
@@ -57,57 +57,41 @@ void FINGER_DeInit(void) {
 }
 
 uint8_t FINGER_Enroll(uint8_t id) {
-  const TickType_t scan_time = (FINGER_SCAN_TIMEOUT);
-  uint8_t res, timeout, error = 0;
+  uint8_t res, error = 0;
   TickType_t tick;
 
   lock();
-  if (!error) {
-    res = fz3387_getTemplateCount();
+  res = fz3387_getTemplateCount();
+  DebugResponse(res, "Retrieve OK");
+  printf("Finger:TemplateCount = %u\n", finger.scanner.templateCount);
 
-    DebugResponse(res, "Retrieve OK");
-    Log("Finger:TemplateCount = %u\n", finger.scanner.templateCount);
-
-    error = (res != FINGERPRINT_OK) || (finger.scanner.templateCount >= FINGER_USER_MAX);
-  }
-
-  if (!error) {
-    Log("Finger:Waiting for valid finger to enroll as #%u\n", id);
+  if (res == FINGERPRINT_OK && finger.scanner.templateCount < FINGER_USER_MAX) {
+    printf("Finger:Waiting for valid finger to enroll as #%u\n", id);
 
     tick = _GetTickMS();
     do {
-      timeout = ((_GetTickMS() - tick) > scan_time);
+      error = !GetImage(1);
+      _DelayMS(10);
+    } while (error && (_GetTickMS() - tick) < FINGER_SCAN_TIMEOUT);
 
-      GetImage(&error, 1);
-    } while (error && !timeout);
+    if (!error)
+      if (ConvertImage()) {
+        printf("Finger:Creating model for #%u\n", id);
 
-    error = (res != FINGERPRINT_OK) || timeout;
+        res = fz3387_createModel();
+        DebugResponse(res, "Prints matched!");
+
+        if (res == FINGERPRINT_OK) {
+          printf("Finger:ID #%u\n", id);
+
+          res = fz3387_storeModel(id);
+          DebugResponse(res, "Stored!");
+        }
+      }
   }
-
-  if (!error)
-    ConvertImage(&error);
-
-  if (!error) {
-    Log("Finger:Creating model for #%u\n", id);
-
-    res = fz3387_createModel();
-    DebugResponse(res, "Prints matched!");
-
-    error = (res != FINGERPRINT_OK);
-  }
-
-  if (!error) {
-    Log("\nFinger:ID #%u\n", id);
-
-    res = fz3387_storeModel(id);
-    DebugResponse(res, "Stored!");
-
-    error = (res != FINGERPRINT_OK);
-  }
-
   unlock();
 
-  return !error;
+  return (!error && res == FINGERPRINT_OK);
 }
 
 uint8_t FINGER_DeleteID(uint8_t id) {
@@ -144,30 +128,22 @@ uint8_t FINGER_SetPassword(uint32_t password) {
 }
 
 int8_t FINGER_Auth(void) {
-  uint8_t res, error = 0;
+  uint8_t res;
   int8_t id = -1;
 
   lock();
-  if (!error)
-    GetImage(&error, 0);
+  if (GetImage(0)) 
+    if (ConvertImage()) {
+      res = fz3387_fingerFastSearch();
+      DebugResponse(res, "Found a print match!");
+      if (res == FINGERPRINT_OK) {
+        printf("Finger:Found ID #%u with confidence of %u\n", 
+            finger.scanner.id, finger.scanner.confidence);
 
-  if (!error)
-    ConvertImage(&error);
-
-  if (!error) {
-    res = fz3387_fingerFastSearch();
-    DebugResponse(res, "Found a print match!");
-
-    error = (res != FINGERPRINT_OK);
-  }
-
-  if (!error) {
-    Log("\nFinger:Found ID #%u with confidence of %u\n", 
-        finger.scanner.id, finger.scanner.confidence);
-
-    if (finger.scanner.confidence > FINGER_CONFIDENCE_MIN)
-      id = finger.scanner.id;
-  }
+        if (finger.scanner.confidence > FINGER_CONFIDENCE_MIN)
+          id = finger.scanner.id;
+      }
+    }
   unlock();
 
   return id;
@@ -180,7 +156,7 @@ int8_t FINGER_AuthFast(void) {
   if (fz3387_getImage() == FINGERPRINT_OK)
     if (fz3387_image2Tz(1) == FINGERPRINT_OK)
       if (fz3387_fingerFastSearch() == FINGERPRINT_OK)
-        if (finger.scanner.confidence > FINGER_CONFIDENCE_MIN)
+        if (finger.scanner.confidence >= FINGER_CONFIDENCE_MIN)
           id = finger.scanner.id;
   unlock();
 
@@ -198,65 +174,65 @@ static void unlock(void) {
   //	osMutexRelease(FingerRecMutexHandle);
 }
 
-static void GetImage(uint8_t *error, uint8_t enroll) {
+static uint8_t GetImage(uint8_t enroll) {
   uint8_t res;
 
   res = fz3387_getImage();
 
   if (enroll && res == FINGERPRINT_NOFINGER)
-    Log(".\n");
+    printf(".\n");
   else 
     DebugResponse(res, "Image taken");
 
-  *error = (res != FINGERPRINT_OK);
+  return (res == FINGERPRINT_OK);
 }
 
-static void ConvertImage(uint8_t *error) {
+static uint8_t ConvertImage(void) {
   uint8_t res;
 
   res = fz3387_image2Tz(1);
-  DebugResponse(res,"Image converted");
+  DebugResponse(res, "Image converted");
 
-  *error = (res != FINGERPRINT_OK);
+  return (res == FINGERPRINT_OK);
 }
 
-static void DebugResponse(int8_t res, char *msg) {
+static void DebugResponse(uint8_t res, char *msg) {
   switch (res) {
     case FINGERPRINT_OK:
-      Log("Finger:%s\n", msg);
+      printf("Finger:%s\n", msg);
       break;
     case FINGERPRINT_NOFINGER:
-      Log("Finger:No finger detected\n");
+      printf("Finger:No finger detected\n");
       break;
     case FINGERPRINT_NOTFOUND :
-      Log("Finger:Did not find a match\n");
+      printf("Finger:Did not find a match\n");
       break;
     case FINGERPRINT_PACKETRECIEVEERR:
-      Log("Finger:Communication error\n");
+      printf("Finger:Communication error\n");
       break;
     case FINGERPRINT_ENROLLMISMATCH :
-      Log("Finger:Fingerprints did not match\n");
+      printf("Finger:Fingerprints did not match\n");
       break;
     case FINGERPRINT_IMAGEMESS:
-      Log("Finger:Image too messy\n");
+      printf("Finger:Image too messy\n");
       break;
     case FINGERPRINT_IMAGEFAIL:
-      Log("Finger:Imaging error\n");
+      printf("Finger:Imaging error\n");
       break;
     case FINGERPRINT_FEATUREFAIL:
-      Log("Finger:Could not find finger print features\n");
+      printf("Finger:Could not find finger print features\n");
       break;
     case FINGERPRINT_INVALIDIMAGE:
-      Log("Finger:Could not find finger print features\n");
+      printf("Finger:Could not find finger print features\n");
       break;
     case FINGERPRINT_BADLOCATION :
-      Log("Finger:Could not execute in that location\n");
+      printf("Finger:Could not execute in that location\n");
       break;
     case FINGERPRINT_FLASHERR :
-      Log("Finger:Error writing to flash\n");
+      printf("Finger:Error writing to flash\n");
       break;
     default:
-      Log("Finger:Unknown error: 0x%02X\n", res);
+      printf("Finger:Unknown error: 0x%02X\n", res);
       break;
   }
 }

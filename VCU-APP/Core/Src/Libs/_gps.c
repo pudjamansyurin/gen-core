@@ -29,7 +29,7 @@ void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 
 	// Inititalize Module
 	do {
-		Log("GPS:Init\n");
+		printf("GPS:Init\n");
 
 		GATE_GpsReset();
 
@@ -85,5 +85,5 @@ uint8_t GPS_CalculateSpeed(gps_data_t *data) {
 
 /* Private functions implementation --------------------------------------------*/
 static void Debugger(void) {
-  Log("GPS:Buffer = %.s\n", sizeof(UBLOX_UART_RX), UBLOX_UART_RX);
+  printf("GPS:Buffer = %*s\n", sizeof(UBLOX_UART_RX), UBLOX_UART_RX);
 }

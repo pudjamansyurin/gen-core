@@ -1,5 +1,5 @@
 /*
- * _logger.c
+ * _log.c
  *
  *  Created on: Jan 15, 2021
  *      Author: pudja
@@ -7,7 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdarg.h>
-#include "Drivers/_logger.h"
+#include "Drivers/_log.h"
 #include "Libs/_utils.h"
 
 /* External variables ----------------------------------------------------------*/
@@ -18,37 +18,41 @@ extern osMutexId_t LogMutexHandle;
 /* Private functions declarations ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static void WriteChar(char ch);
+static void SendITM(char ch);
 
 /* Public functions implementation --------------------------------------------*/
 int __io_putchar(int ch) {
-  WriteChar(ch);
+  SendITM(ch);
   return ch;
 }
 
-//int _write(int32_t file, uint8_t *ptr, int32_t len)
-//{
-//  int i=0;
-//
-//  for(i=0 ; i<len ; i++)
-//    WriteChar((*ptr++));
-//
-//  return len;
-//}
+int _write(int file, char *ptr, int len)
+{
+	int DataIdx;
+
+  lock();
+	for (DataIdx = 0; DataIdx < len; DataIdx++)
+	{
+		__io_putchar(*ptr++);
+	}
+  unlock();
+
+	return len;
+}
 
 void LogInit(void) {
   setvbuf(stdout, NULL, _IONBF, 0);
 }
 
-void Log(const char *fmt, ...) {
-  va_list args;
+// void Log(const char *fmt, ...) {
+//   va_list args;
 
-  lock();
-  va_start(args, fmt);
-  vprintf(fmt, args);
-  va_end(args);
-  unlock();
-}
+//   lock();
+//   va_start(args, fmt);
+//   vprintf(fmt, args);
+//   va_end(args);
+//   unlock();
+// }
 
 /* Private functions implementations ----------------------------------------------*/
 static void lock(void) {
@@ -67,7 +71,7 @@ static void unlock(void) {
 #endif
 }
 
-static void WriteChar(char ch) {
+static void SendITM(char ch) {
 #ifdef DEBUG
   uint32_t tick;
 

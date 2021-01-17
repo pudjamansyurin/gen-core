@@ -80,7 +80,7 @@ SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
       signal->percent = (dBm + 115.0) * 100.0 / 63.0;
 
       // debugging
-      Log("\nSimcom:RSSI = %u %%\n", signal->percent);
+      printf("Simcom:RSSI = %u %%\n", signal->percent);
     }
   }
   Simcom_Unlock();

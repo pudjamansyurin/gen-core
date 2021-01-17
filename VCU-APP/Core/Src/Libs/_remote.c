@@ -166,7 +166,7 @@ static void unlock(void) {
 static void ReInit(void) {
   MX_SPI1_Init();
   do {
-    Log("NRF:Init\n");
+    printf("NRF:Init\n");
 
     //    HAL_SPI_Init(hspi);
     GATE_RemoteReset();
@@ -224,5 +224,5 @@ static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
 }
 
 static void Debugger(void) {
-  Log("NRF:Receive = %.s\n", NRF_DATA_LENGTH, (char*) RMT.rx.payload);
+  printf("NRF:Receive = %*s\n", NRF_DATA_LENGTH, (char*) RMT.rx.payload);
 }

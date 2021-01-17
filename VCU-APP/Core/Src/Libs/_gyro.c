@@ -24,7 +24,7 @@ void GYRO_Init(I2C_HandleTypeDef *hi2c) {
   gyro.h.i2c = hi2c;
 
   do {
-    Log("Gyro:Init\n");
+    printf("Gyro:Init\n");
 
     MX_I2C3_Init();
     GATE_GyroReset();
@@ -122,12 +122,12 @@ static void Convert(coordinate_t *gyro, motion_t *motion) {
 }
 
 static void Debugger(movement_t *movement) {
-  Log("IMU:Accel[%u %%] = %u / %u\n",
+  printf("IMU:Accel[%lu %%] = %lu / %lu\n",
       movement->crash.value * 100 / ACCELEROMETER_LIMIT,
       movement->crash.value,
       ACCELEROMETER_LIMIT
   );
-  Log("IMU:Gyros[%u %%] = %u / %u\n",
+  printf("IMU:Gyros[%lu %%] = %lu / %u\n",
       movement->fall.value * 100 / GYROSCOPE_LIMIT,
       movement->fall.value,
       GYROSCOPE_LIMIT
@@ -135,7 +135,7 @@ static void Debugger(movement_t *movement) {
 }
 
 static void RawDebugger(mems_t *mems) {
-  Log(
+  printf(
       "Accelerometer:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
       "Gyroscope:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
       "Temperature: %d\n\n",

@@ -43,7 +43,7 @@ uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c) {
   };
 
   lock();
-  Log("EEPROM:Init\n");
+  printf("EEPROM:Init\n");
   // check each eeprom
   for (uint8_t i = 0; i < EE_DEV_TOTAL ; i++) {
     if (!ret) {
@@ -51,7 +51,7 @@ uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c) {
       EEPROM24XX_SetDevice(hi2c, EEPROMS[i]);
       do {
         if (EEPROM24XX_IsConnected()) {
-          Log("EEPROM:Device = %u\n", i+1);
+          printf("EEPROM:Device = %u\n", i+1);
 
           ret = 1;
           break;
@@ -63,7 +63,7 @@ uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c) {
 
   // all failed
   if (!ret)
-    Log("EEPROM:Error\n");
+    printf("EEPROM:Error\n");
 
   unlock();
 

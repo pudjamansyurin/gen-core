@@ -40,9 +40,9 @@ uint32_t _GetTickMS(void) {
 void _Error(char msg[50]) {
 #if RTOS_ENABLE
   if (osKernelGetState() == osKernelRunning)
-    Log(msg);
+    printf(msg);
 #else
-  Log(msg);
+  printf(msg);
 #endif
 
   // indicator error

@@ -174,17 +174,17 @@ static uint8_t Activated(void) {
 }
 
 static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
-  Log("\n[TX] 0x%08X => %.*s\n", 
-      (TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId : TxHeader->ExtId,
-          (TxHeader->RTR == CAN_RTR_DATA) ? TxHeader->DLC : strlen("RTR"),
+  printf("[TX] 0x%08X => %*s\n",
+      (unsigned int) ((TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId : TxHeader->ExtId),
+          (TxHeader->RTR == CAN_RTR_DATA) ? (int) TxHeader->DLC : strlen("RTR"),
               (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR"
   );
 }
 
 static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData) {
-  Log("\n[RX] 0x%08X <=  %.*s\n",
-      CANBUS_ReadID(RxHeader),
-      (RxHeader->RTR == CAN_RTR_DATA) ? RxHeader->DLC : strlen("RTR"),
+  printf("[RX] 0x%08X <=  %*s\n",
+      (unsigned int) CANBUS_ReadID(RxHeader),
+      (RxHeader->RTR == CAN_RTR_DATA) ? (int) RxHeader->DLC : strlen("RTR"),
           (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR"
   );
 }
