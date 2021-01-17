@@ -28,51 +28,51 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-    SIM_RESULT_NACK = -4,
-    SIM_RESULT_RESTARTED = -3,
-    SIM_RESULT_NO_RESPONSE = -2,
-    SIM_RESULT_TIMEOUT = -1,
-    SIM_RESULT_ERROR = 0,
-    SIM_RESULT_OK = 1,
-    SIM_RESULT_ACK = 2,
+  //    SIM_RESULT_NACK = -4,
+  SIM_RESULT_RESTARTED = -3,
+  SIM_RESULT_NO_RESPONSE = -2,
+  SIM_RESULT_TIMEOUT = -1,
+  SIM_RESULT_ERROR = 0,
+  SIM_RESULT_OK = 1,
+  //    SIM_RESULT_ACK = 2,
 } SIMCOM_RESULT;
 
 typedef enum {
-    SIM_STATE_DOWN = -1,
-    SIM_STATE_READY = 0,
-    SIM_STATE_CONFIGURED = 1,
-    SIM_STATE_NETWORK_ON = 2,
-    SIM_STATE_GPRS_ON = 3,
-    SIM_STATE_PDP_ON = 4,
-    SIM_STATE_INTERNET_ON = 5,
-    SIM_STATE_SERVER_ON = 6
+  SIM_STATE_DOWN = -1,
+  SIM_STATE_READY = 0,
+  SIM_STATE_CONFIGURED = 1,
+  SIM_STATE_NETWORK_ON = 2,
+  SIM_STATE_GPRS_ON = 3,
+  SIM_STATE_PDP_ON = 4,
+  SIM_STATE_INTERNET_ON = 5,
+  SIM_STATE_SERVER_ON = 6
 } SIMCOM_STATE;
 
 typedef enum {
-    CIPSTAT_UNKNOWN = -1,
-    CIPSTAT_IP_INITIAL = 0,
-    CIPSTAT_IP_START,
-    CIPSTAT_IP_CONFIG,
-    CIPSTAT_IP_GPRSACT,
-    CIPSTAT_IP_STATUS,
-    CIPSTAT_CONNECTING,
-    CIPSTAT_CONNECT_OK,
-    CIPSTAT_CLOSING,
-    CIPSTAT_CLOSED,
-    CIPSTAT_PDP_DEACT,
-    CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
+  CIPSTAT_UNKNOWN = -1,
+  CIPSTAT_IP_INITIAL = 0,
+  CIPSTAT_IP_START,
+  CIPSTAT_IP_CONFIG,
+  CIPSTAT_IP_GPRSACT,
+  CIPSTAT_IP_STATUS,
+  CIPSTAT_CONNECTING,
+  CIPSTAT_CONNECT_OK,
+  CIPSTAT_CLOSING,
+  CIPSTAT_CLOSED,
+  CIPSTAT_PDP_DEACT,
+  CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CIPSTATUS;
 
 /* Struct -------------------------------------------------------------------*/
 typedef struct {
-    SIMCOM_STATE state;
-    AT_CIPSTATUS ip_status;
-    uint8_t signal;
-    uint8_t downloading;
-    struct {
-      UART_HandleTypeDef *uart;
-      DMA_HandleTypeDef *dma;
-    } h;
+  SIMCOM_STATE state;
+  AT_CIPSTATUS ip_status;
+  uint8_t signal;
+  uint8_t downloading;
+  struct {
+    UART_HandleTypeDef *uart;
+    DMA_HandleTypeDef *dma;
+  } h;
 } sim_t;
 
 /* Exported variables --------------------------------------------------------*/

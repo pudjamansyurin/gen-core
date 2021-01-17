@@ -21,92 +21,92 @@ static void Response_SetCRC(response_t *response);
 
 /* Public functions implementation -------------------------------------------*/
 void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
-	printf("Reporter:ReportInit\n");
+  printf("Reporter:ReportInit\n");
 
-	report->header.prefix[0] = PREFIX_REPORT[1];
-	report->header.prefix[1] = PREFIX_REPORT[0];
-	report->header.seq_id = *seq_id_report;
+  report->header.prefix[0] = PREFIX_REPORT[1];
+  report->header.prefix[1] = PREFIX_REPORT[0];
+  report->header.seq_id = *seq_id_report;
 }
 
 void RPT_ResponseInit(response_t *response, uint16_t *seq_id_response) {
-	printf("Reporter:ResponseInit\n");
+  printf("Reporter:ResponseInit\n");
 
-	response->header.prefix[0] = PREFIX_REPORT[1];
-	response->header.prefix[1] = PREFIX_REPORT[0];
-	response->header.seq_id = *seq_id_response;
+  response->header.prefix[0] = PREFIX_REPORT[1];
+  response->header.prefix[1] = PREFIX_REPORT[0];
+  response->header.seq_id = *seq_id_response;
 }
 
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar) {
-    RPT_ReportCaptureHeader(frame, report, vcu->unit_id);
-  
-	// Reconstruct the body
-	report->data.req.vcu.driver_id = vcu->driver_id;
-	report->data.req.vcu.events_group = vcu->events;
-	report->data.req.vcu.rtc.log = RTC_Read();
+  RPT_ReportCaptureHeader(frame, report, vcu->unit_id);
 
-	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-		report->data.req.bms.pack[i].id = bms->pack[i].id;
-		report->data.req.bms.pack[i].voltage = bms->pack[i].voltage * 100;
-		report->data.req.bms.pack[i].current = (bms->pack[i].current + 50) * 100;
-	}
+  // Reconstruct the body
+  report->data.req.vcu.driver_id = vcu->driver_id;
+  report->data.req.vcu.events_group = vcu->events;
+  report->data.req.vcu.rtc.log = RTC_Read();
 
-	// Add more (if full frame)
-	if (frame == FR_FULL) {
-      report->data.opt.vcu.vehicle = (int8_t) vcu->state.vehicle;
+  for (uint8_t i = 0; i < BMS_COUNT ; i++) {
+    report->data.req.bms.pack[i].id = bms->pack[i].id;
+    report->data.req.bms.pack[i].voltage = bms->pack[i].voltage * 100;
+    report->data.req.bms.pack[i].current = (bms->pack[i].current + 50) * 100;
+  }
 
-		report->data.opt.vcu.gps.latitude = (int32_t) (vcu->gps.latitude * 10000000);
-		report->data.opt.vcu.gps.longitude = (int32_t) (vcu->gps.longitude * 10000000);
-		report->data.opt.vcu.gps.altitude = (uint32_t) vcu->gps.altitude;
-		report->data.opt.vcu.gps.hdop = (uint8_t) (vcu->gps.dop_h * 10);
-		report->data.opt.vcu.gps.vdop = (uint8_t) (vcu->gps.dop_v * 10);
-		report->data.opt.vcu.gps.heading = (uint8_t) (vcu->gps.heading / 2);
+  // Add more (if full frame)
+  if (frame == FR_FULL) {
+    report->data.opt.vcu.vehicle = (int8_t) vcu->state.vehicle;
+
+    report->data.opt.vcu.gps.latitude = (int32_t) (vcu->gps.latitude * 10000000);
+    report->data.opt.vcu.gps.longitude = (int32_t) (vcu->gps.longitude * 10000000);
+    report->data.opt.vcu.gps.altitude = (uint32_t) vcu->gps.altitude;
+    report->data.opt.vcu.gps.hdop = (uint8_t) (vcu->gps.dop_h * 10);
+    report->data.opt.vcu.gps.vdop = (uint8_t) (vcu->gps.dop_v * 10);
+    report->data.opt.vcu.gps.heading = (uint8_t) (vcu->gps.heading / 2);
     report->data.opt.vcu.gps.sat_in_use = (uint8_t) vcu->gps.sat_in_use;
 
-		report->data.opt.vcu.speed = vcu->speed;
-		report->data.opt.vcu.odometer = vcu->odometer;
+    report->data.opt.vcu.speed = vcu->speed;
+    report->data.opt.vcu.odometer = vcu->odometer;
 
-		report->data.opt.vcu.trip.a = hbar->trip[HBAR_M_TRIP_A];
-		report->data.opt.vcu.trip.b = hbar->trip[HBAR_M_TRIP_B];
-		report->data.opt.vcu.report.range = hbar->report[HBAR_M_REPORT_RANGE];
-		report->data.opt.vcu.report.efficiency = hbar->report[HBAR_M_REPORT_AVERAGE];
+    report->data.opt.vcu.trip.a = hbar->trip[HBAR_M_TRIP_A];
+    report->data.opt.vcu.trip.b = hbar->trip[HBAR_M_TRIP_B];
+    report->data.opt.vcu.report.range = hbar->report[HBAR_M_REPORT_RANGE];
+    report->data.opt.vcu.report.efficiency = hbar->report[HBAR_M_REPORT_AVERAGE];
 
-		report->data.opt.vcu.signal = SIM.signal;
+    report->data.opt.vcu.signal = SIM.signal;
     report->data.opt.vcu.bat = vcu->bat / 18;
 
-		for (uint8_t i = 0; i < BMS_COUNT ; i++) {
+    for (uint8_t i = 0; i < BMS_COUNT ; i++) {
       report->data.opt.bms.pack[i].soc = bms->pack[i].soc * 100;
-			report->data.opt.bms.pack[i].temperature = (bms->pack[i].temperature + 40) * 10;
-		}
+      report->data.opt.bms.pack[i].temperature = (bms->pack[i].temperature + 40) * 10;
+    }
 
     // debug data
     memcpy(&(report->data.test.motion), &(vcu->motion), sizeof(motion_t));
     memcpy(&(report->data.test.task), &(vcu->task), sizeof(rtos_task_t));
-	}
+  }
 }
 
 void RPT_ResponseCapture(response_t *response, uint32_t *unit_id) {
-	//Reconstruct the header
-	response->header.seq_id++;
-	response->header.unit_id = *unit_id;
-	response->header.frame_id = FR_RESPONSE;
-	response->header.size = sizeof(response->header.frame_id) +
-			sizeof(response->header.unit_id) +
-			sizeof(response->header.seq_id) +
-			sizeof(response->data.code) +
-			strlen(response->data.message);
+  //Reconstruct the header
+  response->header.seq_id++;
+  response->header.unit_id = *unit_id;
+  response->header.frame_id = FR_RESPONSE;
+  response->header.size = sizeof(response->header.frame_id) +
+      sizeof(response->header.unit_id) +
+      sizeof(response->header.seq_id) +
+      sizeof(response->data.code) +
+      strlen(response->data.message);
 }
 
 void RPT_CommandDebugger(command_t *cmd) {
-	printf("Command:Payload [%u-%u] = %*s\n",
-		cmd->data.code,
-		cmd->data.sub_code,
-		sizeof(cmd->data.value),
-		(char*) &(cmd->data.value)
-	);
+  printf("Command:Payload [%u-%u] = %*s\n",
+      cmd->data.code,
+      cmd->data.sub_code,
+      sizeof(cmd->data.value),
+      (char*) &(cmd->data.value)
+  );
 }
 
 FRAME_TYPE RPT_FrameDecider(uint8_t backup) {
-	static uint8_t frameDecider = 0;
+  static uint8_t frameDecider = 0;
   FRAME_TYPE frame;
 
   if (backup) {
@@ -121,64 +121,63 @@ FRAME_TYPE RPT_FrameDecider(uint8_t backup) {
     }
   }
 
-	return frame;
+  return frame;
 }
 
 uint8_t RPT_PacketPending(payload_t *payload) {
-	uint32_t notif;
-	osStatus_t status;
+  uint32_t notif;
+  osStatus_t status;
 
-	// Handle Full Buffer
+  // Handle Full Buffer
   if (payload->type == PAYLOAD_REPORT)
     if (_osThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
-			payload->pending = 0;
+      payload->pending = 0;
 
-	// Check logs
-	if (!payload->pending) {
-		status = osMessageQueueGet(*(payload->pQueue), payload->pPayload, NULL, 0);
-		// check is mail ready
-		if (status == osOK) {
-			payload->retry = SIMCOM_MAX_UPLOAD_RETRY;
-			payload->pending = 1;
-		}
-	}
+  // Check logs
+  if (!payload->pending) {
+    status = osMessageQueueGet(*(payload->pQueue), payload->pPayload, NULL, 0);
+    // check is mail ready
+    if (status == osOK) {
+//      payload->retry = SIMCOM_MAX_UPLOAD_RETRY;
+      payload->pending = 1;
+    }
+  }
 
-	return payload->pending;
+  return payload->pending;
 }
 
 uint8_t RPT_SendPayload(payload_t *payload) {
-	SIMCOM_RESULT res;
-	report_t reporter;
-	header_t *pHeader;
-	const uint8_t size = sizeof(reporter.header.prefix)
-			+ sizeof(reporter.header.crc)
-			+ sizeof(reporter.header.size);
+  SIMCOM_RESULT res;
+  report_t reporter;
+  header_t *pHeader;
+  const uint8_t size = sizeof(reporter.header.prefix)
+			    + sizeof(reporter.header.crc)
+			    + sizeof(reporter.header.size);
 
-	// get the header
-	pHeader = (header_t*) (payload->pPayload);
+  // get the header
+  pHeader = (header_t*) (payload->pPayload);
 
-	// Re-calculate CRC
+  // Re-calculate CRC
   if (payload->type == PAYLOAD_REPORT)
-		Report_SetCRC((report_t*) payload->pPayload);
+    Report_SetCRC((report_t*) payload->pPayload);
   else
-		Response_SetCRC((response_t*) payload->pPayload);
+    Response_SetCRC((response_t*) payload->pPayload);
 
-	// Send to server
-	res = Simcom_Upload(payload->pPayload, size + pHeader->size);
+  // Send to server
+  res = Simcom_Upload(payload->pPayload, size + pHeader->size);
 
-	// Handle looping NACK
-  if (res == SIM_RESULT_NACK)
-		// Probably  CRC not valid, cancel but force as success
-    if (!--payload->retry)
-			res = SIM_RESULT_OK;
+  //	// Handle looping NACK, Probably  CRC not valid, cancel but force as success
+  //  if (res == SIM_RESULT_NACK)
+  //    if (--payload->retry == 0)
+  //			res = SIM_RESULT_OK;
 
-	// Release back
-	if (res == SIM_RESULT_OK) {
-		EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, payload->type);
-		payload->pending = 0;
-	}
+  // Release back
+  if (res == SIM_RESULT_OK) {
+    EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, payload->type);
+    payload->pending = 0;
+  }
 
-	return (res == SIM_RESULT_OK);
+  return (res == SIM_RESULT_OK);
 }
 
 /* Private functions implementation -------------------------------------------*/

@@ -128,7 +128,7 @@ typedef struct {
   PAYLOAD_TYPE type;
   osMessageQueueId_t *pQueue;
   void *pPayload;
-  uint8_t retry;
+  //  uint8_t retry;
   uint8_t pending;
 } payload_t;
 
