@@ -200,11 +200,6 @@ osMessageQueueId_t CanRxQueueHandle;
 const osMessageQueueAttr_t CanRxQueue_attributes = {
   .name = "CanRxQueue"
 };
-/* Definitions for LogMutex */
-osMutexId_t LogMutexHandle;
-const osMutexAttr_t LogMutex_attributes = {
-  .name = "LogMutex"
-};
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
 const osMutexAttr_t EepromMutex_attributes = {
@@ -224,6 +219,12 @@ const osMutexAttr_t CrcMutex_attributes = {
 osMutexId_t AesMutexHandle;
 const osMutexAttr_t AesMutex_attributes = {
   .name = "AesMutex"
+};
+/* Definitions for LogRecMutex */
+osMutexId_t LogRecMutexHandle;
+const osMutexAttr_t LogRecMutex_attributes = {
+  .name = "LogRecMutex",
+  .attr_bits = osMutexRecursive,
 };
 /* Definitions for GlobalEvent */
 osEventFlagsId_t GlobalEventHandle;
@@ -263,9 +264,6 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE END Init */
   /* Create the mutex(es) */
-  /* creation of LogMutex */
-  LogMutexHandle = osMutexNew(&LogMutex_attributes);
-
   /* creation of EepromMutex */
   EepromMutexHandle = osMutexNew(&EepromMutex_attributes);
 
@@ -277,6 +275,10 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of AesMutex */
   AesMutexHandle = osMutexNew(&AesMutex_attributes);
+
+  /* Create the recursive mutex(es) */
+  /* creation of LogRecMutex */
+  LogRecMutexHandle = osMutexNew(&LogRecMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
