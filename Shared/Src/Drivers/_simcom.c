@@ -226,8 +226,7 @@ SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size) {
       printf("\n=> %*s\n", size, data);
     else {
       printf("\n=> ");
-      for(uint32_t i=0; i<size; i++)
-        printf("%02X", *(data+i));
+      LogBufferHex(data, size);
       printf("\n");
     }
 
