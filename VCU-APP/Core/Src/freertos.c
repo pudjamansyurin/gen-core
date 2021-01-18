@@ -443,21 +443,22 @@ void StartManagerTask(void *argument)
 void StartIotTask(void *argument)
 {
   /* USER CODE BEGIN StartIotTask */
-  TickType_t lastWake, lastSend;
-  report_t report;
-  payload_t pReport = {
-      .type = PAYLOAD_REPORT,
-      .pQueue = &ReportQueueHandle,
-      .pPayload = &report,
-      .pending = 0
-  };
+  TickType_t lastWake;
   response_t response;
-  payload_t pResponse = {
+  payload_t pRes = {
       .type = PAYLOAD_RESPONSE,
       .pQueue = &ResponseQueueHandle,
       .pPayload = &response,
       .pending = 0
   };
+  report_t report;
+  payload_t pRep = {
+      .type = PAYLOAD_REPORT,
+      .pQueue = &ReportQueueHandle,
+      .pPayload = &report,
+      .pending = 0
+  };
+  uint16_t seq_id;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -470,23 +471,29 @@ void StartIotTask(void *argument)
   MQTT_Subscribe("VCU/COMMAND");
 
   /* Infinite loop */
-  lastSend = _GetTickMS();
   for (;;) {
     VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
-    if (_GetTickMS() - lastSend > 10000) {
-      lastSend = _GetTickMS();
-      MQTT_Publish("VCU/DATA", &lastWake, sizeof(lastWake));
+    // Upload Response
+    if (RPT_PacketPending(&pRes)) {
+      seq_id = RPT_MakePayload(&pRes);
+      //      if (Simcom_Upload(pRes.pPayload, pRes.size)){
+      if (MQTT_Publish("VCU/DATA", pRes.pPayload, pRes.size)){
+        EEPROM_SequentialID(EE_CMD_W, seq_id, pRes.type);
+        pRes.pending = 0;
+      }
     }
 
-    // Upload Response
-    if (RPT_PacketPending(&pResponse))
-      RPT_SendPayload(&pResponse);
-
     // Upload Report
-    if (RPT_PacketPending(&pReport))
-      RPT_SendPayload(&pReport);
+    if (RPT_PacketPending(&pRep)) {
+      seq_id = RPT_MakePayload(&pRep);
+      //      if (Simcom_Upload(pRep.pPayload, pRep.size)){
+      if (MQTT_Publish("VCU/RESPONSE",pRep.pPayload, pRep.size)){
+        EEPROM_SequentialID(EE_CMD_W, seq_id, pRep.type);
+        pRep.pending = 0;
+      }
+    }
 
     // SIMCOM Related Routines
     if (RTC_NeedCalibration(&(VCU.d.rtc)))

@@ -126,7 +126,6 @@ FRAME_TYPE RPT_FrameDecider(uint8_t backup) {
 
 uint8_t RPT_PacketPending(payload_t *payload) {
   uint32_t notif;
-  osStatus_t status;
 
   // Handle Full Buffer
   if (payload->type == PAYLOAD_REPORT)
@@ -134,28 +133,22 @@ uint8_t RPT_PacketPending(payload_t *payload) {
       payload->pending = 0;
 
   // Check logs
-  if (!payload->pending) {
-    status = osMessageQueueGet(*(payload->pQueue), payload->pPayload, NULL, 0);
-    // check is mail ready
-    if (status == osOK) {
-//      payload->retry = SIMCOM_MAX_UPLOAD_RETRY;
+  if (!payload->pending)
+    if (osMessageQueueGet(*(payload->pQueue), payload->pPayload, NULL, 0) == osOK)
       payload->pending = 1;
-    }
-  }
 
   return payload->pending;
 }
 
-uint8_t RPT_SendPayload(payload_t *payload) {
-  SIMCOM_RESULT res;
-  report_t reporter;
+uint16_t RPT_MakePayload(payload_t *payload) {
   header_t *pHeader;
-  const uint8_t size = sizeof(reporter.header.prefix)
-			    + sizeof(reporter.header.crc)
-			    + sizeof(reporter.header.size);
 
   // get the header
   pHeader = (header_t*) (payload->pPayload);
+  payload->size = sizeof(pHeader->prefix)
+              + sizeof(pHeader->crc)
+              + sizeof(pHeader->size)
+              + pHeader->size;
 
   // Re-calculate CRC
   if (payload->type == PAYLOAD_REPORT)
@@ -163,21 +156,7 @@ uint8_t RPT_SendPayload(payload_t *payload) {
   else
     Response_SetCRC((response_t*) payload->pPayload);
 
-  // Send to server
-  res = Simcom_Upload(payload->pPayload, size + pHeader->size);
-
-  //	// Handle looping NACK, Probably  CRC not valid, cancel but force as success
-  //  if (res == SIM_RESULT_NACK)
-  //    if (--payload->retry == 0)
-  //			res = SIM_RESULT_OK;
-
-  // Release back
-  if (res == SIM_RESULT_OK) {
-    EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, payload->type);
-    payload->pending = 0;
-  }
-
-  return (res == SIM_RESULT_OK);
+  return pHeader->seq_id;
 }
 
 /* Private functions implementation -------------------------------------------*/
