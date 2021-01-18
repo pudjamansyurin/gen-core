@@ -1,28 +1,28 @@
 # VCU / HUB
 
-## Sub-Modules Progress:
+## Modules Progress:
 
-| No  | Sub Module                  | Chip           | ST-Periph. | FW  | HW  | Note             |
-| :-: | --------------------------- | -------------- | :--------: | :-: | :-: | ---------------- |
-|  1  | IoT                         | SIM5300e       |   USART1   |  ✔  |  ✔  | **Done**         |
-|  2  | GPS                         | Ublox NEO-6M   |   USART2   |  ✔  |  ✔  | **Done**: Module |
-|  3  | IMU (Gyro & Accel)          | MPU6050        |    I2C3    |  ✔  |  ✔  | **Done**         |
-|  4  | Remote/RF                   | nRF24L01       |    SPI1    |  ✔  |  ✔  | **Done**: Module |
-|  5  | Fingerprint                 | FZ3387         |   UART4    |  ✔  |  ✔  | **Done**         |
-|  6  | Artificial Audio            | CS43L22        | I2C1, I2S3 |  ✔  |  ✔  | **Done**         |
-|  7  | CAN Transceiver             | SN65HVD230     |    CAN1    |  ✔  |  ✔  | **Done**         |
-|  8  | EEPROM                      | 24AA32A        |    I2C2    |  ✔  |  ✔  | **Done**         |
-|  9  | RTC                         | -              |    RTC     |  ✔  |  ✔  | **Done**         |
-| 10  | Li-ION Charger & Protection | TP4056 & DW01A |     -      |  ✔  |  ✔  | **Done**         |
-| 11  | Handlebar/Switch            | -              |  EXTI-PE   |  ✔  |  ✔  | **Done**         |
-| 12  | Backup Battery Monitor      | -              |    ADC1    |  ✔  |  ✔  | **Done**         |
-| 13  | ~~Debugging Buzzer~~        | -              | TIM10-PWM  |  ✔  |  ✔  | **Done**         |
-| 14  | Data Validator              | -              |    CRC     |  ✔  |  -  | **Done**         |
-| 15  | Encryption RF               | -              |    AES     |  ✔  |  -  | **Done**         |
-| 16  | FW upgrade oTA (FOTA)       | -              |   FLASH    |  ✔  |  -  | **Done**         |
-| 17  | FW upgrade oCAN (FOCAN)     | -              | FLASH, CAN |  ✔  |  -  | **Done**         |
-| 18  | MQTT                        | -              |     -      |  ✔  |  -  | On Progress      |
-| 19  | Encryption MQTT             | -              |  MbedTLS   | 0%  |  -  | Waiting          |
+| No  | Sub Module                  | Chip           | ST-Periph. | FW  | HW  | Note             | GN  |
+| :-: | --------------------------- | -------------- | :--------: | :-: | :-: | ---------------- | :-: |
+|  1  | IoT                         | SIM5300e       |   USART1   |  ✔  |  ✔  | **Done**         | ✔?  |
+|  2  | GPS                         | Ublox NEO-6M   |   USART2   |  ✔  |  ✔  | **Done**: Module |  ✔  |
+|  3  | IMU (Gyro & Accel)          | MPU6050        |    I2C3    |  ✔  |  ✔  | **Done**         |  ✔  |
+|  4  | Remote/RF                   | nRF24L01       |    SPI1    |  ✔  |  ✔  | **Done**: Module |  ✔  |
+|  5  | Fingerprint                 | FZ3387         |   UART4    |  ✔  |  ✔  | **Done**         |  ✔  |
+|  6  | Artificial Audio            | CS43L22        | I2C1, I2S3 |  ✔  |  ✔  | **Done**         | ✔?  |
+|  7  | CAN Transceiver             | SN65HVD230     |    CAN1    |  ✔  |  ✔  | **Done**         | ✔?  |
+|  8  | EEPROM                      | 24AA32A        |    I2C2    |  ✔  |  ✔  | **Done**         | ✔?  |
+|  9  | RTC                         | -              |    RTC     |  ✔  |  ✔  | **Done**         |  ✔  |
+| 10  | Li-ION Charger & Protection | TP4056 & DW01A |     -      |  ✔  |  ✔  | **Done**         |  ✔  |
+| 11  | Handlebar/Switch            | -              |  EXTI-PE   |  ✔  |  ✔  | **Done**         |  x  |
+| 12  | Backup Battery Monitor      | -              |    ADC1    |  ✔  |  ✔  | **Done**         |  ✔  |
+| 13  | ~~Debugging Buzzer~~        | -              | TIM10-PWM  |  ✔  |  ✔  | **Done**         |     |
+| 14  | Data Validator              | -              |    CRC     |  ✔  |  -  | **Done**         |  ✔  |
+| 15  | Encryption RF               | -              |    AES     |  ✔  |  -  | **Done**         |  ✔  |
+| 16  | FW upgrade oTA (FOTA)       | -              |   FLASH    |  ✔  |  -  | **Done**         |  ✔  |
+| 17  | FW upgrade oCAN (FOCAN)     | -              | FLASH, CAN |  ✔  |  -  | **Done**         |  x  |
+| 18  | MQTT                        | -              |     -      |  ✔  |  -  | On Progress      | ✔?  |
+| 19  | Encryption MQTT             | -              |  MbedTLS   | 0%  |  -  | Waiting          | ✔?  |
 
 ## Software Progress:
 
