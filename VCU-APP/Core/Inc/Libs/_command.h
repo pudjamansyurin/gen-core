@@ -12,6 +12,7 @@
 #include "Libs/_reporter.h"
 
 /* Public functions implementation --------------------------------------------*/
+void CMD_ValidateCommand(command_t command);
 void CMD_GenInfo(response_t *resp);
 void CMD_GenLed(command_t *cmd);
 void CMD_GenOverride(command_t *cmd, uint8_t *override_state);
