@@ -97,7 +97,7 @@ void RPT_ResponseCapture(response_t *response, uint32_t *unit_id) {
 }
 
 void RPT_CommandDebugger(command_t *cmd) {
-  printf("Command:Payload [%u-%u] = %*s\n",
+  printf("Command:Payload [%u-%u] = %.*s\n",
       cmd->data.code,
       cmd->data.sub_code,
       sizeof(cmd->data.value),

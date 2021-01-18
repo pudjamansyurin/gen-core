@@ -220,13 +220,12 @@ SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size) {
 
   // Debug: print payload
   if (SIMCOM_DEBUG) {
+    printf("\n=> ");
     if (!upload)
-      printf("\n=> %*s\n", size, data);
-    else {
-      printf("\n=> ");
+      printf("%.*s", size, data);
+    else 
       LogBufferHex(data, size);
-      printf("\n");
-    }
+    printf("\n");
   }
 
   // execute payload
@@ -239,7 +238,7 @@ SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size) {
   // Debug: print response (ignore FTPGET command)
   if (SIMCOM_DEBUG)
     if (strncmp(data, SIMCOM_CMD_FTPGET, strlen(SIMCOM_CMD_FTPGET)) != 0) 
-      printf("%*s\n", sizeof(SIMCOM_UART_RX), SIMCOM_UART_RX);
+      printf("%.*s\n", sizeof(SIMCOM_UART_RX), SIMCOM_UART_RX);
 
   return res;
 }

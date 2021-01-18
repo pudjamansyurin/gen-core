@@ -66,7 +66,7 @@ uint8_t GPS_Capture(gps_data_t *data) {
 	data->speed_mps = nmea_to_speed(gps.nmea.speed, nmea_speed_mps);
   data->fix = gps.nmea.fix;
 
-  Debugger();
+//  Debugger();
 
   return data->fix > 0;
 }
@@ -85,5 +85,5 @@ uint8_t GPS_CalculateSpeed(gps_data_t *data) {
 
 /* Private functions implementation --------------------------------------------*/
 static void Debugger(void) {
-  printf("GPS:Buffer = %*s\n", sizeof(UBLOX_UART_RX), UBLOX_UART_RX);
+  printf("GPS:Buffer = %.*s\n", sizeof(UBLOX_UART_RX), UBLOX_UART_RX);
 }

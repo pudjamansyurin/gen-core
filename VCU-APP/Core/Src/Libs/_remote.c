@@ -224,5 +224,5 @@ static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
 }
 
 static void Debugger(void) {
-  printf("NRF:Receive = %*s\n", NRF_DATA_LENGTH, (char*) RMT.rx.payload);
+  printf("NRF:Receive = %.*s\n", NRF_DATA_LENGTH, (char*) RMT.rx.payload);
 }
