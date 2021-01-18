@@ -2,26 +2,27 @@
 
 ## Sub-Modules Progress:
 
-| No  | Sub Module                  | Chip           | ST-Periph. | FW  | HW  | Note                  |
-| :-: | --------------------------- | -------------- | :--------: | :-: | :-: | --------------------- |
-|  1  | IoT                         | SIM5300e       |   USART1   |  ✔  |  ✔  | **Done**              |
-|  2  | GPS                         | Ublox NEO-6M   |   USART2   |  ✔  |  ✔  | **Done**: Module    |
-|  3  | Gyroscope & Accelerometer   | MPU6050        |    I2C3    |  ✔  |  ✔  | **Done**              |
-|  4  | Remote/RF                   | nRF24L01       |    SPI1    |  ✔  |  ✔  | **Done**: module |
-|  5  | Fingerprint                 | FZ3387         |   UART4    |  ✔  |  ✔  | **Done**              |
-|  6  | RTC                         | -              |    RTC     |  ✔  |  ✔  | **Done**              |
-|  7  | Li-ION Charger & Protection | TP4056 & DW01A |     -      |  ✔  |  ✔  | **Done**              |
-|  8  | Artificial Audio            | CS43L22        | I2C1, I2S3 |  ✔  |  ✔  | **Done**              |
-|  9  | CAN Transceiver             | SN65HVD230     |    CAN1    |  ✔  |  ✔  | **Done**              |
-| 10  | EEPROM                      | 24AA32A        |    I2C2    |  ✔  |  ✔  | **Done**              |
-| 11  | Handlebar/Switch            | -              |  EXTI-PE   |  ✔  |  ✔  | **Done**              |
-| 12  | Data Validator              | -              |    CRC     |  ✔  |  -  | **Done**              |
-| 13  | Backup Battery Monitor      | -              |    ADC1    |  ✔  |  ✔  | **Done**              |
-| 14  | Debugging Buzzer            | -              | TIM10-PWM  |  ✔  |  ✔  | **Done**              |
-| 15  | Encryption RF               | -              |    AES     |  ✔  |  -  | **Done**              |
-| 16  | Encryption IoT              | -              |  MbedTLS   | 0%  |  -  | Waiting: Real Server  |
-| 17  | Fw upgrade OTA (FOTA)       | -              |   FLASH    |  ✔  |  -  | **Done**              |
-| 18  | Fw upgrade CAN (FOCAN)      | -              | FLASH, CAN |  ✔  |  -  | **Done**              |
+| No  | Sub Module                  | Chip           | ST-Periph. | FW  | HW  | Note             |
+| :-: | --------------------------- | -------------- | :--------: | :-: | :-: | ---------------- |
+|  1  | IoT                         | SIM5300e       |   USART1   |  ✔  |  ✔  | **Done**         |
+|  2  | GPS                         | Ublox NEO-6M   |   USART2   |  ✔  |  ✔  | **Done**: Module |
+|  3  | IMU (Gyro & Accel)          | MPU6050        |    I2C3    |  ✔  |  ✔  | **Done**         |
+|  4  | Remote/RF                   | nRF24L01       |    SPI1    |  ✔  |  ✔  | **Done**: Module |
+|  5  | Fingerprint                 | FZ3387         |   UART4    |  ✔  |  ✔  | **Done**         |
+|  6  | Artificial Audio            | CS43L22        | I2C1, I2S3 |  ✔  |  ✔  | **Done**         |
+|  7  | CAN Transceiver             | SN65HVD230     |    CAN1    |  ✔  |  ✔  | **Done**         |
+|  8  | EEPROM                      | 24AA32A        |    I2C2    |  ✔  |  ✔  | **Done**         |
+|  9  | RTC                         | -              |    RTC     |  ✔  |  ✔  | **Done**         |
+| 10  | Li-ION Charger & Protection | TP4056 & DW01A |     -      |  ✔  |  ✔  | **Done**         |
+| 11  | Handlebar/Switch            | -              |  EXTI-PE   |  ✔  |  ✔  | **Done**         |
+| 12  | Backup Battery Monitor      | -              |    ADC1    |  ✔  |  ✔  | **Done**         |
+| 13  | ~~Debugging Buzzer~~        | -              | TIM10-PWM  |  ✔  |  ✔  | **Done**         |
+| 14  | Data Validator              | -              |    CRC     |  ✔  |  -  | **Done**         |
+| 15  | Encryption RF               | -              |    AES     |  ✔  |  -  | **Done**         |
+| 16  | FW upgrade oTA (FOTA)       | -              |   FLASH    |  ✔  |  -  | **Done**         |
+| 17  | FW upgrade oCAN (FOCAN)     | -              | FLASH, CAN |  ✔  |  -  | **Done**         |
+| 18  | MQTT                        | -              |     -      |  ✔  |  -  | On Progress      |
+| 19  | Encryption MQTT             | -              |  MbedTLS   | 0%  |  -  | Waiting          |
 
 ## Software Progress:
 
@@ -108,7 +109,7 @@
         -   [x] Only when knob ON
         -   [x] HMI.Primary Remote blink
         -   [x] Send event group to Server
-    -   [x] Add finger throttle 
+    -   [x] Add finger throttle
     -   [x] Remote.BEEP turn on Horn & Sein Lamp (toggle the HORN_PWR)
     -   [x] Handle Starter Button
     -   [x] Handle Gyroscope crash & fall to switched OFF BMS & MCU
