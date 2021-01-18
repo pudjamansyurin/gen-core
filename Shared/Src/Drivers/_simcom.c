@@ -260,10 +260,16 @@ int Simcom_GetData(unsigned char *buf, int count) {
 	return count;
 }
 
-uint8_t Simcom_GetServerResponse(void) {
+uint8_t Simcom_GetServerResponse(uint32_t timeout) {
+  TickType_t tick = _GetTickMS();
 	char *ptr = NULL;
 
-	if ((ptr = Simcom_Resp(SIMCOM_RSP_IPD)) != NULL) {
+	do {
+    ptr = Simcom_Resp(SIMCOM_RSP_IPD);
+    _DelayMS(10);
+  } while (ptr == NULL && (_GetTickMS() - tick) < timeout);
+
+	if (ptr != NULL) {
 		// get pointer reference
 		//    ptr = Simcom_Resp(PREFIX_ACK);
 		//    if (ptr)
@@ -421,7 +427,7 @@ static void BeforeTransmitHook(void) {
 	void *ptr = NULL;
 
 	// Handle Server Command
-	if (Simcom_GetServerResponse())  {
+	if (Simcom_GetServerResponse(0))  {
 		//		CMD_ValidateCommand(*(command_t*) SIM.response);
 //		ptr = SIM.response;
 //		if (!MQTT_Receive())

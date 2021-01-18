@@ -90,7 +90,7 @@ void Simcom_Unlock(void);
 #if (!BOOTLOADER)
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
 int Simcom_GetData(unsigned char *buf, int count);
-uint8_t Simcom_GetServerResponse(void);
+uint8_t Simcom_GetServerResponse(uint32_t timeout);
 #endif
 
 #endif /* SIMCOM_H_ */

@@ -22,9 +22,11 @@ static uint8_t MQTT_Upload(unsigned char *buf, uint16_t len, uint8_t reply);
 uint8_t MQTT_Connect(void) {
 	MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
 	unsigned char sessionPresent,	connack_rc;
+  char clientID[9];
 	int len;
 
-	sprintf(data.clientID.cstring, "%lu", VCU.d.unit_id);
+	sprintf(clientID, "%08X", (unsigned int) VCU.d.unit_id);
+	data.clientID.cstring = clientID;
 	data.keepAliveInterval = 60;
 	data.cleansession = 1;
 	data.username.cstring = "garda";
@@ -123,20 +125,11 @@ uint16_t MQTT_Receive(void) {
 
 /* Private functions implementation -------------------------------------------*/
 static uint8_t MQTT_Upload(unsigned char *buf, uint16_t len, uint8_t reply) {
-	TickType_t tick, timeout = 5000;
-	uint8_t received = 0;
-
 	if (Simcom_Upload(buf, len) != SIM_RESULT_OK)
 		return 0;
 
 	if (reply) {
-		tick = _GetTickMS();
-		do {
-			received = Simcom_GetServerResponse();
-			_DelayMS(50);
-		} while (!received && (_GetTickMS() - tick) < timeout);
-
-		if (!received)
+		if (!Simcom_GetServerResponse(5000))
 			return 0;
 
 		if (MQTTPacket_read(buf, buflen, Simcom_GetData) != reply)
