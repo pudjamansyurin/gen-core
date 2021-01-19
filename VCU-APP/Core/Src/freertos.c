@@ -458,6 +458,7 @@ void StartIotTask(void *argument)
       .pPayload = &report,
       .pending = 0
   };
+  uint8_t size;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -473,21 +474,20 @@ void StartIotTask(void *argument)
 
     // Upload Response
     if (RPT_PayloadPending(&pRes))
-      if (Simcom_SetState(SIM_STATE_SERVER_ON, 0)) {
-        RPT_WrapPayload(&pRes);
-        //      if (Simcom_Upload(pRes.pPayload, pRes.size))
-        if (MQTT_Publish("VCU/DAT", pRes.pPayload, pRes.size))
-          RPT_FinishedPayload(&pRes);
-      }
+      if (Simcom_SetState(SIM_STATE_SERVER_ON, 0))
+        if ((size = RPT_WrapPayload(&pRes)))
+          //      if (Simcom_Upload(pRes.pPayload, pRes.size))
+          if (MQTT_Publish("VCU/DAT", pRes.pPayload, size))
+            RPT_FinishedPayload(&pRes);
+
 
     // Upload Report
     if (RPT_PayloadPending(&pRep))
-      if (Simcom_SetState(SIM_STATE_SERVER_ON, 0)) {
-        RPT_WrapPayload(&pRep);
-        //      if (Simcom_Upload(pRep.pPayload, pRep.size))
-        if (MQTT_Publish("VCU/RSP",pRep.pPayload, pRep.size))
-          RPT_FinishedPayload(&pRep);
-      }
+      if (Simcom_SetState(SIM_STATE_SERVER_ON, 0))
+        if ((size = RPT_WrapPayload(&pRep)))
+          //      if (Simcom_Upload(pRep.pPayload, pRep.size))
+          if (MQTT_Publish("VCU/RSP",pRep.pPayload, size))
+            RPT_FinishedPayload(&pRep);
 
     // SIMCOM Related Routines
     if (RTC_NeedCalibration(&(VCU.d.rtc)))

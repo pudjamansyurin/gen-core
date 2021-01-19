@@ -129,7 +129,6 @@ typedef struct {
   osMessageQueueId_t *pQueue;
   void *pPayload;
   uint8_t pending;
-  uint8_t size;
 } payload_t;
 
 /* Public functions prototype ------------------------------------------------*/
@@ -140,6 +139,6 @@ void RPT_ResponseCapture(response_t *response, uint32_t *unit_id);
 void RPT_CommandDebugger(command_t *cmd);
 FRAME_TYPE RPT_FrameDecider(uint8_t backup);
 uint8_t RPT_PayloadPending(payload_t *payload);
-void RPT_WrapPayload(payload_t *payload);
+uint8_t RPT_WrapPayload(payload_t *payload);
 void RPT_FinishedPayload(payload_t *payload);
 #endif /* REPORTER_H_ */

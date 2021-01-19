@@ -140,7 +140,7 @@ uint8_t RPT_PayloadPending(payload_t *payload) {
   return payload->pending;
 }
 
-void RPT_WrapPayload(payload_t *payload) {
+uint8_t RPT_WrapPayload(payload_t *payload) {
   header_t *pHeader = (header_t*) (payload->pPayload);
 
   // Re-calculate CRC
@@ -150,7 +150,7 @@ void RPT_WrapPayload(payload_t *payload) {
     Response_SetCRC((response_t*) payload->pPayload);
 
   // Calculate final size
-  payload->size = sizeof(pHeader->prefix)
+  return sizeof(pHeader->prefix)
               + sizeof(pHeader->crc)
               + sizeof(pHeader->size)
               + pHeader->size;
