@@ -150,10 +150,12 @@ uint8_t RPT_WrapPayload(payload_t *payload) {
     Response_SetCRC((response_t*) payload->pPayload);
 
   // Calculate final size
-  return sizeof(pHeader->prefix)
+  payload->size = sizeof(pHeader->prefix)
               + sizeof(pHeader->crc)
               + sizeof(pHeader->size)
               + pHeader->size;
+
+  return payload->size;
 }
 
 void RPT_FinishedPayload(payload_t *payload) {

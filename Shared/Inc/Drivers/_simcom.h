@@ -28,13 +28,11 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-	//    SIM_RESULT_NACK = -4,
 	SIM_RESULT_RESTARTED = -3,
 	SIM_RESULT_NO_RESPONSE = -2,
 	SIM_RESULT_TIMEOUT = -1,
 	SIM_RESULT_ERROR = 0,
 	SIM_RESULT_OK = 1,
-//    SIM_RESULT_ACK = 2,
 } SIMCOM_RESULT;
 
 typedef enum {
@@ -45,7 +43,8 @@ typedef enum {
 	SIM_STATE_GPRS_ON = 3,
 	SIM_STATE_PDP_ON = 4,
 	SIM_STATE_INTERNET_ON = 5,
-	SIM_STATE_SERVER_ON = 6
+	SIM_STATE_SERVER_ON = 6,
+	SIM_STATE_MQTT_ON = 7
 } SIMCOM_STATE;
 
 typedef enum {

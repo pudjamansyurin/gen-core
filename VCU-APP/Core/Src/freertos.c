@@ -458,12 +458,11 @@ void StartIotTask(void *argument)
       .pPayload = &report,
       .pending = 0
   };
-  uint8_t size;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-  // Initialize
+  // Initiate
   Simcom_Init(&huart1, &hdma_usart1_rx);
   Simcom_SetState(SIM_STATE_READY, 0);
 
@@ -474,22 +473,21 @@ void StartIotTask(void *argument)
 
     // Upload Response
     if (RPT_PayloadPending(&pRes))
-      if (Simcom_SetState(SIM_STATE_SERVER_ON, 0))
-        if ((size = RPT_WrapPayload(&pRes)))
+      if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+        if (RPT_WrapPayload(&pRes))
           //      if (Simcom_Upload(pRes.pPayload, pRes.size))
-          if (MQTT_Publish("VCU/DAT", pRes.pPayload, size))
+          if (MQTT_DoPublish(&pRes))
             RPT_FinishedPayload(&pRes);
-
 
     // Upload Report
     if (RPT_PayloadPending(&pRep))
-      if (Simcom_SetState(SIM_STATE_SERVER_ON, 0))
-        if ((size = RPT_WrapPayload(&pRep)))
+      if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+        if (RPT_WrapPayload(&pRep))
           //      if (Simcom_Upload(pRep.pPayload, pRep.size))
-          if (MQTT_Publish("VCU/RSP",pRep.pPayload, size))
+          if (MQTT_DoPublish(&pRep))
             RPT_FinishedPayload(&pRep);
 
-    // SIMCOM Related Routines
+    // SIMCOM related routines
     if (RTC_NeedCalibration(&(VCU.d.rtc)))
       if (Simcom_SetState(SIM_STATE_READY, 0))
         RTC_CalibrateWithSimcom(&(VCU.d.rtc));
@@ -519,7 +517,7 @@ void StartReporterTask(void *argument)
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-  // Initialize
+  // Initiate
   RPT_ReportInit(FR_SIMPLE, &report, &(VCU.d.seq_id.report));
 
   /* Infinite loop */
@@ -564,7 +562,7 @@ void StartCommandTask(void *argument)
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-  // Initialize
+  // Initiate
   RPT_ResponseInit(&response, &(VCU.d.seq_id.response));
 
   // Handle Post-FOTA
@@ -621,9 +619,9 @@ void StartCommandTask(void *argument)
             CMD_ReportOdom(&command);
             break;
 
-          case CMD_REPORT_UNITID :
-            CMD_ReportUnitID(&command);
-            break;
+//          case CMD_REPORT_UNITID :
+//            CMD_ReportUnitID(&command);
+//            break;
 
           default:
             response.data.code = RESPONSE_STATUS_INVALID;
@@ -710,7 +708,7 @@ void StartGpsTask(void *argument)
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
-  // Initialize
+  // Initiate
   GPS_Init(&huart2, &hdma_usart2_rx);
 
   /* Infinite loop */
@@ -938,7 +936,7 @@ void StartAudioTask(void *argument)
   _osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
   osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
-  /* Initialize Wave player (Codec, DMA, I2C) */
+  /* Initiate Wave player (Codec, DMA, I2C) */
   AUDIO_Init(&hi2c1, &hi2s3);
 
   /* Infinite loop */

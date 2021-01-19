@@ -72,8 +72,10 @@
 
 #define FOTA_MIN_VOLTAGE             (uint16_t) 3800
 
-#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
-#define NET_TCP_PORT                 (uint16_t) 46606
+//#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
+//#define NET_TCP_PORT                 (uint16_t) 46606
+#define NET_TCP_SERVER                          "broker.hivemq.com"
+#define NET_TCP_PORT                 (uint16_t) 1883
 
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 #define COMMAND_HMI_FOTA_TIMEOUT     (uint32_t) 20000               // in ms
@@ -84,8 +86,6 @@
 
 #define PREFIX_REPORT                           "@R"
 #define PREFIX_COMMAND                          "@C"
-#define PREFIX_ACK                              "@A"
-#define PREFIX_NACK                             "@N"
 
 #define FINGER_CONFIDENCE_MIN        (uint8_t)  50
 #define FINGER_SCAN_TIMEOUT          (uint32_t) 5000               // in ms
@@ -188,7 +188,7 @@
 
 #define CMD_REPORT_RTC                (uint8_t) 0
 #define CMD_REPORT_ODOM               (uint8_t) 1
-#define CMD_REPORT_UNITID             (uint8_t) 2
+//#define CMD_REPORT_UNITID             (uint8_t) 2
 
 #define CMD_AUDIO_BEEP                (uint8_t) 0
 #define CMD_AUDIO_MUTE                (uint8_t) 1

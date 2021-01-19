@@ -19,7 +19,7 @@ extern osThreadId_t FingerTaskHandle;
 extern osThreadId_t RemoteTaskHandle;
 
 /* Public functions implementation --------------------------------------------*/
-void CMD_ValidateCommand(command_t command) {
+void CMD_CheckCommand(command_t command) {
 	uint32_t crc;
 
 	if (command.header.size != sizeof(command.data))

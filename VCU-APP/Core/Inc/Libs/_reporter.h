@@ -129,6 +129,7 @@ typedef struct {
   osMessageQueueId_t *pQueue;
   void *pPayload;
   uint8_t pending;
+  uint8_t size;
 } payload_t;
 
 /* Public functions prototype ------------------------------------------------*/

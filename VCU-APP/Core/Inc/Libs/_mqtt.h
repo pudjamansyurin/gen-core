@@ -10,12 +10,19 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Libs/_command.h"
+
+/* Exported constants --------------------------------------------------------*/
+#define MQTT_USERNAME          						"garda"
+#define MQTT_PASSWORD          						"energi"
+#define MQTT_KEEPALIVE          (uint8_t) 30				// in second
 
 /* Public functions prototypes ----------------------------------------------*/
+uint8_t MQTT_DoPublish(payload_t *payload);
+uint8_t MQTT_DoSubscribe(void);
 uint8_t MQTT_Connect(void);
-uint8_t MQTT_Subscribe(char *topic);
-uint8_t MQTT_Publish(char *topic, void *payload, uint16_t payloadlen);
 uint8_t MQTT_Disconnect(void);
-uint16_t MQTT_Receive(void);
+uint8_t MQTT_Ping(void);
+uint8_t MQTT_Receive(command_t *cmd);
 
 #endif /* INC_LIBS__MQTT_H_ */

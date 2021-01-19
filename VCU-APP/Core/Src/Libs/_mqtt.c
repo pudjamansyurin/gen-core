@@ -12,29 +12,48 @@
 #include "Nodes/VCU.h"
 
 /* Private variables ----------------------------------------------------------*/
-static unsigned char buf[256];
-static int buflen = sizeof(buf);
+static uint32_t last_con = 0;
 
 /* Private functions prototype ------------------------------------------------*/
-static uint8_t MQTT_Upload(unsigned char *buf, uint16_t len, uint8_t reply);
+static uint8_t MQTT_Subscribe(char *topic);
+static uint8_t MQTT_Publish(char *topic, void *payload, uint16_t payloadlen);
+static uint8_t MQTT_Upload(unsigned char *buf, uint16_t len, uint8_t reply,  uint16_t timeout);
 
 /* Public functions implementation -------------------------------------------*/
+uint8_t MQTT_DoPublish(payload_t *payload) {
+	char topic[20];
+
+	sprintf(topic, "VCU/%lu/%3s",
+			VCU.d.unit_id,
+			(payload->type == PAYLOAD_REPORT ? "RPT" : "RSP")
+	);
+
+	return MQTT_Publish(topic, payload->pPayload, payload->size);
+}
+
+uint8_t MQTT_DoSubscribe(void) {
+	char topic[20];
+
+	sprintf(topic, "VCU/%lu/CMD", VCU.d.unit_id);
+
+	return MQTT_Subscribe(topic);
+}
+
 uint8_t MQTT_Connect(void) {
+	unsigned char buf[256];
+	int buflen = sizeof(buf);
 	MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
 	unsigned char sessionPresent,	connack_rc;
-  char clientID[9];
 	int len;
 
-	sprintf(clientID, "%08X", (unsigned int) VCU.d.unit_id);
-	data.clientID.cstring = clientID;
-	data.keepAliveInterval = 60;
+	data.keepAliveInterval = MQTT_KEEPALIVE;
 	data.cleansession = 1;
-	data.username.cstring = "garda";
-	data.password.cstring = "energi";
+	data.username.cstring = MQTT_USERNAME;
+	data.password.cstring = MQTT_PASSWORD;
 
 	len = MQTTSerialize_connect(buf, buflen, &data);
 
-	if (!MQTT_Upload(buf, len, CONNACK))
+	if (!MQTT_Upload(buf, len, CONNACK, 10000))
 		return 0;
 
 	if (MQTTDeserialize_connack(&sessionPresent, &connack_rc, buf, buflen) != 1 || connack_rc != 0) {
@@ -42,11 +61,69 @@ uint8_t MQTT_Connect(void) {
 		return 0;
 	}
 
-	printf("MQTT:Connection established\n");
+	printf("MQTT:Connected\n");
+	last_con = _GetTickMS();
 	return 1;
 }
 
-uint8_t MQTT_Subscribe(char *topic) {
+uint8_t MQTT_Disconnect(void) {
+	unsigned char buf[2];
+	int buflen = sizeof(buf);
+	int len = MQTTSerialize_disconnect(buf, buflen);
+
+	if (!MQTT_Upload(buf, len, 0, 0))
+		return 0;
+
+	printf("MQTT:Disconnected\n");
+	last_con = _GetTickMS();
+	return 1;
+}
+
+uint8_t MQTT_Ping(void) {
+	unsigned char buf[2];
+	int buflen = sizeof(buf);
+	int len;
+
+	if ((_GetTickMS() - last_con) < (MQTT_KEEPALIVE * 1000) / 2)
+		return 1;
+
+	len = MQTTSerialize_pingreq(buf, buflen);
+
+	if (!MQTT_Upload(buf, len, PINGRESP, 5000))
+		return 0;
+
+	printf("MQTT:Pinged\n");
+	last_con = _GetTickMS();
+	return 1;
+}
+
+uint8_t MQTT_Receive(command_t *cmd) {
+	unsigned char buf[100];
+	int buflen = sizeof(buf);
+	MQTTString topicName;
+	unsigned char dup, retained, *dst;
+	unsigned short packetid;
+	int qos, len = 0;
+
+	if (MQTTPacket_read(buf, buflen, Simcom_GetData) != PUBLISH)
+		return 0;
+
+	MQTTDeserialize_publish(
+			&dup, &qos, &retained, &packetid,
+			&topicName, &dst, &len,
+			buf, buflen
+	);
+
+	memcpy(cmd, dst, len);
+
+	printf("MQTT:Received %d bytes\n", len);
+	return len;
+}
+
+/* Private functions implementation -------------------------------------------*/
+static uint8_t MQTT_Subscribe(char *topic) {
+	unsigned char buf[256];
+	int buflen = sizeof(buf);
 	MQTTString topicFilters = MQTTString_initializer;
 	unsigned char dup = 0;
 	unsigned short packetid = 1;
@@ -59,7 +136,7 @@ uint8_t MQTT_Subscribe(char *topic) {
 			&topicFilters, &qoss
 	);
 
-	if (!MQTT_Upload(buf, len, SUBACK))
+	if (!MQTT_Upload(buf, len, SUBACK, 5000))
 		return 0;
 
 	MQTTDeserialize_suback(&packetid, 1, &count, &qoss, buf, buflen);
@@ -68,11 +145,14 @@ uint8_t MQTT_Subscribe(char *topic) {
 		return 0;
 	}
 
-	printf("MQTT:Subscribed successfully.");
+	printf("MQTT:Subscribed\n");
+	last_con = _GetTickMS();
 	return 1;
 }
 
-uint8_t MQTT_Publish(char *topic, void *payload, uint16_t payloadlen) {
+static uint8_t MQTT_Publish(char *topic, void *payload, uint16_t payloadlen) {
+	unsigned char buf[256];
+	int buflen = sizeof(buf);
 	MQTTString topicName = MQTTString_initializer;
 	unsigned char dup = 0, retained = 0;
 	unsigned short packetid = 0;
@@ -85,54 +165,23 @@ uint8_t MQTT_Publish(char *topic, void *payload, uint16_t payloadlen) {
 			topicName, payload, payloadlen
 	);
 
-	if (!MQTT_Upload(buf, len, 0))
+	if (!MQTT_Upload(buf, len, 0, 0))
 		return 0;
 
-	printf("MQTT:Published successfully.");
+	printf("MQTT:Published\n");
+	last_con = _GetTickMS();
 	return 1;
 }
 
-uint8_t MQTT_Disconnect(void) {
-	int len;
-
-	len = MQTTSerialize_disconnect(buf, buflen);
-
-	if (!MQTT_Upload(buf, len, 0))
-		return 0;
-
-	printf("MQTT:Disconnect successfully.");
-	return 1;
-}
-
-uint16_t MQTT_Receive(void) {
-	MQTTString topicName;
-	unsigned char dup, retained, *dest;
-	unsigned short packetid;
-	int qos, len = 0;
-
-	if (MQTTPacket_read(buf, buflen, Simcom_GetData) != PUBLISH)
-		return 0;
-
-	MQTTDeserialize_publish(
-			&dup, &qos, &retained, &packetid,
-			&topicName, &dest, &len,
-			buf, buflen
-	);
-
-	printf("MQTT:Receive = %.*s\n", len, dest);
-	return len;
-}
-
-/* Private functions implementation -------------------------------------------*/
-static uint8_t MQTT_Upload(unsigned char *buf, uint16_t len, uint8_t reply) {
+static uint8_t MQTT_Upload(unsigned char *buf, uint16_t len, uint8_t reply, uint16_t timeout) {
 	if (Simcom_Upload(buf, len) != SIM_RESULT_OK)
 		return 0;
 
 	if (reply) {
-		if (!Simcom_GetServerResponse(5000))
+		if (!Simcom_GetServerResponse(timeout))
 			return 0;
 
-		if (MQTTPacket_read(buf, buflen, Simcom_GetData) != reply)
+		if (MQTTPacket_read(buf, len, Simcom_GetData) != reply)
 			return 0;
 	}
 
