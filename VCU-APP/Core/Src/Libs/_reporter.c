@@ -124,7 +124,7 @@ FRAME_TYPE RPT_FrameDecider(uint8_t backup) {
   return frame;
 }
 
-uint8_t RPT_PacketPending(payload_t *payload) {
+uint8_t RPT_PayloadPending(payload_t *payload) {
   uint32_t notif;
 
   // Handle Full Buffer
@@ -140,15 +140,8 @@ uint8_t RPT_PacketPending(payload_t *payload) {
   return payload->pending;
 }
 
-uint16_t RPT_MakePayload(payload_t *payload) {
-  header_t *pHeader;
-
-  // get the header
-  pHeader = (header_t*) (payload->pPayload);
-  payload->size = sizeof(pHeader->prefix)
-              + sizeof(pHeader->crc)
-              + sizeof(pHeader->size)
-              + pHeader->size;
+void RPT_WrapPayload(payload_t *payload) {
+  header_t *pHeader = (header_t*) (payload->pPayload);
 
   // Re-calculate CRC
   if (payload->type == PAYLOAD_REPORT)
@@ -156,7 +149,18 @@ uint16_t RPT_MakePayload(payload_t *payload) {
   else
     Response_SetCRC((response_t*) payload->pPayload);
 
-  return pHeader->seq_id;
+  // Calculate final size
+  payload->size = sizeof(pHeader->prefix)
+              + sizeof(pHeader->crc)
+              + sizeof(pHeader->size)
+              + pHeader->size;
+}
+
+void RPT_FinishedPayload(payload_t *payload) {
+  header_t *pHeader = (header_t*) (payload->pPayload);
+
+  EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, payload->type);
+  payload->pending = 0;
 }
 
 /* Private functions implementation -------------------------------------------*/

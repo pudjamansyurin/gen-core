@@ -66,7 +66,7 @@ typedef enum {
 /* Struct -------------------------------------------------------------------*/
 typedef struct {
 	SIMCOM_STATE state;
-	AT_CIPSTATUS ip_status;
+	AT_CIPSTATUS ipstatus;
 	uint8_t signal;
 	uint8_t downloading;
 	char *response;

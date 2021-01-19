@@ -458,7 +458,6 @@ void StartIotTask(void *argument)
       .pPayload = &report,
       .pending = 0
   };
-  uint16_t seq_id;
 
   // wait until ManagerTask done
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -467,33 +466,28 @@ void StartIotTask(void *argument)
   Simcom_Init(&huart1, &hdma_usart1_rx);
   Simcom_SetState(SIM_STATE_READY, 0);
 
-  MQTT_Connect();
-  MQTT_Subscribe("VCU/COMMAND");
-
   /* Infinite loop */
   for (;;) {
     VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
     // Upload Response
-    if (RPT_PacketPending(&pRes)) {
-      seq_id = RPT_MakePayload(&pRes);
-      //      if (Simcom_Upload(pRes.pPayload, pRes.size)){
-      if (MQTT_Publish("VCU/DATA", pRes.pPayload, pRes.size)){
-        EEPROM_SequentialID(EE_CMD_W, seq_id, pRes.type);
-        pRes.pending = 0;
+    if (RPT_PayloadPending(&pRes))
+      if (Simcom_SetState(SIM_STATE_SERVER_ON, 0)) {
+        RPT_WrapPayload(&pRes);
+        //      if (Simcom_Upload(pRes.pPayload, pRes.size))
+        if (MQTT_Publish("VCU/DAT", pRes.pPayload, pRes.size))
+          RPT_FinishedPayload(&pRes);
       }
-    }
 
     // Upload Report
-    if (RPT_PacketPending(&pRep)) {
-      seq_id = RPT_MakePayload(&pRep);
-      //      if (Simcom_Upload(pRep.pPayload, pRep.size)){
-      if (MQTT_Publish("VCU/RESPONSE",pRep.pPayload, pRep.size)){
-        EEPROM_SequentialID(EE_CMD_W, seq_id, pRep.type);
-        pRep.pending = 0;
+    if (RPT_PayloadPending(&pRep))
+      if (Simcom_SetState(SIM_STATE_SERVER_ON, 0)) {
+        RPT_WrapPayload(&pRep);
+        //      if (Simcom_Upload(pRep.pPayload, pRep.size))
+        if (MQTT_Publish("VCU/RSP",pRep.pPayload, pRep.size))
+          RPT_FinishedPayload(&pRep);
       }
-    }
 
     // SIMCOM Related Routines
     if (RTC_NeedCalibration(&(VCU.d.rtc)))
