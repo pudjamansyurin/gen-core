@@ -10,7 +10,7 @@
 #include "can.h"
 
 /* External variables ----------------------------------------------------------*/
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 extern osMessageQueueId_t CanRxQueueHandle;
 #endif
 
@@ -43,7 +43,7 @@ void CANBUS_Init(CAN_HandleTypeDef *hcan) {
     if (HAL_CAN_Start(can.h.can) != HAL_OK)
       error = 1;
 
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
   if (!error)
     if (HAL_CAN_ActivateNotification(can.h.can, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
       error = 1;
@@ -128,7 +128,7 @@ uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef *RxHeader) {
   return RxHeader->ExtId;
 }
 
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
   can_rx_t Rx;
 
@@ -141,13 +141,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-  //#if (!BOOTLOADER)
+  //#if (RTOS_ENABLE)
   //  osMutexAcquire(CanTxMutexHandle, osWaitForever);
   //#endif
 }
 
 static void unlock(void) {
-  //#if (!BOOTLOADER)
+  //#if (RTOS_ENABLE)
   //  osMutexRelease(CanTxMutexHandle);
   //#endif
 }

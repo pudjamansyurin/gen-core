@@ -8,9 +8,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_aes.h"
 
-/* External variable ---------------------------------------------------------*/
-extern osMutexId_t AesMutexHandle;
-
 /* Public variable -----------------------------------------------------------*/
 __ALIGN_BEGIN uint32_t AesKey[4] __ALIGN_END;
 
@@ -22,11 +19,12 @@ static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
-uint8_t AES_Init(CRYP_HandleTypeDef *hcryp) {
+uint8_t AES_Init(CRYP_HandleTypeDef *hcryp, osMutexId_t mutex) {
   HAL_StatusTypeDef ret;
   CRYP_ConfigTypeDef config;
 
   aes.h.cryp = hcryp;
+  aes.h.mutex = mutex;
 
   do {
     lock();
@@ -63,9 +61,9 @@ uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
 }
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-  osMutexAcquire(AesMutexHandle, osWaitForever);
+  osMutexAcquire(aes.h.mutex, osWaitForever);
 }
 
 static void unlock(void) {
-  osMutexRelease(AesMutexHandle);
+  osMutexRelease(aes.h.mutex);
 }

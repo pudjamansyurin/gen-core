@@ -56,7 +56,6 @@ typedef struct {
   uint16_t bat;
   uint32_t odometer;
   motion_t motion;
-  datetime_t rtc;
   uint64_t events;
   struct {
     uint8_t error;
@@ -82,7 +81,7 @@ typedef struct {
 typedef struct {
   struct {
     uint8_t (*SwitchModeControl)(hbar_t*);
-    uint8_t (*Datetime)(timestamp_t*);
+    uint8_t (*Datetime)(datetime_t);
     uint8_t (*MixedData)(hbar_runner_t*);
     uint8_t (*SubTripData)(uint32_t*);
   } t;
@@ -111,7 +110,7 @@ void VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t increment);
 
 uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar);
-uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp);
+uint8_t VCU_CAN_TX_Datetime(datetime_t dt);
 uint8_t VCU_CAN_TX_MixedData(hbar_runner_t *runner);
 uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip);
 

@@ -20,7 +20,7 @@ void GATE_LedToggle(void) {
 
 void GATE_SimcomShutdown(void) {
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(1000);
+  _DelayMS(20000);
 }
 
 void GATE_SimcomReset(void) {

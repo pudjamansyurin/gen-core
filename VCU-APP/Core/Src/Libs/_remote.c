@@ -12,10 +12,6 @@
 #include "Libs/_remote.h"
 #include "Libs/_eeprom.h"
 
-/* External variables -----------------------------------------------------------*/
-//extern osMutexId_t RemoteRecMutexHandle;
-extern osThreadId_t RemoteTaskHandle;
-
 /* Private variables -----------------------------------------------------------*/
 static remote_t RMT = {
     .tx = {
@@ -48,8 +44,9 @@ static void GenRandomNumber32(uint32_t *payload, uint8_t size);
 static void Debugger(void);
 
 /* Public functions implementation --------------------------------------------*/
-void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi) {
+void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi, osThreadId_t threadId) {
   RMT.h.spi = hspi;
+  RMT.h.threadId = threadId;
 
   nrf_param(hspi, RMT.rx.payload);
 
@@ -147,7 +144,7 @@ void RMT_IrqHandler(void) {
 void RMT_PacketReceived(uint8_t *data) {
   RMT.tick.heartbeat = _GetTickMS();
   // Debugger();
-  osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_RX_IT);
+  osThreadFlagsSet(RMT.h.threadId, EVT_REMOTE_RX_IT);
 }
 
 uint8_t RMT_NeedReset(void) {

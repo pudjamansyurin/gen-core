@@ -10,9 +10,6 @@
 #include "DMA/_dma_finger.h"
 #include "Libs/_finger.h"
 
-/* External variables ---------------------------------------------------------*/
-//extern osMutexId_t FingerRecMutexHandle;
-
 /* Private variables ----------------------------------------------------------*/
 static finger_t finger;
 
@@ -132,12 +129,12 @@ int8_t FINGER_Auth(void) {
   int8_t id = -1;
 
   lock();
-  if (GetImage(0)) 
+  if (GetImage(0))
     if (ConvertImage()) {
       res = fz3387_fingerFastSearch();
       DebugResponse(res, "Found a print match!");
       if (res == FINGERPRINT_OK) {
-        printf("Finger:Found ID #%u with confidence of %u\n", 
+        printf("Finger:Found ID #%u with confidence of %u\n",
             finger.scanner.id, finger.scanner.confidence);
 
         if (finger.scanner.confidence > FINGER_CONFIDENCE_MIN)
@@ -181,7 +178,7 @@ static uint8_t GetImage(uint8_t enroll) {
 
   if (enroll && res == FINGERPRINT_NOFINGER)
     printf(".\n");
-  else 
+  else
     DebugResponse(res, "Image taken");
 
   return (res == FINGERPRINT_OK);

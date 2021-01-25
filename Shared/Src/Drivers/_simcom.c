@@ -62,13 +62,13 @@ static void SetStateServerOn(SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus);
 
 /* Public functions implementation --------------------------------------------*/
 void Simcom_Lock(void) {
-	//#if (!BOOTLOADER)
+	//#if (RTOS_ENABLE)
 	//  osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
 	//#endif
 }
 
 void Simcom_Unlock(void) {
-	//#if (!BOOTLOADER)
+	//#if (RTOS_ENABLE)
 	//  osMutexRelease(SimcomRecMutexHandle);
 	//#endif
 }
@@ -90,6 +90,14 @@ void Simcom_DeInit(void) {
 	GATE_SimcomShutdown();
 	SIMCOM_DMA_Stop();
 	HAL_UART_DeInit(SIM.h.uart);
+}
+
+void Simcom_CalibrateTime(void) {
+	timestamp_t ts;
+
+	if (Simcom_SetState(SIM_STATE_READY, 0))
+		if (AT_Clock(ATR, &ts))
+			RTC_Calibrate(&ts);
 }
 
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
@@ -156,7 +164,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 				break;
 
 			case SIM_STATE_MQTT_ON:
-				if (!MQTT_Ping())
+				if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())
 					if (SIM.state == SIM_STATE_MQTT_ON)
 						SIM.state--;
 
@@ -322,7 +330,7 @@ static SIMCOM_RESULT HardReset(void) {
 	printf("Simcom:HardReset\n");
 	SIMCOM_Reset_Buffer();
 
-	Simcom_Init(SIM.h.uart, SIM.h.dma);
+//	Simcom_Init(SIM.h.uart, SIM.h.dma);
 	GATE_SimcomReset();
 #if (!BOOTLOADER)
 	VCU.SetEvent(EV_VCU_NET_HARD_RESET, 1);
@@ -418,17 +426,11 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 #if (!BOOTLOADER)
 static void BeforeTransmitHook(void) {
 	command_t cmd = *(command_t*) SIM.response;
-	uint32_t ptr;
 
 	// Handle Server Command
-	if (Simcom_GetServerResponse(0))  {
-		//		CMD_CheckCommand(cmd);
-		ptr = (uint32_t) SIM.response;
-		if (MQTT_Receive(&cmd))
+	if (Simcom_GetServerResponse(0))
+		if (MQTT_Receive(&cmd, SIM.response))
 			CMD_CheckCommand(cmd);
-		else
-			SIM.response = (void *) ptr;
-	}
 
 	// handle things on every request
 	// printf("============ SIMCOM DEBUG ============\n");

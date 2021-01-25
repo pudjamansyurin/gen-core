@@ -12,13 +12,14 @@
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
 
-/* External variables ---------------------------------------------------------*/
-extern osMessageQueueId_t CommandQueueHandle;
-extern osThreadId_t AudioTaskHandle;
-extern osThreadId_t FingerTaskHandle;
-extern osThreadId_t RemoteTaskHandle;
+/* Private variables ----------------------------------------------------------*/
+osMessageQueueId_t cmdQueue;
 
 /* Public functions implementation --------------------------------------------*/
+void CMD_Init(osMessageQueueId_t mQueueId) {
+	cmdQueue = mQueueId;
+}
+
 void CMD_CheckCommand(command_t command) {
 	uint32_t crc;
 
@@ -33,7 +34,7 @@ void CMD_CheckCommand(command_t command) {
 	if (command.header.crc != crc)
 		return;
 
-	osMessageQueuePut(CommandQueueHandle, &command, 0U, 0U);
+	osMessageQueuePut(cmdQueue, &command, 0U, 0U);
 }
 
 void CMD_GenInfo(response_t *resp) {
@@ -44,11 +45,11 @@ void CMD_GenInfo(response_t *resp) {
 }
 
 void CMD_GenLed(command_t *cmd) {
-	GATE_LedWrite((uint8_t) cmd->data.value);
+	GATE_LedWrite(cmd->data.value[0]);
 }
 
 void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
-	*override_state = (uint8_t) cmd->data.value;
+	*override_state = cmd->data.value[0];
 }
 
 void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_version) {
@@ -66,35 +67,35 @@ void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_v
 	resp->data.code = RESPONSE_STATUS_ERROR;
 }
 
-void CMD_ReportRTC(command_t *cmd, datetime_t *rtc) {
-	RTC_Write((uint64_t) cmd->data.value, rtc);
+void CMD_ReportRTC(command_t *cmd) {
+	RTC_Write(*(datetime_t*) cmd->data.value);
 }
 
 void CMD_ReportOdom(command_t *cmd) {
-	EEPROM_Odometer(EE_CMD_W, (uint32_t) cmd->data.value);
+	EEPROM_Odometer(EE_CMD_W, *(uint32_t*) cmd->data.value);
 }
 
 void CMD_ReportUnitID(command_t *cmd) {
-	EEPROM_UnitID(EE_CMD_W, (uint32_t) cmd->data.value);
+	EEPROM_UnitID(EE_CMD_W, *(uint32_t*) cmd->data.value);
 }
 
 
-void CMD_AudioBeep(void) {
-	osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
+void CMD_AudioBeep(osThreadId_t threadId) {
+	osThreadFlagsSet(threadId, EVT_AUDIO_BEEP);
 }
 
-void CMD_AudioMute(command_t *cmd) {
+void CMD_AudioMute(osThreadId_t threadId, command_t *cmd) {
 	uint32_t flag;
 
-	flag = ((uint8_t) cmd->data.value) ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF;
-	osThreadFlagsSet(AudioTaskHandle, flag);
+	flag =  cmd->data.value[0] ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF;
+	osThreadFlagsSet(threadId, flag);
 }
 
 
-void CMD_Finger(uint8_t event, response_t *resp) {
+void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp) {
 	uint32_t notif, timeout;
 
-	osThreadFlagsSet(FingerTaskHandle, event);
+	osThreadFlagsSet(threadId, event);
 
 	// decide the timeout
 	timeout = (event == EVT_FINGER_ADD) ? 20000 : 5000;
@@ -106,10 +107,10 @@ void CMD_Finger(uint8_t event, response_t *resp) {
 			resp->data.code = RESPONSE_STATUS_OK;
 }
 
-void CMD_RemotePairing(response_t *resp) {
+void CMD_RemotePairing(osThreadId_t threadId, response_t *resp) {
 	uint32_t notif;
 
-	osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
+	osThreadFlagsSet(threadId, EVT_REMOTE_PAIRING);
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;

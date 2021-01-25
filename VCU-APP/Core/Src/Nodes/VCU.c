@@ -135,17 +135,17 @@ uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar) {
   return CANBUS_Write(CAND_VCU_SWITCH, &TxData, 4);
 }
 
-uint8_t VCU_CAN_TX_Datetime(timestamp_t *timestamp) {
+uint8_t VCU_CAN_TX_Datetime(datetime_t dt) {
   CAN_DATA TxData;
 
   // set message
-  TxData.u8[0] = timestamp->time.Seconds;
-  TxData.u8[1] = timestamp->time.Minutes;
-  TxData.u8[2] = timestamp->time.Hours;
-  TxData.u8[3] = timestamp->date.Date;
-  TxData.u8[4] = timestamp->date.Month;
-  TxData.u8[5] = timestamp->date.Year;
-  TxData.u8[6] = timestamp->date.WeekDay;
+  TxData.u8[0] = dt.Seconds;
+  TxData.u8[1] = dt.Minutes;
+  TxData.u8[2] = dt.Hours;
+  TxData.u8[3] = dt.Date;
+  TxData.u8[4] = dt.Month;
+  TxData.u8[5] = dt.Year;
+  TxData.u8[6] = dt.WeekDay;
   // HMI2 shutdown request
   TxData.u8[7] = VCU.d.state.vehicle < VEHICLE_STANDBY;
 

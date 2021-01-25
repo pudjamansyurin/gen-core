@@ -10,6 +10,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_simcom.h"
+#if (!BOOTLOADER)
+#include "Drivers/_rtc.h"
+#endif
 
 /* Private constants ---------------------------------------------------------*/
 #define CHARISNUM(x)                            ((x) >= '0' && (x) <= '9')

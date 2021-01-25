@@ -11,7 +11,7 @@
 #include "crc.h"
 
 /* External variables ---------------------------------------------------------*/
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 extern osMutexId_t CrcMutexHandle;
 #endif
 
@@ -47,7 +47,7 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
 
 	if (cnt) {
 		/* Calculate */
-		while (cnt--) 
+		while (cnt--)
 			remaining[index++] = *arr++;
 		/* Set new value */
 		value = *(uint32_t*) remaining;
@@ -72,13 +72,13 @@ uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 	osMutexAcquire(CrcMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 	osMutexRelease(CrcMutexHandle);
 #endif
 }

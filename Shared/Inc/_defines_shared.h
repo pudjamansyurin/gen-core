@@ -67,7 +67,7 @@
 
 #if (!BOOTLOADER)
 #define VCU_VENDOR                              "GEN"
-#define VCU_BUILD_YEAR               (uint8_t)  20
+#define VCU_BUILD_YEAR               (uint8_t)  21
 #define VCU_UNITID                   (uint32_t) 354313
 
 #define FOTA_MIN_VOLTAGE             (uint16_t) 3800
@@ -254,20 +254,12 @@ typedef enum {
   FOCAN_ACK = 0x79,
   FOCAN_NACK = 0x1F
 } FOCAN;
-
 #else
 typedef enum {
   PAYLOAD_RESPONSE = 0,
   PAYLOAD_REPORT,
   PAYLOAD_MAX = 1,
 } PAYLOAD_TYPE;
-
-/* Exported struct --------------------------------------------------------------*/
-typedef struct {
-  RTC_TimeTypeDef time;
-  RTC_DateTypeDef date;
-  int8_t tzQuarterHour;
-} timestamp_t;
 
 #endif
 #endif /* DEFINES_SHARED_H_ */

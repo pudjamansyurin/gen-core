@@ -13,26 +13,34 @@
 
 /* Typedef -------------------------------------------------------------------*/
 typedef struct {
-  timestamp_t timestamp;
-  RTC_DateTypeDef calibration;
+  RTC_TimeTypeDef time;
+  RTC_DateTypeDef date;
+  int8_t tzQuarterHour;
+} timestamp_t;
+
+typedef struct {
+	uint8_t Year;
+	uint8_t Month;
+	uint8_t Date;
+	uint8_t Hours;
+	uint8_t Minutes;
+	uint8_t Seconds;
+	uint8_t WeekDay;
 } datetime_t;
 
 typedef struct {
   struct {
     RTC_HandleTypeDef *rtc;
+    osMutexId_t mutex;
   } h;
 } rtc_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RTC_Init(RTC_HandleTypeDef *hrtc);
-timestamp_t RTC_Decode(uint64_t dateTime);
-uint64_t RTC_Encode(timestamp_t timestamp);
-uint64_t RTC_Read(void);
-void RTC_ReadRaw(timestamp_t *timestamp);
-void RTC_Write(uint64_t dateTime, datetime_t *dt);
-void RTC_WriteRaw(timestamp_t *timestamp, datetime_t *dt);
-uint8_t RTC_IsDaylight(timestamp_t timestamp);
-uint8_t RTC_NeedCalibration(datetime_t *dt);
-void RTC_CalibrateWithSimcom(datetime_t *dt);
+void RTC_Init(RTC_HandleTypeDef *hrtc, osMutexId_t mutex);
+datetime_t RTC_Read(void);
+void RTC_Write(datetime_t dt);
+uint8_t RTC_NeedCalibration(void);
+void RTC_Calibrate(timestamp_t *ts);
+uint8_t RTC_IsDaylight(void);
 
 #endif /* RTC_H_ */

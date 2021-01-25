@@ -16,8 +16,6 @@
 #include "Nodes/HMI2.h"
 #include "Nodes/HMI1.h"
 
-/* External variables --------------------------------------------------------*/
-
 /* Public variables -----------------------------------------------------------*/
 hmi2_t HMI2 = {
 		.d = { 0 },
@@ -48,9 +46,9 @@ uint8_t HMI2_PowerOverCan(uint8_t state) {
 	uint8_t changed;
 
 	changed = HMI2.d.power != state;
-	if (changed) 
+	if (changed)
 		HMI2.d.power = state;
-	
+
 	return changed;
 }
 

@@ -37,8 +37,8 @@ typedef struct __attribute__((packed)) {
   struct __attribute__((packed)) {
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {
-        uint64_t send;
-        uint64_t log;
+      	datetime_t send;
+        datetime_t log;
       } rtc;
       uint8_t driver_id;
       uint64_t events_group;
@@ -113,16 +113,9 @@ typedef struct __attribute__((packed)) {
   struct __attribute__((packed)) {
     uint8_t code;
     uint8_t sub_code;
-    uint64_t value;
+    uint8_t value[8];
   } data;
 } command_t;
-
-// ACK frame (from server)
-// typedef struct __attribute__((packed)) {
-//   char prefix[2];
-//   uint8_t frame_id;
-//   uint16_t seq_id;
-// } ack_t;
 
 typedef struct {
   PAYLOAD_TYPE type;

@@ -11,7 +11,7 @@
 #include "Libs/_utils.h"
 
 /* External variables ----------------------------------------------------------*/
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 extern osMutexId_t LogRecMutexHandle;
 #endif
 
@@ -60,7 +60,7 @@ void LogBufferHex(char *data, uint16_t size) {
 /* Private functions implementations ----------------------------------------------*/
 static void lock(void) {
 #ifdef DEBUG
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
   osMutexAcquire(LogRecMutexHandle, osWaitForever);
 #endif
 #endif
@@ -68,7 +68,7 @@ static void lock(void) {
 
 static void unlock(void) {
 #ifdef DEBUG
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
   osMutexRelease(LogRecMutexHandle);
 #endif
 #endif

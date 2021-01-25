@@ -97,16 +97,19 @@ uint8_t MQTT_Ping(void) {
 	return 1;
 }
 
-uint8_t MQTT_Receive(command_t *cmd) {
+uint8_t MQTT_Receive(command_t *cmd, void *buffer) {
 	unsigned char buf[100];
 	int buflen = sizeof(buf);
 	MQTTString topicName;
 	unsigned char dup, retained, *dst;
 	unsigned short packetid;
 	int qos, len = 0;
+	uint32_t ptr = (uint32_t) buffer;
 
-	if (MQTTPacket_read(buf, buflen, Simcom_GetData) != PUBLISH)
+	if (MQTTPacket_read(buf, buflen, Simcom_GetData) != PUBLISH) {
+		buffer = (void*) ptr;
 		return 0;
+	}
 
 	MQTTDeserialize_publish(
 			&dup, &qos, &retained, &packetid,

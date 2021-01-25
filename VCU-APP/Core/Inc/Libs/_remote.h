@@ -43,11 +43,12 @@ typedef struct {
   } tick;
   struct {
     SPI_HandleTypeDef *spi;
+    osThreadId_t threadId;
   } h;
 } remote_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi);
+void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi, osThreadId_t threadId);
 void RMT_DeInit(void);
 uint8_t RMT_Ping(uint8_t *unremote);
 void RMT_Pairing(uint32_t *unit_id);

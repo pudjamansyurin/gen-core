@@ -80,6 +80,8 @@ extern sim_t SIM;
 
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
+void Simcom_DeInit(void);
+void Simcom_CalibrateTime(void);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Resp(char *str);
 SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size);
