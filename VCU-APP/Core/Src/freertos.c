@@ -477,7 +477,7 @@ void StartIotTask(void *argument)
 				if (RPT_WrapPayload(&pRes))
 					//      if (Simcom_Upload(pRes.pPayload, pRes.size))
 					if (MQTT_DoPublish(&pRes))
-						RPT_FinishedPayload(&pRes);
+						pRes.pending = 0;
 
 		// Upload Report
 		if (RPT_PayloadPending(&pRep))
@@ -485,7 +485,7 @@ void StartIotTask(void *argument)
 				if (RPT_WrapPayload(&pRep))
 					//      if (Simcom_Upload(pRep.pPayload, pRep.size))
 					if (MQTT_DoPublish(&pRep))
-						RPT_FinishedPayload(&pRep);
+						pRep.pending = 0;
 
 		// SIMCOM related routines
 		if (RTC_NeedCalibration())
@@ -517,7 +517,7 @@ void StartReporterTask(void *argument)
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
-	RPT_ReportInit(FR_SIMPLE, &report, &(VCU.d.seq_id.report));
+	RPT_ReportInit(&report);
 
 	/* Infinite loop */
 	for (;;) {
@@ -563,7 +563,7 @@ void StartCommandTask(void *argument)
 
 	// Initiate
 	CMD_Init(CommandQueueHandle);
-	RPT_ResponseInit(&response, &(VCU.d.seq_id.response));
+	RPT_ResponseInit(&response);
 
 	// Handle Post-FOTA
 	if (FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version)))
@@ -647,7 +647,7 @@ void StartCommandTask(void *argument)
 
 			else if (command.data.code == CMD_CODE_FINGER) {
 				// put finger index to queue
-				driver = command.data.value;
+				driver = command.data.value[0];
 				osMessageQueuePut(DriverQueueHandle, &driver, 0U, 0U);
 
 				switch (command.data.sub_code) {

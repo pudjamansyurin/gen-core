@@ -19,9 +19,9 @@
 #define VADDR_RESET                 (uint16_t) EE_AREA(0, 2)
 #define VADDR_ODOMETER              (uint16_t) EE_AREA(VADDR_RESET + 2, 4)
 #define VADDR_UNITID                (uint16_t) EE_AREA(VADDR_ODOMETER + 4, 4)
-#define VADDR_REPORT_SEQ_ID         (uint16_t) EE_AREA(VADDR_UNITID + 4, 2)
-#define VADDR_RESPONSE_SEQ_ID       (uint16_t) EE_AREA(VADDR_REPORT_SEQ_ID + 2, 2)
-#define VADDR_AES_KEY               (uint16_t) EE_AREA(VADDR_RESPONSE_SEQ_ID + 2, 16)
+#define VADDR_UNUSED_1         			(uint16_t) EE_AREA(VADDR_UNITID + 4, 2)
+#define VADDR_UNUSED_2       				(uint16_t) EE_AREA(VADDR_UNUSED_1 + 2, 2)
+#define VADDR_AES_KEY               (uint16_t) EE_AREA(VADDR_UNUSED_2 + 2, 16)
 #define VADDR_DFU_FLAG              (uint16_t) EE_AREA(VADDR_AES_KEY + 16, 4)
 #define VADDR_FOTA_VERSION          (uint16_t) EE_AREA(VADDR_DFU_FLAG + 4, 2)
 #define VADDR_FOTA_TYPE             (uint16_t) EE_AREA(VADDR_FOTA_VERSION + 2, 4)
@@ -50,7 +50,6 @@ void EEPROM_ResetOrLoad(void);
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
-uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
 #else
 uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value);

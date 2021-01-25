@@ -82,21 +82,11 @@ void EEPROM_ResetOrLoad(void) {
     // load from EEPROM
     EEPROM_UnitID(EE_CMD_R, EE_NULL);
     EEPROM_Odometer(EE_CMD_R, EE_NULL);
-    for (uint8_t type = 0; type <= PAYLOAD_MAX; type++)
-      EEPROM_SequentialID(EE_CMD_R, EE_NULL, type);
-
     EEPROM_AesKey(EE_CMD_R, EE_NULL);
   } else {
     // save to EEPROM, first
     EEPROM_UnitID(EE_CMD_W, VCU_UNITID);
     EEPROM_Odometer(EE_CMD_W, 0);
-    for (uint8_t type = 0; type <= PAYLOAD_MAX; type++)
-      EEPROM_SequentialID(EE_CMD_W, 0, type);
-
-    // generate aes key
-    // uint32_t AesKeyNew[4];
-    // RF_GenerateAesKey(AesKeyNew);
-    // EEPROM_AesKey(EE_CMD_W, AesKeyNew);
 
     // re-write eeprom
     EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
@@ -130,22 +120,6 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
     osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
 
   return ret;
-}
-
-uint8_t EEPROM_SequentialID(EEPROM_COMMAND cmd, uint16_t value, PAYLOAD_TYPE type) {
-  uint16_t *pSeqId;
-  uint32_t vaddr;
-
-  // decide payload type
-  if (type == PAYLOAD_REPORT) {
-    pSeqId = &(VCU.d.seq_id.report);
-    vaddr = VADDR_REPORT_SEQ_ID;
-  } else {
-    pSeqId = &(VCU.d.seq_id.response);
-    vaddr = VADDR_RESPONSE_SEQ_ID;
-  }
-
-  return Command(vaddr, cmd, &value, pSeqId, sizeof(value));
 }
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {

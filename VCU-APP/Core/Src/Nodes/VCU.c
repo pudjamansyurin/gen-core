@@ -50,9 +50,6 @@ void VCU_Init(void) {
   VCU.d.motion.pitch = 0;
 
   VCU.d.events = 0;
-
-  VCU.d.seq_id.report = 0;
-  VCU.d.seq_id.response = 0;
 }
 
 void VCU_SetEvent(uint64_t event_id, uint8_t value) {

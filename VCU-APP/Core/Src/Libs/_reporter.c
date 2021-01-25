@@ -20,20 +20,18 @@ static void Report_SetCRC(report_t *report);
 static void Response_SetCRC(response_t *response);
 
 /* Public functions implementation -------------------------------------------*/
-void RPT_ReportInit(FRAME_TYPE frame, report_t *report, uint16_t *seq_id_report) {
+void RPT_ReportInit(report_t *report) {
   printf("Reporter:ReportInit\n");
 
   report->header.prefix[0] = PREFIX_REPORT[1];
   report->header.prefix[1] = PREFIX_REPORT[0];
-  report->header.seq_id = *seq_id_report;
 }
 
-void RPT_ResponseInit(response_t *response, uint16_t *seq_id_response) {
+void RPT_ResponseInit(response_t *response) {
   printf("Reporter:ResponseInit\n");
 
   response->header.prefix[0] = PREFIX_REPORT[1];
   response->header.prefix[1] = PREFIX_REPORT[0];
-  response->header.seq_id = *seq_id_response;
 }
 
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar) {
@@ -86,12 +84,10 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 
 void RPT_ResponseCapture(response_t *response, uint32_t *unit_id) {
   //Reconstruct the header
-  response->header.seq_id++;
   response->header.unit_id = *unit_id;
   response->header.frame_id = FR_RESPONSE;
   response->header.size = sizeof(response->header.frame_id) +
       sizeof(response->header.unit_id) +
-      sizeof(response->header.seq_id) +
       sizeof(response->data.code) +
       strlen(response->data.message);
 }
@@ -158,21 +154,12 @@ uint8_t RPT_WrapPayload(payload_t *payload) {
   return payload->size;
 }
 
-void RPT_FinishedPayload(payload_t *payload) {
-  header_t *pHeader = (header_t*) (payload->pPayload);
-
-  EEPROM_SequentialID(EE_CMD_W, pHeader->seq_id, payload->type);
-  payload->pending = 0;
-}
-
 /* Private functions implementation -------------------------------------------*/
 static void RPT_ReportCaptureHeader(FRAME_TYPE frame, report_t *report, uint32_t unit_id) {
-  report->header.seq_id++;
   report->header.unit_id = unit_id;
   report->header.frame_id = frame;
   report->header.size = sizeof(report->header.frame_id) +
       sizeof(report->header.unit_id) +
-      sizeof(report->header.seq_id) +
       sizeof(report->data.req);
 
   if (frame == FR_FULL)
@@ -180,9 +167,8 @@ static void RPT_ReportCaptureHeader(FRAME_TYPE frame, report_t *report, uint32_t
 }
 
 static void Report_SetCRC(report_t *report) {
-  // get current sending date-time
   report->data.req.vcu.rtc.send = RTC_Read();
-  // recalculate the CRC
+
   report->header.crc = CRC_Calculate8(
       (uint8_t*) &(report->header.size),
       report->header.size + sizeof(report->header.size),

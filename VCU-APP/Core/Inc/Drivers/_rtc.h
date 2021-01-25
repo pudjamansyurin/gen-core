@@ -18,7 +18,7 @@ typedef struct {
   int8_t tzQuarterHour;
 } timestamp_t;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
 	uint8_t Year;
 	uint8_t Month;
 	uint8_t Date;
