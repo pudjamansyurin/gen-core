@@ -95,9 +95,8 @@ void Simcom_DeInit(void) {
 void Simcom_CalibrateTime(void) {
 	timestamp_t ts;
 
-	if (Simcom_SetState(SIM_STATE_READY, 0))
-		if (AT_Clock(ATR, &ts))
-			RTC_Calibrate(&ts);
+	if (AT_Clock(ATR, &ts))
+		RTC_Calibrate(&ts);
 }
 
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
@@ -330,7 +329,7 @@ static SIMCOM_RESULT HardReset(void) {
 	printf("Simcom:HardReset\n");
 	SIMCOM_Reset_Buffer();
 
-//	Simcom_Init(SIM.h.uart, SIM.h.dma);
+	//	Simcom_Init(SIM.h.uart, SIM.h.dma);
 	GATE_SimcomReset();
 #if (!BOOTLOADER)
 	VCU.SetEvent(EV_VCU_NET_HARD_RESET, 1);

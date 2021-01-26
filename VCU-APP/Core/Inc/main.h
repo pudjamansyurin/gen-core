@@ -143,6 +143,8 @@ void Error_Handler(void);
 #define INT_NET_DTR_GPIO_Port GPIOB
 #define EXT_GPIO_OUT1_Pin GPIO_PIN_8
 #define EXT_GPIO_OUT1_GPIO_Port GPIOD
+#define EXT_GPIO_OUT2_Pin GPIO_PIN_9
+#define EXT_GPIO_OUT2_GPIO_Port GPIOD
 #define SYS_LED_Pin GPIO_PIN_13
 #define SYS_LED_GPIO_Port GPIOD
 #define INT_GPS_SLEEP_Pin GPIO_PIN_6

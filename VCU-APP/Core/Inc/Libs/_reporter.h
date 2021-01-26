@@ -125,8 +125,6 @@ typedef struct {
 } payload_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RPT_ReportInit(report_t *report);
-void RPT_ResponseInit(response_t *response);
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar);
 void RPT_ResponseCapture(response_t *response, uint32_t *unit_id);
 void RPT_CommandDebugger(command_t *cmd);
