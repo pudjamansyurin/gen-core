@@ -92,12 +92,6 @@ void Simcom_DeInit(void) {
 	HAL_UART_DeInit(SIM.h.uart);
 }
 
-void Simcom_CalibrateTime(void) {
-	timestamp_t ts;
-
-	if (AT_Clock(ATR, &ts))
-		RTC_Calibrate(&ts);
-}
 
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
@@ -223,7 +217,7 @@ SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size) {
 	return res;
 }
 
-SIMCOM_RESULT Simcom_UpdateSignalQuality(void) {
+SIMCOM_RESULT Simcom_UpdateSignal(void) {
 	SIMCOM_RESULT res = SIM_RESULT_ERROR;
 	at_csq_t signal;
 
@@ -235,6 +229,14 @@ SIMCOM_RESULT Simcom_UpdateSignalQuality(void) {
 }
 
 #if (!BOOTLOADER)
+void Simcom_CalibrateTime(void) {
+	timestamp_t ts;
+
+	if (AT_Clock(ATR, &ts))
+		RTC_Calibrate(&ts);
+}
+
+
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
 	SIMCOM_RESULT res = SIM_RESULT_ERROR;
 	char ptr[20];
@@ -339,7 +341,7 @@ static SIMCOM_RESULT HardReset(void) {
 }
 
 static void Simcom_IdleJob(void) {
-	Simcom_UpdateSignalQuality();
+	Simcom_UpdateSignal();
 
 #if (!BOOTLOADER)
 	AT_ConnectionStatusSingle(&(SIM.ipstatus));

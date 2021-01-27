@@ -32,7 +32,6 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 		report->data.req.bms.pack[i].current = (bms->pack[i].current + 50) * 100;
 	}
 
-	// Add more (if full frame)
 	if (frame == FR_FULL) {
 		report->data.opt.vcu.vehicle = (int8_t) vcu->state.vehicle;
 
@@ -60,7 +59,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 			report->data.opt.bms.pack[i].temperature = (bms->pack[i].temperature + 40) * 10;
 		}
 
-		// debug data
+		// test data
 		memcpy(&(report->data.test.motion), &(vcu->motion), sizeof(motion_t));
 		memcpy(&(report->data.test.task), &(vcu->task), sizeof(rtos_task_t));
 	}
@@ -70,40 +69,26 @@ void RPT_ResponseCapture(response_t *response, uint32_t *unit_id) {
 	RPT_SetHeader(FR_RESPONSE, response, *unit_id);
 }
 
-void RPT_CommandDebugger(command_t *cmd) {
-	printf("Command:Payload [%u-%u] = %.*s\n",
-			cmd->data.code,
-			cmd->data.sub_code,
-			sizeof(cmd->data.value),
-			(char*) &(cmd->data.value)
-	);
-}
-
-FRAME_TYPE RPT_FrameDecider(uint8_t backup) {
+void RPT_FrameDecider(uint8_t backup, FRAME_TYPE *frame) {
 	static uint8_t frameDecider = 0;
-	FRAME_TYPE frame;
 
 	if (backup) {
-		frame = FR_FULL;
+		*frame = FR_FULL;
 		frameDecider = 0;
 	} else {
 		if (++frameDecider < (RPT_FRAME_FULL / RPT_INTERVAL_NORMAL ))
-			frame = FR_SIMPLE;
+			*frame = FR_SIMPLE;
 		else {
-			frame = FR_FULL;
+			*frame = FR_FULL;
 			frameDecider = 0;
 		}
 	}
-
-	return frame;
 }
 
 uint8_t RPT_PayloadPending(payload_t *payload) {
-	uint32_t notif;
-
 	// Handle full buffer
 	if (payload->type == PAYLOAD_REPORT)
-		if (_osThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
+		if (_osThreadFlagsWait(NULL, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
 			payload->pending = 0;
 
 	// Check logs
@@ -132,6 +117,14 @@ uint8_t RPT_WrapPayload(payload_t *payload) {
 	return payload->size;
 }
 
+void RPT_CommandDebugger(command_t *cmd) {
+	printf("Command:Payload [%u-%u] = %.*s\n",
+			cmd->data.code,
+			cmd->data.sub_code,
+			sizeof(cmd->data.value),
+			(char*) &(cmd->data.value)
+	);
+}
 /* Private functions implementation -------------------------------------------*/
 static void RPT_SetHeader(FRAME_TYPE frame, void *payload, uint32_t unit_id) {
 	header_t *header = (header_t*) payload;

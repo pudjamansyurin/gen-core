@@ -30,7 +30,7 @@ typedef enum {
   HBAR_M_DRIVE = 0,
   HBAR_M_TRIP,
   HBAR_M_REPORT,
-  HBAR_M_MAX = 2
+  HBAR_M_MAX = 3
 } HBAR_MODE;
 
 typedef enum {
@@ -38,28 +38,28 @@ typedef enum {
   HBAR_M_DRIVE_STANDARD,
   HBAR_M_DRIVE_SPORT,
   HBAR_M_DRIVE_PERFORMANCE,
-  HBAR_M_DRIVE_MAX = 3
+  HBAR_M_DRIVE_MAX = 4
 } HBAR_MODE_DRIVE;
 
 typedef enum {
   HBAR_M_TRIP_ODO = 0,
   HBAR_M_TRIP_A,
   HBAR_M_TRIP_B,
-  HBAR_M_TRIP_MAX = 2
+  HBAR_M_TRIP_MAX = 3
 } HBAR_MODE_TRIP;
 
 typedef enum {
   HBAR_M_REPORT_RANGE = 0,
   HBAR_M_REPORT_AVERAGE,
-  HBAR_M_REPORT_MAX = 1
+  HBAR_M_REPORT_MAX = 2
 } HBAR_MODE_REPORT;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
-  uint8_t max[HBAR_M_MAX + 1];
-  uint8_t val[HBAR_M_MAX + 1];
-  uint8_t report[HBAR_M_REPORT_MAX + 1];
-  uint32_t trip[HBAR_M_TRIP_MAX + 1];
+  uint8_t max[HBAR_M_MAX];
+  uint8_t val[HBAR_M_MAX];
+  uint8_t report[HBAR_M_REPORT_MAX];
+  uint32_t trip[HBAR_M_TRIP_MAX];
 } hbar_data_t;
 
 typedef struct {

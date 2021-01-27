@@ -81,14 +81,14 @@ extern sim_t SIM;
 /* Public functions prototype ------------------------------------------------*/
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 void Simcom_DeInit(void);
-void Simcom_CalibrateTime(void);
+void Simcom_Lock(void);
+void Simcom_Unlock(void);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Resp(char *str);
 SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size);
-SIMCOM_RESULT Simcom_UpdateSignalQuality(void);
-void Simcom_Lock(void);
-void Simcom_Unlock(void);
+SIMCOM_RESULT Simcom_UpdateSignal(void);
 #if (!BOOTLOADER)
+void Simcom_CalibrateTime(void);
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
 int Simcom_GetData(unsigned char *buf, int count);
 uint8_t Simcom_GetServerResponse(uint32_t timeout);

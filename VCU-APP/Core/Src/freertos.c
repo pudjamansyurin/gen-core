@@ -487,7 +487,7 @@ void StartIotTask(void *argument)
 
 		// SIMCOM related routines
 		if (Simcom_SetState(SIM_STATE_READY, 0)) {
-			Simcom_UpdateSignalQuality();
+			Simcom_UpdateSignal();
 			if (RTC_NeedCalibration())
 				Simcom_CalibrateTime();
 		}
@@ -520,7 +520,7 @@ void StartReporterTask(void *argument)
 		VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
 		lastWake = _GetTickMS();
 
-		frame = RPT_FrameDecider(!VCU.d.gpio.power5v);
+		RPT_FrameDecider(!VCU.d.gpio.power5v, &frame);
 		RPT_ReportCapture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.runner.mode.d));
 
 		// Put report to log
@@ -734,12 +734,12 @@ void StartGpsTask(void *argument)
 void StartGyroTask(void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
-	uint32_t notif, flag;
+	uint32_t flag;
 	movement_t movement;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(NULL, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
 	/* MPU6050 Initialization*/
@@ -750,9 +750,9 @@ void StartGyroTask(void *argument)
 		VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
+		if (_osThreadFlagsWait(NULL, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
 			GYRO_DeInit();
-			_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+			_osThreadFlagsWait(NULL, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 			GYRO_Init(&hi2c3);
 		}
 
@@ -783,7 +783,7 @@ void StartRemoteTask(void *argument)
 
 	// wait until needed
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(NULL, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
 	// initialization
@@ -852,11 +852,11 @@ void StartFingerTask(void *argument)
   /* USER CODE BEGIN StartFingerTask */
 	int8_t id;
 	uint32_t notif;
-	uint8_t driver, p = 0;
+	uint8_t driver, res = 0;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(NULL, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
 	// Initialisation
@@ -893,14 +893,14 @@ void StartFingerTask(void *argument)
 				// get driver value
 				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
 					if (notif & EVT_FINGER_ADD)
-						p = FINGER_Enroll(driver);
+						res = FINGER_Enroll(driver);
 					else if (notif & EVT_FINGER_DEL)
-						p = FINGER_DeleteID(driver);
+						res = FINGER_DeleteID(driver);
 					else if (notif & EVT_FINGER_RST)
-						p = FINGER_EmptyDatabase();
+						res = FINGER_EmptyDatabase();
 
 					// handle response
-					osThreadFlagsSet(CommandTaskHandle, p ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+					osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 				}
 			}
 
@@ -925,7 +925,7 @@ void StartAudioTask(void *argument)
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(NULL, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_AUDIO_TASK_STOP);
 
 	/* Initiate Wave player (Codec, DMA, I2C) */
@@ -1082,8 +1082,6 @@ void StartCanTxTask(void *argument)
 void StartHmi2PowerTask(void *argument)
 {
   /* USER CODE BEGIN StartHmi2PowerTask */
-	uint32_t notif;
-
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
@@ -1091,7 +1089,7 @@ void StartHmi2PowerTask(void *argument)
 	for (;;) {
 		VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
 
-		if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
+		if (_osThreadFlagsWait(NULL, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
 
 			if (HMI2.d.power)
 				while (!HMI2.d.started)

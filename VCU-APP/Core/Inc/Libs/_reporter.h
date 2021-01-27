@@ -127,8 +127,8 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar);
 void RPT_ResponseCapture(response_t *response, uint32_t *unit_id);
-void RPT_CommandDebugger(command_t *cmd);
-FRAME_TYPE RPT_FrameDecider(uint8_t backup);
+void RPT_FrameDecider(uint8_t backup, FRAME_TYPE *frame);
 uint8_t RPT_PayloadPending(payload_t *payload);
 uint8_t RPT_WrapPayload(payload_t *payload);
+void RPT_CommandDebugger(command_t *cmd);
 #endif /* REPORTER_H_ */

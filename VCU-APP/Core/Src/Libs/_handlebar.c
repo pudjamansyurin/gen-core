@@ -81,9 +81,9 @@ hbar_t HBAR = {
                     HBAR_M_REPORT_RANGE
                 },
                 .max = {
-                    HBAR_M_DRIVE_MAX,
-                    HBAR_M_TRIP_MAX,
-                    HBAR_M_REPORT_MAX
+                    HBAR_M_DRIVE_MAX - 1,
+                    HBAR_M_TRIP_MAX - 1,
+                    HBAR_M_REPORT_MAX - 1
                 },
                 .report = { 0, 0 },
                 .trip = { 0, 0 }
@@ -236,7 +236,7 @@ void HBAR_RunSelectOrSet(void) {
 /* Private functions implementation -------------------------------------------*/
 static void RunSelect(void) {
   if (HBAR.runner.listening) {
-    if (HBAR.runner.mode.m == HBAR_M_MAX)
+    if (HBAR.runner.mode.m == (HBAR_M_MAX - 1))
       HBAR.runner.mode.m = 0;
     else
       HBAR.runner.mode.m++;
