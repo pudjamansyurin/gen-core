@@ -28,7 +28,7 @@ void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
   finger.h.dma = hdma;
   fz3387_init(&(finger.scanner));
 
-  // Inititalize Module
+  // Initiate Module
   do {
     printf("Finger:Init\n");
 

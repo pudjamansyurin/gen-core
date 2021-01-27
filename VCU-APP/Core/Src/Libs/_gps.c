@@ -27,7 +27,7 @@ void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
   MX_USART2_UART_Init();
   UBLOX_DMA_Start(huart, hdma);
 
-	// Inititalize Module
+	// Initiate Module
 	do {
 		printf("GPS:Init\n");
 

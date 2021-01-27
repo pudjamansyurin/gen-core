@@ -15,6 +15,9 @@
 /* Private variables ----------------------------------------------------------*/
 osMessageQueueId_t cmdQueue;
 
+/* Private functions prototypes -----------------------------------------------*/
+static void Debugger(command_t *cmd);
+
 /* Public functions implementation --------------------------------------------*/
 void CMD_Init(osMessageQueueId_t mQueueId) {
 	cmdQueue = mQueueId;
@@ -34,6 +37,7 @@ void CMD_CheckCommand(command_t command) {
 	if (command.header.crc != crc)
 		return;
 
+	// Debugger(&command);
 	osMessageQueuePut(cmdQueue, &command, 0U, 0U);
 }
 
@@ -118,4 +122,14 @@ void CMD_RemotePairing(osThreadId_t threadId, response_t *resp) {
 	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT))
 		if (notif & EVT_COMMAND_OK)
 			resp->data.code = RESPONSE_STATUS_OK;
+}
+
+/* Private functions implementation -------------------------------------------*/
+static void Debugger(command_t *cmd) {
+	printf("Command:Payload [%u-%u] = %.*s\n",
+			cmd->data.code,
+			cmd->data.sub_code,
+			sizeof(cmd->data.value),
+			(char*) &(cmd->data.value)
+	);
 }

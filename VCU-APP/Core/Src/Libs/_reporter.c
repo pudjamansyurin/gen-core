@@ -117,14 +117,6 @@ uint8_t RPT_WrapPayload(payload_t *payload) {
 	return payload->size;
 }
 
-void RPT_CommandDebugger(command_t *cmd) {
-	printf("Command:Payload [%u-%u] = %.*s\n",
-			cmd->data.code,
-			cmd->data.sub_code,
-			sizeof(cmd->data.value),
-			(char*) &(cmd->data.value)
-	);
-}
 /* Private functions implementation -------------------------------------------*/
 static void RPT_SetHeader(FRAME_TYPE frame, void *payload, uint32_t unit_id) {
 	header_t *header = (header_t*) payload;

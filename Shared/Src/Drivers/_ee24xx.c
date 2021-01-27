@@ -10,10 +10,10 @@
 
 /* Private variables ----------------------------------------------------------*/
 static I2C_HandleTypeDef *i2c;
-static uint16_t DevAddress = EEPROM24_MAIN;
+static uint16_t DevAddress;
 
 /* Public functions implementation ---------------------------------------------*/
-void EEPROM24XX_SetDevice(I2C_HandleTypeDef *hi2c, EEPROM24_DEVICE Device) {
+void EEPROM24XX_SetDevice(I2C_HandleTypeDef *hi2c, uint16_t Device) {
   i2c = hi2c;
 	DevAddress = Device;
 }
@@ -23,7 +23,7 @@ uint8_t EEPROM24XX_IsConnected(void) {
 }
 
 uint8_t EEPROM24XX_Save(uint16_t Address, void *data, size_t size_of_data) {
-	if (size_of_data > 32) 
+	if (size_of_data > 32)
 		return 0;
 
   if (HAL_I2C_Mem_Write(i2c, DevAddress, Address, I2C_MEMADD_SIZE_16BIT, (uint8_t*) data, size_of_data, 100) == HAL_OK) {
