@@ -34,14 +34,10 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   // Turn ON HMI-Primary, based on knob state.
   GATE_Hmi1Power(GATE_ReadKnobState());
+  _DelayMS(1000);
 
   /* Set FTP directory */
-  if (type == IAP_VCU)
-    strcpy(ftp.path, "/vcu/");
-  else {
-    strcpy(ftp.path, "/hmi/");
-    _DelayMS(1000);
-  }
+  strcpy(ftp.path, (type == IAP_VCU) ? "/vcu/" : "/hmi/");
 
   /* Set current IAP type */
   *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
@@ -216,7 +212,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
     } while ((res > 0) && (*len < setFTP->size));
 
     // Check, stop timer
-    if (*len == setFTP->size) 
+    if (*len == setFTP->size)
       printf("FOTA:End = %lu ms\n", _GetTickMS() - timer);
     else {
       printf("FOTA:Failed\n");

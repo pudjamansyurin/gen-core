@@ -23,7 +23,6 @@
 #include "Drivers/_fz3387.h"
 
 /* Private variables -----------------------------------------------------------*/
-static scanner_t *scanner;
 static packet_t packet;
 
 /* Private functions implementation --------------------------------------------*/
@@ -37,10 +36,6 @@ static void FINGER_IO_WRITE_U16(uint16_t cc);
  @param   packet A structure containing the bytes to transmit
  */
 /**************************************************************************/
-void fz3387_init(scanner_t *scan) {
-  scanner = scan;
-}
-
 void fz3387_writeStructuredPacket(void) {
 	FINGER_Reset_Buffer();
 
@@ -331,7 +326,7 @@ uint8_t fz3387_emptyDatabase(void) {
  @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
  */
 /**************************************************************************/
-uint8_t fz3387_fingerFastSearch(void) {
+uint8_t fz3387_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
 	uint8_t data[] = {
 			FINGERPRINT_HISPEEDSEARCH,
 			0x01,
@@ -342,16 +337,16 @@ uint8_t fz3387_fingerFastSearch(void) {
 	};
 	// high speed search of slot #1 starting at page 0x0000 and page #0x00A3
 	fz3387_SendCmdPacket(data, sizeof(data));
-	scanner->id = 0xFFFF;
-	scanner->confidence = 0xFFFF;
+	*id = 0xFFFF;
+	*confidence = 0xFFFF;
 
-	scanner->id = packet.data[1];
-	scanner->id <<= 8;
-	scanner->id |= packet.data[2];
+	*id = packet.data[1];
+	*id <<= 8;
+	*id |= packet.data[2];
 
-	scanner->confidence = packet.data[3];
-	scanner->confidence <<= 8;
-	scanner->confidence |= packet.data[4];
+	*confidence = packet.data[3];
+	*confidence <<= 8;
+	*confidence |= packet.data[4];
 
 	return packet.data[0];
 }
@@ -363,15 +358,15 @@ uint8_t fz3387_fingerFastSearch(void) {
  @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
  */
 /**************************************************************************/
-uint8_t fz3387_getTemplateCount(void) {
+uint8_t fz3387_getTemplateCount(uint16_t *templateCount) {
 	uint8_t data[] = {
 			FINGERPRINT_TEMPLATECOUNT
 	};
 	fz3387_SendCmdPacket(data, sizeof(data));
 
-	scanner->templateCount = packet.data[1];
-	scanner->templateCount <<= 8;
-	scanner->templateCount |= packet.data[2];
+	*templateCount = packet.data[1];
+	*templateCount <<= 8;
+	*templateCount |= packet.data[2];
 
 	return packet.data[0];
 }

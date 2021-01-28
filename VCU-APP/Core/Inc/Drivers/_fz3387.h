@@ -89,7 +89,6 @@ typedef struct {
 } scanner_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void fz3387_init(scanner_t *scan);
 void fz3387_writeStructuredPacket(void);
 uint8_t fz3387_getStructuredPacket(void);
 uint8_t fz3387_SendCmdPacket(uint8_t *data, uint8_t size);
@@ -105,8 +104,8 @@ uint8_t fz3387_storeModel(uint16_t id);
 uint8_t fz3387_loadModel(uint16_t id);
 uint8_t fz3387_getModel(void);
 uint8_t fz3387_deleteModel(uint16_t id);
-uint8_t fz3387_fingerFastSearch(void);
-uint8_t fz3387_getTemplateCount(void);
+uint8_t fz3387_fingerFastSearch(uint16_t *id, uint16_t *confidence);
+uint8_t fz3387_getTemplateCount(uint16_t *templateCount);
 uint8_t fz3387_setPassword(uint32_t password);
 
 #endif /* fz3387_H_ */

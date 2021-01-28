@@ -24,7 +24,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
   NRF.config.rx_buffer = rx_buffer;
 
   NRF.config.data_rate = NRF_DATA_RATE_250KBPS;
-  NRF.config.tx_power = NRF_TX_PWR_M18dBm;
+  NRF.config.tx_power = NRF_TX_PWR_M6dBm;
   NRF.config.crc_width = NRF_CRC_WIDTH_1B;
   NRF.config.retransmit_count = 0x0F;   // maximum is 15 times
   NRF.config.retransmit_delay = 0x0F; // 4000us, LSB:250us
@@ -36,22 +36,15 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
 // Checks the presence of the nRF24L01
 NRF_RESULT nrf_check(void) {
   char *nRF24_TEST_ADDR = "nRF24";
-  uint8_t rxbuf[sizeof(nRF24_TEST_ADDR) - 1U];
-  uint8_t *ptr = (uint8_t*) nRF24_TEST_ADDR;
+  uint8_t buflen = sizeof(nRF24_TEST_ADDR) - 1U;
+  uint8_t *txbuf = (uint8_t*) nRF24_TEST_ADDR;
+  uint8_t rxbuf[buflen];
 
-  // Write the test address to the TX_ADDR register
-  nrf_write_register_mb(NRF_TX_ADDR, ptr, sizeof(nRF24_TEST_ADDR) - 1U);
-  // Read it back to the buffer
-  nrf_read_register_mb(NRF_TX_ADDR, rxbuf, sizeof(nRF24_TEST_ADDR) - 1U);
+  nrf_write_register_mb(NRF_TX_ADDR, txbuf, buflen);
+  nrf_read_register_mb(NRF_TX_ADDR, rxbuf, buflen);
 
   // Compare transmitted and received data...
-  for (uint8_t idx = 0U; idx < sizeof(nRF24_TEST_ADDR) - 1U; idx++)
-    if (rxbuf[idx] != *ptr++)
-      // The transceiver is absent
-      return NRF_ERROR;
-
-  // The transceiver is present
-  return NRF_OK;
+  return (memcmp(rxbuf, txbuf, buflen) == 0) ? NRF_OK : NRF_ERROR;
 }
 
 NRF_RESULT nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address, uint8_t payload_width) {
@@ -101,7 +94,6 @@ NRF_RESULT nrf_configure(void) {
 
   // auto ack (Enhanced ShockBurst) on pipe0
   nrf_enable_auto_ack(0x00);
-  //  nrf_disable_auto_ack();
 
   // clear interrupt
   nrf_clear_interrupts();

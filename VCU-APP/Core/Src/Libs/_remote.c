@@ -50,7 +50,6 @@ void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi, osThreadId_t threadId)
 	RMT.h.threadId = threadId;
 
 	nrf_param(hspi, RMT.rx.payload);
-
 	ReInit();
 
 	nrf_configure();
@@ -119,8 +118,8 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 				valid = 1;
 	unlock();
 
-//	if (valid)
-//		Debugger(*cmd);
+	//	if (valid)
+	//		Debugger(*cmd);
 
 	return valid;
 }

@@ -557,7 +557,7 @@ void StartCommandTask(void *argument)
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
-	CMD_Init(CommandQueueHandle);
+	CMD_Init(CommandQueueHandle, DriverQueueHandle);
 
 	// Handle Post-FOTA
 	if (FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version)))
@@ -639,14 +639,13 @@ void StartCommandTask(void *argument)
 			}
 
 			else if (command.data.code == CMD_CODE_FINGER) {
-				osMessageQueuePut(DriverQueueHandle, &command.data.value[0], 0U, 0U);
-
 				switch (command.data.sub_code) {
 					case CMD_FINGER_ADD :
 						CMD_Finger(FingerTaskHandle, EVT_FINGER_ADD, &response);
 						break;
 
 					case CMD_FINGER_DEL :
+						osMessageQueuePut(DriverQueueHandle, &command.data.value[0], 0U, 0U);
 						CMD_Finger(FingerTaskHandle, EVT_FINGER_DEL, &response);
 						break;
 
@@ -791,7 +790,7 @@ void StartRemoteTask(void *argument)
 		VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
 		// Check response
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 3)) {
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 2)) {
 			// handle threads management
 			if (notif & EVT_REMOTE_TASK_STOP) {
 				RMT_DeInit();
@@ -817,16 +816,14 @@ void StartRemoteTask(void *argument)
 						GATE_SeatToggle();
 					}
 					else if (command == RMT_CMD_ALARM) {
-						for (uint8_t i = 0; i < 2; i++)
-							GATE_HornToggle(&(HBAR.runner.hazard));
+						//						for (uint8_t i = 0; i < 2; i++)
+						GATE_HornToggle(&(HBAR.runner.hazard));
 					}
 				}
 			}
 			// osThreadFlagsClear(EVT_MASK);
 		}
-
 		RMT_Ping(&(HMI1.d.state.unremote));
-
 	}
 	/* USER CODE END StartRemoteTask */
 }
@@ -844,6 +841,7 @@ void StartFingerTask(void *argument)
 	int8_t id;
 	uint32_t notif;
 	uint8_t driver, res = 0;
+	uint8_t db[FINGER_USER_MAX];
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -852,6 +850,7 @@ void StartFingerTask(void *argument)
 
 	// Initialisation
 	FINGER_Init(&huart4, &hdma_uart4_rx);
+	FINGER_GetDatabase(db);
 
 	/* Infinite loop */
 	for (;;) {
@@ -880,17 +879,22 @@ void StartFingerTask(void *argument)
 				_DelayMS(2000);
 			}
 
-			if (notif & (EVT_FINGER_ADD | EVT_FINGER_DEL | EVT_FINGER_RST)) {
-				// get driver value
-				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
-					if (notif & EVT_FINGER_ADD)
-						res = FINGER_Enroll(driver);
-					else if (notif & EVT_FINGER_DEL)
-						res = FINGER_DeleteID(driver);
-					else if (notif & EVT_FINGER_RST)
+			if (notif & (EVT_FINGER_ADD | EVT_FINGER_RST)) {
+					if (notif & EVT_FINGER_ADD) {
+						res = FINGER_Enroll(&id);
+						if (res && id >= 0)
+							osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
+					} else
 						res = FINGER_EmptyDatabase();
 
-					// handle response
+					osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+
+			}
+
+			if (notif & EVT_FINGER_DEL) {
+				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
+						res = FINGER_DeleteID(driver);
+
 					osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 				}
 			}

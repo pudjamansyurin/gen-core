@@ -12,7 +12,7 @@
 #include "Libs/_reporter.h"
 
 /* Public functions implementation --------------------------------------------*/
-void CMD_Init(osMessageQueueId_t mQueueId);
+void CMD_Init(osMessageQueueId_t mCmdQueue, osMessageQueueId_t mDriverQueue);
 void CMD_CheckCommand(command_t command);
 void CMD_GenInfo(response_t *resp);
 void CMD_GenLed(command_t *cmd);

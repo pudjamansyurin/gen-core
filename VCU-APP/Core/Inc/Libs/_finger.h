@@ -14,7 +14,7 @@
 
 /* Structs --------------------------------------------------------------------*/
 typedef struct {
-  scanner_t scanner;
+	uint8_t db[FINGER_USER_MAX];
   struct {
     UART_HandleTypeDef *uart;
     DMA_HandleTypeDef *dma;
@@ -24,7 +24,8 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 void FINGER_DeInit(void);
-uint8_t FINGER_Enroll(uint8_t id);
+void FINGER_GetDatabase(uint8_t *db);
+uint8_t FINGER_Enroll(int8_t *id);
 uint8_t FINGER_DeleteID(uint8_t id);
 uint8_t FINGER_EmptyDatabase(void);
 uint8_t FINGER_SetPassword(uint32_t password);

@@ -14,13 +14,15 @@
 
 /* Private variables ----------------------------------------------------------*/
 osMessageQueueId_t cmdQueue;
+osMessageQueueId_t driverQueue;
 
 /* Private functions prototypes -----------------------------------------------*/
 static void Debugger(command_t *cmd);
 
 /* Public functions implementation --------------------------------------------*/
-void CMD_Init(osMessageQueueId_t mQueueId) {
-	cmdQueue = mQueueId;
+void CMD_Init(osMessageQueueId_t mCmdQueue, osMessageQueueId_t mDriverQueue) {
+	cmdQueue = mCmdQueue;
+	driverQueue = mDriverQueue;
 }
 
 void CMD_CheckCommand(command_t command) {
@@ -98,6 +100,7 @@ void CMD_AudioMute(osThreadId_t threadId, command_t *cmd) {
 
 void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp) {
 	uint32_t notif, timeout;
+	uint8_t id;
 
 	osThreadFlagsSet(threadId, event);
 
@@ -109,6 +112,13 @@ void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp) {
 	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout))
 		if (notif & EVT_COMMAND_OK) {
 			resp->data.code = RESPONSE_STATUS_OK;
+
+			if (event == EVT_FINGER_ADD) {
+				if (osMessageQueueGet(driverQueue, &id, NULL, 0U) == osOK)
+					sprintf(resp->data.message, "%u", id);
+				else
+					resp->data.code = RESPONSE_STATUS_ERROR;
+			}
 		}
 }
 

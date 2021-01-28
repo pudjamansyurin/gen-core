@@ -30,7 +30,6 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
   TxData.FLOAT[1] = percent;
   // send message
   do {
-    // send message
     p = CANBUS_Write(address, &TxData, 8);
   } while (!p && --retry);
 
