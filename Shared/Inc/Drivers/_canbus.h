@@ -46,6 +46,7 @@ typedef struct {
 
 /* Public functions prototype ------------------------------------------------*/
 void CANBUS_Init(CAN_HandleTypeDef *hcan);
+void CANBUS_DeInit(void);
 uint8_t CANBUS_Filter(void);
 uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC);
 uint8_t CANBUS_Read(can_rx_t *Rx);

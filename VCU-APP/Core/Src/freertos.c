@@ -396,7 +396,6 @@ void StartManagerTask(void *argument)
 	// Peripheral Initiate
 	RTC_Init(&hrtc, RtcMutexHandle);
 	EEPROM_Init(&hi2c2);
-	CANBUS_Init(&hcan1);
 	BAT_Init(&hadc1);
 
 	// Threads management:
@@ -767,8 +766,8 @@ void StartGyroTask(void *argument)
 
 		// Read all accelerometer, gyroscope (average)
 		GYRO_Decision(&movement, &(VCU.d.motion), 50);
-
 		VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
+
 		// Indicators
 		GATE_LedWrite(movement.fallen);
 		flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
@@ -812,7 +811,7 @@ void StartRemoteTask(void *argument)
 				RMT_Init(&(VCU.d.unit_id), &hspi1, RemoteTaskHandle);
 			}
 
-			// handle Pairing
+			// handle pairing
 			if (notif & EVT_REMOTE_PAIRING)
 				RMT_Pairing(&(VCU.d.unit_id));
 
@@ -830,7 +829,6 @@ void StartRemoteTask(void *argument)
 						GATE_SeatToggle();
 					}
 					else if (command == RMT_CMD_ALARM) {
-						//						for (uint8_t i = 0; i < 2; i++)
 						GATE_HornToggle(&(HBAR.runner.hazard));
 					}
 				}
@@ -852,10 +850,9 @@ void StartRemoteTask(void *argument)
 void StartFingerTask(void *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
-	uint8_t id, valid;
 	uint32_t notif;
-	uint8_t driver, res = 0;
-	finger_db_t finger;
+  finger_db_t finger;
+	uint8_t  id, valid, driver, res = 0;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -990,15 +987,21 @@ void StartCanRxTask(void *argument)
 	/* USER CODE BEGIN StartCanRxTask */
 	can_rx_t Rx;
 
-	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  // wait until needed
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  _osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+  osThreadFlagsClear(EVT_CAN_TASK_STOP);
 
 	/* Infinite loop */
 	for (;;) {
 		VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
 
-		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, osWaitForever) == osOK) {
-			// handle STD message
+    // Check notifications
+    if (_osThreadFlagsWait(NULL, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) {
+      _osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+    }
+
+		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
 			switch (CANBUS_ReadID(&(Rx.header))) {
 				case CAND_HMI1 :
 					HMI1.can.r.State(&Rx);
@@ -1007,7 +1010,7 @@ void StartCanRxTask(void *argument)
 					HMI2.can.r.State(&Rx);
 					break;
 				default:
-					// BMS - Extended ID
+					// Extended ID
 					switch (CANBUS_ReadID(&(Rx.header)) >> 20) {
 						case CAND_BMS_PARAM_1 :
 							BMS.can.r.Param1(&Rx);
@@ -1035,32 +1038,41 @@ void StartCanRxTask(void *argument)
 void StartCanTxTask(void *argument)
 {
 	/* USER CODE BEGIN StartCanTxTask */
-	TickType_t lastWake, last500ms, last1000ms;
+	TickType_t last500ms, last1000ms;
 
-	// wait until ManagerTask done
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  // wait until needed
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  _osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+  osThreadFlagsClear(EVT_CAN_TASK_STOP);
+
+  // initiate
+  CANBUS_Init(&hcan1);
 
 	/* Infinite loop */
 	last500ms = _GetTickMS();
 	last1000ms = _GetTickMS();
 	for (;;) {
 		VCU.d.task.canTx.wakeup = _GetTickMS() / 1000;
-		lastWake = _GetTickMS();
 
-		// send every 20m
+    // Check notifications
+    if (_osThreadFlagsWait(NULL, EVT_CAN_TASK_STOP, osFlagsWaitAll, 20)) {
+      CANBUS_DeInit();
+      _osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+      CANBUS_Init(&hcan1);
+    }
+
+		// send every 20ms
 		VCU.can.t.SwitchModeControl(&HBAR);
 
 		// send every 500ms
-		if (lastWake - last500ms > 500) {
+		if (_GetTickMS() - last500ms > 500) {
 			last500ms = _GetTickMS();
-
 			VCU.can.t.MixedData(&(HBAR.runner));
 		}
 
 		// send every 1000ms
-		if (lastWake - last1000ms > 1000) {
+		if (_GetTickMS() - last1000ms > 1000) {
 			last1000ms = _GetTickMS();
-
 			VCU.can.t.Datetime(RTC_Read());
 			VCU.can.t.SubTripData(&(HBAR.runner.mode.d.trip[0]));
 		}
@@ -1074,8 +1086,6 @@ void StartCanTxTask(void *argument)
 		HMI1.Refresh();
 		HMI2.Refresh();
 		BMS.RefreshIndex();
-
-		osDelayUntil(lastWake + 20);
 	}
 	/* USER CODE END StartCanTxTask */
 }
@@ -1228,6 +1238,8 @@ static void CheckVehicleState(void) {
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
 					osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
+          osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
+          osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_STOP);
 				}
 
 				if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
@@ -1247,6 +1259,8 @@ static void CheckVehicleState(void) {
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
 					osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_START);
+          osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_START);
+          osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_START);
 					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
 				}
 

@@ -29,30 +29,34 @@ static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData);
 
 /* Public functions implementation ---------------------------------------------*/
 void CANBUS_Init(CAN_HandleTypeDef *hcan) {
-  uint8_t error = 0;
+  uint8_t e;
 
   can.h.can = hcan;
 
   GATE_CanbusReset();
   MX_CAN1_Init();
 
-  if (!CANBUS_Filter())
-    error = 1;
+  e = (!CANBUS_Filter());
 
-  if (!error)
-    if (HAL_CAN_Start(can.h.can) != HAL_OK)
-      error = 1;
+  if (!e)
+    e = (HAL_CAN_Start(can.h.can) != HAL_OK);
 
 #if (RTOS_ENABLE)
-  if (!error)
-    if (HAL_CAN_ActivateNotification(can.h.can, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-      error = 1;
+  if (!e)
+    e = (HAL_CAN_ActivateNotification(can.h.can, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK);
 #endif
 
-  if (error)
-    Error_Handler();
+  if (e)
+    printf("CAN: Initiate error.");
 
-  can.active = !error;
+  can.active = !e;
+}
+
+void CANBUS_DeInit(void) {
+  HAL_CAN_DeactivateNotification(can.h.can, CAN_IT_RX_FIFO0_MSG_PENDING);
+  HAL_CAN_Stop(can.h.can);
+  HAL_CAN_DeInit(can.h.can);
+  GATE_CanbusShutdown();
 }
 
 uint8_t CANBUS_Filter(void) {
@@ -167,14 +171,15 @@ static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC
 }
 
 static uint8_t Activated(void) {
-  if (!can.active)
+  if (!can.active) {
+    CANBUS_DeInit();
     CANBUS_Init(can.h.can);
-
+  }
   return can.active;
 }
 
 static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
-  printf("[TX] 0x%08X => %.*s\n",
+  printf("CAN:[TX] 0x%08X => %.*s\n",
       (unsigned int) ((TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId : TxHeader->ExtId),
           (TxHeader->RTR == CAN_RTR_DATA) ? (int) TxHeader->DLC : strlen("RTR"),
               (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR"
@@ -182,7 +187,7 @@ static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
 }
 
 static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData) {
-  printf("[RX] 0x%08X <=  %.*s\n",
+  printf("CAN:[RX] 0x%08X <=  %.*s\n",
       (unsigned int) CANBUS_ReadID(RxHeader),
       (RxHeader->RTR == CAN_RTR_DATA) ? (int) RxHeader->DLC : strlen("RTR"),
           (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR"

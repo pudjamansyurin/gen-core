@@ -35,9 +35,13 @@ void GATE_SimcomSoftReset(void) {
   HAL_GPIO_WritePin(INT_NET_RST_GPIO_Port, INT_NET_RST_Pin, GPIO_PIN_RESET);
 }
 
-void GATE_CanbusReset(void) {
+void GATE_CanbusShutdown(void) {
   HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(50);
+}
+
+void GATE_CanbusReset(void) {
+  GATE_CanbusShutdown();
   HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(50);
 }

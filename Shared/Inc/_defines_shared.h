@@ -161,12 +161,15 @@
 #define EVT_AUDIO_MUTE_ON                       BIT(5)
 #define EVT_AUDIO_MUTE_OFF                      BIT(6)
 
-#define EVT_HMI2POWER_CHANGED                   BIT(0)
+#define EVT_CAN_TASK_START                      BIT(0)
+#define EVT_CAN_TASK_STOP                       BIT(1)
 
 #define EVT_GATE_HBAR                           BIT(0)
 #define EVT_GATE_REG_5V_IRQ                     BIT(1)
 #define EVT_GATE_STARTER_IRQ                    BIT(2)
 #define EVT_GATE_KNOB_IRQ                       BIT(3)
+
+#define EVT_HMI2POWER_CHANGED                   BIT(0)
 
 // Events group (for All Threads)
 #define EVENT_MASK                   (uint32_t) 0xFFFFFF
