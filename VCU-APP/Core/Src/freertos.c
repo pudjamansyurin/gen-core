@@ -824,10 +824,9 @@ void StartRemoteTask(void *argument)
 				// process command
 				if (RMT_ValidateCommand(&command)) {
 					if (command == RMT_CMD_SEAT) {
+						GATE_SeatToggle();
 						// FIXME: use real starter button (replace real starter for test)
 						VCU.d.gpio.starter = 1;
-
-						GATE_SeatToggle();
 					}
 					else if (command == RMT_CMD_ALARM) {
 						//						for (uint8_t i = 0; i < 2; i++)

@@ -30,11 +30,9 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       .size = 0,
   };
 
-  Simcom_SetState(SIM_STATE_READY, 0);
-
   // Turn ON HMI-Primary, based on knob state.
   GATE_Hmi1Power(GATE_ReadKnobState());
-  _DelayMS(3000);
+  _DelayMS(2000);
 
   /* Set FTP directory */
   strcpy(ftp.path, (type == IAP_VCU) ? "/vcu/" : "/hmi/");
@@ -42,6 +40,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   /* Set current IAP type */
   *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
   FOCAN_SetProgress(type, 0.0f);
+
+  Simcom_SetState(SIM_STATE_READY, 0);
 
   /* Backup if needed */
   if (res > 0)
