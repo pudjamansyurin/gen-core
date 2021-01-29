@@ -34,7 +34,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   // Turn ON HMI-Primary, based on knob state.
   GATE_Hmi1Power(GATE_ReadKnobState());
-  _DelayMS(1000);
+  _DelayMS(3000);
 
   /* Set FTP directory */
   strcpy(ftp.path, (type == IAP_VCU) ? "/vcu/" : "/hmi/");
