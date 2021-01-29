@@ -876,22 +876,13 @@ void StartFingerTask(void *argument)
 				FINGER_Init(&huart4, &hdma_uart4_rx);
 			}
 
-			if (notif & EVT_FINGER_PLACED) {
+			else if (notif & EVT_FINGER_PLACED) {
 				id = FINGER_AuthFast();
-				// Finger is registered
-				if (id > 0) {
-					if (HMI1.d.state.unfinger)
-						VCU.SetDriver(id);
-					else
-						VCU.SetDriver(DRIVER_ID_NONE);
-				}
-
-				// Handle bounce effect
-				// _DelayMS(1000);
+				if (id > 0)
+					VCU.SetDriver(HMI1.d.state.unfinger ? id : DRIVER_ID_NONE);
 			}
 
-
-			if (notif & EVT_FINGER_ADD) {
+			else if (notif & EVT_FINGER_ADD) {
 				res = FINGER_Enroll(&id, &valid);
 				if (res)
 					osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
@@ -899,8 +890,7 @@ void StartFingerTask(void *argument)
 				osThreadFlagsSet(CommandTaskHandle, valid ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
-
-			if (notif & (EVT_FINGER_FETCH | EVT_FINGER_RST)) {
+			else if (notif & (EVT_FINGER_FETCH | EVT_FINGER_RST)) {
 				if (notif & EVT_FINGER_FETCH) {
 					res = FINGER_Fetch(finger.db);
 					if (res)
@@ -911,7 +901,7 @@ void StartFingerTask(void *argument)
 				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
-			if (notif & EVT_FINGER_DEL) {
+			else if (notif & EVT_FINGER_DEL) {
 				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
 					res = FINGER_DeleteID(driver);
 
@@ -919,8 +909,9 @@ void StartFingerTask(void *argument)
 				}
 			}
 
+			// Handle bounce effect
+			// _DelayMS(1000);
 			osThreadFlagsClear(EVT_MASK);
-
 		}
 	}
 	/* USER CODE END StartFingerTask */

@@ -76,7 +76,7 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 	lock();
 	res = GenerateID(id);
 
-	if (res == FINGERPRINT_OK) {
+	if (res == FINGERPRINT_OK && *id > 0) {
 		printf("Finger:Waiting for valid finger to enroll as #%u\n", *id);
 
 		tick = _GetTickMS();
