@@ -47,7 +47,7 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
     sprintf(node, FOTA_TYPE == IAP_VCU ? "VCU":"HMI");
 
     // set default value
-    response->data.code = RESPONSE_STATUS_ERROR;
+    response->data.res_code = RESPONSE_STATUS_ERROR;
     sprintf(response->data.message, "%s Failed", node);
 
     // check fota response
@@ -73,7 +73,7 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
       case IAP_DFU_SUCCESS:
         FW_MakeResponseIAP(response->data.message, node, hmi_version);
 
-        response->data.code = RESPONSE_STATUS_OK;
+        response->data.res_code = RESPONSE_STATUS_OK;
         break;
       default:
         break;

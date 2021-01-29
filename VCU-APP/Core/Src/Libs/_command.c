@@ -72,7 +72,7 @@ void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_v
 		sprintf(resp->data.message, "Allowed vehicle state are (%d) - (%d).", minState, maxState);
 
 	/* This line is never reached (if FOTA is activated) */
-	resp->data.code = RESPONSE_STATUS_ERROR;
+	resp->data.res_code = RESPONSE_STATUS_ERROR;
 }
 
 void CMD_ReportRTC(command_t *cmd) {
@@ -106,12 +106,12 @@ void CMD_FingerAdd(osThreadId_t threadId, osMessageQueueId_t queue, response_t *
 	osThreadFlagsSet(threadId, EVT_FINGER_ADD);
 
 	// wait response until timeout
-	resp->data.code = RESPONSE_STATUS_ERROR;
+	resp->data.res_code = RESPONSE_STATUS_ERROR;
 	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, FINGER_SCAN_TIMEOUT+3000)) {
 		if (notif & EVT_COMMAND_OK) {
 			if (osMessageQueueGet(queue, &id, NULL, 0U) == osOK) {
 				sprintf(resp->data.message, "%u", id);
-				resp->data.code = RESPONSE_STATUS_OK;
+				resp->data.res_code = RESPONSE_STATUS_OK;
 			}
 		} else {
 			if (osMessageQueueGet(queue, &id, NULL, 0U) == osOK)
@@ -122,17 +122,17 @@ void CMD_FingerAdd(osThreadId_t threadId, osMessageQueueId_t queue, response_t *
 }
 
 void CMD_FingerFetch(osThreadId_t threadId, osMessageQueueId_t queue, response_t *resp) {
-	uint32_t notif;
+	uint32_t notif, len;
 	finger_db_t finger;
 
 	osThreadFlagsSet(threadId, EVT_FINGER_FETCH);
 
 	// wait response until timeout
-	resp->data.code = RESPONSE_STATUS_ERROR;
+	resp->data.res_code = RESPONSE_STATUS_ERROR;
 	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
 		if (notif & EVT_COMMAND_OK) {
 			if (osMessageQueueGet(queue, finger.db, NULL, 0U) == osOK) {
-				resp->data.code = RESPONSE_STATUS_OK;
+				resp->data.res_code = RESPONSE_STATUS_OK;
 
 				for (uint8_t id=1; id<=FINGER_USER_MAX; id++) {
 					if (finger.db[id-1]) {
@@ -141,6 +141,11 @@ void CMD_FingerFetch(osThreadId_t threadId, osMessageQueueId_t queue, response_t
 						);
 					}
 				}
+
+				// remove last comma
+				len = strlen(resp->data.message);
+				if (len > 0)
+					resp->data.message[len-1] = '\0';
 			}
 		}
 }
@@ -152,10 +157,10 @@ void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp) {
 	osThreadFlagsSet(threadId, event);
 
 	// wait response until timeout
-	resp->data.code = RESPONSE_STATUS_ERROR;
+	resp->data.res_code = RESPONSE_STATUS_ERROR;
 	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
 		if (notif & EVT_COMMAND_OK)
-			resp->data.code = RESPONSE_STATUS_OK;
+			resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
 void CMD_RemotePairing(osThreadId_t threadId, response_t *resp) {
@@ -164,10 +169,10 @@ void CMD_RemotePairing(osThreadId_t threadId, response_t *resp) {
 	osThreadFlagsSet(threadId, EVT_REMOTE_PAIRING);
 
 	// wait response until timeout
-	resp->data.code = RESPONSE_STATUS_ERROR;
+	resp->data.res_code = RESPONSE_STATUS_ERROR;
 	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT))
 		if (notif & EVT_COMMAND_OK)
-			resp->data.code = RESPONSE_STATUS_OK;
+			resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
 /* Private functions implementation -------------------------------------------*/

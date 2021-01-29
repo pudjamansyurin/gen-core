@@ -578,7 +578,9 @@ void StartCommandTask(void *argument)
 		if (osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever) == osOK) {
 
 			// default command response
-			response.data.code = RESPONSE_STATUS_OK;
+			response.data.code = command.data.code;
+			response.data.sub_code = command.data.sub_code;
+			response.data.res_code = RESPONSE_STATUS_OK;
 			strcpy(response.data.message, "");
 
 			// handle the command
@@ -605,7 +607,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
@@ -625,7 +627,7 @@ void StartCommandTask(void *argument)
 						//            break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
@@ -641,7 +643,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
@@ -666,7 +668,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
@@ -678,13 +680,13 @@ void StartCommandTask(void *argument)
 						break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
 
 			else
-				response.data.code = RESPONSE_STATUS_INVALID;
+				response.data.res_code = RESPONSE_STATUS_INVALID;
 
 			// Get current snapshot
 			RPT_ResponseCapture(&response, &(VCU.d.unit_id));
