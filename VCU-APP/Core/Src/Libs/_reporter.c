@@ -135,6 +135,6 @@ static void RPT_SetHeader(FRAME_TYPE frame, void *payload, uint32_t unit_id) {
 	} else {
 		response_t *response = (response_t*) payload;
 
-		header->size += sizeof(response->data.code) + strlen(response->data.message);
+		header->size += sizeof(response->data.code) +sizeof(response->data.sub_code) +sizeof(response->data.res_code) + strlen(response->data.message);
 	}
 }

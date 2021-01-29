@@ -99,11 +99,9 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	const uint8_t rng = NRF_DATA_LENGTH / 2;
 
 	lock();
-	// Read Payload
+	// Read payload
 	if (Payload(RMT_ACTION_R, plain)) {
-		// Check Payload Command
 		for (uint8_t i = 0; i < (sizeof(COMMAND) / sizeof(COMMAND[0])); i++) {
-			// check command
 			if (memcmp(plain, &COMMAND[i], 8) == 0) {
 				*cmd = i;
 				valid = 1;
@@ -111,11 +109,13 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 			}
 		}
 	}
-	// Check is valid ping response
-	if (valid)
-		if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT)
-			if (memcmp(&plain[rng], &payload[rng], rng) == 0)
-				valid = 1;
+	// Is ping response
+	if (valid) {
+		if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT) {
+		  RMT.tick.heartbeat = _GetTickMS();
+			valid = (memcmp(&plain[rng], &payload[rng], rng) == 0);
+		}
+	}
 	unlock();
 
 	//	if (valid)
@@ -145,7 +145,6 @@ void RMT_IrqHandler(void) {
 }
 
 void RMT_PacketReceived(uint8_t *data) {
-	RMT.tick.heartbeat = _GetTickMS();
 	// Debugger();
 	osThreadFlagsSet(RMT.h.threadId, EVT_REMOTE_RX_IT);
 }

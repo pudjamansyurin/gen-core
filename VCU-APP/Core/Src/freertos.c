@@ -578,7 +578,9 @@ void StartCommandTask(void *argument)
 		if (osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever) == osOK) {
 
 			// default command response
-			response.data.code = RESPONSE_STATUS_OK;
+			response.data.code = command.data.code;
+			response.data.sub_code = command.data.sub_code;
+			response.data.res_code = RESPONSE_STATUS_OK;
 			strcpy(response.data.message, "");
 
 			// handle the command
@@ -605,7 +607,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
@@ -625,7 +627,7 @@ void StartCommandTask(void *argument)
 						//            break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
@@ -641,7 +643,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
@@ -666,7 +668,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
@@ -678,13 +680,13 @@ void StartCommandTask(void *argument)
 						break;
 
 					default:
-						response.data.code = RESPONSE_STATUS_INVALID;
+						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
 				}
 			}
 
 			else
-				response.data.code = RESPONSE_STATUS_INVALID;
+				response.data.res_code = RESPONSE_STATUS_INVALID;
 
 			// Get current snapshot
 			RPT_ResponseCapture(&response, &(VCU.d.unit_id));
@@ -876,22 +878,13 @@ void StartFingerTask(void *argument)
 				FINGER_Init(&huart4, &hdma_uart4_rx);
 			}
 
-			if (notif & EVT_FINGER_PLACED) {
+			else if (notif & EVT_FINGER_PLACED) {
 				id = FINGER_AuthFast();
-				// Finger is registered
-				if (id > 0) {
-					if (HMI1.d.state.unfinger)
-						VCU.SetDriver(id);
-					else
-						VCU.SetDriver(DRIVER_ID_NONE);
-				}
-
-				// Handle bounce effect
-				// _DelayMS(1000);
+				if (id > 0)
+					VCU.SetDriver(HMI1.d.state.unfinger ? id : DRIVER_ID_NONE);
 			}
 
-
-			if (notif & EVT_FINGER_ADD) {
+			else if (notif & EVT_FINGER_ADD) {
 				res = FINGER_Enroll(&id, &valid);
 				if (res)
 					osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
@@ -899,8 +892,7 @@ void StartFingerTask(void *argument)
 				osThreadFlagsSet(CommandTaskHandle, valid ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
-
-			if (notif & (EVT_FINGER_FETCH | EVT_FINGER_RST)) {
+			else if (notif & (EVT_FINGER_FETCH | EVT_FINGER_RST)) {
 				if (notif & EVT_FINGER_FETCH) {
 					res = FINGER_Fetch(finger.db);
 					if (res)
@@ -911,7 +903,7 @@ void StartFingerTask(void *argument)
 				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
-			if (notif & EVT_FINGER_DEL) {
+			else if (notif & EVT_FINGER_DEL) {
 				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
 					res = FINGER_DeleteID(driver);
 
@@ -919,8 +911,9 @@ void StartFingerTask(void *argument)
 				}
 			}
 
+			// Handle bounce effect
+			// _DelayMS(1000);
 			osThreadFlagsClear(EVT_MASK);
-
 		}
 	}
 	/* USER CODE END StartFingerTask */

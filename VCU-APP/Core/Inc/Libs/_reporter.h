@@ -98,6 +98,8 @@ typedef struct __attribute__((packed)) {
   header_t header;
   struct __attribute__((packed)) {
     uint8_t code;
+    uint8_t sub_code;
+    uint8_t res_code;
     char message[50];
   } data;
 } response_t;
