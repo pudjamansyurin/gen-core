@@ -61,7 +61,7 @@ void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
 }
 
 void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_version) {
-	vehicle_state_t minState = VEHICLE_BACKUP, maxState = VEHICLE_READY;
+	vehicle_state_t minState = VEHICLE_LOST, maxState = VEHICLE_READY;
 
 	if (type == IAP_HMI)
 		minState = VEHICLE_STANDBY;
