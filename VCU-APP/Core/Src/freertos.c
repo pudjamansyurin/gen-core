@@ -201,6 +201,11 @@ osMessageQueueId_t CanRxQueueHandle;
 const osMessageQueueAttr_t CanRxQueue_attributes = {
 		.name = "CanRxQueue"
 };
+/* Definitions for FingerDbQueue */
+osMessageQueueId_t FingerDbQueueHandle;
+const osMessageQueueAttr_t FingerDbQueue_attributes = {
+		.name = "FingerDbQueue"
+};
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
 const osMutexAttr_t EepromMutex_attributes = {
@@ -308,6 +313,9 @@ void MX_FREERTOS_Init(void) {
 
 	/* creation of CanRxQueue */
 	CanRxQueueHandle = osMessageQueueNew (10, sizeof(can_rx_t), &CanRxQueue_attributes);
+
+	/* creation of FingerDbQueue */
+	FingerDbQueueHandle = osMessageQueueNew (1, sizeof(finger_db_t), &FingerDbQueue_attributes);
 
 	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
@@ -557,7 +565,7 @@ void StartCommandTask(void *argument)
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
-	CMD_Init(CommandQueueHandle, DriverQueueHandle);
+	CMD_Init(CommandQueueHandle);
 
 	// Handle Post-FOTA
 	if (FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version)))
@@ -640,8 +648,12 @@ void StartCommandTask(void *argument)
 
 			else if (command.data.code == CMD_CODE_FINGER) {
 				switch (command.data.sub_code) {
+					case CMD_FINGER_FETCH :
+						CMD_FingerFetch(FingerTaskHandle, FingerDbQueueHandle, &response);
+						break;
+
 					case CMD_FINGER_ADD :
-						CMD_Finger(FingerTaskHandle, EVT_FINGER_ADD, &response);
+						CMD_FingerAdd(FingerTaskHandle, DriverQueueHandle, &response);
 						break;
 
 					case CMD_FINGER_DEL :
@@ -838,10 +850,10 @@ void StartRemoteTask(void *argument)
 void StartFingerTask(void *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
-	int8_t id;
+	uint8_t id, valid;
 	uint32_t notif;
 	uint8_t driver, res = 0;
-	uint8_t db[FINGER_USER_MAX];
+	finger_db_t finger;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -850,7 +862,6 @@ void StartFingerTask(void *argument)
 
 	// Initialisation
 	FINGER_Init(&huart4, &hdma_uart4_rx);
-	FINGER_GetDatabase(db);
 
 	/* Infinite loop */
 	for (;;) {
@@ -868,7 +879,7 @@ void StartFingerTask(void *argument)
 			if (notif & EVT_FINGER_PLACED) {
 				id = FINGER_AuthFast();
 				// Finger is registered
-				if (id >= 0) {
+				if (id > 0) {
 					if (HMI1.d.state.unfinger)
 						VCU.SetDriver(id);
 					else
@@ -876,24 +887,33 @@ void StartFingerTask(void *argument)
 				}
 
 				// Handle bounce effect
-				_DelayMS(2000);
+				// _DelayMS(1000);
 			}
 
-			if (notif & (EVT_FINGER_ADD | EVT_FINGER_RST)) {
-					if (notif & EVT_FINGER_ADD) {
-						res = FINGER_Enroll(&id);
-						if (res && id >= 0)
-							osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
-					} else
-						res = FINGER_EmptyDatabase();
 
-					osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+			if (notif & EVT_FINGER_ADD) {
+				res = FINGER_Enroll(&id, &valid);
+				if (res)
+					osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
 
+				osThreadFlagsSet(CommandTaskHandle, valid ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+			}
+
+
+			if (notif & (EVT_FINGER_FETCH | EVT_FINGER_RST)) {
+				if (notif & EVT_FINGER_FETCH) {
+					res = FINGER_Fetch(finger.db);
+					if (res)
+						osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
+				} else
+					res = FINGER_Flush();
+
+				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
 			if (notif & EVT_FINGER_DEL) {
 				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
-						res = FINGER_DeleteID(driver);
+					res = FINGER_DeleteID(driver);
 
 					osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 				}

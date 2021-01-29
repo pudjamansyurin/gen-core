@@ -57,6 +57,5 @@ void RMT_GenerateAesKey(uint32_t *aes);
 uint8_t RMT_GotPairedResponse(void);
 void RMT_IrqHandler(void);
 void RMT_PacketReceived(uint8_t *data);
-uint8_t RMT_NeedReset(void);
 
 #endif /* REMOTE_H_ */

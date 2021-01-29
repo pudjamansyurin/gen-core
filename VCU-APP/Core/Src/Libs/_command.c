@@ -11,24 +11,26 @@
 #include "Libs/_command.h"
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
+#include "Libs/_finger.h"
 
 /* Private variables ----------------------------------------------------------*/
 osMessageQueueId_t cmdQueue;
-osMessageQueueId_t driverQueue;
 
 /* Private functions prototypes -----------------------------------------------*/
 static void Debugger(command_t *cmd);
 
 /* Public functions implementation --------------------------------------------*/
-void CMD_Init(osMessageQueueId_t mCmdQueue, osMessageQueueId_t mDriverQueue) {
+void CMD_Init(osMessageQueueId_t mCmdQueue) {
 	cmdQueue = mCmdQueue;
-	driverQueue = mDriverQueue;
 }
 
 void CMD_CheckCommand(command_t command) {
 	uint32_t crc;
 
 	if (command.header.size != sizeof(command.data))
+		return;
+
+	if (memcmp(command.header.prefix, PREFIX_COMMAND, 2) != 0)
 		return;
 
 	crc = CRC_Calculate8(
@@ -97,29 +99,63 @@ void CMD_AudioMute(osThreadId_t threadId, command_t *cmd) {
 	osThreadFlagsSet(threadId, flag);
 }
 
-
-void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp) {
-	uint32_t notif, timeout;
+void CMD_FingerAdd(osThreadId_t threadId, osMessageQueueId_t queue, response_t *resp) {
+	uint32_t notif;
 	uint8_t id;
 
-	osThreadFlagsSet(threadId, event);
-
-	// decide the timeout
-	timeout = (event == EVT_FINGER_ADD) ? 20000 : 5000;
+	osThreadFlagsSet(threadId, EVT_FINGER_ADD);
 
 	// wait response until timeout
 	resp->data.code = RESPONSE_STATUS_ERROR;
-	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, timeout))
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, FINGER_SCAN_TIMEOUT + 1000)) {
 		if (notif & EVT_COMMAND_OK) {
-			resp->data.code = RESPONSE_STATUS_OK;
+			if (osMessageQueueGet(queue, &id, NULL, 0U) == osOK) {
+				sprintf(resp->data.message, "%u", id);
+				resp->data.code = RESPONSE_STATUS_OK;
+			}
+		} else {
+			if (osMessageQueueGet(queue, &id, NULL, 0U) == osOK)
+				if (id == 0)
+					sprintf(resp->data.message, "Max. reached : %u", FINGER_USER_MAX);
+		}
+	}
+}
 
-			if (event == EVT_FINGER_ADD) {
-				if (osMessageQueueGet(driverQueue, &id, NULL, 0U) == osOK)
-					sprintf(resp->data.message, "%u", id);
-				else
-					resp->data.code = RESPONSE_STATUS_ERROR;
+void CMD_FingerFetch(osThreadId_t threadId, osMessageQueueId_t queue, response_t *resp) {
+	uint32_t notif;
+	finger_db_t finger;
+
+	osThreadFlagsSet(threadId, EVT_FINGER_FETCH);
+
+	// wait response until timeout
+	resp->data.code = RESPONSE_STATUS_ERROR;
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
+		if (notif & EVT_COMMAND_OK) {
+			if (osMessageQueueGet(queue, finger.db, NULL, 0U) == osOK) {
+				resp->data.code = RESPONSE_STATUS_OK;
+
+				for (uint8_t id=1; id<=FINGER_USER_MAX; id++) {
+					if (finger.db[id-1]) {
+						sprintf(resp->data.message, "%.*s%u,",
+								strlen(resp->data.message), resp->data.message, id
+						);
+					}
+				}
 			}
 		}
+}
+
+
+void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp) {
+	uint32_t notif;
+
+	osThreadFlagsSet(threadId, event);
+
+	// wait response until timeout
+	resp->data.code = RESPONSE_STATUS_ERROR;
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
+		if (notif & EVT_COMMAND_OK)
+			resp->data.code = RESPONSE_STATUS_OK;
 }
 
 void CMD_RemotePairing(osThreadId_t threadId, response_t *resp) {

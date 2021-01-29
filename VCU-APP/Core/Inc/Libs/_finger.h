@@ -14,7 +14,10 @@
 
 /* Structs --------------------------------------------------------------------*/
 typedef struct {
-	uint8_t db[FINGER_USER_MAX];
+  uint8_t db[FINGER_USER_MAX];
+} finger_db_t;
+
+typedef struct {
   struct {
     UART_HandleTypeDef *uart;
     DMA_HandleTypeDef *dma;
@@ -24,12 +27,12 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 void FINGER_DeInit(void);
-void FINGER_GetDatabase(uint8_t *db);
-uint8_t FINGER_Enroll(int8_t *id);
+uint8_t FINGER_Fetch(uint8_t *db);
+uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid);
 uint8_t FINGER_DeleteID(uint8_t id);
-uint8_t FINGER_EmptyDatabase(void);
+uint8_t FINGER_Flush(void);
 uint8_t FINGER_SetPassword(uint32_t password);
-int8_t FINGER_Auth(void);
-int8_t FINGER_AuthFast(void);
+uint8_t FINGER_Auth(void);
+uint8_t FINGER_AuthFast(void);
 
 #endif /* FINGER_H_ */

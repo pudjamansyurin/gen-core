@@ -55,7 +55,6 @@ typedef struct {
   uint8_t speed;
   uint16_t bat;
   uint32_t odometer;
-  motion_t motion;
   uint64_t events;
   struct {
     uint8_t error;
@@ -70,6 +69,7 @@ typedef struct {
   struct {
     uint32_t independent;
   } tick;
+  motion_t motion;
   gps_data_t gps;
   rtos_task_t task;
 } vcu_data_t;

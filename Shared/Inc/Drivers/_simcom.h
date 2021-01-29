@@ -91,7 +91,7 @@ SIMCOM_RESULT Simcom_UpdateSignal(void);
 void Simcom_CalibrateTime(void);
 SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
 int Simcom_GetData(unsigned char *buf, int count);
-uint8_t Simcom_GetServerResponse(uint32_t timeout);
+uint8_t Simcom_ReceiveResponse(uint32_t timeout);
 #endif
 
 #endif /* SIMCOM_H_ */

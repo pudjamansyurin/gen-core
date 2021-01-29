@@ -12,7 +12,7 @@
 #include "Libs/_reporter.h"
 
 /* Public functions implementation --------------------------------------------*/
-void CMD_Init(osMessageQueueId_t mCmdQueue, osMessageQueueId_t mDriverQueue);
+void CMD_Init(osMessageQueueId_t mCmdQueue);
 void CMD_CheckCommand(command_t command);
 void CMD_GenInfo(response_t *resp);
 void CMD_GenLed(command_t *cmd);
@@ -23,6 +23,8 @@ void CMD_ReportOdom(command_t *cmd);
 void CMD_ReportUnitID(command_t *cmd);
 void CMD_AudioBeep(osThreadId_t threadId);
 void CMD_AudioMute(osThreadId_t threadId, command_t *cmd);
+void CMD_FingerAdd(osThreadId_t threadId, osMessageQueueId_t queue, response_t *resp);
+void CMD_FingerFetch(osThreadId_t threadId, osMessageQueueId_t queue, response_t *resp);
 void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp);
 void CMD_RemotePairing(osThreadId_t threadId, response_t *resp);
 

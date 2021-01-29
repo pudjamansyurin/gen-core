@@ -121,8 +121,7 @@ uint8_t RPT_WrapPayload(payload_t *payload) {
 static void RPT_SetHeader(FRAME_TYPE frame, void *payload, uint32_t unit_id) {
 	header_t *header = (header_t*) payload;
 
-	header->prefix[0] = PREFIX_REPORT[1];
-	header->prefix[1] = PREFIX_REPORT[0];
+	memcpy(header->prefix, PREFIX_REPORT, 2);
 	header->unit_id = unit_id;
 	header->frame_id = frame;
 	header->size = sizeof(header->frame_id) + sizeof(header->unit_id);

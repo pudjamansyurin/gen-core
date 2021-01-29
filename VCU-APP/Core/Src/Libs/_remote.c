@@ -150,10 +150,6 @@ void RMT_PacketReceived(uint8_t *data) {
 	osThreadFlagsSet(RMT.h.threadId, EVT_REMOTE_RX_IT);
 }
 
-uint8_t RMT_NeedReset(void) {
-	return (_GetTickMS() - RMT.tick.heartbeat) > REMOTE_NEED_RESET;
-}
-
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
 	//  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);

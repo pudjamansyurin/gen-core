@@ -41,6 +41,7 @@ static void Simcom_IdleJob(void);
 static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *reply);
 #if (!BOOTLOADER)
 static void BeforeTransmitHook(void);
+static void Simcom_ProcessResponse(void);
 #endif
 
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay);
@@ -266,7 +267,7 @@ int Simcom_GetData(unsigned char *buf, int count) {
 	return count;
 }
 
-uint8_t Simcom_GetServerResponse(uint32_t timeout) {
+uint8_t Simcom_ReceiveResponse(uint32_t timeout) {
 	TickType_t tick = _GetTickMS();
 	char *ptr = NULL;
 
@@ -276,12 +277,6 @@ uint8_t Simcom_GetServerResponse(uint32_t timeout) {
 	} while (ptr == NULL && (_GetTickMS() - tick) < timeout);
 
 	if (ptr != NULL) {
-		// get pointer reference
-		//    ptr = Simcom_Resp(PREFIX_ACK);
-		//    if (ptr)
-		//      ptr = strstr(ptr + sizeof(ack_t), PREFIX_COMMAND);
-		//    else
-		// ptr = Simcom_Resp(PREFIX_COMMAND);
 
 		if ((ptr = strstr(ptr, ":")) != NULL)
 			SIM.response = ptr+1;
@@ -368,7 +363,7 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 				|| Simcom_Resp(SIMCOM_RSP_ERROR)
 				|| Simcom_Resp(SIMCOM_RSP_READY)
 #if (!BOOTLOADER)
-				|| Simcom_Resp(PREFIX_COMMAND)
+				|| Simcom_ReceiveResponse(0)
 #endif
 				|| (_GetTickMS() - tick) > timeout
 		) {
@@ -398,8 +393,9 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 
 #if (!BOOTLOADER)
 				// exception for server command collision
-				else if (Simcom_Resp(PREFIX_COMMAND)) {
+				else if (Simcom_ReceiveResponse(0)) {
 					printf("Simcom:CommandCollision\n");
+					Simcom_ProcessResponse();
 					res = SIM_RESULT_TIMEOUT;
 				}
 #endif
@@ -426,17 +422,22 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 
 #if (!BOOTLOADER)
 static void BeforeTransmitHook(void) {
-	command_t cmd = *(command_t*) SIM.response;
 
 	// Handle Server Command
-	if (Simcom_GetServerResponse(0))
-		if (MQTT_Receive(&cmd, SIM.response))
-			CMD_CheckCommand(cmd);
+	if (Simcom_ReceiveResponse(0))
+		Simcom_ProcessResponse();
 
 	// handle things on every request
 	// printf("============ SIMCOM DEBUG ============\n");
 	// printf("%.s\n", strlen(SIMCOM_UART_RX), SIMCOM_UART_RX);
 	// printf("======================================\n");
+}
+
+static void Simcom_ProcessResponse(void) {
+	command_t cmd = *(command_t*) SIM.response;
+
+	if (MQTT_Receive(&cmd, SIM.response))
+		CMD_CheckCommand(cmd);
 }
 #endif
 

@@ -16,7 +16,7 @@ static finger_t finger;
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static int8_t GenerateID(void);
+static uint8_t GenerateID(uint8_t *theId);
 static uint8_t ConvertImage(void);
 static uint8_t GetImage(uint8_t enroll);
 static void DebugResponse(uint8_t res, char *msg);
@@ -54,21 +54,29 @@ void FINGER_DeInit(void) {
 }
 
 
-void FINGER_GetDatabase(uint8_t *db) {
+uint8_t FINGER_Fetch(uint8_t *db) {
+	uint16_t templateCount;
+	uint8_t res;
+
 	lock();
-	for(uint8_t id=0; id<FINGER_USER_MAX; id++)
-		*(db+id) = (fz3387_loadModel(id) == FINGERPRINT_OK);
+	res = fz3387_getTemplateCount(&templateCount);
+	for(uint8_t id=1; id<=FINGER_USER_MAX; id++)
+		*(db++) = (fz3387_loadModel(id) == FINGERPRINT_OK);
 	unlock();
+
+	return res == FINGERPRINT_OK;
 }
 
-uint8_t FINGER_Enroll(int8_t *id) {
-	uint8_t res = FINGERPRINT_NOFINGER, e = 0;
+uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
+	uint8_t res, e = 0;
 	TickType_t tick;
 
-	lock();
-	*id = GenerateID();
+	*valid = 0;
 
-	if (*id >= 0) {
+	lock();
+	res = GenerateID(id);
+
+	if (res == FINGERPRINT_OK) {
 		printf("Finger:Waiting for valid finger to enroll as #%u\n", *id);
 
 		tick = _GetTickMS();
@@ -89,12 +97,14 @@ uint8_t FINGER_Enroll(int8_t *id) {
 
 					res = fz3387_storeModel(*id);
 					DebugResponse(res, "Stored!");
+
+					*valid = (res == FINGERPRINT_OK);
 				}
 			}
 	}
 	unlock();
 
-	return !e && res == FINGERPRINT_OK;
+	return (res == FINGERPRINT_OK);
 }
 
 uint8_t FINGER_DeleteID(uint8_t id) {
@@ -108,7 +118,7 @@ uint8_t FINGER_DeleteID(uint8_t id) {
 	return (res == FINGERPRINT_OK);
 }
 
-uint8_t FINGER_EmptyDatabase(void) {
+uint8_t FINGER_Flush(void) {
 	uint8_t res;
 
 	lock();
@@ -130,10 +140,9 @@ uint8_t FINGER_SetPassword(uint32_t password) {
 	return (res == FINGERPRINT_OK);
 }
 
-int8_t FINGER_Auth(void) {
+uint8_t FINGER_Auth(void) {
 	uint16_t id, confidence;
-	uint8_t res;
-	int8_t theId = -1;
+	uint8_t res, theId = 0;
 
 	lock();
 	if (GetImage(0))
@@ -152,9 +161,9 @@ int8_t FINGER_Auth(void) {
 	return theId;
 }
 
-int8_t FINGER_AuthFast(void) {
+uint8_t FINGER_AuthFast(void) {
 	uint16_t id, confidence;
-	int8_t theId = -1;
+	uint8_t theId = 0;
 
 	lock();
 	if (fz3387_getImage() == FINGERPRINT_OK)
@@ -178,26 +187,26 @@ static void unlock(void) {
 	//	osMutexRelease(FingerRecMutexHandle);
 }
 
-static int8_t GenerateID(void) {
-	int8_t theId = -1;
-	uint8_t res;
+static uint8_t GenerateID(uint8_t *theId) {
 	uint16_t templateCount;
+	uint8_t res;
+
+	*theId = 0;
 
 	res = fz3387_getTemplateCount(&templateCount);
-
 	if (res == FINGERPRINT_OK) {
 		printf("Finger:TemplateCount = %u\n", templateCount);
 
-		if (templateCount < FINGER_USER_MAX) {
-			for(uint8_t id=0; id<FINGER_USER_MAX; id++)
+		if (templateCount <= FINGER_USER_MAX) {
+			for(uint8_t id=1; id<=FINGER_USER_MAX; id++)
 				if (fz3387_loadModel(id) != FINGERPRINT_OK) {
-					theId = id;
+					*theId = id;
 					break;
 				}
 		}
 	}
 
-	return theId;
+	return res;
 }
 
 static uint8_t GetImage(uint8_t enroll) {

@@ -181,7 +181,7 @@ static uint8_t MQTT_Upload(unsigned char *buf, uint16_t len, uint8_t reply, uint
 		return 0;
 
 	if (reply) {
-		if (!Simcom_GetServerResponse(timeout))
+		if (!Simcom_ReceiveResponse(timeout))
 			return 0;
 
 		if (MQTTPacket_read(buf, len, Simcom_GetData) != reply)

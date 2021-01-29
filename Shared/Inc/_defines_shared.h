@@ -70,7 +70,7 @@
 #define VCU_BUILD_YEAR               (uint8_t)  21
 #define VCU_UNITID                   (uint32_t) 354313
 
-#define FOTA_MIN_VOLTAGE             (uint16_t) 3800
+#define FOTA_MIN_VOLTAGE             (uint16_t) 3700
 
 //#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
 //#define NET_TCP_PORT                 (uint16_t) 46606
@@ -80,12 +80,11 @@
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 #define COMMAND_HMI_FOTA_TIMEOUT     (uint32_t) 20000               // in ms
 
-#define REMOTE_TIMEOUT               (uint32_t) 10000                // in ms
-#define REMOTE_NEED_RESET            (uint32_t) 10000               // in ms
-#define REMOTE_PAIRING_TIMEOUT       (uint32_t) 5000                 // in ms
+#define REMOTE_TIMEOUT               (uint32_t) 10000               // in ms
+#define REMOTE_PAIRING_TIMEOUT       (uint32_t) 5000                // in ms
 
-#define PREFIX_REPORT                           "@R"
-#define PREFIX_COMMAND                          "@C"
+#define PREFIX_REPORT                           "R@"
+#define PREFIX_COMMAND                          "C@"
 
 #define FINGER_CONFIDENCE_MIN        (uint8_t)  50
 #define FINGER_SCAN_TIMEOUT          (uint32_t) 5000               // in ms
@@ -93,7 +92,7 @@
 
 #define DRIVER_ID_NONE               (uint8_t)  0xFF
 
-#define RPT_FRAME_FULL               (uint16_t) 20                  // in second
+#define RPT_FRAME_FULL               (uint16_t) 20                 // in second
 #define RPT_INTERVAL_NORMAL          (uint16_t) 5                  // in second
 #define RPT_INTERVAL_BACKUP          (uint16_t) 20                 // in second
 #define RPT_INTERVAL_LOST            (uint16_t) 60                 // in second
@@ -101,9 +100,9 @@
 #define VCU_ACTIVATE_LOST            (uint16_t) (5*60)             // in second
 
 // Payload list (Remote)
-#define REMOTE_MSG_BROADCAST                   BIT(0)
-#define REMOTE_MSG_FINDER                      BIT(1)
-#define REMOTE_MSG_SEAT                        BIT(2)
+#define REMOTE_MSG_BROADCAST                    BIT(0)
+#define REMOTE_MSG_FINDER                       BIT(1)
+#define REMOTE_MSG_SEAT                         BIT(2)
 
 // Events group (for Frame Report)
 #define EV_VCU_NET_SOFT_RESET                   BIT(0)
@@ -149,9 +148,10 @@
 #define EVT_FINGER_TASK_START                   BIT(0)
 #define EVT_FINGER_TASK_STOP                    BIT(1)
 #define EVT_FINGER_PLACED                       BIT(2)
-#define EVT_FINGER_ADD                          BIT(3)
-#define EVT_FINGER_DEL                          BIT(4)
-#define EVT_FINGER_RST                          BIT(5)
+#define EVT_FINGER_FETCH                        BIT(3)
+#define EVT_FINGER_ADD                          BIT(4)
+#define EVT_FINGER_DEL                          BIT(5)
+#define EVT_FINGER_RST                          BIT(6)
 
 #define EVT_AUDIO_TASK_START                    BIT(0)
 #define EVT_AUDIO_TASK_STOP                     BIT(1)
@@ -177,7 +177,7 @@
 #define CMD_CODE_REPORT               (uint8_t) 1
 #define CMD_CODE_AUDIO                (uint8_t) 2
 #define CMD_CODE_FINGER               (uint8_t) 3
-#define CMD_CODE_REMOTE              (uint8_t) 4
+#define CMD_CODE_REMOTE               (uint8_t) 4
 
 // Command Sub-Code List
 #define CMD_GEN_INFO                  (uint8_t) 0
@@ -193,11 +193,12 @@
 #define CMD_AUDIO_BEEP                (uint8_t) 0
 #define CMD_AUDIO_MUTE                (uint8_t) 1
 
-#define CMD_FINGER_ADD                (uint8_t) 0
-#define CMD_FINGER_DEL                (uint8_t) 1
-#define CMD_FINGER_RST                (uint8_t) 2
+#define CMD_FINGER_FETCH              (uint8_t) 0
+#define CMD_FINGER_ADD                (uint8_t) 1
+#define CMD_FINGER_DEL                (uint8_t) 2
+#define CMD_FINGER_RST                (uint8_t) 3
 
-#define CMD_REMOTE_PAIRING           (uint8_t) 0
+#define CMD_REMOTE_PAIRING            (uint8_t) 0
 
 // Response Status List
 #define RESPONSE_STATUS_ERROR         (uint8_t) 0
@@ -207,7 +208,7 @@
 // Others Parameters
 #define MCU_RPM_MAX                  (uint32_t) 99999
 #define VCU_ODOMETER_KM_MAX          (uint32_t) 99999
-#define MCU_SPEED_KPH_MAX            (uint8_t) 150
+#define MCU_SPEED_KPH_MAX             (uint8_t) 150
 
 // CAN Message Address
 #define CAND_VCU_SWITCH              (uint32_t) 0x000
