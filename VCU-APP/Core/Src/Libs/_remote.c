@@ -62,6 +62,10 @@ void RMT_DeInit(void) {
 	_DelayMS(1000);
 }
 
+uint8_t RMT_NeedPing(void) {
+	return ((_GetTickMS() - RMT.tick.heartbeat) > (REMOTE_TIMEOUT-1000));
+}
+
 uint8_t RMT_Ping(uint8_t *unremote) {
 	if (RMT.tick.heartbeat)
 		*unremote =  ((_GetTickMS() - RMT.tick.heartbeat) > REMOTE_TIMEOUT );

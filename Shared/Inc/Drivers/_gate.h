@@ -47,6 +47,4 @@ void GATE_SeatToggle(void);
 GPIO_PinState GATE_ReadPower5v(void);
 #endif
 
-GPIO_PinState GATE_ReadKnobState(void);
-
 #endif /* INC_DRIVERS__GATE_H_ */

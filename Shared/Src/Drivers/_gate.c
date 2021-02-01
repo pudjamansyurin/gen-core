@@ -169,7 +169,3 @@ GPIO_PinState GATE_ReadPower5v(void) {
 }
 #endif
 
-GPIO_PinState GATE_ReadKnobState(void) {
-  return HAL_GPIO_ReadPin(EXT_KNOB_IRQ_GPIO_Port, EXT_KNOB_IRQ_Pin);
-}
-
