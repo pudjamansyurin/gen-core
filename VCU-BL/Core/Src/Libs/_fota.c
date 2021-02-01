@@ -30,8 +30,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       .size = 0,
   };
 
-  // Turn ON HMI-Primary, based on knob state.
-  GATE_Hmi1Power(GATE_ReadKnobState());
+  // Turn ON HMI-Primary.
+  GATE_Hmi1Power(1);
   _DelayMS(1000);
 
   /* Set FTP directory */

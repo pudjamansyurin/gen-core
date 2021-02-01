@@ -220,11 +220,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  if (GPIO_Pin == EXT_KNOB_IRQ_Pin)
-    if (SIM.state >= SIM_STATE_READY)
-      GATE_Hmi1Power(GATE_ReadKnobState());
-}
 /* USER CODE END 4 */
 
 /**
