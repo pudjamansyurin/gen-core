@@ -15,17 +15,6 @@
 #include "Libs/_gyro.h"
 #include "Libs/_gps.h"
 
-/* Exported enums --------------------------------------------------------------*/
-typedef enum {
-  VEHICLE_UNKNOWN = -3,
-  VEHICLE_LOST = -2,
-  VEHICLE_BACKUP = -1,
-  VEHICLE_NORMAL = 0,
-  VEHICLE_STANDBY = 1,
-  VEHICLE_READY = 2,
-  VEHICLE_RUN = 3,
-} vehicle_state_t;
-
 /* Exported struct --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
   uint8_t wakeup;

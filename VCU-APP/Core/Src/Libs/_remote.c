@@ -62,14 +62,18 @@ void RMT_DeInit(void) {
 	_DelayMS(1000);
 }
 
-uint8_t RMT_NeedPing(void) {
-	return ((_GetTickMS() - RMT.tick.heartbeat) > (REMOTE_TIMEOUT-1000));
+uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote) {
+	uint32_t timeout = (*state < VEHICLE_RUN) ? REMOTE_TIMEOUT : REMOTE_TIMEOUT_RUN;
+
+	if (RMT.tick.heartbeat)
+		*unremote =  (_GetTickMS() - RMT.tick.heartbeat) > timeout ;
+
+	if (*state >= VEHICLE_RUN)
+		return (_GetTickMS() - RMT.tick.heartbeat) > (timeout-3000);
+	return 1;
 }
 
-uint8_t RMT_Ping(uint8_t *unremote) {
-	if (RMT.tick.heartbeat)
-		*unremote =  ((_GetTickMS() - RMT.tick.heartbeat) > REMOTE_TIMEOUT );
-
+uint8_t RMT_Ping(void) {
 	GenRandomNumber32((uint32_t*) RMT.tx.payload, NRF_DATA_LENGTH / 4);
 
 	return (nrf_send_packet_noack(RMT.tx.payload) == NRF_OK);

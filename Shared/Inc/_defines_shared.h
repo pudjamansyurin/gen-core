@@ -81,12 +81,13 @@
 #define COMMAND_HMI_FOTA_TIMEOUT     (uint32_t) 20000               // in ms
 
 #define REMOTE_TIMEOUT               (uint32_t) 10000               // in ms
+#define REMOTE_TIMEOUT_RUN           (uint32_t) 60000               // in ms
 #define REMOTE_PAIRING_TIMEOUT       (uint32_t) 5000                // in ms
 
 #define PREFIX_REPORT                           "R@"
 #define PREFIX_COMMAND                          "C@"
 
-#define FINGER_CONFIDENCE_MIN        (uint8_t)  50
+#define FINGER_CONFIDENCE_MIN        (uint8_t)  25
 #define FINGER_SCAN_TIMEOUT          (uint32_t) 5000               // in ms
 #define FINGER_USER_MAX              (uint8_t)  5
 
@@ -258,6 +259,16 @@ typedef enum {
   FOCAN_NACK = 0x1F
 } FOCAN;
 #else
+typedef enum {
+  VEHICLE_UNKNOWN = -3,
+  VEHICLE_LOST = -2,
+  VEHICLE_BACKUP = -1,
+  VEHICLE_NORMAL = 0,
+  VEHICLE_STANDBY = 1,
+  VEHICLE_READY = 2,
+  VEHICLE_RUN = 3,
+} vehicle_state_t;
+
 typedef enum {
   PAYLOAD_RESPONSE = 0,
   PAYLOAD_REPORT,

@@ -50,8 +50,8 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi, osThreadId_t threadId);
 void RMT_DeInit(void);
-uint8_t RMT_NeedPing(void);
-uint8_t RMT_Ping(uint8_t *unremote);
+uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote);
+uint8_t RMT_Ping(void);
 void RMT_Pairing(uint32_t *unit_id);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
 void RMT_GenerateAesKey(uint32_t *aes);

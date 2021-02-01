@@ -831,8 +831,8 @@ void StartRemoteTask(void *argument)
 			//			osThreadFlagsClear(EVT_MASK);
 		}
 
-		if (RMT_NeedPing())
-			RMT_Ping(&(HMI1.d.state.unremote));
+		if (RMT_NeedPing(&(VCU.d.state.vehicle), &(HMI1.d.state.unremote)))
+			RMT_Ping();
 	}
   /* USER CODE END StartRemoteTask */
 }
