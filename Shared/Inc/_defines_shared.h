@@ -81,7 +81,7 @@
 #define COMMAND_HMI_FOTA_TIMEOUT     (uint32_t) 20000               // in ms
 
 #define REMOTE_TIMEOUT               (uint32_t) 10000               // in ms
-#define REMOTE_TIMEOUT_RUN           (uint32_t) 60000               // in ms
+#define REMOTE_TIMEOUT_RUN           (uint32_t) 30000               // in ms
 #define REMOTE_PAIRING_TIMEOUT       (uint32_t) 5000                // in ms
 
 #define PREFIX_REPORT                           "R@"

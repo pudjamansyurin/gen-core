@@ -586,7 +586,7 @@ void StartCommandTask(void *argument)
 			if (command.data.code == CMD_CODE_GEN) {
 				switch (command.data.sub_code) {
 					case CMD_GEN_INFO :
-						CMD_GenInfo(&response);
+						CMD_GenInfo(&response, &(HMI1.d.started), &(HMI1.d.version));
 						break;
 
 					case CMD_GEN_LED :

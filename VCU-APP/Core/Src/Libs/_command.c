@@ -45,10 +45,20 @@ void CMD_CheckCommand(command_t command) {
 	osMessageQueuePut(cmdQueue, &command, 0U, 0U);
 }
 
-void CMD_GenInfo(response_t *resp) {
+void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version) {
+	sprintf(resp->data.message, "VCU v.%d,", VCU_VERSION);
+
+	if (*hmi_started)
+		sprintf(resp->data.message,
+				"%.*s HMI v.%d,",
+				strlen(resp->data.message),
+				resp->data.message,
+				*hmi_version);
+
 	sprintf(resp->data.message,
-			"VCU v.%d, "VCU_VENDOR" @ 20%d",
-			VCU_VERSION,
+			"%.*s "VCU_VENDOR" @ 20%d",
+			strlen(resp->data.message),
+			resp->data.message,
 			VCU_BUILD_YEAR);
 }
 
