@@ -32,7 +32,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   // Turn ON HMI-Primary, based on knob state.
   GATE_Hmi1Power(GATE_ReadKnobState());
-  _DelayMS(2000);
+  _DelayMS(1000);
 
   /* Set FTP directory */
   strcpy(ftp.path, (type == IAP_VCU) ? "/vcu/" : "/hmi/");
@@ -44,12 +44,15 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   Simcom_SetState(SIM_STATE_READY, 0);
 
   /* Backup if needed */
-  if (res > 0)
+  if (res > 0) {
+    FOCAN_SetProgress(type, 0.0f);
     if (!FOTA_InProgressDFU())
       FOTA_SetDFU();
+  }
 
   /* Get the stored checksum information */
   if (res > 0) {
+    FOCAN_SetProgress(type, 0.0f);
     if (type == IAP_VCU)
       FOTA_GetChecksum(&cksumOld);
     else
@@ -58,6 +61,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   // Initialise SIMCOM
   if (res > 0) {
+    FOCAN_SetProgress(type, 0.0f);
     res = Simcom_SetState(SIM_STATE_GPRS_ON, 60000);
 
     // Initialise Bearer &  FTP
@@ -81,6 +85,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   // Open FTP Session
   if (res > 0) {
+    FOCAN_SetProgress(type, 0.0f);
     ftpget.mode = FTPGET_OPEN;
     res = AT_FtpDownload(&ftpget);
 
@@ -90,6 +95,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   // Get checksum of new firmware
   if (res > 0) {
+    FOCAN_SetProgress(type, 0.0f);
     res = FOTA_DownloadChecksum(&ftp, &ftpget, &cksumNew);
 
     // Only download when image is different

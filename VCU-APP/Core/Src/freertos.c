@@ -803,7 +803,7 @@ void StartRemoteTask(void *argument)
 		VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
 		// Check response
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 2)) {
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny | osFlagsNoClear, 4)) {
 			// handle threads management
 			if (notif & EVT_REMOTE_TASK_STOP) {
 				RMT_DeInit();
@@ -833,7 +833,7 @@ void StartRemoteTask(void *argument)
 					}
 				}
 			}
-			// osThreadFlagsClear(EVT_MASK);
+			osThreadFlagsClear(EVT_MASK);
 		}
 		RMT_Ping(&(HMI1.d.state.unremote));
 	}
@@ -1238,8 +1238,8 @@ static void CheckVehicleState(void) {
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
 					osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
-          osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
           osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_STOP);
+          osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
 				}
 
 				if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
@@ -1259,8 +1259,8 @@ static void CheckVehicleState(void) {
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
 					osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_START);
-          osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_START);
           osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_START);
+          osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_START);
 					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
 				}
 
