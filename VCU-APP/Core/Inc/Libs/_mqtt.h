@@ -13,8 +13,8 @@
 #include "Libs/_command.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MQTT_USERNAME          						"garda"
-#define MQTT_PASSWORD          						"energi"
+#define MQTT_USERNAME          						"sLSDwexrmm9JVuS13iGGj6wyOWh5tAkJb2dw6yLgKKPt2xjUEPqLLM9nyeiQCtpB"
+#define MQTT_PASSWORD          						""
 #define MQTT_KEEPALIVE          (uint8_t) 30				// in second
 
 /* Public functions prototypes ----------------------------------------------*/

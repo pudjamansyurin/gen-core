@@ -494,7 +494,6 @@ void StartIotTask(void *argument)
 
 		// SIMCOM related routines
 		if (Simcom_SetState(SIM_STATE_READY, 0)) {
-			Simcom_UpdateSignal();
 			if (RTC_NeedCalibration())
 				Simcom_CalibrateTime();
 		}

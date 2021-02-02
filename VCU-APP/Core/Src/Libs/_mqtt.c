@@ -41,11 +41,14 @@ uint8_t MQTT_DoSubscribe(void) {
 
 uint8_t MQTT_Connect(void) {
 	unsigned char buf[256];
+	char clientId[20];
 	int buflen = sizeof(buf);
 	MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
 	unsigned char sessionPresent,	connack_rc;
 	int len;
 
+	sprintf(clientId, "VCU-%lu", VCU.d.unit_id);
+	data.clientID.cstring = clientId;
 	data.keepAliveInterval = MQTT_KEEPALIVE;
 	data.cleansession = 1;
 	data.username.cstring = MQTT_USERNAME;
