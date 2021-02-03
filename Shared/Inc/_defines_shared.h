@@ -74,9 +74,7 @@
 
 //#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
 //#define NET_TCP_PORT                 (uint16_t) 46606
-//#define NET_TCP_SERVER                          "broker.hivemq.com"
-//#define NET_TCP_PORT                 (uint16_t) 1883
-#define NET_TCP_SERVER                          "mqtt.flespi.io"
+#define NET_TCP_SERVER                          "mqtt.eclipseprojects.io"
 #define NET_TCP_PORT                 (uint16_t) 1883
 
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
