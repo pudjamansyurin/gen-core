@@ -70,8 +70,8 @@
 #define FINGERPRINT_HISPEEDSEARCH       0x1B
 #define FINGERPRINT_TEMPLATECOUNT       0x1D
 
-#define FINGERPRINT_PASSWORD 	        0x0000000
-#define FINGERPRINT_ADDRESS 	        0xFFFFFFFF
+#define FINGERPRINT_PASSWORD 	          0x0000000
+#define FINGERPRINT_ADDRESS 	          0xFFFFFFFF
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {

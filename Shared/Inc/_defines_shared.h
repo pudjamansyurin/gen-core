@@ -80,14 +80,14 @@
 #define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 #define COMMAND_HMI_FOTA_TIMEOUT     (uint32_t) 20000               // in ms
 
-#define REMOTE_TIMEOUT               (uint32_t) 5000                // in ms
+#define REMOTE_TIMEOUT               (uint32_t) 7000                // in ms
 #define REMOTE_TIMEOUT_RUN           (uint32_t) 30000               // in ms
 #define REMOTE_PAIRING_TIMEOUT       (uint32_t) 5000                // in ms
 
 #define PREFIX_REPORT                           "R@"
 #define PREFIX_COMMAND                          "C@"
 
-#define FINGER_CONFIDENCE_MIN        (uint8_t)  25
+#define FINGER_CONFIDENCE_MIN        (uint8_t)  75
 #define FINGER_SCAN_TIMEOUT          (uint32_t) 5000               // in ms
 #define FINGER_USER_MAX              (uint8_t)  5
 

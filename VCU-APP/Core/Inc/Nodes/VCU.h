@@ -52,7 +52,9 @@ typedef struct {
   } state;
   struct {
     uint8_t power5v;
-    uint8_t starter;
+    struct {
+    	uint32_t tick;
+    } starter;
   } gpio;
   struct {
     uint32_t independent;

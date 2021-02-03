@@ -164,6 +164,10 @@ void GATE_SeatToggle(void) {
   HAL_GPIO_WritePin(EXT_SEAT_PWR_GPIO_Port, EXT_SEAT_PWR_Pin, GPIO_PIN_RESET);
 }
 
+GPIO_PinState GATE_ReadStarter(void) {
+  return HAL_GPIO_ReadPin(EXT_STARTER_IRQ_GPIO_Port, EXT_STARTER_IRQ_Pin);
+}
+
 GPIO_PinState GATE_ReadPower5v(void) {
   return HAL_GPIO_ReadPin(EXT_REG_5V_IRQ_GPIO_Port, EXT_REG_5V_IRQ_Pin);
 }

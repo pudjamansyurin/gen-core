@@ -44,6 +44,7 @@ void GATE_FanBMS(GPIO_PinState state);
 void GATE_HornToggle(uint8_t *hazard);
 void GATE_SeatToggle(void);
 
+GPIO_PinState GATE_ReadStarter(void);
 GPIO_PinState GATE_ReadPower5v(void);
 #endif
 

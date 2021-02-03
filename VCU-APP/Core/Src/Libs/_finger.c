@@ -16,9 +16,10 @@ static finger_t finger;
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);
 static void unlock(void);
+static uint8_t Scan(uint8_t id, uint8_t slot,  uint32_t timeout);
 static uint8_t GenerateID(uint8_t *theId);
-static uint8_t ConvertImage(void);
-static uint8_t GetImage(uint8_t enroll);
+static uint8_t ConvertImage(uint8_t slot);
+static uint8_t GetImage(void);
 static void DebugResponse(uint8_t res, char *msg);
 
 /* Public functions implementation --------------------------------------------*/
@@ -68,39 +69,37 @@ uint8_t FINGER_Fetch(uint8_t *db) {
 }
 
 uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
-	uint8_t res, e = 0;
-	TickType_t tick;
-
-	*valid = 0;
+	uint8_t res;
 
 	lock();
 	res = GenerateID(id);
 
-	if (res == FINGERPRINT_OK && *id > 0) {
-		printf("Finger:Waiting for valid finger to enroll as #%u\n", *id);
+	*valid = (res == FINGERPRINT_OK && *id > 0);
 
-		tick = _GetTickMS();
-		do {
-			e = !GetImage(1);
-			_DelayMS(10);
-		} while (e && (_GetTickMS() - tick) < FINGER_SCAN_TIMEOUT);
+	if (*valid)
+		*valid = Scan(*id, 1, 5000);
 
-		if (!e)
-			if (ConvertImage()) {
-				printf("Finger:Creating model for #%u\n", *id);
+	if (*valid) {
+		GATE_LedWrite(1);
+		_DelayMS(2000);
+		while(fz3387_getImage() != FINGERPRINT_NOFINGER);
+		GATE_LedWrite(0);
 
-				res = fz3387_createModel();
-				DebugResponse(res, "Prints matched!");
+		*valid = Scan(*id, 2, 5000);
+	}
 
-				if (res == FINGERPRINT_OK) {
-					printf("Finger:ID #%u\n", *id);
+	if (*valid) {
+		printf("Finger:Creating model for #%u\n", *id);
+		res = fz3387_createModel();
+		DebugResponse(res, "Prints matched!");
+		*valid = (res == FINGERPRINT_OK);
+	}
 
-					res = fz3387_storeModel(*id);
-					DebugResponse(res, "Stored!");
-
-					*valid = (res == FINGERPRINT_OK);
-				}
-			}
+	if (*valid) {
+		printf("Finger:ID #%u\n", *id);
+		res = fz3387_storeModel(*id);
+		DebugResponse(res, "Stored!");
+		*valid = (res == FINGERPRINT_OK);
 	}
 	unlock();
 
@@ -143,19 +142,26 @@ uint8_t FINGER_SetPassword(uint32_t password) {
 uint8_t FINGER_Auth(void) {
 	uint16_t id, confidence;
 	uint8_t res, theId = 0;
+	uint8_t valid;
 
 	lock();
-	if (GetImage(0))
-		if (ConvertImage()) {
-			res = fz3387_fingerFastSearch(&id, &confidence);
-			DebugResponse(res, "Found a print match!");
-			if (res == FINGERPRINT_OK) {
-				printf("Finger:Found ID #%u with confidence of %u\n", id, confidence);
+	valid = (GetImage() == FINGERPRINT_OK);
 
-				if (confidence > FINGER_CONFIDENCE_MIN)
-					theId = id;
-			}
-		}
+	if (valid)
+		valid = (ConvertImage(1));
+
+	if (valid) {
+		res = fz3387_fingerFastSearch(&id, &confidence);
+		DebugResponse(res, "Found a print match!");
+		valid = (res == FINGERPRINT_OK);
+	}
+
+	if (valid) {
+		printf("Finger:Found ID #%u with confidence of %u\n", id, confidence);
+		if (confidence > FINGER_CONFIDENCE_MIN)
+			theId = id;
+	}
+
 	unlock();
 
 	return theId;
@@ -169,7 +175,7 @@ uint8_t FINGER_AuthFast(void) {
 	if (fz3387_getImage() == FINGERPRINT_OK)
 		if (fz3387_image2Tz(1) == FINGERPRINT_OK)
 			if (fz3387_fingerFastSearch(&id, &confidence) == FINGERPRINT_OK)
-				if (confidence >= FINGER_CONFIDENCE_MIN)
+				if (confidence > FINGER_CONFIDENCE_MIN)
 					theId = id;
 	unlock();
 
@@ -185,6 +191,45 @@ static void lock(void) {
 static void unlock(void) {
 	GATE_FingerDigitalPower(GPIO_PIN_RESET);
 	//	osMutexRelease(FingerRecMutexHandle);
+}
+
+static uint8_t Scan(uint8_t id, uint8_t slot, uint32_t timeout) {
+	TickType_t tick = _GetTickMS();
+	uint8_t valid = 0;
+
+	printf("Finger:Waiting for valid finger to enroll as #%u\n", id);
+
+	do {
+		valid = (GetImage() == FINGERPRINT_OK);
+		_DelayMS(10);
+	} while (!valid && (_GetTickMS() - tick) < timeout);
+
+	if (valid)
+		valid = ConvertImage(slot);
+
+	return valid;
+}
+
+static uint8_t GetImage(void) {
+	uint8_t res;
+
+	res = fz3387_getImage();
+
+	if (res == FINGERPRINT_NOFINGER)
+		printf(".\n");
+	else
+		DebugResponse(res, "Image taken");
+
+	return res;
+}
+
+static uint8_t ConvertImage(uint8_t slot) {
+	uint8_t res;
+
+	res = fz3387_image2Tz(slot);
+	DebugResponse(res, "Image converted");
+
+	return (res == FINGERPRINT_OK);
 }
 
 static uint8_t GenerateID(uint8_t *theId) {
@@ -207,28 +252,6 @@ static uint8_t GenerateID(uint8_t *theId) {
 	}
 
 	return res;
-}
-
-static uint8_t GetImage(uint8_t enroll) {
-	uint8_t res;
-
-	res = fz3387_getImage();
-
-	if (enroll && res == FINGERPRINT_NOFINGER)
-		printf(".\n");
-	else
-		DebugResponse(res, "Image taken");
-
-	return (res == FINGERPRINT_OK);
-}
-
-static uint8_t ConvertImage(void) {
-	uint8_t res;
-
-	res = fz3387_image2Tz(1);
-	DebugResponse(res, "Image converted");
-
-	return (res == FINGERPRINT_OK);
 }
 
 static void DebugResponse(uint8_t res, char *msg) {
