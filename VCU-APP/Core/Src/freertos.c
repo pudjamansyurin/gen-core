@@ -432,7 +432,7 @@ void StartManagerTask(void *argument)
 		BAT_ScanValue(&(VCU.d.bat));
 		MX_IWDG_Reset();
 
-		osDelayUntil(lastWake + 111);
+		osDelayUntil(lastWake + 555);
 	}
 	/* USER CODE END StartManagerTask */
 }
@@ -590,15 +590,12 @@ void StartCommandTask(void *argument)
 						break;
 
 					case CMD_GEN_OVERRIDE :
-						CMD_GenOverride(&command, &(VCU.d.state.override));
-						break;
-
-					case CMD_GEN_FOTA_VCU :
-						CMD_GenFota(IAP_VCU, &response, &(VCU.d.bat), &(HMI1.d.version));
-						break;
-
-					case CMD_GEN_FOTA_HMI :
-						CMD_GenFota(IAP_HMI, &response, &(VCU.d.bat), &(HMI1.d.version));
+						if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
+							CMD_GenOverride(&command, &(VCU.d.state.override));
+						else {
+							sprintf(response.data.message, "Only in state >= (%d).", VEHICLE_NORMAL);
+							response.data.res_code = RESPONSE_STATUS_ERROR;
+						}
 						break;
 
 					default:
@@ -628,56 +625,89 @@ void StartCommandTask(void *argument)
 			}
 
 			else if (command.data.code == CMD_CODE_AUDIO) {
-				switch (command.data.sub_code) {
-					case CMD_AUDIO_BEEP :
-						CMD_AudioBeep(AudioTaskHandle);
-						break;
+				if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
+					sprintf(response.data.message, "Not in state < (%d).", VEHICLE_NORMAL);
+					response.data.res_code = RESPONSE_STATUS_ERROR;
+				} else
+					switch (command.data.sub_code) {
+						case CMD_AUDIO_BEEP :
+							CMD_AudioBeep(AudioTaskHandle);
+							break;
 
-					case CMD_AUDIO_MUTE :
-						CMD_AudioMute(AudioTaskHandle, &command);
-						break;
+						case CMD_AUDIO_MUTE :
+							CMD_AudioMute(AudioTaskHandle, &command);
+							break;
 
-					default:
-						response.data.res_code = RESPONSE_STATUS_INVALID;
-						break;
-				}
+						default:
+							response.data.res_code = RESPONSE_STATUS_INVALID;
+							break;
+					}
 			}
 
 			else if (command.data.code == CMD_CODE_FINGER) {
-				switch (command.data.sub_code) {
-					case CMD_FINGER_FETCH :
-						CMD_FingerFetch(FingerTaskHandle, FingerDbQueueHandle, &response);
-						break;
+				if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
+					sprintf(response.data.message, "Not in state < (%d).", VEHICLE_STANDBY);
+					response.data.res_code = RESPONSE_STATUS_ERROR;
+				} else
+					switch (command.data.sub_code) {
+						case CMD_FINGER_FETCH :
+							CMD_FingerFetch(FingerTaskHandle, FingerDbQueueHandle, &response);
+							break;
 
-					case CMD_FINGER_ADD :
-						CMD_FingerAdd(FingerTaskHandle, DriverQueueHandle, &response);
-						break;
+						case CMD_FINGER_ADD :
+							CMD_FingerAdd(FingerTaskHandle, DriverQueueHandle, &response);
+							break;
 
-					case CMD_FINGER_DEL :
-						osMessageQueuePut(DriverQueueHandle, &command.data.value[0], 0U, 0U);
-						CMD_Finger(FingerTaskHandle, EVT_FINGER_DEL, &response);
-						break;
+						case CMD_FINGER_DEL :
+							osMessageQueuePut(DriverQueueHandle, &command.data.value[0], 0U, 0U);
+							CMD_Finger(FingerTaskHandle, EVT_FINGER_DEL, &response);
+							break;
 
-					case CMD_FINGER_RST :
-						CMD_Finger(FingerTaskHandle, EVT_FINGER_RST, &response);
-						break;
+						case CMD_FINGER_RST :
+							CMD_Finger(FingerTaskHandle, EVT_FINGER_RST, &response);
+							break;
 
-					default:
-						response.data.res_code = RESPONSE_STATUS_INVALID;
-						break;
-				}
+						default:
+							response.data.res_code = RESPONSE_STATUS_INVALID;
+							break;
+					}
 			}
 
 			else if (command.data.code == CMD_CODE_REMOTE) {
-				switch (command.data.sub_code) {
-					case CMD_REMOTE_PAIRING :
-						CMD_RemotePairing(RemoteTaskHandle, &response);
-						break;
+				if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
+					sprintf(response.data.message, "Not in state < (%d).", VEHICLE_NORMAL);
+					response.data.res_code = RESPONSE_STATUS_ERROR;
+				} else
+					switch (command.data.sub_code) {
+						case CMD_REMOTE_PAIRING :
+							CMD_RemotePairing(RemoteTaskHandle, &response);
+							break;
 
-					default:
-						response.data.res_code = RESPONSE_STATUS_INVALID;
-						break;
-				}
+						default:
+							response.data.res_code = RESPONSE_STATUS_INVALID;
+							break;
+					}
+			}
+
+			else if (command.data.code == CMD_CODE_FOTA) {
+				response.data.res_code = RESPONSE_STATUS_ERROR;
+
+				if (VCU.d.state.vehicle == VEHICLE_RUN) {
+					sprintf(response.data.message, "Not in state = (%d).", VEHICLE_RUN);
+				} else
+					switch (command.data.sub_code) {
+						case CMD_FOTA_VCU :
+							CMD_GenFota(IAP_VCU, &response, &(VCU.d.bat), &(HMI1.d.version));
+							break;
+
+						case CMD_FOTA_HMI :
+							CMD_GenFota(IAP_HMI, &response, &(VCU.d.bat), &(HMI1.d.version));
+							break;
+
+						default:
+							response.data.res_code = RESPONSE_STATUS_INVALID;
+							break;
+					}
 			}
 
 			else
@@ -829,6 +859,8 @@ void StartRemoteTask(void *argument)
 
 		if (RMT_NeedPing(&(VCU.d.state.vehicle), &(HMI1.d.state.unremote)))
 			RMT_Ping();
+
+		VCU.SetEvent(EV_VCU_REMOTE_MISSING, HMI1.d.state.unremote);
 	}
 	/* USER CODE END StartRemoteTask */
 }
@@ -871,8 +903,12 @@ void StartFingerTask(void *argument)
 			else if (notif & EVT_FINGER_PLACED) {
 				//				id = FINGER_AuthFast();
 				id = FINGER_Auth();
-				if (id > 0)
+				if (id > 0) {
 					VCU.SetDriver(HMI1.d.state.unfinger ? id : DRIVER_ID_NONE);
+					GATE_LedWrite(1);
+					_DelayMS(1000);
+					GATE_LedWrite(0);
+				}
 			}
 
 			else if (notif & EVT_FINGER_ADD) {
@@ -1201,20 +1237,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 static void CheckVehicleState(void) {
 	static vehicle_state_t lastState = VEHICLE_UNKNOWN;
-	static uint8_t forceNormal = 0, starter = 0;
+	uint8_t starter, normalize = 0;
 	vehicle_state_t initialState;
-
-	if (VCU.d.gpio.starter.tick > 0) {
-		if (VCU.d.gpio.starter.tick > 3000) {
-			if (lastState > VEHICLE_NORMAL)
-				forceNormal = 1;
-		} else
-			starter = 1;
-		VCU.d.gpio.starter.tick = 0;
-	}
 
 	do {
 		initialState = VCU.d.state.vehicle;
+		starter = 0;
+
+		if (VCU.d.gpio.starter.tick > 0) {
+			if (VCU.d.gpio.starter.tick > 3000) {
+				if (lastState > VEHICLE_NORMAL)
+					normalize = 1;
+			} else
+				starter = 1;
+			VCU.d.gpio.starter.tick = 0;
+		}
 
 		switch (VCU.d.state.vehicle) {
 			case VEHICLE_LOST:
@@ -1251,7 +1288,7 @@ static void CheckVehicleState(void) {
 			case VEHICLE_NORMAL:
 				if (lastState != VEHICLE_NORMAL) {
 					lastState = VEHICLE_NORMAL;
-					forceNormal = 0;
+					normalize = 0;
 
 					VCU.d.interval = RPT_INTERVAL_NORMAL;
 					VCU.d.state.override = VEHICLE_NORMAL;
@@ -1271,7 +1308,6 @@ static void CheckVehicleState(void) {
 				else if (starter
 						&& (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY))
 					VCU.d.state.vehicle++;
-				starter = 0;
 				break;
 
 			case VEHICLE_STANDBY:
@@ -1284,12 +1320,10 @@ static void CheckVehicleState(void) {
 				}
 
 				if (!VCU.d.gpio.power5v
-						|| forceNormal
-						|| starter)
+						|| normalize)
 					VCU.d.state.vehicle--;
 				else if (!HMI1.d.state.unfinger || VCU.d.state.override >= VEHICLE_READY)
 					VCU.d.state.vehicle++;
-				starter = 0;
 				break;
 
 			case VEHICLE_READY:
@@ -1298,14 +1332,13 @@ static void CheckVehicleState(void) {
 				}
 
 				if (!VCU.d.gpio.power5v
-						|| forceNormal
+						|| normalize
 						|| (HMI1.d.state.unfinger && !VCU.d.state.override)
 						|| VCU.d.state.override == VEHICLE_STANDBY)
 					VCU.d.state.vehicle--;
 				else if (!VCU.d.state.error
 						&& (starter || VCU.d.state.override >= VEHICLE_RUN))
 					VCU.d.state.vehicle++;
-				starter = 0;
 				break;
 
 			case VEHICLE_RUN:
@@ -1314,7 +1347,7 @@ static void CheckVehicleState(void) {
 				}
 
 				if (!VCU.d.gpio.power5v
-						|| forceNormal
+						|| normalize
 						|| VCU.d.state.error
 						|| VCU.d.state.override == VEHICLE_READY)
 					VCU.d.state.vehicle--;
@@ -1322,7 +1355,6 @@ static void CheckVehicleState(void) {
 						|| (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY)
 						|| VCU.d.state.override == VEHICLE_STANDBY)
 					VCU.d.state.vehicle -= 2;
-				starter = 0;
 				break;
 
 			default:

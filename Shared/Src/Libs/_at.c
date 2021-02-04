@@ -506,7 +506,7 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 
       tick = _GetTickMS();
       while (strncmp(ptr, SIMCOM_RSP_OK, strlen(SIMCOM_RSP_OK)) != 0) {
-        if (_GetTickMS() - tick > (5 * 1000)) {
+        if (_GetTickMS() - tick > (10 * 1000)) {
           res = SIM_RESULT_ERROR;
           break;
         };

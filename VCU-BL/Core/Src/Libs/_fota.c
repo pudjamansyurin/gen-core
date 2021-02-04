@@ -155,7 +155,7 @@ uint8_t FOTA_DownloadChecksum(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
 
   // Initiate Download
   setFTPGET->mode = FTPGET_READ;
-  setFTPGET->reqlength = 4;
+  setFTPGET->reqlength = sizeof(uint32_t);
   res = AT_FtpDownload(setFTPGET);
 
   if (res > 0) {
@@ -218,7 +218,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
     } while ((res > 0) && (*len < setFTP->size));
 
     // Check, stop timer
-    if (*len == setFTP->size)
+    if (*len >= setFTP->size)
       printf("FOTA:End = %lu ms\n", _GetTickMS() - timer);
     else {
       printf("FOTA:Failed\n");

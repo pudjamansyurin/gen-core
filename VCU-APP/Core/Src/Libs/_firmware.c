@@ -21,7 +21,7 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *h
   }
 
   if (type == IAP_HMI && *hmi_version == 0) {
-    sprintf(message, "HMI Device not connected");
+    sprintf(message, "HMI not connected");
     return 0;
   }
 
@@ -47,8 +47,8 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
     sprintf(node, FOTA_TYPE == IAP_VCU ? "VCU":"HMI");
 
     // set default value
-    response->data.code = CMD_CODE_GEN;
-    response->data.sub_code = FOTA_TYPE == IAP_VCU ? CMD_GEN_FOTA_VCU : CMD_GEN_FOTA_HMI;
+    response->data.code = CMD_CODE_FOTA;
+    response->data.sub_code = FOTA_TYPE == IAP_VCU ? CMD_FOTA_VCU : CMD_FOTA_HMI;
     response->data.res_code = RESPONSE_STATUS_ERROR;
     sprintf(response->data.message, "%s Failed", node);
 

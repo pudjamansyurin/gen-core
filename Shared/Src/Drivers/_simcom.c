@@ -405,6 +405,10 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 					printf("Simcom:Timeout\n");
 					res = SIM_RESULT_TIMEOUT;
 				}
+
+				else {
+					printf("Simcom:UnknownError\n");
+				}
 			}
 
 			// exit loop

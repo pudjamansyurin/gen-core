@@ -73,20 +73,25 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 
 	lock();
 	res = GenerateID(id);
+//	res = FINGERPRINT_OK;
+//	*id = 3;
 
 	*valid = (res == FINGERPRINT_OK && *id > 0);
 
-	if (*valid)
-		*valid = Scan(*id, 1, 5000);
-
 	if (*valid) {
 		GATE_LedWrite(1);
-		_DelayMS(2000);
-		while(fz3387_getImage() != FINGERPRINT_NOFINGER);
-		GATE_LedWrite(0);
+		*valid = Scan(*id, 1, 5000);
+	}
 
+	if (*valid) {
+		GATE_LedWrite(0);
+		_DelayMS(1000);
+		while(fz3387_getImage() != FINGERPRINT_NOFINGER);
+
+		GATE_LedWrite(1);
 		*valid = Scan(*id, 2, 5000);
 	}
+	GATE_LedWrite(0);
 
 	if (*valid) {
 		printf("Finger:Creating model for #%u\n", *id);
