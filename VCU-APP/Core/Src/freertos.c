@@ -911,6 +911,14 @@ void StartFingerTask(void *argument)
 				}
 			}
 
+			else if (notif & EVT_FINGER_FETCH) {
+				res = FINGER_Fetch(finger.db);
+				if (res)
+					osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
+
+				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+			}
+
 			else if (notif & EVT_FINGER_ADD) {
 				res = FINGER_Enroll(&id, &valid);
 				if (res)
@@ -919,23 +927,18 @@ void StartFingerTask(void *argument)
 				osThreadFlagsSet(CommandTaskHandle, valid ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
-			else if (notif & (EVT_FINGER_FETCH | EVT_FINGER_RST)) {
-				if (notif & EVT_FINGER_FETCH) {
-					res = FINGER_Fetch(finger.db);
-					if (res)
-						osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
-				} else
-					res = FINGER_Flush();
-
-				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
-			}
-
 			else if (notif & EVT_FINGER_DEL) {
 				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
 					res = FINGER_DeleteID(driver);
 
 					osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 				}
+			}
+
+			else if (notif & EVT_FINGER_RST) {
+				res = FINGER_Flush();
+
+				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
 			// Handle bounce effect
