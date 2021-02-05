@@ -24,14 +24,16 @@ bms_t BMS = {
     },
     BMS_Init,
     BMS_PowerOverCan,
-    BMS_ResetIndex,
     BMS_RefreshIndex,
-    BMS_GetIndex,
-    BMS_SetEvents,
-    BMS_CheckRun,
-    BMS_CheckState,
-    BMS_MergeData,
 };
+
+/* Private functions prototypes -----------------------------------------------*/
+static void ResetIndex(uint8_t i);
+static uint8_t GetIndex(uint32_t id);
+static void SetEvents(uint16_t flag);
+static uint8_t CheckRun(uint8_t state);
+static uint8_t CheckState(BMS_STATE state);
+static void MergeData(void);
 
 /* Public functions implementation --------------------------------------------*/
 void BMS_Init(void) {
@@ -42,19 +44,19 @@ void BMS_Init(void) {
   BMS.d.warning = 0;
 
   for (uint8_t i = 0; i < BMS_COUNT ; i++)
-    BMS_ResetIndex(i);
+    ResetIndex(i);
 }
 
 void BMS_PowerOverCan(uint8_t on) {
   if (on) {
-    if (!BMS.CheckRun(1) && !BMS.CheckState(BMS_STATE_DISCHARGE))
+    if (!CheckRun(1) && !CheckState(BMS_STATE_DISCHARGE))
       BMS_CAN_TX_Setting(1, BMS_STATE_FULL);
     else
       // completely ON
       BMS.d.started = 1;
 
   } else {
-    if (!BMS.CheckRun(0) || !BMS.CheckState(BMS_STATE_IDLE))
+    if (!CheckRun(0) || !CheckState(BMS_STATE_IDLE))
       BMS_CAN_TX_Setting(0, BMS_STATE_IDLE);
     else {
       // completely OFF
@@ -68,7 +70,55 @@ void BMS_PowerOverCan(uint8_t on) {
   }
 }
 
-void BMS_ResetIndex(uint8_t i) {
+void BMS_RefreshIndex(void) {
+  for (uint8_t i = 0; i < BMS_COUNT ; i++)
+    if ((_GetTickMS() - BMS.d.pack[i].tick) > 500)
+      ResetIndex(i);
+
+  MergeData();
+}
+
+/* ====================================== CAN RX =================================== */
+void BMS_CAN_RX_Param1(can_rx_t *Rx) {
+  uint8_t index = GetIndex(Rx->header.ExtId & BMS_ID_MASK);
+
+  // read the content
+  BMS.d.pack[index].voltage = Rx->data.u16[0] * 0.01;
+  BMS.d.pack[index].current = (Rx->data.u16[1] * 0.01) - 50;
+  BMS.d.pack[index].soc = Rx->data.u16[2] * 0.01;
+  BMS.d.pack[index].temperature = (Rx->data.u16[3] * 0.1) - 40;
+
+  // read the id
+  BMS.d.pack[index].id = Rx->header.ExtId & BMS_ID_MASK;
+  BMS.d.pack[index].started = 1;
+  BMS.d.pack[index].tick = _GetTickMS();
+}
+
+void BMS_CAN_RX_Param2(can_rx_t *Rx) {
+  uint8_t index = GetIndex(Rx->header.ExtId & BMS_ID_MASK);
+
+  // save flag
+  BMS.d.pack[index].flag = Rx->data.u16[3];
+
+  // save state
+  BMS.d.pack[index].state = (_R1(Rx->data.u8[7], 4) << 1) | _R1(Rx->data.u8[7], 5);
+}
+
+/* ====================================== CAN TX =================================== */
+uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
+  CAN_DATA TxData;
+
+  // set message
+  TxData.u8[0] = start;
+  TxData.u8[0] |= state << 1;
+
+  // send message
+  return CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);
+}
+
+
+/* Private functions implementation --------------------------------------------*/
+static void ResetIndex(uint8_t i) {
   BMS.d.pack[i].id = BMS_ID_NONE;
   BMS.d.pack[i].voltage = 0;
   BMS.d.pack[i].current = 0;
@@ -80,15 +130,7 @@ void BMS_ResetIndex(uint8_t i) {
   BMS.d.pack[i].tick = 0;
 }
 
-void BMS_RefreshIndex(void) {
-  for (uint8_t i = 0; i < BMS_COUNT ; i++)
-    if ((_GetTickMS() - BMS.d.pack[i].tick) > 500)
-      BMS_ResetIndex(i);
-
-  BMS_MergeData();
-}
-
-uint8_t BMS_GetIndex(uint32_t id) {
+static uint8_t GetIndex(uint32_t id) {
   uint8_t i;
 
   // find index (if already exist)
@@ -105,7 +147,7 @@ uint8_t BMS_GetIndex(uint32_t id) {
   return 0;
 }
 
-void BMS_SetEvents(uint16_t flag) {
+static void SetEvents(uint16_t flag) {
   // Set events
   VCU.SetEvent(EV_BMS_SHORT_CIRCUIT, _R1(flag, 0));
   VCU.SetEvent(EV_BMS_DISCHARGE_OVER_CURRENT, _R1(flag, 1));
@@ -147,21 +189,21 @@ void BMS_SetEvents(uint16_t flag) {
       VCU.ReadEvent(EV_BMS_WARNING_UNBALANCE);
 }
 
-uint8_t BMS_CheckRun(uint8_t state) {
+static uint8_t CheckRun(uint8_t state) {
   for (uint8_t i = 0; i < BMS_COUNT ; i++)
     if (BMS.d.pack[i].started != state)
       return 0;
   return 1;
 }
 
-uint8_t BMS_CheckState(BMS_STATE state) {
+static uint8_t CheckState(BMS_STATE state) {
   for (uint8_t i = 0; i < BMS_COUNT ; i++)
     if (BMS.d.pack[i].state != state)
       return 0;
   return 1;
 }
 
-void BMS_MergeData(void) {
+static void MergeData(void) {
   uint16_t flags = 0;
   uint8_t soc = 0, device = 0;
 
@@ -169,7 +211,7 @@ void BMS_MergeData(void) {
   for (uint8_t i = 0; i < BMS_COUNT ; i++)
     flags |= BMS.d.pack[i].flag;
 
-  BMS_SetEvents(flags);
+  SetEvents(flags);
 
   // Average SOC
   for (uint8_t i = 0; i < BMS_COUNT ; i++)
@@ -180,42 +222,3 @@ void BMS_MergeData(void) {
 
   BMS.d.soc = device ? (soc / device) : soc;
 }
-
-/* ====================================== CAN RX =================================== */
-void BMS_CAN_RX_Param1(can_rx_t *Rx) {
-  uint8_t index = BMS.GetIndex(Rx->header.ExtId & BMS_ID_MASK);
-
-  // read the content
-  BMS.d.pack[index].voltage = Rx->data.u16[0] * 0.01;
-  BMS.d.pack[index].current = (Rx->data.u16[1] * 0.01) - 50;
-  BMS.d.pack[index].soc = Rx->data.u16[2] * 0.01;
-  BMS.d.pack[index].temperature = (Rx->data.u16[3] * 0.1) - 40;
-
-  // read the id
-  BMS.d.pack[index].id = Rx->header.ExtId & BMS_ID_MASK;
-  BMS.d.pack[index].started = 1;
-  BMS.d.pack[index].tick = _GetTickMS();
-}
-
-void BMS_CAN_RX_Param2(can_rx_t *Rx) {
-  uint8_t index = BMS.GetIndex(Rx->header.ExtId & BMS_ID_MASK);
-
-  // save flag
-  BMS.d.pack[index].flag = Rx->data.u16[3];
-
-  // save state
-  BMS.d.pack[index].state = (_R1(Rx->data.u8[7], 4) << 1) | _R1(Rx->data.u8[7], 5);
-}
-
-/* ====================================== CAN TX =================================== */
-uint8_t BMS_CAN_TX_Setting(uint8_t start, BMS_STATE state) {
-  CAN_DATA TxData;
-
-  // set message
-  TxData.u8[0] = start;
-  TxData.u8[0] |= state << 1;
-
-  // send message
-  return CANBUS_Write(CAND_BMS_SETTING, &TxData, 1);
-}
-

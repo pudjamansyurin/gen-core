@@ -428,6 +428,10 @@ void StartManagerTask(void *argument)
 		CheckVehicleState();
 		CheckTaskState(&(VCU.d.task));
 
+		HMI1.Refresh();
+		HMI2.Refresh();
+		BMS.RefreshIndex();
+		
 		// _DummyDataGenerator();
 		BAT_ScanValue(&(VCU.d.bat));
 		MX_IWDG_Reset();
@@ -1030,9 +1034,8 @@ void StartCanRxTask(void *argument)
 		VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
 
 		// Check notifications
-		if (_osThreadFlagsWait(NULL, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) {
+		if (_osThreadFlagsWait(NULL, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) 
 			_osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
-		}
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
 			switch (CANBUS_ReadID(&(Rx.header))) {
@@ -1114,11 +1117,6 @@ void StartCanTxTask(void *argument)
 		BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
 		if (HMI2.PowerOverCan(VCU.d.state.vehicle >= VEHICLE_STANDBY))
 			osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
-
-		// Refresh CAN-Signaled Nodes
-		HMI1.Refresh();
-		HMI2.Refresh();
-		BMS.RefreshIndex();
 	}
 	/* USER CODE END StartCanTxTask */
 }

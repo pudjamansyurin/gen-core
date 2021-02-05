@@ -60,13 +60,7 @@ typedef struct {
     bms_can_t can;
     void (*Init)(void);
     void (*PowerOverCan)(uint8_t);
-    void (*ResetIndex)(uint8_t);
     void (*RefreshIndex)(void);
-    uint8_t (*GetIndex)(uint32_t);
-    void (*SetEvents)(uint16_t);
-    uint8_t (*CheckRun)(uint8_t);
-    uint8_t (*CheckState)(BMS_STATE);
-    void (*MergeData)(void);
 } bms_t;
 
 /* Exported variables ---------------------------------------------------------*/
@@ -75,13 +69,7 @@ extern bms_t BMS;
 /* Public functions implementation --------------------------------------------*/
 void BMS_Init(void);
 void BMS_PowerOverCan(uint8_t on);
-void BMS_ResetIndex(uint8_t i);
 void BMS_RefreshIndex(void);
-uint8_t BMS_GetIndex(uint32_t id);
-void BMS_SetEvents(uint16_t flag);
-uint8_t BMS_CheckRun(uint8_t state);
-uint8_t BMS_CheckState(BMS_STATE state);
-void BMS_MergeData(void);
 
 void BMS_CAN_RX_Param1(can_rx_t *Rx);
 void BMS_CAN_RX_Param2(can_rx_t *Rx);
