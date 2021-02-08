@@ -438,10 +438,13 @@ static void BeforeTransmitHook(void) {
 }
 
 static void Simcom_ProcessResponse(void) {
-	command_t cmd = *(command_t*) SIM.response;
+  char *ptr = SIM.response;
+	command_t cmd = *(command_t*) ptr;
 
-	if (MQTT_Receive(&cmd, SIM.response))
+	if (MQTT_Receive(&cmd))
 		CMD_CheckCommand(cmd);
+	else
+	  SIM.response = ptr;
 }
 #endif
 

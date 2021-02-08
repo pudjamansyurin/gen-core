@@ -16,9 +16,8 @@
 
 /* Exported enum ---------------------------------------------------------------*/
 typedef enum {
-  FR_RESPONSE = 0,
-  FR_SIMPLE = 1,
-  FR_FULL = 2,
+  FR_SIMPLE = 0,
+  FR_FULL = 1,
 } FRAME_TYPE;
 
 /* Exported struct --------------------------------------------------------------*/
@@ -27,16 +26,16 @@ typedef struct __attribute__((packed)) {
   char prefix[2];
   uint32_t crc;
   uint8_t size;
-  uint8_t frame_id;
   uint32_t unit_id;
 } header_t;
 
 // report frame
 typedef struct __attribute__((packed)) {
   struct __attribute__((packed)) {
+    uint8_t frame_id;
     struct __attribute__((packed)) {
       struct __attribute__((packed)) {
-      	datetime_t send;
+        datetime_t send;
         datetime_t log;
       } rtc;
       uint8_t driver_id;

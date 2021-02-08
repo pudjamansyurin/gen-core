@@ -86,6 +86,7 @@
 
 #define PREFIX_REPORT                           "R@"
 #define PREFIX_COMMAND                          "C@"
+#define PREFIX_RESPONSE                         "S@"
 
 #define FINGER_CONFIDENCE_MIN        (uint8_t)  75
 #define FINGER_SCAN_TIMEOUT          (uint32_t) 5000               // in ms

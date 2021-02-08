@@ -26,10 +26,8 @@ void CMD_Init(osMessageQueueId_t mCmdQueue) {
 }
 
 void CMD_CheckCommand(command_t command) {
-	uint32_t crc;
-	uint8_t size = sizeof(command.header.frame_id) +
-			sizeof(command.header.unit_id) +
-			sizeof(command.data);
+	uint8_t size = sizeof(command.header.unit_id) + sizeof(command.data);
+  uint32_t crc;
 
 	if (command.header.size != size)
 		return;
@@ -44,8 +42,6 @@ void CMD_CheckCommand(command_t command) {
 
 	if (command.header.crc != crc)
 		return;
-
-	// frame not checked
 
 	if (command.header.unit_id != VCU.d.unit_id)
 		return;

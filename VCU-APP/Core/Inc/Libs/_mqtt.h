@@ -24,6 +24,6 @@ uint8_t MQTT_DoUnsubscribe(void);
 uint8_t MQTT_Connect(void);
 uint8_t MQTT_Disconnect(void);
 uint8_t MQTT_Ping(void);
-uint8_t MQTT_Receive(command_t *cmd, void *buffer);
+uint8_t MQTT_Receive(command_t *cmd);
 
 #endif /* INC_LIBS__MQTT_H_ */
