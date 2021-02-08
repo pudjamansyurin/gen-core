@@ -13,42 +13,42 @@
 
 /* Private variables ----------------------------------------------------------*/
 static uint32_t last_con = 0;
+static char subTopic[20], pubTopic[20];
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t MQTT_Subscribe(char *topic);
+static uint8_t MQTT_Unsubscribe(char *topic);
 static uint8_t MQTT_Publish(char *topic, void *payload, uint16_t payloadlen);
 static uint8_t MQTT_Upload(unsigned char *buf, uint16_t len, uint8_t reply,  uint16_t timeout);
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t MQTT_DoPublish(payload_t *payload) {
-	char topic[20];
-
-	sprintf(topic, "VCU/%lu/%3s",
+	sprintf(pubTopic, "VCU/%lu/%3s",
 			VCU.d.unit_id,
 			(payload->type == PAYLOAD_REPORT ? "RPT" : "RSP")
 	);
-
-	return MQTT_Publish(topic, payload->pPayload, payload->size);
+	return MQTT_Publish(pubTopic, payload->pPayload, payload->size);
 }
 
 uint8_t MQTT_DoSubscribe(void) {
-	char topic[20];
+	sprintf(subTopic, "VCU/%lu/CMD", VCU.d.unit_id);
+	return MQTT_Subscribe(subTopic);
+}
 
-	sprintf(topic, "VCU/%lu/CMD", VCU.d.unit_id);
-
-	return MQTT_Subscribe(topic);
+uint8_t MQTT_DoUnsubscribe(void) {
+	return MQTT_Unsubscribe(subTopic);
 }
 
 uint8_t MQTT_Connect(void) {
 	unsigned char buf[256];
-	char clientId[20];
+	//	char clientId[20];
 	int buflen = sizeof(buf);
 	MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
 	unsigned char sessionPresent,	connack_rc;
 	int len;
 
-	sprintf(clientId, "VCU-%lu", VCU.d.unit_id);
-	data.clientID.cstring = clientId;
+	//	sprintf(clientId, "VCU-%lu", VCU.d.unit_id);
+	//	data.clientID.cstring = clientId;
 	data.keepAliveInterval = MQTT_KEEPALIVE;
 	data.cleansession = 1;
 	data.username.cstring = MQTT_USERNAME;
@@ -132,7 +132,7 @@ static uint8_t MQTT_Subscribe(char *topic) {
 	int buflen = sizeof(buf);
 	MQTTString topicFilters = MQTTString_initializer;
 	unsigned char dup = 0;
-	unsigned short packetid = 1;
+	unsigned short packetid = 1, packetid_rx;
 	int qoss = 0, count = 1, len;
 
 	topicFilters.cstring = topic;
@@ -145,13 +145,38 @@ static uint8_t MQTT_Subscribe(char *topic) {
 	if (!MQTT_Upload(buf, len, SUBACK, 5000))
 		return 0;
 
-	MQTTDeserialize_suback(&packetid, 1, &count, &qoss, buf, buflen);
+	MQTTDeserialize_suback(&packetid_rx, 1, &count, &qoss, buf, buflen);
 	if (qoss != 0) {
 		printf("MQTT:Granted QoS != 0, %d\n", qoss);
 		return 0;
 	}
 
 	printf("MQTT:Subscribed\n");
+	last_con = _GetTickMS();
+	return 1;
+}
+
+static uint8_t MQTT_Unsubscribe(char *topic) {
+	unsigned char buf[256];
+	int buflen = sizeof(buf);
+	MQTTString topicFilters = MQTTString_initializer;
+	unsigned char dup = 0;
+	unsigned short packetid = 1, packetid_rx;
+	int count = 1, len;
+
+	topicFilters.cstring = topic;
+	len = MQTTSerialize_unsubscribe(buf, buflen, dup, packetid, count, &topicFilters);
+
+	if (!MQTT_Upload(buf, len, UNSUBACK, 5000))
+		return 0;
+
+	MQTTDeserialize_unsuback(&packetid_rx, buf, buflen);
+	if (packetid != packetid_rx) {
+		printf("MQTT:Unsubscribe failed.");
+		return 0;
+	}
+
+	printf("MQTT:Unsubscribed\n");
 	last_con = _GetTickMS();
 	return 1;
 }

@@ -431,7 +431,7 @@ void StartManagerTask(void *argument)
 		HMI1.Refresh();
 		HMI2.Refresh();
 		BMS.RefreshIndex();
-		
+
 		// _DummyDataGenerator();
 		BAT_ScanValue(&(VCU.d.bat));
 		MX_IWDG_Reset();
@@ -452,6 +452,7 @@ void StartIotTask(void *argument)
 {
 	/* USER CODE BEGIN StartIotTask */
 	TickType_t lastWake;
+	uint32_t notif;
 	response_t response;
 	payload_t pRes = {
 			.type = PAYLOAD_RESPONSE,
@@ -478,6 +479,11 @@ void StartIotTask(void *argument)
 	for (;;) {
 		VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
 		lastWake = _GetTickMS();
+
+		if (_osThreadFlagsWait(&notif, EVT_IOT_RESUBSCRIBE, osFlagsWaitAll, 0)) {
+			MQTT_DoUnsubscribe();
+			MQTT_DoSubscribe();
+		}
 
 		// Upload Response
 		if (RPT_PayloadPending(&pRes))
@@ -570,6 +576,7 @@ void StartCommandTask(void *argument)
 	if (FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version)))
 		osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
 
+
 	/* Infinite loop */
 	for (;;) {
 		VCU.d.task.command.wakeup = _GetTickMS() / 1000;
@@ -618,10 +625,6 @@ void StartCommandTask(void *argument)
 						CMD_ReportOdom(&command);
 						break;
 
-						//          case CMD_REPORT_UNITID :
-						//            CMD_ReportUnitID(&command);
-						//            break;
-
 					default:
 						response.data.res_code = RESPONSE_STATUS_INVALID;
 						break;
@@ -639,7 +642,7 @@ void StartCommandTask(void *argument)
 							break;
 
 						case CMD_AUDIO_MUTE :
-							CMD_AudioMute(AudioTaskHandle, &command);
+							CMD_AudioMute( &command, AudioTaskHandle);
 							break;
 
 						default:
@@ -655,20 +658,20 @@ void StartCommandTask(void *argument)
 				} else
 					switch (command.data.sub_code) {
 						case CMD_FINGER_FETCH :
-							CMD_FingerFetch(FingerTaskHandle, FingerDbQueueHandle, &response);
+							CMD_FingerFetch(&response, FingerTaskHandle, FingerDbQueueHandle);
 							break;
 
 						case CMD_FINGER_ADD :
-							CMD_FingerAdd(FingerTaskHandle, DriverQueueHandle, &response);
+							CMD_FingerAdd(&response, FingerTaskHandle, DriverQueueHandle);
 							break;
 
 						case CMD_FINGER_DEL :
 							osMessageQueuePut(DriverQueueHandle, &command.data.value[0], 0U, 0U);
-							CMD_Finger(FingerTaskHandle, EVT_FINGER_DEL, &response);
+							CMD_Finger(&response, FingerTaskHandle, EVT_FINGER_DEL);
 							break;
 
 						case CMD_FINGER_RST :
-							CMD_Finger(FingerTaskHandle, EVT_FINGER_RST, &response);
+							CMD_Finger(&response, FingerTaskHandle, EVT_FINGER_RST);
 							break;
 
 						default:
@@ -684,7 +687,11 @@ void StartCommandTask(void *argument)
 				} else
 					switch (command.data.sub_code) {
 						case CMD_REMOTE_PAIRING :
-							CMD_RemotePairing(RemoteTaskHandle, &response);
+							CMD_RemotePairing(&response, RemoteTaskHandle);
+							break;
+
+						case CMD_REMOTE_UNITID :
+							CMD_RemoteUnitID(&command, IotTaskHandle, RemoteTaskHandle);
 							break;
 
 						default:
@@ -701,11 +708,11 @@ void StartCommandTask(void *argument)
 				} else
 					switch (command.data.sub_code) {
 						case CMD_FOTA_VCU :
-							CMD_GenFota(IAP_VCU, &response, &(VCU.d.bat), &(HMI1.d.version));
+							CMD_Fota( &response, IAP_VCU, &(VCU.d.bat), &(HMI1.d.version));
 							break;
 
 						case CMD_FOTA_HMI :
-							CMD_GenFota(IAP_HMI, &response, &(VCU.d.bat), &(HMI1.d.version));
+							CMD_Fota(&response, IAP_HMI, &(VCU.d.bat), &(HMI1.d.version));
 							break;
 
 						default:
@@ -772,12 +779,12 @@ void StartGpsTask(void *argument)
 void StartGyroTask(void *argument)
 {
 	/* USER CODE BEGIN StartGyroTask */
-	uint32_t flag;
+	uint32_t flag, notif;
 	movement_t movement;
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(NULL, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	/* MPU6050 Initialization*/
@@ -788,9 +795,9 @@ void StartGyroTask(void *argument)
 		VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
 
 		// Check notifications
-		if (_osThreadFlagsWait(NULL, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
+		if (_osThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
 			GYRO_DeInit();
-			_osThreadFlagsWait(NULL, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+			_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 			GYRO_Init(&hi2c3);
 		}
 
@@ -821,7 +828,7 @@ void StartRemoteTask(void *argument)
 
 	// wait until needed
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(NULL, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	// Initiate
@@ -840,6 +847,10 @@ void StartRemoteTask(void *argument)
 				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
 				RMT_Init(&(VCU.d.unit_id), &hspi1, RemoteTaskHandle);
 			}
+
+			// handle address change
+			if (notif & EVT_REMOTE_REINIT)
+				RMT_ReInit(&(VCU.d.unit_id));
 
 			// handle pairing
 			if (notif & EVT_REMOTE_PAIRING)
@@ -885,7 +896,7 @@ void StartFingerTask(void *argument)
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(NULL, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	// Initialisation
@@ -967,7 +978,7 @@ void StartAudioTask(void *argument)
 
 	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(NULL, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	/* Initiate Wave player (Codec, DMA, I2C) */
@@ -1022,11 +1033,12 @@ void StartAudioTask(void *argument)
 void StartCanRxTask(void *argument)
 {
 	/* USER CODE BEGIN StartCanRxTask */
+	uint32_t notif;
 	can_rx_t Rx;
 
 	// wait until needed
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	/* Infinite loop */
@@ -1034,8 +1046,8 @@ void StartCanRxTask(void *argument)
 		VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
 
 		// Check notifications
-		if (_osThreadFlagsWait(NULL, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) 
-			_osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0))
+			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
 			switch (CANBUS_ReadID(&(Rx.header))) {
@@ -1074,11 +1086,12 @@ void StartCanRxTask(void *argument)
 void StartCanTxTask(void *argument)
 {
 	/* USER CODE BEGIN StartCanTxTask */
+	uint32_t notif;
 	TickType_t last500ms, last1000ms;
 
 	// wait until needed
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	// initiate
@@ -1091,9 +1104,9 @@ void StartCanTxTask(void *argument)
 		VCU.d.task.canTx.wakeup = _GetTickMS() / 1000;
 
 		// Check notifications
-		if (_osThreadFlagsWait(NULL, EVT_CAN_TASK_STOP, osFlagsWaitAll, 20)) {
+		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 20)) {
 			CANBUS_DeInit();
-			_osThreadFlagsWait(NULL, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
 			CANBUS_Init(&hcan1);
 		}
 
@@ -1131,14 +1144,15 @@ void StartCanTxTask(void *argument)
 void StartHmi2PowerTask(void *argument)
 {
 	/* USER CODE BEGIN StartHmi2PowerTask */
-	// wait until ManagerTask done
+	uint32_t notif;
+
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
 	for (;;) {
 		VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
 
-		if (_osThreadFlagsWait(NULL, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
+		if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
 
 			if (HMI2.d.power)
 				while (!HMI2.d.started)

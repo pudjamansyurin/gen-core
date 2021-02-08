@@ -20,6 +20,7 @@
 /* Public functions prototypes ----------------------------------------------*/
 uint8_t MQTT_DoPublish(payload_t *payload);
 uint8_t MQTT_DoSubscribe(void);
+uint8_t MQTT_DoUnsubscribe(void);
 uint8_t MQTT_Connect(void);
 uint8_t MQTT_Disconnect(void);
 uint8_t MQTT_Ping(void);

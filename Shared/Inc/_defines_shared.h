@@ -131,6 +131,7 @@
 #define EVT_MASK                     (uint32_t) 0x7FFFFFFF
 
 #define EVT_IOT_DISCARD                         BIT(0)
+#define EVT_IOT_RESUBSCRIBE                     BIT(1)
 
 #define EVT_COMMAND_ERROR                       BIT(0)
 #define EVT_COMMAND_OK                          BIT(1)
@@ -143,8 +144,9 @@
 
 #define EVT_REMOTE_TASK_START                   BIT(0)
 #define EVT_REMOTE_TASK_STOP                    BIT(1)
-#define EVT_REMOTE_RX_IT                        BIT(2)
-#define EVT_REMOTE_PAIRING                      BIT(3)
+#define EVT_REMOTE_REINIT                       BIT(2)
+#define EVT_REMOTE_RX_IT                        BIT(3)
+#define EVT_REMOTE_PAIRING                      BIT(4)
 
 #define EVT_FINGER_TASK_START                   BIT(0)
 #define EVT_FINGER_TASK_STOP                    BIT(1)
@@ -190,7 +192,6 @@
 
 #define CMD_REPORT_RTC                (uint8_t) 0
 #define CMD_REPORT_ODOM               (uint8_t) 1
-//#define CMD_REPORT_UNITID             (uint8_t) 2
 
 #define CMD_AUDIO_BEEP                (uint8_t) 0
 #define CMD_AUDIO_MUTE                (uint8_t) 1
@@ -201,6 +202,7 @@
 #define CMD_FINGER_RST                (uint8_t) 3
 
 #define CMD_REMOTE_PAIRING            (uint8_t) 0
+#define CMD_REMOTE_UNITID             (uint8_t) 1
 
 #define CMD_FOTA_VCU                  (uint8_t) 0
 #define CMD_FOTA_HMI                  (uint8_t) 1

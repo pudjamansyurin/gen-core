@@ -36,11 +36,10 @@ static const uint8_t COMMAND[3][8] = {
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static void ReInit(void);
-static void SetAesPayload(uint32_t *aes);
 static void ChangeMode(RMT_MODE mode, uint32_t *unit_id);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
 static void GenRandomNumber32(uint32_t *payload, uint8_t size);
+static void RMT_GenerateAesKey(uint32_t *aesSwapped);
 static void RawDebugger(void);
 static void Debugger(RMT_CMD command);
 
@@ -50,10 +49,7 @@ void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi, osThreadId_t threadId)
 	RMT.h.threadId = threadId;
 
 	nrf_param(hspi, RMT.rx.payload);
-	ReInit();
-
-	nrf_configure();
-	ChangeMode(RMT_MODE_NORMAL, unit_id);
+	RMT_ReInit(unit_id);
 }
 
 void RMT_DeInit(void) {
@@ -61,6 +57,21 @@ void RMT_DeInit(void) {
 	HAL_SPI_DeInit(RMT.h.spi);
 	_DelayMS(1000);
 }
+
+void RMT_ReInit(uint32_t *unit_id) {
+	MX_SPI1_Init();
+	do {
+		printf("NRF:Init\n");
+
+		//    HAL_SPI_Init(hspi);
+		GATE_RemoteReset();
+		_DelayMS(1000);
+	} while (nrf_check() == NRF_ERROR);
+
+	nrf_configure();
+	ChangeMode(RMT_MODE_NORMAL, unit_id);
+}
+
 
 uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote) {
 	uint32_t timeout = (*state < VEHICLE_RUN) ? REMOTE_TIMEOUT : REMOTE_TIMEOUT_RUN;
@@ -75,7 +86,6 @@ uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote) {
 
 uint8_t RMT_Ping(void) {
 	GenRandomNumber32((uint32_t*) RMT.tx.payload, NRF_DATA_LENGTH / 4);
-
 	return (nrf_send_packet_noack(RMT.tx.payload) == NRF_OK);
 }
 
@@ -83,22 +93,17 @@ void RMT_Pairing(uint32_t *unit_id) {
 	uint32_t aes[4];
 
 	RMT.tick.pairing = _GetTickMS();
-
-	// Insert AES to payload
 	RMT_GenerateAesKey(aes);
-	EEPROM_AesKey(EE_CMD_W, aes);
-	SetAesPayload(aes);
 
-	// Insert VCU_ID to payload
+	// Insert to payload
+	memcpy(&RMT.tx.payload[0], aes, NRF_DATA_LENGTH);
 	memcpy(&RMT.tx.payload[NRF_DATA_LENGTH ], RMT.tx.address, NRF_ADDR_LENGTH);
 
 	ChangeMode(RMT_MODE_PAIRING, NULL);
 	nrf_send_packet_noack(RMT.tx.payload);
 
 	// back to normal
-	ReInit();
-	nrf_configure();
-	ChangeMode(RMT_MODE_NORMAL, unit_id);
+	RMT_ReInit(unit_id);
 }
 
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
@@ -120,7 +125,7 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	// Is ping response
 	if (valid) {
 		if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT) {
-		  RMT.tick.heartbeat = _GetTickMS();
+			RMT.tick.heartbeat = _GetTickMS();
 			valid = (memcmp(&plain[rng], &payload[rng], rng) == 0);
 		}
 	}
@@ -130,10 +135,6 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	//		Debugger(*cmd);
 
 	return valid;
-}
-
-void RMT_GenerateAesKey(uint32_t *aes) {
-	GenRandomNumber32(aes, NRF_DATA_LENGTH / 4);
 }
 
 uint8_t RMT_GotPairedResponse(void) {
@@ -164,27 +165,6 @@ static void lock(void) {
 
 static void unlock(void) {
 	//  osMutexRelease(RemoteRecMutexHandle);
-}
-
-static void ReInit(void) {
-	MX_SPI1_Init();
-	do {
-		printf("NRF:Init\n");
-
-		//    HAL_SPI_Init(hspi);
-		GATE_RemoteReset();
-		_DelayMS(1000);
-	} while (nrf_check() == NRF_ERROR);
-}
-
-static void SetAesPayload(uint32_t *aes) {
-	uint32_t swapped;
-
-	// insert to payload & swap byte order
-	for (uint8_t i = 0; i < (NRF_DATA_LENGTH / 4); i++) {
-		swapped = _ByteSwap32(*(aes + i));
-		memcpy(&RMT.tx.payload[i * 4], &swapped, 4);
-	}
 }
 
 static void ChangeMode(RMT_MODE mode, uint32_t *unit_id) {
@@ -222,8 +202,23 @@ static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
 }
 
 static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
-	for (uint8_t i = 0; i < size; i++)
+	while(size--)
 		HAL_RNG_GenerateRandomNumber(&hrng, payload++);
+}
+
+static void RMT_GenerateAesKey(uint32_t *aesSwapped) {
+	const uint8_t len = 4;
+	uint32_t aes[len];
+	uint32_t tmp;
+
+	GenRandomNumber32(aes, len);
+	EEPROM_AesKey(EE_CMD_W, aes);
+
+	// insert to payload & swap byte order
+	for (uint8_t i = 0; i < len; i++) {
+		tmp = _ByteSwap32(aes[i]);
+		memcpy(aesSwapped++, &tmp, len);
+	}
 }
 
 static void RawDebugger(void) {

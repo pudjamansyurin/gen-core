@@ -12,6 +12,7 @@
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
+#include "Nodes/VCU.h"
 
 /* Private variables ----------------------------------------------------------*/
 osMessageQueueId_t cmdQueue;
@@ -26,8 +27,11 @@ void CMD_Init(osMessageQueueId_t mCmdQueue) {
 
 void CMD_CheckCommand(command_t command) {
 	uint32_t crc;
+	uint8_t size = sizeof(command.header.frame_id) +
+			sizeof(command.header.unit_id) +
+			sizeof(command.data);
 
-	if (command.header.size != sizeof(command.data))
+	if (command.header.size != size)
 		return;
 
 	if (memcmp(command.header.prefix, PREFIX_COMMAND, 2) != 0)
@@ -35,10 +39,15 @@ void CMD_CheckCommand(command_t command) {
 
 	crc = CRC_Calculate8(
 			(uint8_t*) &(command.header.size),
-			sizeof(command.header.size) + sizeof(command.data),
+			sizeof(command.header.size) + size,
 			0);
 
 	if (command.header.crc != crc)
+		return;
+
+	// frame not checked
+
+	if (command.header.unit_id != VCU.d.unit_id)
 		return;
 
 	// Debugger(&command);
@@ -70,7 +79,7 @@ void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
 	*override_state = cmd->data.value[0];
 }
 
-void CMD_GenFota(IAP_TYPE type, response_t *resp, uint16_t *bat, uint16_t *hmi_version) {
+void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_version) {
 	FW_EnterModeIAP(type, resp->data.message, bat, hmi_version);
 
 	/* This line is never reached (if FOTA is activated) */
@@ -84,23 +93,19 @@ void CMD_ReportOdom(command_t *cmd) {
 	EEPROM_Odometer(EE_CMD_W, *(uint32_t*) cmd->data.value);
 }
 
-void CMD_ReportUnitID(command_t *cmd) {
-	EEPROM_UnitID(EE_CMD_W, *(uint32_t*) cmd->data.value);
-}
-
 
 void CMD_AudioBeep(osThreadId_t threadId) {
 	osThreadFlagsSet(threadId, EVT_AUDIO_BEEP);
 }
 
-void CMD_AudioMute(osThreadId_t threadId, command_t *cmd) {
+void CMD_AudioMute(command_t *cmd, osThreadId_t threadId) {
 	uint32_t flag;
 
 	flag =  cmd->data.value[0] ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF;
 	osThreadFlagsSet(threadId, flag);
 }
 
-void CMD_FingerAdd(osThreadId_t threadId, osMessageQueueId_t queue, response_t *resp) {
+void CMD_FingerAdd(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue) {
 	uint32_t notif;
 	uint8_t id;
 
@@ -122,7 +127,7 @@ void CMD_FingerAdd(osThreadId_t threadId, osMessageQueueId_t queue, response_t *
 	}
 }
 
-void CMD_FingerFetch(osThreadId_t threadId, osMessageQueueId_t queue, response_t *resp) {
+void CMD_FingerFetch(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue) {
 	uint32_t notif, len;
 	finger_db_t finger;
 
@@ -152,7 +157,7 @@ void CMD_FingerFetch(osThreadId_t threadId, osMessageQueueId_t queue, response_t
 }
 
 
-void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp) {
+void CMD_Finger(response_t *resp, osThreadId_t threadId, uint8_t event) {
 	uint32_t notif;
 
 	osThreadFlagsSet(threadId, event);
@@ -164,7 +169,16 @@ void CMD_Finger(osThreadId_t threadId, uint8_t event, response_t *resp) {
 			resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
-void CMD_RemotePairing(osThreadId_t threadId, response_t *resp) {
+void CMD_RemoteUnitID(command_t *cmd, osThreadId_t threadIot, osThreadId_t threadRemote) {
+	// persist changes
+	EEPROM_UnitID(EE_CMD_W, *(uint32_t*) cmd->data.value);
+	// resubscribe mqtt topic
+	osThreadFlagsSet(threadIot, EVT_IOT_RESUBSCRIBE);
+	// change nrf address
+	osThreadFlagsSet(threadRemote, EVT_REMOTE_REINIT);
+}
+
+void CMD_RemotePairing(response_t *resp, osThreadId_t threadId) {
 	uint32_t notif;
 
 	osThreadFlagsSet(threadId, EVT_REMOTE_PAIRING);

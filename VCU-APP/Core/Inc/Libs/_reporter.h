@@ -106,11 +106,7 @@ typedef struct __attribute__((packed)) {
 
 // command frame (from server)
 typedef struct __attribute__((packed)) {
-  struct __attribute__((packed)) {
-    char prefix[2];
-    uint32_t crc;
-    uint8_t size;
-  } header;
+  header_t header;
   struct __attribute__((packed)) {
     uint8_t code;
     uint8_t sub_code;

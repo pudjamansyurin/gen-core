@@ -17,7 +17,6 @@
 
 /* External variables -------------------------------------------------------*/
 #if (!BOOTLOADER)
-extern osThreadId_t RemoteTaskHandle;
 extern osMutexId_t EepromMutexHandle;
 #endif
 
@@ -35,31 +34,25 @@ static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c) {
-	uint8_t retry = 5, error = 1;
+	uint8_t retry = 5, valid = 0;
 
 	lock();
 	printf("EEPROM:Init\n");
 	EEPROM24XX_SetDevice(hi2c, EEPROM_ADDR);
-	while (retry--) {
-		if (EEPROM24XX_IsConnected()) {
-			error = 0;
-			break;
-		}
-		_DelayMS(50);
-	};
+	while (!valid && retry--)
+		valid = EEPROM24XX_IsConnected(1000);
 	unlock();
 
-	if (error) {
-		printf("EEPROM:Error\n");
-	} else {
+	if (valid) {
 #if (!BOOTLOADER)
-	EEPROM_ResetOrLoad();
-	EEPROM_FotaVersion(EE_CMD_R, EE_NULL);
+		EEPROM_ResetOrLoad();
+		EEPROM_FotaVersion(EE_CMD_R, EE_NULL);
 #endif
-	EEPROM_FotaType(EE_CMD_R, EE_NULL);
-	}
+		EEPROM_FotaType(EE_CMD_R, EE_NULL);
+	} else
+		printf("EEPROM:Error\n");
 
-	return error;
+	return valid;
 }
 
 #if (!BOOTLOADER)
@@ -101,10 +94,6 @@ uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
 
 	ret = Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
 
-	// update the NRF Address
-	if (cmd == EE_CMD_W)
-		osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
-
 	return ret;
 }
 
@@ -112,7 +101,6 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 	uint8_t ret;
 	uint32_t *ptr, tmp[4];
 
-	// eeprom
 	ptr = (cmd == EE_CMD_W ? value : tmp);
 	ret = Command(VADDR_AES_KEY, cmd, ptr, AesKey, 16);
 
