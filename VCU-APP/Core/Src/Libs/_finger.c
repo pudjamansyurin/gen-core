@@ -73,8 +73,6 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 
 	lock();
 	res = GenerateID(id);
-//	res = FINGERPRINT_OK;
-//	*id = 3;
 
 	*valid = (res == FINGERPRINT_OK && *id > 0);
 
@@ -85,8 +83,9 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 
 	if (*valid) {
 		GATE_LedWrite(0);
-		_DelayMS(1000);
-		while(fz3387_getImage() != FINGERPRINT_NOFINGER);
+		while(fz3387_getImage() != FINGERPRINT_NOFINGER) {
+			_DelayMS(50);
+		}
 
 		GATE_LedWrite(1);
 		*valid = Scan(*id, 2, 5000);
@@ -107,6 +106,12 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 		*valid = (res == FINGERPRINT_OK);
 	}
 	unlock();
+
+	if (*valid) {
+		GATE_LedBlink(200);
+		_DelayMS(100);
+		GATE_LedBlink(200);
+	}
 
 	return (res == FINGERPRINT_OK);
 }

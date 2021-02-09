@@ -26,7 +26,7 @@ hmi2_t HMI2 = {
 		},
 		HMI2_Init,
 		HMI2_Refresh,
-		HMI2_PowerOverCan,
+		HMI2_PowerByCan,
 		HMI2_PowerOn,
 		HMI2_PowerOff
 };
@@ -42,14 +42,11 @@ void HMI2_Refresh(void) {
 		HMI2.d.started = 0;
 }
 
-uint8_t HMI2_PowerOverCan(uint8_t state) {
-	uint8_t changed;
-
-	changed = HMI2.d.power != state;
-	if (changed)
+void HMI2_PowerByCan(uint8_t state, osThreadId_t hmi2task) {
+	if (HMI2.d.power != state) {
 		HMI2.d.power = state;
-
-	return changed;
+		osThreadFlagsSet(hmi2task, EVT_HMI2POWER_CHANGED);
+	}
 }
 
 void HMI2_PowerOn(void) {

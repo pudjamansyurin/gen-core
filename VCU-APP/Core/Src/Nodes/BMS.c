@@ -65,7 +65,7 @@ void BMS_PowerOverCan(uint8_t on) {
 
       // other parameters
       BMS.d.overheat = 0;
-      BMS.d.warning = 1;
+      BMS.d.warning = 0;
     }
   }
 }

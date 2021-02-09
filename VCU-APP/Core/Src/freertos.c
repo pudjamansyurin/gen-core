@@ -428,11 +428,6 @@ void StartManagerTask(void *argument)
 		CheckVehicleState();
 		CheckTaskState(&(VCU.d.task));
 
-		HMI1.Refresh();
-		HMI2.Refresh();
-		BMS.RefreshIndex();
-
-		// _DummyDataGenerator();
 		BAT_ScanValue(&(VCU.d.bat));
 		MX_IWDG_Reset();
 
@@ -468,7 +463,7 @@ void StartIotTask(void *argument)
 			.pending = 0
 	};
 
-	// wait until ManagerTask done
+
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
@@ -525,7 +520,7 @@ void StartReporterTask(void *argument)
 	osStatus_t status;
 	TickType_t lastWake;
 
-	// wait until ManagerTask done
+
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
@@ -566,7 +561,7 @@ void StartCommandTask(void *argument)
 	command_t command;
 	response_t response;
 
-	// wait until ManagerTask done
+
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
@@ -601,12 +596,11 @@ void StartCommandTask(void *argument)
 						break;
 
 					case CMD_GEN_OVERRIDE :
-						if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
-							CMD_GenOverride(&command, &(VCU.d.state.override));
-						else {
-							sprintf(response.data.message, "Only in state >= (%d).", VEHICLE_NORMAL);
+						if (VCU.d.state.vehicle < VEHICLE_NORMAL){
+							sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
 							response.data.res_code = RESPONSE_STATUS_ERROR;
-						}
+						} else
+							CMD_GenOverride(&command, &(VCU.d.state.override));
 						break;
 
 					default:
@@ -633,7 +627,7 @@ void StartCommandTask(void *argument)
 
 			else if (command.data.code == CMD_CODE_AUDIO) {
 				if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
-					sprintf(response.data.message, "Not in state < (%d).", VEHICLE_NORMAL);
+					sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
 					response.data.res_code = RESPONSE_STATUS_ERROR;
 				} else
 					switch (command.data.sub_code) {
@@ -653,7 +647,7 @@ void StartCommandTask(void *argument)
 
 			else if (command.data.code == CMD_CODE_FINGER) {
 				if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
-					sprintf(response.data.message, "Not in state < (%d).", VEHICLE_STANDBY);
+					sprintf(response.data.message, "State should >= {%d}.", VEHICLE_STANDBY);
 					response.data.res_code = RESPONSE_STATUS_ERROR;
 				} else
 					switch (command.data.sub_code) {
@@ -682,7 +676,7 @@ void StartCommandTask(void *argument)
 
 			else if (command.data.code == CMD_CODE_REMOTE) {
 				if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
-					sprintf(response.data.message, "Not in state < (%d).", VEHICLE_NORMAL);
+					sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
 					response.data.res_code = RESPONSE_STATUS_ERROR;
 				} else
 					switch (command.data.sub_code) {
@@ -704,7 +698,7 @@ void StartCommandTask(void *argument)
 				response.data.res_code = RESPONSE_STATUS_ERROR;
 
 				if (VCU.d.state.vehicle == VEHICLE_RUN) {
-					sprintf(response.data.message, "Not in state = (%d).", VEHICLE_RUN);
+					sprintf(response.data.message, "State should != {%d}.", VEHICLE_RUN);
 				} else
 					switch (command.data.sub_code) {
 						case CMD_FOTA_VCU :
@@ -745,7 +739,6 @@ void StartGpsTask(void *argument)
 	uint32_t lastWake;
 	uint8_t movement;
 
-	// wait until ManagerTask done
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
@@ -760,8 +753,7 @@ void StartGpsTask(void *argument)
 
 		VCU.d.speed = GPS_CalculateSpeed(&(VCU.d.gps));
 
-		movement = GPS_CalculateOdometer(&(VCU.d.gps));
-		if (movement)
+		if ((movement = GPS_CalculateOdometer(&(VCU.d.gps))))
 			VCU.SetOdometer(movement);
 
 		osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
@@ -782,7 +774,7 @@ void StartGyroTask(void *argument)
 	uint32_t flag, notif;
 	movement_t movement;
 
-	// wait until ManagerTask done
+
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
@@ -796,6 +788,8 @@ void StartGyroTask(void *argument)
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
+			VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
+
 			GYRO_DeInit();
 			_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 			GYRO_Init(&hi2c3);
@@ -839,10 +833,15 @@ void StartRemoteTask(void *argument)
 	for (;;) {
 		VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
-		// Check response
+		if (RMT_NeedPing(&(VCU.d.state.vehicle), &(HMI1.d.state.unremote)))
+			RMT_Ping();
+
+		VCU.SetEvent(EV_VCU_REMOTE_MISSING, HMI1.d.state.unremote);
+
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
-			// handle threads management
 			if (notif & EVT_REMOTE_TASK_STOP) {
+				VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
+
 				RMT_DeInit();
 				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
 				RMT_Init(&(VCU.d.unit_id), &hspi1, RemoteTaskHandle);
@@ -871,11 +870,6 @@ void StartRemoteTask(void *argument)
 			}
 			//			osThreadFlagsClear(EVT_MASK);
 		}
-
-		if (RMT_NeedPing(&(VCU.d.state.vehicle), &(HMI1.d.state.unremote)))
-			RMT_Ping();
-
-		VCU.SetEvent(EV_VCU_REMOTE_MISSING, HMI1.d.state.unremote);
 	}
 	/* USER CODE END StartRemoteTask */
 }
@@ -894,7 +888,7 @@ void StartFingerTask(void *argument)
 	finger_db_t finger;
 	uint8_t  id, valid, driver, res = 0;
 
-	// wait until ManagerTask done
+
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
@@ -906,53 +900,46 @@ void StartFingerTask(void *argument)
 	for (;;) {
 		VCU.d.task.finger.wakeup = _GetTickMS() / 1000;
 
-		// check if user put finger
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
-			// handle reset
 			if (notif & EVT_FINGER_TASK_STOP) {
+				VCU.SetDriver(DRIVER_ID_NONE);
+
 				FINGER_DeInit();
 				_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
 				FINGER_Init(&huart4, &hdma_uart4_rx);
 			}
 
 			else if (notif & EVT_FINGER_PLACED) {
-				//				id = FINGER_AuthFast();
-				id = FINGER_Auth();
-				if (id > 0) {
+				if ((id = FINGER_Auth()) > 0) {
 					VCU.SetDriver(HMI1.d.state.unfinger ? id : DRIVER_ID_NONE);
-					GATE_LedWrite(1);
-					_DelayMS(1000);
-					GATE_LedWrite(0);
-				}
+					GATE_LedBlink(200);
+					_DelayMS(100);
+					GATE_LedBlink(200);
+				} else
+					GATE_LedBlink(1000);
 			}
 
 			else if (notif & EVT_FINGER_FETCH) {
-				res = FINGER_Fetch(finger.db);
-				if (res)
+				if ((res = FINGER_Fetch(finger.db)))
 					osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
-
 				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
 			else if (notif & EVT_FINGER_ADD) {
-				res = FINGER_Enroll(&id, &valid);
-				if (res)
+				if ((res = FINGER_Enroll(&id, &valid)))
 					osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
-
 				osThreadFlagsSet(CommandTaskHandle, valid ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
 			else if (notif & EVT_FINGER_DEL) {
 				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
 					res = FINGER_DeleteID(driver);
-
 					osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 				}
 			}
 
 			else if (notif & EVT_FINGER_RST) {
 				res = FINGER_Flush();
-
 				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
@@ -976,7 +963,7 @@ void StartAudioTask(void *argument)
 	/* USER CODE BEGIN StartAudioTask */
 	uint32_t notif;
 
-	// wait until ManagerTask done
+
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
@@ -988,7 +975,8 @@ void StartAudioTask(void *argument)
 	for (;;) {
 		VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
 
-		// wait with timeout
+		AUDIO_OUT_SetVolume(VCU.SpeedToVolume());
+
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
 			if (notif & EVT_AUDIO_TASK_STOP) {
 				AUDIO_DeInit();
@@ -1014,11 +1002,7 @@ void StartAudioTask(void *argument)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
 			if (notif & EVT_AUDIO_MUTE_OFF)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
-
 		}
-
-		// update volume
-		AUDIO_OUT_SetVolume(VCU.SpeedToVolume());
 	}
 	/* USER CODE END StartAudioTask */
 }
@@ -1045,9 +1029,18 @@ void StartCanRxTask(void *argument)
 	for (;;) {
 		VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
 
+		HMI1.Refresh();
+		HMI2.Refresh();
+		BMS.RefreshIndex();
+
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0))
+		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) {
+			HMI1.Init();
+			HMI2.Init();
+			BMS.Init();
+
 			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+		}
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
 			switch (CANBUS_ReadID(&(Rx.header))) {
@@ -1103,8 +1096,15 @@ void StartCanTxTask(void *argument)
 	for (;;) {
 		VCU.d.task.canTx.wakeup = _GetTickMS() / 1000;
 
+		// Handle CAN-powered nodes
+		BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
+		HMI2.PowerByCan(VCU.d.state.vehicle >= VEHICLE_STANDBY, Hmi2PowerTaskHandle);
+
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 20)) {
+			BMS.PowerOverCan(0);
+			HMI2.PowerByCan(0, Hmi2PowerTaskHandle);
+
 			CANBUS_DeInit();
 			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
 			CANBUS_Init(&hcan1);
@@ -1125,11 +1125,6 @@ void StartCanTxTask(void *argument)
 			VCU.can.t.Datetime(RTC_Read());
 			VCU.can.t.SubTripData(&(HBAR.runner.mode.d.trip[0]));
 		}
-
-		// Handle CAN-Powered Nodes
-		BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
-		if (HMI2.PowerOverCan(VCU.d.state.vehicle >= VEHICLE_STANDBY))
-			osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
 	}
 	/* USER CODE END StartCanTxTask */
 }
@@ -1179,7 +1174,7 @@ void StartGateTask(void *argument)
 	/* USER CODE BEGIN StartGateTask */
 	uint32_t notif, tick = 0;
 
-	// wait until ManagerTask done
+
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
@@ -1214,7 +1209,6 @@ void StartGateTask(void *argument)
 				HBAR_TimerSelectSet();
 				HBAR_RunSelectOrSet();
 			}
-
 		}
 
 		// GATE Output Control
@@ -1328,8 +1322,6 @@ static void CheckVehicleState(void) {
 			case VEHICLE_STANDBY:
 				if (lastState != VEHICLE_STANDBY) {
 					lastState = VEHICLE_STANDBY;
-
-					VCU.SetDriver(DRIVER_ID_NONE);
 
 					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_START);
 				}

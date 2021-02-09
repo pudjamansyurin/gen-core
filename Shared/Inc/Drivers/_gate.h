@@ -14,6 +14,7 @@
 /* Public functions prototype ------------------------------------------------*/
 void GATE_LedWrite(GPIO_PinState state);
 void GATE_LedToggle(void);
+void GATE_LedBlink(uint32_t time);
 void GATE_SimcomShutdown(void);
 void GATE_SimcomReset(void);
 void GATE_SimcomSoftReset(void);

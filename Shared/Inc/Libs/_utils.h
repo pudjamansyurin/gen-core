@@ -24,7 +24,6 @@ uint32_t _ByteSwap32(uint32_t x);
 
 #if (!BOOTLOADER)
 void _BuzzerWrite(uint8_t state);
-void _DummyDataGenerator(void);
 int8_t _BitPosition(uint64_t event_id);
 #endif
 #endif /* UTILS_H_ */

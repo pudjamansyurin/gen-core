@@ -73,24 +73,6 @@ void _BuzzerWrite(uint8_t state) {
     HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
 }
 
-void _DummyDataGenerator(void) {
-  uint8_t *pRange = &(HBAR.runner.mode.d.report[HBAR_M_REPORT_RANGE]);
-  uint8_t *pAverage = &(HBAR.runner.mode.d.report[HBAR_M_REPORT_AVERAGE]);
-
-  // Dummy Report Range
-  if (!(*pRange))
-    *pRange = 255;
-  else
-    (*pRange)--;
-
-
-  // Dummy Report Average (Efficiency)
-  if (*pAverage >= 255)
-    *pAverage = 0;
-  else
-    (*pAverage)++;
-}
-
 int8_t _BitPosition(uint64_t event_id) {
   uint8_t pos = -1;
 

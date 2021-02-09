@@ -10,6 +10,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
+/* Public typedef ------------------------------------------------------------*/
+
 
 /* Public functions prototype ------------------------------------------------*/
 void EEPROM24XX_SetDevice(I2C_HandleTypeDef *hi2c, uint16_t device);
