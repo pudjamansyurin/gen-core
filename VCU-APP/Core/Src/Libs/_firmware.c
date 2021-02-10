@@ -44,11 +44,11 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
   uint8_t valid = 0;
 
   if (FW_ValidResponseIAP()) {
-    sprintf(node, FOTA_TYPE == IAP_VCU ? "VCU":"HMI");
+    sprintf(node, FOTA_TYPE == IAP_HMI ? "HMI":"VCU");
 
     // set default value
     response->data.code = CMD_CODE_FOTA;
-    response->data.sub_code = FOTA_TYPE == IAP_VCU ? CMD_FOTA_VCU : CMD_FOTA_HMI;
+    response->data.sub_code = FOTA_TYPE == IAP_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
     response->data.res_code = RESPONSE_STATUS_ERROR;
     sprintf(response->data.message, "%s Failed", node);
 

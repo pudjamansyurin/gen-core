@@ -90,33 +90,6 @@ static void RTC_WriteRaw(timestamp_t *timestamp) {
 
 
 static timestamp_t RTC_Decode(datetime_t dt) {
-	//	// format dateTime: YYMMDDHHmmssE
-	//	uint8_t dt[7];
-	//	timestamp_t timestamp;
-	//	uint64_t tot = 0, mul;
-	//
-	//	// parsing to timestamp
-	//	for (int i = 0; i <= 6; i++) {
-	//		if (i < 6)
-	//			mul = pow(10, (11 - (2 * i)));
-	//		else
-	//			mul = 1;
-	//
-	//		dt[i] = (dateTime - tot) / mul;
-	//		tot += (dt[i] * mul);
-	//	}
-	//
-	//	// fill to timestamp
-	//	timestamp.date.Year = dt[0];
-	//	timestamp.date.Month = dt[1];
-	//	timestamp.date.Date = dt[2];
-	//	timestamp.time.Hours = dt[3];
-	//	timestamp.time.Minutes = dt[4];
-	//	timestamp.time.Seconds = dt[5];
-	//	timestamp.date.WeekDay = dt[6];
-	//
-	//	return timestamp;
-
 	timestamp_t ts;
 
 	ts.date.Year = dt.Year;
@@ -131,29 +104,6 @@ static timestamp_t RTC_Decode(datetime_t dt) {
 }
 
 static datetime_t RTC_Encode(timestamp_t ts) {
-	//	uint8_t dt[7];
-	//	uint64_t tot = 0, mul;
-	//
-	//	// get from timestamp
-	//	dt[0] = timestamp.date.Year;
-	//	dt[1] = timestamp.date.Month;
-	//	dt[2] = timestamp.date.Date;
-	//	dt[3] = timestamp.time.Hours;
-	//	dt[4] = timestamp.time.Minutes;
-	//	dt[5] = timestamp.time.Seconds;
-	//	dt[6] = timestamp.date.WeekDay;
-	//
-	//	// parsing to datetime
-	//	for (int i = 0; i <= 6; i++) {
-	//		if (i < 6)
-	//			mul = pow(10, (11 - (2 * i)));
-	//		else
-	//			mul = 1;
-	//		tot += dt[i] * mul;
-	//	}
-	//
-	//	return tot;
-
 	datetime_t dt;
 
 	dt.Year = ts.date.Year;

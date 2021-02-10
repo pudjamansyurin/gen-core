@@ -35,7 +35,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   _DelayMS(1000);
 
   /* Set FTP directory */
-  strcpy(ftp.path, (type == IAP_VCU) ? "/vcu/" : "/hmi/");
+  strcpy(ftp.path, (type == IAP_HMI) ? "/hmi/" : "/vcu/");
 
   /* Set current IAP type */
   *(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
@@ -53,10 +53,10 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   /* Get the stored checksum information */
   if (res > 0) {
     FOCAN_SetProgress(type, 0.0f);
-    if (type == IAP_VCU)
-      FOTA_GetChecksum(&cksumOld);
-    else
+    if (type == IAP_HMI)
       res = FOCAN_GetChecksum(&cksumOld);
+    else
+      FOTA_GetChecksum(&cksumOld);
   }
 
   // Initialise SIMCOM
@@ -124,15 +124,16 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   // Buffer filled, compare the checksum
   if (res > 0) {
-    if (type == IAP_VCU) {
+    if (type == IAP_HMI) 
+      res = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew);
+    else {
       res = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
       // Glue related information to new image
       if (res > 0) {
         FOTA_GlueInfo32(CHECKSUM_OFFSET, &cksumNew);
         FOTA_GlueInfo32(SIZE_OFFSET, &len);
       }
-    } else
-      res = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew);
+    } 
 
     // Handle error
     if (res <= 0)
@@ -174,10 +175,10 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
   float percent;
 
   // Backup and prepare the area
-  if (type == IAP_VCU)
-    FLASHER_BackupApp();
-  else
+  if (type == IAP_HMI)
     res = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(setFTP->size));
+  else
+    FLASHER_BackupApp();
 
   // Read FTP File
   if (res > 0) {
@@ -195,10 +196,10 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *setFTP, at_ftpget_t *setFTPGET, uint32_t
 
       // Copy buffer to flash
       if (res > 0 && setFTPGET->cnflength) {
-        if (type == IAP_VCU)
-          res = FLASHER_WriteAppArea((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len);
-        else
+        if (type == IAP_HMI)
           res = FOCAN_DownloadFlash((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len, setFTP->size);
+        else
+          res = FLASHER_WriteAppArea((uint8_t*) setFTPGET->ptr, setFTPGET->cnflength, *len);
       } else
         // failure
         break;
