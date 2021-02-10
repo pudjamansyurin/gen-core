@@ -89,14 +89,6 @@ void RPT_FrameDecider(uint8_t backup, FRAME_TYPE *frame) {
 }
 
 uint8_t RPT_PayloadPending(payload_t *payload) {
-  uint32_t notif;
-
-  // Handle full buffer
-  if (payload->type == PAYLOAD_REPORT)
-    if (_osThreadFlagsWait(&notif, EVT_IOT_DISCARD, osFlagsWaitAny, 0))
-      payload->pending = 0;
-
-  // Check logs
   if (!payload->pending)
     if (osMessageQueueGet(*(payload->pQueue), payload->pPayload, NULL, 0) == osOK)
       payload->pending = 1;

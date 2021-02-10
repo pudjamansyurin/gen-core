@@ -387,7 +387,7 @@ void StartManagerTask(void *argument)
 	/* USER CODE BEGIN StartManagerTask */
 	TickType_t lastWake;
 
-	// Initialization, this task get executed first!
+	// Initiate, this task get executed first!
 	VCU.Init();
 	BMS.Init();
 	HMI1.Init();
@@ -446,7 +446,6 @@ void StartManagerTask(void *argument)
 void StartIotTask(void *argument)
 {
 	/* USER CODE BEGIN StartIotTask */
-	TickType_t lastWake;
 	uint32_t notif;
 	response_t response;
 	payload_t pRes = {
@@ -473,11 +472,15 @@ void StartIotTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
-		lastWake = _GetTickMS();
 
-		if (_osThreadFlagsWait(&notif, EVT_IOT_RESUBSCRIBE, osFlagsWaitAll, 0)) {
-			MQTT_DoUnsubscribe();
-			MQTT_DoSubscribe();
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, (RPT_INTERVAL_NORMAL * 1000))) {
+			if (notif & EVT_IOT_RESUBSCRIBE) {
+				MQTT_DoUnsubscribe();
+				MQTT_DoSubscribe();
+			}
+
+			if (notif & EVT_IOT_DISCARD)
+				pRep.pending = 0;
 		}
 
 		// Upload Response
@@ -495,12 +498,9 @@ void StartIotTask(void *argument)
 						pRep.pending = 0;
 
 		// SIMCOM related routines
-		if (Simcom_SetState(SIM_STATE_READY, 0)) {
+		if (Simcom_SetState(SIM_STATE_READY, 0))
 			if (RTC_NeedCalibration())
 				Simcom_CalibrateTime();
-		}
-
-		osDelayUntil(lastWake + 500);
 	}
 	/* USER CODE END StartIotTask */
 }
@@ -515,18 +515,16 @@ void StartIotTask(void *argument)
 void StartReporterTask(void *argument)
 {
 	/* USER CODE BEGIN StartReporterTask */
+	uint32_t notif;
 	report_t report;
 	FRAME_TYPE frame;
 	osStatus_t status;
-	TickType_t lastWake;
-
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	/* Infinite loop */
 	for (;;) {
 		VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
-		lastWake = _GetTickMS();
 
 		RPT_FrameDecider(!VCU.d.gpio.power5v, &frame);
 		RPT_ReportCapture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.runner.mode.d));
@@ -543,7 +541,7 @@ void StartReporterTask(void *argument)
 		VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
 		VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
 
-		osDelayUntil(lastWake + (VCU.d.interval * 1000));
+		_osThreadFlagsWait(&notif, EVT_REPORTER_YIELD, osFlagsWaitAll, VCU.d.interval * 1000);
 	}
 	/* USER CODE END StartReporterTask */
 }
@@ -561,7 +559,6 @@ void StartCommandTask(void *argument)
 	command_t command;
 	response_t response;
 
-
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
@@ -570,7 +567,6 @@ void StartCommandTask(void *argument)
 	// Handle Post-FOTA
 	if (FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version)))
 		osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
-
 
 	/* Infinite loop */
 	for (;;) {
@@ -774,12 +770,11 @@ void StartGyroTask(void *argument)
 	uint32_t flag, notif;
 	movement_t movement;
 
-
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
-	/* MPU6050 Initialization*/
+	/* MPU6050 Initiate*/
 	GYRO_Init(&hi2c3);
 
 	/* Infinite loop */
@@ -788,8 +783,6 @@ void StartGyroTask(void *argument)
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
-			VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
-
 			GYRO_DeInit();
 			_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 			GYRO_Init(&hi2c3);
@@ -798,6 +791,7 @@ void StartGyroTask(void *argument)
 		// Read all accelerometer, gyroscope (average)
 		GYRO_Decision(&movement, &(VCU.d.motion), 50);
 		VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
+		//		VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 
 		// Indicators
 		//		GATE_LedWrite(movement.fallen);
@@ -840,8 +834,6 @@ void StartRemoteTask(void *argument)
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
 			if (notif & EVT_REMOTE_TASK_STOP) {
-				VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
-
 				RMT_DeInit();
 				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
 				RMT_Init(&(VCU.d.unit_id), &hspi1, RemoteTaskHandle);
@@ -902,8 +894,6 @@ void StartFingerTask(void *argument)
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
 			if (notif & EVT_FINGER_TASK_STOP) {
-				VCU.SetDriver(DRIVER_ID_NONE);
-
 				FINGER_DeInit();
 				_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
 				FINGER_Init(&huart4, &hdma_uart4_rx);
@@ -1034,13 +1024,8 @@ void StartCanRxTask(void *argument)
 		BMS.RefreshIndex();
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) {
-			HMI1.Init();
-			HMI2.Init();
-			BMS.Init();
-
+		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0))
 			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
-		}
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
 			switch (CANBUS_ReadID(&(Rx.header))) {
@@ -1110,20 +1095,23 @@ void StartCanTxTask(void *argument)
 			CANBUS_Init(&hcan1);
 		}
 
-		// send every 20ms
-		VCU.can.t.SwitchModeControl(&HBAR);
+		// (only send for HMI1)
+		if (HMI1.d.started) {
+			// send every 20ms
+			VCU.can.t.SwitchModeControl(&HBAR);
 
-		// send every 500ms
-		if (_GetTickMS() - last500ms > 500) {
-			last500ms = _GetTickMS();
-			VCU.can.t.MixedData(&(HBAR.runner));
-		}
+			// send every 500ms
+			if (_GetTickMS() - last500ms > 500) {
+				last500ms = _GetTickMS();
+				VCU.can.t.MixedData(&(HBAR.runner));
+			}
 
-		// send every 1000ms
-		if (_GetTickMS() - last1000ms > 1000) {
-			last1000ms = _GetTickMS();
-			VCU.can.t.Datetime(RTC_Read());
-			VCU.can.t.SubTripData(&(HBAR.runner.mode.d.trip[0]));
+			// send every 1000ms
+			if (_GetTickMS() - last1000ms > 1000) {
+				last1000ms = _GetTickMS();
+				VCU.can.t.Datetime(RTC_Read());
+				VCU.can.t.SubTripData(&(HBAR.runner.mode.d.trip[0]));
+			}
 		}
 	}
 	/* USER CODE END StartCanTxTask */
@@ -1173,7 +1161,6 @@ void StartGateTask(void *argument)
 {
 	/* USER CODE BEGIN StartGateTask */
 	uint32_t notif, tick = 0;
-
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
@@ -1268,6 +1255,7 @@ static void CheckVehicleState(void) {
 					lastState = VEHICLE_LOST;
 
 					VCU.d.interval = RPT_INTERVAL_LOST;
+					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 				}
 
 				if (VCU.d.gpio.power5v)
@@ -1280,12 +1268,23 @@ static void CheckVehicleState(void) {
 
 					VCU.d.tick.independent = _GetTickMS();
 					VCU.d.interval = RPT_INTERVAL_BACKUP;
+					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
+					VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
+
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
+
 					osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
+					memset(&(VCU.d.motion), 0x00, sizeof(VCU.d.motion));
+					VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
+					VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+
 					osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_STOP);
 					osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
+					HMI1.Init();
+					HMI2.Init();
+					BMS.Init();
 				}
 
 				if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
@@ -1299,10 +1298,11 @@ static void CheckVehicleState(void) {
 					lastState = VEHICLE_NORMAL;
 					normalize = 0;
 
-					VCU.d.interval = RPT_INTERVAL_NORMAL;
 					VCU.d.state.override = VEHICLE_NORMAL;
-
 					BAT_ReInit();
+
+					VCU.d.interval = RPT_INTERVAL_NORMAL;
+					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
@@ -1310,6 +1310,7 @@ static void CheckVehicleState(void) {
 					osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_START);
 					osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_START);
 					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
+					VCU.SetDriver(DRIVER_ID_NONE);
 				}
 
 				if (!VCU.d.gpio.power5v)

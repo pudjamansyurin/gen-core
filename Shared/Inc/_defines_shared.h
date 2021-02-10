@@ -109,8 +109,9 @@
 // Events group (for Frame Report)
 #define EV_VCU_NET_SOFT_RESET                   BIT(0)
 #define EV_VCU_NET_HARD_RESET                   BIT(1)
-#define EV_VCU_BIKE_FALLEN                      BIT(2)
-#define EV_VCU_REMOTE_MISSING                   BIT(3)
+#define EV_VCU_REMOTE_MISSING                   BIT(2)
+#define EV_VCU_BIKE_FALLEN                      BIT(3)
+#define EV_VCU_BIKE_MOVED	                      BIT(4)
 #define EV_BMS_DISCHARGE_OVER_CURRENT           BIT(30)
 #define EV_BMS_CHARGE_OVER_CURRENT              BIT(31)
 #define EV_BMS_SHORT_CIRCUIT                    BIT(32)
@@ -133,6 +134,8 @@
 
 #define EVT_IOT_DISCARD                         BIT(0)
 #define EVT_IOT_RESUBSCRIBE                     BIT(1)
+
+#define EVT_REPORTER_YIELD	                  	BIT(0)
 
 #define EVT_COMMAND_ERROR                       BIT(0)
 #define EVT_COMMAND_OK                          BIT(1)
