@@ -61,7 +61,7 @@ void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version) 
 				*hmi_version);
 
 	sprintf(resp->data.message,
-			"%.*s "VCU_VENDOR" © 20%d",
+			"%.*s "VCU_VENDOR" - 20%d",
 			strlen(resp->data.message),
 			resp->data.message,
 			VCU_BUILD_YEAR);

@@ -473,7 +473,7 @@ void StartIotTask(void *argument)
 	for (;;) {
 		VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, (RPT_INTERVAL_NORMAL * 1000))) {
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
 			if (notif & EVT_IOT_RESUBSCRIBE) {
 				MQTT_DoUnsubscribe();
 				MQTT_DoSubscribe();
