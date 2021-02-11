@@ -9,6 +9,7 @@
 #include "Drivers/_rtc.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_simcom.h"
+#include "Libs/_handlebar.h"
 #include "Libs/_reporter.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_eeprom.h"
@@ -46,14 +47,13 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
     report->data.opt.vcu.gps.heading = (uint8_t) (vcu->gps.heading / 2);
     report->data.opt.vcu.gps.sat_in_use = (uint8_t) vcu->gps.sat_in_use;
 
-    report->data.opt.vcu.speed = vcu->speed;
-    report->data.opt.vcu.odometer = vcu->odometer;
-
+    report->data.opt.vcu.odometer = hbar->trip[HBAR_M_TRIP_ODO];
     report->data.opt.vcu.trip.a = hbar->trip[HBAR_M_TRIP_A];
     report->data.opt.vcu.trip.b = hbar->trip[HBAR_M_TRIP_B];
     report->data.opt.vcu.report.range = hbar->report[HBAR_M_REPORT_RANGE];
     report->data.opt.vcu.report.efficiency = hbar->report[HBAR_M_REPORT_AVERAGE];
 
+    report->data.opt.vcu.speed = vcu->speed;
     report->data.opt.vcu.signal = SIM.signal;
     report->data.opt.vcu.bat = vcu->bat / 18;
 

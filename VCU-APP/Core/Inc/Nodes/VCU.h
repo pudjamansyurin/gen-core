@@ -10,8 +10,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_rtc.h"
-#include "Libs/_utils.h"
-#include "Libs/_handlebar.h"
 #include "Libs/_gyro.h"
 #include "Libs/_gps.h"
 
@@ -43,7 +41,6 @@ typedef struct {
   uint16_t interval;
   uint8_t speed;
   uint16_t bat;
-  uint32_t odometer;
   uint64_t events;
   struct {
     uint8_t error;
@@ -66,10 +63,10 @@ typedef struct {
 
 typedef struct {
   struct {
-    uint8_t (*SwitchModeControl)(hbar_t*);
+    uint8_t (*SwitchModeControl)(void);
     uint8_t (*Datetime)(datetime_t);
-    uint8_t (*MixedData)(hbar_data_t*);
-    uint8_t (*SubTripData)(hbar_data_t*);
+    uint8_t (*MixedData)(void);
+    uint8_t (*TripData)(void);
   } t;
 } vcu_can_t;
 
@@ -93,11 +90,11 @@ void VCU_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t VCU_ReadEvent(uint64_t event_id);
 uint16_t VCU_SpeedToVolume(void);
 void VCU_SetDriver(uint8_t driver_id);
-void VCU_SetOdometer(uint8_t increment);
+void VCU_SetOdometer(uint8_t meter);
 
-uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar);
+uint8_t VCU_CAN_TX_SwitchModeControl(void);
 uint8_t VCU_CAN_TX_Datetime(datetime_t dt);
-uint8_t VCU_CAN_TX_MixedData(hbar_data_t *hbar);
-uint8_t VCU_CAN_TX_SubTripData(hbar_data_t *hbar);
+uint8_t VCU_CAN_TX_MixedData(void);
+uint8_t VCU_CAN_TX_TripData(void);
 
 #endif /* INC_NODES_VCU_H_ */

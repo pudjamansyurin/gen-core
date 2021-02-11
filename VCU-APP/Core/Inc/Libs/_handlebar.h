@@ -95,11 +95,10 @@ extern hbar_t HBAR;
 /* Public functions prototype ------------------------------------------------*/
 void HBAR_Init(void);
 void HBAR_ReadStates(void);
-void HBAR_CheckReverse(void);
+uint32_t HBAR_AccumulateTrip(uint8_t meter);
+sein_t HBAR_SeinController(void);
 void HBAR_TimerSelectSet(void);
 void HBAR_RunSelectOrSet(void);
-void HBAR_AccumulateSubTrip(uint8_t increment);
-sein_t HBAR_SeinController(void);
 uint8_t HBAR_ModeController(void);
 
 #endif /* LIBS__HANDLEBAR_H_ */

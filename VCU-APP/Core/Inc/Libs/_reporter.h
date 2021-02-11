@@ -11,6 +11,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 #include "Libs/_gyro.h"
+#include "Libs/_handlebar.h"
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 

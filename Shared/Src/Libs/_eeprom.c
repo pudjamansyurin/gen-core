@@ -13,6 +13,7 @@
 #include "Drivers/_aes.h"
 #include "Libs/_reporter.h"
 #include "Libs/_remote.h"
+#include "Libs/_handlebar.h"
 #include "Nodes/VCU.h"
 #endif
 
@@ -97,7 +98,7 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
 }
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
-	return Command(VADDR_ODOMETER, cmd, &value, &(VCU.d.odometer), sizeof(value));
+	return Command(VADDR_ODOMETER, cmd, &value, &(HBAR.d.trip[HBAR_M_TRIP_ODO]), sizeof(value));
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {

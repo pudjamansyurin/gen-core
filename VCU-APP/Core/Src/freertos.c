@@ -733,7 +733,7 @@ void StartGpsTask(void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
 	uint32_t lastWake;
-	uint8_t movement;
+	uint8_t meter;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
@@ -749,8 +749,8 @@ void StartGpsTask(void *argument)
 
 		VCU.d.speed = GPS_CalculateSpeed(&(VCU.d.gps));
 
-		if ((movement = GPS_CalculateOdometer(&(VCU.d.gps))))
-			VCU.SetOdometer(movement);
+		if ((meter = GPS_CalculateOdometer(&(VCU.d.gps))))
+			VCU.SetOdometer(meter);
 
 		osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
 	}
@@ -1098,19 +1098,19 @@ void StartCanTxTask(void *argument)
 		// (only send for HMI1)
 		if (HMI1.d.started) {
 			// send every 20ms
-			VCU.can.t.SwitchModeControl(&HBAR);
+			VCU.can.t.SwitchModeControl();
 
 			// send every 500ms
 			if (_GetTickMS() - last500ms > 500) {
 				last500ms = _GetTickMS();
-				VCU.can.t.MixedData(&(HBAR.d));
+				VCU.can.t.MixedData();
 			}
 
 			// send every 1000ms
 			if (_GetTickMS() - last1000ms > 1000) {
 				last1000ms = _GetTickMS();
 				VCU.can.t.Datetime(RTC_Read());
-				VCU.can.t.SubTripData(&(HBAR.d));
+				VCU.can.t.TripData();
 			}
 		}
 	}
