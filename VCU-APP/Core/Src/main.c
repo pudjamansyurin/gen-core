@@ -93,7 +93,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  LogInit();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -115,7 +115,6 @@ int main(void)
   MX_RNG_Init();
   MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
-  LogInit();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -198,6 +197,9 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void _Error_Handler(char *file, int line) {
+  printf("Something wrong at: file %s on line %d\r\n", file, line) */
+}
 /* USER CODE END 4 */
 
  /**
@@ -244,13 +246,9 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-	char str[100];
-
 	/* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	sprintf(str, "Wrong parameters value: file %s on line %lu\r\n", file, line) ;
-
-	while(1);
+    printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
