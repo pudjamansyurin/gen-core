@@ -471,7 +471,7 @@ static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT res)
 
 static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *retry) {
 	// Handle locked-loop
-	if (SIM.state < *lastState) {
+	if (SIM.state < *lastState || SIM.state < SIM_STATE_DOWN) {
 		*retry -= 1;
 		if (!(*retry)) {
 			SIM.state = SIM_STATE_DOWN;

@@ -37,6 +37,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Libs/_utils.h"
+#include "Drivers/_errata.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -93,6 +94,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  I2C_ClearBusyFlagErratum1();
   LogInit();
   /* USER CODE END SysInit */
 
@@ -197,9 +199,9 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void _Error_Handler(char *file, int line) {
-  printf("Something wrong at: file %s on line %d\r\n", file, line) */
-}
+//void _Error_Handler(char *file, int line) {
+//  printf("Something wrong at: file %s on line %d\r\n", file, line);
+//}
 /* USER CODE END 4 */
 
  /**
@@ -230,8 +232,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
-	_Error("Error Handler.");
+//	/* User can add his own implementation to report the HAL error return state */
+//	_Error("Error Handler.");
   /* USER CODE END Error_Handler_Debug */
 }
 

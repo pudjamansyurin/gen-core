@@ -42,9 +42,9 @@ typedef enum {
 } HBAR_MODE_DRIVE;
 
 typedef enum {
-  HBAR_M_TRIP_ODO = 0,
-  HBAR_M_TRIP_A,
+  HBAR_M_TRIP_A = 0,
   HBAR_M_TRIP_B,
+  HBAR_M_TRIP_ODO,
   HBAR_M_TRIP_MAX = 3
 } HBAR_MODE_TRIP;
 
@@ -63,18 +63,7 @@ typedef struct {
 } hbar_data_t;
 
 typedef struct {
-  uint8_t listening;
-  uint8_t hazard;
-  uint8_t reverse;
-  struct {
-    HBAR_MODE m;
-    hbar_data_t d;
-  } mode;
-} hbar_runner_t;
-
-typedef struct {
   GPIO_TypeDef *port;
-  char event[20];
   uint16_t pin;
   uint8_t state;
 } hbar_list_t;
@@ -86,9 +75,13 @@ typedef struct {
 } hbar_timer_t;
 
 typedef struct {
+  HBAR_MODE m;
+  hbar_data_t d;
+  uint8_t listening;
+  uint8_t hazard;
+  uint8_t reverse;
   hbar_list_t list[HBAR_K_MAX];
   hbar_timer_t timer[2];
-  hbar_runner_t runner;
 } hbar_t;
 
 typedef struct {
@@ -100,12 +93,13 @@ typedef struct {
 extern hbar_t HBAR;
 
 /* Public functions prototype ------------------------------------------------*/
+void HBAR_Init(void);
 void HBAR_ReadStates(void);
 void HBAR_CheckReverse(void);
 void HBAR_TimerSelectSet(void);
 void HBAR_RunSelectOrSet(void);
 void HBAR_AccumulateSubTrip(uint8_t increment);
-sein_t HBAR_SeinController(hbar_t *hbar);
-uint8_t HBAR_ModeController(hbar_runner_t *runner);
+sein_t HBAR_SeinController(void);
+uint8_t HBAR_ModeController(void);
 
 #endif /* LIBS__HANDLEBAR_H_ */

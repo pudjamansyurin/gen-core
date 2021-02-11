@@ -19,7 +19,11 @@ void EEPROM24XX_SetDevice(I2C_HandleTypeDef *hi2c, uint16_t device) {
 }
 
 uint8_t EEPROM24XX_IsConnected(uint32_t timeout) {
-  return (HAL_I2C_IsDeviceReady(i2c, DevAddress, 1, timeout) == HAL_OK);
+	HAL_StatusTypeDef res;
+
+  res = HAL_I2C_IsDeviceReady(i2c, DevAddress, 1, timeout);
+
+  return (res == HAL_OK);
 }
 
 uint8_t EEPROM24XX_Save(uint16_t address, void *data, size_t size) {

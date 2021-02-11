@@ -100,7 +100,6 @@ void VCU_SetOdometer(uint8_t increment) {
 
 /* ====================================== CAN TX =================================== */
 uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar) {
-  sein_t sein = HBAR_SeinController(hbar);
   CAN_DATA TxData;
 
   // set message
@@ -114,16 +113,17 @@ uint8_t VCU_CAN_TX_SwitchModeControl(hbar_t *hbar) {
   TxData.u8[0] |= HMI1.d.state.daylight << 7;
 
   // sein value
+  sein_t sein = HBAR_SeinController();
   TxData.u8[1] = sein.left;
   TxData.u8[1] |= sein.right << 1;
-  TxData.u8[1] |= hbar->runner.reverse << 2;
+  TxData.u8[1] |= hbar->reverse << 2;
 
   // mode
-  TxData.u8[2] = hbar->runner.mode.d.val[HBAR_M_DRIVE];
-  TxData.u8[2] |= hbar->runner.mode.d.val[HBAR_M_TRIP] << 2;
-  TxData.u8[2] |= hbar->runner.mode.d.val[HBAR_M_REPORT] << 4;
-  TxData.u8[2] |= hbar->runner.mode.m << 5;
-  TxData.u8[2] |= HBAR_ModeController(&(hbar->runner)) << 7;
+  TxData.u8[2] = hbar->d.val[HBAR_M_DRIVE];
+  TxData.u8[2] |= hbar->d.val[HBAR_M_TRIP] << 2;
+  TxData.u8[2] |= hbar->d.val[HBAR_M_REPORT] << 4;
+  TxData.u8[2] |= hbar->m << 5;
+  TxData.u8[2] |= HBAR_ModeController() << 7;
 
   // others
   TxData.u8[3] = VCU.d.speed;
@@ -150,26 +150,30 @@ uint8_t VCU_CAN_TX_Datetime(datetime_t dt) {
   return CANBUS_Write(CAND_VCU_DATETIME, &TxData, 8);
 }
 
-uint8_t VCU_CAN_TX_MixedData(hbar_runner_t *runner) {
+uint8_t VCU_CAN_TX_MixedData(hbar_data_t *hbar) {
   CAN_DATA TxData;
 
   // set message
   TxData.u8[0] = SIM.signal;
   TxData.u8[1] = BMS.d.soc;
-  TxData.u8[2] = runner->mode.d.report[HBAR_M_REPORT_RANGE];
-  TxData.u8[3] = runner->mode.d.report[HBAR_M_REPORT_AVERAGE];
+  TxData.u8[2] = hbar->report[HBAR_M_REPORT_RANGE];
+  TxData.u8[3] = hbar->report[HBAR_M_REPORT_AVERAGE];
   TxData.u32[1] = VCU.d.odometer;
 
   // send message
   return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 8);
 }
 
-uint8_t VCU_CAN_TX_SubTripData(uint32_t *trip) {
+uint8_t VCU_CAN_TX_SubTripData(hbar_data_t *hbar) {
   CAN_DATA TxData;
 
   // set message
-  TxData.u32[0] = trip[HBAR_M_TRIP_A] / 1000;
-  TxData.u32[1] = trip[HBAR_M_TRIP_B] / 1000;
+  TxData.u32[0] = hbar->trip[HBAR_M_TRIP_A] / 1000;
+  TxData.u32[1] = hbar->trip[HBAR_M_TRIP_B] / 1000;
+//  TxData.u16[0] = hbar->trip[HBAR_M_TRIP_A] / 1000;
+//  TxData.u16[1] = hbar->trip[HBAR_M_TRIP_B] / 1000;
+//  TxData.u32[1] = hbar->trip[HBAR_M_TRIP_ODO] / 1000;
+//  TxData.u32[1] = VCU.d.odometer;
 
   // send message
   return CANBUS_Write(CAND_VCU_TRIP_MODE, &TxData, 8);

@@ -33,6 +33,7 @@
 #include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_simcom.h"
+#include "Drivers/_errata.h"
 #include "Libs/_utils.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_fota.h"
@@ -89,6 +90,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  I2C_ClearBusyFlagErratum1();
   LogInit();
   /* USER CODE END SysInit */
 
