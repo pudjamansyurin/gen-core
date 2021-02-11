@@ -132,7 +132,7 @@
 // Events (for Individual Thread)
 #define EVT_MASK                     (uint32_t) 0x7FFFFFFF
 
-#define EVT_IOT_DISCARD                         BIT(0)
+#define EVT_IOT_REPORT_DISCARD                  BIT(0)
 #define EVT_IOT_RESUBSCRIBE                     BIT(1)
 
 #define EVT_REPORTER_YIELD	                  	BIT(0)

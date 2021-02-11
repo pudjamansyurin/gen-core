@@ -155,7 +155,7 @@ uint8_t VCU_CAN_TX_MixedData(void) {
   TxData.u8[3] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
   // send message
-  return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 8);
+  return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 4);
 }
 
 uint8_t VCU_CAN_TX_TripData(void) {

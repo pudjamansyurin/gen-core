@@ -479,7 +479,7 @@ void StartIotTask(void *argument)
 				MQTT_DoSubscribe();
 			}
 
-			if (notif & EVT_IOT_DISCARD)
+			if (notif & EVT_IOT_REPORT_DISCARD)
 				pRep.pending = 0;
 		}
 
@@ -534,7 +534,7 @@ void StartReporterTask(void *argument)
 			status = osMessageQueuePut(ReportQueueHandle, &report, 0U, 0U);
 			// already full, remove oldest
 			if (status == osErrorResource)
-				osThreadFlagsSet(IotTaskHandle, EVT_IOT_DISCARD);
+				osThreadFlagsSet(IotTaskHandle, EVT_IOT_REPORT_DISCARD);
 		} while (status != osOK);
 
 		// reset some events group
@@ -783,6 +783,10 @@ void StartGyroTask(void *argument)
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
+      memset(&(VCU.d.motion), 0x00, sizeof(VCU.d.motion));
+      VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
+      VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+
 			GYRO_DeInit();
 			_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
 			GYRO_Init(&hi2c3);
@@ -834,6 +838,7 @@ void StartRemoteTask(void *argument)
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
 			if (notif & EVT_REMOTE_TASK_STOP) {
+        VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
 				RMT_DeInit();
 				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
 				RMT_Init(&(VCU.d.unit_id), &hspi1, RemoteTaskHandle);
@@ -849,8 +854,10 @@ void StartRemoteTask(void *argument)
 
 			// handle incoming payload
 			if (notif & EVT_REMOTE_RX_IT) {
-				if (RMT_GotPairedResponse())
+				if (RMT_GotPairedResponse()) {
+				  RMT_Paired();
 					osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+				}
 
 				// process command
 				if (RMT_ValidateCommand(&command)) {
@@ -878,8 +885,7 @@ void StartFingerTask(void *argument)
   /* USER CODE BEGIN StartFingerTask */
 	uint32_t notif;
 	finger_db_t finger;
-	uint8_t  id, valid, driver, res = 0;
-
+	uint8_t  id, driver, ok = 0;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
@@ -894,6 +900,8 @@ void StartFingerTask(void *argument)
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
 			if (notif & EVT_FINGER_TASK_STOP) {
+        VCU.SetDriver(DRIVER_ID_NONE);
+
 				FINGER_DeInit();
 				_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
 				FINGER_Init(&huart4, &hdma_uart4_rx);
@@ -909,33 +917,28 @@ void StartFingerTask(void *argument)
 					GATE_LedBlink(1000);
 			}
 
-			else if (notif & EVT_FINGER_FETCH) {
-				if ((res = FINGER_Fetch(finger.db)))
-					osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
-				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
-			}
+			else {
+        if (notif & EVT_FINGER_FETCH) {
+          if ((ok = FINGER_Fetch(finger.db)))
+            osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
+        }
+        else if (notif & EVT_FINGER_ADD) {
+          if (FINGER_Enroll(&id, &ok))
+            osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
+        }
+        else if (notif & EVT_FINGER_DEL) {
+          if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK)
+            ok = FINGER_DeleteID(driver);
+        }
+        else if (notif & EVT_FINGER_RST)
+          ok = FINGER_Flush();
 
-			else if (notif & EVT_FINGER_ADD) {
-				if ((res = FINGER_Enroll(&id, &valid)))
-					osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
-				osThreadFlagsSet(CommandTaskHandle, valid ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
-			}
-
-			else if (notif & EVT_FINGER_DEL) {
-				if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK) {
-					res = FINGER_DeleteID(driver);
-					osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
-				}
-			}
-
-			else if (notif & EVT_FINGER_RST) {
-				res = FINGER_Flush();
-				osThreadFlagsSet(CommandTaskHandle, res ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+        osThreadFlagsSet(CommandTaskHandle, ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
 			// Handle bounce effect
 			// _DelayMS(1000);
-			osThreadFlagsClear(EVT_MASK);
+			// osThreadFlagsClear(EVT_MASK);
 		}
 	}
   /* USER CODE END StartFingerTask */
@@ -952,7 +955,6 @@ void StartAudioTask(void *argument)
 {
   /* USER CODE BEGIN StartAudioTask */
 	uint32_t notif;
-
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
@@ -1010,7 +1012,6 @@ void StartCanRxTask(void *argument)
 	uint32_t notif;
 	can_rx_t Rx;
 
-	// wait until needed
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
@@ -1024,8 +1025,13 @@ void StartCanRxTask(void *argument)
 		BMS.RefreshIndex();
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0))
+		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) {
+      HMI1.Init();
+      HMI2.Init();
+      BMS.Init();
+
 			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+		}
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
 			switch (CANBUS_ReadID(&(Rx.header))) {
@@ -1067,7 +1073,6 @@ void StartCanTxTask(void *argument)
 	uint32_t notif;
 	TickType_t last500ms, last1000ms;
 
-	// wait until needed
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
@@ -1246,7 +1251,7 @@ static void CheckVehicleState(void) {
 		starter = 0;
 
 		if (VCU.d.gpio.starter.tick > 0) {
-			if (VCU.d.gpio.starter.tick > 3000) {
+			if (VCU.d.gpio.starter.tick > 2000) {
 				if (lastState > VEHICLE_NORMAL)
 					normalize = 1;
 			} else
@@ -1258,7 +1263,6 @@ static void CheckVehicleState(void) {
 			case VEHICLE_LOST:
 				if (lastState != VEHICLE_LOST) {
 					lastState = VEHICLE_LOST;
-
 					VCU.d.interval = RPT_INTERVAL_LOST;
 					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 				}
@@ -1270,26 +1274,15 @@ static void CheckVehicleState(void) {
 			case VEHICLE_BACKUP:
 				if (lastState != VEHICLE_BACKUP) {
 					lastState = VEHICLE_BACKUP;
-
-					VCU.d.tick.independent = _GetTickMS();
-					VCU.d.interval = RPT_INTERVAL_BACKUP;
-					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
+          VCU.d.interval = RPT_INTERVAL_BACKUP;
+          osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
-					VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
-
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
-
 					osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
-					memset(&(VCU.d.motion), 0x00, sizeof(VCU.d.motion));
-					VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
-					VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
-
 					osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_STOP);
 					osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
-					HMI1.Init();
-					HMI2.Init();
-					BMS.Init();
+
 				}
 
 				if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
@@ -1301,14 +1294,8 @@ static void CheckVehicleState(void) {
 			case VEHICLE_NORMAL:
 				if (lastState != VEHICLE_NORMAL) {
 					lastState = VEHICLE_NORMAL;
-					normalize = 0;
-
-					VCU.d.state.override = VEHICLE_NORMAL;
-					BAT_ReInit();
-					HBAR_Init();
-
-					VCU.d.interval = RPT_INTERVAL_NORMAL;
-					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
+          VCU.d.interval = RPT_INTERVAL_NORMAL;
+          osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
@@ -1316,7 +1303,11 @@ static void CheckVehicleState(void) {
 					osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_START);
 					osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_START);
 					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
-					VCU.SetDriver(DRIVER_ID_NONE);
+
+          normalize = 0;
+          VCU.d.state.override = VEHICLE_NORMAL;
+          BAT_ReInit();
+          HBAR_Init();
 				}
 
 				if (!VCU.d.gpio.power5v)

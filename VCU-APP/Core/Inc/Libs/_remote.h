@@ -41,6 +41,7 @@ typedef struct {
     uint32_t heartbeat;
     uint32_t pairing;
   } tick;
+  uint32_t pairingAes[4];
   struct {
     SPI_HandleTypeDef *spi;
     osThreadId_t threadId;
@@ -54,6 +55,7 @@ void RMT_ReInit(uint32_t *unit_id);
 uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote);
 uint8_t RMT_Ping(void);
 void RMT_Pairing(uint32_t *unit_id);
+void RMT_Paired(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
 uint8_t RMT_GotPairedResponse(void);
 void RMT_IrqHandler(void);
