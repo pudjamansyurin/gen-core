@@ -248,6 +248,11 @@ SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate) {
   return SingleInteger("IPR", mode, (int32_t*) rate, 0);
 }
 
+SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
+  return SingleInteger("CGATT", mode, (int32_t*) state, 0);
+}
+
+
 #if (!BOOTLOADER)
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
   SIMCOM_RESULT res = SIM_RESULT_ERROR;
@@ -367,10 +372,6 @@ SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
   return res;
 }
 
-SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
-  return SingleInteger("CGATT", mode, (int32_t*) state, 0);
-}
-
 SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state) {
   return SingleInteger("CIPRXGET", mode, (int32_t*) state, 0);
 }
@@ -422,33 +423,28 @@ SIMCOM_RESULT AT_BearerInitialize(void) {
 
 SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param) {
   SIMCOM_RESULT res;
+  int32_t cid = 1;
 
   Simcom_Lock();
-  res = SingleInteger("FTPCID", ATW, &param->id, 0);
-
-  // set server & credential
-  if (res > 0)
-    res = SingleString("FTPSERV", ATW, param->server, sizeof(param->server), 0);
+  res = SingleInteger("FTPCID", ATW, &cid, 0);
 
   if (res > 0)
-    res = SingleString("FTPUN", ATW, param->username, sizeof(param->username), 0);
+    res = SingleString("FTPSERV", ATW, NET_FTP_SERVER, sizeof(NET_FTP_SERVER), 0);
 
   if (res > 0)
-    res = SingleString("FTPPW", ATW, param->password, sizeof(param->password), 0);
+    res = SingleString("FTPUN", ATW, NET_FTP_USERNAME, sizeof(NET_FTP_USERNAME), 0);
 
-  // set path & file
+  if (res > 0)
+    res = SingleString("FTPPW", ATW, NET_FTP_PASSWORD, sizeof(NET_FTP_PASSWORD), 0);
+
   if (res > 0)
     res = SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);
 
   if (res > 0)
-    res = AT_FtpSetFile(param->file);
+  	res = SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file), 0);
 
   Simcom_Unlock();
   return res;
-}
-
-SIMCOM_RESULT AT_FtpSetFile(char *file) {
-  return SingleString("FTPGETNAME", ATW, file, sizeof(file), 0);
 }
 
 SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
@@ -521,6 +517,10 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 
 SIMCOM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state) {
   return SingleInteger("FTPSTATE", ATR, (int32_t*) state, 1);
+}
+
+SIMCOM_RESULT AT_FtpResume(uint32_t start) {
+  return SingleInteger("FTPREST", ATW, (int32_t*) &start, 0);
 }
 
 SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {

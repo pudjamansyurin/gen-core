@@ -51,12 +51,12 @@
 #define NET_BOOT_TIMEOUT             (uint32_t) 8000                // in ms
 #define NET_EXTRA_TIME               (uint32_t) 1000                // in ms
 
-//#define NET_CON_APN                             "3gprs"
-//#define NET_CON_USERNAME                        "3gprs"
-//#define NET_CON_PASSWORD                        "3gprs"
-#define NET_CON_APN                             "telkomsel"
-#define NET_CON_USERNAME                        "wap"
-#define NET_CON_PASSWORD                        "wap123"
+#define NET_CON_APN                             "3gprs"
+#define NET_CON_USERNAME                        "3gprs"
+#define NET_CON_PASSWORD                        "3gprs"
+//#define NET_CON_APN                             "telkomsel"
+//#define NET_CON_USERNAME                        "wap"
+//#define NET_CON_PASSWORD                        "wap123"
 //#define NET_CON_APN                             "indosatgprs"
 //#define NET_CON_USERNAME                        "indosat"
 //#define NET_CON_PASSWORD                        "indosat"
@@ -77,7 +77,6 @@
 #define NET_TCP_SERVER                          "mqtt.eclipseprojects.io"
 #define NET_TCP_PORT                 (uint16_t) 1883
 
-#define COMMAND_TIMEOUT              (uint32_t) 10000               // in ms
 #define COMMAND_HMI_FOTA_TIMEOUT     (uint32_t) 20000               // in ms
 
 #define REMOTE_TIMEOUT               (uint32_t) 7000                // in ms
@@ -220,6 +219,7 @@
 #define MCU_RPM_MAX                  (uint32_t) 99999
 #define VCU_ODOMETER_KM_MAX          (uint32_t) 99999
 #define MCU_SPEED_KPH_MAX             (uint8_t) 150
+#endif
 
 // CAN Message Address
 #define CAND_VCU_SWITCH              (uint32_t) 0x000
@@ -228,20 +228,15 @@
 #define CAND_VCU_TRIP_MODE           (uint32_t) 0x003
 #define CAND_BMS_PARAM_1             (uint32_t) 0x0B0
 #define CAND_BMS_PARAM_2             (uint32_t) 0x0B1
-#endif
 #define CAND_BMS_SETTING             (uint32_t) 0x1B2
 #define CAND_HMI1                    (uint32_t) 0x7C0
 #define CAND_HMI2                    (uint32_t) 0x7D0
-
-#if (BOOTLOADER)
-// FOCAN Message Address
 #define CAND_SET_PROGRESS            (uint32_t) 0x101
 #define CAND_GET_CHECKSUM            (uint32_t) 0x102
 #define CAND_PRA_DOWNLOAD            (uint32_t) 0x103
 #define CAND_INIT_DOWNLOAD           (uint32_t) 0x104
 #define CAND_DOWNLOADING             (uint32_t) 0x105
 #define CAND_PASCA_DOWNLOAD          (uint32_t) 0x106
-#endif
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {

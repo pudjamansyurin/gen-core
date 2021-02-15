@@ -20,24 +20,32 @@ static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t AES_Init(CRYP_HandleTypeDef *hcryp, osMutexId_t mutex) {
-  HAL_StatusTypeDef ret;
-  CRYP_ConfigTypeDef config;
+	uint8_t ok = 0;
 
   aes.h.cryp = hcryp;
   aes.h.mutex = mutex;
 
   do {
-    lock();
-    ret = HAL_CRYP_GetConfig(hcryp, &config);
-    if (ret == HAL_OK) {
-      config.pKey = AesKey;
-      HAL_CRYP_SetConfig(hcryp, &config);
-    }
-    unlock();
+  	ok = AES_ChangeKey(NULL);
     _DelayMS(100);
-  } while (ret != HAL_OK);
+  } while (!ok);
 
-  return ret;
+  return ok;
+}
+
+uint8_t AES_ChangeKey(uint32_t *key) {
+  CRYP_ConfigTypeDef config;
+  HAL_StatusTypeDef ret;
+
+  lock();
+  ret = HAL_CRYP_GetConfig(aes.h.cryp, &config);
+  if (ret == HAL_OK) {
+    config.pKey = (key == NULL) ? AesKey : key;
+    HAL_CRYP_SetConfig(aes.h.cryp, &config);
+  }
+  unlock();
+
+  return (ret == HAL_OK);
 }
 
 uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {

@@ -88,154 +88,154 @@ extern DMA_HandleTypeDef hdma_uart4_rx;
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
 const osThreadAttr_t ManagerTask_attributes = {
-  .name = "ManagerTask",
-  .priority = (osPriority_t) osPriorityRealtime,
-  .stack_size = 256 * 4
+		.name = "ManagerTask",
+		.priority = (osPriority_t) osPriorityRealtime,
+		.stack_size = 256 * 4
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
 const osThreadAttr_t IotTask_attributes = {
-  .name = "IotTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 496 * 4
+		.name = "IotTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 496 * 4
 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
 const osThreadAttr_t ReporterTask_attributes = {
-  .name = "ReporterTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 304 * 4
+		.name = "ReporterTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 304 * 4
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
 const osThreadAttr_t CommandTask_attributes = {
-  .name = "CommandTask",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 256 * 4
+		.name = "CommandTask",
+		.priority = (osPriority_t) osPriorityAboveNormal,
+		.stack_size = 256 * 4
 };
 /* Definitions for GpsTask */
 osThreadId_t GpsTaskHandle;
 const osThreadAttr_t GpsTask_attributes = {
-  .name = "GpsTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 256 * 4
+		.name = "GpsTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 256 * 4
 };
 /* Definitions for GyroTask */
 osThreadId_t GyroTaskHandle;
 const osThreadAttr_t GyroTask_attributes = {
-  .name = "GyroTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 304 * 4
+		.name = "GyroTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 304 * 4
 };
 /* Definitions for RemoteTask */
 osThreadId_t RemoteTaskHandle;
 const osThreadAttr_t RemoteTask_attributes = {
-  .name = "RemoteTask",
-  .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 256 * 4
+		.name = "RemoteTask",
+		.priority = (osPriority_t) osPriorityAboveNormal,
+		.stack_size = 256 * 4
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
 const osThreadAttr_t FingerTask_attributes = {
-  .name = "FingerTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+		.name = "FingerTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 224 * 4
 };
 /* Definitions for AudioTask */
 osThreadId_t AudioTaskHandle;
 const osThreadAttr_t AudioTask_attributes = {
-  .name = "AudioTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 240 * 4
+		.name = "AudioTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 240 * 4
 };
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
 const osThreadAttr_t CanRxTask_attributes = {
-  .name = "CanRxTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 229 * 4
+		.name = "CanRxTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 229 * 4
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
 const osThreadAttr_t CanTxTask_attributes = {
-  .name = "CanTxTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 230 * 4
+		.name = "CanTxTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 230 * 4
 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
 const osThreadAttr_t Hmi2PowerTask_attributes = {
-  .name = "Hmi2PowerTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 176 * 4
+		.name = "Hmi2PowerTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 176 * 4
 };
 /* Definitions for GateTask */
 osThreadId_t GateTaskHandle;
 const osThreadAttr_t GateTask_attributes = {
-  .name = "GateTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 224 * 4
+		.name = "GateTask",
+		.priority = (osPriority_t) osPriorityNormal,
+		.stack_size = 224 * 4
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
 const osMessageQueueAttr_t CommandQueue_attributes = {
-  .name = "CommandQueue"
+		.name = "CommandQueue"
 };
 /* Definitions for ResponseQueue */
 osMessageQueueId_t ResponseQueueHandle;
 const osMessageQueueAttr_t ResponseQueue_attributes = {
-  .name = "ResponseQueue"
+		.name = "ResponseQueue"
 };
 /* Definitions for ReportQueue */
 osMessageQueueId_t ReportQueueHandle;
 const osMessageQueueAttr_t ReportQueue_attributes = {
-  .name = "ReportQueue"
+		.name = "ReportQueue"
 };
 /* Definitions for DriverQueue */
 osMessageQueueId_t DriverQueueHandle;
 const osMessageQueueAttr_t DriverQueue_attributes = {
-  .name = "DriverQueue"
+		.name = "DriverQueue"
 };
 /* Definitions for CanRxQueue */
 osMessageQueueId_t CanRxQueueHandle;
 const osMessageQueueAttr_t CanRxQueue_attributes = {
-  .name = "CanRxQueue"
+		.name = "CanRxQueue"
 };
 /* Definitions for FingerDbQueue */
 osMessageQueueId_t FingerDbQueueHandle;
 const osMessageQueueAttr_t FingerDbQueue_attributes = {
-  .name = "FingerDbQueue"
+		.name = "FingerDbQueue"
 };
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
 const osMutexAttr_t EepromMutex_attributes = {
-  .name = "EepromMutex"
+		.name = "EepromMutex"
 };
 /* Definitions for RtcMutex */
 osMutexId_t RtcMutexHandle;
 const osMutexAttr_t RtcMutex_attributes = {
-  .name = "RtcMutex"
+		.name = "RtcMutex"
 };
 /* Definitions for CrcMutex */
 osMutexId_t CrcMutexHandle;
 const osMutexAttr_t CrcMutex_attributes = {
-  .name = "CrcMutex"
+		.name = "CrcMutex"
 };
 /* Definitions for AesMutex */
 osMutexId_t AesMutexHandle;
 const osMutexAttr_t AesMutex_attributes = {
-  .name = "AesMutex"
+		.name = "AesMutex"
 };
 /* Definitions for LogRecMutex */
 osMutexId_t LogRecMutexHandle;
 const osMutexAttr_t LogRecMutex_attributes = {
-  .name = "LogRecMutex",
-  .attr_bits = osMutexRecursive,
+		.name = "LogRecMutex",
+		.attr_bits = osMutexRecursive,
 };
 /* Definitions for GlobalEvent */
 osEventFlagsId_t GlobalEventHandle;
 const osEventFlagsAttr_t GlobalEvent_attributes = {
-  .name = "GlobalEvent"
+		.name = "GlobalEvent"
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -261,117 +261,117 @@ void StartGateTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 void MX_FREERTOS_Init(void) {
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
-  /* Create the mutex(es) */
-  /* creation of EepromMutex */
-  EepromMutexHandle = osMutexNew(&EepromMutex_attributes);
+	/* USER CODE END Init */
+	/* Create the mutex(es) */
+	/* creation of EepromMutex */
+	EepromMutexHandle = osMutexNew(&EepromMutex_attributes);
 
-  /* creation of RtcMutex */
-  RtcMutexHandle = osMutexNew(&RtcMutex_attributes);
+	/* creation of RtcMutex */
+	RtcMutexHandle = osMutexNew(&RtcMutex_attributes);
 
-  /* creation of CrcMutex */
-  CrcMutexHandle = osMutexNew(&CrcMutex_attributes);
+	/* creation of CrcMutex */
+	CrcMutexHandle = osMutexNew(&CrcMutex_attributes);
 
-  /* creation of AesMutex */
-  AesMutexHandle = osMutexNew(&AesMutex_attributes);
+	/* creation of AesMutex */
+	AesMutexHandle = osMutexNew(&AesMutex_attributes);
 
-  /* Create the recursive mutex(es) */
-  /* creation of LogRecMutex */
-  LogRecMutexHandle = osMutexNew(&LogRecMutex_attributes);
+	/* Create the recursive mutex(es) */
+	/* creation of LogRecMutex */
+	LogRecMutexHandle = osMutexNew(&LogRecMutex_attributes);
 
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
+	/* USER CODE END RTOS_TIMERS */
 
-  /* Create the queue(s) */
-  /* creation of CommandQueue */
-  CommandQueueHandle = osMessageQueueNew (1, sizeof(command_t), &CommandQueue_attributes);
+	/* Create the queue(s) */
+	/* creation of CommandQueue */
+	CommandQueueHandle = osMessageQueueNew (1, sizeof(command_t), &CommandQueue_attributes);
 
-  /* creation of ResponseQueue */
-  ResponseQueueHandle = osMessageQueueNew (1, sizeof(response_t), &ResponseQueue_attributes);
+	/* creation of ResponseQueue */
+	ResponseQueueHandle = osMessageQueueNew (1, sizeof(response_t), &ResponseQueue_attributes);
 
-  /* creation of ReportQueue */
-  ReportQueueHandle = osMessageQueueNew (60, sizeof(report_t), &ReportQueue_attributes);
+	/* creation of ReportQueue */
+	ReportQueueHandle = osMessageQueueNew (60, sizeof(report_t), &ReportQueue_attributes);
 
-  /* creation of DriverQueue */
-  DriverQueueHandle = osMessageQueueNew (1, sizeof(uint8_t), &DriverQueue_attributes);
+	/* creation of DriverQueue */
+	DriverQueueHandle = osMessageQueueNew (1, sizeof(uint8_t), &DriverQueue_attributes);
 
-  /* creation of CanRxQueue */
-  CanRxQueueHandle = osMessageQueueNew (10, sizeof(can_rx_t), &CanRxQueue_attributes);
+	/* creation of CanRxQueue */
+	CanRxQueueHandle = osMessageQueueNew (10, sizeof(can_rx_t), &CanRxQueue_attributes);
 
-  /* creation of FingerDbQueue */
-  FingerDbQueueHandle = osMessageQueueNew (1, sizeof(finger_db_t), &FingerDbQueue_attributes);
+	/* creation of FingerDbQueue */
+	FingerDbQueueHandle = osMessageQueueNew (1, sizeof(finger_db_t), &FingerDbQueue_attributes);
 
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* creation of ManagerTask */
-  ManagerTaskHandle = osThreadNew(StartManagerTask, NULL, &ManagerTask_attributes);
+	/* Create the thread(s) */
+	/* creation of ManagerTask */
+	ManagerTaskHandle = osThreadNew(StartManagerTask, NULL, &ManagerTask_attributes);
 
-  /* creation of IotTask */
-  IotTaskHandle = osThreadNew(StartIotTask, NULL, &IotTask_attributes);
+	/* creation of IotTask */
+	IotTaskHandle = osThreadNew(StartIotTask, NULL, &IotTask_attributes);
 
-  /* creation of ReporterTask */
-  ReporterTaskHandle = osThreadNew(StartReporterTask, NULL, &ReporterTask_attributes);
+	/* creation of ReporterTask */
+	ReporterTaskHandle = osThreadNew(StartReporterTask, NULL, &ReporterTask_attributes);
 
-  /* creation of CommandTask */
-  CommandTaskHandle = osThreadNew(StartCommandTask, NULL, &CommandTask_attributes);
+	/* creation of CommandTask */
+	CommandTaskHandle = osThreadNew(StartCommandTask, NULL, &CommandTask_attributes);
 
-  /* creation of GpsTask */
-  GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
+	/* creation of GpsTask */
+	GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
 
-  /* creation of GyroTask */
-  GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
+	/* creation of GyroTask */
+	GyroTaskHandle = osThreadNew(StartGyroTask, NULL, &GyroTask_attributes);
 
-  /* creation of RemoteTask */
-  RemoteTaskHandle = osThreadNew(StartRemoteTask, NULL, &RemoteTask_attributes);
+	/* creation of RemoteTask */
+	RemoteTaskHandle = osThreadNew(StartRemoteTask, NULL, &RemoteTask_attributes);
 
-  /* creation of FingerTask */
-  FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
+	/* creation of FingerTask */
+	FingerTaskHandle = osThreadNew(StartFingerTask, NULL, &FingerTask_attributes);
 
-  /* creation of AudioTask */
-  AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
+	/* creation of AudioTask */
+	AudioTaskHandle = osThreadNew(StartAudioTask, NULL, &AudioTask_attributes);
 
-  /* creation of CanRxTask */
-  CanRxTaskHandle = osThreadNew(StartCanRxTask, NULL, &CanRxTask_attributes);
+	/* creation of CanRxTask */
+	CanRxTaskHandle = osThreadNew(StartCanRxTask, NULL, &CanRxTask_attributes);
 
-  /* creation of CanTxTask */
-  CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
+	/* creation of CanTxTask */
+	CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
 
-  /* creation of Hmi2PowerTask */
-  Hmi2PowerTaskHandle = osThreadNew(StartHmi2PowerTask, NULL, &Hmi2PowerTask_attributes);
+	/* creation of Hmi2PowerTask */
+	Hmi2PowerTaskHandle = osThreadNew(StartHmi2PowerTask, NULL, &Hmi2PowerTask_attributes);
 
-  /* creation of GateTask */
-  GateTaskHandle = osThreadNew(StartGateTask, NULL, &GateTask_attributes);
+	/* creation of GateTask */
+	GateTaskHandle = osThreadNew(StartGateTask, NULL, &GateTask_attributes);
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
 	HAL_Delay(1000);
-  /* USER CODE END RTOS_THREADS */
+	/* USER CODE END RTOS_THREADS */
 
-  /* creation of GlobalEvent */
-  GlobalEventHandle = osEventFlagsNew(&GlobalEvent_attributes);
+	/* creation of GlobalEvent */
+	GlobalEventHandle = osEventFlagsNew(&GlobalEvent_attributes);
 
-  /* USER CODE BEGIN RTOS_EVENTS */
+	/* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
+	/* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -384,7 +384,7 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartManagerTask */
 void StartManagerTask(void *argument)
 {
-  /* USER CODE BEGIN StartManagerTask */
+	/* USER CODE BEGIN StartManagerTask */
 	TickType_t lastWake;
 
 	// Initiate, this task get executed first!
@@ -433,7 +433,7 @@ void StartManagerTask(void *argument)
 
 		osDelayUntil(lastWake + 555);
 	}
-  /* USER CODE END StartManagerTask */
+	/* USER CODE END StartManagerTask */
 }
 
 /* USER CODE BEGIN Header_StartIotTask */
@@ -445,7 +445,7 @@ void StartManagerTask(void *argument)
 /* USER CODE END Header_StartIotTask */
 void StartIotTask(void *argument)
 {
-  /* USER CODE BEGIN StartIotTask */
+	/* USER CODE BEGIN StartIotTask */
 	uint32_t notif;
 	response_t response;
 	payload_t pRes = {
@@ -502,7 +502,7 @@ void StartIotTask(void *argument)
 			if (RTC_NeedCalibration())
 				Simcom_CalibrateTime();
 	}
-  /* USER CODE END StartIotTask */
+	/* USER CODE END StartIotTask */
 }
 
 /* USER CODE BEGIN Header_StartReporterTask */
@@ -514,7 +514,7 @@ void StartIotTask(void *argument)
 /* USER CODE END Header_StartReporterTask */
 void StartReporterTask(void *argument)
 {
-  /* USER CODE BEGIN StartReporterTask */
+	/* USER CODE BEGIN StartReporterTask */
 	uint32_t notif;
 	report_t report;
 	FRAME_TYPE frame;
@@ -543,7 +543,7 @@ void StartReporterTask(void *argument)
 
 		_osThreadFlagsWait(&notif, EVT_REPORTER_YIELD, osFlagsWaitAll, VCU.d.interval * 1000);
 	}
-  /* USER CODE END StartReporterTask */
+	/* USER CODE END StartReporterTask */
 }
 
 /* USER CODE BEGIN Header_StartCommandTask */
@@ -555,7 +555,7 @@ void StartReporterTask(void *argument)
 /* USER CODE END Header_StartCommandTask */
 void StartCommandTask(void *argument)
 {
-  /* USER CODE BEGIN StartCommandTask */
+	/* USER CODE BEGIN StartCommandTask */
 	command_t command;
 	response_t response;
 
@@ -719,7 +719,7 @@ void StartCommandTask(void *argument)
 			osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
 		}
 	}
-  /* USER CODE END StartCommandTask */
+	/* USER CODE END StartCommandTask */
 }
 
 /* USER CODE BEGIN Header_StartGpsTask */
@@ -731,7 +731,7 @@ void StartCommandTask(void *argument)
 /* USER CODE END Header_StartGpsTask */
 void StartGpsTask(void *argument)
 {
-  /* USER CODE BEGIN StartGpsTask */
+	/* USER CODE BEGIN StartGpsTask */
 	uint32_t lastWake;
 	uint8_t meter;
 
@@ -754,7 +754,7 @@ void StartGpsTask(void *argument)
 
 		osDelayUntil(lastWake + (GPS_INTERVAL * 1000));
 	}
-  /* USER CODE END StartGpsTask */
+	/* USER CODE END StartGpsTask */
 }
 
 /* USER CODE BEGIN Header_StartGyroTask */
@@ -766,7 +766,7 @@ void StartGpsTask(void *argument)
 /* USER CODE END Header_StartGyroTask */
 void StartGyroTask(void *argument)
 {
-  /* USER CODE BEGIN StartGyroTask */
+	/* USER CODE BEGIN StartGyroTask */
 	uint32_t flag, notif;
 	movement_t movement;
 
@@ -783,9 +783,9 @@ void StartGyroTask(void *argument)
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
-      memset(&(VCU.d.motion), 0x00, sizeof(VCU.d.motion));
-      VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
-      VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+			memset(&(VCU.d.motion), 0x00, sizeof(VCU.d.motion));
+			VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
+			VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 
 			GYRO_DeInit();
 			_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
@@ -802,7 +802,7 @@ void StartGyroTask(void *argument)
 		flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
 		osThreadFlagsSet(AudioTaskHandle, flag);
 	}
-  /* USER CODE END StartGyroTask */
+	/* USER CODE END StartGyroTask */
 }
 
 /* USER CODE BEGIN Header_StartRemoteTask */
@@ -814,7 +814,7 @@ void StartGyroTask(void *argument)
 /* USER CODE END Header_StartRemoteTask */
 void StartRemoteTask(void *argument)
 {
-  /* USER CODE BEGIN StartRemoteTask */
+	/* USER CODE BEGIN StartRemoteTask */
 	uint32_t notif;
 	RMT_CMD command;
 
@@ -834,11 +834,13 @@ void StartRemoteTask(void *argument)
 		if (RMT_NeedPing(&(VCU.d.state.vehicle), &(HMI1.d.state.unremote)))
 			RMT_Ping();
 
+		RMT_RefreshPairing();
+
 		VCU.SetEvent(EV_VCU_REMOTE_MISSING, HMI1.d.state.unremote);
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
 			if (notif & EVT_REMOTE_TASK_STOP) {
-        VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
+				VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
 				RMT_DeInit();
 				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
 				RMT_Init(&(VCU.d.unit_id), &hspi1, RemoteTaskHandle);
@@ -854,14 +856,13 @@ void StartRemoteTask(void *argument)
 
 			// handle incoming payload
 			if (notif & EVT_REMOTE_RX_IT) {
-				if (RMT_GotPairedResponse()) {
-				  RMT_Paired();
-					osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
-				}
-
 				// process command
 				if (RMT_ValidateCommand(&command)) {
-					if (command == RMT_CMD_SEAT)
+					if (command == RMT_CMD_PING) {
+						if (RMT_GotPairedResponse())
+							osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+					}
+					else if (command == RMT_CMD_SEAT)
 						GATE_SeatToggle();
 					else if (command == RMT_CMD_ALARM)
 						GATE_HornToggle(&(HBAR.hazard));
@@ -870,7 +871,7 @@ void StartRemoteTask(void *argument)
 			//			osThreadFlagsClear(EVT_MASK);
 		}
 	}
-  /* USER CODE END StartRemoteTask */
+	/* USER CODE END StartRemoteTask */
 }
 
 /* USER CODE BEGIN Header_StartFingerTask */
@@ -882,7 +883,7 @@ void StartRemoteTask(void *argument)
 /* USER CODE END Header_StartFingerTask */
 void StartFingerTask(void *argument)
 {
-  /* USER CODE BEGIN StartFingerTask */
+	/* USER CODE BEGIN StartFingerTask */
 	uint32_t notif;
 	finger_db_t finger;
 	uint8_t  id, driver, ok = 0;
@@ -900,7 +901,7 @@ void StartFingerTask(void *argument)
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
 			if (notif & EVT_FINGER_TASK_STOP) {
-        VCU.SetDriver(DRIVER_ID_NONE);
+				VCU.SetDriver(DRIVER_ID_NONE);
 
 				FINGER_DeInit();
 				_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
@@ -918,22 +919,22 @@ void StartFingerTask(void *argument)
 			}
 
 			else {
-        if (notif & EVT_FINGER_FETCH) {
-          if ((ok = FINGER_Fetch(finger.db)))
-            osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
-        }
-        else if (notif & EVT_FINGER_ADD) {
-          if (FINGER_Enroll(&id, &ok))
-            osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
-        }
-        else if (notif & EVT_FINGER_DEL) {
-          if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK)
-            ok = FINGER_DeleteID(driver);
-        }
-        else if (notif & EVT_FINGER_RST)
-          ok = FINGER_Flush();
+				if (notif & EVT_FINGER_FETCH) {
+					if ((ok = FINGER_Fetch(finger.db)))
+						osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
+				}
+				else if (notif & EVT_FINGER_ADD) {
+					if (FINGER_Enroll(&id, &ok))
+						osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
+				}
+				else if (notif & EVT_FINGER_DEL) {
+					if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK)
+						ok = FINGER_DeleteID(driver);
+				}
+				else if (notif & EVT_FINGER_RST)
+					ok = FINGER_Flush();
 
-        osThreadFlagsSet(CommandTaskHandle, ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+				osThreadFlagsSet(CommandTaskHandle, ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
 			}
 
 			// Handle bounce effect
@@ -941,7 +942,7 @@ void StartFingerTask(void *argument)
 			// osThreadFlagsClear(EVT_MASK);
 		}
 	}
-  /* USER CODE END StartFingerTask */
+	/* USER CODE END StartFingerTask */
 }
 
 /* USER CODE BEGIN Header_StartAudioTask */
@@ -953,7 +954,7 @@ void StartFingerTask(void *argument)
 /* USER CODE END Header_StartAudioTask */
 void StartAudioTask(void *argument)
 {
-  /* USER CODE BEGIN StartAudioTask */
+	/* USER CODE BEGIN StartAudioTask */
 	uint32_t notif;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -996,7 +997,7 @@ void StartAudioTask(void *argument)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 		}
 	}
-  /* USER CODE END StartAudioTask */
+	/* USER CODE END StartAudioTask */
 }
 
 /* USER CODE BEGIN Header_StartCanRxTask */
@@ -1008,7 +1009,7 @@ void StartAudioTask(void *argument)
 /* USER CODE END Header_StartCanRxTask */
 void StartCanRxTask(void *argument)
 {
-  /* USER CODE BEGIN StartCanRxTask */
+	/* USER CODE BEGIN StartCanRxTask */
 	uint32_t notif;
 	can_rx_t Rx;
 
@@ -1026,9 +1027,9 @@ void StartCanRxTask(void *argument)
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) {
-      HMI1.Init();
-      HMI2.Init();
-      BMS.Init();
+			HMI1.Init();
+			HMI2.Init();
+			BMS.Init();
 
 			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
 		}
@@ -1057,7 +1058,7 @@ void StartCanRxTask(void *argument)
 			}
 		}
 	}
-  /* USER CODE END StartCanRxTask */
+	/* USER CODE END StartCanRxTask */
 }
 
 /* USER CODE BEGIN Header_StartCanTxTask */
@@ -1069,7 +1070,7 @@ void StartCanRxTask(void *argument)
 /* USER CODE END Header_StartCanTxTask */
 void StartCanTxTask(void *argument)
 {
-  /* USER CODE BEGIN StartCanTxTask */
+	/* USER CODE BEGIN StartCanTxTask */
 	uint32_t notif;
 	TickType_t last500ms, last1000ms;
 
@@ -1119,7 +1120,7 @@ void StartCanTxTask(void *argument)
 			}
 		}
 	}
-  /* USER CODE END StartCanTxTask */
+	/* USER CODE END StartCanTxTask */
 }
 
 /* USER CODE BEGIN Header_StartHmi2PowerTask */
@@ -1131,7 +1132,7 @@ void StartCanTxTask(void *argument)
 /* USER CODE END Header_StartHmi2PowerTask */
 void StartHmi2PowerTask(void *argument)
 {
-  /* USER CODE BEGIN StartHmi2PowerTask */
+	/* USER CODE BEGIN StartHmi2PowerTask */
 	uint32_t notif;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -1152,7 +1153,7 @@ void StartHmi2PowerTask(void *argument)
 
 		}
 	}
-  /* USER CODE END StartHmi2PowerTask */
+	/* USER CODE END StartHmi2PowerTask */
 }
 
 /* USER CODE BEGIN Header_StartGateTask */
@@ -1164,7 +1165,7 @@ void StartHmi2PowerTask(void *argument)
 /* USER CODE END Header_StartGateTask */
 void StartGateTask(void *argument)
 {
-  /* USER CODE BEGIN StartGateTask */
+	/* USER CODE BEGIN StartGateTask */
 	uint32_t notif, tick = 0;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -1208,7 +1209,7 @@ void StartGateTask(void *argument)
 		HMI1.Power(VCU.d.state.vehicle >= VEHICLE_STANDBY);
 		GATE_FanBMS(BMS.d.overheat);
 	}
-  /* USER CODE END StartGateTask */
+	/* USER CODE END StartGateTask */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -1274,8 +1275,8 @@ static void CheckVehicleState(void) {
 			case VEHICLE_BACKUP:
 				if (lastState != VEHICLE_BACKUP) {
 					lastState = VEHICLE_BACKUP;
-          VCU.d.interval = RPT_INTERVAL_BACKUP;
-          osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
+					VCU.d.interval = RPT_INTERVAL_BACKUP;
+					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
@@ -1283,6 +1284,7 @@ static void CheckVehicleState(void) {
 					osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_STOP);
 					osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
 
+					VCU.d.tick.independent = _GetTickMS();
 				}
 
 				if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
@@ -1294,8 +1296,8 @@ static void CheckVehicleState(void) {
 			case VEHICLE_NORMAL:
 				if (lastState != VEHICLE_NORMAL) {
 					lastState = VEHICLE_NORMAL;
-          VCU.d.interval = RPT_INTERVAL_NORMAL;
-          osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
+					VCU.d.interval = RPT_INTERVAL_NORMAL;
+					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 
 					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
 					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
@@ -1304,10 +1306,10 @@ static void CheckVehicleState(void) {
 					osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_START);
 					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
 
-          normalize = 0;
-          VCU.d.state.override = VEHICLE_NORMAL;
-          BAT_ReInit();
-          HBAR_Init();
+					normalize = 0;
+					VCU.d.state.override = VEHICLE_NORMAL;
+					BAT_ReInit();
+					HBAR_Init();
 				}
 
 				if (!VCU.d.gpio.power5v)

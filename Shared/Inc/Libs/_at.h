@@ -80,13 +80,13 @@ typedef enum {
     CAT_ACT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CSACT_ACT;
 
-#if (!BOOTLOADER)
 typedef enum {
     CGATT_DETACHED = 0,
     CGATT_ATTACHED,
     CGATT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CGATT;
 
+#if (!BOOTLOADER)
 typedef enum {
     CIPMODE_NORMAL = 0,
     CIPMODE_TRANSPARENT,
@@ -230,10 +230,6 @@ typedef struct {
 } at_ftpget_t;
 
 typedef struct {
-    int32_t id;
-    char server[30];
-    char username[30];
-    char password[20];
     char path[20];
     char file[20];
     uint32_t size;
@@ -253,13 +249,13 @@ SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t
 SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state);
 SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state);
 SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate);
+SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
 
 #if (!BOOTLOADER)
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
 SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
 SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm);
-SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
 SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state);
 SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state);
 SIMCOM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state);
@@ -269,10 +265,10 @@ SIMCOM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state);
 #else
 SIMCOM_RESULT AT_BearerInitialize(void);
 SIMCOM_RESULT AT_FtpInitialize(at_ftp_t *param);
-SIMCOM_RESULT AT_FtpSetFile(char *file);
 SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param);
 SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param);
 SIMCOM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state);
+SIMCOM_RESULT AT_FtpResume(uint32_t start);
 SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param);
 #endif
 #endif /* INC_LIBS__AT_H_ */

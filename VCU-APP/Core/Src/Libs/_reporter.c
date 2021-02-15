@@ -47,7 +47,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
     report->data.opt.vcu.gps.heading = (uint8_t) (vcu->gps.heading / 2);
     report->data.opt.vcu.gps.sat_in_use = (uint8_t) vcu->gps.sat_in_use;
 
-    report->data.opt.vcu.odometer = hbar->trip[HBAR_M_TRIP_ODO];
+    report->data.opt.vcu.odometer = hbar->trip[HBAR_M_TRIP_ODO] / 1000;
     report->data.opt.vcu.trip.a = hbar->trip[HBAR_M_TRIP_A];
     report->data.opt.vcu.trip.b = hbar->trip[HBAR_M_TRIP_B];
     report->data.opt.vcu.report.range = hbar->report[HBAR_M_REPORT_RANGE];

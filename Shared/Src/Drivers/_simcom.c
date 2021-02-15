@@ -54,8 +54,10 @@ static void SetStateReady(SIMCOM_RESULT *res, SIMCOM_STATE *state);
 static void SetStateConfigured(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
 static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
 static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
-#if (!BOOTLOADER)
 static void SetStateGprsOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
+#if (BOOTLOADER)
+static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state);
+#else
 static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus);
 static void SetStateInternetOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus, uint32_t tick, uint32_t timeout);
 static void SetStateServerOn(SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus);
@@ -138,11 +140,20 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 				_DelayMS(500);
 				break;
 
-#if (!BOOTLOADER)
 			case SIM_STATE_GPRS_ON:
 				SetStateGprsOn(&res, &(SIM.state), tick, timeout);
 				_DelayMS(500);
 				break;
+
+#if (BOOTLOADER)
+			case SIM_STATE_PDP_ON:
+				SetStatePdpOn(&res, &(SIM.state));
+				_DelayMS(500);
+				break;
+			case SIM_STATE_BEARER_ON:
+				/*nothing*/
+				break;
+#else
 
 			case SIM_STATE_PDP_ON:
 				SetStatePdpOn(&res, &(SIM.state), &(SIM.ipstatus));
@@ -621,9 +632,7 @@ static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t 
 		*state = SIM_STATE_CONFIGURED;
 }
 
-#if (!BOOTLOADER)
 static void SetStateGprsOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
-	// =========== PDP CONFIGURATION
 	// Attach to GPRS service
 	if (*res > 0) {
 		AT_CGATT param;
@@ -643,6 +652,22 @@ static void SetStateGprsOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tic
 	else if (*state == SIM_STATE_GPRS_ON)
 		*state = SIM_STATE_NETWORK_ON;
 }
+
+#if (BOOTLOADER)
+static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
+	// =========== FTP CONFIGURATION
+	// Initialise bearer for TCP based applications.
+	*res = AT_BearerInitialize();
+
+	// upgrade simcom state
+	if (*res > 0)
+		*state = SIM_STATE_BEARER_ON;
+	else
+		if (*state == SIM_STATE_PDP_ON)
+			*state = SIM_STATE_GPRS_ON;
+}
+
+#else
 
 static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
 	// =========== PDP ATTACH

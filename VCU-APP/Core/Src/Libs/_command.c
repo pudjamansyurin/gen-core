@@ -86,7 +86,7 @@ void CMD_ReportRTC(command_t *cmd) {
 }
 
 void CMD_ReportOdom(command_t *cmd) {
-	EEPROM_Odometer(EE_CMD_W, *(uint32_t*) cmd->data.value);
+	EEPROM_Odometer(EE_CMD_W, (*(uint32_t*) cmd->data.value) * 1000);
 }
 
 
@@ -181,7 +181,7 @@ void CMD_RemotePairing(response_t *resp, osThreadId_t threadId) {
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
-	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, COMMAND_TIMEOUT))
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
 		if (notif & EVT_COMMAND_OK)
 			resp->data.res_code = RESPONSE_STATUS_OK;
 }
