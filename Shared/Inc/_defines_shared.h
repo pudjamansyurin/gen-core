@@ -144,6 +144,7 @@
 
 #define EVT_GYRO_TASK_START                     BIT(0)
 #define EVT_GYRO_TASK_STOP                      BIT(1)
+#define EVT_GYRO_MOVED_RESET	                  BIT(2)
 
 #define EVT_REMOTE_TASK_START                   BIT(0)
 #define EVT_REMOTE_TASK_STOP                    BIT(1)

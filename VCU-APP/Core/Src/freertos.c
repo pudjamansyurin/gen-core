@@ -769,6 +769,8 @@ void StartGyroTask(void *argument)
 	/* USER CODE BEGIN StartGyroTask */
 	uint32_t flag, notif;
 	movement_t movement;
+	motion_t refference;
+	uint8_t initial = 1;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
@@ -782,25 +784,45 @@ void StartGyroTask(void *argument)
 		VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_GYRO_TASK_STOP, osFlagsWaitAll, 1000)) {
-			memset(&(VCU.d.motion), 0x00, sizeof(VCU.d.motion));
-			VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
-			VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+			if (notif & EVT_GYRO_TASK_STOP) {
+				memset(&(VCU.d.motion), 0x00, sizeof(VCU.d.motion));
+				VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
+				VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 
-			GYRO_DeInit();
-			_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
-			GYRO_Init(&hi2c3);
+				GYRO_DeInit();
+				_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+				GYRO_Init(&hi2c3);
+			}
+
+			else if (notif & EVT_GYRO_MOVED_RESET) {
+				initial = 1;
+				VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+			}
 		}
 
 		// Read all accelerometer, gyroscope (average)
 		GYRO_Decision(&movement, &(VCU.d.motion), 50);
 		VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
-		//		VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 
-		// Indicators
+		// Fallen indicators
 		//		GATE_LedWrite(movement.fallen);
 		flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
 		osThreadFlagsSet(AudioTaskHandle, flag);
+
+		// Moved at rest
+		if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
+			if (initial) {
+				initial = 0;
+				memcpy(&refference, &(VCU.d.motion), sizeof(motion_t));
+			}
+
+			if (GYRO_Moved(&refference, &(VCU.d.motion)))
+				VCU.SetEvent(EV_VCU_BIKE_MOVED, 1);
+		} else {
+			initial = 1;
+			VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+		}
 	}
 	/* USER CODE END StartGyroTask */
 }
@@ -864,8 +886,12 @@ void StartRemoteTask(void *argument)
 					}
 					else if (command == RMT_CMD_SEAT)
 						GATE_SeatToggle();
-					else if (command == RMT_CMD_ALARM)
+					else if (command == RMT_CMD_ALARM) {
 						GATE_HornToggle(&(HBAR.hazard));
+
+						if (VCU.ReadEvent(EV_VCU_BIKE_MOVED))
+							osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_MOVED_RESET);
+					}
 				}
 			}
 			//			osThreadFlagsClear(EVT_MASK);
