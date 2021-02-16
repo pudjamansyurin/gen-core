@@ -101,7 +101,7 @@ void BMS_CAN_RX_Param2(can_rx_t *Rx) {
   BMS.d.pack[index].flag = Rx->data.u16[3];
 
   // save state
-  BMS.d.pack[index].state = (_R1(Rx->data.u8[7], 4) << 1) | _R1(Rx->data.u8[7], 5);
+  BMS.d.pack[index].state = (((Rx->data.u8[7] >> 4) & 0x01) << 1) | ((Rx->data.u8[7] >> 5) & 0x01);
 }
 
 /* ====================================== CAN TX =================================== */
@@ -149,24 +149,24 @@ static uint8_t GetIndex(uint32_t id) {
 
 static void SetEvents(uint16_t flag) {
   // Set events
-  VCU.SetEvent(EV_BMS_SHORT_CIRCUIT, _R1(flag, 0));
-  VCU.SetEvent(EV_BMS_DISCHARGE_OVER_CURRENT, _R1(flag, 1));
-  VCU.SetEvent(EV_BMS_CHARGE_OVER_CURRENT, _R1(flag, 2));
-  VCU.SetEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE, _R1(flag, 3));
-  VCU.SetEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE, _R1(flag, 4));
-  VCU.SetEvent(EV_BMS_CHARGE_OVER_TEMPERATURE, _R1(flag, 5));
-  VCU.SetEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE, _R1(flag, 6));
-  VCU.SetEvent(EV_BMS_UNBALANCE, _R1(flag, 7));
+  VCU.SetEvent(EV_BMS_SHORT_CIRCUIT, (flag >> 0) & 0x01);
+  VCU.SetEvent(EV_BMS_DISCHARGE_OVER_CURRENT, (flag >> 1) & 0x01);
+  VCU.SetEvent(EV_BMS_CHARGE_OVER_CURRENT, (flag >> 2) & 0x01);
+  VCU.SetEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE, (flag >> 3) & 0x01);
+  VCU.SetEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE, (flag >> 4) & 0x01);
+  VCU.SetEvent(EV_BMS_CHARGE_OVER_TEMPERATURE, (flag >> 5) & 0x01);
+  VCU.SetEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE, (flag >> 6) & 0x01);
+  VCU.SetEvent(EV_BMS_UNBALANCE, (flag >> 7) & 0x01);
 
-  VCU.SetEvent(EV_BMS_UNDER_VOLTAGE, _R1(flag, 8));
-  VCU.SetEvent(EV_BMS_OVER_VOLTAGE, _R1(flag, 9));
-  VCU.SetEvent(EV_BMS_OVER_DISCHARGE_CAPACITY, _R1(flag, 10));
-  VCU.SetEvent(EV_BMS_SYSTEM_FAILURE, _R1(flag, 11));
+  VCU.SetEvent(EV_BMS_UNDER_VOLTAGE, (flag >> 8) & 0x01);
+  VCU.SetEvent(EV_BMS_OVER_VOLTAGE, (flag >> 9) & 0x01);
+  VCU.SetEvent(EV_BMS_OVER_DISCHARGE_CAPACITY, (flag >> 10) & 0x01);
+  VCU.SetEvent(EV_BMS_SYSTEM_FAILURE, (flag >> 11) & 0x01);
 
-  VCU.SetEvent(EV_BMS_WARNING_OVER_CURRENT, _R1(flag, 12));
-  VCU.SetEvent(EV_BMS_WARNING_OVER_TEMPERATURE, _R1(flag, 13));
-  VCU.SetEvent(EV_BMS_WARNING_UNDER_VOLTAGE, _R1(flag, 14));
-  VCU.SetEvent(EV_BMS_WARNING_UNBALANCE, _R1(flag, 15));
+  VCU.SetEvent(EV_BMS_WARNING_OVER_CURRENT, (flag >> 12) & 0x01);
+  VCU.SetEvent(EV_BMS_WARNING_OVER_TEMPERATURE, (flag >> 13) & 0x01);
+  VCU.SetEvent(EV_BMS_WARNING_UNDER_VOLTAGE, (flag >> 14) & 0x01);
+  VCU.SetEvent(EV_BMS_WARNING_UNBALANCE, (flag >> 15) & 0x01);
 
   // Parse event for indicator
   BMS.d.overheat = VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||

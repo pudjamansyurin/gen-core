@@ -114,9 +114,9 @@ uint8_t VCU_CAN_TX_SwitchModeControl(void) {
   TxData.u8[1] |= HBAR.reverse << 2;
 
   // mode
-  TxData.u8[2] = HBAR.d.val[HBAR_M_DRIVE];
-  TxData.u8[2] |= HBAR.d.val[HBAR_M_TRIP] << 2;
-  TxData.u8[2] |= HBAR.d.val[HBAR_M_REPORT] << 4;
+  TxData.u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
+  TxData.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
+  TxData.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
   TxData.u8[2] |= HBAR.m << 5;
   TxData.u8[2] |= HBAR_ModeController() << 7;
 

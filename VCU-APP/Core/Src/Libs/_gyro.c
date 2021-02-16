@@ -58,8 +58,12 @@ void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample) {
 	movement->crash.state = (movement->crash.value > ACCELEROMETER_LIMIT );
 
 	// calculate movement change
-	movement->fall.value = sqrt(pow(mot.roll, 2) + pow(mot.pitch, 2));
-	movement->fall.state = movement->fall.value > GYROSCOPE_LIMIT || mot.yaw < GYROSCOPE_LIMIT;
+	movement->fall.value = sqrt(
+			pow(mot.roll, 2) +
+			pow(mot.pitch, 2) +
+			pow(mot.yaw, 2)
+	);
+	movement->fall.state = movement->fall.value > GYROSCOPE_LIMIT;
 
 	movement->fallen = movement->crash.state || movement->fall.state;
 
@@ -68,19 +72,17 @@ void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample) {
 }
 
 uint8_t GYRO_Moved(motion_t *refference, motion_t *current) {
-	const uint8_t maxDelta = 5;
-	uint32_t ref, cur;
-	uint8_t delta;
+	uint8_t euclidean;
 
-	ref = sqrt(pow(refference->roll, 2) + pow(refference->pitch, 2));
-	cur = sqrt(pow(current->roll, 2) + pow(current->pitch, 2));
-	delta = abs(ref - cur);
+	euclidean = sqrt(
+			pow(refference->roll - current->roll, 2) +
+			pow(refference->pitch - current->pitch, 2) +
+			pow(refference->yaw - current->yaw, 2)
+	);
 
-	if (delta > maxDelta) {
-		printf("IMU:Gyro moved = %d\n", delta);
-		return 1;
-	}
-	return 0;
+	if (euclidean > MOVED_LIMIT)
+		printf("IMU:Gyro moved = %d\n", euclidean);
+	return euclidean > MOVED_LIMIT;
 }
 
 /* Private functions implementation --------------------------------------------*/
@@ -135,6 +137,9 @@ static void Convert(coordinate_t *gyro, motion_t *motion) {
 	motion->yaw = mot.yaw == 0 ? 0 : RAD2DEG(atan(gyro->z / mot.yaw));
 	motion->roll = mot.roll == 0 ? 0 : RAD2DEG(atan(gyro->y / mot.roll));
 	motion->pitch = mot.pitch == 0 ? 0 : RAD2DEG(atan(gyro->x / mot.pitch));
+
+	// normalize yaw axes
+	motion->yaw -= 90;
 }
 
 static void Debugger(movement_t *movement) {
@@ -152,9 +157,9 @@ static void Debugger(movement_t *movement) {
 
 static void RawDebugger(mems_t *mems) {
 	printf(
-			"Accelerometer:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-			"Gyroscope:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-			"Temperature: %d\n\n",
+			"Acce:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+			"Gyro:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+			"Temp: %d\n\n",
 			mems->accelerometer.x, mems->accelerometer.y, mems->accelerometer.z,
 			mems->gyroscope.x, mems->gyroscope.y, mems->gyroscope.z,
 			(int8_t) mems->temperature

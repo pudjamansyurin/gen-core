@@ -795,10 +795,8 @@ void StartGyroTask(void *argument)
 				GYRO_Init(&hi2c3);
 			}
 
-			else if (notif & EVT_GYRO_MOVED_RESET) {
+			else if (notif & EVT_GYRO_MOVED_RESET)
 				initial = 1;
-				VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
-			}
 		}
 
 		// Read all accelerometer, gyroscope (average)
@@ -815,6 +813,7 @@ void StartGyroTask(void *argument)
 			if (initial) {
 				initial = 0;
 				memcpy(&refference, &(VCU.d.motion), sizeof(motion_t));
+				VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 			}
 
 			if (GYRO_Moved(&refference, &(VCU.d.motion)))

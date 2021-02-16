@@ -73,9 +73,9 @@ void HBAR_Init(void) {
 	HBAR.reverse = 0;
 
 	HBAR.m = HBAR_M_DRIVE;
-	HBAR.d.val[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
-	HBAR.d.val[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
-	HBAR.d.val[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
+	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
+	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
+	HBAR.d.mode[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
 
 	HBAR.d.max[HBAR_M_DRIVE] = HBAR_M_DRIVE_MAX - 1;
 	HBAR.d.max[HBAR_M_TRIP] = HBAR_M_TRIP_MAX - 1;
@@ -103,7 +103,7 @@ void HBAR_ReadStates(void) {
 }
 
 uint32_t HBAR_AccumulateTrip(uint8_t meter) {
-	HBAR_MODE_TRIP mTrip = HBAR.d.val[HBAR_M_TRIP];
+	HBAR_MODE_TRIP mTrip = HBAR.d.mode[HBAR_M_TRIP];
 	uint32_t *trip = &(HBAR.d.trip[mTrip]);
 	uint32_t limit;
 
@@ -189,8 +189,8 @@ uint8_t HBAR_ModeController(void) {
 			tickPeriod = _GetTickMS();
 		}
 		// value changed
-		else if (iValue != HBAR.d.val[HBAR.m]) {
-			iValue = HBAR.d.val[HBAR.m];
+		else if (iValue != HBAR.d.mode[HBAR.m]) {
+			iValue = HBAR.d.mode[HBAR.m];
 			tickPeriod = _GetTickMS();
 		}
 
@@ -236,16 +236,16 @@ static void RunSelect(void) {
 
 static void RunSet(void) {
 	if (HBAR.listening) {
-		if (HBAR.d.val[HBAR.m] == HBAR.d.max[HBAR.m])
-			HBAR.d.val[HBAR.m] = 0;
+		if (HBAR.d.mode[HBAR.m] == HBAR.d.max[HBAR.m])
+			HBAR.d.mode[HBAR.m] = 0;
 		else
-			HBAR.d.val[HBAR.m]++;
+			HBAR.d.mode[HBAR.m]++;
 	}
 
 	else {
 		if (HBAR.timer[HBAR_K_SET].time >= 3)
 			if (HBAR.m == HBAR_M_TRIP)
-				if (HBAR.d.val[HBAR.m] != HBAR_M_TRIP_ODO)
-					HBAR.d.trip[HBAR.d.val[HBAR.m]] = 0;
+				if (HBAR.d.mode[HBAR.m] != HBAR_M_TRIP_ODO)
+					HBAR.d.trip[HBAR.d.mode[HBAR.m]] = 0;
 	}
 }

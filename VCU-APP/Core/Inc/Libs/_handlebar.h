@@ -57,7 +57,7 @@ typedef enum {
 /* Exported struct --------------------------------------------------------------*/
 typedef struct {
   uint8_t max[HBAR_M_MAX];
-  uint8_t val[HBAR_M_MAX];
+  uint8_t mode[HBAR_M_MAX];
   uint8_t report[HBAR_M_REPORT_MAX];
   uint32_t trip[HBAR_M_TRIP_MAX];
 } hbar_data_t;
@@ -77,9 +77,9 @@ typedef struct {
 typedef struct {
   HBAR_MODE m;
   hbar_data_t d;
+  uint8_t reverse;
   uint8_t listening;
   uint8_t hazard;
-  uint8_t reverse;
   hbar_list_t list[HBAR_K_MAX];
   hbar_timer_t timer[2];
 } hbar_t;

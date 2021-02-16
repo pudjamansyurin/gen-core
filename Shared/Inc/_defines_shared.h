@@ -28,8 +28,8 @@
 #define BT(var, x)                              (var ^= (1ULL << x))
 //#define _L(var, x)                              (var << x)
 //#define _R(var, x)                              (var >> x)
-#define _R1(var, x)                             ((var >> x) & 0x01)
-#define _R2(var, x)                             ((var >> x) & 0x03)
+//#define _R1(var, x)                             ((var >> x) & 0x01)
+//#define _R2(var, x)                             ((var >> x) & 0x03)
 #define _R8(var, x)                             ((var >> x) & 0xFF)
 
 // FOTA related stuffs
