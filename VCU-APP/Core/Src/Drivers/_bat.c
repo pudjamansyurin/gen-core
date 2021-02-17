@@ -35,9 +35,13 @@ void BAT_ReInit(void) {
 }
 
 void BAT_ScanValue(uint16_t *voltage) {
+	uint8_t retry = 2;
   uint16_t value;
 
-  HAL_ADC_PollForConversion(bat.h.adc, 10);
+  while (retry-- && HAL_ADC_PollForConversion(bat.h.adc, 10) != HAL_OK) {
+		BAT_ReInit();
+  }
+
   value = HAL_ADC_GetValue(bat.h.adc);
 
   // change to battery value

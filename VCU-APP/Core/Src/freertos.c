@@ -462,7 +462,6 @@ void StartIotTask(void *argument)
 			.pending = 0
 	};
 
-
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Initiate
@@ -529,6 +528,10 @@ void StartReporterTask(void *argument)
 		RPT_FrameDecider(!VCU.d.gpio.power5v, &frame);
 		RPT_ReportCapture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.d));
 
+		// reset some events group
+		VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
+		VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
+
 		// Put report to log
 		do {
 			status = osMessageQueuePut(ReportQueueHandle, &report, 0U, 0U);
@@ -536,10 +539,6 @@ void StartReporterTask(void *argument)
 			if (status == osErrorResource)
 				osThreadFlagsSet(IotTaskHandle, EVT_IOT_REPORT_DISCARD);
 		} while (status != osOK);
-
-		// reset some events group
-		VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
-		VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
 
 		_osThreadFlagsWait(&notif, EVT_REPORTER_YIELD, osFlagsWaitAll, VCU.d.interval * 1000);
 	}
@@ -1333,7 +1332,6 @@ static void CheckVehicleState(void) {
 
 					normalize = 0;
 					VCU.d.state.override = VEHICLE_NORMAL;
-					BAT_ReInit();
 					HBAR_Init();
 				}
 
