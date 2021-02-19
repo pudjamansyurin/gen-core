@@ -498,8 +498,9 @@ void StartIotTask(void *argument)
 						pRep.pending = 0;
 
 		// Check Command
-		if (MQTT_Receive(&cmd))
-			CMD_CheckCommand(&cmd);
+		if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+			if (MQTT_Receive(&cmd))
+				CMD_CheckCommand(&cmd);
 
 		// SIMCOM related routines
 		if (Simcom_SetState(SIM_STATE_READY, 0))
