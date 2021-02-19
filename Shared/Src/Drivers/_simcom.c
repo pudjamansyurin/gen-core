@@ -12,7 +12,6 @@
 #include "Libs/_at.h"
 #if (!BOOTLOADER)
 #include "Libs/_reporter.h"
-#include "Libs/_command.h"
 #include "Libs/_mqtt.h"
 #include "Nodes/VCU.h"
 #else
@@ -441,7 +440,6 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 
 #if (!BOOTLOADER)
 static void BeforeTransmitHook(void) {
-
 	// Handle Server Command
 	if (Simcom_ReceiveResponse(0))
 		Simcom_ProcessResponse();
@@ -454,11 +452,8 @@ static void BeforeTransmitHook(void) {
 
 static void Simcom_ProcessResponse(void) {
 	char *ptr = SIM.response;
-	command_t cmd = *(command_t*) ptr;
 
-	if (MQTT_Receive(&cmd))
-		CMD_CheckCommand(cmd);
-	else
+	if (!MQTT_Received())
 		SIM.response = ptr;
 }
 #endif

@@ -25,29 +25,29 @@ void CMD_Init(osMessageQueueId_t mCmdQueue) {
 	cmdQueue = mCmdQueue;
 }
 
-void CMD_CheckCommand(command_t command) {
-	uint8_t size = sizeof(command.header.unit_id) + sizeof(command.data);
+void CMD_CheckCommand(command_t *cmd) {
+	uint8_t size = sizeof(cmd->header.unit_id) + sizeof(cmd->data);
   uint32_t crc;
 
-	if (command.header.size != size)
+	if (cmd->header.size != size)
 		return;
 
-	if (memcmp(command.header.prefix, PREFIX_COMMAND, 2) != 0)
+	if (memcmp(cmd->header.prefix, PREFIX_COMMAND, 2) != 0)
 		return;
 
 	crc = CRC_Calculate8(
-			(uint8_t*) &(command.header.size),
-			sizeof(command.header.size) + size,
+			(uint8_t*) &(cmd->header.size),
+			sizeof(cmd->header.size) + size,
 			0);
 
-	if (command.header.crc != crc)
+	if (cmd->header.crc != crc)
 		return;
 
-	if (command.header.unit_id != VCU.d.unit_id)
+	if (cmd->header.unit_id != VCU.d.unit_id)
 		return;
 
-	// Debugger(&command);
-	osMessageQueuePut(cmdQueue, &command, 0U, 0U);
+	Debugger(cmd);
+	osMessageQueuePut(cmdQueue, cmd, 0U, 0U);
 }
 
 void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version) {

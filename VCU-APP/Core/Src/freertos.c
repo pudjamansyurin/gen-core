@@ -447,6 +447,7 @@ void StartIotTask(void *argument)
 {
 	/* USER CODE BEGIN StartIotTask */
 	uint32_t notif;
+	command_t cmd;
 	response_t response;
 	payload_t pRes = {
 			.type = PAYLOAD_RESPONSE,
@@ -472,7 +473,7 @@ void StartIotTask(void *argument)
 	for (;;) {
 		VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
+		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
 			if (notif & EVT_IOT_RESUBSCRIBE) {
 				MQTT_DoUnsubscribe();
 				MQTT_DoSubscribe();
@@ -495,6 +496,10 @@ void StartIotTask(void *argument)
 				if (RPT_WrapPayload(&pRep))
 					if (MQTT_DoPublish(&pRep))
 						pRep.pending = 0;
+
+		// Check Command
+		if (MQTT_Receive(&cmd))
+			CMD_CheckCommand(&cmd);
 
 		// SIMCOM related routines
 		if (Simcom_SetState(SIM_STATE_READY, 0))
@@ -540,7 +545,7 @@ void StartReporterTask(void *argument)
 				osThreadFlagsSet(IotTaskHandle, EVT_IOT_REPORT_DISCARD);
 		} while (status != osOK);
 
-		_osThreadFlagsWait(&notif, EVT_REPORTER_YIELD, osFlagsWaitAll, VCU.d.interval * 1000);
+		_osThreadFlagsWait(&notif, EVT_REPORTER_YIELD, osFlagsWaitAny, VCU.d.interval * 1000);
 	}
 	/* USER CODE END StartReporterTask */
 }
@@ -772,7 +777,7 @@ void StartGyroTask(void *argument)
 	uint8_t initial = 1;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	/* MPU6050 Initiate*/
@@ -790,7 +795,7 @@ void StartGyroTask(void *argument)
 				VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 
 				GYRO_DeInit();
-				_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAll, osWaitForever);
+				_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny, osWaitForever);
 				GYRO_Init(&hi2c3);
 			}
 
@@ -840,7 +845,7 @@ void StartRemoteTask(void *argument)
 
 	// wait until needed
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	// Initiate
@@ -862,7 +867,7 @@ void StartRemoteTask(void *argument)
 			if (notif & EVT_REMOTE_TASK_STOP) {
 				VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
 				RMT_DeInit();
-				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAll, osWaitForever);
+				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny, osWaitForever);
 				RMT_Init(&(VCU.d.unit_id), &hspi1, RemoteTaskHandle);
 			}
 
@@ -913,7 +918,7 @@ void StartFingerTask(void *argument)
 	uint8_t  id, driver, ok = 0;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAny, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	// Initialisation
@@ -928,7 +933,7 @@ void StartFingerTask(void *argument)
 				VCU.SetDriver(DRIVER_ID_NONE);
 
 				FINGER_DeInit();
-				_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAll, osWaitForever);
+				_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAny, osWaitForever);
 				FINGER_Init(&huart4, &hdma_uart4_rx);
 			}
 
@@ -982,7 +987,7 @@ void StartAudioTask(void *argument)
 	uint32_t notif;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAny, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	/* Initiate Wave player (Codec, DMA, I2C) */
@@ -997,7 +1002,7 @@ void StartAudioTask(void *argument)
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
 			if (notif & EVT_AUDIO_TASK_STOP) {
 				AUDIO_DeInit();
-				_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAll, osWaitForever);
+				_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAny, osWaitForever);
 				AUDIO_Init(&hi2c1, &hi2s3);
 			}
 
@@ -1038,7 +1043,7 @@ void StartCanRxTask(void *argument)
 	can_rx_t Rx;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	/* Infinite loop */
@@ -1050,12 +1055,12 @@ void StartCanRxTask(void *argument)
 		BMS.RefreshIndex();
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 0)) {
+		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 0)) {
 			HMI1.Init();
 			HMI2.Init();
 			BMS.Init();
 
-			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
 		}
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
@@ -1099,7 +1104,7 @@ void StartCanTxTask(void *argument)
 	TickType_t last500ms, last1000ms;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
 	osThreadFlagsClear(EVT_MASK);
 
 	// initiate
@@ -1116,12 +1121,12 @@ void StartCanTxTask(void *argument)
 		HMI2.PowerByCan(VCU.d.state.vehicle >= VEHICLE_STANDBY, Hmi2PowerTaskHandle);
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAll, 20)) {
+		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 20)) {
 			BMS.PowerOverCan(0);
 			HMI2.PowerByCan(0, Hmi2PowerTaskHandle);
 
 			CANBUS_DeInit();
-			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAll, osWaitForever);
+			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
 			CANBUS_Init(&hcan1);
 		}
 

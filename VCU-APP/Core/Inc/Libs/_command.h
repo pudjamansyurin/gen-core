@@ -13,7 +13,7 @@
 
 /* Public functions implementation --------------------------------------------*/
 void CMD_Init(osMessageQueueId_t mCmdQueue);
-void CMD_CheckCommand(command_t command);
+void CMD_CheckCommand(command_t* cmd);
 void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version);
 void CMD_GenLed(command_t *cmd);
 void CMD_GenOverride(command_t *cmd, uint8_t *override_state);
