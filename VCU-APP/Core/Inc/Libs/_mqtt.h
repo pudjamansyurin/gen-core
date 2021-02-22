@@ -15,12 +15,12 @@
 /* Exported constants --------------------------------------------------------*/
 #define MQTT_USERNAME          						""
 #define MQTT_PASSWORD          						""
-#define MQTT_KEEPALIVE          (uint8_t) 30				// in second
+#define MQTT_KEEPALIVE          		  (uint8_t) 60				// in second
 
 /* Public functions prototypes ----------------------------------------------*/
-uint8_t MQTT_DoPublish(payload_t *payload);
-uint8_t MQTT_DoSubscribe(void);
-uint8_t MQTT_DoUnsubscribe(void);
+uint8_t MQTT_Publish(payload_t *payload);
+uint8_t MQTT_Subscribe(void);
+uint8_t MQTT_Unsubscribe(void);
 uint8_t MQTT_Connect(void);
 uint8_t MQTT_Disconnect(void);
 uint8_t MQTT_Ping(void);

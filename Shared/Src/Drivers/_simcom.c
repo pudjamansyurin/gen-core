@@ -99,7 +99,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
 	SIMCOM_RESULT res = SIM_RESULT_ERROR;
 	uint32_t tick = _GetTickMS();
-	uint8_t retry = 3;
+	uint8_t retry = 0;
 
 	Simcom_Lock();
 	do {
@@ -482,11 +482,12 @@ static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT res)
 static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *retry) {
 	// Handle locked-loop
 	if (SIM.state < *lastState) {
-		*retry -= 1;
-		if (!(*retry)) {
-			SIM.state = SIM_STATE_DOWN;
+		if (*retry == 0) {
+			if (SIM.state > SIM_STATE_DOWN)
+				SIM.state--;
 			return 1;
 		}
+		(*retry)--;
 		printf("Simcom:LockedLoop = %u\n", *retry);
 	}
 	*lastState = SIM.state;
@@ -774,7 +775,7 @@ static void SetStateServerOn(SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
 
 	if (*ipStatus == CIPSTAT_CONNECT_OK)
 		if (MQTT_Connect())
-			if (MQTT_DoSubscribe())
+			if (MQTT_Subscribe())
 				valid = 1;
 
 	// upgrade simcom state

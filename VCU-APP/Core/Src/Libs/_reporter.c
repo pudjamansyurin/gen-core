@@ -7,7 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_rtc.h"
-#include "Drivers/_crc.h"
+//#include "Drivers/_crc.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_reporter.h"

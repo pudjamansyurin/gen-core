@@ -474,27 +474,26 @@ void StartIotTask(void *argument)
 		VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
-			if (notif & EVT_IOT_RESUBSCRIBE) {
-				MQTT_DoUnsubscribe();
-				MQTT_DoSubscribe();
-			}
+			if (notif & EVT_IOT_RESUBSCRIBE)
+				MQTT_Disconnect();
 
 			if (notif & EVT_IOT_REPORT_DISCARD)
 				pRep.pending = 0;
 		}
 
+
 		// Upload Response
-		if (RPT_PayloadPending(&pRes))
-			if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+		if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+			if (RPT_PayloadPending(&pRes))
 				if (RPT_WrapPayload(&pRes))
-					if (MQTT_DoPublish(&pRes))
+					if (MQTT_Publish(&pRes))
 						pRes.pending = 0;
 
 		// Upload Report
-		if (RPT_PayloadPending(&pRep))
-			if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+		if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+			if (RPT_PayloadPending(&pRep))
 				if (RPT_WrapPayload(&pRep))
-					if (MQTT_DoPublish(&pRep))
+					if (MQTT_Publish(&pRep))
 						pRep.pending = 0;
 
 		// Check Command
@@ -1203,7 +1202,6 @@ void StartGateTask(void *argument)
 	// Initiate
 	HBAR_Init();
 	HBAR_ReadStates();
-	//	VCU.d.gpio.power5v = GATE_ReadPower5v();
 
 	/* Infinite loop */
 	for (;;) {
@@ -1214,10 +1212,6 @@ void StartGateTask(void *argument)
 			// handle bounce effect
 			_DelayMS(50);
 			//      osThreadFlagsClear(EVT_MASK);
-
-			// BMS Power IRQ
-			//			if (notif & EVT_GATE_REG_5V_IRQ)
-			//				VCU.d.gpio.power5v = GATE_ReadPower5v();
 
 			// Starter Button IRQ
 			if (notif & EVT_GATE_STARTER_IRQ) {
@@ -1250,9 +1244,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 	if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY)
 		return;
-
-	//	if (GPIO_Pin == EXT_REG_5V_IRQ_Pin)
-	//		osThreadFlagsSet(GateTaskHandle, EVT_GATE_REG_5V_IRQ);
 
 	if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
 		if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
