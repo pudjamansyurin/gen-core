@@ -25,7 +25,7 @@ typedef enum {
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {
   char prefix[2];
-  uint32_t crc;
+//  uint32_t crc;
   uint8_t size;
   uint32_t unit_id;
 } header_t;

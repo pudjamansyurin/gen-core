@@ -48,7 +48,7 @@ typedef struct {
     vehicle_state_t vehicle;
   } state;
   struct {
-    uint8_t power5v;
+//    uint8_t power5v;
     struct {
     	uint32_t tick;
     } starter;

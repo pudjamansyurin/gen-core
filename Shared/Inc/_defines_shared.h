@@ -172,7 +172,7 @@
 #define EVT_CAN_TASK_STOP                       BIT(1)
 
 #define EVT_GATE_HBAR                           BIT(0)
-#define EVT_GATE_REG_5V_IRQ                     BIT(1)
+//#define EVT_GATE_REG_5V_IRQ                     BIT(1)
 #define EVT_GATE_STARTER_IRQ                    BIT(2)
 
 #define EVT_HMI2POWER_CHANGED                   BIT(0)
