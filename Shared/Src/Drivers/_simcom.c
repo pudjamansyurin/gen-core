@@ -99,14 +99,10 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
 	SIMCOM_RESULT res = SIM_RESULT_ERROR;
 	uint32_t tick = _GetTickMS();
-	uint8_t retry = 0;
+	uint8_t retry = 2;
 
 	Simcom_Lock();
 	do {
-		// Handle bugs (fix this!)
-		if (SIM.state < SIM_STATE_DOWN)
-			SIM.state = SIM_STATE_DOWN;
-
 		if (StateTimeout(&tick, timeout, res))
 			break;
 		if (StateLockedLoop(&lastState, &retry))
@@ -321,7 +317,7 @@ uint8_t Simcom_Upload(void *payload, uint16_t size) {
 	res = Simcom_Cmd(ptr, SIMCOM_RSP_SEND, 500, 0);
 
 	if (res > 0)
-		res = Simcom_Cmd((char*) payload, SIMCOM_RSP_SENT, 20000, size);
+		res = Simcom_Cmd((char*) payload, SIMCOM_RSP_SENT, 30000, size);
 
 	Simcom_Unlock();
 
@@ -451,8 +447,8 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 				// exception for no response
 				if (strlen(SIMCOM_UART_RX) == 0) {
 					printf("Simcom:NoResponse\n");
-					res = SIM_RESULT_TIMEOUT;
-					// SIM.state = SIM_STATE_DOWN;
+					res = SIM_RESULT_NO_RESPONSE;
+					SIM.state = SIM_STATE_DOWN;
 				}
 
 				// exception for accidentally reboot
@@ -575,6 +571,8 @@ static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, u
 			.mode = CREG_MODE_DISABLE,
 			.stat = CREG_STAT_REG_HOME
 	};
+	uint8_t retry = 5;
+
 	// wait until attached
 	do {
 		*res = AT_NetworkRegistration(type, ATW, &param);
@@ -584,7 +582,7 @@ static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, u
 		if (TimeoutReached(tick, timeout, 1000))
 			break;
 
-	} while (*res && read.stat != param.stat);
+	} while (*res && retry-- && read.stat != param.stat);
 }
 
 static void SetStateDown(SIMCOM_RESULT *res, SIMCOM_STATE *state) {

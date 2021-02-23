@@ -2,7 +2,6 @@
 
 source .env
 
-SRC_BIN_FILE="../${DEVICE}-APP/Release/${DEVICE}-APP.bin"
 APP_BIN_FILE="APP.bin"
 CRC_STR_FILE="CRC.txt"
 CRC_BIN_FILE="CRC.bin"

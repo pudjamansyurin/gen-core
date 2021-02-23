@@ -29,7 +29,7 @@ static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,  uint16_t
 /* Public functions implementation -------------------------------------------*/
 uint8_t MQTT_Publish(payload_t *payload) {
 	char *topic = (payload->type == PAYLOAD_REPORT ? rptTopic : rspTopic);
-	int qos = (payload->type == PAYLOAD_REPORT ? 1 : 2);
+	int qos = (payload->type == PAYLOAD_REPORT ? 1 : 1);
 
 	return Publish(payload->pPayload, payload->size, topic, qos);
 }

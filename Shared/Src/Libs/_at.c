@@ -587,7 +587,7 @@ SIMCOM_RESULT AT_FtpFileSize(at_ftp_t *param) {
 
 	Simcom_Lock();
 	// Read
-	res = CmdRead("AT+FTPSIZE\r", 60000, "+FTPSIZE: ", &str);
+	res = CmdRead("AT+FTPSIZE\r", 20000, "+FTPSIZE: ", &str);
 	if (res > 0) {
 		// parsing
 		ParseNumber(&str[len], &cnt);
@@ -617,7 +617,7 @@ SIMCOM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 	else
 		sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
 
-	res = CmdRead(cmd, 60000, "+FTPGET: ", &str);
+	res = CmdRead(cmd, 20000, "+FTPGET: ", &str);
 
 	if (res > 0) {
 		// parsing
@@ -704,7 +704,7 @@ SIMCOM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
 			// open or close
 			if (tmp.status != param->status) {
 				sprintf(cmd, "AT+SAPBR=%d,1\r", param->cmd_type);
-				res = CmdWrite(cmd, 60000, NULL);
+				res = CmdWrite(cmd, 20000, NULL);
 			}
 		} else
 			*param = tmp;
