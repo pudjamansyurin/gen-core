@@ -93,7 +93,8 @@ SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size);
 SIMCOM_RESULT Simcom_UpdateSignal(void);
 #if (!BOOTLOADER)
 void Simcom_CalibrateTime(void);
-SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size);
+uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen);
+uint8_t Simcom_Upload(void *payload, uint16_t size);
 int Simcom_GetData(unsigned char *buf, int count);
 uint8_t Simcom_ReceiveResponse(uint32_t timeout);
 #endif

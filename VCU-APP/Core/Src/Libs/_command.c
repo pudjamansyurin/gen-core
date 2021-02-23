@@ -67,6 +67,19 @@ void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version) 
 			VCU_BUILD_YEAR);
 }
 
+void CMD_GenQuota(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue) {
+	uint32_t notif;
+
+	osThreadFlagsSet(threadId, EVT_IOT_CHECK_QUOTA);
+
+	// wait response until timeout
+	resp->data.res_code = RESPONSE_STATUS_ERROR;
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 40000))
+		if (notif & EVT_COMMAND_OK)
+			if (osMessageQueueGet(queue, resp->data.message, NULL, 0U) == osOK)
+				resp->data.res_code = RESPONSE_STATUS_OK;
+}
+
 void CMD_GenLed(command_t *cmd) {
 	GATE_LedWrite(cmd->data.value[0]);
 }

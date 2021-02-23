@@ -15,6 +15,7 @@
 void CMD_Init(osMessageQueueId_t mCmdQueue);
 void CMD_CheckCommand(command_t* cmd);
 void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version);
+void CMD_GenQuota(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue);
 void CMD_GenLed(command_t *cmd);
 void CMD_GenOverride(command_t *cmd, uint8_t *override_state);
 void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_version);

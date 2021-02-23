@@ -119,69 +119,69 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
 		// Handle states
 		switch (SIM.state) {
-			case SIM_STATE_DOWN:
-				SetStateDown(&res, &(SIM.state));
-				_DelayMS(500);
-				break;
+		case SIM_STATE_DOWN:
+			SetStateDown(&res, &(SIM.state));
+			_DelayMS(500);
+			break;
 
-			case SIM_STATE_READY:
-				SetStateReady(&res, &(SIM.state));
-				_DelayMS(500);
-				break;
+		case SIM_STATE_READY:
+			SetStateReady(&res, &(SIM.state));
+			_DelayMS(500);
+			break;
 
-			case SIM_STATE_CONFIGURED:
-				SetStateConfigured(&res, &(SIM.state), tick, timeout);
-				_DelayMS(500);
-				break;
+		case SIM_STATE_CONFIGURED:
+			SetStateConfigured(&res, &(SIM.state), tick, timeout);
+			_DelayMS(500);
+			break;
 
-			case SIM_STATE_NETWORK_ON:
-				SetStateNetworkOn(&res, &(SIM.state), tick, timeout);
-				_DelayMS(500);
-				break;
+		case SIM_STATE_NETWORK_ON:
+			SetStateNetworkOn(&res, &(SIM.state), tick, timeout);
+			_DelayMS(500);
+			break;
 
-			case SIM_STATE_GPRS_ON:
-				SetStateGprsOn(&res, &(SIM.state), tick, timeout);
-				_DelayMS(500);
-				break;
+		case SIM_STATE_GPRS_ON:
+			SetStateGprsOn(&res, &(SIM.state), tick, timeout);
+			_DelayMS(500);
+			break;
 
 #if (BOOTLOADER)
-			case SIM_STATE_PDP_ON:
-				SetStatePdpOn(&res, &(SIM.state));
-				_DelayMS(500);
-				break;
-			case SIM_STATE_BEARER_ON:
-				/*nothing*/
-				break;
+		case SIM_STATE_PDP_ON:
+			SetStatePdpOn(&res, &(SIM.state));
+			_DelayMS(500);
+			break;
+		case SIM_STATE_BEARER_ON:
+			/*nothing*/
+			break;
 #else
 
-			case SIM_STATE_PDP_ON:
-				SetStatePdpOn(&res, &(SIM.state), &(SIM.ipstatus));
-				_DelayMS(500);
-				break;
+		case SIM_STATE_PDP_ON:
+			SetStatePdpOn(&res, &(SIM.state), &(SIM.ipstatus));
+			_DelayMS(500);
+			break;
 
-			case SIM_STATE_INTERNET_ON:
-				AT_ConnectionStatusSingle(&(SIM.ipstatus));
-				SetStateInternetOn(&res, &(SIM.state), &(SIM.ipstatus), tick, timeout);
-				_DelayMS(500);
-				break;
+		case SIM_STATE_INTERNET_ON:
+			AT_ConnectionStatusSingle(&(SIM.ipstatus));
+			SetStateInternetOn(&res, &(SIM.state), &(SIM.ipstatus), tick, timeout);
+			_DelayMS(500);
+			break;
 
-			case SIM_STATE_SERVER_ON:
-				AT_ConnectionStatusSingle(&(SIM.ipstatus));
-				SetStateServerOn(&(SIM.state), &(SIM.ipstatus));
-				_DelayMS(500);
-				break;
+		case SIM_STATE_SERVER_ON:
+			AT_ConnectionStatusSingle(&(SIM.ipstatus));
+			SetStateServerOn(&(SIM.state), &(SIM.ipstatus));
+			_DelayMS(500);
+			break;
 
-			case SIM_STATE_MQTT_ON:
-				if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())
-					if (SIM.state == SIM_STATE_MQTT_ON)
-						SIM.state = SIM_STATE_SERVER_ON;
+		case SIM_STATE_MQTT_ON:
+			if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())
+				if (SIM.state == SIM_STATE_MQTT_ON)
+					SIM.state = SIM_STATE_SERVER_ON;
 
-				_DelayMS(500);
-				break;
+			_DelayMS(500);
+			break;
 #endif
 
-			default:
-				break;
+		default:
+			break;
 		}
 	} while (SIM.state < state);
 	Simcom_Unlock();
@@ -247,17 +247,74 @@ SIMCOM_RESULT Simcom_UpdateSignal(void) {
 void Simcom_CalibrateTime(void) {
 	timestamp_t ts;
 
+	if (!Simcom_SetState(SIM_STATE_READY, 0))
+		return;
+
 	if (AT_Clock(ATR, &ts))
 		RTC_Calibrate(&ts);
 }
 
+uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen) {
+	SIMCOM_RESULT res;
 
-SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
-	SIMCOM_RESULT res = SIM_RESULT_ERROR;
+	if (!Simcom_SetState(SIM_STATE_NETWORK_ON, 0))
+		return SIM_RESULT_ERROR;
+
+	// Set TE Character
+	{
+		char chset[5] = "GSM";
+		res = AT_CharacterSetTE(ATW, chset, sizeof(chset));
+	}
+	// Set SMS format
+	if (res > 0) {
+		AT_CMGF param = CMGF_TEXT;
+		res = AT_MessageFormatSMS(ATW, &param);
+	}
+	// Set new SMS indications
+	if (res > 0) {
+		res = AT_MessageIndicationSMS(2, 1);
+	}
+	// Delete readed message
+	if (res > 0) {
+		at_cmgd_t param = {
+				.index = 0,
+				.delflag = CMGD_ALL
+		};
+		res = AT_DeleteMessageSMS(&param);
+	}
+	// Dial USSD (check quota)
+	if (res > 0) {
+		at_cusd_t param = {
+				.n = CUSD_ENABLE,
+				.str = NET_CHECK_QUOTA,
+				.dcs = 15
+		};
+		res = AT_ServiceDataUSSD(ATW, &param);
+	}
+	// Wait SMS message
+	if (res > 0) {
+		at_cmti_t param;
+		res = AT_WaitMessageSMS(&param, 20000);
+
+		// Read SMS response
+		if (res > 0) {
+			at_cmgr_t param2 = {
+					.index = param.index,
+					.mode = CMG_MODE_NORMAL
+			};
+			res = AT_ReadMessageSMS(&param2, buf, buflen);
+		}
+	}
+
+	return res > 0;
+}
+
+uint8_t Simcom_Upload(void *payload, uint16_t size) {
+	SIMCOM_RESULT res;
 	char ptr[20];
 
 	if (SIM.ipstatus != CIPSTAT_CONNECT_OK && SIM.state < SIM_STATE_SERVER_ON)
-		return res;
+		return 0;
 
 	Simcom_Lock();
 	sprintf(ptr, "AT+CIPSEND=%d\r", size);
@@ -268,7 +325,7 @@ SIMCOM_RESULT Simcom_Upload(void *payload, uint16_t size) {
 
 	Simcom_Unlock();
 
-	return res;
+	return res > 0;
 }
 
 int Simcom_GetData(unsigned char *buf, int count) {
@@ -319,7 +376,8 @@ static SIMCOM_RESULT PowerUp(void) {
 
 	res = SoftReset();
 	if (res != SIM_RESULT_OK)
-		return HardReset();
+		if (VCU.d.bat > SIMCOM_MIN_VOLTAGE)
+			return HardReset();
 
 	return res;
 }
@@ -391,8 +449,8 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 				// exception for no response
 				if (strlen(SIMCOM_UART_RX) == 0) {
 					printf("Simcom:NoResponse\n");
-					res = SIM_RESULT_NO_RESPONSE;
-					SIM.state = SIM_STATE_DOWN;
+					res = SIM_RESULT_TIMEOUT;
+					// SIM.state = SIM_STATE_DOWN;
 				}
 
 				// exception for accidentally reboot
@@ -562,9 +620,9 @@ static void SetStateReady(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
 		*res = AT_ConfigureSlowClock(ATW, &param);
 	}
 #if (!BOOTLOADER)
-	// Enable time reporting
+	// Disable time reporting
 	if (*res > 0) {
-		AT_BOOL param = AT_ENABLE;
+		AT_BOOL param = AT_DISABLE;
 		*res = AT_EnableLocalTimestamp(ATW, &param);
 	}
 	// Enable “+IPD” header
@@ -606,6 +664,7 @@ static void SetStateConfigured(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t
 		};
 		*res = AT_RadioAccessTechnology(ATW, &param);
 	}
+
 	// Network Registration Status
 	if (*res > 0)
 		NetworkRegistration("CREG", res, tick, timeout);

@@ -86,6 +86,44 @@ typedef enum {
     CGATT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CGATT;
 
+typedef enum {
+    CMGF_PDU= 0,
+    CMGF_TEXT,
+    CMGF_ForceEnumSize = MAX_ENUM_SIZE
+} AT_CMGF;
+
+typedef enum {
+    CUSD_DISABLE = 0,
+    CUSD_ENABLE,
+	CUSD_CANCEL,
+    CUSD_ForceEnumSize = MAX_ENUM_SIZE
+} AT_CUSD_N;
+
+typedef enum {
+    CMGL_STAT_UNREAD = 0,
+    CMGL_STAT_READ,
+    CMGL_STAT_UNSENT,
+    CMGL_STAT_SENT,
+    CMGL_STAT_ALL,
+    CMGL_ForceEnumSize = MAX_ENUM_SIZE
+} AT_CMGL_STAT;
+
+typedef enum {
+    CMG_MODE_NORMAL = 0,
+    CMG_MODE_CHANGE_STATUS,
+    CMG_MODE_ForceEnumSize = MAX_ENUM_SIZE
+} AT_CMG_MODE;
+
+typedef enum {
+    CMGD_ID = 0,
+	CMGD_READ = 1,
+	CMGD_READ_SENT,
+	CMGD_READ_SENT_UNSENT,
+	CMGD_ALL,
+    CMGD_ForceEnumSize = MAX_ENUM_SIZE
+} AT_CMGD;
+
+
 #if (!BOOTLOADER)
 typedef enum {
     CIPMODE_NORMAL = 0,
@@ -188,6 +226,32 @@ typedef struct {
 } at_csact_t;
 
 typedef struct {
+    AT_CUSD_N n;
+    char str[20];
+    uint8_t dcs;
+} at_cusd_t;
+
+typedef struct {
+    char mem[3];
+    uint8_t index;
+} at_cmti_t;
+
+typedef struct {
+	AT_CMGL_STAT stat;
+	AT_CMG_MODE mode;
+} at_cmgl_t;
+
+typedef struct {
+	uint8_t index;
+	AT_CMG_MODE mode;
+} at_cmgr_t;
+
+typedef struct {
+	uint8_t index;
+	AT_CMGD delflag;
+} at_cmgd_t;
+
+typedef struct {
     AT_CNMP_MODE mode;
     AT_CNMP_PREFERRED preferred;
 } at_cnmp_t;
@@ -250,6 +314,14 @@ SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state);
 SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state);
 SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate);
 SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
+SIMCOM_RESULT AT_CharacterSetTE(AT_MODE mode, char *chset, uint8_t len);
+SIMCOM_RESULT AT_MessageIndicationSMS(uint8_t mode, uint8_t mt);
+SIMCOM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF *state);
+uint8_t AT_WaitMessageSMS(at_cmti_t *param, uint32_t timeout);
+SIMCOM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param);
+SIMCOM_RESULT AT_DeleteMessageSMS(at_cmgd_t *param);
+SIMCOM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen);
+SIMCOM_RESULT AT_ListMessageSMS(at_cmgl_t *param);
 
 #if (!BOOTLOADER)
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);

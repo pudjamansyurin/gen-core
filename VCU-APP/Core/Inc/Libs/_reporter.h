@@ -100,7 +100,7 @@ typedef struct __attribute__((packed)) {
     uint8_t code;
     uint8_t sub_code;
     uint8_t res_code;
-    char message[50];
+    char message[200];
   } data;
 } response_t;
 

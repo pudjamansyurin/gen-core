@@ -300,7 +300,7 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos)
 }
 
 static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply, uint16_t timeout) {
-	if (Simcom_Upload(buf, len) != SIM_RESULT_OK)
+	if (!Simcom_Upload(buf, len))
 		return 0;
 
 	if (reply) {

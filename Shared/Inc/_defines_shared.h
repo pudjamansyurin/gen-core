@@ -54,6 +54,8 @@
 #define NET_CON_APN                             "3gprs"
 #define NET_CON_USERNAME                        "3gprs"
 #define NET_CON_PASSWORD                        "3gprs"
+#define NET_CHECK_QUOTA							"*111*4*2*1*1#"
+
 //#define NET_CON_APN                             "telkomsel"
 //#define NET_CON_USERNAME                        "wap"
 //#define NET_CON_PASSWORD                        "wap123"
@@ -71,6 +73,7 @@
 #define VCU_UNITID                   (uint32_t) 354313
 
 #define FOTA_MIN_VOLTAGE             (uint16_t) 3500
+#define SIMCOM_MIN_VOLTAGE           (uint16_t) 3400
 
 //#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
 //#define NET_TCP_PORT                 (uint16_t) 46606
@@ -133,6 +136,7 @@
 
 #define EVT_IOT_REPORT_DISCARD                  BIT(0)
 #define EVT_IOT_RESUBSCRIBE                     BIT(1)
+#define EVT_IOT_CHECK_QUOTA                     BIT(2)
 
 #define EVT_REPORTER_YIELD	                  	BIT(0)
 
@@ -191,8 +195,9 @@
 
 // Command Sub-Code List
 #define CMD_GEN_INFO                  (uint8_t) 0
-#define CMD_GEN_LED                   (uint8_t) 1
-#define CMD_GEN_OVERRIDE              (uint8_t) 2
+#define CMD_GEN_QUOTA          		  (uint8_t) 1
+#define CMD_GEN_LED                   (uint8_t) 2
+#define CMD_GEN_OVERRIDE              (uint8_t) 3
 
 #define CMD_REPORT_RTC                (uint8_t) 0
 #define CMD_REPORT_ODOM               (uint8_t) 1
