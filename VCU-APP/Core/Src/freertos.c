@@ -173,7 +173,7 @@ const osThreadAttr_t Hmi2PowerTask_attributes = {
 osThreadId_t GateTaskHandle;
 const osThreadAttr_t GateTask_attributes = {
   .name = "GateTask",
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityAboveNormal,
   .stack_size = 224 * 4
 };
 /* Definitions for CommandQueue */

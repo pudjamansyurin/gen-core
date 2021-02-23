@@ -32,7 +32,7 @@ sim_t SIM = {
 };
 
 /* Private functions prototype -----------------------------------------------*/
-static SIMCOM_RESULT WaitUntilReady(void);
+static SIMCOM_RESULT WaitUntilReady(uint32_t timeout);
 static SIMCOM_RESULT PowerUp(void);
 static SIMCOM_RESULT SoftReset(void);
 static SIMCOM_RESULT HardReset(void);
@@ -83,7 +83,6 @@ void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 	SIM.h.uart = huart;
 	SIM.h.dma = hdma;
 
-	//  HAL_UART_Init(huart);
 	MX_USART1_UART_Init();
 	SIMCOM_DMA_Start(huart, hdma);
 }
@@ -254,7 +253,7 @@ uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen) {
 	SIMCOM_RESULT res;
 
 	if (!Simcom_SetState(SIM_STATE_NETWORK_ON, 0))
-		return SIM_RESULT_ERROR;
+		return 0;
 
 	// Set TE Character
 	{
@@ -343,11 +342,10 @@ uint8_t Simcom_ReceiveResponse(uint32_t timeout) {
 		_DelayMS(10);
 	} while (ptr == NULL && (_GetTickMS() - tick) < timeout);
 
-	if (ptr != NULL) {
-
+	if (ptr != NULL)
 		if ((ptr = strstr(ptr, ":")) != NULL)
 			SIM.response = ptr+1;
-	}
+
 
 	return (ptr != NULL);
 }
@@ -355,14 +353,14 @@ uint8_t Simcom_ReceiveResponse(uint32_t timeout) {
 #endif
 
 /* Private functions implementation --------------------------------------------*/
-static SIMCOM_RESULT WaitUntilReady(void) {
+static SIMCOM_RESULT WaitUntilReady(uint32_t timeout) {
 	uint32_t tick = _GetTickMS();
 
 	do {
 		if (Simcom_Resp(SIMCOM_RSP_READY) || Simcom_Resp(SIMCOM_RSP_OK))
 			break;
 		_DelayMS(100);
-	} while (SIM.state == SIM_STATE_DOWN && (_GetTickMS() - tick) < NET_BOOT_TIMEOUT );
+	} while (SIM.state == SIM_STATE_DOWN && (_GetTickMS() - tick) < timeout);
 
 	return Simcom_Cmd(SIMCOM_CMD_BOOT, SIMCOM_RSP_READY, 1000, 0);
 }
@@ -389,20 +387,19 @@ static SIMCOM_RESULT SoftReset(void) {
 	VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 1);
 #endif
 
-	return WaitUntilReady();
+	return WaitUntilReady(NET_BOOT_TIMEOUT);
 }
 
 static SIMCOM_RESULT HardReset(void) {
 	printf("Simcom:HardReset\n");
 	SIMCOM_Reset_Buffer();
 
-	//	Simcom_Init(SIM.h.uart, SIM.h.dma);
 	GATE_SimcomReset();
 #if (!BOOTLOADER)
 	VCU.SetEvent(EV_VCU_NET_HARD_RESET, 1);
 #endif
 
-	return WaitUntilReady();
+	return WaitUntilReady(NET_BOOT_TIMEOUT);
 }
 
 static void Simcom_IdleJob(void) {
@@ -571,7 +568,6 @@ static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, u
 			.mode = CREG_MODE_DISABLE,
 			.stat = CREG_STAT_REG_HOME
 	};
-	uint8_t retry = 5;
 
 	// wait until attached
 	do {
@@ -582,7 +578,7 @@ static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, u
 		if (TimeoutReached(tick, timeout, 1000))
 			break;
 
-	} while (*res && retry-- && read.stat != param.stat);
+	} while (*res && read.stat != param.stat);
 }
 
 static void SetStateDown(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
@@ -672,6 +668,12 @@ static void SetStateConfigured(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t
 	// upgrade simcom state
 	if (*res > 0)
 		*state = SIM_STATE_NETWORK_ON;
+  else if (*state == SIM_STATE_CONFIGURED) {
+    if (HardReset() == SIM_RESULT_OK)
+      *state = SIM_STATE_READY;
+    else
+      *state = SIM_STATE_DOWN;
+  }
 }
 
 static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
