@@ -250,6 +250,7 @@ SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
 	return SingleInteger("CGATT", mode, (int32_t*) state, 0);
 }
 
+#if (!BOOTLOADER)
 SIMCOM_RESULT AT_CharacterSetTE(AT_MODE mode, char *chset, uint8_t len) {
 	return SingleString("CSCS", mode, chset, len, 0);
 }
@@ -385,8 +386,6 @@ SIMCOM_RESULT AT_ListMessageSMS(at_cmgl_t *param) {
 	return res;
 }
 
-
-#if (!BOOTLOADER)
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
 	SIMCOM_RESULT res = SIM_RESULT_ERROR;
 	uint8_t cnt, len = 0;

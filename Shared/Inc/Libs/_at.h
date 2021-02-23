@@ -86,6 +86,7 @@ typedef enum {
     CGATT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CGATT;
 
+#if (!BOOTLOADER)
 typedef enum {
     CMGF_PDU= 0,
     CMGF_TEXT,
@@ -123,8 +124,6 @@ typedef enum {
     CMGD_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CMGD;
 
-
-#if (!BOOTLOADER)
 typedef enum {
     CIPMODE_NORMAL = 0,
     CIPMODE_TRANSPARENT,
@@ -226,6 +225,23 @@ typedef struct {
 } at_csact_t;
 
 typedef struct {
+    AT_CNMP_MODE mode;
+    AT_CNMP_PREFERRED preferred;
+} at_cnmp_t;
+
+typedef struct {
+    AT_C_GREG_MODE mode;
+    AT_C_GREG_STAT stat;
+} at_c_greg_t;
+
+typedef struct {
+    char apn[20];
+    char username[20];
+    char password[20];
+} at_cstt_t;
+
+#if (!BOOTLOADER)
+typedef struct {
     AT_CUSD_N n;
     char str[20];
     uint8_t dcs;
@@ -252,28 +268,10 @@ typedef struct {
 } at_cmgd_t;
 
 typedef struct {
-    AT_CNMP_MODE mode;
-    AT_CNMP_PREFERRED preferred;
-} at_cnmp_t;
-
-typedef struct {
-    AT_C_GREG_MODE mode;
-    AT_C_GREG_STAT stat;
-} at_c_greg_t;
-
-typedef struct {
-    char apn[20];
-    char username[20];
-    char password[20];
-} at_cstt_t;
-
-#if (!BOOTLOADER)
-typedef struct {
     char mode[4];
     char ip[30];
     uint16_t port;
 } at_cipstart_t;
-
 
 typedef struct {
     char address[20];
@@ -314,6 +312,8 @@ SIMCOM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state);
 SIMCOM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state);
 SIMCOM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate);
 SIMCOM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
+
+#if (!BOOTLOADER)
 SIMCOM_RESULT AT_CharacterSetTE(AT_MODE mode, char *chset, uint8_t len);
 SIMCOM_RESULT AT_MessageIndicationSMS(uint8_t mode, uint8_t mt);
 SIMCOM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF *state);
@@ -322,8 +322,6 @@ SIMCOM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param);
 SIMCOM_RESULT AT_DeleteMessageSMS(at_cmgd_t *param);
 SIMCOM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen);
 SIMCOM_RESULT AT_ListMessageSMS(at_cmgl_t *param);
-
-#if (!BOOTLOADER)
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
 SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);

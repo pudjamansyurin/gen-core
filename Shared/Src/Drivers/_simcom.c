@@ -376,7 +376,9 @@ static SIMCOM_RESULT PowerUp(void) {
 
 	res = SoftReset();
 	if (res != SIM_RESULT_OK)
+#if (!BOOTLOADER)
 		if (VCU.d.bat > SIMCOM_MIN_VOLTAGE)
+#endif
 			return HardReset();
 
 	return res;
