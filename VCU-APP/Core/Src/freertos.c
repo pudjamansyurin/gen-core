@@ -103,7 +103,7 @@ const osThreadAttr_t ManagerTask_attributes = {
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
-uint32_t IotTaskBuffer[ 496 ];
+uint32_t IotTaskBuffer[ 592 ];
 osStaticThreadDef_t IotTaskControlBlock;
 const osThreadAttr_t IotTask_attributes = {
   .name = "IotTask",
@@ -127,7 +127,7 @@ const osThreadAttr_t ReporterTask_attributes = {
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
-uint32_t CommandTaskBuffer[ 256 ];
+uint32_t CommandTaskBuffer[ 328 ];
 osStaticThreadDef_t CommandTaskControlBlock;
 const osThreadAttr_t CommandTask_attributes = {
   .name = "CommandTask",
