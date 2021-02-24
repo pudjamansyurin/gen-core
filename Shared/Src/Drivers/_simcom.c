@@ -842,7 +842,7 @@ static void SetStateServerOn(SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
 
 	if (*ipStatus == CIPSTAT_CONNECT_OK)
 		if (MQTT_Connect())
-			if (MQTT_PublishWill())
+			if (MQTT_PublishWill(1))
 				if (MQTT_Subscribe())
 					valid = 1;
 

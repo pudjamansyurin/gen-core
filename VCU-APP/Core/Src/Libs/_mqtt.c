@@ -34,9 +34,9 @@ uint8_t MQTT_Publish(payload_t *payload) {
 	return Publish(payload->pPayload, payload->size, topic, qos);
 }
 
-uint8_t MQTT_PublishWill(void) {
-	char status[] = "1";
-
+uint8_t MQTT_PublishWill(uint8_t on) {
+	char status[2];
+	sprintf(status, "%1d", on);
 	return Publish(status, strlen(status), willTopic, willQos);
 }
 

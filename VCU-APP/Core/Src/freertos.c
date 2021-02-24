@@ -612,8 +612,8 @@ void StartIotTask(void *argument)
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
 			if (notif & EVT_IOT_RESUBSCRIBE) {
+				MQTT_PublishWill(0);
 				MQTT_Disconnect();
-				SIM.state = SIM_STATE_DOWN;
 			}
 
 			if (notif & EVT_IOT_REPORT_DISCARD)
