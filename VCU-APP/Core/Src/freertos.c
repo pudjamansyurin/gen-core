@@ -1462,6 +1462,7 @@ static void CheckVehicleState(void) {
 				osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
 
 				VCU.d.tick.independent = _GetTickMS();
+				VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
 			}
 
 			if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
