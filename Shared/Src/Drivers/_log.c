@@ -38,11 +38,11 @@ int _write(int file, char *ptr, int len)
 	return len;
 }
 
-void LogInit(void) {
+void printf_init(void) {
   setvbuf(stdout, NULL, _IONBF, 0);
 }
 
-void LogBufferHex(char *data, uint16_t size) {
+void printf_hex(char *data, uint16_t size) {
   lock();
   for(uint32_t i=0; i<size; i++)
     printf("%02X", *(data+i));

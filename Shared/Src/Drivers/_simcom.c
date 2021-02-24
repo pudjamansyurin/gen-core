@@ -75,8 +75,18 @@ void Simcom_Unlock(void) {
 	//#endif
 }
 
-char* Simcom_Resp(char *ptr) {
-	return strstr(SIMCOM_UART_RX, ptr);
+char* Simcom_Resp(char *keyword) {
+	return strnstr(SIMCOM_UART_RX, keyword, SIMCOM_UART_RX_SZ);
+}
+
+char* Simcom_RespFrom(char *from, char *keyword) {
+	char *start = &SIMCOM_UART_RX[0];
+	char *stop = &SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
+
+	if (from != NULL)
+		if (from >= start && from <= stop)
+			return strnstr(from, keyword, stop - from);
+	return NULL;
 }
 
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
@@ -92,7 +102,6 @@ void Simcom_DeInit(void) {
 	SIMCOM_DMA_Stop();
 	HAL_UART_DeInit(SIM.h.uart);
 }
-
 
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
@@ -208,7 +217,7 @@ SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size) {
 		if (!upload)
 			printf("%.*s", size, data);
 		else
-			LogBufferHex(data, size);
+			printf_hex(data, size);
 		printf("\n");
 	}
 
@@ -317,7 +326,6 @@ uint8_t Simcom_Upload(void *payload, uint16_t size) {
 
 	if (res > 0)
 		res = Simcom_Cmd((char*) payload, SIMCOM_RSP_SENT, 30000, size);
-
 	Simcom_Unlock();
 
 	return res > 0;
@@ -342,10 +350,8 @@ uint8_t Simcom_ReceiveResponse(uint32_t timeout) {
 		_DelayMS(10);
 	} while (ptr == NULL && (_GetTickMS() - tick) < timeout);
 
-	if (ptr != NULL)
-		if ((ptr = strstr(ptr, ":")) != NULL)
-			SIM.response = ptr+1;
-
+	if ((ptr = Simcom_RespFrom(ptr, ":")) != NULL)
+		SIM.response = ptr+1;
 
 	return (ptr != NULL);
 }
@@ -668,12 +674,12 @@ static void SetStateConfigured(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t
 	// upgrade simcom state
 	if (*res > 0)
 		*state = SIM_STATE_NETWORK_ON;
-  else if (*state == SIM_STATE_CONFIGURED) {
-    if (HardReset() == SIM_RESULT_OK)
-      *state = SIM_STATE_READY;
-    else
-      *state = SIM_STATE_DOWN;
-  }
+	else if (*state == SIM_STATE_CONFIGURED) {
+		if (HardReset() == SIM_RESULT_OK)
+			*state = SIM_STATE_READY;
+		else
+			*state = SIM_STATE_DOWN;
+	}
 }
 
 static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
@@ -836,8 +842,9 @@ static void SetStateServerOn(SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
 
 	if (*ipStatus == CIPSTAT_CONNECT_OK)
 		if (MQTT_Connect())
-			if (MQTT_Subscribe())
-				valid = 1;
+			if (MQTT_PublishWill())
+				if (MQTT_Subscribe())
+					valid = 1;
 
 	// upgrade simcom state
 	if (valid)

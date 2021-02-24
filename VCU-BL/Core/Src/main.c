@@ -91,7 +91,7 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   I2C_ClearBusyFlagErratum1();
-  LogInit();
+  printf_init();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */

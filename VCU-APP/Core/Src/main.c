@@ -95,7 +95,7 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   I2C_ClearBusyFlagErratum1();
-  LogInit();
+  printf_init();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -200,7 +200,7 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 //void _Error_Handler(char *file, int line) {
-//  printf("Something wrong at: file %s on line %d\r\n", file, line);
+//  printf("ERROR: %s on line %d\r\n", file, line);
 //}
 /* USER CODE END 4 */
 

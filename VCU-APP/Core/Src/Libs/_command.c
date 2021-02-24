@@ -47,6 +47,7 @@ void CMD_CheckCommand(command_t *cmd) {
 		return;
 
 	Debugger(cmd);
+	osMessageQueueReset(cmdQueue);
 	osMessageQueuePut(cmdQueue, cmd, 0U, 0U);
 }
 
@@ -81,11 +82,11 @@ void CMD_GenQuota(response_t *resp, osThreadId_t threadId, osMessageQueueId_t qu
 }
 
 void CMD_GenLed(command_t *cmd) {
-	GATE_LedWrite(cmd->data.value[0]);
+	GATE_LedWrite(cmd->data.value.u8[0]);
 }
 
 void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
-	*override_state = cmd->data.value[0];
+	*override_state = cmd->data.value.u8[0];
 }
 
 void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_version) {
@@ -95,11 +96,11 @@ void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_vers
 }
 
 void CMD_ReportRTC(command_t *cmd) {
-	RTC_Write(*(datetime_t*) cmd->data.value);
+	RTC_Write(*(datetime_t*) &cmd->data.value);
 }
 
 void CMD_ReportOdom(command_t *cmd) {
-	EEPROM_Odometer(EE_CMD_W, (*(uint32_t*) cmd->data.value) * 1000);
+	EEPROM_Odometer(EE_CMD_W, (cmd->data.value.u32[0]) * 1000);
 }
 
 
@@ -110,7 +111,7 @@ void CMD_AudioBeep(osThreadId_t threadId) {
 void CMD_AudioMute(command_t *cmd, osThreadId_t threadId) {
 	uint32_t flag;
 
-	flag =  cmd->data.value[0] ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF;
+	flag =  cmd->data.value.u8[0] ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF;
 	osThreadFlagsSet(threadId, flag);
 }
 
@@ -180,7 +181,7 @@ void CMD_Finger(response_t *resp, osThreadId_t threadId, uint8_t event) {
 
 void CMD_RemoteUnitID(command_t *cmd, osThreadId_t threadIot, osThreadId_t threadRemote) {
 	// persist changes
-	EEPROM_UnitID(EE_CMD_W, *(uint32_t*) cmd->data.value);
+	EEPROM_UnitID(EE_CMD_W, cmd->data.value.u32[0]);
 	// resubscribe mqtt topic
 	osThreadFlagsSet(threadIot, EVT_IOT_RESUBSCRIBE);
 	// change nrf address
@@ -201,10 +202,13 @@ void CMD_RemotePairing(response_t *resp, osThreadId_t threadId) {
 
 /* Private functions implementation -------------------------------------------*/
 static void Debugger(command_t *cmd) {
-	printf("Command:Payload [%u-%u] = %.*s\n",
+	printf("Command:Payload [%u-%u]",
 			cmd->data.code,
-			cmd->data.sub_code,
-			sizeof(cmd->data.value),
-			(char*) &(cmd->data.value)
+			cmd->data.sub_code
 	);
+	if (cmd->data.value.u64) {
+		printf(" = ");
+		printf_hex((char*) &(cmd->data.value), sizeof(cmd->data.value));
+	}
+	printf("\n");
 }

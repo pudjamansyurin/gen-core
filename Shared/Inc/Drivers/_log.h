@@ -12,8 +12,8 @@
 #include "_defines.h"
 
 /* Public functions prototype ------------------------------------------------*/
-void LogInit(void);
-void LogBufferHex(char *data, uint16_t size);
+void printf_init(void);
+void printf_hex(char *data, uint16_t size);
 // void Log(const char *fmt, ...);
 
 #endif /* INC_LIBS__LOGGER_H_ */

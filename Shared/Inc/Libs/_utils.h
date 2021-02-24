@@ -13,6 +13,21 @@
 #include "Drivers/_log.h"
 #include "Drivers/_gate.h"
 
+/* Exported union ------------------------------------------------------------*/
+typedef union {
+    uint8_t u8[8];
+    uint16_t u16[4];
+    uint32_t u32[2];
+    uint64_t u64;
+    int8_t s8[8];
+    int16_t s16[4];
+    int32_t s32[2];
+    int64_t s64;
+    char CHAR[8];
+    float FLOAT[2];
+    double DOUBLE;
+} UNION64;
+
 /* Public functions prototype ------------------------------------------------*/
 #if RTOS_ENABLE
 uint8_t _osThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout);

@@ -110,7 +110,7 @@ typedef struct __attribute__((packed)) {
   struct __attribute__((packed)) {
     uint8_t code;
     uint8_t sub_code;
-    uint8_t value[8];
+    UNION64 value;
   } data;
 } command_t;
 

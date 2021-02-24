@@ -13,9 +13,9 @@
 
 /* Private variables ----------------------------------------------------------*/
 static uint32_t last_con = 0;
-static int grantedQos;
+static int grantedQos, willQos = 1;
 static unsigned short packetid = 0;
-static char cmdTopic[20], rptTopic[20], rspTopic[20];
+static char cmdTopic[20], rptTopic[20], rspTopic[20], willTopic[20];
 static unsigned char buf_rx[100];
 static int buflen_rx = sizeof(buf_rx);
 static uint8_t received = 0;
@@ -34,6 +34,12 @@ uint8_t MQTT_Publish(payload_t *payload) {
 	return Publish(payload->pPayload, payload->size, topic, qos);
 }
 
+uint8_t MQTT_PublishWill(void) {
+	char status[] = "1";
+
+	return Publish(status, strlen(status), willTopic, willQos);
+}
+
 uint8_t MQTT_Subscribe(void) {
 	return Subscribe(cmdTopic, 2);
 }
@@ -44,7 +50,7 @@ uint8_t MQTT_Unsubscribe(void) {
 
 uint8_t MQTT_Connect(void) {
 	unsigned char buf[256];
-	char clientId[20];
+	char clientId[20], status[] = "0";
 	int buflen = sizeof(buf);
 	MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
 	unsigned char sessionPresent, connack_rc;
@@ -54,6 +60,7 @@ uint8_t MQTT_Connect(void) {
 	sprintf(cmdTopic, "VCU/%lu/CMD", VCU.d.unit_id);
 	sprintf(rptTopic, "VCU/%lu/RPT", VCU.d.unit_id);
 	sprintf(rspTopic, "VCU/%lu/RSP", VCU.d.unit_id);
+	sprintf(willTopic, "VCU/%lu/STS", VCU.d.unit_id);
 	sprintf(clientId, "VCU-%lu", VCU.d.unit_id);
 
 	// subscribe
@@ -62,6 +69,12 @@ uint8_t MQTT_Connect(void) {
 	data.cleansession = 1;
 	data.username.cstring = MQTT_USERNAME;
 	data.password.cstring = MQTT_PASSWORD;
+
+	data.willFlag = 1;
+	data.will.qos = willQos;
+	data.will.retained = 1;
+	data.will.topicName.cstring = willTopic;
+	data.will.message.cstring = status;
 
 	len = MQTTSerialize_connect(buf, buflen, &data);
 

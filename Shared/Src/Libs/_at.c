@@ -351,9 +351,9 @@ SIMCOM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen) {
 		// parsing
 		if ((str = Simcom_Resp(prefix)) != NULL) {
 			str += strlen(prefix);
-			if ((str = strstr(str, SIMCOM_RSP_NONE)) != NULL) {
+			if ((str = Simcom_RespFrom(str, SIMCOM_RSP_NONE)) != NULL) {
 				str += strlen(SIMCOM_RSP_NONE);
-				if ((end = strstr(str, SIMCOM_RSP_OK)) != NULL) {
+				if ((end = Simcom_RespFrom(str, SIMCOM_RSP_OK)) != NULL) {
 					if ((end - str) < buflen)
 						buflen = (end - str);
 					memcpy(buf, str, buflen);
