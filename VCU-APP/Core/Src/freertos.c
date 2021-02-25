@@ -269,7 +269,7 @@ const osMessageQueueAttr_t ResponseQueue_attributes = {
 };
 /* Definitions for ReportQueue */
 osMessageQueueId_t ReportQueueHandle;
-uint8_t ReportQueueBuffer[ 100 * sizeof( report_t ) ];
+uint8_t ReportQueueBuffer[ 30 * sizeof( report_t ) ];
 osStaticMessageQDef_t ReportQueueControlBlock;
 const osMessageQueueAttr_t ReportQueue_attributes = {
   .name = "ReportQueue",
@@ -440,7 +440,7 @@ void MX_FREERTOS_Init(void) {
   ResponseQueueHandle = osMessageQueueNew (1, sizeof(response_t), &ResponseQueue_attributes);
 
   /* creation of ReportQueue */
-  ReportQueueHandle = osMessageQueueNew (100, sizeof(report_t), &ReportQueue_attributes);
+  ReportQueueHandle = osMessageQueueNew (30, sizeof(report_t), &ReportQueue_attributes);
 
   /* creation of DriverQueue */
   DriverQueueHandle = osMessageQueueNew (1, sizeof(uint8_t), &DriverQueue_attributes);
