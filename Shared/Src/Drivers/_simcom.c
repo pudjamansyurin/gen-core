@@ -731,18 +731,25 @@ static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
 }
 
 #else
-
 static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
 	// =========== PDP ATTACH
 	// Set type of authentication for PDP connections of socket
-	AT_ConnectionStatusSingle(ipStatus);
-	if (*res > 0 && (*ipStatus == CIPSTAT_IP_INITIAL || *ipStatus == CIPSTAT_PDP_DEACT)) {
-		at_cstt_t param = {
-				.apn = NET_CON_APN,
-				.username = NET_CON_USERNAME,
-				.password = NET_CON_PASSWORD,
-		};
-		*res = AT_ConfigureAPN(ATW, &param);
+	if (*res > 0) {
+		AT_ConnectionStatusSingle(ipStatus);
+		if (*ipStatus == CIPSTAT_IP_INITIAL || *ipStatus == CIPSTAT_PDP_DEACT) {
+			at_cstt_t param = {
+					.apn = NET_CON_APN,
+					.username = NET_CON_USERNAME,
+					.password = NET_CON_PASSWORD,
+			};
+			*res = AT_ConfigureAPN(ATW, &param);
+		}
+	}
+	// Check PDP status
+	if (*res > 0) {
+		AT_ConnectionStatusSingle(ipStatus);
+		if (*ipStatus == CIPSTAT_IP_INITIAL || *ipStatus == CIPSTAT_PDP_DEACT)
+			*res = SIM_RESULT_ERROR;
 	}
 	// Select TCPIP application mode:
 	// (0: Non Transparent (command mode), 1: Transparent (data mode))
@@ -763,15 +770,19 @@ static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS 
 
 	// =========== IP ATTACH
 	// Bring Up IP Connection
-	AT_ConnectionStatusSingle(ipStatus);
-	if (*res > 0 && *ipStatus == CIPSTAT_IP_START)
-		*res = Simcom_Cmd("AT+CIICR\r", NULL, 10000, 0);
+	if (*res > 0) {
+		AT_ConnectionStatusSingle(ipStatus);
+		if (*ipStatus == CIPSTAT_IP_START)
+			*res = Simcom_Cmd("AT+CIICR\r", NULL, 10000, 0);
+	}
 
 	// Check IP Address
-	AT_ConnectionStatusSingle(ipStatus);
-	if (*res > 0 && (*ipStatus == CIPSTAT_IP_CONFIG || *ipStatus == CIPSTAT_IP_GPRSACT)) {
-		at_cifsr_t param;
-		*res = AT_GetLocalIpAddress(&param);
+	if (*res > 0) {
+		AT_ConnectionStatusSingle(ipStatus);
+		if (*ipStatus == CIPSTAT_IP_CONFIG || *ipStatus == CIPSTAT_IP_GPRSACT) {
+			at_cifsr_t param;
+			*res = AT_GetLocalIpAddress(&param);
+		}
 	}
 
 	// upgrade simcom state
@@ -779,10 +790,7 @@ static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS 
 		*state = SIM_STATE_INTERNET_ON;
 	else {
 		AT_ConnectionStatusSingle(ipStatus);
-
-		// Close PDP
-		if (*ipStatus != CIPSTAT_IP_INITIAL &&
-				*ipStatus != CIPSTAT_PDP_DEACT)
+		if (*ipStatus != CIPSTAT_IP_INITIAL && *ipStatus != CIPSTAT_PDP_DEACT)
 			*res = Simcom_Cmd("AT+CIPSHUT\r", NULL, 1000, 0);
 
 		if (*state == SIM_STATE_PDP_ON)
