@@ -98,7 +98,7 @@ static timestamp_t RTC_Decode(datetime_t dt) {
 	ts.time.Hours = dt.Hours;
 	ts.time.Minutes = dt.Minutes;
 	ts.time.Seconds = dt.Seconds;
-	ts.date.WeekDay = dt.WeekDay;
+	ts.date.WeekDay = dt.WeekDay == 0 ? 7 : dt.WeekDay;
 
 	return ts;
 }
@@ -112,7 +112,7 @@ static datetime_t RTC_Encode(timestamp_t ts) {
 	dt.Hours = ts.time.Hours;
 	dt.Minutes = ts.time.Minutes;
 	dt.Seconds = ts.time.Seconds;
-	dt.WeekDay = ts.date.WeekDay;
+	dt.WeekDay = ts.date.WeekDay == 7 ? 0 : ts.date.WeekDay;
 
 	return dt;
 }

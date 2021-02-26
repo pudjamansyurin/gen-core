@@ -27,7 +27,7 @@ void CMD_Init(osMessageQueueId_t mCmdQueue) {
 
 void CMD_CheckCommand(command_t *cmd) {
 	uint8_t size = sizeof(cmd->header.unit_id) + sizeof(cmd->data);
-//  uint32_t crc;
+	//  uint32_t crc;
 
 	if (cmd->header.size != size)
 		return;
@@ -35,13 +35,13 @@ void CMD_CheckCommand(command_t *cmd) {
 	if (memcmp(cmd->header.prefix, PREFIX_COMMAND, 2) != 0)
 		return;
 
-//	crc = CRC_Calculate8(
-//			(uint8_t*) &(cmd->header.size),
-//			sizeof(cmd->header.size) + size,
-//			0);
-//
-//	if (cmd->header.crc != crc)
-//		return;
+	//	crc = CRC_Calculate8(
+	//			(uint8_t*) &(cmd->header.size),
+	//			sizeof(cmd->header.size) + size,
+	//			0);
+	//
+	//	if (cmd->header.crc != crc)
+	//		return;
 
 	if (cmd->header.unit_id != VCU.d.unit_id)
 		return;

@@ -736,7 +736,7 @@ static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS 
 	// Set type of authentication for PDP connections of socket
 	if (*res > 0) {
 		AT_ConnectionStatusSingle(ipStatus);
-		if (*ipStatus == CIPSTAT_IP_INITIAL || *ipStatus == CIPSTAT_PDP_DEACT) {
+		if (*ipStatus == CIPSTAT_IP_INITIAL) {
 			at_cstt_t param = {
 					.apn = NET_CON_APN,
 					.username = NET_CON_USERNAME,
