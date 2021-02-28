@@ -133,7 +133,7 @@ void RMT_RefreshPairing(void) {
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	uint8_t *payload = RMT.tx.payload;
 	uint8_t valid = 0, plain[NRF_DATA_LENGTH ];
-	const uint8_t rng = NRF_DATA_LENGTH / 2;
+	uint8_t rng = NRF_DATA_LENGTH / 2;
 
 	lock();
 	// Read payload
@@ -184,13 +184,13 @@ static void ChangeMode(RMT_MODE mode, uint32_t *unit_id) {
 
 	if (mode == RMT_MODE_NORMAL) {
 		// use VCU_ID as address
-		memcpy(RMT.tx.address, unit_id, 4);
-		memcpy(RMT.rx.address, unit_id, 4);
+		memcpy(RMT.tx.address, unit_id, sizeof(uint32_t));
+		memcpy(RMT.rx.address, unit_id, sizeof(uint32_t));
 		payload_width = NRF_DATA_LENGTH;
 	} else {
 		// Set Address (pairing mode)
-		memset(RMT.tx.address, 0x00, 4);
-		memset(RMT.rx.address, 0x00, 4);
+		memset(RMT.tx.address, 0x00, sizeof(uint32_t));
+		memset(RMT.rx.address, 0x00, sizeof(uint32_t));
 		payload_width = NRF_DATA_PAIR_LENGTH;
 	}
 
@@ -220,14 +220,11 @@ static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
 
 static void RMT_GenerateAesKey(uint32_t *aesSwapped) {
 	const uint8_t len = sizeof(uint32_t);
-	//  uint32_t tmp;
 
 	GenRandomNumber32(RMT.pairingAes, len);
 
 	// swap byte order
 	for (uint8_t i = 0; i < len; i++) {
-		//    tmp = _ByteSwap32(RMT.pairingAes[i]);
-		//    memcpy(aesSwapped++, &tmp, len);
 		*aesSwapped = _ByteSwap32(RMT.pairingAes[i]);
 		aesSwapped++;
 	}

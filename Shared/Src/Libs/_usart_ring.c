@@ -105,7 +105,10 @@ void USART_Check_Buffer(usart_ring_t *ring) {
  * Write data to buffer
  */
 void USART_Fill_Buffer(usart_ring_t *ring, size_t start, size_t len) {
-	memcpy(&(ring->usart.buf[ring->usart.idx]), &(ring->dma.buf[start]), len);
+  void *dest = &(ring->usart.buf[ring->usart.idx]);
+  void *src =  &(ring->dma.buf[start]);
+
+	memcpy(dest, src, len);
 	ring->usart.idx += len;
 }
 
@@ -113,7 +116,7 @@ void USART_Fill_Buffer(usart_ring_t *ring, size_t start, size_t len) {
  * Clear rx buffer
  */
 void USART_Reset_Buffer(usart_ring_t *ring) {
-	memset(ring->usart.buf, 0x00, ring->usart.idx);
+	memset(&ring->usart.buf[0], 0x00, ring->usart.idx);
 	ring->usart.idx = 0;
 }
 

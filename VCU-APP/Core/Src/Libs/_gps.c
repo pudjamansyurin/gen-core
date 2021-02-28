@@ -36,11 +36,11 @@ void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 		// set timeout guard
 		tick = _GetTickMS();
 		while ((_GetTickMS() - tick) < 5000) {
-			if (strlen(UBLOX_UART_RX) > 50)
+			if (strnlen(UBLOX_UART_RX, sizeof(UBLOX_UART_RX)) > 50)
 				break;
 			_DelayMS(10);
 		}
-	} while (strlen(UBLOX_UART_RX) <= 50);
+	} while (strnlen(UBLOX_UART_RX, sizeof(UBLOX_UART_RX)) <= 50);
 
 	nmea_init(&(gps.nmea));
 }
@@ -52,7 +52,7 @@ void GPS_DeInit(void) {
 }
 
 uint8_t GPS_Capture(gps_data_t *data) {
-	nmea_process(&(gps.nmea), UBLOX_UART_RX, strlen(UBLOX_UART_RX));
+	nmea_process(&(gps.nmea), UBLOX_UART_RX, strnlen(UBLOX_UART_RX, sizeof(UBLOX_UART_RX)));
 
 	// copy only necessary part
 	data->dop_h = gps.nmea.dop_h;

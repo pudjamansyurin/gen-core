@@ -12,17 +12,16 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define SIMCOM_RSP_NONE                 "\r\n"
-#define SIMCOM_RSP_SEND                 ">"
-#define SIMCOM_RSP_SENT                 "SEND OK\r"
-#define SIMCOM_RSP_OK                   "OK\r"
-#define SIMCOM_RSP_ERROR                "ERROR"
-#define SIMCOM_RSP_READY                "RDY"
-#define SIMCOM_RSP_IPD                  "+IPD,"
-#define SIMCOM_CMD_BOOT                 "AT\r"
-#define SIMCOM_CMD_FTPGET               "AT+FTPGET=2"
-#define SIMCOM_DEBUG                    (uint8_t) 1
-#define SIMCOM_MAX_UPLOAD_RETRY         (uint8_t) 3
+#define SIM_RSP_NONE                 "\r\n"
+#define SIM_RSP_SEND                 ">"
+#define SIM_RSP_SENT                 "SEND OK\r"
+#define SIM_RSP_OK                   "OK\r"
+#define SIM_RSP_ERROR                "ERROR"
+#define SIM_RSP_READY                "RDY"
+#define SIM_RSP_IPD                  "+IPD,"
+#define SIM_CMD_BOOT                 "AT\r"
+#define SIM_CMD_FTPGET               "AT+FTPGET=2"
+#define SIMCOM_DEBUG        (uint8_t) 1
 
 #define MAX_ENUM_SIZE                   (uint32_t) 0xFFFFFFFF
 
@@ -90,7 +89,7 @@ void Simcom_Unlock(void);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Resp(char *keyword);
 char* Simcom_RespFrom(char *from, char *keyword);
-SIMCOM_RESULT Simcom_Cmd(char *data, char *reply, uint32_t ms, uint16_t size);
+SIMCOM_RESULT Simcom_Cmd(char *command, char *reply, uint32_t ms);
 SIMCOM_RESULT Simcom_UpdateSignal(void);
 #if (!BOOTLOADER)
 void Simcom_CalibrateTime(void);

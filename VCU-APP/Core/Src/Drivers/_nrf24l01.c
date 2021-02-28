@@ -36,7 +36,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
 // Checks the presence of the nRF24L01
 NRF_RESULT nrf_check(void) {
   char *nRF24_TEST_ADDR = "nRF24";
-  uint8_t buflen = sizeof(nRF24_TEST_ADDR) - 1U;
+  uint8_t buflen = strlen(nRF24_TEST_ADDR);
   uint8_t *txbuf = (uint8_t*) nRF24_TEST_ADDR;
   uint8_t rxbuf[buflen];
 

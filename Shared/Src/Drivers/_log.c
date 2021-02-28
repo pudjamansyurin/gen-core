@@ -80,7 +80,7 @@ static void SendITM(char ch) {
 
   // wait if busy
   tick = _GetTickMS();
-  while (_GetTickMS() - tick <= 5) {
+  while (_GetTickMS() - tick <= 3) {
     if (ITM->PORT[0].u32 != 0) {
       ITM->PORT[0].u8 = (uint8_t) ch;
       break;

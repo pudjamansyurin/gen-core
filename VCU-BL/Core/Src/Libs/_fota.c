@@ -36,7 +36,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	_DelayMS(1000);
 
 	/* Set FTP directory */
-	strcpy(ftp.path, (type == IAP_HMI) ? "/hmi/" : "/vcu/");
+	sprintf(ftp.path, "/%s/", (type == IAP_HMI) ? "hmi" : "vcu");
 
 	/* Set current IAP type */
 	*(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
@@ -200,8 +200,8 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 				}
 			} else {
 				AT_FtpCurrentState(&state);
-				if (state == FTP_STATE_ESTABLISHED)
-					Simcom_Cmd("AT+FTPQUIT\r", NULL, 500, 0);
+				if (state == FTP_STATE_ESTABLISHED) 
+					Simcom_Cmd("AT+FTPQUIT\r", SIM_RSP_OK, 500);
 
 				res = prepareFTP(ftp, timeout);
 				if (res > 0)

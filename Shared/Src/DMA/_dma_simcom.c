@@ -14,8 +14,8 @@
 char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 
 /* Private variables ----------------------------------------------------------*/
-static char SIMCOM_DMA_RX[SIMCOM_DMA_RX_SZ];
-static usart_ring_t SIMCOM_RING = {
+char SIMCOM_DMA_RX[SIMCOM_DMA_RX_SZ];
+usart_ring_t SIMCOM_RING = {
 	.rx_only = 0,
 	.usart = {
 			.idx = 0,

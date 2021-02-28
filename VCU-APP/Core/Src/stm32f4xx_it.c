@@ -26,6 +26,7 @@
 #include "DMA/_dma_simcom.h"
 #include "DMA/_dma_ublox.h"
 #include "DMA/_dma_finger.h"
+#include "Nodes/VCU.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,6 +65,7 @@ extern I2C_HandleTypeDef hi2c1;
 extern DMA_HandleTypeDef hdma_spi3_tx;
 extern I2S_HandleTypeDef hi2s3;
 extern TIM_HandleTypeDef htim10;
+extern TIM_HandleTypeDef htim13;
 extern DMA_HandleTypeDef hdma_uart4_rx;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart2_rx;
@@ -73,7 +75,7 @@ extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN EV */
-
+extern volatile unsigned long ulHighFrequencyTimerTicks;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -383,6 +385,20 @@ void EXTI15_10_IRQHandler(void)
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */
 
   /* USER CODE END EXTI15_10_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM8 update interrupt and TIM13 global interrupt.
+  */
+void TIM8_UP_TIM13_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM8_UP_TIM13_IRQn 0 */
+  ulHighFrequencyTimerTicks++;
+  /* USER CODE END TIM8_UP_TIM13_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim13);
+  /* USER CODE BEGIN TIM8_UP_TIM13_IRQn 1 */
+
+  /* USER CODE END TIM8_UP_TIM13_IRQn 1 */
 }
 
 /**
