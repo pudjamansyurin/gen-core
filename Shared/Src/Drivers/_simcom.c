@@ -391,7 +391,7 @@ static SIMCOM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint3
 
 	// Debug: print payload
 	if (SIMCOM_DEBUG) {
-		if (strncmp(reply, SIM_RSP_SENT, strlen(reply)) == 0)
+		if (strcmp(reply, SIM_RSP_SENT) == 0)
 			printf_hex(data, size);
 		else {
 	    printf("\n=> ");
@@ -409,7 +409,7 @@ static SIMCOM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint3
 
 	// Debug: print response (ignore FTPGET command)
 	if (SIMCOM_DEBUG)
-		if (strncmp(data, SIM_CMD_FTPGET, size) != 0)
+		if (strnstr(data, SIM_CMD_FTPGET, size) == NULL)
 			printf("%.*s\n", sizeof(SIMCOM_UART_RX), SIMCOM_UART_RX);
 
 	return res;
