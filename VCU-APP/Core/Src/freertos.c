@@ -287,14 +287,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName)
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-	VCU.Init();
-	BMS.Init();
-	HMI1.Init();
-	HMI2.Init();
 
-	RTC_Init(&hrtc, RtcMutexHandle);
-	EEPROM_Init(&hi2c2);
-	BAT_Init(&hadc1);
   /* USER CODE END Init */
   /* Create the mutex(es) */
   /* creation of EepromMutex */
@@ -418,6 +411,15 @@ void StartManagerTask(void *argument)
 	uint8_t activeThreads = (uint8_t) osThreadGetCount();
 	uint8_t totalThreads = sizeof(rtos_task_t) / sizeof(task_t);
 
+	VCU.Init();
+	BMS.Init();
+	HMI1.Init();
+	HMI2.Init();
+
+	BAT_Init(&hadc1);
+	EEPROM_Init(&hi2c2);
+	RTC_Init(&hrtc, RtcMutexHandle);
+
 	// Threads management:
 	osThreadSuspend(IotTaskHandle);
 	osThreadSuspend(ReporterTaskHandle);
@@ -439,6 +441,7 @@ void StartManagerTask(void *argument)
 
 	while(1) {
 		printf("Tick: %lu\n", osKernelGetTickCount());
+		MX_IWDG_Reset();
 	}
 
 	// Release threads

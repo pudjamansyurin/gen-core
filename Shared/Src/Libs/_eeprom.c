@@ -37,22 +37,12 @@ static void unlock(void);
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c) {
 	uint8_t retry = 5, valid = 0;
-//	I2C_module_t module = {
-//			.instance = *hi2c,
-//			.sdaPin = INT_EEPROM_SDA_Pin,
-//			.sdaPort = INT_EEPROM_SDA_GPIO_Port,
-//			.sclPin = INT_EEPROM_SCL_Pin,
-//			.sclPort = INT_EEPROM_SCL_GPIO_Port,
-//	};
 
 	lock();
 	printf("EEPROM:Init\n");
 	EEPROM24XX_SetDevice(hi2c, EEPROM_ADDR);
-	while (!valid && retry--) {
+	while (!valid && retry--)
 		valid = EEPROM24XX_IsConnected(100);
-//		if (!valid)
-//			I2C_ClearBusyFlagErratum(&module);
-	}
 	unlock();
 
 	if (valid) {
