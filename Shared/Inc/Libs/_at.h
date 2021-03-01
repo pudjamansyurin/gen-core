@@ -304,7 +304,7 @@ typedef struct {
 SIMCOM_RESULT AT_CommandEchoMode(uint8_t state);
 SIMCOM_RESULT AT_QueryTransmittedData(at_cipack_t *info);
 SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal);
-SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state);
+SIMCOM_RESULT AT_ConnectionStatus(AT_CIPSTATUS *state);
 SIMCOM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
 SIMCOM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);
 SIMCOM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t *param);
@@ -324,7 +324,7 @@ SIMCOM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen);
 SIMCOM_RESULT AT_ListMessageSMS(at_cmgl_t *param);
 SIMCOM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
 SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
-SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param);
+SIMCOM_RESULT AT_StartConnection(at_cipstart_t *param);
 SIMCOM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm);
 SIMCOM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state);
 SIMCOM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state);

@@ -86,7 +86,7 @@ SIMCOM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
 	return res;
 }
 
-SIMCOM_RESULT AT_ConnectionStatusSingle(AT_CIPSTATUS *state) {
+SIMCOM_RESULT AT_ConnectionStatus(AT_CIPSTATUS *state) {
 	SIMCOM_RESULT res = SIM_RESULT_ERROR;
 	char status[20], *str = NULL;
 	uint8_t len;
@@ -434,7 +434,7 @@ SIMCOM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param) {
 	return res;
 }
 
-SIMCOM_RESULT AT_StartConnectionSingle(at_cipstart_t *param) {
+SIMCOM_RESULT AT_StartConnection(at_cipstart_t *param) {
 	SIMCOM_RESULT res = SIM_RESULT_ERROR;
 	char cmd[80];
 

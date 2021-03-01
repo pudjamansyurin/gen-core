@@ -23,6 +23,7 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "iwdg.h"
 #include "DMA/_dma_simcom.h"
 #include "DMA/_dma_ublox.h"
 #include "DMA/_dma_finger.h"
@@ -107,6 +108,9 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+	  HAL_IWDG_Refresh(&hiwdg);
+	  GATE_LedToggle();
+	  _DelayMS(100);
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }

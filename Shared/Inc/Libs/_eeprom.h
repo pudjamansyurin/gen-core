@@ -29,7 +29,6 @@
 #define VADDR_FOTA_VERSION          (uint16_t) EE_AREA(VADDR_DFU_FLAG + 4, 2)
 #define VADDR_FOTA_TYPE             (uint16_t) EE_AREA(VADDR_FOTA_VERSION + 2, 4)
 
-
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
     EE_CMD_R = 0,
@@ -39,10 +38,7 @@ typedef enum {
 /* Exported variables ---------------------------------------------------------*/
 extern uint16_t FOTA_VERSION;
 extern IAP_TYPE FOTA_TYPE;
-#if (BOOTLOADER)
 extern uint32_t DFU_FLAG;
-#endif
-
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c);
@@ -52,9 +48,8 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
-#else
-uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value);
 #endif
+uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value);
 #endif /* EEPROM_H_ */

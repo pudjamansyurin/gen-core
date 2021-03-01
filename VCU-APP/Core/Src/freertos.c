@@ -375,7 +375,7 @@ const osEventFlagsAttr_t GlobalEvent_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-static void CheckTaskState(rtos_task_t *rtos);
+static void CheckTaskStack(rtos_task_t *rtos);
 static void CheckVehicleState(void);
 /* USER CODE END FunctionPrototypes */
 
@@ -565,9 +565,9 @@ void StartManagerTask(void *argument)
   HMI2.Init();
 
   // Peripheral Initiate
-  RTC_Init(&hrtc, RtcMutexHandle);
-  EEPROM_Init(&hi2c2);
   BAT_Init(&hadc1);
+  EEPROM_Init(&hi2c2);
+  RTC_Init(&hrtc, RtcMutexHandle);
 
   // Threads management:
   //  osThreadSuspend(IotTaskHandle);
@@ -580,8 +580,8 @@ void StartManagerTask(void *argument)
   //  osThreadSuspend(AudioTaskHandle);
   //  osThreadSuspend(CanRxTaskHandle);
   //  osThreadSuspend(CanTxTaskHandle);
-  osThreadSuspend(Hmi2PowerTaskHandle);
   //  osThreadSuspend(GateTaskHandle);
+  osThreadSuspend(Hmi2PowerTaskHandle); // TODO: use osThreadTerminate
 
   // Release threads
   osEventFlagsSet(GlobalEventHandle, EVENT_READY);
@@ -597,7 +597,7 @@ void StartManagerTask(void *argument)
     HMI1.d.state.warning = BMS.d.warning || VCU.d.state.error;
 
     CheckVehicleState();
-    CheckTaskState(&(VCU.d.task));
+    CheckTaskStack(&(VCU.d.task));
 
     BAT_ScanValue(&(VCU.d.bat));
     MX_IWDG_Reset();
@@ -1581,7 +1581,7 @@ static void CheckVehicleState(void) {
   } while (initialState != VCU.d.state.vehicle);
 }
 
-static void CheckTaskState(rtos_task_t *rtos) {
+static void CheckTaskStack(rtos_task_t *rtos) {
   rtos->manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
   rtos->iot.stack = osThreadGetStackSpace(IotTaskHandle);
   rtos->reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);

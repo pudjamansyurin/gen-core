@@ -52,19 +52,20 @@ void CMD_CheckCommand(command_t *cmd) {
 }
 
 void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version) {
-	sprintf(resp->data.message, "VCU v.%d,", VCU_VERSION);
+	char msg[20];
+	sprintf(msg, "VCU v.%d,", VCU_VERSION);
 
 	if (*hmi_started)
 		sprintf(resp->data.message,
 				"%.*s HMI v.%d,",
-				strnlen(resp->data.message, sizeof(resp->data.message)),
-				resp->data.message,
+				strlen(msg),
+				msg,
 				*hmi_version);
 
 	sprintf(resp->data.message,
 			"%.*s "VCU_VENDOR" - 20%d",
-			strnlen(resp->data.message, sizeof(resp->data.message)),
-			resp->data.message,
+			strlen(msg),
+			msg,
 			VCU_BUILD_YEAR);
 }
 
@@ -140,6 +141,7 @@ void CMD_FingerAdd(response_t *resp, osThreadId_t threadId, osMessageQueueId_t q
 void CMD_FingerFetch(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue) {
 	uint32_t notif, len;
 	finger_db_t finger;
+	char fingers[3];
 
 	osThreadFlagsSet(threadId, EVT_FINGER_FETCH);
 
@@ -152,9 +154,8 @@ void CMD_FingerFetch(response_t *resp, osThreadId_t threadId, osMessageQueueId_t
 
 				for (uint8_t id=1; id<=FINGER_USER_MAX; id++) {
 					if (finger.db[id-1]) {
-						sprintf(resp->data.message, "%.*s%u,",
-								strnlen(resp->data.message, sizeof(resp->data.message)), resp->data.message, id
-						);
+						sprintf(fingers, "%1d,", id);
+						strcat(resp->data.message, fingers);
 					}
 				}
 

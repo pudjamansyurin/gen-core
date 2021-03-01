@@ -25,9 +25,7 @@ extern osMutexId_t EepromMutexHandle;
 /* Exported variables ---------------------------------------------------------*/
 uint16_t FOTA_VERSION = 0;
 IAP_TYPE FOTA_TYPE = 0;
-#if (BOOTLOADER)
 uint32_t DFU_FLAG = 0;
-#endif
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
@@ -37,22 +35,12 @@ static void unlock(void);
 /* Public functions implementation --------------------------------------------*/
 uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c) {
 	uint8_t retry = 5, valid = 0;
-//	I2C_module_t module = {
-//			.instance = *hi2c,
-//			.sdaPin = INT_EEPROM_SDA_Pin,
-//			.sdaPort = INT_EEPROM_SDA_GPIO_Port,
-//			.sclPin = INT_EEPROM_SCL_Pin,
-//			.sclPort = INT_EEPROM_SCL_GPIO_Port,
-//	};
 
 	lock();
 	printf("EEPROM:Init\n");
 	EEPROM24XX_SetDevice(hi2c, EEPROM_ADDR);
-	while (!valid && retry--) {
+	while (!valid && retry--)
 		valid = EEPROM24XX_IsConnected(100);
-//		if (!valid)
-//			I2C_ClearBusyFlagErratum(&module);
-	}
 	unlock();
 
 	if (valid) {
@@ -118,11 +106,11 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 
 	return ret;
 }
-#else
+#endif
+
 uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value) {
 	return Command(VADDR_DFU_FLAG, cmd, &value, &DFU_FLAG, sizeof(value));
 }
-#endif
 
 uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value) {
 	return Command(VADDR_FOTA_VERSION, cmd, &value, &FOTA_VERSION, sizeof(value));

@@ -32,6 +32,13 @@ __ALIGN_BEGIN static const uint32_t pKeyAES[4] __ALIGN_END = {
 void MX_AES_Init(void)
 {
 
+  /* USER CODE BEGIN AES_Init 0 */
+
+  /* USER CODE END AES_Init 0 */
+
+  /* USER CODE BEGIN AES_Init 1 */
+
+  /* USER CODE END AES_Init 1 */
   hcryp.Instance = AES;
   hcryp.Init.DataType = CRYP_DATATYPE_8B;
   hcryp.Init.KeySize = CRYP_KEYSIZE_128B;
@@ -43,6 +50,9 @@ void MX_AES_Init(void)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN AES_Init 2 */
+
+  /* USER CODE END AES_Init 2 */
 
 }
 

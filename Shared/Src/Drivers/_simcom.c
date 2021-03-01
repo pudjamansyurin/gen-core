@@ -49,18 +49,18 @@ static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT res)
 static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *retry);
 static uint8_t StatePoorSignal(void);
 static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
-static void SetStateDown(SIMCOM_RESULT *res, SIMCOM_STATE *state);
-static void SetStateReady(SIMCOM_RESULT *res, SIMCOM_STATE *state);
-static void SetStateConfigured(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
-static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
-static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
-static void SetStateGprsOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout);
+static void SetStateDown(SIMCOM_RESULT *res);
+static void SetStateReady(SIMCOM_RESULT *res);
+static void SetStateConfigured(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStateNetworkOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStateNetworkOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStateGprsOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
 #if (BOOTLOADER)
-static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state);
+static void SetStatePdpOn(SIMCOM_RESULT *res);
 #else
-static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus);
-static void SetStateInternetOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus, uint32_t tick, uint32_t timeout);
-static void SetStateServerOn(SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus);
+static void SetStatePdpOn(SIMCOM_RESULT *res);
+static void SetStateInternetOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStateServerOn(void);
 #endif
 
 /* Public functions implementation --------------------------------------------*/
@@ -108,7 +108,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
 	SIMCOM_RESULT res = SIM_RESULT_ERROR;
 	uint32_t tick = _GetTickMS();
-	uint8_t retry = 2;
+	uint8_t retry = 0;
 
 	Simcom_Lock();
 	do {
@@ -124,69 +124,69 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
 		// Handle states
 		switch (SIM.state) {
-		case SIM_STATE_DOWN:
-			SetStateDown(&res, &(SIM.state));
-			_DelayMS(500);
-			break;
+			case SIM_STATE_DOWN:
+				SetStateDown(&res);
+				_DelayMS(500);
+				break;
 
-		case SIM_STATE_READY:
-			SetStateReady(&res, &(SIM.state));
-			_DelayMS(500);
-			break;
+			case SIM_STATE_READY:
+				SetStateReady(&res);
+				_DelayMS(500);
+				break;
 
-		case SIM_STATE_CONFIGURED:
-			SetStateConfigured(&res, &(SIM.state), tick, timeout);
-			_DelayMS(500);
-			break;
+			case SIM_STATE_CONFIGURED:
+				SetStateConfigured(&res, tick, timeout);
+				_DelayMS(500);
+				break;
 
-		case SIM_STATE_NETWORK_ON:
-			SetStateNetworkOn(&res, &(SIM.state), tick, timeout);
-			_DelayMS(500);
-			break;
+			case SIM_STATE_NETWORK_ON:
+				SetStateNetworkOn(&res, tick, timeout);
+				_DelayMS(500);
+				break;
 
-		case SIM_STATE_GPRS_ON:
-			SetStateGprsOn(&res, &(SIM.state), tick, timeout);
-			_DelayMS(500);
-			break;
+			case SIM_STATE_GPRS_ON:
+				SetStateGprsOn(&res, tick, timeout);
+				_DelayMS(500);
+				break;
 
 #if (BOOTLOADER)
-		case SIM_STATE_PDP_ON:
-			SetStatePdpOn(&res, &(SIM.state));
-			_DelayMS(500);
-			break;
-		case SIM_STATE_BEARER_ON:
-			/*nothing*/
-			break;
+			case SIM_STATE_PDP_ON:
+				SetStatePdpOn(&res, &(SIM.state));
+				_DelayMS(500);
+				break;
+			case SIM_STATE_BEARER_ON:
+				/*nothing*/
+				break;
 #else
 
-		case SIM_STATE_PDP_ON:
-			SetStatePdpOn(&res, &(SIM.state), &(SIM.ipstatus));
-			_DelayMS(500);
-			break;
+			case SIM_STATE_PDP_ON:
+				SetStatePdpOn(&res);
+				_DelayMS(500);
+				break;
 
-		case SIM_STATE_INTERNET_ON:
-			AT_ConnectionStatusSingle(&(SIM.ipstatus));
-			SetStateInternetOn(&res, &(SIM.state), &(SIM.ipstatus), tick, timeout);
-			_DelayMS(500);
-			break;
+			case SIM_STATE_INTERNET_ON:
+				AT_ConnectionStatus(&(SIM.ipstatus));
+				SetStateInternetOn(&res, tick, timeout);
+				_DelayMS(500);
+				break;
 
-		case SIM_STATE_SERVER_ON:
-			AT_ConnectionStatusSingle(&(SIM.ipstatus));
-			SetStateServerOn(&(SIM.state), &(SIM.ipstatus));
-			_DelayMS(500);
-			break;
+			case SIM_STATE_SERVER_ON:
+				AT_ConnectionStatus(&(SIM.ipstatus));
+				SetStateServerOn();
+				_DelayMS(500);
+				break;
 
-		case SIM_STATE_MQTT_ON:
-			if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())
-				if (SIM.state == SIM_STATE_MQTT_ON)
-					SIM.state = SIM_STATE_SERVER_ON;
+			case SIM_STATE_MQTT_ON:
+				if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())
+					if (SIM.state == SIM_STATE_MQTT_ON)
+						SIM.state = SIM_STATE_SERVER_ON;
 
-			_DelayMS(500);
-			break;
+				_DelayMS(500);
+				break;
 #endif
 
-		default:
-			break;
+			default:
+				break;
 		}
 	} while (SIM.state < state);
 	Simcom_Unlock();
@@ -378,7 +378,7 @@ static void Simcom_IdleJob(void) {
 	Simcom_UpdateSignal();
 
 #if (!BOOTLOADER)
-	AT_ConnectionStatusSingle(&(SIM.ipstatus));
+	AT_ConnectionStatus(&(SIM.ipstatus));
 #endif
 }
 
@@ -394,7 +394,7 @@ static SIMCOM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint3
 		if (strcmp(reply, SIM_RSP_SENT) == 0)
 			printf_hex(data, size);
 		else {
-	    printf("\n=> ");
+			printf("\n=> ");
 			printf("%.*s", size, data);
 		}
 		printf("\n");
@@ -586,7 +586,7 @@ static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, u
 	} while (*res && read.stat != param.stat);
 }
 
-static void SetStateDown(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
+static void SetStateDown(SIMCOM_RESULT *res) {
 	printf("Simcom:Init\n");
 
 	// power up the module
@@ -595,12 +595,12 @@ static void SetStateDown(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
 	// upgrade simcom state
 	if (*res > 0) {
 		printf("Simcom:ON\n");
-		*state = SIM_STATE_READY;
+		SIM.state = SIM_STATE_READY;
 	} else
 		printf("Simcom:Error\n");
 }
 
-static void SetStateReady(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
+static void SetStateReady(SIMCOM_RESULT *res) {
 	// =========== BASIC CONFIGURATION
 	// disable command echo
 	if (*res > 0)
@@ -639,9 +639,9 @@ static void SetStateReady(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
 #endif
 	// =========== NETWORK CONFIGURATION
 	// Check SIM Card
-	if (*res > 0) 
+	if (*res > 0)
 		*res = Simcom_Cmd("AT+CPIN?\r", "READY", 500);
-	
+
 	// Disable presentation of <AcT>&<rac> at CREG and CGREG
 	if (*res > 0) {
 		at_csact_t param = {
@@ -653,10 +653,13 @@ static void SetStateReady(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
 
 	// upgrade simcom state
 	if (*res > 0)
-		*state = SIM_STATE_CONFIGURED;
+		SIM.state = SIM_STATE_CONFIGURED;
+	else if (SIM.state == SIM_STATE_READY)
+		SIM.state = SIM_STATE_DOWN;
+
 }
 
-static void SetStateConfigured(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
+static void SetStateConfigured(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	// =========== NETWORK ATTACH
 	// Set signal Generation 2G(13)/3G(14)/AUTO(2)
 	if (*res > 0) {
@@ -673,16 +676,12 @@ static void SetStateConfigured(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t
 
 	// upgrade simcom state
 	if (*res > 0)
-		*state = SIM_STATE_NETWORK_ON;
-	else if (*state == SIM_STATE_CONFIGURED) {
-		if (HardReset() == SIM_RESULT_OK)
-			*state = SIM_STATE_READY;
-		else
-			*state = SIM_STATE_DOWN;
-	}
+		SIM.state = SIM_STATE_NETWORK_ON;
+	else if (SIM.state == SIM_STATE_CONFIGURED)
+		SIM.state = SIM_STATE_DOWN; // -2 state
 }
 
-static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
+static void SetStateNetworkOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	// =========== GPRS ATTACH
 	// GPRS Registration Status
 	if (*res > 0)
@@ -690,12 +689,12 @@ static void SetStateNetworkOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t 
 
 	// upgrade simcom state
 	if (*res > 0)
-		*state = SIM_STATE_GPRS_ON;
-	else if (*state == SIM_STATE_NETWORK_ON)
-		*state = SIM_STATE_CONFIGURED;
+		SIM.state = SIM_STATE_GPRS_ON;
+	else if (SIM.state == SIM_STATE_NETWORK_ON)
+		SIM.state = SIM_STATE_CONFIGURED;
 }
 
-static void SetStateGprsOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tick, uint32_t timeout) {
+static void SetStateGprsOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	// Attach to GPRS service
 	if (*res > 0) {
 		AT_CGATT param;
@@ -710,46 +709,41 @@ static void SetStateGprsOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, uint32_t tic
 	}
 
 	// upgrade simcom state
-	if (*res > 0)
-		*state = SIM_STATE_PDP_ON;
-	else if (*state == SIM_STATE_GPRS_ON)
-		*state = SIM_STATE_NETWORK_ON;
+	if (*res > 0) {
+		AT_ConnectionStatus(&(SIM.ipstatus));
+		if (SIM.ipstatus == CIPSTAT_PDP_DEACT)
+			SIM.state = SIM_STATE_DOWN;
+		else
+			SIM.state = SIM_STATE_PDP_ON;
+	} else if (SIM.state == SIM_STATE_GPRS_ON)
+		SIM.state = SIM_STATE_NETWORK_ON;
 }
 
 #if (BOOTLOADER)
-static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state) {
+static void SetStatePdpOn(SIMCOM_RESULT *res) {
 	// =========== FTP CONFIGURATION
 	// Initialise bearer for TCP based applications.
 	*res = AT_BearerInitialize();
 
 	// upgrade simcom state
 	if (*res > 0)
-		*state = SIM_STATE_BEARER_ON;
+		SIM.state = SIM_STATE_BEARER_ON;
 	else
-		if (*state == SIM_STATE_PDP_ON)
-			*state = SIM_STATE_GPRS_ON;
+		if (SIM.state == SIM_STATE_PDP_ON)
+			SIM.state = SIM_STATE_GPRS_ON;
 }
 
 #else
-static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
+static void SetStatePdpOn(SIMCOM_RESULT *res) {
 	// =========== PDP ATTACH
 	// Set type of authentication for PDP connections of socket
 	if (*res > 0) {
-		AT_ConnectionStatusSingle(ipStatus);
-		if (*ipStatus == CIPSTAT_IP_INITIAL) {
-			at_cstt_t param = {
-					.apn = NET_CON_APN,
-					.username = NET_CON_USERNAME,
-					.password = NET_CON_PASSWORD,
-			};
-			*res = AT_ConfigureAPN(ATW, &param);
-		}
-	}
-	// Check PDP status
-	if (*res > 0) {
-		AT_ConnectionStatusSingle(ipStatus);
-		if (*ipStatus == CIPSTAT_IP_INITIAL || *ipStatus == CIPSTAT_PDP_DEACT)
-			*res = SIM_RESULT_ERROR;
+		at_cstt_t param = {
+				.apn = NET_CON_APN,
+				.username = NET_CON_USERNAME,
+				.password = NET_CON_PASSWORD,
+		};
+		*res = AT_ConfigureAPN(ATW, &param);
 	}
 	// Select TCPIP application mode:
 	// (0: Non Transparent (command mode), 1: Transparent (data mode))
@@ -769,17 +763,23 @@ static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS 
 	}
 
 	// =========== IP ATTACH
+	// Check PDP status
+	if (*res > 0) {
+		AT_ConnectionStatus(&(SIM.ipstatus));
+		if (SIM.ipstatus == CIPSTAT_IP_INITIAL || SIM.ipstatus == CIPSTAT_PDP_DEACT)
+			*res = SIM_RESULT_ERROR;
+	}
 	// Bring Up IP Connection
 	if (*res > 0) {
-		AT_ConnectionStatusSingle(ipStatus);
-		if (*ipStatus == CIPSTAT_IP_START)
+		AT_ConnectionStatus(&(SIM.ipstatus));
+		if (SIM.ipstatus == CIPSTAT_IP_START)
 			*res = Simcom_Cmd("AT+CIICR\r", SIM_RSP_OK, 10000);
 	}
 
 	// Check IP Address
 	if (*res > 0) {
-		AT_ConnectionStatusSingle(ipStatus);
-		if (*ipStatus == CIPSTAT_IP_CONFIG || *ipStatus == CIPSTAT_IP_GPRSACT) {
+		AT_ConnectionStatus(&(SIM.ipstatus));
+		if (SIM.ipstatus == CIPSTAT_IP_CONFIG || SIM.ipstatus == CIPSTAT_IP_GPRSACT) {
 			at_cifsr_t param;
 			*res = AT_GetLocalIpAddress(&param);
 		}
@@ -787,68 +787,71 @@ static void SetStatePdpOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS 
 
 	// upgrade simcom state
 	if (*res > 0)
-		*state = SIM_STATE_INTERNET_ON;
+		SIM.state = SIM_STATE_INTERNET_ON;
 	else {
-		AT_ConnectionStatusSingle(ipStatus);
-		if (*ipStatus != CIPSTAT_IP_INITIAL && *ipStatus != CIPSTAT_PDP_DEACT) 
-			*res = Simcom_Cmd("AT+CIPSHUT\r", SIM_RSP_OK, 1000);
+		AT_ConnectionStatus(&(SIM.ipstatus));
+		if (SIM.ipstatus != CIPSTAT_IP_INITIAL) {
+			Simcom_Cmd("AT+CIPCLOSE\r", SIM_RSP_OK, 5000);
+			if (SIM.ipstatus != CIPSTAT_PDP_DEACT)
+				Simcom_Cmd("AT+CIPSHUT\r", SIM_RSP_OK, 1000);
+		}
 
-		if (*state == SIM_STATE_PDP_ON)
-			*state = SIM_STATE_GPRS_ON;
+		if (SIM.state == SIM_STATE_PDP_ON)
+			SIM.state = SIM_STATE_GPRS_ON;
 	}
 }
 
-static void SetStateInternetOn(SIMCOM_RESULT *res, SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus, uint32_t tick, uint32_t timeout) {
+static void SetStateInternetOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	// ============ SOCKET CONFIGURATION
 	// Establish connection with server
-	if (*res > 0 && (*ipStatus != CIPSTAT_CONNECT_OK || *ipStatus != CIPSTAT_CONNECTING)) {
+	if (*res > 0 && (SIM.ipstatus != CIPSTAT_CONNECT_OK || SIM.ipstatus != CIPSTAT_CONNECTING)) {
 		at_cipstart_t param = {
 				.mode = "TCP",
 				.ip = NET_TCP_SERVER,
 				.port = NET_TCP_PORT
 		};
-		*res = AT_StartConnectionSingle(&param);
+		*res = AT_StartConnection(&param);
 
 		// wait until attached
 		do {
-			AT_ConnectionStatusSingle(ipStatus);
+			AT_ConnectionStatus(&(SIM.ipstatus));
 
 			if (TimeoutReached(tick, timeout, 1000))
 				break;
 
-		} while (*ipStatus == CIPSTAT_CONNECTING);
+		} while (SIM.ipstatus == CIPSTAT_CONNECTING);
 	}
 
 	// upgrade simcom state
 	if (*res > 0)
-		*state = SIM_STATE_SERVER_ON;
+		SIM.state = SIM_STATE_SERVER_ON;
 	else {
 		// Check IP Status
-		AT_ConnectionStatusSingle(ipStatus);
+		AT_ConnectionStatus(&(SIM.ipstatus));
 
 		// Close IP
-		if (*ipStatus == CIPSTAT_CONNECT_OK) {
+		if (SIM.ipstatus == CIPSTAT_CONNECT_OK) {
 			*res = Simcom_Cmd("AT+CIPCLOSE\r", SIM_RSP_OK, 1000);
 
 			// wait until closed
 			do {
-				AT_ConnectionStatusSingle(ipStatus);
+				AT_ConnectionStatus(&(SIM.ipstatus));
 
 				if (TimeoutReached(tick, timeout, 1000))
 					break;
 
-			} while (*ipStatus == CIPSTAT_CLOSING);
+			} while (SIM.ipstatus == CIPSTAT_CLOSING);
 		}
 
-		if (*state == SIM_STATE_INTERNET_ON)
-			*state = SIM_STATE_PDP_ON;
+		if (SIM.state == SIM_STATE_INTERNET_ON)
+			SIM.state = SIM_STATE_PDP_ON;
 	}
 }
 
-static void SetStateServerOn(SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
+static void SetStateServerOn(void) {
 	uint8_t valid = 0;
 
-	if (*ipStatus == CIPSTAT_CONNECT_OK)
+	if (SIM.ipstatus == CIPSTAT_CONNECT_OK)
 		if (MQTT_Connect())
 			if (MQTT_PublishWill(1))
 				if (MQTT_Subscribe())
@@ -856,10 +859,10 @@ static void SetStateServerOn(SIMCOM_STATE *state, AT_CIPSTATUS *ipStatus) {
 
 	// upgrade simcom state
 	if (valid)
-		*state = SIM_STATE_MQTT_ON;
-	else if (*state == SIM_STATE_SERVER_ON) {
+		SIM.state = SIM_STATE_MQTT_ON;
+	else if (SIM.state == SIM_STATE_SERVER_ON) {
 		MQTT_Disconnect();
-		*state = SIM_STATE_INTERNET_ON;
+		SIM.state = SIM_STATE_INTERNET_ON;
 	}
 }
 #endif
