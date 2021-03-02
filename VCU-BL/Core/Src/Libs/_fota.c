@@ -17,12 +17,12 @@
 #include "usart.h"
 
 /* Private functions prototypes -----------------------------------------------*/
-static SIMCOM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout);
-static SIMCOM_RESULT openFTP(at_ftpget_t *ftpGET);
+static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout);
+static SIM_RESULT openFTP(at_ftpget_t *ftpGET);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
-	SIMCOM_RESULT res = SIM_RESULT_OK;
+	SIM_RESULT res = SIM_OK;
 	uint32_t timeout = 60000;
 	uint32_t cksumOld = 0, cksumNew = 0, len = 0;
 	at_ftpget_t ftpget;
@@ -141,7 +141,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 }
 
 uint8_t FOTA_DownloadChecksum(at_ftpget_t *ftpGET, uint32_t *checksum) {
-	SIMCOM_RESULT res;
+	SIM_RESULT res;
 
 	// Initiate Download
 	ftpGET->mode = FTPGET_READ;
@@ -151,11 +151,11 @@ uint8_t FOTA_DownloadChecksum(at_ftpget_t *ftpGET, uint32_t *checksum) {
 	if (res > 0)
 		memcpy(checksum, ftpGET->ptr, sizeof(uint32_t));
 
-	return (res == SIM_RESULT_OK);
+	return (res == SIM_OK);
 }
 
 uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len, IAP_TYPE type, uint32_t timeout) {
-	SIMCOM_RESULT res = SIM_RESULT_OK;
+	SIM_RESULT res = SIM_OK;
 	AT_FTP_STATE state;
 	uint32_t timer;
 	float percent;
@@ -217,11 +217,11 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 			printf("FOTA:End = %lu ms\n", _GetTickMS() - timer);
 		else {
 			printf("FOTA:Failed\n");
-			res = SIM_RESULT_ERROR;
+			res = SIM_ERROR;
 		}
 	}
 
-	return (res == SIM_RESULT_OK);
+	return (res == SIM_OK);
 }
 
 uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address) {
@@ -340,8 +340,8 @@ void FOTA_ResetDFU(void) {
 }
 
 /* Private functions implementation --------------------------------------------*/
-static SIMCOM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
-	SIMCOM_RESULT res;
+static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
+	SIM_RESULT res;
 
 	res = Simcom_SetState(SIM_STATE_BEARER_ON, timeout);
 	if (res > 0)
@@ -350,8 +350,8 @@ static SIMCOM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
 	return res;
 }
 
-static SIMCOM_RESULT openFTP(at_ftpget_t *ftpGET) {
-	SIMCOM_RESULT res;
+static SIM_RESULT openFTP(at_ftpget_t *ftpGET) {
+	SIM_RESULT res;
 
 	ftpGET->mode = FTPGET_OPEN;
 	res = AT_FtpDownload(ftpGET);
