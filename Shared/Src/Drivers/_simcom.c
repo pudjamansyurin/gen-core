@@ -32,35 +32,33 @@ sim_t SIM = {
 };
 
 /* Private functions prototype -----------------------------------------------*/
-static SIMCOM_RESULT WaitUntilReady(uint32_t timeout);
-static SIMCOM_RESULT PowerUp(void);
-static SIMCOM_RESULT SoftReset(void);
-static SIMCOM_RESULT HardReset(void);
+static SIM_RESULT PowerUp(void);
+static SIM_RESULT Reset(uint8_t hard);
 static void Simcom_IdleJob(void);
-static SIMCOM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint32_t ms);
-static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *reply);
+static SIM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint32_t ms);
+static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *reply);
 #if (!BOOTLOADER)
-static void BeforeTransmitHook(void);
 static void Simcom_ProcessResponse(void);
 #endif
 
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay);
-static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT res);
+static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIM_RESULT res);
 static uint8_t StateLockedLoop(SIMCOM_STATE *lastState, uint8_t *retry);
 static uint8_t StatePoorSignal(void);
-static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
-static void SetStateDown(SIMCOM_RESULT *res);
-static void SetStateReady(SIMCOM_RESULT *res);
-static void SetStateConfigured(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
-static void SetStateNetworkOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
-static void SetStateNetworkOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
-static void SetStateGprsOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void NetworkRegistration(char *type, SIM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStateDown(SIM_RESULT *res);
+static void SetStateReady(SIM_RESULT *res);
+static void SetStateConfigured(SIM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStateNetworkOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStateNetworkOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStateGprsOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout);
 #if (BOOTLOADER)
-static void SetStatePdpOn(SIMCOM_RESULT *res);
+static void SetStatePdpOn(SIM_RESULT *res);
 #else
-static void SetStatePdpOn(SIMCOM_RESULT *res);
-static void SetStateInternetOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout);
+static void SetStatePdpOn(SIM_RESULT *res);
+static void SetStateInternetOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout);
 static void SetStateServerOn(void);
+static void SetStateMqttOn(void);
 #endif
 
 /* Public functions implementation --------------------------------------------*/
@@ -74,20 +72,6 @@ void Simcom_Unlock(void) {
 	//#if (RTOS_ENABLE)
 	//  osMutexRelease(SimcomRecMutexHandle);
 	//#endif
-}
-
-char* Simcom_Resp(char *keyword) {
-	return strnstr(SIMCOM_UART_RX, keyword, SIMCOM_UART_RX_SZ);
-}
-
-char* Simcom_RespFrom(char *from, char *keyword) {
-	char *start = &SIMCOM_UART_RX[0];
-	char *stop = &SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
-
-	if (from != NULL)
-		if (from >= start && from <= stop)
-			return strnstr(from, keyword, stop - from);
-	return NULL;
 }
 
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
@@ -106,7 +90,7 @@ void Simcom_DeInit(void) {
 
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
-	SIMCOM_RESULT res = SIM_RESULT_ERROR;
+	SIM_RESULT res = SIM_ERROR;
 	uint32_t tick = _GetTickMS();
 	uint8_t retry = 0;
 
@@ -120,39 +104,33 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 			break;
 
 		// Set value
-		res = SIM_RESULT_OK;
+		res = SIM_OK;
 
 		// Handle states
 		switch (SIM.state) {
 			case SIM_STATE_DOWN:
 				SetStateDown(&res);
-				_DelayMS(500);
 				break;
 
 			case SIM_STATE_READY:
 				SetStateReady(&res);
-				_DelayMS(500);
 				break;
 
 			case SIM_STATE_CONFIGURED:
 				SetStateConfigured(&res, tick, timeout);
-				_DelayMS(500);
 				break;
 
 			case SIM_STATE_NETWORK_ON:
 				SetStateNetworkOn(&res, tick, timeout);
-				_DelayMS(500);
 				break;
 
 			case SIM_STATE_GPRS_ON:
 				SetStateGprsOn(&res, tick, timeout);
-				_DelayMS(500);
 				break;
 
 #if (BOOTLOADER)
 			case SIM_STATE_PDP_ON:
-				SetStatePdpOn(&res, &(SIM.state));
-				_DelayMS(500);
+				SetStatePdpOn(&res);
 				break;
 			case SIM_STATE_BEARER_ON:
 				/*nothing*/
@@ -161,52 +139,44 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 
 			case SIM_STATE_PDP_ON:
 				SetStatePdpOn(&res);
-				_DelayMS(500);
 				break;
 
 			case SIM_STATE_INTERNET_ON:
-				AT_ConnectionStatus(&(SIM.ipstatus));
 				SetStateInternetOn(&res, tick, timeout);
-				_DelayMS(500);
 				break;
 
 			case SIM_STATE_SERVER_ON:
-				AT_ConnectionStatus(&(SIM.ipstatus));
 				SetStateServerOn();
-				_DelayMS(500);
 				break;
 
 			case SIM_STATE_MQTT_ON:
-				if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())
-					if (SIM.state == SIM_STATE_MQTT_ON)
-						SIM.state = SIM_STATE_SERVER_ON;
-
-				_DelayMS(500);
+				SetStateMqttOn();
 				break;
 #endif
 
 			default:
 				break;
 		}
+		_DelayMS(500);
 	} while (SIM.state < state);
 	Simcom_Unlock();
 
 	return (SIM.state >= state);
 }
 
-SIMCOM_RESULT Simcom_Cmd(char *command, char *reply, uint32_t ms) {
+SIM_RESULT Simcom_Cmd(char *command, char *reply, uint32_t ms) {
 	return Simcom_CmdRaw(command, strlen(command), reply, ms);
 }
 
-SIMCOM_RESULT Simcom_UpdateSignal(void) {
-	SIMCOM_RESULT res = SIM_RESULT_ERROR;
-	at_csq_t signal;
+char* Simcom_Resp(char *keyword, char *from) {
+	char *start = &SIMCOM_UART_RX[0];
+	char *stop = &SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 
-	res = AT_SignalQualityReport(&signal);
-	if (res > 0)
-		SIM.signal = signal.percent;
+	if (from != NULL)
+		if (from >= start && from <= stop)
+			start = from;
 
-	return res;
+	return strnstr(start, keyword, stop - start);
 }
 
 #if (!BOOTLOADER)
@@ -216,12 +186,12 @@ void Simcom_CalibrateTime(void) {
 	if (!Simcom_SetState(SIM_STATE_READY, 0))
 		return;
 
-	if (AT_Clock(ATR, &ts))
+	if (AT_Clock(ATR, &ts) == SIM_OK)
 		RTC_Calibrate(&ts);
 }
 
 uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen) {
-	SIMCOM_RESULT res;
+	SIM_RESULT res;
 
 	if (!Simcom_SetState(SIM_STATE_NETWORK_ON, 0))
 		return 0;
@@ -232,16 +202,16 @@ uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen) {
 		res = AT_CharacterSetTE(ATW, chset, sizeof(chset));
 	}
 	// Set SMS format
-	if (res > 0) {
+	if (res == SIM_OK) {
 		AT_CMGF param = CMGF_TEXT;
 		res = AT_MessageFormatSMS(ATW, &param);
 	}
 	// Set new SMS indications
-	if (res > 0) {
+	if (res == SIM_OK) {
 		res = AT_MessageIndicationSMS(2, 1);
 	}
 	// Delete readed message
-	if (res > 0) {
+	if (res == SIM_OK) {
 		at_cmgd_t param = {
 				.index = 0,
 				.delflag = CMGD_ALL
@@ -249,7 +219,7 @@ uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen) {
 		res = AT_DeleteMessageSMS(&param);
 	}
 	// Dial USSD (check quota)
-	if (res > 0) {
+	if (res == SIM_OK) {
 		at_cusd_t param = {
 				.n = CUSD_ENABLE,
 				.str = NET_CHECK_QUOTA,
@@ -258,12 +228,12 @@ uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen) {
 		res = AT_ServiceDataUSSD(ATW, &param);
 	}
 	// Wait SMS message
-	if (res > 0) {
+	if (res == SIM_OK) {
 		at_cmti_t param;
 		res = AT_WaitMessageSMS(&param, 20000);
 
 		// Read SMS response
-		if (res > 0) {
+		if (res == SIM_OK) {
 			at_cmgr_t param2 = {
 					.index = param.index,
 					.mode = CMG_MODE_NORMAL
@@ -272,11 +242,11 @@ uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen) {
 		}
 	}
 
-	return res > 0;
+	return res == SIM_OK;
 }
 
 uint8_t Simcom_Upload(void *payload, uint16_t size) {
-	SIMCOM_RESULT res;
+	SIM_RESULT res;
 	char cmd[20];
 
 	if (SIM.ipstatus != CIPSTAT_CONNECT_OK && SIM.state < SIM_STATE_SERVER_ON)
@@ -286,11 +256,11 @@ uint8_t Simcom_Upload(void *payload, uint16_t size) {
 	sprintf(cmd, "AT+CIPSEND=%d\r", size);
 	res = Simcom_Cmd(cmd, SIM_RSP_SEND, 500);
 
-	if (res > 0)
+	if (res == SIM_OK)
 		res = Simcom_CmdRaw((char*) payload, size, SIM_RSP_SENT, 30000);
 	Simcom_Unlock();
 
-	return res > 0;
+	return res == SIM_OK;
 }
 
 int Simcom_GetData(unsigned char *buf, int count) {
@@ -307,16 +277,16 @@ int Simcom_GetData(unsigned char *buf, int count) {
 	return count;
 }
 
-uint8_t Simcom_ReceiveResponse(uint32_t timeout) {
+uint8_t Simcom_ReceivedResponse(uint32_t timeout) {
 	TickType_t tick = _GetTickMS();
 	char *ptr = NULL;
 
 	do {
-		ptr = Simcom_Resp(SIM_RSP_IPD);
+		ptr = Simcom_Resp(SIM_RSP_IPD, NULL);
 		_DelayMS(10);
 	} while (ptr == NULL && (_GetTickMS() - tick) < timeout);
 
-	if ((ptr = Simcom_RespFrom(ptr, ":")) != NULL)
+	if ((ptr = Simcom_Resp(":", ptr)) != NULL)
 		SIM.response = ptr+1;
 
 	return (ptr != NULL);
@@ -325,65 +295,55 @@ uint8_t Simcom_ReceiveResponse(uint32_t timeout) {
 #endif
 
 /* Private functions implementation --------------------------------------------*/
-static SIMCOM_RESULT WaitUntilReady(uint32_t timeout) {
-	uint32_t tick = _GetTickMS();
+static SIM_RESULT PowerUp(void) {
+	SIM_RESULT res;
 
-	do {
-		if (Simcom_Resp(SIM_RSP_READY) || Simcom_Resp(SIM_RSP_OK))
-			break;
-		_DelayMS(100);
-	} while (SIM.state == SIM_STATE_DOWN && (_GetTickMS() - tick) < timeout);
-
-	return Simcom_Cmd(SIM_CMD_BOOT, SIM_RSP_READY, 1000);
-}
-
-static SIMCOM_RESULT PowerUp(void) {
-	SIMCOM_RESULT res;
-
-	res = SoftReset();
-	if (res != SIM_RESULT_OK)
+	res = Reset(0);
+	if (res != SIM_OK)
 #if (!BOOTLOADER)
 		if (VCU.d.bat > SIMCOM_MIN_VOLTAGE)
 #endif
-			return HardReset();
+			return Reset(1);
 
 	return res;
 }
 
-static SIMCOM_RESULT SoftReset(void) {
-	printf("Simcom:SoftReset\n");
-	SIMCOM_Reset_Buffer();
+static SIM_RESULT Reset(uint8_t hard) {
+	uint32_t tick;
 
-	GATE_SimcomSoftReset();
+	SIMCOM_Reset_Buffer();
+	printf("Simcom:%s\n", hard ? "HardReset" : "SoftReset");
+
+	if (hard) GATE_SimcomSoftReset();
+	else GATE_SimcomReset();
+
 #if (!BOOTLOADER)
-	VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 1);
+	VCU.SetEvent(hard ? EV_VCU_NET_HARD_RESET : EV_VCU_NET_SOFT_RESET, 1);
 #endif
 
-	return WaitUntilReady(NET_BOOT_TIMEOUT);
-}
+	// Wait until ready
+	tick = _GetTickMS();
+	do {
+		if (Simcom_Resp(SIM_RSP_READY, NULL) || Simcom_Resp(SIM_RSP_OK, NULL))
+			break;
+		_DelayMS(100);
+	} while (SIM.state == SIM_STATE_DOWN && (_GetTickMS() - tick) < NET_BOOT_TIMEOUT);
 
-static SIMCOM_RESULT HardReset(void) {
-	printf("Simcom:HardReset\n");
-	SIMCOM_Reset_Buffer();
-
-	GATE_SimcomReset();
-#if (!BOOTLOADER)
-	VCU.SetEvent(EV_VCU_NET_HARD_RESET, 1);
-#endif
-
-	return WaitUntilReady(NET_BOOT_TIMEOUT);
+	return Simcom_Cmd(SIM_CMD_BOOT, SIM_RSP_READY, 1000);
 }
 
 static void Simcom_IdleJob(void) {
-	Simcom_UpdateSignal();
+	at_csq_t signal;
+	if (AT_SignalQualityReport(&signal) == SIM_OK)
+		SIM.signal = signal.percent;
 
 #if (!BOOTLOADER)
 	AT_ConnectionStatus(&(SIM.ipstatus));
 #endif
 }
 
-static SIMCOM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint32_t ms) {
-	SIMCOM_RESULT res = SIM_RESULT_ERROR;
+static SIM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint32_t ms) {
+	SIM_RESULT res = SIM_ERROR;
 
 	// only handle command if SIM_STATE_READY or BOOT_CMD
 	if (!(SIM.state >= SIM_STATE_READY || (strncmp(data, SIM_CMD_BOOT, size) == 0)))
@@ -415,48 +375,46 @@ static SIMCOM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint3
 	return res;
 }
 
-static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *reply) {
-	SIMCOM_RESULT res = SIM_RESULT_ERROR;
-	uint32_t tick, timeout = 0;
+static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *reply) {
+	SIM_RESULT res = SIM_ERROR;
+	uint32_t tick;
 
-	// transmit to serial (low-level)
 #if (!BOOTLOADER)
-	BeforeTransmitHook();
+	if (Simcom_ReceivedResponse(0))
+		Simcom_ProcessResponse();
 #endif
 	SIMCOM_Transmit(data, size);
 
-	// set timeout guard
-	timeout = (ms + NET_EXTRA_TIME );
-	tick = _GetTickMS();
-
 	// wait response from SIMCOM
+	ms += NET_EXTRA_TIME;
+	tick = _GetTickMS();
 	while (1) {
-		if (Simcom_Resp(reply)
-				|| Simcom_Resp(SIM_RSP_ERROR)
-				|| Simcom_Resp(SIM_RSP_READY)
+		if (Simcom_Resp(reply, NULL)
+				|| Simcom_Resp(SIM_RSP_ERROR, NULL)
+				|| Simcom_Resp(SIM_RSP_READY, NULL)
 #if (!BOOTLOADER)
-				|| Simcom_Resp(SIM_RSP_IPD)
+				|| Simcom_Resp(SIM_RSP_IPD, NULL)
 #endif
-				|| (_GetTickMS() - tick) > timeout
+				|| (_GetTickMS() - tick) > ms
 		) {
 
 			// check response
-			if (Simcom_Resp(reply))
-				res = SIM_RESULT_OK;
+			if (Simcom_Resp(reply, NULL))
+				res = SIM_OK;
 
 			// Handle failure
 			else {
 				// exception for no response
 				if ( strnlen(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX) ) == 0) {
 					printf("Simcom:NoResponse\n");
-					res = SIM_RESULT_NO_RESPONSE;
+					res = SIM_NORESPONSE;
 					SIM.state = SIM_STATE_DOWN;
 				}
 
 				// exception for accidentally reboot
-				else if (Simcom_Resp(SIM_RSP_READY) && (SIM.state >= SIM_STATE_READY)) {
+				else if (Simcom_Resp(SIM_RSP_READY, NULL) && (SIM.state >= SIM_STATE_READY)) {
 					printf("Simcom:Restarted\n");
-					res = SIM_RESULT_RESTARTED;
+					res = SIM_RESTARTED;
 					SIM.state = SIM_STATE_READY;
 #if (!BOOTLOADER)
 					VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 1);
@@ -465,22 +423,21 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 
 #if (!BOOTLOADER)
 				// exception for server command collision
-				else if (Simcom_ReceiveResponse(0)) {
+				else if (Simcom_ReceivedResponse(0)) {
 					printf("Simcom:CommandCollision\n");
 					Simcom_ProcessResponse();
-					res = SIM_RESULT_TIMEOUT;
+					res = SIM_TIMEOUT;
 				}
 #endif
 
 				// exception for timeout
-				else if ((_GetTickMS() - tick) > timeout) {
+				else if ((_GetTickMS() - tick) > ms) {
 					printf("Simcom:Timeout\n");
-					res = SIM_RESULT_TIMEOUT;
+					res = SIM_TIMEOUT;
 				}
 
-				else {
+				else 
 					printf("Simcom:UnknownError\n");
-				}
 			}
 
 			// exit loop
@@ -497,17 +454,6 @@ static SIMCOM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *r
 }
 
 #if (!BOOTLOADER)
-static void BeforeTransmitHook(void) {
-	// Handle Server Command
-	if (Simcom_ReceiveResponse(0))
-		Simcom_ProcessResponse();
-
-	// handle things on every request
-	// printf("============ SIMCOM DEBUG ============\n");
-	// printf("%.s\n", strnlen(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX)), SIMCOM_UART_RX);
-	// printf("======================================\n");
-}
-
 static void Simcom_ProcessResponse(void) {
 	char *ptr = SIM.response;
 
@@ -526,9 +472,9 @@ static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay) {
 	return 0;
 }
 
-static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIMCOM_RESULT res) {
+static uint8_t StateTimeout(uint32_t *tick, uint32_t timeout, SIM_RESULT res) {
 	if (timeout) {
-		if (res == SIM_RESULT_OK)
+		if (res == SIM_OK)
 			*tick = _GetTickMS();
 
 		if (TimeoutReached(*tick, timeout, 0))
@@ -568,7 +514,7 @@ static uint8_t StatePoorSignal(void) {
 	return 0;
 }
 
-static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
+static void NetworkRegistration(char *type, SIM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	at_c_greg_t read, param = {
 			.mode = CREG_MODE_DISABLE,
 			.stat = CREG_STAT_REG_HOME
@@ -577,7 +523,7 @@ static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, u
 	// wait until attached
 	do {
 		*res = AT_NetworkRegistration(type, ATW, &param);
-		if (*res > 0)
+		if (*res == SIM_OK)
 			*res = AT_NetworkRegistration(type, ATR, &read);
 
 		if (TimeoutReached(tick, timeout, 1000))
@@ -586,64 +532,64 @@ static void NetworkRegistration(char *type, SIMCOM_RESULT *res, uint32_t tick, u
 	} while (*res && read.stat != param.stat);
 }
 
-static void SetStateDown(SIMCOM_RESULT *res) {
+static void SetStateDown(SIM_RESULT *res) {
 	printf("Simcom:Init\n");
 
 	// power up the module
 	*res = PowerUp();
 
 	// upgrade simcom state
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		printf("Simcom:ON\n");
 		SIM.state = SIM_STATE_READY;
 	} else
 		printf("Simcom:Error\n");
 }
 
-static void SetStateReady(SIMCOM_RESULT *res) {
+static void SetStateReady(SIM_RESULT *res) {
 	// =========== BASIC CONFIGURATION
 	// disable command echo
-	if (*res > 0)
+	if (*res == SIM_OK)
 		*res = AT_CommandEchoMode(0);
 	// Set serial baud-rate
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		uint32_t rate = 0;
 		*res = AT_FixedLocalRate(ATW, &rate);
 	}
 	// Error report format: 0, 1(Numeric), 2(verbose)
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_CMEE param = CMEE_VERBOSE;
 		*res = AT_ReportMobileEquipmentError(ATW, &param);
 	}
 	// Use pin DTR as sleep control
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_CSCLK param = CSCLK_EN_DTR;
 		*res = AT_ConfigureSlowClock(ATW, &param);
 	}
 #if (!BOOTLOADER)
 	// Enable time reporting
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_BOOL param = AT_ENABLE;
 		*res = AT_EnableLocalTimestamp(ATW, &param);
 	}
 	// Enable “+IPD” header
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_BOOL param = AT_ENABLE;
 		*res = AT_IpPackageHeader(ATW, &param);
 	}
 	// Disable “RECV FROM” header
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_BOOL param = AT_DISABLE;
 		*res = AT_ShowRemoteIp(ATW, &param);
 	}
 #endif
 	// =========== NETWORK CONFIGURATION
 	// Check SIM Card
-	if (*res > 0)
+	if (*res == SIM_OK)
 		*res = Simcom_Cmd("AT+CPIN?\r", "READY", 500);
 
 	// Disable presentation of <AcT>&<rac> at CREG and CGREG
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		at_csact_t param = {
 				.creg = 0,
 				.cgreg = 0,
@@ -652,17 +598,17 @@ static void SetStateReady(SIMCOM_RESULT *res) {
 	}
 
 	// upgrade simcom state
-	if (*res > 0)
+	if (*res == SIM_OK)
 		SIM.state = SIM_STATE_CONFIGURED;
 	else if (SIM.state == SIM_STATE_READY)
 		SIM.state = SIM_STATE_DOWN;
 
 }
 
-static void SetStateConfigured(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
+static void SetStateConfigured(SIM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	// =========== NETWORK ATTACH
 	// Set signal Generation 2G(13)/3G(14)/AUTO(2)
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		at_cnmp_t param = {
 				.mode = CNMP_ACT_AUTO,
 				.preferred = CNMP_ACT_P_UMTS
@@ -671,32 +617,32 @@ static void SetStateConfigured(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeo
 	}
 
 	// Network Registration Status
-	if (*res > 0)
+	if (*res == SIM_OK)
 		NetworkRegistration("CREG", res, tick, timeout);
 
 	// upgrade simcom state
-	if (*res > 0)
+	if (*res == SIM_OK)
 		SIM.state = SIM_STATE_NETWORK_ON;
 	else if (SIM.state == SIM_STATE_CONFIGURED)
 		SIM.state = SIM_STATE_DOWN; // -2 state
 }
 
-static void SetStateNetworkOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
+static void SetStateNetworkOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	// =========== GPRS ATTACH
 	// GPRS Registration Status
-	if (*res > 0)
+	if (*res == SIM_OK)
 		NetworkRegistration("CGREG", res, tick, timeout);
 
 	// upgrade simcom state
-	if (*res > 0)
+	if (*res == SIM_OK)
 		SIM.state = SIM_STATE_GPRS_ON;
 	else if (SIM.state == SIM_STATE_NETWORK_ON)
 		SIM.state = SIM_STATE_CONFIGURED;
 }
 
-static void SetStateGprsOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
+static void SetStateGprsOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	// Attach to GPRS service
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_CGATT param;
 		// wait until attached
 		do {
@@ -709,7 +655,7 @@ static void SetStateGprsOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) 
 	}
 
 	// upgrade simcom state
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_ConnectionStatus(&(SIM.ipstatus));
 		if (SIM.ipstatus == CIPSTAT_PDP_DEACT)
 			SIM.state = SIM_STATE_DOWN;
@@ -720,13 +666,13 @@ static void SetStateGprsOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) 
 }
 
 #if (BOOTLOADER)
-static void SetStatePdpOn(SIMCOM_RESULT *res) {
+static void SetStatePdpOn(SIM_RESULT *res) {
 	// =========== FTP CONFIGURATION
 	// Initialise bearer for TCP based applications.
 	*res = AT_BearerInitialize();
 
 	// upgrade simcom state
-	if (*res > 0)
+	if (*res == SIM_OK)
 		SIM.state = SIM_STATE_BEARER_ON;
 	else
 		if (SIM.state == SIM_STATE_PDP_ON)
@@ -734,10 +680,10 @@ static void SetStatePdpOn(SIMCOM_RESULT *res) {
 }
 
 #else
-static void SetStatePdpOn(SIMCOM_RESULT *res) {
+static void SetStatePdpOn(SIM_RESULT *res) {
 	// =========== PDP ATTACH
 	// Set type of authentication for PDP connections of socket
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		at_cstt_t param = {
 				.apn = NET_CON_APN,
 				.username = NET_CON_USERNAME,
@@ -747,37 +693,37 @@ static void SetStatePdpOn(SIMCOM_RESULT *res) {
 	}
 	// Select TCPIP application mode:
 	// (0: Non Transparent (command mode), 1: Transparent (data mode))
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_CIPMODE param = CIPMODE_NORMAL;
 		*res = AT_TcpApllicationMode(ATW, &param);
 	}
 	// Set to Single IP Connection (Backend)
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_CIPMUX param = CIPMUX_SINGLE_IP;
 		*res = AT_MultiIpConnection(ATW, &param);
 	}
 	// Get data from network automatically
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_CIPRXGET param = CIPRXGET_DISABLE;
 		*res = AT_ManuallyReceiveData(ATW, &param);
 	}
 
 	// =========== IP ATTACH
 	// Check PDP status
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_ConnectionStatus(&(SIM.ipstatus));
 		if (SIM.ipstatus == CIPSTAT_IP_INITIAL || SIM.ipstatus == CIPSTAT_PDP_DEACT)
-			*res = SIM_RESULT_ERROR;
+			*res = SIM_ERROR;
 	}
 	// Bring Up IP Connection
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_ConnectionStatus(&(SIM.ipstatus));
 		if (SIM.ipstatus == CIPSTAT_IP_START)
 			*res = Simcom_Cmd("AT+CIICR\r", SIM_RSP_OK, 10000);
 	}
 
 	// Check IP Address
-	if (*res > 0) {
+	if (*res == SIM_OK) {
 		AT_ConnectionStatus(&(SIM.ipstatus));
 		if (SIM.ipstatus == CIPSTAT_IP_CONFIG || SIM.ipstatus == CIPSTAT_IP_GPRSACT) {
 			at_cifsr_t param;
@@ -786,7 +732,7 @@ static void SetStatePdpOn(SIMCOM_RESULT *res) {
 	}
 
 	// upgrade simcom state
-	if (*res > 0)
+	if (*res == SIM_OK)
 		SIM.state = SIM_STATE_INTERNET_ON;
 	else {
 		AT_ConnectionStatus(&(SIM.ipstatus));
@@ -801,10 +747,11 @@ static void SetStatePdpOn(SIMCOM_RESULT *res) {
 	}
 }
 
-static void SetStateInternetOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeout) {
+static void SetStateInternetOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout) {
 	// ============ SOCKET CONFIGURATION
 	// Establish connection with server
-	if (*res > 0 && (SIM.ipstatus != CIPSTAT_CONNECT_OK || SIM.ipstatus != CIPSTAT_CONNECTING)) {
+	AT_ConnectionStatus(&(SIM.ipstatus));
+	if (*res == SIM_OK && (SIM.ipstatus != CIPSTAT_CONNECT_OK || SIM.ipstatus != CIPSTAT_CONNECTING)) {
 		at_cipstart_t param = {
 				.mode = "TCP",
 				.ip = NET_TCP_SERVER,
@@ -823,7 +770,7 @@ static void SetStateInternetOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeo
 	}
 
 	// upgrade simcom state
-	if (*res > 0)
+	if (*res == SIM_OK)
 		SIM.state = SIM_STATE_SERVER_ON;
 	else {
 		// Check IP Status
@@ -851,6 +798,7 @@ static void SetStateInternetOn(SIMCOM_RESULT *res, uint32_t tick, uint32_t timeo
 static void SetStateServerOn(void) {
 	uint8_t valid = 0;
 
+	AT_ConnectionStatus(&(SIM.ipstatus));
 	if (SIM.ipstatus == CIPSTAT_CONNECT_OK)
 		if (MQTT_Connect())
 			if (MQTT_PublishWill(1))
@@ -864,6 +812,13 @@ static void SetStateServerOn(void) {
 		MQTT_Disconnect();
 		SIM.state = SIM_STATE_INTERNET_ON;
 	}
+}
+
+static void SetStateMqttOn(void) {
+	AT_ConnectionStatus(&(SIM.ipstatus));
+	if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())
+		if (SIM.state == SIM_STATE_MQTT_ON)
+			SIM.state = SIM_STATE_SERVER_ON;
 }
 #endif
 

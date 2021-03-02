@@ -27,12 +27,12 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-	SIM_RESULT_RESTARTED = -3,
-	SIM_RESULT_NO_RESPONSE = -2,
-	SIM_RESULT_TIMEOUT = -1,
-	SIM_RESULT_ERROR = 0,
-	SIM_RESULT_OK = 1,
-} SIMCOM_RESULT;
+	SIM_RESTARTED = -3,
+	SIM_NORESPONSE = -2,
+	SIM_TIMEOUT = -1,
+	SIM_ERROR = 0,
+	SIM_OK = 1,
+} SIM_RESULT;
 
 typedef enum {
 	SIM_STATE_DOWN = -1,
@@ -87,16 +87,14 @@ void Simcom_DeInit(void);
 void Simcom_Lock(void);
 void Simcom_Unlock(void);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
-char* Simcom_Resp(char *keyword);
-char* Simcom_RespFrom(char *from, char *keyword);
-SIMCOM_RESULT Simcom_Cmd(char *command, char *reply, uint32_t ms);
-SIMCOM_RESULT Simcom_UpdateSignal(void);
+char* Simcom_Resp(char *keyword, char *from);
+SIM_RESULT Simcom_Cmd(char *command, char *reply, uint32_t ms);
 #if (!BOOTLOADER)
 void Simcom_CalibrateTime(void);
 uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen);
 uint8_t Simcom_Upload(void *payload, uint16_t size);
 int Simcom_GetData(unsigned char *buf, int count);
-uint8_t Simcom_ReceiveResponse(uint32_t timeout);
+uint8_t Simcom_ReceivedResponse(uint32_t timeout);
 #endif
 
 #endif /* SIMCOM_H_ */
