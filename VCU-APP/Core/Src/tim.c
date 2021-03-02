@@ -30,8 +30,16 @@ TIM_HandleTypeDef htim13;
 /* TIM10 init function */
 void MX_TIM10_Init(void)
 {
+
+  /* USER CODE BEGIN TIM10_Init 0 */
+
+  /* USER CODE END TIM10_Init 0 */
+
   TIM_OC_InitTypeDef sConfigOC = {0};
 
+  /* USER CODE BEGIN TIM10_Init 1 */
+
+  /* USER CODE END TIM10_Init 1 */
   htim10.Instance = TIM10;
   htim10.Init.Prescaler = 36630-1;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -54,6 +62,9 @@ void MX_TIM10_Init(void)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN TIM10_Init 2 */
+
+  /* USER CODE END TIM10_Init 2 */
   HAL_TIM_MspPostInit(&htim10);
 
 }
@@ -61,6 +72,13 @@ void MX_TIM10_Init(void)
 void MX_TIM13_Init(void)
 {
 
+  /* USER CODE BEGIN TIM13_Init 0 */
+
+  /* USER CODE END TIM13_Init 0 */
+
+  /* USER CODE BEGIN TIM13_Init 1 */
+
+  /* USER CODE END TIM13_Init 1 */
   htim13.Instance = TIM13;
   htim13.Init.Prescaler = 0;
   htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -71,6 +89,9 @@ void MX_TIM13_Init(void)
   {
     Error_Handler();
   }
+  /* USER CODE BEGIN TIM13_Init 2 */
+
+  /* USER CODE END TIM13_Init 2 */
 
 }
 

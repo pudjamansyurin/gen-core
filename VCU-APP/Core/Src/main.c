@@ -117,6 +117,7 @@ int main(void)
   MX_RNG_Init();
   MX_TIM10_Init();
   MX_TIM13_Init();
+  MX_UART9_Init();
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
 

@@ -314,8 +314,8 @@ static SIM_RESULT Reset(uint8_t hard) {
 	SIMCOM_Reset_Buffer();
 	printf("Simcom:%s\n", hard ? "HardReset" : "SoftReset");
 
-	if (hard) GATE_SimcomSoftReset();
-	else GATE_SimcomReset();
+	if (hard) GATE_SimcomReset();
+	else GATE_SimcomSoftReset();
 
 #if (!BOOTLOADER)
 	VCU.SetEvent(hard ? EV_VCU_NET_HARD_RESET : EV_VCU_NET_SOFT_RESET, 1);
@@ -436,7 +436,7 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 					res = SIM_TIMEOUT;
 				}
 
-				else 
+				else
 					printf("Simcom:UnknownError\n");
 			}
 

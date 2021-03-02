@@ -102,6 +102,7 @@ int main(void)
   MX_I2C2_Init();
   MX_USART1_UART_Init();
   MX_IWDG_Init();
+  MX_UART9_Init();
   /* USER CODE BEGIN 2 */
   EEPROM_Init(&hi2c2);
   CANBUS_Init(&hcan1);
