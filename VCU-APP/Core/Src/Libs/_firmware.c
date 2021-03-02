@@ -44,11 +44,11 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
 	uint8_t valid = 0;
 
 	if (FW_ValidResponseIAP()) {
-		sprintf(node, FOTA_TYPE == IAP_HMI ? "HMI":"VCU");
+		sprintf(node, FOTA.TYPE == IAP_HMI ? "HMI":"VCU");
 
 		// set default value
 		response->data.code = CMD_CODE_FOTA;
-		response->data.sub_code = FOTA_TYPE == IAP_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
+		response->data.sub_code = FOTA.TYPE == IAP_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
 		response->data.res_code = RESPONSE_STATUS_ERROR;
 		sprintf(response->data.message, "%s Failed", node);
 
@@ -69,10 +69,10 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
 			case IAP_CANBUS_FAILED:
 				sprintf(response->data.message, "%s Canbus Failed", node);
 				break;
-			case IAP_DFU_ERROR:
-				sprintf(response->data.message, "%s DFU Error", node);
+			case IAP_FOTA_ERROR:
+				sprintf(response->data.message, "%s FOTA Error", node);
 				break;
-			case IAP_DFU_SUCCESS:
+			case IAP_FOTA_SUCCESS:
 				FW_MakeResponseIAP(response->data.message, node, hmi_version);
 
 				response->data.res_code = RESPONSE_STATUS_OK;
@@ -98,9 +98,9 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
 static void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version) {
 	uint32_t tick;
 	uint16_t vNew = VCU_VERSION;
-	uint16_t vOld = FOTA_VERSION;
+	uint16_t vOld = FOTA.VERSION;
 
-	if (FOTA_TYPE == IAP_HMI) {
+	if (FOTA.TYPE == IAP_HMI) {
 		tick = _GetTickMS();
 		do {
 			vNew = *hmi_version;
@@ -133,9 +133,9 @@ static uint8_t FW_ValidResponseIAP(void) {
 			break;
 		case IAP_CANBUS_FAILED:
 			break;
-		case IAP_DFU_ERROR:
+		case IAP_FOTA_ERROR:
 			break;
-		case IAP_DFU_SUCCESS:
+		case IAP_FOTA_SUCCESS:
 			break;
 		default:
 			valid = 0;

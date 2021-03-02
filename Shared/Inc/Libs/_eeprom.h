@@ -12,7 +12,7 @@
 #include "Libs/_utils.h"
 
 /* Exported macro function ---------------------------------------------------*/
-#define EEPROM_ADDR  							  (uint16_t) 0xA0
+#define EEPROM_ADDR  				(uint16_t) 0xA0
 #define EE_NULL                      (uint8_t) 0
 
 /* NOTE: EEPROM is 32 bytes aligned, do not store variable in intersection */
@@ -22,12 +22,19 @@
 #define VADDR_RESET                 (uint16_t) EE_AREA(0, 2)
 #define VADDR_ODOMETER              (uint16_t) EE_AREA(VADDR_RESET + 2, 4)
 #define VADDR_UNITID                (uint16_t) EE_AREA(VADDR_ODOMETER + 4, 4)
-#define VADDR_UNUSED_1         			(uint16_t) EE_AREA(VADDR_UNITID + 4, 2)
-#define VADDR_UNUSED_2       				(uint16_t) EE_AREA(VADDR_UNUSED_1 + 2, 2)
+#define VADDR_UNUSED_1         	    (uint16_t) EE_AREA(VADDR_UNITID + 4, 2)
+#define VADDR_UNUSED_2       	    (uint16_t) EE_AREA(VADDR_UNUSED_1 + 2, 2)
 #define VADDR_AES_KEY               (uint16_t) EE_AREA(VADDR_UNUSED_2 + 2, 16)
-#define VADDR_DFU_FLAG              (uint16_t) EE_AREA(VADDR_AES_KEY + 16, 4)
-#define VADDR_FOTA_VERSION          (uint16_t) EE_AREA(VADDR_DFU_FLAG + 4, 2)
+#define VADDR_FOTA_FLAG             (uint16_t) EE_AREA(VADDR_AES_KEY + 16, 4)
+#define VADDR_FOTA_VERSION          (uint16_t) EE_AREA(VADDR_FOTA_FLAG + 4, 2)
 #define VADDR_FOTA_TYPE             (uint16_t) EE_AREA(VADDR_FOTA_VERSION + 2, 4)
+
+/* Exported struct -----------------------------------------------------------*/
+typedef struct {
+    uint32_t FLAG;
+    uint16_t VERSION;
+    IAP_TYPE TYPE;
+} fota_t;
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
@@ -36,9 +43,7 @@ typedef enum {
 } EEPROM_COMMAND;
 
 /* Exported variables ---------------------------------------------------------*/
-extern uint16_t FOTA_VERSION;
-extern IAP_TYPE FOTA_TYPE;
-extern uint32_t DFU_FLAG;
+extern fota_t FOTA;
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c);
@@ -49,7 +54,7 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
 #endif
-uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value);
+uint8_t EEPROM_FotaFlag(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value);
 #endif /* EEPROM_H_ */

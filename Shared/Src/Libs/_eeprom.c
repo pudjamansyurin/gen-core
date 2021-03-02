@@ -22,10 +22,8 @@
 extern osMutexId_t EepromMutexHandle;
 #endif
 
-/* Exported variables ---------------------------------------------------------*/
-uint16_t FOTA_VERSION = 0;
-IAP_TYPE FOTA_TYPE = 0;
-uint32_t DFU_FLAG = 0;
+/* Public variables -----------------------------------------------------------*/
+fota_t FOTA = {0};
 
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
@@ -90,11 +88,7 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
 }
 
 uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
-	uint8_t ret;
-
-	ret = Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
-
-	return ret;
+	return Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
 }
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
@@ -108,22 +102,22 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 }
 #endif
 
-uint8_t EEPROM_FlagDFU(EEPROM_COMMAND cmd, uint32_t value) {
-	return Command(VADDR_DFU_FLAG, cmd, &value, &DFU_FLAG, sizeof(value));
+uint8_t EEPROM_FotaFlag(EEPROM_COMMAND cmd, uint32_t value) {
+	return Command(VADDR_FOTA_FLAG, cmd, &value, &(FOTA.FLAG), sizeof(value));
 }
 
 uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value) {
-	return Command(VADDR_FOTA_VERSION, cmd, &value, &FOTA_VERSION, sizeof(value));
+	return Command(VADDR_FOTA_VERSION, cmd, &value, &(FOTA.VERSION), sizeof(value));
 }
 
 uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value) {
 	uint32_t result;
 
-	result = Command(VADDR_FOTA_TYPE, cmd, &value, &FOTA_TYPE, sizeof(uint32_t));
+	result = Command(VADDR_FOTA_TYPE, cmd, &value, &(FOTA.TYPE), sizeof(uint32_t));
 
 	if (cmd == EE_CMD_R)
-		if (!(FOTA_TYPE == IAP_VCU || FOTA_TYPE == IAP_HMI))
-			FOTA_TYPE = IAP_VCU;
+		if (!(FOTA.TYPE == IAP_VCU || FOTA.TYPE == IAP_HMI))
+			FOTA.TYPE = IAP_VCU;
 
 	return result;
 }

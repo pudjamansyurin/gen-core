@@ -39,7 +39,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	sprintf(ftp.path, "/%s/", (type == IAP_HMI) ? "hmi" : "vcu");
 
 	/* Set current IAP type */
-	*(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_ERROR;
+	*(uint32_t*) IAP_RESPONSE_ADDR = IAP_FOTA_ERROR;
 	FOCAN_SetProgress(type, 0.0f);
 
 	Simcom_SetState(SIM_STATE_READY, 0);
@@ -47,8 +47,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	/* Backup if needed */
 	if (res > 0) {
 		FOCAN_SetProgress(type, 0.0f);
-		if (!FOTA_InProgressDFU())
-			FOTA_SetDFU();
+		if (!FOTA_InProgress())
+			FOTA_SetFlag();
 	}
 
 	/* Get the stored checksum information */
@@ -129,12 +129,12 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 			_DelayMS(2000);
 	}
 
-	// Reset DFU flag only when FOTA success
+	// Reset FOTA flag only when FOTA success
 	if (res > 0) {
-		FOTA_ResetDFU();
+		FOTA_ResetFlag();
 
 		// Handle success
-		*(uint32_t*) IAP_RESPONSE_ADDR = IAP_DFU_SUCCESS;
+		*(uint32_t*) IAP_RESPONSE_ADDR = IAP_FOTA_SUCCESS;
 	}
 
 	return (res > 0);
@@ -306,7 +306,7 @@ void FOTA_Reboot(IAP_TYPE type) {
 	if (type == IAP_VCU)
 		FLASHER_EraseBkpArea();
 
-	FOTA_ResetDFU();
+	FOTA_ResetFlag();
 	HAL_NVIC_SystemReset();
 }
 
@@ -327,16 +327,16 @@ uint8_t FOTA_NeedBackup(void) {
 	return (FOTA_ValidImage(APP_START_ADDR) && !FOTA_ValidImage(BKP_START_ADDR));
 }
 
-uint8_t FOTA_InProgressDFU(void) {
-	return (DFU_FLAG == DFU_PROGRESS_FLAG );
+uint8_t FOTA_InProgress(void) {
+	return (FOTA.FLAG == FOTA_PROGRESS_FLAG );
 }
 
-void FOTA_SetDFU(void) {
-	EEPROM_FlagDFU(EE_CMD_W, DFU_PROGRESS_FLAG);
+void FOTA_SetFlag(void) {
+	EEPROM_FotaFlag(EE_CMD_W, FOTA_PROGRESS_FLAG);
 }
 
-void FOTA_ResetDFU(void) {
-	EEPROM_FlagDFU(EE_CMD_W, 0);
+void FOTA_ResetFlag(void) {
+	EEPROM_FotaFlag(EE_CMD_W, 0);
 }
 
 /* Private functions implementation --------------------------------------------*/

@@ -115,39 +115,39 @@ int main(void)
     /* USER CODE BEGIN 3 */
   /* IAP flag has been set, initiate firmware download procedure */
   if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
-    printf("IAP set, do DFU.\n");
+    printf("IAP set, do FOTA.\n");
     /* Everything went well */
-    if (FOTA_Upgrade(FOTA_TYPE)) {
+    if (FOTA_Upgrade(FOTA.TYPE)) {
       /* Reset IAP flag */
       *(uint32_t*) IAP_FLAG_ADDR = 0;
       /* Take branching decision on next reboot */
-      FOTA_Reboot(FOTA_TYPE);
+      FOTA_Reboot(FOTA.TYPE);
     }
     /* Reset IAP flag */
     *(uint32_t*) IAP_FLAG_ADDR = 0;
     /* FOTA failed */
     HAL_NVIC_SystemReset();
   }
-  /* Jump to application if it exist and DFU finished */
-  else if (FOTA_ValidImage(APP_START_ADDR) && !FOTA_InProgressDFU()) {
+  /* Jump to application if it exist and FOTA finished */
+  else if (FOTA_ValidImage(APP_START_ADDR) && !FOTA_InProgress()) {
     printf("Jump to application.\n");
     /* Jump sequence */
     FOTA_JumpToApplication();
   }
-  /* Power reset during DFU, try once more */
-  else if (FOTA_InProgressDFU()) {
-    if (FOTA_TYPE == IAP_VCU) {
-      printf("DFU set, do DFU once more.\n");
+  /* Power reset during FOTA, try once more */
+  else if (FOTA_InProgress()) {
+    if (FOTA.TYPE == IAP_VCU) {
+      printf("FOTA set, do FOTA once more.\n");
       /* Everything went well, boot form new image */
       if (FOTA_Upgrade(IAP_VCU)) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA_TYPE);
+        FOTA_Reboot(FOTA.TYPE);
       }
       /* Erase partially programmed application area */
       FLASHER_EraseAppArea();
     }
-    /* Reset DFU flag */
-    FOTA_ResetDFU();
+    /* Reset FOTA flag */
+    FOTA_ResetFlag();
     HAL_NVIC_SystemReset();
   }
   /* Try to restore the backup */
@@ -158,14 +158,14 @@ int main(void)
       /* Restore back old image to application area */
       if (FLASHER_RestoreApp()) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA_TYPE);
+        FOTA_Reboot(FOTA.TYPE);
       }
     } else {
-      printf("No image at all, do DFU.\n");
+      printf("No image at all, do FOTA.\n");
       /* Download new firmware for the first time */
       if (FOTA_Upgrade(IAP_VCU)) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA_TYPE);
+        FOTA_Reboot(FOTA.TYPE);
       }
     }
     HAL_NVIC_SystemReset();

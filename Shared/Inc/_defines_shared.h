@@ -38,7 +38,8 @@
 #define SRAM_END_ADDR                           (SRAM_BASE_ADDR + SRAM_SIZE)
 #define SP_MASK                      (uint32_t) 0x2FFFFFFF
 #define SP_RANGE                                (SP_MASK - (SRAM_SIZE - 1))
-#define DFU_PROGRESS_FLAG            (uint32_t) 0x89ABCDEF
+
+#define FOTA_PROGRESS_FLAG           (uint32_t) 0x89ABCDEF
 #define IAP_FLAG                     (uint32_t) 0xAABBCCDD
 #define IAP_FLAG_ADDR                           (SRAM_END_ADDR - sizeof(uint32_t))
 #define IAP_RESPONSE_ADDR                       (IAP_FLAG_ADDR - sizeof(uint32_t))
@@ -256,8 +257,8 @@ typedef enum {
   IAP_FIRMWARE_SAME = 0xA5BE5FF3,
   IAP_CHECKSUM_INVALID = 0xD7E9EF0D,
   IAP_CANBUS_FAILED = 0x977FC0A3,
-  IAP_DFU_ERROR = 0xFA359EA1,
-  IAP_DFU_SUCCESS = 0x41B0FC9E,
+  IAP_FOTA_ERROR = 0xFA359EA1,
+  IAP_FOTA_SUCCESS = 0x41B0FC9E,
   IAP_RESPONSE_COUNT = 7
 } IAP_RESPONSE;
 

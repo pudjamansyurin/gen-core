@@ -23,8 +23,8 @@ void FOTA_Reboot(IAP_TYPE type);
 void FOTA_GetChecksum(uint32_t *checksum);
 void FOTA_GlueInfo32(uint32_t offset, uint32_t *data);
 uint8_t FOTA_NeedBackup(void);
-uint8_t FOTA_InProgressDFU(void);
-void FOTA_SetDFU(void);
-void FOTA_ResetDFU(void);
+uint8_t FOTA_InProgress(void);
+void FOTA_SetFlag(void);
+void FOTA_ResetFlag(void);
 
 #endif /* INC_LIBS__FOTA_H_ */
