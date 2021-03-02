@@ -26,7 +26,7 @@ void CMD_Init(osMessageQueueId_t mCmdQueue) {
 }
 
 void CMD_CheckCommand(command_t *cmd) {
-	uint8_t size = sizeof(cmd->header.unit_id) + sizeof(cmd->data);
+	uint8_t size = sizeof(cmd->header.unit_id) + sizeof(cmd->header.send_time) + sizeof(cmd->data);
 	//  uint32_t crc;
 
 	if (cmd->header.size != size)

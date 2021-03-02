@@ -15,18 +15,20 @@
 #include "Libs/_eeprom.h"
 #include "Nodes/BMS.h"
 
-/* Private functions declarations -------------------------------------------*/
-static void RPT_SetHeader(PAYLOAD_TYPE type, void *payload, uint32_t unit_id);
-
 /* Public functions implementation -------------------------------------------*/
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar) {
-	RPT_SetHeader(PAYLOAD_REPORT, report, vcu->unit_id);
+	header_t *header = (header_t*) report;
 
-	// Reconstruct the body
+	memcpy(header->prefix, PREFIX_REPORT, 2);
+
+	// Required data
+	header->size = sizeof(report->data.req);
+
 	report->data.req.frame_id = frame;
+	report->data.req.vcu.log_time = RTC_Read();
 	report->data.req.vcu.driver_id = vcu->driver_id;
 	report->data.req.vcu.events_group = vcu->events;
-	report->data.req.vcu.rtc.log = RTC_Read();
+	report->data.req.vcu.vehicle = (int8_t) vcu->state.vehicle;
 
 	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
 		report->data.req.bms.pack[i].id = bms->pack[i].id;
@@ -34,10 +36,9 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 		report->data.req.bms.pack[i].current = (bms->pack[i].current + 50) * 100;
 	}
 
+	// Optional data
 	if (frame == FR_FULL) {
-		report->header.size += sizeof(report->data.opt) + sizeof(report->data.test);
-
-		report->data.req.vcu.vehicle = (int8_t) vcu->state.vehicle;
+		header->size += sizeof(report->data.opt);
 
 		report->data.opt.vcu.gps.latitude = (int32_t) (vcu->gps.latitude * 10000000);
 		report->data.opt.vcu.gps.longitude = (int32_t) (vcu->gps.longitude * 10000000);
@@ -62,14 +63,23 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 			report->data.opt.bms.pack[i].temperature = (bms->pack[i].temperature + 40) * 10;
 		}
 
-		// test data
-		memcpy(&(report->data.test.motion), &(vcu->motion), sizeof(motion_t));
-		memcpy(&(report->data.test.task), &(vcu->task), sizeof(rtos_task_t));
+		// Debug data
+		header->size += sizeof(report->data.debug);
+		memcpy(&(report->data.debug.motion), &(vcu->motion), sizeof(motion_t));
+		memcpy(&(report->data.debug.task), &(vcu->task), sizeof(rtos_task_t));
 	}
 }
 
-void RPT_ResponseCapture(response_t *response, uint32_t *unit_id) {
-	RPT_SetHeader(PAYLOAD_RESPONSE, response, *unit_id);
+void RPT_ResponseCapture(response_t *response) {
+	header_t *header = (header_t*) response;
+
+	memcpy(header->prefix, PREFIX_RESPONSE, 2);
+
+	header->size = sizeof(response->data.code)
+					+sizeof(response->data.sub_code)
+					+sizeof(response->data.res_code)
+					+ strnlen(response->data.message, sizeof(response->data.message)
+					);
 }
 
 void RPT_FrameDecider(uint8_t backup, FRAME_TYPE *frame) {
@@ -96,11 +106,13 @@ uint8_t RPT_PayloadPending(payload_t *payload) {
 	return payload->pending;
 }
 
-uint8_t RPT_WrapPayload(payload_t *payload) {
+uint8_t RPT_WrapPayload(payload_t *payload, uint32_t unit_id) {
 	header_t *header = (header_t*) (payload->pPayload);
 
-	if (payload->type == PAYLOAD_REPORT)
-		((report_t*) payload->pPayload)->data.req.vcu.rtc.send = RTC_Read();
+	header->size += sizeof(header->unit_id) +
+			sizeof(header->send_time);
+	header->unit_id = unit_id;
+	header->send_time = RTC_Read();
 
 	//  // Re-calculate CRC
 	//  header->crc = CRC_Calculate8(
@@ -108,28 +120,10 @@ uint8_t RPT_WrapPayload(payload_t *payload) {
 	//      header->size + sizeof(header->size),
 	//      0);
 
-	// Calculate final size
 	payload->size = sizeof(header->prefix)	+
-//			sizeof(header->crc) +
+			//			sizeof(header->crc) +
 			sizeof(header->size) +
 			header->size;
 
 	return payload->size;
-}
-
-/* Private functions implementation -------------------------------------------*/
-static void RPT_SetHeader(PAYLOAD_TYPE type, void *payload, uint32_t unit_id) {
-	header_t *header = (header_t*) payload;
-
-	memcpy(header->prefix, type == PAYLOAD_REPORT ? PREFIX_REPORT : PREFIX_RESPONSE, 2);
-	header->unit_id = unit_id;
-	header->size = sizeof(header->unit_id);
-
-	if (type == PAYLOAD_REPORT) {
-		report_t *report = (report_t*) payload;
-		header->size += sizeof(report->data.req);
-	} else {
-		response_t *response = (response_t*) payload;
-		header->size += sizeof(response->data.code) +sizeof(response->data.sub_code) +sizeof(response->data.res_code) + strnlen(response->data.message, sizeof(response->data.message));
-	}
 }

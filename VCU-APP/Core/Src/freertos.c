@@ -673,14 +673,14 @@ void StartIotTask(void *argument)
 
     // Upload Response
     if (RPT_PayloadPending(&pRes))
-      if (RPT_WrapPayload(&pRes))
+      if (RPT_WrapPayload(&pRes, VCU.d.unit_id))
         if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
           if (MQTT_Publish(&pRes))
             pRes.pending = 0;
 
     // Upload Report
     if (RPT_PayloadPending(&pRep))
-      if (RPT_WrapPayload(&pRep))
+      if (RPT_WrapPayload(&pRep, VCU.d.unit_id))
         if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
           if (MQTT_Publish(&pRep))
             pRep.pending = 0;
@@ -912,7 +912,7 @@ void StartCommandTask(void *argument)
         response.data.res_code = RESPONSE_STATUS_INVALID;
 
       // Get current snapshot
-      RPT_ResponseCapture(&response, &(VCU.d.unit_id));
+      RPT_ResponseCapture(&response);
       osMessageQueueReset(ResponseQueueHandle);
       osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
     }

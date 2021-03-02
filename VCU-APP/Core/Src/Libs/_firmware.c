@@ -82,12 +82,12 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
 		}
 
 		/* Send Response */
-		RPT_ResponseCapture(response, unit_id);
+		RPT_ResponseCapture(response);
 		valid = 1;
 
 		/* Reset after FOTA */
-		EEPROM_FotaVersion(EE_CMD_W, 0);
 		EEPROM_FotaType(EE_CMD_W, 0);
+		EEPROM_FotaVersion(EE_CMD_W, 0);
 		*(uint32_t*) IAP_RESPONSE_ADDR = 0;
 	}
 
