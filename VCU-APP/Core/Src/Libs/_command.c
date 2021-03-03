@@ -26,24 +26,28 @@ void CMD_Init(osMessageQueueId_t mCmdQueue) {
 }
 
 void CMD_CheckCommand(command_t *cmd) {
-	uint8_t size = sizeof(cmd->header.unit_id) + sizeof(cmd->header.send_time) + sizeof(cmd->data);
 	//  uint32_t crc;
 
-	if (cmd->header.size != size)
-		return;
-
-	if (memcmp(cmd->header.prefix, PREFIX_COMMAND, 2) != 0)
+	if (memcmp(cmd->rx.header.prefix, PREFIX_COMMAND, 2) != 0)
 		return;
 
 	//	crc = CRC_Calculate8(
-	//			(uint8_t*) &(cmd->header.size),
-	//			sizeof(cmd->header.size) + size,
+	//			(uint8_t*) &(cmd->rx.header.size),
+	//			sizeof(cmd->rx.header.size) + size,
 	//			0);
 	//
-	//	if (cmd->header.crc != crc)
+	//	if (cmd->rx.header.crc != crc)
 	//		return;
 
-	if (cmd->header.unit_id != VCU.d.unit_id)
+	if (cmd->rx.header.unit_id != VCU.d.unit_id)
+		return;
+
+	cmd->length = cmd->rx.header.size -
+			(sizeof(cmd->rx.header.unit_id) +
+			sizeof(cmd->rx.header.send_time) +
+			sizeof(cmd->rx.data.code) +
+			sizeof(cmd->rx.data.sub_code));
+	if (cmd->length > sizeof(cmd->rx.data.value) )
 		return;
 
 	Debugger(cmd);
@@ -83,11 +87,11 @@ void CMD_GenQuota(response_t *resp, osThreadId_t threadId, osMessageQueueId_t qu
 }
 
 void CMD_GenLed(command_t *cmd) {
-	GATE_LedWrite(cmd->data.value.u8[0]);
+	GATE_LedWrite(*(uint8_t*) cmd->rx.data.value);
 }
 
 void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
-	*override_state = cmd->data.value.u8[0];
+	*override_state = *(uint8_t*) cmd->rx.data.value;
 }
 
 void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_version) {
@@ -97,11 +101,12 @@ void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_vers
 }
 
 void CMD_ReportRTC(command_t *cmd) {
-	RTC_Write(*(datetime_t*) &cmd->data.value);
+	RTC_Write(*(datetime_t*) cmd->rx.data.value);
 }
 
 void CMD_ReportOdom(command_t *cmd) {
-	EEPROM_Odometer(EE_CMD_W, (cmd->data.value.u32[0]) * 1000);
+	uint32_t value = *(uint32_t*) cmd->rx.data.value;
+	EEPROM_Odometer(EE_CMD_W, value * 1000);
 }
 
 
@@ -110,9 +115,10 @@ void CMD_AudioBeep(osThreadId_t threadId) {
 }
 
 void CMD_AudioMute(command_t *cmd, osThreadId_t threadId) {
+	uint8_t value = *(uint8_t*) cmd->rx.data.value;
 	uint32_t flag;
 
-	flag =  cmd->data.value.u8[0] ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF;
+	flag = value ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF;
 	osThreadFlagsSet(threadId, flag);
 }
 
@@ -168,6 +174,14 @@ void CMD_FingerFetch(response_t *resp, osThreadId_t threadId, osMessageQueueId_t
 }
 
 
+void CMD_FingerDelete(response_t *resp, command_t *cmd, osThreadId_t threadId, osMessageQueueId_t queue) {
+    uint8_t value = *(uint8_t*) cmd->rx.data.value;
+
+	osMessageQueueReset(queue);
+    osMessageQueuePut(queue, &value, 0U, 0U);
+    CMD_Finger(resp, threadId, EVT_FINGER_DEL);
+}
+
 void CMD_Finger(response_t *resp, osThreadId_t threadId, uint8_t event) {
 	uint32_t notif;
 
@@ -181,8 +195,9 @@ void CMD_Finger(response_t *resp, osThreadId_t threadId, uint8_t event) {
 }
 
 void CMD_RemoteUnitID(command_t *cmd, osThreadId_t threadIot, osThreadId_t threadRemote) {
+	uint32_t value = *(uint32_t*) cmd->rx.data.value;
 	// persist changes
-	EEPROM_UnitID(EE_CMD_W, cmd->data.value.u32[0]);
+	EEPROM_UnitID(EE_CMD_W, value);
 	// resubscribe mqtt topic
 	osThreadFlagsSet(threadIot, EVT_IOT_RESUBSCRIBE);
 	// change nrf address
@@ -203,13 +218,14 @@ void CMD_RemotePairing(response_t *resp, osThreadId_t threadId) {
 
 /* Private functions implementation -------------------------------------------*/
 static void Debugger(command_t *cmd) {
-	printf("Command:Payload [%u-%u]",
-			cmd->data.code,
-			cmd->data.sub_code
+	printf("Command:Payload (%u-%u)[%u]",
+			cmd->rx.data.code,
+			cmd->rx.data.sub_code,
+			cmd->length
 	);
-	if (cmd->data.value.u64) {
+	if (cmd->length) {
 		printf(" = ");
-		printf_hex((char*) &(cmd->data.value), sizeof(cmd->data.value));
+		printf_hex(cmd->rx.data.value, cmd->length);
 	}
 	printf("\n");
 }

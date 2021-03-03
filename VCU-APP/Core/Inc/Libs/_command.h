@@ -25,6 +25,7 @@ void CMD_AudioBeep(osThreadId_t threadId);
 void CMD_AudioMute(command_t *cmd, osThreadId_t threadId);
 void CMD_FingerAdd(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue);
 void CMD_FingerFetch(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue);
+void CMD_FingerDelete(response_t *resp, command_t *cmd, osThreadId_t threadId, osMessageQueueId_t queue);
 void CMD_Finger(response_t *resp, osThreadId_t threadId, uint8_t event);
 void CMD_RemoteUnitID(command_t *cmd, osThreadId_t threadIot, osThreadId_t threadRemote);
 void CMD_RemotePairing(response_t *resp, osThreadId_t threadId);

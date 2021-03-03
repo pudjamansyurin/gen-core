@@ -147,7 +147,8 @@ uint8_t MQTT_Receive(command_t *cmd) {
 	))
 		return 0;
 
-	memcpy(cmd, dst, len);
+	if (len > sizeof(cmd->rx)) return 0;
+	memcpy(&(cmd->rx), dst, len);
 
 	if (grantedQos == 1) {
 		len = MQTTSerialize_puback(buf, buflen, packetid_rx);

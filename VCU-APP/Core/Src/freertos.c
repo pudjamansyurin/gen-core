@@ -396,26 +396,7 @@ void StartGateTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* Hook prototypes */
-void configureTimerForRunTimeStats(void);
-unsigned long getRunTimeCounterValue(void);
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName);
-
-/* USER CODE BEGIN 1 */
-volatile unsigned long ulHighFrequencyTimerTicks;
-/* Functions needed when configGENERATE_RUN_TIME_STATS is on */
-__weak void configureTimerForRunTimeStats(void)
-{
-  ulHighFrequencyTimerTicks = 0;
-#ifdef DEBUG
-  HAL_TIM_Base_Start_IT(&htim13);
-#endif
-}
-
-__weak unsigned long getRunTimeCounterValue(void)
-{
-  return ulHighFrequencyTimerTicks;
-}
-/* USER CODE END 1 */
 
 /* USER CODE BEGIN 4 */
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName)
@@ -748,7 +729,7 @@ void StartReporterTask(void *argument)
 void StartCommandTask(void *argument)
 {
   /* USER CODE BEGIN StartCommandTask */
-  command_t command;
+  command_t cmd;
   response_t response;
 
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
@@ -764,17 +745,17 @@ void StartCommandTask(void *argument)
   for (;;) {
     VCU.d.task.command.wakeup = _GetTickMS() / 1000;
     // get command in queue
-    if (osMessageQueueGet(CommandQueueHandle, &command, NULL, osWaitForever) == osOK) {
+    if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) == osOK) {
 
       // default command response
-      response.data.code = command.data.code;
-      response.data.sub_code = command.data.sub_code;
+      response.data.code = cmd.rx.data.code;
+      response.data.sub_code = cmd.rx.data.sub_code;
       response.data.res_code = RESPONSE_STATUS_OK;
       strcpy(response.data.message, "");
 
       // handle the command
-      if (command.data.code == CMD_CODE_GEN) {
-        switch (command.data.sub_code) {
+      if (cmd.rx.data.code == CMD_CODE_GEN) {
+        switch (cmd.rx.data.sub_code) {
           case CMD_GEN_INFO :
             CMD_GenInfo(&response, &(HMI1.d.started), &(HMI1.d.version));
             break;
@@ -784,7 +765,7 @@ void StartCommandTask(void *argument)
             break;
 
           case CMD_GEN_LED :
-            CMD_GenLed(&command);
+            CMD_GenLed(&cmd);
             break;
 
           case CMD_GEN_OVERRIDE :
@@ -792,7 +773,7 @@ void StartCommandTask(void *argument)
               sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
               response.data.res_code = RESPONSE_STATUS_ERROR;
             } else
-              CMD_GenOverride(&command, &(VCU.d.state.override));
+              CMD_GenOverride(&cmd, &(VCU.d.state.override));
             break;
 
           default:
@@ -801,14 +782,14 @@ void StartCommandTask(void *argument)
         }
       }
 
-      else if (command.data.code == CMD_CODE_REPORT) {
-        switch (command.data.sub_code) {
+      else if (cmd.rx.data.code == CMD_CODE_REPORT) {
+        switch (cmd.rx.data.sub_code) {
           case CMD_REPORT_RTC :
-            CMD_ReportRTC(&command);
+            CMD_ReportRTC(&cmd);
             break;
 
           case CMD_REPORT_ODOM :
-            CMD_ReportOdom(&command);
+            CMD_ReportOdom(&cmd);
             break;
 
           default:
@@ -817,18 +798,18 @@ void StartCommandTask(void *argument)
         }
       }
 
-      else if (command.data.code == CMD_CODE_AUDIO) {
+      else if (cmd.rx.data.code == CMD_CODE_AUDIO) {
         if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
           sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
           response.data.res_code = RESPONSE_STATUS_ERROR;
         } else
-          switch (command.data.sub_code) {
+          switch (cmd.rx.data.sub_code) {
             case CMD_AUDIO_BEEP :
               CMD_AudioBeep(AudioTaskHandle);
               break;
 
             case CMD_AUDIO_MUTE :
-              CMD_AudioMute( &command, AudioTaskHandle);
+              CMD_AudioMute( &cmd, AudioTaskHandle);
               break;
 
             default:
@@ -837,12 +818,12 @@ void StartCommandTask(void *argument)
           }
       }
 
-      else if (command.data.code == CMD_CODE_FINGER) {
+      else if (cmd.rx.data.code == CMD_CODE_FINGER) {
         if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
           sprintf(response.data.message, "State should >= {%d}.", VEHICLE_STANDBY);
           response.data.res_code = RESPONSE_STATUS_ERROR;
         } else
-          switch (command.data.sub_code) {
+          switch (cmd.rx.data.sub_code) {
             case CMD_FINGER_FETCH :
               CMD_FingerFetch(&response, FingerTaskHandle, FingerDbQueueHandle);
               break;
@@ -852,9 +833,7 @@ void StartCommandTask(void *argument)
               break;
 
             case CMD_FINGER_DEL :
-              osMessageQueueReset(DriverQueueHandle);
-              osMessageQueuePut(DriverQueueHandle, &command.data.value.u8[0], 0U, 0U);
-              CMD_Finger(&response, FingerTaskHandle, EVT_FINGER_DEL);
+              CMD_FingerDelete(&response, &cmd, FingerTaskHandle, DriverQueueHandle);
               break;
 
             case CMD_FINGER_RST :
@@ -867,18 +846,18 @@ void StartCommandTask(void *argument)
           }
       }
 
-      else if (command.data.code == CMD_CODE_REMOTE) {
+      else if (cmd.rx.data.code == CMD_CODE_REMOTE) {
         if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
           sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
           response.data.res_code = RESPONSE_STATUS_ERROR;
         } else
-          switch (command.data.sub_code) {
+          switch (cmd.rx.data.sub_code) {
             case CMD_REMOTE_PAIRING :
               CMD_RemotePairing(&response, RemoteTaskHandle);
               break;
 
             case CMD_REMOTE_UNITID :
-              CMD_RemoteUnitID(&command, IotTaskHandle, RemoteTaskHandle);
+              CMD_RemoteUnitID(&cmd, IotTaskHandle, RemoteTaskHandle);
               break;
 
             default:
@@ -887,13 +866,13 @@ void StartCommandTask(void *argument)
           }
       }
 
-      else if (command.data.code == CMD_CODE_FOTA) {
+      else if (cmd.rx.data.code == CMD_CODE_FOTA) {
         response.data.res_code = RESPONSE_STATUS_ERROR;
 
         if (VCU.d.state.vehicle == VEHICLE_RUN) {
           sprintf(response.data.message, "State should != {%d}.", VEHICLE_RUN);
         } else
-          switch (command.data.sub_code) {
+          switch (cmd.rx.data.sub_code) {
             case CMD_FOTA_VCU :
               CMD_Fota( &response, IAP_VCU, &(VCU.d.bat), &(HMI1.d.version));
               break;

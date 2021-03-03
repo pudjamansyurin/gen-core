@@ -47,7 +47,7 @@ void CANBUS_Init(CAN_HandleTypeDef *hcan) {
 #endif
 
   if (e)
-    printf("CAN: Initiate error.");
+    printf("CAN: Initiate error.\n");
 
   can.active = !e;
 }
