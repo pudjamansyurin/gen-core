@@ -70,7 +70,6 @@ typedef struct {
 	SIMCOM_STATE state;
 	AT_CIPSTATUS ipstatus;
 	uint8_t signal;
-	uint8_t subscribed;
 	uint8_t downloading;
 	char *response;
 	struct {

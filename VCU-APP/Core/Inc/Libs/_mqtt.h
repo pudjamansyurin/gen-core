@@ -16,7 +16,8 @@
 /* Exported constants --------------------------------------------------------*/
 #define MQTT_USERNAME          						""
 #define MQTT_PASSWORD          						""
-#define MQTT_KEEPALIVE          (uint8_t) 5				// in second
+#define MQTT_KEEPALIVE          (uint8_t) 30				// in second
+#define MQTT_PERSISTENT         (uint8_t) 0
 
 /* Exported structs --------------------------------------------------------*/
 typedef struct {
@@ -30,6 +31,8 @@ typedef struct {
 
 typedef struct {
 	unsigned short packetid;
+  uint8_t subscribed;
+  uint8_t willed;
 	uint32_t tick;
 	struct {
 		int command;
@@ -59,7 +62,9 @@ uint8_t MQTT_Connect(void);
 uint8_t MQTT_Disconnect(void);
 uint8_t MQTT_Ping(void);
 uint8_t MQTT_GotPublish(void);
-uint8_t MQTT_GotCommand(void);
 uint8_t MQTT_AckPublish(command_rx_t *cmd);
+uint8_t MQTT_GotCommand(void);
+uint8_t MQTT_Subscribed(void);
+uint8_t MQTT_Willed(void);
 
 #endif /* INC_LIBS__MQTT_H_ */
