@@ -104,15 +104,17 @@ typedef struct __attribute__((packed)) {
 
 // command frame (from server)
 typedef struct __attribute__((packed)) {
+	header_t header;
 	struct __attribute__((packed)) {
-		header_t header;
-		struct __attribute__((packed)) {
-			uint8_t code;
-			uint8_t sub_code;
-			char value[200];
-			// UNION64 value;
-		} data;
-	} rx;
+		uint8_t code;
+		uint8_t sub_code;
+		char value[200];
+		// UNION64 value;
+	} data;
+} command_rx_t;
+
+typedef struct __attribute__((packed)) {
+	command_rx_t rx;
 	uint8_t length;
 } command_t;
 

@@ -27,6 +27,7 @@ sim_t SIM = {
 		.state = SIM_STATE_DOWN,
 		.ipstatus = CIPSTAT_UNKNOWN,
 		.signal = 0,
+		.subscribed = 0,
 		.downloading = 0,
 		.response = NULL
 };
@@ -38,7 +39,7 @@ static void Simcom_IdleJob(void);
 static SIM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint32_t ms);
 static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *reply);
 #if (!BOOTLOADER)
-static void Simcom_ProcessResponse(void);
+static uint8_t Simcom_ProcessResponse(void);
 #endif
 
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay);
@@ -257,7 +258,7 @@ uint8_t Simcom_Upload(void *payload, uint16_t size) {
 	res = Simcom_Cmd(cmd, SIM_RSP_SEND, 500);
 
 	if (res == SIM_OK)
-		res = Simcom_CmdRaw((char*) payload, size, SIM_RSP_SENT, 30000);
+		res = Simcom_CmdRaw((char*) payload, size, SIM_RSP_SENT, 10000);
 	Simcom_Unlock();
 
 	return res == SIM_OK;
@@ -286,8 +287,9 @@ uint8_t Simcom_ReceivedResponse(uint32_t timeout) {
 		_DelayMS(10);
 	} while (ptr == NULL && (_GetTickMS() - tick) < timeout);
 
-	if ((ptr = Simcom_Resp(":", ptr)) != NULL)
-		SIM.response = ptr+1;
+	if (ptr != NULL)
+		if ((ptr = Simcom_Resp(":", ptr)) != NULL)
+			SIM.response = ptr+1;
 
 	return (ptr != NULL);
 }
@@ -392,9 +394,9 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 		if (Simcom_Resp(reply, NULL)
 				|| Simcom_Resp(SIM_RSP_ERROR, NULL)
 				|| Simcom_Resp(SIM_RSP_READY, NULL)
-#if (!BOOTLOADER)
-				|| Simcom_Resp(SIM_RSP_IPD, NULL)
-#endif
+				//#if (!BOOTLOADER)
+				//				|| Simcom_Resp(SIM_RSP_IPD, NULL)
+				//#endif
 				|| (_GetTickMS() - tick) > ms
 		) {
 
@@ -421,15 +423,6 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 #endif
 				}
 
-#if (!BOOTLOADER)
-				// exception for server command collision
-				else if (Simcom_ReceivedResponse(0)) {
-					printf("Simcom:CommandCollision\n");
-					Simcom_ProcessResponse();
-					res = SIM_TIMEOUT;
-				}
-#endif
-
 				// exception for timeout
 				else if ((_GetTickMS() - tick) > ms) {
 					printf("Simcom:Timeout\n");
@@ -439,6 +432,17 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 				else
 					printf("Simcom:UnknownError\n");
 			}
+
+#if (!BOOTLOADER)
+			// exception for server command collision
+			if (Simcom_ReceivedResponse(0)) {
+				if (Simcom_ProcessResponse()) {
+					printf("Simcom:CommandCollision\n");
+					//						res = SIM_TIMEOUT;
+				}
+			}
+#endif
+
 
 			// exit loop
 			break;
@@ -454,11 +458,14 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 }
 
 #if (!BOOTLOADER)
-static void Simcom_ProcessResponse(void) {
+static uint8_t Simcom_ProcessResponse(void) {
 	char *ptr = SIM.response;
 
-	if (!MQTT_Received())
+	if (!MQTT_GotPublish()) {
 		SIM.response = ptr;
+		return 0;
+	}
+	return 1;
 }
 #endif
 
@@ -719,7 +726,7 @@ static void SetStatePdpOn(SIM_RESULT *res) {
 	if (*res == SIM_OK) {
 		AT_ConnectionStatus(&(SIM.ipstatus));
 		if (SIM.ipstatus == CIPSTAT_IP_START)
-			*res = Simcom_Cmd("AT+CIICR\r", SIM_RSP_OK, 10000);
+			*res = Simcom_Cmd("AT+CIICR\r", SIM_RSP_OK, 15000);
 	}
 
 	// Check IP Address
@@ -798,12 +805,12 @@ static void SetStateInternetOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout)
 static void SetStateServerOn(void) {
 	uint8_t valid = 0;
 
+	SIM.subscribed = 0;
+
 	AT_ConnectionStatus(&(SIM.ipstatus));
 	if (SIM.ipstatus == CIPSTAT_CONNECT_OK)
 		if (MQTT_Connect())
-			if (MQTT_PublishWill(1))
-				if (MQTT_Subscribe())
-					valid = 1;
+			valid = 1;
 
 	// upgrade simcom state
 	if (valid)
@@ -815,6 +822,11 @@ static void SetStateServerOn(void) {
 }
 
 static void SetStateMqttOn(void) {
+	if (!SIM.subscribed)
+		if (MQTT_PublishWill(1))
+			if (MQTT_Subscribe())
+				SIM.subscribed = 1;
+
 	AT_ConnectionStatus(&(SIM.ipstatus));
 	if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())
 		if (SIM.state == SIM_STATE_MQTT_ON)

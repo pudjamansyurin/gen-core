@@ -15,70 +15,70 @@
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
-  uint8_t wakeup;
-  uint16_t stack;
+	uint8_t wakeup;
+	uint16_t stack;
 } task_t;
 
 typedef struct __attribute__((packed)) {
-  task_t manager;
-  task_t iot;
-  task_t reporter;
-  task_t command;
-  task_t gps;
-  task_t gyro;
-  task_t remote;
-  task_t finger;
-  task_t audio;
-  task_t gate;
-  task_t canRx;
-  task_t canTx;
-  task_t hmi2Power;
+	task_t manager;
+	task_t iot;
+	task_t reporter;
+	task_t command;
+	task_t gps;
+	task_t gyro;
+	task_t remote;
+	task_t finger;
+	task_t audio;
+	task_t gate;
+	task_t canRx;
+	task_t canTx;
+	//  task_t hmi2Power;
 } rtos_task_t;
 
 typedef struct {
-  uint32_t unit_id;
-  uint8_t driver_id;
-  uint16_t interval;
-  uint8_t speed;
-  uint16_t bat;
-  uint64_t events;
-  struct {
-    uint8_t error;
-    uint8_t override;
-    vehicle_state_t vehicle;
-  } state;
-  struct {
-//    uint8_t power5v;
-    struct {
-    	uint32_t tick;
-    } starter;
-  } gpio;
-  struct {
-    uint32_t independent;
-  } tick;
-  motion_t motion;
-  gps_data_t gps;
-  rtos_task_t task;
+	uint32_t unit_id;
+	uint8_t driver_id;
+	uint16_t interval;
+	uint8_t speed;
+	uint16_t bat;
+	uint64_t events;
+	struct {
+		uint8_t error;
+		uint8_t override;
+		vehicle_state_t vehicle;
+	} state;
+	struct {
+		//    uint8_t power5v;
+		struct {
+			uint32_t tick;
+		} starter;
+	} gpio;
+	struct {
+		uint32_t independent;
+	} tick;
+	motion_t motion;
+	gps_data_t gps;
+	rtos_task_t task;
 } vcu_data_t;
 
 typedef struct {
-  struct {
-    uint8_t (*SwitchModeControl)(void);
-    uint8_t (*Datetime)(datetime_t);
-    uint8_t (*MixedData)(void);
-    uint8_t (*TripData)(void);
-  } t;
+	struct {
+		uint8_t (*SwitchModeControl)(void);
+		uint8_t (*Datetime)(datetime_t);
+		uint8_t (*MixedData)(void);
+		uint8_t (*TripData)(void);
+	} t;
 } vcu_can_t;
 
 typedef struct {
-  vcu_data_t d;
-  vcu_can_t can;
-  void (*Init)(void);
-  void (*SetEvent)(uint64_t, uint8_t);
-  uint8_t (*ReadEvent)(uint64_t);
-  uint16_t (*SpeedToVolume)(void);
-  void (*SetDriver)(uint8_t);
-  void (*SetOdometer)(uint8_t);
+	vcu_data_t d;
+	vcu_can_t can;
+	void (*Init)(void);
+	void (*SetEvent)(uint64_t, uint8_t);
+	uint8_t (*ReadEvent)(uint64_t);
+	uint16_t (*SpeedToVolume)(void);
+	void (*SetDriver)(uint8_t);
+	void (*SetOdometer)(uint8_t);
 } vcu_t;
 
 /* Exported variables ---------------------------------------------------------*/

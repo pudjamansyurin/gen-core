@@ -25,30 +25,40 @@ void CMD_Init(osMessageQueueId_t mCmdQueue) {
 	cmdQueue = mCmdQueue;
 }
 
-void CMD_CheckCommand(command_t *cmd) {
+uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
+	if (len > sizeof(command_rx_t)) return 0;
+
+	// TODO: remove 2 & replace with command_header_t
+	if (len < sizeof(header_t) + 2) return 0;
+
+	command_rx_t *cmdrx = ptr;
+
+	if (memcmp(cmdrx->header.prefix, PREFIX_COMMAND, 2) != 0)
+		return 0;
+
 	//  uint32_t crc;
-
-	if (memcmp(cmd->rx.header.prefix, PREFIX_COMMAND, 2) != 0)
-		return;
-
 	//	crc = CRC_Calculate8(
-	//			(uint8_t*) &(cmd->rx.header.size),
-	//			sizeof(cmd->rx.header.size) + size,
+	//			(uint8_t*) &(cmdrx->header.size),
+	//			sizeof(cmdrx->header.size) + size,
 	//			0);
 	//
-	//	if (cmd->rx.header.crc != crc)
+	//	if (cmdrx->header.crc != crc)
 	//		return;
 
-	if (cmd->rx.header.unit_id != VCU.d.unit_id)
-		return;
+	if (cmdrx->header.unit_id != VCU.d.unit_id)
+		return 0;
 
+	// TODO: check length according to command id
+
+	return 1;
+}
+
+void CMD_ExecuteCommand(command_t *cmd) {
 	cmd->length = cmd->rx.header.size -
 			(sizeof(cmd->rx.header.unit_id) +
 			sizeof(cmd->rx.header.send_time) +
 			sizeof(cmd->rx.data.code) +
 			sizeof(cmd->rx.data.sub_code));
-	if (cmd->length > sizeof(cmd->rx.data.value) )
-		return;
 
 	Debugger(cmd);
 	osMessageQueueReset(cmdQueue);
