@@ -7,13 +7,17 @@
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
 #include "Libs/_gyro.h"
+#include "Nodes/VCU.h"
 
 /* Private variables ----------------------------------------------------------*/
-static gyro_t gyro;
+static gyro_t gyro = {
+    .detector_init = 1
+};
 
 /* Private functions prototype ------------------------------------------------*/
 static void Average(mems_t *mems, uint16_t sample);
 static void Convert(coordinate_t *gyro, motion_t *motion);
+static uint8_t GYRO_Moved(motion_t *refference, motion_t *current);
 static void Debugger(movement_t *movement);
 static void RawDebugger(mems_t *mems);
 
@@ -71,18 +75,22 @@ void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample) {
 	//  Debugger(movement);
 }
 
-uint8_t GYRO_Moved(motion_t *refference, motion_t *current) {
-	uint8_t euclidean;
+void GYRO_MonitorMovement(motion_t *motion) {
+  static motion_t refference;
 
-	euclidean = sqrt(
-			pow(refference->roll - current->roll, 2) +
-			pow(refference->pitch - current->pitch, 2) +
-			pow(refference->yaw - current->yaw, 2)
-	);
+  if (gyro.detector_init) {
+    gyro.detector_init = 0;
+    memcpy(&refference, motion, sizeof(motion_t));
+    VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+  }
 
-	if (euclidean > MOVED_LIMIT)
-		printf("IMU:Gyro moved = %d\n", euclidean);
-	return euclidean > MOVED_LIMIT;
+  if (GYRO_Moved(&refference, motion))
+    VCU.SetEvent(EV_VCU_BIKE_MOVED, 1);
+}
+
+void GYRO_ResetDetector(void) {
+  gyro.detector_init = 1;
+  VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 }
 
 /* Private functions implementation --------------------------------------------*/
@@ -140,6 +148,20 @@ static void Convert(coordinate_t *gyro, motion_t *motion) {
 
 	// normalize yaw axes
 	motion->yaw -= 90;
+}
+
+static uint8_t GYRO_Moved(motion_t *refference, motion_t *current) {
+  uint8_t euclidean;
+
+  euclidean = sqrt(
+      pow(refference->roll - current->roll, 2) +
+      pow(refference->pitch - current->pitch, 2) +
+      pow(refference->yaw - current->yaw, 2)
+  );
+
+  if (euclidean > MOVED_LIMIT)
+    printf("IMU:Gyro moved = %d\n", euclidean);
+  return euclidean > MOVED_LIMIT;
 }
 
 static void Debugger(movement_t *movement) {

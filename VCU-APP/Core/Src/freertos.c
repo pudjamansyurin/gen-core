@@ -404,8 +404,10 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName)
 	/* Run time stack overflow checking is performed if
    configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
    called if a stack overflow is detected. */
-	printf("%s is overflowed.\n", pcTaskName);
-	while(1);
+	while(1) {
+	  printf("%s is overflowed.\n", pcTaskName);
+	  _DelayMS(1000);
+	}
 }
 /* USER CODE END 4 */
 
@@ -515,7 +517,6 @@ void MX_FREERTOS_Init(void) {
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-	HAL_Delay(1000);
 	/* USER CODE END RTOS_THREADS */
 
 	/* creation of GlobalEvent */
@@ -949,8 +950,6 @@ void StartGyroTask(void *argument)
 	/* USER CODE BEGIN StartGyroTask */
 	uint32_t flag, notif;
 	movement_t movement;
-	motion_t refference;
-	uint8_t initial = 1;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny, osWaitForever);
@@ -976,7 +975,7 @@ void StartGyroTask(void *argument)
 			}
 
 			else if (notif & EVT_GYRO_MOVED_RESET)
-				initial = 1;
+	      GYRO_ResetDetector();
 		}
 
 		// Read all accelerometer, gyroscope (average)
@@ -989,19 +988,10 @@ void StartGyroTask(void *argument)
 		osThreadFlagsSet(AudioTaskHandle, flag);
 
 		// Moved at rest
-		if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
-			if (initial) {
-				initial = 0;
-				memcpy(&refference, &(VCU.d.motion), sizeof(motion_t));
-				VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
-			}
-
-			if (GYRO_Moved(&refference, &(VCU.d.motion)))
-				VCU.SetEvent(EV_VCU_BIKE_MOVED, 1);
-		} else {
-			initial = 1;
-			VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
-		}
+		if (VCU.d.state.vehicle < VEHICLE_STANDBY)
+		  GYRO_MonitorMovement(&(VCU.d.motion));
+		else
+		  GYRO_ResetDetector();
 	}
 	/* USER CODE END StartGyroTask */
 }
