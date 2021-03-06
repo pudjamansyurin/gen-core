@@ -8,8 +8,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_rtc.h"
 
+/* External variables -------------------------------------------------------*/
+#if (RTOS_ENABLE)
+extern osMutexId_t RtcMutexHandle;
+#endif
+
 /* Private variables ----------------------------------------------------------*/
-static rtc_t rtc;
+static RTC_HandleTypeDef *hrtc;
 
 /* Private functions declaration ----------------------------------------------*/
 static void lock(void);
@@ -20,9 +25,8 @@ static timestamp_t RTC_Decode(datetime_t dt);
 static datetime_t RTC_Encode(timestamp_t ts);
 
 /* Public functions implementation --------------------------------------------*/
-void RTC_Init(RTC_HandleTypeDef *hrtc, osMutexId_t mutex) {
-	rtc.h.rtc = hrtc;
-	rtc.h.mutex = mutex;
+void RTC_Init(RTC_HandleTypeDef *rtc) {
+	hrtc = rtc;
 }
 
 datetime_t RTC_Read(void) {
@@ -61,17 +65,17 @@ uint8_t RTC_IsDaylight() {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-	osMutexAcquire(rtc.h.mutex, osWaitForever);
+	osMutexAcquire(RtcMutexHandle, osWaitForever);
 }
 
 static void unlock(void) {
-	osMutexRelease(rtc.h.mutex);
+	osMutexRelease(RtcMutexHandle);
 }
 
 static void RTC_ReadRaw(timestamp_t *timestamp) {
 	lock();
-	HAL_RTC_GetTime(rtc.h.rtc, &timestamp->time, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(rtc.h.rtc, &timestamp->date, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(hrtc, &timestamp->time, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, &timestamp->date, RTC_FORMAT_BIN);
 	timestamp->tzQuarterHour = 0;
 	unlock();
 }
@@ -83,8 +87,8 @@ static void RTC_WriteRaw(timestamp_t *timestamp) {
 
 	// set the RTC
 	lock();
-	HAL_RTC_SetTime(rtc.h.rtc, &timestamp->time, RTC_FORMAT_BIN);
-	HAL_RTC_SetDate(rtc.h.rtc, &timestamp->date, RTC_FORMAT_BIN);
+	HAL_RTC_SetTime(hrtc, &timestamp->time, RTC_FORMAT_BIN);
+	HAL_RTC_SetDate(hrtc, &timestamp->date, RTC_FORMAT_BIN);
 	unlock();
 }
 

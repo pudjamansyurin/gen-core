@@ -16,7 +16,7 @@
 typedef struct {
 	UART_HandleTypeDef *huart;
 	DMA_HandleTypeDef *hdma;
-	uint8_t rx_only;
+  void (*IdleCallback)(void);
 	struct {
 		size_t idx;
 		char *buf;

@@ -22,6 +22,11 @@
 #include "Libs/_focan.h"
 #endif
 
+/* External variables -------------------------------------------------------*/
+#if (RTOS_ENABLE)
+// extern osMutexId_t SimcomRecMutexHandle;
+#endif
+
 /* Public variables ---------------------------------------------------------*/
 sim_t SIM = {
     .state = SIM_STATE_DOWN,
@@ -63,15 +68,15 @@ static void SetStateMqttOn(void);
 
 /* Public functions implementation --------------------------------------------*/
 void Simcom_Lock(void) {
-  //#if (RTOS_ENABLE)
-  //  osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
-  //#endif
+#if (RTOS_ENABLE)
+  //    osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
+#endif
 }
 
 void Simcom_Unlock(void) {
-  //#if (RTOS_ENABLE)
-  //  osMutexRelease(SimcomRecMutexHandle);
-  //#endif
+#if (RTOS_ENABLE)
+  //    osMutexRelease(SimcomRecMutexHandle);
+#endif
 }
 
 void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
@@ -257,7 +262,7 @@ uint8_t Simcom_Upload(void *payload, uint16_t size) {
   res = Simcom_Cmd(cmd, SIM_RSP_SEND, 500);
 
   if (res == SIM_OK)
-    res = Simcom_CmdRaw((char*) payload, size, SIM_RSP_SENT, 20000);
+    res = Simcom_CmdRaw((char*) payload, size, SIM_RSP_SENT, 30000);
   Simcom_Unlock();
 
   return res == SIM_OK;
@@ -405,15 +410,8 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 
       // Handle failure
       else {
-        // exception for no response
-        if ( strnlen(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX) ) == 0) {
-          printf("Simcom:NoResponse\n");
-          res = SIM_NORESPONSE;
-          SIM.state = SIM_STATE_DOWN;
-        }
-
         // exception for accidentally reboot
-        else if (Simcom_Resp(SIM_RSP_READY, NULL) && (SIM.state >= SIM_STATE_READY)) {
+        if (Simcom_Resp(SIM_RSP_READY, NULL) && (SIM.state >= SIM_STATE_READY)) {
           printf("Simcom:Restarted\n");
           res = SIM_RESTARTED;
           SIM.state = SIM_STATE_READY;
@@ -431,6 +429,13 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
           }
         }
 #endif
+        // exception for no response
+        else if ( strnlen(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX) ) == 0) {
+          printf("Simcom:NoResponse\n");
+          res = SIM_NORESPONSE;
+          SIM.state = SIM_STATE_DOWN;
+        }
+
         // exception for timeout
         else if ((_GetTickMS() - tick) > ms) {
           printf("Simcom:Timeout\n");
@@ -457,6 +462,8 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 #if (!BOOTLOADER)
 static uint8_t Simcom_ProcessResponse(void) {
   char *ptr = SIM.response;
+
+  _DelayMS(1000);
 
   if (!MQTT_GotPublish()) {
     SIM.response = ptr;

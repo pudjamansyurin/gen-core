@@ -111,7 +111,7 @@ void HardFault_Handler(void)
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
 	  HAL_IWDG_Refresh(&hiwdg);
 	  GATE_LedToggle();
-	  _DelayMS(100);
+	  HAL_Delay(100);
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }

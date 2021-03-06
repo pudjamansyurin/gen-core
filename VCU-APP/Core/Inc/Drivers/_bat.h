@@ -27,7 +27,7 @@ typedef struct {
 } bat_t;
 
 /* Public functions prototypes ------------------------------------------*/
-void BAT_Init(ADC_HandleTypeDef *hadc);
+void BAT_Init(ADC_HandleTypeDef *adc);
 void BAT_DeInit(void);
 void BAT_ReInit(void);
 void BAT_ScanValue(uint16_t *voltage);

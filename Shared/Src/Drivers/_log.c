@@ -59,18 +59,14 @@ void printf_hex(char *data, uint16_t size) {
 
 /* Private functions implementations ----------------------------------------------*/
 static void lock(void) {
-#ifdef DEBUG
 #if (RTOS_ENABLE)
   osMutexAcquire(LogRecMutexHandle, osWaitForever);
-#endif
 #endif
 }
 
 static void unlock(void) {
-#ifdef DEBUG
 #if (RTOS_ENABLE)
   osMutexRelease(LogRecMutexHandle);
-#endif
 #endif
 }
 

@@ -12,6 +12,11 @@
 #include "Libs/_remote.h"
 #include "Libs/_eeprom.h"
 
+/* External variables -------------------------------------------------------*/
+#if (RTOS_ENABLE)
+extern osThreadId_t RemoteTaskHandle;
+#endif
+
 /* Private variables -----------------------------------------------------------*/
 static remote_t RMT = {
 		.tx = {
@@ -44,9 +49,8 @@ static void RawDebugger(void);
 static void Debugger(RMT_CMD command);
 
 /* Public functions implementation --------------------------------------------*/
-void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi, osThreadId_t threadId) {
+void RMT_Init(SPI_HandleTypeDef *hspi, uint32_t *unit_id) {
 	RMT.h.spi = hspi;
-	RMT.h.threadId = threadId;
 
 	nrf_param(hspi, RMT.rx.payload);
 	RMT_ReInit(unit_id);
@@ -167,7 +171,7 @@ void RMT_IrqHandler(void) {
 
 void RMT_PacketReceived(uint8_t *data) {
 	// Debugger();
-	osThreadFlagsSet(RMT.h.threadId, EVT_REMOTE_RX_IT);
+	osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_RX_IT);
 }
 
 /* Private functions implementation --------------------------------------------*/

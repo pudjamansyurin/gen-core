@@ -55,7 +55,8 @@
 #define NET_CON_APN                             "3gprs"
 #define NET_CON_USERNAME                        "3gprs"
 #define NET_CON_PASSWORD                        "3gprs"
-#define NET_CHECK_QUOTA							"*111*4*2*1*1#"
+//#define NET_CHECK_QUOTA							            "*111*4*2*1*1#"
+#define NET_CHECK_QUOTA                         "*123*10*3#"
 
 //#define NET_CON_APN                             "telkomsel"
 //#define NET_CON_USERNAME                        "wap"
@@ -146,6 +147,7 @@
 
 #define EVT_GPS_TASK_START                      BIT(0)
 #define EVT_GPS_TASK_STOP                       BIT(1)
+#define EVT_GPS_RECEIVED                        BIT(2)
 
 #define EVT_GYRO_TASK_START                     BIT(0)
 #define EVT_GYRO_TASK_STOP                      BIT(1)

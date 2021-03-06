@@ -28,8 +28,6 @@ static mqtt_t MQTT = {
 };
 
 /* Private functions prototype ------------------------------------------------*/
-static uint8_t Subscribe(char *topic, int qos);
-static uint8_t Unsubscribe(char *topic);
 static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos);
 static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,  uint16_t timeout);
 
@@ -58,11 +56,72 @@ uint8_t MQTT_PublishWill(uint8_t on) {
 }
 
 uint8_t MQTT_Subscribe(void) {
-	return Subscribe(MQTT.topic.command, MQTT.qos.command);
+  int count = 1, count_rx;
+  MQTTString topicFilters[] = { MQTTString_initializer };
+  int grantedQos, qoss_rx[count], qoss[] = { MQTT.qos.command };
+  unsigned char buf[256];
+  int len, buflen = sizeof(buf);
+  mqtt_data_t d;
+
+  topicFilters[0].cstring = MQTT.topic.command;
+  len = MQTTSerialize_subscribe(
+      buf, buflen,
+      0, ++MQTT.packetid, count,
+      topicFilters, qoss
+  );
+
+  if (!Upload(buf, len, SUBACK, 5000))
+    return 0;
+
+  if (!MQTTDeserialize_suback(&(d.packetid), count, &count_rx, qoss_rx, buf, buflen)) {
+    printf("MQTT:Subscribe failed\n");
+    return 0;
+  }
+
+  if (MQTT.packetid != d.packetid) {
+    printf("MQTT:SUBACK packet mismatched\n");
+    return 0;
+  }
+
+  grantedQos = qoss_rx[0];
+  if (MQTT.qos.command != grantedQos) {
+    printf("MQTT:Granted QoS != %d, %d\n", MQTT.qos.command, grantedQos);
+    // return 0;
+  }
+
+  MQTT.subscribed = 1;
+
+  printf("MQTT:Subscribed\n");
+  MQTT.tick = _GetTickMS();
+  return 1;
 }
 
 uint8_t MQTT_Unsubscribe(void) {
-	return Unsubscribe(MQTT.topic.command);
+  MQTTString topicFilters = MQTTString_initializer;
+  unsigned char buf[256];
+  int len, buflen = sizeof(buf);
+  int count = 1;
+  mqtt_data_t d;
+
+  topicFilters.cstring = MQTT.topic.command;
+  len = MQTTSerialize_unsubscribe(buf, buflen, 0, ++MQTT.packetid, count, &topicFilters);
+
+  if (!Upload(buf, len, UNSUBACK, 5000))
+    return 0;
+
+  if (!MQTTDeserialize_unsuback(&(d.packetid), buf, buflen)) {
+    printf("MQTT:Unsubscribe failed\n");
+    return 0;
+  }
+
+  if (MQTT.packetid != d.packetid) {
+    printf("MQTT:UNSUBACK packet mismatched\n");
+    return 0;
+  }
+
+  printf("MQTT:Unsubscribed\n");
+  MQTT.tick = _GetTickMS();
+  return 1;
 }
 
 uint8_t MQTT_Connect(void) {
@@ -149,11 +208,12 @@ uint8_t MQTT_GotPublish(void) {
 	int len, buflen = sizeof(buf);
 	mqtt_data_t *d = &(MQTT.rx.d);
 
-	if (MQTT.rx.received)	return 0;
 
 	d->packettype = MQTTPacket_read(buf, buflen, Simcom_GetData);
 	if (d->packettype != PUBLISH)
 		return 0;
+
+//  if (MQTT.rx.received) return 0;
 
 	if (!MQTTDeserialize_publish(
 			&(d->dup), &(d->qos), &(d->retained), &(d->packetid),
@@ -162,6 +222,7 @@ uint8_t MQTT_GotPublish(void) {
 	))
 		return 0;
 
+  printf("MQTT:Received %d bytes\n", len);
 	if (len == 0) return 0;
 
 	if (!CMD_ValidateCommand(dst, len)) return 0;
@@ -204,8 +265,7 @@ uint8_t MQTT_AckPublish(command_rx_t *cmd) {
 			return 0;
 	}
 
-	printf("MQTT:Received %d bytes\n", len);
-	return len;
+	return 1;
 }
 
 uint8_t MQTT_GotCommand(void) {
@@ -221,75 +281,6 @@ uint8_t MQTT_Willed(void) {
 }
 
 /* Private functions implementation -------------------------------------------*/
-static uint8_t Subscribe(char *topic, int qos) {
-	int count = 1, count_rx;
-  MQTTString topicFilters[] = { MQTTString_initializer };
-	int grantedQos, qoss_rx[count], qoss[] = { qos };
-	unsigned char buf[256];
-	int len, buflen = sizeof(buf);
-	mqtt_data_t d;
-
-	topicFilters[0].cstring = topic;
-	len = MQTTSerialize_subscribe(
-			buf, buflen,
-			0, ++MQTT.packetid, count,
-			topicFilters, qoss
-	);
-
-	if (!Upload(buf, len, SUBACK, 5000))
-		return 0;
-
-	if (!MQTTDeserialize_suback(&(d.packetid), count, &count_rx, qoss_rx, buf, buflen)) {
-		printf("MQTT:Subscribe failed\n");
-		return 0;
-	}
-
-	if (MQTT.packetid != d.packetid) {
-		printf("MQTT:SUBACK packet mismatched\n");
-		return 0;
-	}
-
-	grantedQos = qoss_rx[0];
-	if (qos != grantedQos) {
-		printf("MQTT:Granted QoS != %d, %d\n", qos, grantedQos);
-		// return 0;
-	}
-
-	MQTT.subscribed = 1;
-
-	printf("MQTT:Subscribed\n");
-	MQTT.tick = _GetTickMS();
-	return 1;
-}
-
-static uint8_t Unsubscribe(char *topic) {
-	MQTTString topicFilters = MQTTString_initializer;
-	unsigned char buf[256];
-	int len, buflen = sizeof(buf);
-	int count = 1;
-	mqtt_data_t d;
-
-	topicFilters.cstring = topic;
-	len = MQTTSerialize_unsubscribe(buf, buflen, 0, ++MQTT.packetid, count, &topicFilters);
-
-	if (!Upload(buf, len, UNSUBACK, 5000))
-		return 0;
-
-	if (!MQTTDeserialize_unsuback(&(d.packetid), buf, buflen)) {
-		printf("MQTT:Unsubscribe failed\n");
-		return 0;
-	}
-
-	if (MQTT.packetid != d.packetid) {
-		printf("MQTT:UNSUBACK packet mismatched\n");
-		return 0;
-	}
-
-	printf("MQTT:Unsubscribed\n");
-	MQTT.tick = _GetTickMS();
-	return 1;
-}
-
 static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos) {
 	MQTTString topicName = MQTTString_initializer;
 	unsigned char buf[256];

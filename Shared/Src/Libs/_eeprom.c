@@ -18,7 +18,7 @@
 #endif
 
 /* External variables -------------------------------------------------------*/
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 extern osMutexId_t EepromMutexHandle;
 #endif
 
@@ -147,13 +147,13 @@ static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *pt
 }
 
 static void lock(void) {
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 	osMutexAcquire(EepromMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (!BOOTLOADER)
+#if (RTOS_ENABLE)
 	osMutexRelease(EepromMutexHandle);
 #endif
 }

@@ -44,12 +44,11 @@ typedef struct {
   uint32_t pairingAes[4];
   struct {
     SPI_HandleTypeDef *spi;
-    osThreadId_t threadId;
   } h;
 } remote_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RMT_Init(uint32_t *unit_id, SPI_HandleTypeDef *hspi, osThreadId_t threadId);
+void RMT_Init( SPI_HandleTypeDef *hspi, uint32_t *unit_id);
 void RMT_DeInit(void);
 void RMT_ReInit(uint32_t *unit_id);
 uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote);

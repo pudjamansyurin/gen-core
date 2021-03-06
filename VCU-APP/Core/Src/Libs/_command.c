@@ -14,17 +14,15 @@
 #include "Libs/_finger.h"
 #include "Nodes/VCU.h"
 
-/* Private variables ----------------------------------------------------------*/
-osMessageQueueId_t cmdQueue;
+/* External variables -------------------------------------------------------*/
+#if (RTOS_ENABLE)
+extern osMessageQueueId_t CommandQueueHandle;
+#endif
 
 /* Private functions prototypes -----------------------------------------------*/
 static void Debugger(command_t *cmd);
 
 /* Public functions implementation --------------------------------------------*/
-void CMD_Init(osMessageQueueId_t mCmdQueue) {
-	cmdQueue = mCmdQueue;
-}
-
 uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 	if (len > sizeof(command_rx_t)) return 0;
 
@@ -61,8 +59,8 @@ void CMD_ExecuteCommand(command_t *cmd) {
 			sizeof(cmd->rx.data.sub_code));
 
 	Debugger(cmd);
-	osMessageQueueReset(cmdQueue);
-	osMessageQueuePut(cmdQueue, cmd, 0U, 0U);
+	osMessageQueueReset(CommandQueueHandle);
+	osMessageQueuePut(CommandQueueHandle, cmd, 0U, 0U);
 }
 
 void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version) {

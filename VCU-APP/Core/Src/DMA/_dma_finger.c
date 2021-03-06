@@ -14,7 +14,7 @@ char FINGER_UART_RX[FINGER_UART_RX_SZ];
 /* Private variables ----------------------------------------------------------*/
 static char FINGER_DMA_RX[FINGER_DMA_RX_SZ];
 static usart_ring_t FINGER_RING = {
-		.rx_only = 0,
+		.IdleCallback = NULL,
 		.usart = {
 				.idx = 0,
 				.buf = FINGER_UART_RX,

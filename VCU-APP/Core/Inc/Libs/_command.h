@@ -12,7 +12,6 @@
 #include "Libs/_reporter.h"
 
 /* Public functions implementation --------------------------------------------*/
-void CMD_Init(osMessageQueueId_t mCmdQueue);
 uint8_t CMD_ValidateCommand(void *ptr, uint8_t len);
 void CMD_ExecuteCommand(command_t* cmd);
 void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version);

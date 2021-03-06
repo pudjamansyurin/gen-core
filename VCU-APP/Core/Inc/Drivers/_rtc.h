@@ -28,15 +28,8 @@ typedef struct __attribute__((packed)) {
 	uint8_t WeekDay;
 } datetime_t;
 
-typedef struct {
-  struct {
-    RTC_HandleTypeDef *rtc;
-    osMutexId_t mutex;
-  } h;
-} rtc_t;
-
 /* Public functions prototype ------------------------------------------------*/
-void RTC_Init(RTC_HandleTypeDef *hrtc, osMutexId_t mutex);
+void RTC_Init(RTC_HandleTypeDef *rtc);
 datetime_t RTC_Read(void);
 void RTC_Write(datetime_t dt);
 uint8_t RTC_NeedCalibration(void);

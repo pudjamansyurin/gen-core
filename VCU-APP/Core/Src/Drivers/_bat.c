@@ -10,45 +10,46 @@
 #include "Drivers/_bat.h"
 
 /* Private variables --------------------------------------------------------*/
-static bat_t bat = {0};
+static uint16_t BUFFER[AVERAGE_SZ];
+static ADC_HandleTypeDef *hadc;
 
 /* Private functions declaration --------------------------------------------*/
 static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value);
 
 /* Public functions implementation ------------------------------------------*/
-void BAT_Init(ADC_HandleTypeDef *hadc) {
-  bat.h.adc = hadc;
+void BAT_Init(ADC_HandleTypeDef *adc) {
+  hadc = adc;
 
   MX_ADC1_Init();
-  HAL_ADC_Start(bat.h.adc);
+  HAL_ADC_Start(hadc);
 }
 
 void BAT_DeInit(void) {
-  HAL_ADC_Stop(bat.h.adc);
-  HAL_ADC_DeInit(bat.h.adc);
+  HAL_ADC_Stop(hadc);
+  HAL_ADC_DeInit(hadc);
 }
 
 void BAT_ReInit(void) {
   BAT_DeInit();
   _DelayMS(500);
-  BAT_Init(bat.h.adc);
+  BAT_Init(hadc);
 }
 
 void BAT_ScanValue(uint16_t *voltage) {
 	uint8_t retry = 2;
   uint16_t value;
 
-  while (retry-- && HAL_ADC_PollForConversion(bat.h.adc, 10) != HAL_OK) {
+  while (retry-- && HAL_ADC_PollForConversion(hadc, 10) != HAL_OK) {
 		BAT_ReInit();
   }
 
-  value = HAL_ADC_GetValue(bat.h.adc);
+  value = HAL_ADC_GetValue(hadc);
 
   // change to battery value
   value = (value * BAT_MAX_VOLTAGE ) / ADC_MAX_VALUE;
 
   // calculate the moving average
-  value = MovingAverage(bat.buffer, AVERAGE_SZ, value);
+  value = MovingAverage(BUFFER, AVERAGE_SZ, value);
 
   *voltage = value;
 }
