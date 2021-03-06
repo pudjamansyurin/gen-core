@@ -6,9 +6,9 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_focan.h"
-#include "Drivers/_canbus.h"
 #include "iwdg.h"
+#include "Drivers/_canbus.h"
+#include "Libs/_focan.h"
 
 /* Private functions prototypes -----------------------------------------------*/
 static uint8_t FOCAN_WriteAndWaitResponse(uint32_t address, CAN_DATA *TxData, uint32_t DLC, uint32_t timeout, uint32_t retry);

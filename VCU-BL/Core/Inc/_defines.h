@@ -10,7 +10,10 @@
 
 /* Choose between VCU or Boot-loader mode */
 #define BOOTLOADER                              1
+#define RTOS_ENABLE                             !BOOTLOADER
 
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
+
+
 #endif /* DEFINES_H_ */

@@ -11,7 +11,25 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
-#define CAN_DATA 	UNION64
+/* Exported defines ----------------------------------------------------------*/
+// CAN Message Address
+#define CAND_VCU_SWITCH              (uint32_t) 0x000
+#define CAND_VCU_DATETIME            (uint32_t) 0x001
+#define CAND_VCU_SELECT_SET          (uint32_t) 0x002
+#define CAND_VCU_TRIP_MODE           (uint32_t) 0x003
+#define CAND_BMS_PARAM_1             (uint32_t) 0x0B0
+#define CAND_BMS_PARAM_2             (uint32_t) 0x0B1
+#define CAND_BMS_SETTING             (uint32_t) 0x1B2
+#define CAND_HMI1                    (uint32_t) 0x7C0
+#define CAND_HMI2                    (uint32_t) 0x7D0
+#define CAND_SET_PROGRESS            (uint32_t) 0x101
+#define CAND_GET_CHECKSUM            (uint32_t) 0x102
+#define CAND_PRA_DOWNLOAD            (uint32_t) 0x103
+#define CAND_INIT_DOWNLOAD           (uint32_t) 0x104
+#define CAND_DOWNLOADING             (uint32_t) 0x105
+#define CAND_PASCA_DOWNLOAD          (uint32_t) 0x106
+
+#define CAN_DATA 	                    UNION64
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {

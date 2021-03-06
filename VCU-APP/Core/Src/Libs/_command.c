@@ -20,30 +20,29 @@ extern osMessageQueueId_t CommandQueueHandle;
 #endif
 
 /* Private functions prototypes -----------------------------------------------*/
-static void Debugger(command_t *cmd);
+static void Debugger(command_t *cmd, uint8_t len);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
-	if (len > sizeof(command_rx_t)) return 0;
+	if (len > sizeof(command_t)) return 0;
 
-	// TODO: remove 2 & replace with command_header_t
-	if (len < sizeof(header_t) + 2) return 0;
+	if (len < sizeof(command_header_t) + 2) return 0;
 
-	command_rx_t *cmdrx = ptr;
+	command_t *cmd = ptr;
 
-	if (memcmp(cmdrx->header.prefix, PREFIX_COMMAND, 2) != 0)
+	if (memcmp(cmd->header.prefix, PREFIX_COMMAND, 2) != 0)
 		return 0;
 
 	//  uint32_t crc;
 	//	crc = CRC_Calculate8(
-	//			(uint8_t*) &(cmdrx->header.size),
-	//			sizeof(cmdrx->header.size) + size,
+	//			(uint8_t*) &(cmd->header.size),
+	//			sizeof(cmd->header.size) + size,
 	//			0);
 	//
-	//	if (cmdrx->header.crc != crc)
+	//	if (cmd->header.crc != crc)
 	//		return;
 
-	if (cmdrx->header.unit_id != VCU.d.unit_id)
+	if (cmd->header.unit_id != VCU.d.unit_id)
 		return 0;
 
 	// TODO: check length according to command id
@@ -52,13 +51,13 @@ uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 }
 
 void CMD_ExecuteCommand(command_t *cmd) {
-	cmd->length = cmd->rx.header.size -
-			(sizeof(cmd->rx.header.unit_id) +
-			sizeof(cmd->rx.header.send_time) +
-			sizeof(cmd->rx.data.code) +
-			sizeof(cmd->rx.data.sub_code));
+	uint8_t len = cmd->header.size -
+			(sizeof(cmd->header.unit_id) +
+			sizeof(cmd->header.send_time) +
+			sizeof(cmd->header.code) +
+			sizeof(cmd->header.sub_code));
 
-	Debugger(cmd);
+	Debugger(cmd, len);
 	osMessageQueueReset(CommandQueueHandle);
 	osMessageQueuePut(CommandQueueHandle, cmd, 0U, 0U);
 }
@@ -95,11 +94,11 @@ void CMD_GenQuota(response_t *resp, osThreadId_t threadId, osMessageQueueId_t qu
 }
 
 void CMD_GenLed(command_t *cmd) {
-	GATE_LedWrite(*(uint8_t*) cmd->rx.data.value);
+	GATE_LedWrite(*(uint8_t*) cmd->data.value);
 }
 
 void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
-	*override_state = *(uint8_t*) cmd->rx.data.value;
+	*override_state = *(uint8_t*) cmd->data.value;
 }
 
 void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_version) {
@@ -109,11 +108,11 @@ void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_vers
 }
 
 void CMD_ReportRTC(command_t *cmd) {
-	RTC_Write(*(datetime_t*) cmd->rx.data.value);
+	RTC_Write(*(datetime_t*) cmd->data.value);
 }
 
 void CMD_ReportOdom(command_t *cmd) {
-	uint32_t value = *(uint32_t*) cmd->rx.data.value;
+	uint32_t value = *(uint32_t*) cmd->data.value;
 	EEPROM_Odometer(EE_CMD_W, value * 1000);
 }
 
@@ -123,7 +122,7 @@ void CMD_AudioBeep(osThreadId_t threadId) {
 }
 
 void CMD_AudioMute(command_t *cmd, osThreadId_t threadId) {
-	uint8_t value = *(uint8_t*) cmd->rx.data.value;
+	uint8_t value = *(uint8_t*) cmd->data.value;
 	uint32_t flag;
 
 	flag = value ? EVT_AUDIO_MUTE_ON : EVT_AUDIO_MUTE_OFF;
@@ -183,7 +182,7 @@ void CMD_FingerFetch(response_t *resp, osThreadId_t threadId, osMessageQueueId_t
 
 
 void CMD_FingerDelete(response_t *resp, command_t *cmd, osThreadId_t threadId, osMessageQueueId_t queue) {
-    uint8_t value = *(uint8_t*) cmd->rx.data.value;
+    uint8_t value = *(uint8_t*) cmd->data.value;
 
 	osMessageQueueReset(queue);
     osMessageQueuePut(queue, &value, 0U, 0U);
@@ -203,7 +202,7 @@ void CMD_Finger(response_t *resp, osThreadId_t threadId, uint8_t event) {
 }
 
 void CMD_RemoteUnitID(command_t *cmd, osThreadId_t threadIot, osThreadId_t threadRemote) {
-	uint32_t value = *(uint32_t*) cmd->rx.data.value;
+	uint32_t value = *(uint32_t*) cmd->data.value;
 	// persist changes
 	EEPROM_UnitID(EE_CMD_W, value);
 	// resubscribe mqtt topic
@@ -225,15 +224,15 @@ void CMD_RemotePairing(response_t *resp, osThreadId_t threadId) {
 }
 
 /* Private functions implementation -------------------------------------------*/
-static void Debugger(command_t *cmd) {
+static void Debugger(command_t *cmd, uint8_t len) {
 	printf("Command:Payload (%u-%u)[%u]",
-			cmd->rx.data.code,
-			cmd->rx.data.sub_code,
-			cmd->length
+			cmd->header.code,
+			cmd->header.sub_code,
+			len
 	);
-	if (cmd->length) {
+	if (len) {
 		printf(" = ");
-		printf_hex(cmd->rx.data.value, cmd->length);
+		printf_hex(cmd->data.value, len);
 	}
 	printf("\n");
 }

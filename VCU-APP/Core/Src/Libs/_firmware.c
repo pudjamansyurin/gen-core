@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
+#include "Libs/_command.h"
 
 /* Private functions prototypes -----------------------------------------------*/
 static void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version);
@@ -47,8 +48,8 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
 		sprintf(node, FOTA.TYPE == IAP_HMI ? "HMI":"VCU");
 
 		// set default value
-		response->data.code = CMD_CODE_FOTA;
-		response->data.sub_code = FOTA.TYPE == IAP_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
+		response->header.code = CMD_CODE_FOTA;
+		response->header.sub_code = FOTA.TYPE == IAP_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
 		response->data.res_code = RESPONSE_STATUS_ERROR;
 		sprintf(response->data.message, "%s Failed", node);
 

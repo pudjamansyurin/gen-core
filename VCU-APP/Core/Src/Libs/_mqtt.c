@@ -232,14 +232,14 @@ uint8_t MQTT_GotPublish(void) {
 	return 1;
 }
 
-uint8_t MQTT_AckPublish(command_rx_t *cmd) {
+uint8_t MQTT_AckPublish(command_t *cmd) {
 	unsigned char buf[100], packettype;
 	int len, buflen = sizeof(buf);
 	mqtt_data_t *d = &(MQTT.rx.d);
 	unsigned short packetid;
 
 	MQTT.rx.received = 0;
-	memcpy(cmd, &(MQTT.rx.command), sizeof(command_rx_t));
+	memcpy(cmd, &(MQTT.rx.command), sizeof(command_t));
 
 	if (d->qos == 1) {
 		len = MQTTSerialize_puback(buf, buflen, d->packetid);

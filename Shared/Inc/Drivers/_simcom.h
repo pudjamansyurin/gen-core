@@ -12,6 +12,41 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
+#define NET_BOOT_TIMEOUT             (uint32_t) 8000                // in ms
+#define NET_EXTRA_TIME               (uint32_t) 1000                // in ms
+
+#define NET_CON_APN                             "3gprs"
+#define NET_CON_USERNAME                        "3gprs"
+#define NET_CON_PASSWORD                        "3gprs"
+#define NET_CHECK_QUOTA                         "*123*10*3#"
+
+//#define NET_CON_APN                             "telkomsel"
+//#define NET_CON_USERNAME                        "wap"
+//#define NET_CON_PASSWORD                        "wap123"
+//#define NET_CON_APN                             "indosatgprs"
+//#define NET_CON_USERNAME                        "indosat"
+//#define NET_CON_PASSWORD                        "indosat"
+
+#define NET_FTP_SERVER                          "ftp.genmotorcycles.com"
+#define NET_FTP_USERNAME                        "fota@genmotorcycles.com"
+#define NET_FTP_PASSWORD                        "@Garda313"
+
+//#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
+//#define NET_TCP_PORT                 (uint16_t) 46606
+#define NET_TCP_SERVER                          "mqtt.eclipseprojects.io"
+#define NET_TCP_PORT                 (uint16_t) 1883
+
+
+
+
+
+
+
+#define SIMCOM_DEBUG        (uint8_t) 1
+
+#define SIM_CMD_BOOT                 "AT\r"
+#define SIM_CMD_FTPGET               "AT+FTPGET=2"
+
 #define SIM_RSP_NONE                 "\r\n"
 #define SIM_RSP_SEND                 ">"
 #define SIM_RSP_SENT                 "SEND OK\r"
@@ -19,11 +54,8 @@
 #define SIM_RSP_ERROR                "ERROR"
 #define SIM_RSP_READY                "RDY"
 #define SIM_RSP_IPD                  "+IPD,"
-#define SIM_CMD_BOOT                 "AT\r"
-#define SIM_CMD_FTPGET               "AT+FTPGET=2"
-#define SIMCOM_DEBUG        (uint8_t) 1
 
-#define MAX_ENUM_SIZE                   (uint32_t) 0xFFFFFFFF
+#define MAX_ENUM_SIZE       (uint32_t) 0xFFFFFFFF
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {

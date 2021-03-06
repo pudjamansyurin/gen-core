@@ -677,7 +677,7 @@ void StartIotTask(void *argument)
     // Check Command
     if (Simcom_SetState(SIM_STATE_MQTT_ON, 0)){
       if (MQTT_GotCommand()) {
-        MQTT_AckPublish(&(cmd.rx));
+        MQTT_AckPublish(&cmd);
         CMD_ExecuteCommand(&cmd);
       }
     }
@@ -753,14 +753,14 @@ void StartCommandTask(void *argument)
     if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) == osOK) {
 
       // default command response
-      response.data.code = cmd.rx.data.code;
-      response.data.sub_code = cmd.rx.data.sub_code;
+      response.header.code = cmd.header.code;
+      response.header.sub_code = cmd.header.sub_code;
       response.data.res_code = RESPONSE_STATUS_OK;
       strcpy(response.data.message, "");
 
       // handle the command
-      if (cmd.rx.data.code == CMD_CODE_GEN) {
-        switch (cmd.rx.data.sub_code) {
+      if (cmd.header.code == CMD_CODE_GEN) {
+        switch (cmd.header.sub_code) {
           case CMD_GEN_INFO :
             CMD_GenInfo(&response, &(HMI1.d.started), &(HMI1.d.version));
             break;
@@ -787,8 +787,8 @@ void StartCommandTask(void *argument)
         }
       }
 
-      else if (cmd.rx.data.code == CMD_CODE_REPORT) {
-        switch (cmd.rx.data.sub_code) {
+      else if (cmd.header.code == CMD_CODE_REPORT) {
+        switch (cmd.header.sub_code) {
           case CMD_REPORT_RTC :
             CMD_ReportRTC(&cmd);
             break;
@@ -803,12 +803,12 @@ void StartCommandTask(void *argument)
         }
       }
 
-      else if (cmd.rx.data.code == CMD_CODE_AUDIO) {
+      else if (cmd.header.code == CMD_CODE_AUDIO) {
         if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
           sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
           response.data.res_code = RESPONSE_STATUS_ERROR;
         } else
-          switch (cmd.rx.data.sub_code) {
+          switch (cmd.header.sub_code) {
             case CMD_AUDIO_BEEP :
               CMD_AudioBeep(AudioTaskHandle);
               break;
@@ -823,12 +823,12 @@ void StartCommandTask(void *argument)
           }
       }
 
-      else if (cmd.rx.data.code == CMD_CODE_FINGER) {
+      else if (cmd.header.code == CMD_CODE_FINGER) {
         if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
           sprintf(response.data.message, "State should >= {%d}.", VEHICLE_STANDBY);
           response.data.res_code = RESPONSE_STATUS_ERROR;
         } else
-          switch (cmd.rx.data.sub_code) {
+          switch (cmd.header.sub_code) {
             case CMD_FINGER_FETCH :
               CMD_FingerFetch(&response, FingerTaskHandle, FingerDbQueueHandle);
               break;
@@ -851,12 +851,12 @@ void StartCommandTask(void *argument)
           }
       }
 
-      else if (cmd.rx.data.code == CMD_CODE_REMOTE) {
+      else if (cmd.header.code == CMD_CODE_REMOTE) {
         if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
           sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
           response.data.res_code = RESPONSE_STATUS_ERROR;
         } else
-          switch (cmd.rx.data.sub_code) {
+          switch (cmd.header.sub_code) {
             case CMD_REMOTE_PAIRING :
               CMD_RemotePairing(&response, RemoteTaskHandle);
               break;
@@ -871,13 +871,13 @@ void StartCommandTask(void *argument)
           }
       }
 
-      else if (cmd.rx.data.code == CMD_CODE_FOTA) {
+      else if (cmd.header.code == CMD_CODE_FOTA) {
         response.data.res_code = RESPONSE_STATUS_ERROR;
 
         if (VCU.d.state.vehicle == VEHICLE_RUN) {
           sprintf(response.data.message, "State should != {%d}.", VEHICLE_RUN);
         } else
-          switch (cmd.rx.data.sub_code) {
+          switch (cmd.header.sub_code) {
             case CMD_FOTA_VCU :
               CMD_Fota( &response, IAP_VCU, &(VCU.d.bat), &(HMI1.d.version));
               break;

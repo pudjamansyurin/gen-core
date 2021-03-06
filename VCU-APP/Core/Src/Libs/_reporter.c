@@ -75,8 +75,8 @@ void RPT_ResponseCapture(response_t *response) {
 
 	memcpy(header->prefix, PREFIX_RESPONSE, 2);
 
-	header->size = sizeof(response->data.code)
-					+sizeof(response->data.sub_code)
+	header->size = sizeof(response->header.code)
+					+sizeof(response->header.sub_code)
 					+sizeof(response->data.res_code)
 					+ strnlen(response->data.message, sizeof(response->data.message)
 					);

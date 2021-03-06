@@ -15,6 +15,12 @@
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 
+
+/* Exported define -------------------------------------------------------------*/
+#define PREFIX_REPORT                           "R@"
+#define PREFIX_COMMAND                          "C@"
+#define PREFIX_RESPONSE                         "S@"
+
 /* Exported enum ---------------------------------------------------------------*/
 typedef enum {
 	FR_SIMPLE = 0,
@@ -30,6 +36,16 @@ typedef struct __attribute__((packed)) {
 	uint32_t unit_id;
 	datetime_t send_time;
 } header_t;
+
+typedef struct __attribute__((packed)) {
+	char prefix[2];
+	//  uint32_t crc;
+	uint8_t size;
+	uint32_t unit_id;
+	datetime_t send_time;
+	uint8_t code;
+	uint8_t sub_code;
+} command_header_t;
 
 // report frame
 typedef struct __attribute__((packed)) {
@@ -93,10 +109,8 @@ typedef struct __attribute__((packed)) {
 
 // response frame
 typedef struct __attribute__((packed)) {
-	header_t header;
+	command_header_t header;
 	struct __attribute__((packed)) {
-		uint8_t code;
-		uint8_t sub_code;
 		uint8_t res_code;
 		char message[200];
 	} data;
@@ -104,18 +118,10 @@ typedef struct __attribute__((packed)) {
 
 // command frame (from server)
 typedef struct __attribute__((packed)) {
-	header_t header;
+	command_header_t header;
 	struct __attribute__((packed)) {
-		uint8_t code;
-		uint8_t sub_code;
 		char value[200];
-		// UNION64 value;
 	} data;
-} command_rx_t;
-
-typedef struct __attribute__((packed)) {
-	command_rx_t rx;
-	uint8_t length;
 } command_t;
 
 typedef struct {

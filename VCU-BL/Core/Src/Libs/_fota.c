@@ -6,15 +6,16 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_fota.h"
-#include "Libs/_focan.h"
-#include "Libs/_eeprom.h"
-#include "Drivers/_flasher.h"
-#include "Drivers/_crc.h"
 #include "can.h"
 #include "crc.h"
 #include "i2c.h"
 #include "usart.h"
+#include "Drivers/_flasher.h"
+#include "Drivers/_crc.h"
+#include "Drivers/_canbus.h"
+#include "Libs/_fota.h"
+#include "Libs/_focan.h"
+#include "Libs/_eeprom.h"
 
 /* Private functions prototypes -----------------------------------------------*/
 static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout);

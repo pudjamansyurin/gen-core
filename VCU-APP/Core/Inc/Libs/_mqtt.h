@@ -47,7 +47,7 @@ typedef struct {
 		char will[20];
 	} topic;
 	struct {
-		command_rx_t command;
+		command_t command;
 		uint8_t received;
 		mqtt_data_t d;
 	} rx;
@@ -62,7 +62,7 @@ uint8_t MQTT_Connect(void);
 uint8_t MQTT_Disconnect(void);
 uint8_t MQTT_Ping(void);
 uint8_t MQTT_GotPublish(void);
-uint8_t MQTT_AckPublish(command_rx_t *cmd);
+uint8_t MQTT_AckPublish(command_t *cmd);
 uint8_t MQTT_GotCommand(void);
 uint8_t MQTT_Subscribed(void);
 uint8_t MQTT_Willed(void);
