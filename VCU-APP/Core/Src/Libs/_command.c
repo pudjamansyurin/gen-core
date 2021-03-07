@@ -26,7 +26,7 @@ static void Debugger(command_t *cmd, uint8_t len);
 uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 	if (len > sizeof(command_t)) return 0;
 
-	if (len < sizeof(command_header_t) + 2) return 0;
+	if (len < sizeof(command_header_t)) return 0;
 
 	command_t *cmd = ptr;
 
