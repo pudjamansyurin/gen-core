@@ -35,9 +35,13 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "i2s.h"
 #include "Libs/_audio.h"
 
 /* External variables --------------------------------------------------------*/
+#if (RTOS_ENABLE)
+extern osMutexId_t AudioMutexHandle;
+#endif
 extern uint32_t SOUND_FREQ;
 extern uint32_t SOUND_SIZE;
 extern uint16_t SOUND_SAMPLE[];
@@ -45,7 +49,8 @@ extern uint16_t SOUND_SAMPLE[];
 /* Private variables ---------------------------------------------------------*/
 static audio_t audio = {
     .initial_volume = 10,
-    .size = { 0 }
+    .size = { 0 },
+		.pi2s = &hi2s3,
 };
 
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
@@ -62,11 +67,8 @@ static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation ---------------------------------------------*/
-void AUDIO_Init(I2C_HandleTypeDef *hi2c, I2S_HandleTypeDef *hi2s) {
+void AUDIO_Init(void) {
   uint8_t ret;
-
-  audio.h.i2c = hi2c;
-  audio.h.i2s = hi2s;
 
   do {
     printf("Audio:Init\n");
@@ -131,7 +133,7 @@ void AUDIO_BeepStop(void) {
  * @param  Size: Number of data to be written
  */
 void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
-  HAL_I2S_Transmit_DMA(audio.h.i2s, pData, DMA_MAX(Size/AUDIODATA_SIZE));
+  HAL_I2S_Transmit_DMA(audio.pi2s, pData, DMA_MAX(Size/AUDIODATA_SIZE));
 }
 
 /**
@@ -148,7 +150,7 @@ uint8_t AUDIO_OUT_Pause(void) {
     return AUDIO_ERROR;
   else {
     /* Call the Media layer pause function */
-    HAL_I2S_DMAPause(audio.h.i2s);
+    HAL_I2S_DMAPause(audio.pi2s);
 
     /* Return AUDIO_OK when all operations are correctly done */
     return AUDIO_OK;
@@ -168,7 +170,7 @@ uint8_t AUDIO_OUT_Resume(void) {
     return AUDIO_ERROR;
   else {
     /* Call the Media layer resume function */
-    HAL_I2S_DMAResume(audio.h.i2s);
+    HAL_I2S_DMAResume(audio.pi2s);
 
     /* Return AUDIO_OK when all operations are correctly done */
     return AUDIO_OK;
@@ -184,7 +186,7 @@ uint8_t AUDIO_OUT_Resume(void) {
  */
 uint8_t AUDIO_OUT_Stop(uint32_t Option) {
   /* Call DMA Stop to disable DMA stream before stopping codec */
-  HAL_I2S_DMAStop(audio.h.i2s);
+  HAL_I2S_DMAStop(audio.pi2s);
 
   /* Call Audio Codec Stop function */
   if (cs43l22_Stop(AUDIO_I2C_ADDRESS, Option) != 0)
@@ -258,7 +260,7 @@ uint8_t AUDIO_OUT_SetOutputMode(uint8_t Output) {
  */
 void AUDIO_OUT_SetFrequency(uint32_t AudioFreq) {
   /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
-  AUDIO_OUT_ClockConfig(audio.h.i2s, AudioFreq, NULL);
+  AUDIO_OUT_ClockConfig(audio.pi2s, AudioFreq, NULL);
 
   /* Update the I2S audio frequency configuration */
   I2S_Init(AudioFreq);
@@ -362,7 +364,7 @@ __weak void AUDIO_OUT_Error_CallBack(void) {
  * @param  hi2s: I2S handle
  */
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
-  if (hi2s->Instance == audio.h.i2s->Instance)
+  if (hi2s->Instance == audio.pi2s->Instance)
     /* Call the user function which will manage directly transfer complete */
     AUDIO_OUT_TransferComplete_CallBack();
 }
@@ -372,7 +374,7 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
  * @param  hi2s: I2S handle
  */
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
-  if (hi2s->Instance == audio.h.i2s->Instance)
+  if (hi2s->Instance == audio.pi2s->Instance)
     /* Manage the remaining file size and new address offset: This function should
          be coded by user (its prototype is already declared in stm32f4_discovery_audio.h) */
     AUDIO_OUT_HalfTransfer_CallBack();
@@ -391,13 +393,13 @@ static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Au
   uint8_t ret = AUDIO_OK;
 
   /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
-  AUDIO_OUT_ClockConfig(audio.h.i2s, AudioFreq, NULL);
+  AUDIO_OUT_ClockConfig(audio.pi2s, AudioFreq, NULL);
 
   /* I2S data transfer preparation:
      Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
-  if (HAL_I2S_GetState(audio.h.i2s) == HAL_I2S_STATE_RESET)
+  if (HAL_I2S_GetState(audio.pi2s) == HAL_I2S_STATE_RESET)
     /* Init the I2S MSP: this __weak function can be redefined by the application*/
-    AUDIO_OUT_MspInit(audio.h.i2s, NULL);
+    AUDIO_OUT_MspInit(audio.pi2s, NULL);
 
   /* I2S data transfer preparation:
      Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
@@ -407,8 +409,8 @@ static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Au
 
   if (ret == AUDIO_OK) {
     /* Retieve audio codec identifier */
-    if (((cs43l22_ReadID(audio.h.i2c, AUDIO_I2C_ADDRESS)) & CS43L22_ID_MASK) == CS43L22_ID)
-      cs43l22_Init(audio.h.i2c, AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
+    if (((cs43l22_ReadID(AUDIO_I2C_ADDRESS)) & CS43L22_ID_MASK) == CS43L22_ID)
+      cs43l22_Init(AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
     else
       ret = AUDIO_ERROR;
   }
@@ -418,7 +420,7 @@ static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Au
 
 static void AUDIO_OUT_DeInit(void) {
   cs43l22_DeInit();
-  AUDIO_OUT_MspDeInit(audio.h.i2s, NULL);
+  AUDIO_OUT_MspDeInit(audio.pi2s, NULL);
 }
 
 /**
@@ -433,7 +435,7 @@ static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
     return AUDIO_ERROR;
 
   /* Update the Media layer and enable it for play */
-  HAL_I2S_Transmit_DMA(audio.h.i2s, pBuffer, DMA_MAX(Size/AUDIODATA_SIZE));
+  HAL_I2S_Transmit_DMA(audio.pi2s, pBuffer, DMA_MAX(Size/AUDIODATA_SIZE));
   /* Return AUDIO_OK when all operations are correctly done */
   return AUDIO_OK;
 }
@@ -444,29 +446,33 @@ static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
  */
 static uint8_t I2S_Init(uint32_t AudioFreq) {
   /* Disable I2S block */
-  __HAL_I2S_DISABLE(audio.h.i2s);
+  __HAL_I2S_DISABLE(audio.pi2s);
 
-  audio.h.i2s->Init.Mode = I2S_MODE_MASTER_TX;
-  audio.h.i2s->Init.Standard = I2S_STANDARD_PHILIPS;
-  audio.h.i2s->Init.DataFormat = I2S_DATAFORMAT_32B;
-  audio.h.i2s->Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
-  audio.h.i2s->Init.AudioFreq = AudioFreq;
-  audio.h.i2s->Init.CPOL = I2S_CPOL_LOW;
-  audio.h.i2s->Init.ClockSource = I2S_CLOCK_PLL;
-  audio.h.i2s->Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
+  audio.pi2s->Init.Mode = I2S_MODE_MASTER_TX;
+  audio.pi2s->Init.Standard = I2S_STANDARD_PHILIPS;
+  audio.pi2s->Init.DataFormat = I2S_DATAFORMAT_32B;
+  audio.pi2s->Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
+  audio.pi2s->Init.AudioFreq = AudioFreq;
+  audio.pi2s->Init.CPOL = I2S_CPOL_LOW;
+  audio.pi2s->Init.ClockSource = I2S_CLOCK_PLL;
+  audio.pi2s->Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
 
   /* Initialize the I2S peripheral with the structure above */
-  if (HAL_I2S_Init(audio.h.i2s) != HAL_OK)
+  if (HAL_I2S_Init(audio.pi2s) != HAL_OK)
     return AUDIO_ERROR;
 
   return AUDIO_OK;
 }
 
 static void lock(void) {
-  //  osMutexAcquire(AudioMutexHandle, osWaitForever);
+  #if (RTOS_ENABLE)
+  osMutexAcquire(AudioMutexHandle, osWaitForever);
+  #endif
 }
 
 static void unlock(void) {
-  //  osMutexRelease(AudioMutexHandle);
+  #if (RTOS_ENABLE)
+  osMutexRelease(AudioMutexHandle);
+  #endif
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

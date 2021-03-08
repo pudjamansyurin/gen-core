@@ -109,7 +109,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-	  HAL_IWDG_Refresh(&hiwdg);
+  	MX_IWDG_Reset();
 	  GATE_LedToggle();
 	  HAL_Delay(100);
     /* USER CODE END W1_HardFault_IRQn 0 */

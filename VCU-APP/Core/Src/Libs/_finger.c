@@ -10,8 +10,16 @@
 #include "DMA/_dma_finger.h"
 #include "Libs/_finger.h"
 
+/* External variables -------------------------------------------------------*/
+#if (RTOS_ENABLE)
+extern osMutexId_t FingerRecMutexHandle;
+#endif
+
 /* Private variables ----------------------------------------------------------*/
-static finger_t finger;
+static finger_t finger = {
+		.puart = &huart4,
+		.pdma = &hdma_uart4_rx
+};
 
 /* Private functions ----------------------------------------------------------*/
 static void lock(void);
@@ -23,11 +31,8 @@ static uint8_t GetImage(void);
 static void DebugResponse(uint8_t res, char *msg);
 
 /* Public functions implementation --------------------------------------------*/
-void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+void FINGER_Init(void) {
 	uint8_t verified = 0;
-
-	finger.h.uart = huart;
-	finger.h.dma = hdma;
 
 	// Initiate Module
 	do {
@@ -36,7 +41,7 @@ void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 		// control
 		//	  HAL_UART_Init(huart);
 		MX_UART4_Init();
-		FINGER_DMA_Start(huart, hdma);
+		FINGER_DMA_Start(finger.puart, finger.pdma);
 		GATE_FingerReset();
 
 		// verify password and check hardware
@@ -51,7 +56,7 @@ void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
 void FINGER_DeInit(void) {
 	GATE_FingerShutdown();
 	FINGER_DMA_Stop();
-	HAL_UART_DeInit(finger.h.uart);
+	HAL_UART_DeInit(finger.puart);
 }
 
 
@@ -194,13 +199,17 @@ uint8_t FINGER_AuthFast(void) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-	//	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
+  #if (RTOS_ENABLE)
+		osMutexAcquire(FingerRecMutexHandle, osWaitForever);
+		#endif
 	GATE_FingerDigitalPower(GPIO_PIN_SET);
 }
 
 static void unlock(void) {
 	GATE_FingerDigitalPower(GPIO_PIN_RESET);
-	//	osMutexRelease(FingerRecMutexHandle);
+  #if (RTOS_ENABLE)
+		osMutexRelease(FingerRecMutexHandle);
+		#endif
 }
 
 static uint8_t Scan(uint8_t id, uint8_t slot, uint32_t timeout) {

@@ -29,7 +29,7 @@ typedef struct __attribute__((packed)) {
 } datetime_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RTC_Init(RTC_HandleTypeDef *rtc);
+void RTC_Init(void);
 datetime_t RTC_Read(void);
 void RTC_Write(datetime_t dt);
 uint8_t RTC_NeedCalibration(void);

@@ -33,6 +33,14 @@ uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 	if (memcmp(cmd->header.prefix, PREFIX_COMMAND, 2) != 0)
 		return 0;
 
+	uint8_t size = sizeof(cmd->header.unit_id) +
+			sizeof(cmd->header.send_time) +
+			sizeof(cmd->header.code) +
+			sizeof(cmd->header.sub_code) +
+			sizeof(cmd->data);
+	if (cmd->header.size > size)
+		return 0;
+
 	//  uint32_t crc;
 	//	crc = CRC_Calculate8(
 	//			(uint8_t*) &(cmd->header.size),
@@ -53,9 +61,9 @@ uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 void CMD_ExecuteCommand(command_t *cmd) {
 	uint8_t len = cmd->header.size -
 			(sizeof(cmd->header.unit_id) +
-			sizeof(cmd->header.send_time) +
-			sizeof(cmd->header.code) +
-			sizeof(cmd->header.sub_code));
+					sizeof(cmd->header.send_time) +
+					sizeof(cmd->header.code) +
+					sizeof(cmd->header.sub_code));
 
 	Debugger(cmd, len);
 	osMessageQueueReset(CommandQueueHandle);
@@ -78,19 +86,6 @@ void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version) 
 			strlen(msg),
 			msg,
 			VCU_BUILD_YEAR);
-}
-
-void CMD_GenQuota(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue) {
-	uint32_t notif;
-
-	osThreadFlagsSet(threadId, EVT_IOT_CHECK_QUOTA);
-
-	// wait response until timeout
-	resp->data.res_code = RESPONSE_STATUS_ERROR;
-	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 40000))
-		if (notif & EVT_COMMAND_OK)
-			if (osMessageQueueGet(queue, resp->data.message, NULL, 0U) == osOK)
-				resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
 void CMD_GenLed(command_t *cmd) {
@@ -129,11 +124,9 @@ void CMD_AudioMute(command_t *cmd, osThreadId_t threadId) {
 	osThreadFlagsSet(threadId, flag);
 }
 
-void CMD_FingerAdd(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue) {
+void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue) {
 	uint32_t notif;
 	uint8_t id;
-
-	osThreadFlagsSet(threadId, EVT_FINGER_ADD);
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
@@ -151,12 +144,10 @@ void CMD_FingerAdd(response_t *resp, osThreadId_t threadId, osMessageQueueId_t q
 	}
 }
 
-void CMD_FingerFetch(response_t *resp, osThreadId_t threadId, osMessageQueueId_t queue) {
+void CMD_FingerFetch(response_t *resp, osMessageQueueId_t queue) {
 	uint32_t notif, len;
 	finger_db_t finger;
 	char fingers[3];
-
-	osThreadFlagsSet(threadId, EVT_FINGER_FETCH);
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
@@ -182,17 +173,17 @@ void CMD_FingerFetch(response_t *resp, osThreadId_t threadId, osMessageQueueId_t
 
 
 void CMD_FingerDelete(response_t *resp, command_t *cmd, osThreadId_t threadId, osMessageQueueId_t queue) {
-    uint8_t value = *(uint8_t*) cmd->data.value;
+	uint8_t value = *(uint8_t*) cmd->data.value;
 
 	osMessageQueueReset(queue);
-    osMessageQueuePut(queue, &value, 0U, 0U);
-    CMD_Finger(resp, threadId, EVT_FINGER_DEL);
+	osMessageQueuePut(queue, &value, 0U, 0U);
+
+	osThreadFlagsSet(threadId, EVT_FINGER_DEL);
+	CMD_Finger(resp);
 }
 
-void CMD_Finger(response_t *resp, osThreadId_t threadId, uint8_t event) {
+void CMD_Finger(response_t *resp) {
 	uint32_t notif;
-
-	osThreadFlagsSet(threadId, event);
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
@@ -211,16 +202,25 @@ void CMD_RemoteUnitID(command_t *cmd, osThreadId_t threadIot, osThreadId_t threa
 	osThreadFlagsSet(threadRemote, EVT_REMOTE_REINIT);
 }
 
-void CMD_RemotePairing(response_t *resp, osThreadId_t threadId) {
+void CMD_RemotePairing(response_t *resp) {
 	uint32_t notif;
-
-	osThreadFlagsSet(threadId, EVT_REMOTE_PAIRING);
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
 	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
 		if (notif & EVT_COMMAND_OK)
 			resp->data.res_code = RESPONSE_STATUS_OK;
+}
+
+void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue) {
+	uint32_t notif;
+
+	// wait response until timeout
+	resp->data.res_code = RESPONSE_STATUS_ERROR;
+	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 40000))
+		if (notif & EVT_COMMAND_OK)
+			if (osMessageQueueGet(queue, resp->data.message, NULL, 0U) == osOK)
+				resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
 /* Private functions implementation -------------------------------------------*/

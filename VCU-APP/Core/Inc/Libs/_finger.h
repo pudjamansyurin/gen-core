@@ -14,18 +14,16 @@
 
 /* Structs --------------------------------------------------------------------*/
 typedef struct {
-  uint8_t db[FINGER_USER_MAX];
+	uint8_t db[FINGER_USER_MAX];
 } finger_db_t;
 
 typedef struct {
-  struct {
-    UART_HandleTypeDef *uart;
-    DMA_HandleTypeDef *dma;
-  } h;
+	UART_HandleTypeDef *puart;
+	DMA_HandleTypeDef *pdma;
 } finger_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void FINGER_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
+void FINGER_Init(void);
 void FINGER_DeInit(void);
 uint8_t FINGER_Fetch(uint8_t *db);
 uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid);

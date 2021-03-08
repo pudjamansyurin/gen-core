@@ -18,7 +18,7 @@
 #define NET_CON_APN                             "3gprs"
 #define NET_CON_USERNAME                        "3gprs"
 #define NET_CON_PASSWORD                        "3gprs"
-#define NET_CHECK_QUOTA                         "*123*10*3#"
+//#define NET_CHECK_QUOTA                         "*123*10*3#"
 
 //#define NET_CON_APN                             "telkomsel"
 //#define NET_CON_USERNAME                        "wap"
@@ -35,12 +35,6 @@
 //#define NET_TCP_PORT                 (uint16_t) 46606
 #define NET_TCP_SERVER                          "mqtt.eclipseprojects.io"
 #define NET_TCP_PORT                 (uint16_t) 1883
-
-
-
-
-
-
 
 #define SIMCOM_DEBUG        (uint8_t) 1
 
@@ -104,17 +98,15 @@ typedef struct {
 	uint8_t signal;
 	uint8_t downloading;
 	char *response;
-	struct {
-		UART_HandleTypeDef *uart;
-		DMA_HandleTypeDef *dma;
-	} h;
+	UART_HandleTypeDef *puart;
+	DMA_HandleTypeDef *pdma;
 } sim_t;
 
 /* Exported variables --------------------------------------------------------*/
 extern sim_t SIM;
 
 /* Public functions prototype ------------------------------------------------*/
-void Simcom_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
+void Simcom_Init(void);
 void Simcom_DeInit(void);
 void Simcom_Lock(void);
 void Simcom_Unlock(void);
@@ -123,7 +115,9 @@ char* Simcom_Resp(char *keyword, char *from);
 SIM_RESULT Simcom_Cmd(char *command, char *reply, uint32_t ms);
 #if (!BOOTLOADER)
 void Simcom_CalibrateTime(void);
-uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen);
+uint8_t Simcom_SendUSSD(char *ussd, char *buf, uint8_t buflen);
+uint8_t Simcom_ReadNewSMS(char *buf, uint8_t buflen);
+//uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen);
 uint8_t Simcom_Upload(void *payload, uint16_t size);
 int Simcom_GetData(unsigned char *buf, int count);
 uint8_t Simcom_ReceivedResponse(uint32_t timeout);

@@ -40,16 +40,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
-// #define VERIFY_WRITTENDATA
-
-/* Maximum Timeout values for flags waiting loops. These timeouts are not based
- // on accurate values, they just guarantee that the application will not remain
- // stuck if the SPI communication is corrupted.
- // You may modify these timeout values depending on CPU frequency and application
- // conditions (interrupts routines ...). */
-#define I2Cx_TIMEOUT_MAX                0x1000 /*<! The value of the maximal timeout for BUS waiting loops */
-
 /******************************************************************************/
 /***************************  Codec User defines ******************************/
 /******************************************************************************/
@@ -91,11 +81,11 @@
 
 /* BEEP Tone */
 // Beep frequency
-#define BEEP_FREQ_260_HZ			    0
-#define BEEP_FREQ_521_HZ			    1
-#define BEEP_FREQ_585_HZ			    2
-#define BEEP_FREQ_666_HZ			    3
-#define BEEP_FREQ_705_HZ			    4
+#define BEEP_FREQ_260_HZ			  0
+#define BEEP_FREQ_521_HZ		    1
+#define BEEP_FREQ_585_HZ			  2
+#define BEEP_FREQ_666_HZ			  3
+#define BEEP_FREQ_705_HZ			  4
 #define BEEP_FREQ_774_HZ				5
 #define BEEP_FREQ_888_HZ				6
 #define BEEP_FREQ_1000_HZ				7
@@ -108,7 +98,7 @@
 #define BEEP_FREQ_2000_HZ				14
 #define BEEP_FREQ_2181_HZ				15
 // Beep on time
-#define BEEP_ON_86_MS					0
+#define BEEP_ON_86_MS					  0
 #define BEEP_ON_430_MS					1
 #define BEEP_ON_780_MS					2
 #define BEEP_ON_1200_MS					3
@@ -134,17 +124,17 @@
 #define BEEP_OFF_9350_MS				6
 #define BEEP_OFF_10800_MS				7
 // Beep volume
-#define BEEP_VOL_MAX					6
+#define BEEP_VOL_MAX					  6
 #define BEEP_VOL_NORMAL					0
-#define BEEP_VOL_MIN					7
+#define BEEP_VOL_MIN					  7
 // Beep mode
-#define	BEEP_MODE_OFF					0
+#define	BEEP_MODE_OFF					  0
 #define	BEEP_MODE_SINGLE				1
-#define	BEEP_MODE_MULTIPLE				2
-#define	BEEP_MODE_CONTINUOUS			3
+#define	BEEP_MODE_MULTIPLE			2
+#define	BEEP_MODE_CONTINUOUS		3
 // Mix with serial sound
 #define BEEP_MIX_ON					    0
-#define BEEP_MIX_OFF					1
+#define BEEP_MIX_OFF					  1
 
 /** CS43l22 Registers  ***/
 #define   CS43L22_REG_ID                  0x01
@@ -215,15 +205,12 @@ typedef struct {
     uint8_t stopDevice;
     uint8_t outputDev;
     uint16_t outputDevice;
-    struct {
-      I2C_HandleTypeDef *i2c;
-    } h;
 } cs43l22_t;
 
 /* Public functions prototype ------------------------------------------------*/
-uint32_t cs43l22_Init(I2C_HandleTypeDef *hi2c, uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
+uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
 void cs43l22_DeInit(void);
-uint32_t cs43l22_ReadID(I2C_HandleTypeDef *hi2c, uint16_t DeviceAddr);
+uint32_t cs43l22_ReadID(uint16_t DeviceAddr);
 uint32_t cs43l22_Play(uint16_t DeviceAddr, uint16_t *pBuffer, uint16_t Size);
 uint32_t cs43l22_Pause(uint16_t DeviceAddr);
 uint32_t cs43l22_Resume(uint16_t DeviceAddr);

@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "rng.h"
 #include "spi.h"
+#include "Drivers/_rng.h"
 #include "Drivers/_aes.h"
 #include "Libs/_remote.h"
 #include "Libs/_eeprom.h"
@@ -15,6 +15,7 @@
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osThreadId_t RemoteTaskHandle;
+extern osMutexId_t RemoteRecMutexHandle;
 #endif
 
 /* Private variables -----------------------------------------------------------*/
@@ -30,7 +31,8 @@ static remote_t RMT = {
 		.tick = {
 				.heartbeat = 0,
 				.pairing = 0,
-		}
+		},
+		.pspi = &hspi1
 };
 static const uint8_t COMMAND[3][8] = {
 		{ 0x5e, 0x6c, 0xa7, 0x74, 0xfd, 0xe3, 0xdf, 0xbc },
@@ -43,22 +45,19 @@ static void lock(void);
 static void unlock(void);
 static void ChangeMode(RMT_MODE mode, uint32_t *unit_id);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
-static void GenRandomNumber32(uint32_t *payload, uint8_t size);
 static void RMT_GenerateAesKey(uint32_t *aesSwapped);
 static void RawDebugger(void);
 static void Debugger(RMT_CMD command);
 
 /* Public functions implementation --------------------------------------------*/
-void RMT_Init(SPI_HandleTypeDef *hspi, uint32_t *unit_id) {
-	RMT.h.spi = hspi;
-
-	nrf_param(hspi, RMT.rx.payload);
+void RMT_Init(uint32_t *unit_id) {
+	nrf_param(RMT.pspi, RMT.rx.payload);
 	RMT_ReInit(unit_id);
 }
 
 void RMT_DeInit(void) {
 	GATE_RemoteShutdown();
-	HAL_SPI_DeInit(RMT.h.spi);
+	HAL_SPI_DeInit(RMT.pspi);
 	_DelayMS(1000);
 }
 
@@ -89,7 +88,7 @@ uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote) {
 }
 
 uint8_t RMT_Ping(void) {
-	GenRandomNumber32((uint32_t*) RMT.tx.payload, NRF_DATA_LENGTH / 4);
+	RNG_Generate32((uint32_t*) RMT.tx.payload, NRF_DATA_LENGTH / 4);
 	return (nrf_send_packet_noack(RMT.tx.payload) == NRF_OK);
 }
 
@@ -176,11 +175,15 @@ void RMT_PacketReceived(uint8_t *data) {
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-	//  osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
+  #if (RTOS_ENABLE)
+	osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
+	#endif
 }
 
 static void unlock(void) {
-	//  osMutexRelease(RemoteRecMutexHandle);
+  #if (RTOS_ENABLE)
+	osMutexRelease(RemoteRecMutexHandle);
+	#endif
 }
 
 static void ChangeMode(RMT_MODE mode, uint32_t *unit_id) {
@@ -217,15 +220,11 @@ static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
 	return ret;
 }
 
-static void GenRandomNumber32(uint32_t *payload, uint8_t size) {
-	while(size--)
-		HAL_RNG_GenerateRandomNumber(&hrng, payload++);
-}
 
 static void RMT_GenerateAesKey(uint32_t *aesSwapped) {
 	const uint8_t len = sizeof(uint32_t);
 
-	GenRandomNumber32(RMT.pairingAes, len);
+	RNG_Generate32(RMT.pairingAes, len);
 
 	// swap byte order
 	for (uint8_t i = 0; i < len; i++) {

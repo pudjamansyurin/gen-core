@@ -96,7 +96,7 @@ typedef enum {
 typedef enum {
     CUSD_DISABLE = 0,
     CUSD_ENABLE,
-	CUSD_CANCEL,
+		CUSD_CANCEL,
     CUSD_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CUSD_N;
 
@@ -248,6 +248,16 @@ typedef struct {
 } at_cusd_t;
 
 typedef struct {
+	char storage[3];
+	uint8_t used;
+	uint8_t total;
+} at_cpms_mem_t;
+
+typedef struct {
+	at_cpms_mem_t mem[3];
+} at_cpms_t;
+
+typedef struct {
     char mem[3];
     uint8_t index;
 } at_cmti_t;
@@ -318,7 +328,8 @@ SIM_RESULT AT_CharacterSetTE(AT_MODE mode, char *chset, uint8_t len);
 SIM_RESULT AT_MessageIndicationSMS(uint8_t mode, uint8_t mt);
 SIM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF *state);
 uint8_t AT_WaitMessageSMS(at_cmti_t *param, uint32_t timeout);
-SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param);
+SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param, char *buf, uint8_t buflen);
+SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param);
 SIM_RESULT AT_DeleteMessageSMS(at_cmgd_t *param);
 SIM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen);
 SIM_RESULT AT_ListMessageSMS(at_cmgl_t *param);

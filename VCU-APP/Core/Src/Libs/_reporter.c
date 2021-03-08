@@ -29,6 +29,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 	report->data.req.vcu.driver_id = vcu->driver_id;
 	report->data.req.vcu.events_group = vcu->events;
 	report->data.req.vcu.vehicle = (int8_t) vcu->state.vehicle;
+	report->data.req.vcu.uptime = vcu->uptime * 1000 / 1111;
 
 	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
 		report->data.req.bms.pack[i].id = bms->pack[i].id;

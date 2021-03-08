@@ -9,12 +9,20 @@
 #include "Libs/_gyro.h"
 #include "Nodes/VCU.h"
 
+/* External variables -------------------------------------------------------*/
+#if (RTOS_ENABLE)
+extern osMutexId_t GyroMutexHandle;
+#endif
+
 /* Private variables ----------------------------------------------------------*/
 static gyro_t gyro = {
-    .detector_init = 1
+    .detector_init = 1,
+		.pi2c = &hi2c3,
 };
 
-/* Private functions prototype ------------------------------------------------*/
+/* Private functions declaration ---------------------------------------------*/
+static void lock(void);
+static void unlock(void);
 static void Average(mems_t *mems, uint16_t sample);
 static void Convert(coordinate_t *gyro, motion_t *motion);
 static uint8_t GYRO_Moved(motion_t *refference, motion_t *current);
@@ -22,32 +30,33 @@ static void Debugger(movement_t *movement);
 static void RawDebugger(mems_t *mems);
 
 /* Public functions implementation --------------------------------------------*/
-void GYRO_Init(I2C_HandleTypeDef *hi2c) {
+void GYRO_Init(void) {
 	MPU6050_Result result;
 
-	gyro.h.i2c = hi2c;
-
+	lock();
 	do {
 		printf("Gyro:Init\n");
 
 		MX_I2C3_Init();
 		GATE_GyroReset();
 
-		// module initialization
-		result = MPU6050_Init(gyro.h.i2c, &(gyro.mpu), MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
+		// module initiate
+		result = MPU6050_Init(gyro.pi2c, &(gyro.mpu), MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
 
 	} while (result != MPU6050_Result_Ok);
+	unlock();
 }
 
 void GYRO_DeInit(void) {
 	GATE_GyroShutdown();
-	HAL_I2C_DeInit(gyro.h.i2c);
+	HAL_I2C_DeInit(gyro.pi2c);
 }
 
 void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample) {
 	mems_t mems;
 	motion_t mot;
 
+	lock();
 	// get gyro data
 	Average(&mems, sample);
 	Convert(&(mems.gyroscope), &mot);
@@ -73,11 +82,13 @@ void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample) {
 
 	//  RawDebugger(&mems);
 	//  Debugger(movement);
+	unlock();
 }
 
 void GYRO_MonitorMovement(motion_t *motion) {
   static motion_t refference;
 
+  lock();
   if (gyro.detector_init) {
     gyro.detector_init = 0;
     memcpy(&refference, motion, sizeof(motion_t));
@@ -86,14 +97,29 @@ void GYRO_MonitorMovement(motion_t *motion) {
 
   if (GYRO_Moved(&refference, motion))
     VCU.SetEvent(EV_VCU_BIKE_MOVED, 1);
+  unlock();
 }
 
 void GYRO_ResetDetector(void) {
+	lock();
   gyro.detector_init = 1;
   VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+  unlock();
 }
 
 /* Private functions implementation --------------------------------------------*/
+static void lock(void) {
+  #if (RTOS_ENABLE)
+  osMutexAcquire(GyroMutexHandle, osWaitForever);
+	#endif
+}
+
+static void unlock(void) {
+  #if (RTOS_ENABLE)
+  osMutexRelease(GyroMutexHandle);
+	#endif
+}
+
 static void Average(mems_t *mems, uint16_t sample) {
 	mems_t m = { 0 };
 	MPU6050_Result status;
@@ -102,10 +128,10 @@ static void Average(mems_t *mems, uint16_t sample) {
 	for (uint16_t i = 0; i < sample; i++) {
 		// read sensor
 		do {
-			status = MPU6050_ReadAll(gyro.h.i2c, &(gyro.mpu));
+			status = MPU6050_ReadAll(gyro.pi2c, &(gyro.mpu));
 
 			if (status != MPU6050_Result_Ok)
-				GYRO_Init(gyro.h.i2c);
+				GYRO_Init();
 		} while (status != MPU6050_Result_Ok);
 
 		// sum all value

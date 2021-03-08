@@ -61,13 +61,11 @@ typedef struct {
 typedef struct {
   MPU6050 mpu;
   uint8_t detector_init;
-  struct {
-    I2C_HandleTypeDef *i2c;
-  } h;
+  I2C_HandleTypeDef *pi2c;
 } gyro_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void GYRO_Init(I2C_HandleTypeDef *hi2c);
+void GYRO_Init(void);
 void GYRO_DeInit(void);
 void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample);
 void GYRO_MonitorMovement(motion_t *motion);

@@ -65,14 +65,11 @@ typedef struct {
   	uint16_t played;
   	uint32_t remaining;
   } size;
-  struct {
-    I2C_HandleTypeDef *i2c;
-    I2S_HandleTypeDef *i2s;
-  } h;
+  I2S_HandleTypeDef *pi2s;
 } audio_t;
 
 /* Public functions prototype -------------------------------------------------*/
-void AUDIO_Init(I2C_HandleTypeDef *hi2c, I2S_HandleTypeDef *hi2s);
+void AUDIO_Init(void);
 void AUDIO_DeInit(void);
 void AUDIO_Play(void);
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS);

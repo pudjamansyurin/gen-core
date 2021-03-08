@@ -10,7 +10,6 @@
 
 /* Choose  between VCU or Boot-loader mode */
 #define BOOTLOADER                              0
-#define RTOS_ENABLE                             !BOOTLOADER
 
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
@@ -48,7 +47,8 @@
 
 #define EVT_IOT_REPORT_DISCARD                  BIT(0)
 #define EVT_IOT_RESUBSCRIBE                     BIT(1)
-#define EVT_IOT_CHECK_QUOTA                     BIT(2)
+#define EVT_IOT_SEND_USSD                       BIT(2)
+#define EVT_IOT_READ_SMS                        BIT(3)
 
 #define EVT_REPORTER_YIELD                      BIT(0)
 

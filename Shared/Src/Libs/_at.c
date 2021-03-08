@@ -294,17 +294,17 @@ uint8_t AT_WaitMessageSMS(at_cmti_t *param, uint32_t timeout) {
 	return str != NULL;
 }
 
-SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param) {
+SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param, char *buf, uint8_t buflen) {
 	SIM_RESULT res = SIM_ERROR;
 	uint8_t cnt, len = 0;
-	char *str = NULL, cmd[40];
+	char *str = NULL, *prefix = "+CUSD: ", cmd[40];
 
 	// Copy by value
 	at_cusd_t tmp = *param;
 
 	Simcom_Lock();
 	// Read
-	res = CmdRead("AT+CUSD?\r", "+CUSD: ", 500, &str);
+	res = CmdRead("AT+CUSD?\r", prefix, 500, &str);
 	if (res == SIM_OK) {
 		tmp.n = ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
@@ -313,11 +313,77 @@ SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param) {
 		if (mode == ATW) {
 			sprintf(cmd, "AT+CUSD=%d,\"%s\",%d\r", param->n, param->str, param->dcs);
 			res = CmdWrite(cmd, SIM_RSP_OK, 10000);
+			// parsing
+			if (res == SIM_OK) {
+				// parsing
+				if ((str = Simcom_Resp(prefix, NULL)) != NULL) {
+					str += strlen(prefix);
+					len = 0;
+
+					tmp.n = ParseNumber(&str[len], &cnt);
+					len += cnt + 1;
+					ParseText(&str[len], &cnt, buf, buflen);
+					len += cnt + 1;
+					tmp.dcs = ParseNumber(&str[len], &cnt);
+					len += cnt + 1;
+				}
+			}
 		} else {
 			memset(tmp.str, 0x00, sizeof(tmp.str));
 			tmp.dcs = 0;
 
 			*param = tmp;
+		}
+	}
+	Simcom_Unlock();
+
+	return res;
+}
+
+SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param) {
+	SIM_RESULT res = SIM_ERROR;
+	uint8_t cnt, len = 0;
+	char *str = NULL, *prefix = "+CPMS: ", cmd[50];
+
+	// Copy by value
+	at_cpms_t tmp = *param;
+
+	Simcom_Lock();
+	// Read
+	res = CmdRead("AT+CPMS?\r", prefix, 1000, &str);
+	if (res == SIM_OK) {
+		for(uint8_t i = 0; i < 3; i++) {
+			ParseText(&str[len], &cnt, tmp.mem[i].storage, sizeof(tmp.mem[i].storage));
+			len += cnt + 1;
+			tmp.mem[i].used = ParseNumber(&str[len], &cnt);
+			len += cnt + 1;
+			tmp.mem[i].total = ParseNumber(&str[len], &cnt);
+			len += cnt + 1;
+		}
+
+		// Write
+		if (mode == ATW) {
+			uint8_t diff = 0;
+			for(uint8_t i = 0; i < 3; i++) {
+				if (memcmp(tmp.mem[i].storage, param->mem[i].storage, sizeof(tmp.mem[i].storage)) != 0) {
+					diff = 1;
+					break;
+				}
+			}
+
+			if (diff) {
+				sprintf(cmd, "AT+CPMS=\"%s\",\"%s\",\"%s\"\r",
+						param->mem[0].storage,
+						param->mem[1].storage,
+						param->mem[2].storage
+				);
+				res = CmdWrite(cmd, SIM_RSP_OK, 1000);
+			}
+		}
+
+		for(uint8_t i = 0; i < 3; i++) {
+			param->mem[i].used = tmp.mem[i].used;
+			param->mem[i].total = tmp.mem[i].total;
 		}
 	}
 	Simcom_Unlock();
@@ -380,7 +446,7 @@ SIM_RESULT AT_ListMessageSMS(at_cmgl_t *param) {
 	Simcom_Lock();
 	// Write
 	sprintf(cmd, "AT+CMGL=\"%s\",%d\r", stat[param->stat], param->mode);
-	res = CmdWrite(cmd, SIM_RSP_OK, 500);
+	res = CmdWrite(cmd, SIM_RSP_OK, 5000);
 	Simcom_Unlock();
 
 	return res;

@@ -15,7 +15,6 @@
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 
-
 /* Exported define -------------------------------------------------------------*/
 #define PREFIX_REPORT                           "R@"
 #define PREFIX_COMMAND                          "C@"
@@ -56,6 +55,7 @@ typedef struct __attribute__((packed)) {
 			uint8_t driver_id;
 			uint64_t events_group;
 			int8_t vehicle;
+			uint32_t uptime;
 		} vcu;
 		struct __attribute__((packed)) {
 			struct __attribute__((packed)) {

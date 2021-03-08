@@ -46,7 +46,7 @@ typedef enum {
 extern fota_t FOTA;
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c);
+uint8_t EEPROM_Init(void);
 #if (!BOOTLOADER)
 void EEPROM_ResetOrLoad(void);
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);

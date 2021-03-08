@@ -65,6 +65,7 @@ typedef struct {
 	uint8_t speed;
 	uint16_t bat;
 	uint64_t events;
+	uint32_t uptime;
 	struct {
 		uint8_t error;
 		uint8_t override;

@@ -34,22 +34,16 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "i2c.h"
+#include "Drivers/_codec.h"
 #include "Drivers/_cs43l22.h"
 
 /* Private variables ----------------------------------------------------------*/
 static cs43l22_t cs43l22 = {
 	.stopDevice = 1,
-	.outputDev = 0
+	.outputDev = 0,
 };
 
 /* Private functions prototype ------------------------------------------------*/
-static void CODEC_Init(void);
-static void CODEC_DeInit(void);
-static void CODEC_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
-static uint8_t CODEC_Read(uint8_t Addr, uint8_t Reg);
-static void I2Cx_Error(uint8_t Addr);
-static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 static uint8_t VOLUME_CONVERT(uint8_t Volume);
 
 /* Public functions implementation ---------------------------------------------*/
@@ -61,10 +55,8 @@ static uint8_t VOLUME_CONVERT(uint8_t Volume);
  * @param Volume: Initial volume level (from 0 (Mute) to 100 (Max))
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_Init(I2C_HandleTypeDef *hi2c, uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
+uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
 	uint32_t counter = 0;
-
-	cs43l22.h.i2c = hi2c;
 
 	/* Initialize the Control interface of the Audio Codec */
   CODEC_Init();
@@ -151,10 +143,8 @@ void cs43l22_DeInit(void) {
  * @param DeviceAddr: Device address on communication Bus.
  * @retval The CS43L22 ID
  */
-uint32_t cs43l22_ReadID(I2C_HandleTypeDef *hi2c, uint16_t DeviceAddr) {
+uint32_t cs43l22_ReadID(uint16_t DeviceAddr) {
 	uint8_t Value;
-
-	cs43l22.h.i2c = hi2c;
 
 	/* Initialize the Control interface of the Audio Codec */
   CODEC_Init();
@@ -400,80 +390,6 @@ uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix) {
 }
 
 /* Private functions implementation ---------------------------------------------*/
-/********************************* LINK AUDIO *********************************/
-/**
- * @brief  Initializes Audio low level.
- */
-static void CODEC_Init(void) {
-  MX_I2C1_Init();
-  GATE_AudioCodecReset();
-}
-
-/**
- * @brief  DeInitializes Audio low level.
- */
-static void CODEC_DeInit(void) {
-  GATE_AudioCodecStop();
-  HAL_I2C_DeInit(cs43l22.h.i2c);
-}
-
-/**
- * @brief  Writes a single data.
- * @param  Addr: I2C address
- * @param  Reg: Reg address
- * @param  Value: Data to be written
- */
-static void CODEC_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
-	HAL_StatusTypeDef status = HAL_OK;
-
-	status = HAL_I2C_Mem_Write(cs43l22.h.i2c, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &Value, 1, I2Cx_TIMEOUT_MAX);
-
-	/* Check the communication status */
-	if (status != HAL_OK) 
-		/* Execute user timeout callback */
-		I2Cx_Error(Addr);
-}
-
-/**
- * @brief  Reads a single data.
- * @param  Addr: I2C address
- * @param  Reg: Reg address
- * @retval Data to be read
- */
-static uint8_t CODEC_Read(uint8_t Addr, uint8_t Reg) {
-	HAL_StatusTypeDef status = HAL_OK;
-	uint8_t value = 0;
-
-	status = HAL_I2C_Mem_Read(cs43l22.h.i2c, Addr, (uint16_t) Reg, I2C_MEMADD_SIZE_8BIT, &value, 1, I2Cx_TIMEOUT_MAX);
-
-	/* Check the communication status */
-	if (status != HAL_OK) 
-		/* Execute user timeout callback */
-		I2Cx_Error(Addr);
-
-	return value;
-}
-
-/**
- * @brief  Writes/Read a single data.
- * @param  Addr: I2C address
- * @param  Reg: Reg address
- * @param  Value: Data to be written
- * @retval None
- */
-static uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
-	uint32_t result = 0;
-
-  CODEC_Write(Addr, Reg, Value);
-
-#ifdef VERIFY_WRITTENDATA
-	/* Verify that the data has been correctly written */
-	result = (CODEC_Read(Addr, Reg) == Value)? 0:1;
-#endif /* VERIFY_WRITTENDATA */
-
-	return result;
-}
-
 static uint8_t VOLUME_CONVERT(uint8_t Volume) {
 	uint64_t Vol, Multiplier = pow(10, 10);
 	uint8_t Log, Result;
@@ -491,17 +407,5 @@ static uint8_t VOLUME_CONVERT(uint8_t Volume) {
 	Result = Log > 100 ? 255 : (uint8_t) ((Log * 255) / 100);
 
 	return Result;
-}
-
-/**
- * @brief  Manages error callback by re-initializing I2C.
- * @param  Addr: I2C Address
- */
-static void I2Cx_Error(uint8_t Addr) {
-	/* De-initialize the I2C communication bus */
-	HAL_I2C_MspDeInit(cs43l22.h.i2c);
-
-	/* Re-Initialize the I2C communication bus */
-	HAL_I2C_MspInit(cs43l22.h.i2c);
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

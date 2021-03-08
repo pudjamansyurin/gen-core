@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#define RTOS_ENABLE                             !BOOTLOADER
+
 /* Exported macro functions --------------------------------------------------*/
 #define BIT(x)                                  (1ULL << x)
 #define BV(var, x)                              (var |= (1ULL << x))
@@ -37,8 +39,6 @@
 #define IAP_FLAG_ADDR                           (SRAM_END_ADDR - sizeof(uint32_t))
 #define IAP_RESPONSE_ADDR                       (IAP_FLAG_ADDR - sizeof(uint32_t))
 #define IS_VALID_SP(a)                          ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
-
-/* Exported constants --------------------------------------------------------*/
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {

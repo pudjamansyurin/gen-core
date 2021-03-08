@@ -13,23 +13,27 @@
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osThreadId_t GpsTaskHandle;
+extern osMutexId_t GpsMutexHandle;
 #endif
 
 /* Private variables ----------------------------------------------------------*/
-static gps_t gps;
+static gps_t gps = {
+		.puart = &huart2,
+		.pdma = &hdma_usart2_rx,
+};
 
-/* Private functions protoypes -----------------------------------------------*/
+/* Private functions declaration ---------------------------------------------*/
+static void lock(void);
+static void unlock(void);
 static void Debugger(char *ptr, size_t len);
 
 /* Public functions implementation --------------------------------------------*/
-void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+void GPS_Init(void) {
   uint32_t tick;
 
-  gps.h.uart = huart;
-  gps.h.dma = hdma;
-
+  lock();
   MX_USART2_UART_Init();
-  UBLOX_DMA_Start(huart, hdma, GPS_ProcessBuffer);
+  UBLOX_DMA_Start(gps.puart, gps.pdma, GPS_ProcessBuffer);
 
   // Initiate Module
   do {
@@ -47,12 +51,15 @@ void GPS_Init(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
   } while (strnlen(UBLOX_UART_RX, UBLOX_UART_RX_SZ) <= 50);
 
   nmea_init(&(gps.nmea));
+  unlock();
 }
 
 void GPS_DeInit(void) {
+	lock();
   GATE_GpsShutdown();
   UBLOX_DMA_Stop();
-  HAL_UART_DeInit(gps.h.uart);
+  HAL_UART_DeInit(gps.puart);
+  unlock();
 }
 
 void GPS_ProcessBuffer(void *ptr, size_t len) {
@@ -90,6 +97,18 @@ uint8_t GPS_CalculateSpeed(gps_data_t *data) {
 }
 
 /* Private functions implementation --------------------------------------------*/
+static void lock(void) {
+  #if (RTOS_ENABLE)
+  osMutexAcquire(GpsMutexHandle, osWaitForever);
+  #endif
+}
+
+static void unlock(void) {
+  #if (RTOS_ENABLE)
+  osMutexRelease(GpsMutexHandle);
+  #endif
+}
+
 static void Debugger(char *ptr, size_t len) {
   printf("\n%.*s\n", len, ptr);
 }

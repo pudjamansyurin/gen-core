@@ -104,9 +104,9 @@ int main(void)
   MX_IWDG_Init();
   MX_UART9_Init();
   /* USER CODE BEGIN 2 */
-  EEPROM_Init(&hi2c2);
-  CANBUS_Init(&hcan1);
-  Simcom_Init(&huart1, &hdma_usart1_rx);
+  EEPROM_Init();
+  CANBUS_Init();
+  Simcom_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */

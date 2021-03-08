@@ -6,6 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "aes.h"
 #include "Drivers/_aes.h"
 
 /* External variables -------------------------------------------------------*/
@@ -17,17 +18,15 @@ extern osMutexId_t AesMutexHandle;
 __ALIGN_BEGIN uint32_t AesKey[4] __ALIGN_END;
 
 /* Private variable ----------------------------------------------------------*/
-static CRYP_HandleTypeDef *hcryp;
+static CRYP_HandleTypeDef *pcryp = &hcryp;
 
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
-uint8_t AES_Init(CRYP_HandleTypeDef *cryp) {
+uint8_t AES_Init(void) {
 	uint8_t ok = 0;
-
-  hcryp = cryp;
 
   do {
   	ok = AES_ChangeKey(NULL);
@@ -42,10 +41,10 @@ uint8_t AES_ChangeKey(uint32_t *key) {
   HAL_StatusTypeDef ret;
 
   lock();
-  ret = HAL_CRYP_GetConfig(hcryp, &config);
+  ret = HAL_CRYP_GetConfig(pcryp, &config);
   if (ret == HAL_OK) {
     config.pKey = (key == NULL) ? AesKey : key;
-    HAL_CRYP_SetConfig(hcryp, &config);
+    HAL_CRYP_SetConfig(pcryp, &config);
   }
   unlock();
 
@@ -56,7 +55,7 @@ uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
   uint8_t ret;
 
   lock();
-  ret = (HAL_CRYP_Encrypt(hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+  ret = (HAL_CRYP_Encrypt(pcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
   unlock();
 
   return ret;
@@ -66,16 +65,21 @@ uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
   uint8_t ret;
 
   lock();
-  ret = (HAL_CRYP_Decrypt(hcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+  ret = (HAL_CRYP_Decrypt(pcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
   unlock();
 
   return ret;
 }
+
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
+  #if (RTOS_ENABLE)
   osMutexAcquire(AesMutexHandle, osWaitForever);
+  #endif
 }
 
 static void unlock(void) {
+  #if (RTOS_ENABLE)
   osMutexRelease(AesMutexHandle);
+  #endif
 }

@@ -6,6 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "i2c.h"
 #include "Drivers/_ee24xx.h"
 #include "Drivers/_errata.h"
 #include "Libs/_eeprom.h"
@@ -25,18 +26,21 @@ extern osMutexId_t EepromMutexHandle;
 /* Public variables -----------------------------------------------------------*/
 fota_t FOTA = {0};
 
+/* Private variables ----------------------------------------------------------*/
+static I2C_HandleTypeDef *pi2c = &hi2c2;
+
 /* Private functions prototype ------------------------------------------------*/
 static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t EEPROM_Init(I2C_HandleTypeDef *hi2c) {
+uint8_t EEPROM_Init(void) {
 	uint8_t retry = 5, valid = 0;
 
 	lock();
 	printf("EEPROM:Init\n");
-	EEPROM24XX_SetDevice(hi2c, EEPROM_ADDR);
+	EEPROM24XX_SetDevice(pi2c, EEPROM_ADDR);
 	while (!valid && retry--)
 		valid = EEPROM24XX_IsConnected(100);
 	unlock();

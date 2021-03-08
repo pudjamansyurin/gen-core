@@ -44,13 +44,11 @@ typedef struct {
 
 typedef struct {
   uint8_t active;
-  struct {
-    CAN_HandleTypeDef *can;
-  } h;
+    CAN_HandleTypeDef *pcan;
 } can_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void CANBUS_Init(CAN_HandleTypeDef *hcan);
+void CANBUS_Init(void);
 void CANBUS_DeInit(void);
 uint8_t CANBUS_Filter(void);
 uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC);

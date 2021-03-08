@@ -18,16 +18,8 @@
 #define BAT_MAX_VOLTAGE     (float) 4150   // mV
 #define BAT_OFFSET_VOLTAGE  (float) 0      // mV
 
-/* Structs -------------------------------------------------------------------*/
-typedef struct {
-    uint16_t buffer[AVERAGE_SZ];
-    struct {
-      ADC_HandleTypeDef *adc;
-    } h;
-} bat_t;
-
 /* Public functions prototypes ------------------------------------------*/
-void BAT_Init(ADC_HandleTypeDef *adc);
+void BAT_Init(void);
 void BAT_DeInit(void);
 void BAT_ReInit(void);
 void BAT_ScanValue(uint16_t *voltage);
