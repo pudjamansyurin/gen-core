@@ -1130,7 +1130,7 @@ void StartGyroTask(void *argument)
 		}
 
 		// Read all accelerometer, gyroscope (average)
-		GYRO_Decision(&movement, &(VCU.d.motion), 50);
+		GYRO_Decision(&movement, &(VCU.d.motion), 1);
 		VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
 
 		// Fallen indicators

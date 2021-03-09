@@ -205,6 +205,14 @@ uint8_t Simcom_SendUSSD(char *ussd, char *buf, uint8_t buflen) {
 		char chset[5] = "GSM";
 		res = AT_CharacterSetTE(ATW, chset, sizeof(chset));
 	}
+	// Delete all message
+	{
+		at_cmgd_t param = {
+				.index = 0,
+				.delflag = CMGD_ALL
+		};
+		res = AT_DeleteMessageSMS(&param);
+	}
 	// Dial USSD (check quota)
 	if (res == SIM_OK) {
 		at_cusd_t param = {
@@ -233,7 +241,7 @@ uint8_t Simcom_ReadNewSMS(char *buf, uint8_t buflen) {
 	//	if (res == SIM_OK) {
 	//		at_cpms_t param;
 	//
-	//		for(uint8_t i = 0; i < 3; i++)
+	//		for(uint8_t i = 0; i < sizeof(at_cpms_t) / sizeof(at_cpms_mem_t); i++)
 	//			strcpy(param.mem[i].storage, "SM");
 	//		res = AT_StorageMessageSMS(ATW, &param);
 	//	}
@@ -262,14 +270,6 @@ uint8_t Simcom_ReadNewSMS(char *buf, uint8_t buflen) {
 				.mode = CMG_MODE_NORMAL
 		};
 		res = AT_ReadMessageSMS(&par, buf, buflen);
-	}
-	// Delete all message
-	{
-		at_cmgd_t param = {
-				.index = 0,
-				.delflag = CMGD_ALL
-		};
-		res = AT_DeleteMessageSMS(&param);
 	}
 
 	return res == SIM_OK;

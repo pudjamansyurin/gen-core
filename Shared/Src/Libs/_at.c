@@ -344,6 +344,7 @@ SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param) {
 	SIM_RESULT res = SIM_ERROR;
 	uint8_t cnt, len = 0;
 	char *str = NULL, *prefix = "+CPMS: ", cmd[50];
+	const uint8_t memTot = sizeof(at_cpms_t) / sizeof(at_cpms_mem_t);
 
 	// Copy by value
 	at_cpms_t tmp = *param;
@@ -352,7 +353,7 @@ SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param) {
 	// Read
 	res = CmdRead("AT+CPMS?\r", prefix, 1000, &str);
 	if (res == SIM_OK) {
-		for(uint8_t i = 0; i < 3; i++) {
+		for(uint8_t i = 0; i < memTot; i++) {
 			ParseText(&str[len], &cnt, tmp.mem[i].storage, sizeof(tmp.mem[i].storage));
 			len += cnt + 1;
 			tmp.mem[i].used = ParseNumber(&str[len], &cnt);
@@ -364,7 +365,7 @@ SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param) {
 		// Write
 		if (mode == ATW) {
 			uint8_t diff = 0;
-			for(uint8_t i = 0; i < 3; i++) {
+			for(uint8_t i = 0; i < memTot; i++) {
 				if (memcmp(tmp.mem[i].storage, param->mem[i].storage, sizeof(tmp.mem[i].storage)) != 0) {
 					diff = 1;
 					break;
@@ -381,7 +382,7 @@ SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param) {
 			}
 		}
 
-		for(uint8_t i = 0; i < 3; i++) {
+		for(uint8_t i = 0; i < memTot; i++) {
 			param->mem[i].used = tmp.mem[i].used;
 			param->mem[i].total = tmp.mem[i].total;
 		}

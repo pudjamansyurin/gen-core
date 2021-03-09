@@ -16,7 +16,7 @@ extern osMutexId_t GyroMutexHandle;
 
 /* Private variables ----------------------------------------------------------*/
 static gyro_t gyro = {
-    .detector_init = 1,
+		.detector_init = 1,
 		.pi2c = &hi2c3,
 };
 
@@ -24,7 +24,7 @@ static gyro_t gyro = {
 static void lock(void);
 static void unlock(void);
 static void Average(mems_t *mems, uint16_t sample);
-static void Convert(coordinate_t *gyro, motion_t *motion);
+static void Convert(motion_t *motion, coordinate_t *gyro);
 static uint8_t GYRO_Moved(motion_t *refference, motion_t *current);
 static void Debugger(movement_t *movement);
 static void RawDebugger(mems_t *mems);
@@ -41,7 +41,9 @@ void GYRO_Init(void) {
 		GATE_GyroReset();
 
 		// module initiate
-		result = MPU6050_Init(gyro.pi2c, &(gyro.mpu), MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
+		result = MPU6050_Init(gyro.pi2c, &(gyro.mpu),
+				MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s
+		);
 
 	} while (result != MPU6050_Result_Ok);
 	unlock();
@@ -54,30 +56,31 @@ void GYRO_DeInit(void) {
 
 void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample) {
 	mems_t mems;
-	motion_t mot;
+	//	motion_t mot;
 
 	lock();
-	// get gyro data
+	// get mems data
 	Average(&mems, sample);
-	Convert(&(mems.gyroscope), &mot);
-	memcpy(motion, &mot, sizeof(motion_t));
+	Convert(motion, &(mems.gyroscope));
+	//	memcpy(motion, &mot, sizeof(motion_t));
 
-	// calculate g-force
+	// calculate accel
 	movement->crash.value = sqrt(
 			pow(mems.accelerometer.x, 2) +
 			pow(mems.accelerometer.y, 2) +
 			pow(mems.accelerometer.z, 2)
 	) / GRAVITY_FORCE;
-	movement->crash.state = (movement->crash.value > ACCELEROMETER_LIMIT );
+	movement->crash.state = movement->crash.value > ACCELEROMETER_LIMIT;
 
-	// calculate movement change
+	// calculate gyro
 	movement->fall.value = sqrt(
-			pow(mot.roll, 2) +
-			pow(mot.pitch, 2) +
-			pow(mot.yaw, 2)
+			pow(motion->roll, 2) +
+			pow(motion->pitch, 2) +
+			pow(motion->yaw, 2)
 	);
 	movement->fall.state = movement->fall.value > GYROSCOPE_LIMIT;
 
+	// fallen indicator
 	movement->fallen = movement->crash.state || movement->fall.state;
 
 	//  RawDebugger(&mems);
@@ -86,38 +89,38 @@ void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample) {
 }
 
 void GYRO_MonitorMovement(motion_t *motion) {
-  static motion_t refference;
+	static motion_t refference;
 
-  lock();
-  if (gyro.detector_init) {
-    gyro.detector_init = 0;
-    memcpy(&refference, motion, sizeof(motion_t));
-    VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
-  }
+	lock();
+	if (gyro.detector_init) {
+		gyro.detector_init = 0;
+		memcpy(&refference, motion, sizeof(motion_t));
+		VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+	}
 
-  if (GYRO_Moved(&refference, motion))
-    VCU.SetEvent(EV_VCU_BIKE_MOVED, 1);
-  unlock();
+	if (GYRO_Moved(&refference, motion))
+		VCU.SetEvent(EV_VCU_BIKE_MOVED, 1);
+	unlock();
 }
 
 void GYRO_ResetDetector(void) {
 	lock();
-  gyro.detector_init = 1;
-  VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
-  unlock();
+	gyro.detector_init = 1;
+	VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+	unlock();
 }
 
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
-  #if (RTOS_ENABLE)
-  osMutexAcquire(GyroMutexHandle, osWaitForever);
-	#endif
+#if (RTOS_ENABLE)
+	osMutexAcquire(GyroMutexHandle, osWaitForever);
+#endif
 }
 
 static void unlock(void) {
-  #if (RTOS_ENABLE)
-  osMutexRelease(GyroMutexHandle);
-	#endif
+#if (RTOS_ENABLE)
+	osMutexRelease(GyroMutexHandle);
+#endif
 }
 
 static void Average(mems_t *mems, uint16_t sample) {
@@ -160,7 +163,7 @@ static void Average(mems_t *mems, uint16_t sample) {
 	*mems = m;
 }
 
-static void Convert(coordinate_t *gyro, motion_t *motion) {
+static void Convert(motion_t *motion, coordinate_t *gyro) {
 	motion_float_t mot;
 
 	// Calculating Roll and Pitch from the accelerometer data
@@ -177,17 +180,17 @@ static void Convert(coordinate_t *gyro, motion_t *motion) {
 }
 
 static uint8_t GYRO_Moved(motion_t *refference, motion_t *current) {
-  uint8_t euclidean;
+	uint8_t euclidean;
 
-  euclidean = sqrt(
-      pow(refference->roll - current->roll, 2) +
-      pow(refference->pitch - current->pitch, 2) +
-      pow(refference->yaw - current->yaw, 2)
-  );
+	euclidean = sqrt(
+			pow(refference->roll - current->roll, 2) +
+			pow(refference->pitch - current->pitch, 2) +
+			pow(refference->yaw - current->yaw, 2)
+	);
 
-  if (euclidean > MOVED_LIMIT)
-    printf("IMU:Gyro moved = %d\n", euclidean);
-  return euclidean > MOVED_LIMIT;
+	if (euclidean > MOVED_LIMIT)
+		printf("IMU:Gyro moved = %d\n", euclidean);
+	return euclidean > MOVED_LIMIT;
 }
 
 static void Debugger(movement_t *movement) {
