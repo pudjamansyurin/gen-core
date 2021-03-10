@@ -113,9 +113,7 @@ static void unlock(void) {
 }
 
 static uint8_t DataAvailable(void) {
-	const uint8_t minDataInBuffer = 50;
-
-	return strnlen(UBLOX_UART_RX, UBLOX_UART_RX_SZ) > minDataInBuffer;
+	return strnlen(UBLOX_UART_RX, UBLOX_UART_RX_SZ) > GPS_MIN_LENGTH;
 }
 
 static void Debugger(char *ptr, size_t len) {

@@ -14,6 +14,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define GPS_INTERVAL          (uint16_t) 1				// in second
+#define GPS_MIN_LENGTH				 (uint8_t) 100
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {

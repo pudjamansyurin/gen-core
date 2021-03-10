@@ -18,7 +18,6 @@
 #define NET_CON_APN                             "3gprs"
 #define NET_CON_USERNAME                        "3gprs"
 #define NET_CON_PASSWORD                        "3gprs"
-//#define NET_CHECK_QUOTA                         "*123*10*3#"
 
 //#define NET_CON_APN                             "telkomsel"
 //#define NET_CON_USERNAME                        "wap"
@@ -33,8 +32,10 @@
 
 //#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
 //#define NET_TCP_PORT                 (uint16_t) 46606
-#define NET_TCP_SERVER                          "mqtt.eclipseprojects.io"
-#define NET_TCP_PORT                 (uint16_t) 1883
+//#define NET_TCP_SERVER                          "mqtt.eclipseprojects.io"
+//#define NET_TCP_PORT                 (uint16_t) 1883
+#define NET_TCP_SERVER                          "test.mosquitto.org"
+#define NET_TCP_PORT                 (uint16_t) 8081
 
 #define SIMCOM_DEBUG        (uint8_t) 1
 
