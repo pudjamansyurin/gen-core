@@ -96,8 +96,8 @@ void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
 	*override_state = *(uint8_t*) cmd->data.value;
 }
 
-void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *bat, uint16_t *hmi_version) {
-	FW_EnterModeIAP(type, resp->data.message, bat, hmi_version);
+void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *hmi_version) {
+	FW_EnterModeIAP(type, resp->data.message, hmi_version);
 
 	/* This line is never reached (if FOTA is activated) */
 }

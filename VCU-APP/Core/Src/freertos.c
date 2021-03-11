@@ -40,10 +40,10 @@
 #include "DMA/_dma_ublox.h"
 #include "DMA/_dma_finger.h"
 
+#include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_rtc.h"
 #include "Drivers/_aes.h"
-#include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 
 #include "Libs/_command.h"
@@ -869,7 +869,7 @@ void StartCommandTask(void *argument)
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Handle Post-FOTA
-	if (FW_PostFota(&response, &(VCU.d.unit_id), &(HMI1.d.version)))
+	if (FW_PostFota(&response, &(VCU.d.unit_id), &(VCU.d.bat), &(HMI1.d.version)))
 		osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
 
 	/* Infinite loop */
@@ -1005,11 +1005,11 @@ void StartCommandTask(void *argument)
 				} else
 					switch (cmd.header.sub_code) {
 						case CMD_FOTA_VCU :
-							CMD_Fota( &response, IAP_VCU, &(VCU.d.bat), &(HMI1.d.version));
+							CMD_Fota(&response, IAP_VCU, &(HMI1.d.version));
 							break;
 
 						case CMD_FOTA_HMI :
-							CMD_Fota(&response, IAP_HMI, &(VCU.d.bat), &(HMI1.d.version));
+							CMD_Fota(&response, IAP_HMI, &(HMI1.d.version));
 							break;
 
 						default:

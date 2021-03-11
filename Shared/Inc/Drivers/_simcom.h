@@ -35,7 +35,7 @@
 //#define NET_TCP_SERVER                          "mqtt.eclipseprojects.io"
 //#define NET_TCP_PORT                 (uint16_t) 1883
 #define NET_TCP_SERVER                          "test.mosquitto.org"
-#define NET_TCP_PORT                 (uint16_t) 8081
+#define NET_TCP_PORT                 (uint16_t) 1883
 
 #define SIMCOM_DEBUG        (uint8_t) 1
 

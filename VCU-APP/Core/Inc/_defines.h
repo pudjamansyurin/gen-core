@@ -14,7 +14,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION                  (uint16_t) 601
+#define SIMCOM_MIN_VOLTAGE           (uint16_t) 3300                // in mV
+
+#define VCU_VERSION                  (uint16_t) 603
 #define EEPROM_RESET                 (uint16_t) 53
 
 /* Exported constants --------------------------------------------------------*/
@@ -22,8 +24,6 @@
 #define VCU_BUILD_YEAR               (uint8_t)  21
 #define VCU_UNITID                   (uint32_t) 354313
 
-#define FOTA_MIN_VOLTAGE             (uint16_t) 3500                // in mV
-#define SIMCOM_MIN_VOLTAGE           (uint16_t) 3300                // in mV
 #define COMMAND_HMI_FOTA_TIMEOUT     (uint32_t) 20000               // in ms
 
 #define REMOTE_TIMEOUT               (uint32_t) 7000                // in ms

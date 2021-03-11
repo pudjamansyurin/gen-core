@@ -15,11 +15,11 @@ static void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version)
 static uint8_t FW_ValidResponseIAP(void);
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *hmi_version) {
-	if (*bat < FOTA_MIN_VOLTAGE) {
-		sprintf(message, "Battery %u mV (-%u mV)", *bat, FOTA_MIN_VOLTAGE - *bat);
-		return 0;
-	}
+uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *hmi_version) {
+	//	if (*bat < SIMCOM_MIN_VOLTAGE) {
+	//		sprintf(message, "Battery %u mV (-%u mV)", *bat, SIMCOM_MIN_VOLTAGE - *bat);
+	//		return 0;
+	//	}
 
 	//  if (type == IAP_HMI && *hmi_version == 0) {
 	//    sprintf(message, "HMI not connected");
@@ -40,7 +40,7 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *bat, uint16_t *h
 	return 0;
 }
 
-uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_version) {
+uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *bat, uint16_t *hmi_version) {
 	char node[4];
 	uint8_t valid = 0;
 
@@ -55,6 +55,9 @@ uint8_t FW_PostFota(response_t *response, uint32_t *unit_id, uint16_t *hmi_versi
 
 		// check fota response
 		switch (*(uint32_t*) IAP_RESPONSE_ADDR) {
+			case IAP_BATTERY_LOW:
+				sprintf(response->data.message, "%s Battery Low (-%u mV)", node, SIMCOM_MIN_VOLTAGE - *bat);
+				break;
 			case IAP_SIMCOM_TIMEOUT:
 				sprintf(response->data.message, "%s Internet Timeout", node);
 				break;

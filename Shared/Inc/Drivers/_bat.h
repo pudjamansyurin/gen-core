@@ -21,7 +21,7 @@
 /* Public functions prototypes ------------------------------------------*/
 void BAT_Init(void);
 void BAT_DeInit(void);
-void BAT_ReInit(void);
-void BAT_ScanValue(uint16_t *voltage);
+//void BAT_ReInit(void);
+uint8_t BAT_ScanValue(uint16_t *voltage);
 
 #endif /* INC_LIBS__BAT_H_ */

@@ -14,5 +14,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
+#define SIMCOM_MIN_VOLTAGE           (uint16_t) 3400                // in mV
 
 #endif /* DEFINES_H_ */

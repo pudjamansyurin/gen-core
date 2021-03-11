@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 #include "DMA/_dma_simcom.h"
+#include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_at.h"
 #if (!BOOTLOADER)
@@ -180,6 +181,10 @@ char* Simcom_Resp(char *keyword, char *from) {
 		if (from >= start && from <= stop)
 			start = from;
 
+#if (BOOTLOADER)
+		HAL_IWDG_Refresh(&hiwdg);
+#endif
+
 	return strnstr(start, keyword, stop - start);
 }
 
@@ -330,11 +335,16 @@ static SIM_RESULT PowerUp(void) {
 	SIM_RESULT res;
 
 	res = Reset(0);
-	if (res != SIM_OK)
-#if (!BOOTLOADER)
+	if (res != SIM_OK) {
+#if (BOOTLOADER)
+		uint16_t voltage = 0;
+		BAT_ScanValue(&voltage);
+		if (voltage > SIMCOM_MIN_VOLTAGE)
+#else
 		if (VCU.d.bat > SIMCOM_MIN_VOLTAGE)
 #endif
 			return Reset(1);
+	}
 
 	return res;
 }
@@ -357,6 +367,11 @@ static SIM_RESULT Reset(uint8_t hard) {
 	do {
 		if (Simcom_Resp(SIM_RSP_READY, NULL) || Simcom_Resp(SIM_RSP_OK, NULL))
 			break;
+
+#if (BOOTLOADER)
+		HAL_IWDG_Refresh(&hiwdg);
+#endif
+
 		_DelayMS(100);
 	} while (SIM.state == SIM_STATE_DOWN && (_GetTickMS() - tick) < NET_BOOT_TIMEOUT);
 
@@ -475,9 +490,6 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 			break;
 		}
 
-#if (BOOTLOADER)
-		HAL_IWDG_Refresh(&hiwdg);
-#endif
 		_DelayMS(10);
 	}
 

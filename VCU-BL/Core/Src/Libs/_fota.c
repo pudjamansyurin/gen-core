@@ -10,6 +10,7 @@
 #include "crc.h"
 #include "i2c.h"
 #include "usart.h"
+#include "Drivers/_bat.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_canbus.h"
@@ -31,29 +32,36 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 			.file = "CRC_APP.bin",
 			.size = 0,
 	};
+	uint16_t voltage = 0;
+
+	BAT_ScanValue(&voltage);
+	if (voltage < SIMCOM_MIN_VOLTAGE)
+		res = SIM_ERROR;
 
 	// Turn ON HMI-Primary.
-	GATE_Hmi1Power(1);
-	_DelayMS(1000);
+	if (res == SIM_OK) {
+		GATE_Hmi1Power(1);
+		_DelayMS(1000);
 
-	/* Set FTP directory */
-	sprintf(ftp.path, "/%s/", (type == IAP_HMI) ? "hmi" : "vcu");
+		/* Set FTP directory */
+		sprintf(ftp.path, "/%s/", (type == IAP_HMI) ? "hmi" : "vcu");
 
-	/* Set current IAP type */
-	*(uint32_t*) IAP_RESPONSE_ADDR = IAP_FOTA_ERROR;
-	FOCAN_SetProgress(type, 0.0f);
+		/* Set current IAP type */
+		*(uint32_t*) IAP_RESPONSE_ADDR = IAP_FOTA_ERROR;
+		FOCAN_SetProgress(type, 0.0f);
 
-	Simcom_SetState(SIM_STATE_READY, 0);
+		Simcom_SetState(SIM_STATE_READY, 0);
+	}
 
 	/* Backup if needed */
-	if (res > 0) {
+	if (res == SIM_OK) {
 		FOCAN_SetProgress(type, 0.0f);
 		if (!FOTA_InProgress())
 			FOTA_SetFlag();
 	}
 
 	/* Get the stored checksum information */
-	if (res > 0) {
+	if (res == SIM_OK) {
 		FOCAN_SetProgress(type, 0.0f);
 		if (type == IAP_HMI)
 			res = FOCAN_GetChecksum(&cksumOld);
@@ -62,7 +70,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	}
 
 	// Initialise SIMCOM
-	if (res > 0) {
+	if (res == SIM_OK) {
 		FOCAN_SetProgress(type, 0.0f);
 		res = prepareFTP(&ftp, timeout);
 
@@ -71,24 +79,24 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	}
 
 	// Get file size
-	if (res > 0) {
+	if (res == SIM_OK) {
 		FOCAN_SetProgress(type, 0.0f);
 		res = AT_FtpFileSize(&ftp);
 	}
 
 	// Open FTP Session
-	if (res > 0) {
+	if (res == SIM_OK) {
 		FOCAN_SetProgress(type, 0.0f);
 		res = openFTP(&ftpget);
 	}
 
 	// Get checksum of new firmware
-	if (res > 0) {
+	if (res == SIM_OK) {
 		FOCAN_SetProgress(type, 0.0f);
 		res = FOTA_DownloadChecksum(&ftpget, &cksumNew);
 
 		// Only download when image is different
-		if (res > 0) {
+		if (res == SIM_OK) {
 			res = (cksumOld != cksumNew);
 
 			if (res <= 0)
@@ -98,12 +106,12 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 		}
 
 		// Decrease the total size
-		if (res > 0)
+		if (res == SIM_OK)
 			ftp.size -= sizeof(uint32_t);
 	}
 
 	// Download & Program new firmware
-	if (res > 0) {
+	if (res == SIM_OK) {
 		res = FOTA_DownloadFirmware(&ftp, &ftpget, &len, type, timeout);
 
 		if (res <= 0)
@@ -112,13 +120,13 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	}
 
 	// Buffer filled, compare the checksum
-	if (res > 0) {
+	if (res == SIM_OK) {
 		if (type == IAP_HMI)
 			res = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew);
 		else {
 			res = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
 			// Glue related information to new image
-			if (res > 0) {
+			if (res == SIM_OK) {
 				FOTA_GlueInfo32(CHECKSUM_OFFSET, &cksumNew);
 				FOTA_GlueInfo32(SIZE_OFFSET, &len);
 			}
@@ -131,14 +139,14 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	}
 
 	// Reset FOTA flag only when FOTA success
-	if (res > 0) {
+	if (res == SIM_OK) {
 		FOTA_ResetFlag();
 
 		// Handle success
 		*(uint32_t*) IAP_RESPONSE_ADDR = IAP_FOTA_SUCCESS;
 	}
 
-	return (res > 0);
+	return (res == SIM_OK);
 }
 
 uint8_t FOTA_DownloadChecksum(at_ftpget_t *ftpGET, uint32_t *checksum) {
@@ -149,7 +157,7 @@ uint8_t FOTA_DownloadChecksum(at_ftpget_t *ftpGET, uint32_t *checksum) {
 	ftpGET->reqlength = sizeof(uint32_t);
 	res = AT_FtpDownload(ftpGET);
 
-	if (res > 0)
+	if (res == SIM_OK)
 		memcpy(checksum, ftpGET->ptr, sizeof(uint32_t));
 
 	return (res == SIM_OK);
@@ -168,7 +176,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 		FLASHER_BackupApp();
 
 	// Read FTP File
-	if (res > 0) {
+	if (res == SIM_OK) {
 		// Prepare, start timer
 		printf("FOTA:Start\n");
 		timer = _GetTickMS();
@@ -182,14 +190,14 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 			res = AT_FtpDownload(ftpGET);
 
 			// Copy buffer to flash
-			if (res > 0 && ftpGET->cnflength) {
+			if (res == SIM_OK && ftpGET->cnflength) {
 				if (type == IAP_HMI)
 					res = FOCAN_DownloadFlash((uint8_t*) ftpGET->ptr, ftpGET->cnflength, *len, ftp->size);
 				else
 					res = FLASHER_WriteAppArea((uint8_t*) ftpGET->ptr, ftpGET->cnflength, *len);
 
 				// Check after flashing
-				if (res > 0) {
+				if (res == SIM_OK) {
 					*len += ftpGET->cnflength;
 
 					// Indicator
@@ -201,17 +209,19 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 				}
 			} else {
 				AT_FtpCurrentState(&state);
-				if (state == FTP_STATE_ESTABLISHED) 
+				if (state == FTP_STATE_ESTABLISHED)
 					Simcom_Cmd("AT+FTPQUIT\r", SIM_RSP_OK, 500);
 
 				res = prepareFTP(ftp, timeout);
-				if (res > 0)
+				if (res == SIM_OK)
 					res = AT_FtpResume(*len);
-				if (res > 0)
+				if (res == SIM_OK)
 					res = openFTP(ftpGET);
+				if (res == SIM_OK && ftpGET->response != FTP_READY)
+					res = SIM_ERROR;
 			}
 
-		} while ((res > 0) && (*len < ftp->size));
+		} while ((res == SIM_OK) && (*len < ftp->size));
 
 		// Check, stop timer
 		if (*len >= ftp->size)
@@ -345,7 +355,7 @@ static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
 	SIM_RESULT res;
 
 	res = Simcom_SetState(SIM_STATE_BEARER_ON, timeout);
-	if (res > 0)
+	if (res == SIM_OK)
 		res = AT_FtpInitialize(ftp);
 
 	return res;
@@ -357,7 +367,7 @@ static SIM_RESULT openFTP(at_ftpget_t *ftpGET) {
 	ftpGET->mode = FTPGET_OPEN;
 	res = AT_FtpDownload(ftpGET);
 
-	if (res > 0)
+	if (res == SIM_OK)
 		res = ftpGET->response == FTP_READY;
 
 	return res;

@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "can.h"
 #include "crc.h"
 #include "dma.h"
@@ -30,6 +31,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "DMA/_dma_simcom.h"
+#include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_simcom.h"
@@ -56,7 +58,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-extern DMA_HandleTypeDef hdma_usart1_rx;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -103,7 +105,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_IWDG_Init();
   MX_UART9_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+	BAT_Init();
   EEPROM_Init();
   CANBUS_Init();
   Simcom_Init();

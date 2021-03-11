@@ -509,7 +509,7 @@ SIM_RESULT AT_StartConnection(at_cipstart_t *param) {
 	// Write
 	sprintf(cmd, "AT+CIPSTART=\"%s\",\"%s\",\"%d\"\r",
 			param->mode, param->ip, param->port);
-	res = CmdWrite(cmd, "CONNECT", 20000);
+	res = CmdWrite(cmd, "CONNECT", 30000);
 
 	// check either connection ok / error
 	if (res == SIM_OK) {
@@ -654,7 +654,7 @@ SIM_RESULT AT_FtpFileSize(at_ftp_t *param) {
 
 	Simcom_Lock();
 	// Read
-	res = CmdRead("AT+FTPSIZE\r", "+FTPSIZE: ", 20000, &str);
+	res = CmdRead("AT+FTPSIZE\r", "+FTPSIZE: ", 30000, &str);
 	if (res == SIM_OK) {
 		// parsing
 		ParseNumber(&str[len], &cnt);
@@ -684,7 +684,7 @@ SIM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 	else
 		sprintf(cmd, "AT+FTPGET=%d,%d\r", param->mode, param->reqlength);
 
-	res = CmdRead(cmd, "+FTPGET: ", 20000, &str);
+	res = CmdRead(cmd, "+FTPGET: ", 30000, &str);
 
 	if (res == SIM_OK) {
 		// parsing
@@ -771,7 +771,7 @@ SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
 			// open or close
 			if (tmp.status != param->status) {
 				sprintf(cmd, "AT+SAPBR=%d,1\r", param->cmd_type);
-				res = CmdWrite(cmd, SIM_RSP_OK, 20000);
+				res = CmdWrite(cmd, SIM_RSP_OK, 30000);
 			}
 		} else
 			*param = tmp;
