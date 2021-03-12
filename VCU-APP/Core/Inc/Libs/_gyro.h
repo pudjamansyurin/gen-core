@@ -67,7 +67,7 @@ typedef struct {
 /* Public functions prototype ------------------------------------------------*/
 void GYRO_Init(void);
 void GYRO_DeInit(void);
-void GYRO_Decision(movement_t *movement, motion_t *motion, uint16_t sample);
+void GYRO_Decision(movement_t *movement, motion_t *motion);
 void GYRO_MonitorMovement(motion_t *motion);
 void GYRO_ResetDetector(void);
 

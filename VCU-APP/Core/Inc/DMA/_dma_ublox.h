@@ -13,7 +13,7 @@
 #include "Libs/_usart_ring.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define UBLOX_UART_RX_SZ     (uint16_t) 512
+#define UBLOX_UART_RX_SZ     (uint16_t) (1024)
 #define UBLOX_DMA_RX_SZ      (uint16_t) (UBLOX_UART_RX_SZ/(UBLOX_UART_RX_SZ/128))
 
 /* Exported variables --------------------------------------------------------*/
