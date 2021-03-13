@@ -97,7 +97,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
 	SIM_RESULT res = SIM_ERROR;
 	uint32_t tick = _GetTickMS();
-	uint8_t retry = 0;
+	uint8_t retry = 1;
 
 	Simcom_Lock();
 	do {
@@ -473,7 +473,7 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 				else if ( strnlen(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX) ) == 0) {
 					printf("Simcom:NoResponse\n");
 					res = SIM_NORESPONSE;
-					SIM.state = SIM_STATE_DOWN;
+					// SIM.state = SIM_STATE_DOWN;
 				}
 
 				// exception for timeout

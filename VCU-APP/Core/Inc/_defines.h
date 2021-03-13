@@ -16,7 +16,7 @@
 
 #define SIMCOM_MIN_VOLTAGE           (uint16_t) 3300                // in mV
 
-#define VCU_VERSION                  (uint16_t) 603
+#define VCU_VERSION                  (uint16_t) 605
 #define EEPROM_RESET                 (uint16_t) 53
 
 /* Exported constants --------------------------------------------------------*/
