@@ -1,0 +1,6592 @@
+**********************************************
+	Sun Mar 14 14:00:02 2021
+	Device Name: STM32F413/F423
+**********************************************
+	>>>>>> Reception Started <<<<<<
+
+rror HandlerEEPROM:Init
+No image at all, do FOTA.
+Simcom:Init
+Simcom:SoftReset
+
+=> AT
+
+RDY
+
+Call Ready
+AT
+OK
+
+Simcom:ON
+
+=> AT+CSQ
+AT+CSQ
++CSQ: 0,0
+
+OK
+
+Simcom:RSSI = 0 %
+
+=> ATE0
+ATE0
+OK
+
+
+=> AT+IPR?
+
++IPR: 0
+
+OK
+
+
+=> AT+CMEE?
+
++CMEE: 0
+
+OK
+
+
+=> AT+CMEE=2
+
+OK
+
+
+=> AT+CSCLK?
+
++CSCLK: 0
+
+OK
+
+
+=> AT+CSCLK=1
+
+OK
+
+
+=> AT+CPIN?
+
++CPIN: READY
+
+OK
+
+
+=> AT+CSACT?
+
++CSACT: 2,"63",0,0
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CNMP?
+
++CNMP: 2,14
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CGATT?
+
++CGATT: 1
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+SAPBR=2,1
+
++SAPBR: 1,3,"0.0.0.0"
+
+OK
+
+
+=> AT+SAPBR=4,1
+
++SAPBR:
+CONTYPE: GPRS
+APN: 
+USER: 
+PWD: 
+
+OK
+
+
+=> AT+SAPBR=3,1,"APN""3gprs"
+
+OK
+
+
+=> AT+SAPBR=3,1,"USER","3gprs"
+
+OK
+
+
+=> AT+SAPBR=3,1,"PWD","3gprs"
+
+OK
+
+
+=> AT+SAPBR=1,1
+
+OK
+
+
+=> AT+SAPBR=2,1
+
++SAPBR: 1,1,"10.36.146.98"
+
+OK
+
+
+=> AT+SAPBR=4,1
+
++SAPBR:
+CONTYPE: GPRS
+APN: 3gprs
+USER: 3gprs
+PWD: 3gprs
+
+OK
+
+
+=> AT+FTPCID?
+
++FTPCID: 1
+
+OK
+
+
+=> AT+FTPSERV?
+
++FTPSERV: ""
+
+OK
+
+
+=> AT+FTPSERV="ftp.genmotorcycles.com"
+
+OK
+
+
+=> AT+FTPUN?
+
++FTPUN: ""
+
+OK
+
+
+=> AT+FTPUN="fota@genmotorcycles.com"
+
+OK
+
+
+=> AT+FTPPW?
+
++FTPPW: ""
+
+OK
+
+
+=> AT+FTPPW="@Garda313"
+
+OK
+
+
+=> AT+FTPGETPATH?
+
++FTPGETPATH: ""
+
+OK
+
+
+=> AT+FTPGETPATH="/vcu/"
+
+OK
+
+
+=> AT+FTPGETNAME?
+
++FTPGETNAME: ""
+
+OK
+
+
+=> AT+FTPGETNAME="CRC_APP.bin"
+
+OK
+
+
+=> AT+FTPSIZE
+
+OK
+
++FTPSIZE: 1,0,245992
+
+
+=> AT+FTPGET=1
+
+OK
+
++FTPGET: 1,1
+
+
+=> AT+FTPGET=2,4
+FOTA:Checksum = 0xFFFFFFFF => 0xAA54EE4D
+FLASHER:Erase = OK
+FOTA:Start
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 1460 Bytes (0%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 2920 Bytes (1%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 4380 Bytes (1%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 5840 Bytes (2%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 7300 Bytes (2%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 8760 Bytes (3%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 10220 Bytes (4%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 11680 Bytes (4%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 13140 Bytes (5%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 14600 Bytes (5%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 16060 Bytes (6%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 17520 Bytes (7%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 18980 Bytes (7%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 20440 Bytes (8%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 21900 Bytes (8%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 23360 Bytes (9%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 24820 Bytes (10%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 26280 Bytes (10%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 27740 Bytes (11%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 29200 Bytes (11%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 30660 Bytes (12%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 32120 Bytes (13%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 33580 Bytes (13%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 35040 Bytes (14%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 36500 Bytes (14%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 37960 Bytes (15%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 39420 Bytes (16%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 40880 Bytes (16%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 42340 Bytes (17%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 43800 Bytes (17%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 45260 Bytes (18%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 46720 Bytes (18%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 48180 Bytes (19%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 49640 Bytes (20%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 51100 Bytes (20%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 52560 Bytes (21%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 54020 Bytes (21%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 55480 Bytes (22%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 56940 Bytes (23%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 58400 Bytes (23%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 59860 Bytes (24%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 61320 Bytes (24%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 62780 Bytes (25%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 64240 Bytes (26%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 65700 Bytes (26%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 67160 Bytes (27%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 68620 Bytes (27%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 70080 Bytes (28%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 71540 Bytes (29%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 73000 Bytes (29%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 74460 Bytes (30%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 75920 Bytes (30%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 77380 Bytes (31%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 78840 Bytes (32%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 80300 Bytes (32%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 81760 Bytes (33%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 83220 Bytes (33%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 84680 Bytes (34%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 86140 Bytes (35%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 87600 Bytes (35%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 89060 Bytes (36%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 90520 Bytes (36%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 91980 Bytes (37%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 93440 Bytes (37%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 94900 Bytes (38%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 96360 Bytes (39%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 97820 Bytes (39%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 99280 Bytes (40%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 100740 Bytes (40%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 102200 Bytes (41%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 103660 Bytes (42%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 105120 Bytes (42%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 106580 Bytes (43%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 108040 Bytes (43%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 109500 Bytes (44%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 110960 Bytes (45%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 112420 Bytes (45%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 113880 Bytes (46%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 115340 Bytes (46%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 116800 Bytes (47%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 118260 Bytes (48%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 119720 Bytes (48%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 121180 Bytes (49%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 122640 Bytes (49%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 124100 Bytes (50%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 125560 Bytes (51%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 127020 Bytes (51%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 128480 Bytes (52%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 129940 Bytes (52%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 131400 Bytes (53%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 132860 Bytes (54%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 134320 Bytes (54%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 135780 Bytes (55%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 137240 Bytes (55%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 138700 Bytes (56%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 140160 Bytes (56%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 141620 Bytes (57%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 143080 Bytes (58%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 144540 Bytes (58%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 146000 Bytes (59%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 147460 Bytes (59%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 148920 Bytes (60%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 150380 Bytes (61%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 151840 Bytes (61%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 153300 Bytes (62%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 154760 Bytes (62%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 156220 Bytes (63%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 157680 Bytes (64%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 159140 Bytes (64%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 160600 Bytes (65%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 162060 Bytes (65%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 163520 Bytes (66%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 164980 Bytes (67%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 166440 Bytes (67%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 167900 Bytes (68%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 169360 Bytes (68%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 170820 Bytes (69%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 172280 Bytes (70%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 173740 Bytes (70%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 175200 Bytes (71%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 176660 Bytes (71%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 178120 Bytes (72%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 179580 Bytes (73%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 181040 Bytes (73%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 182500 Bytes (74%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 183960 Bytes (74%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 185420 Bytes (75%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 186880 Bytes (75%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 188340 Bytes (76%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 189800 Bytes (77%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 191260 Bytes (77%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 192720 Bytes (78%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 194180 Bytes (78%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 195640 Bytes (79%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 197100 Bytes (80%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 198560 Bytes (80%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 200020 Bytes (81%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 201480 Bytes (81%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 202940 Bytes (82%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 204400 Bytes (83%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 205860 Bytes (83%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 207320 Bytes (84%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 208780 Bytes (84%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 210240 Bytes (85%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 211700 Bytes (86%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 213160 Bytes (86%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 214620 Bytes (87%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 216080 Bytes (87%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 217540 Bytes (88%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 219000 Bytes (89%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 220460 Bytes (89%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 221920 Bytes (90%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 223380 Bytes (90%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 224840 Bytes (91%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 226300 Bytes (91%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 227760 Bytes (92%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 229220 Bytes (93%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 230680 Bytes (93%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 232140 Bytes (94%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 233600 Bytes (94%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 235060 Bytes (95%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 236520 Bytes (96%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 237980 Bytes (96%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 239440 Bytes (97%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 240900 Bytes (97%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 242360 Bytes (98%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 243820 Bytes (99%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 245280 Bytes (99%)
+
+=> AT+FTPGET=2,1460
+FLASHER:Program = OK
+FOTA:Progress = 245988 Bytes (100%)
+FOTA:End = 64881 ms
+FOTA:Checksum = MATCH
+FLASHER:Program = OK
+FLASHER:Program = OK
+FLASHER:Erase = OK
+Error HandlerEEPROM:Init
+FOTA:Checksum = MATCH
+Jump to appliEEPROM:Init
+SimcAm:Init
+Simcom:SoftReset
+
+PS:Init
+
+yro:Init
+
+udio:Init
+NRF:Init
+
+=> AT
+
+RDY
+
+Call Ready
+AT
+OK
+
+Simcom:ON
+
+=> AT+CSQ
+AT+CSQ
++CSQ: 8,0
+
+OK
+
+Simcom:RSSI = 25 %
+
+=> AT+CIPSTATUS
+AT+CIPSTATUS
+OK
+
+STATE: IP INITIAL
+
+
+=> ATE0
+ATE0
+OK
+
+
+=> AT+IPR?
+
++IPR: 0
+
+OK
+
+
+=> AT+CMEE?
+
++CMEE: 0
+
+OK
+
+
+=> AT+CMEE=2
+
+OK
+
+
+=> AT+CSCLK?
+
++CSCLK: 0
+
+OK
+
+
+=> AT+CSCLK=1
+
+OK
+
+
+=> AT+CLTS?
+
++CLTS: 0
+
+OK
+
+
+=> AT+CLTS=1
+
+OK
+
+
+=> AT+CIPHEAD?
+
++CIPHEAD: 0
+
+OK
+
+
+=> AT+CIPHEAD=1
+
+OK
+
+
+=> AT+CIPSRIP?
+
++CIPSRIP: 0
+
+OK
+
+
+=> AT+CPIN?
+
++CPIN: READY
+
+OK
+
+
+=> AT+CSACT?
+
++CSACT: 2,"63",0,0
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CNMP?
+
++CNMP: 2,14
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CGATT?
+
++CGATT: 1
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSTT?
+
++CSTT: "CMNET","",""
+
+OK
+
+
+=> AT+CSTT="3gprs","3gprs","3gprs"
+
+OK
+
+
+=> AT+CIPMODE?
+
++CIPMODE: 0
+
+OK
+
+
+=> AT+CIPMUX?
+
++CIPMUX: 0
+
+OK
+
+
+=> AT+CIPRXGET?
+
++CIPRXGET: 0
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP START
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP START
+
+
+=> AT+CIICR
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP GPRSACT
+
+
+=> AT+CIFSR
+
+10.149.92.25
+
+
+=> AT+CSQ
+
++CSQ: 8,0
+
+OK
+
+Simcom:RSSI = 25 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTART="TCP","test.mosquitto.org","1883"
+
+OK
+
+CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=47
+
+> 
+102D00044D51545404EE001E000A5643552D333534333133000E5643552F3335343331332F53545300013000000000
+**********************************************
+	Sun Mar 14 14:16:32 2021
+	Device Name: STM32F413/F423
+**********************************************
+	>>>>>> Reception Started <<<<<<
+
+Error HandlerEEPROM:Init
+FOTA:Checksum = MATCH
+Jump to appliEEPROM:Init
+SimcoA:Init
+Simcom:SoftReset
+
+PS:Init
+
+yro:Init
+
+udio:Init
+NRF:Init
+
+=> AT
+
+RDY
+
+Call Ready
+AT
+OK
+
+Simcom:ON
+
+=> AT+CSQ
+AT+CSQ
++CSQ: 0,0
+
+OK
+
+Simcom:RSSI = 0 %
+
+=> AT+CIPSTATUS
+AT+CIPSTATUS
+OK
+
+STATE: IP INITIAL
+
+
+=> ATE0
+ATE0
+OK
+
+
+=> AT+IPR?
+
++IPR: 0
+
+OK
+
+
+=> AT+CMEE?
+
++CMEE: 0
+
+OK
+
+
+=> AT+CMEE=2
+
+OK
+
+
+=> AT+CSCLK?
+
++CSCLK: 0
+
+OK
+
+
+=> AT+CSCLK=1
+
+OK
+
+
+=> AT+CLTS?
+
++CLTS: 0
+
+OK
+
+
+=> AT+CLTS=1
+
+OK
+
+
+=> AT+CIPHEAD?
+
++CIPHEAD: 0
+
+OK
+
+
+=> AT+CIPHEAD=1
+
+OK
+
+
+=> AT+CIPSRIP?
+
++CIPSRIP: 0
+
+OK
+
+
+=> AT+CPIN?
+
++CPIN: READY
+
+OK
+
+
+=> AT+CSACT?
+
++CSACT: 0,"00",0,0
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 0,0
+
+OK
+
+Simcom:RSSI = 0 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CNMP?
+
++CNMP: 2,14
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CGATT?
+
++CGATT: 1
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSTT?
+
++CSTT: "CMNET","",""
+
+OK
+
+
+=> AT+CSTT="3gprs","3gprs","3gprs"
+
+OK
+
+
+=> AT+CIPMODE?
+
++CIPMODE: 0
+
+OK
+
+
+=> AT+CIPMUX?
+
++CIPMUX: 0
+
+OK
+
+
+=> AT+CIPRXGET?
+
++CIPRXGET: 0
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP START
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP START
+
+
+=> AT+CIICR
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP GPRSACT
+
+
+=> AT+CIFSR
+
+10.155.158.164
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTART="TCP","test.mosquitto.org","1883"
+
+OK
+
+CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=47
+
+> 
+102D00044D51545404EE001E000A5643552D333534333133000E5643552F3335343331332F53545300013000000000
+
+SEND OK
+
++IPD,4: 
+MQTT:Connected
+
+=> AT+CCLK?
+
++CCLK: "21/03/14,14:17:26+28"
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 10,0
+
+OK
+
+Simcom:RSSI = 32 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=21
+
+> 
+3313000E5643552F3335343331332F535453000131
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CIPSEND=21
+
+> 
+82130002000E5643552F3335343331332F434D4400
+
+*PSUTTZ: 21/03/14,14:17:56,"+28",0
+
+DST: 0
+
++CMTI: "SM",4
+
+SEND OK
+
++IPD,5:�
+MQTT:Subscribed
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=51
+
+> 
+3331000E5643552F3335343331332F525350000353401C0968050015030E0E111A0105000056435520464F5441204572726F72
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400045240310968050015030E0E120E010014010100000003FF04000000000000000001000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400055240310968050015030E0E1214010014010100000003FF04000000000000000001000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400065240310968050015030E0E121A010014010100000503FF05000000000000000005000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400075240810968050015030E0E1221010114010100000A03FF0400000000000000000B000000FFFFFFFF00008813FFFFFFFF0000881300702743083992FB19000000080F000A003930000000D60000000000000000000000009001000090010A8802001C050AD00200A00109740209D8020A5002006C0209BC010A9C0209A40209AC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400085240310968050015030E0E1226010014010100000F03FF0400000000000000000F000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400095240310968050015030E0E122A010014010100001403FF04000000000000000015000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054000A5240310968050015030E0E122E010014010100001903FF04000000000000000019000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F525054000B5240810968050015030E0E1231010114010100001E03FF0400000000000000001F000000FFFFFFFF00008813FFFFFFFF0000881300702743283992FB1A000000070B000A00393000001DD20000000000000000000000009001000090011E8802007C041ED00200A0011D74021DE0021E5002006C021DAC011E9C021DA4021DAC02FC0102
+Simcom:NoResponse
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=2
+
+> 
+C000
+Simcom:NoResponse
+
+Simcom:LockedLoop = 0
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=47
+Simcom:UnknownError
+
++CME ERROR: operation not allowed
+
+
+=> AT+CIPSEND=2
+Simcom:UnknownError
+
++CME ERROR: operation not allowed
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CSTT?
+
++CSTT: "3gprs","3gprs","3gprs"
+
+OK
+
+
+=> AT+CIPMODE?
+
++CIPMODE: 0
+
+OK
+
+
+=> AT+CIPMUX?
+
++CIPMUX: 0
+
+OK
+
+
+=> AT+CIPRXGET?
+
++CIPRXGET: 0
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTART="TCP","test.mosquitto.org","1883"
+**********************************************
+	Sun Mar 14 14:20:46 2021
+	Device Name: STM32F413/F423
+**********************************************
+	>>>>>> Reception Started <<<<<<
+
+Error HandlerEEPROM:Init
+FOTA:Checksum = MATCH
+Jump to appliEEPROM:Init
+Simcom:Init
+Simcom:SoftReset
+GPS:Init
+Gyro:Init
+Audio:Init
+NRF:Init
+
+=> AT
+
+RDY
+
+Call Ready
+AT
+OK
+
+Simcom:ON
+
+=> AT+CSQ
+AT+CSQ
++CSQ: 0,0
+
+OK
+
+Simcom:RSSI = 0 %
+
+=> AT+CIPSTATUS
+AT+CIPSTATUS
+OK
+
+STATE: IP INITIAL
+
+
+=> ATE0
+ATE0
+OK
+
+
+=> AT+IPR?
+
++IPR: 0
+
+OK
+
+
+=> AT+CMEE?
+
++CMEE: 0
+
+OK
+
+
+=> AT+CMEE=2
+
+OK
+
+
+=> AT+CSCLK?
+
++CSCLK: 0
+
+OK
+
+
+=> AT+CSCLK=1
+
+OK
+
+
+=> AT+CLTS?
+
++CLTS: 0
+
+OK
+
+
+=> AT+CLTS=1
+
+OK
+
+
+=> AT+CIPHEAD?
+
++CIPHEAD: 0
+
+OK
+
+
+=> AT+CIPHEAD=1
+
+OK
+
+
+=> AT+CIPSRIP?
+
++CIPSRIP: 0
+
+OK
+
+
+=> AT+CPIN?
+
++CPIN: READY
+
+OK
+
+
+=> AT+CSACT?
+
++CSACT: 0,"00",0,0
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 0,0
+
+OK
+
+Simcom:RSSI = 0 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CNMP?
+
++CNMP: 2,14
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+*PSUTTZ: 21/03/14,14:21:03,"+28",0
+
+DST: 0
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CGATT?
+
++CGATT: 1
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSTT?
+
++CSTT: "CMNET","",""
+
+OK
+
+
+=> AT+CSTT="3gprs","3gprs","3gprs"
+
+OK
+
+
+=> AT+CIPMODE?
+
++CIPMODE: 0
+
+OK
+
+
+=> AT+CIPMUX?
+
++CIPMUX: 0
+
+OK
+
+
+=> AT+CIPRXGET?
+
++CIPRXGET: 0
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP START
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP START
+
+
+=> AT+CIICR
+Simcom:UnknownError
+
++PDP: DEACT
+
+ERROR
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: PDP DEACT
+
+
+=> AT+CIPCLOSE
+Simcom:UnknownError
+
++CME ERROR: operation not allowed
+
+Simcom:LockedLoop = 0
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: PDP DEACT
+
+
+=> AT+CGATT?
+
++CGATT: 1
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: PDP DEACT
+
+Simcom:Init
+Simcom:SoftReset
+
+=> AT
+
+RDY
+
+Call Ready
+AT
+OK
+
+Simcom:ON
+
+=> AT+CCLK?
+AT+CCLK?
++CCLK: "21/03/14,14:21:34+00"
+
+OK
+
+
+=> AT+CSQ
+AT+CSQ
++CSQ: 0,0
+
+OK
+
+Simcom:RSSI = 0 %
+
+=> AT+CIPSTATUS
+AT+CIPSTATUS
+OK
+
+STATE: IP INITIAL
+
+
+=> ATE0
+ATE0
+OK
+
+
+=> AT+IPR?
+
++IPR: 0
+
+OK
+
+
+=> AT+CMEE?
+
++CMEE: 0
+
+OK
+
+
+=> AT+CMEE=2
+
+OK
+
+
+=> AT+CSCLK?
+
++CSCLK: 0
+
+OK
+
+
+=> AT+CSCLK=1
+
+OK
+
+
+=> AT+CLTS?
+
++CLTS: 0
+
+OK
+
+
+=> AT+CLTS=1
+
+OK
+
+
+=> AT+CIPHEAD?
+
++CIPHEAD: 0
+
+OK
+
+
+=> AT+CIPHEAD=1
+
+OK
+
+
+=> AT+CIPSRIP?
+
++CIPSRIP: 0
+
+OK
+
+
+=> AT+CPIN?
+
++CPIN: READY
+
+OK
+
+
+=> AT+CSACT?
+
++CSACT: 0,"00",0,0
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 0,0
+
+OK
+
+Simcom:RSSI = 0 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CNMP?
+
++CNMP: 2,14
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG=0
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,0
+
+OK
+
+
+=> AT+CREG?
+
+*PSUTTZ: 21/03/14,14:21:44,"+28",0
+
+DST: 0
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CREG?
+
++CREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CGREG?
+
++CGREG: 0,1
+
+OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CGATT?
+
++CGATT: 1
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP INITIAL
+
+
+=> AT+CSTT?
+
++CSTT: "CMNET","",""
+
+OK
+
+
+=> AT+CSTT="3gprs","3gprs","3gprs"
+
+OK
+
+
+=> AT+CIPMODE?
+
++CIPMODE: 0
+
+OK
+
+
+=> AT+CIPMUX?
+
++CIPMUX: 0
+
+OK
+
+
+=> AT+CIPRXGET?
+
++CIPRXGET: 0
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP START
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP START
+
+
+=> AT+CIICR
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP GPRSACT
+
+
+=> AT+CIFSR
+
+10.153.109.248
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTART="TCP","test.mosquitto.org","1883"
+
+OK
+
+CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=47
+
+> 
+102D00044D51545404EE001E000A5643552D333534333133000E5643552F3335343331332F53545300013000000000
+
+SEND OK
+
++IPD,4: 
+MQTT:Connected
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400015240310968050015030E0E1522010014010100000003FF04000000000000000001000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=21
+
+> 
+3313000E5643552F3335343331332F535453000231
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CIPSEND=21
+
+> 
+82130003000E5643552F3335343331332F434D4400
+Simcom:NoResponse
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=2
+
+> 
+C000
+Simcom:Timeout
+
+CLOSED
+
+Simcom:LockedLoop = 0
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSEND=2
+Simcom:UnknownError
+
++CME ERROR: operation not allowed
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CSTT?
+
++CSTT: "3gprs","3gprs","3gprs"
+
+OK
+
+
+=> AT+CIPMODE?
+
++CIPMODE: 0
+
+OK
+
+
+=> AT+CIPMUX?
+
++CIPMUX: 0
+
+OK
+
+
+=> AT+CIPRXGET?
+
++CIPRXGET: 0
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: TCP CLOSED
+
+
+=> AT+CIPSTART="TCP","test.mosquitto.org","1883"
+
+OK
+
+STATE: IP STATUS
+
+CONNECT FAIL
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+Simcom:LockedLoop = 0
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CSTT?
+
++CSTT: "3gprs","3gprs","3gprs"
+
+OK
+
+
+=> AT+CIPMODE?
+
++CIPMODE: 0
+
+OK
+
+
+=> AT+CIPMUX?
+
++CIPMUX: 0
+
+OK
+
+
+=> AT+CIPRXGET?
+
++CIPRXGET: 0
+
+OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: IP STATUS
+
+
+=> AT+CIPSTART="TCP","test.mosquitto.org","1883"
+
+OK
+
+CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=47
+
+> 
+102D00044D51545404EE001E000A5643552D333534333133000E5643552F3335343331332F53545300013000000000
+
+SEND OK
+
++IPD,4: 
+MQTT:Connected
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400045240310968050015030E0E170B010014010100000003FF04000000000000000001000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=21
+
+> 
+3313000E5643552F3335343331332F535453000531
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CIPSEND=21
+
+> 
+82130006000E5643552F3335343331332F434D4400
+
+SEND OK
+
++IPD,5:�
+MQTT:Subscribed
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400075240310968050015030E0E1806010014010100000503FF05000000000000000005000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400085240810968050015030E0E1809010114010100000A03FF0400000000000000000B000000FFFFFFFF00008813FFFFFFFF00008813806F2743D03892FB28000000070B000B013930000000D60000000000000000000000009001000090010A8802001C050AD00200A80209800209D8020A5002006C02098C010A9C0209940209AC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400095240310968050015030E0E180D010014010100000F03FF0400000000000000000F000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054000A5240310968050015030E0E1811010014010100001403FF04000000000000000015000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054000B5240310968050015030E0E1815010014010100001903FF04000000000000000019000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F525054000C5240810968050015030E0E1819010114010100001E03FF0400000000000000001F000000FFFFFFFF00008813FFFFFFFF00008813806F2743C03892FB26000000070B000B00393000001DD20000000000000000000000009001000090011E8802006C041ED00200A8021D80021DE0021E5002006C021D8C011E9C021D94021DAC02FD0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054000D5240310968050015030E0E181D010014010100002303FF04000000000000000023000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054000E5240310968050015030E0E1821010014010100002803FF05000000000000000029000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054000F5240310968050015030E0E1825010014010100002D03FF0400000000000000002D000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400105240810968050015030E0E1829010115030E0E152401FF04000000000000000033000000FFFFFFFF00008813FFFFFFFF0000881300702743783892FB26000000070B000A003930000000D4000000000000000000000000900100009001328802266C0432D00200A80231800231E002325002006C02318C01329C0231940231AC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400115240310968050015030E0E1830010015030E0E152901FF04000000000000000037000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400125240310968050015030E0E1835010015030E0E152F01FF0400000000000000003D000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400135240310968050015030E0E183A010015030E0E153401FF04000000000000000041000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400145240810968050015030E0E1901010115030E0E153901FF04000000000000000047000000FFFFFFFF00008813FFFFFFFF0000881300702743A03892FB23000000080F000A00393000001DD4000000000000000000000000900100009001458802266C0446D00200A80245800245D802465002006C02458C01469C0245840245AC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400155240310968050015030E0E1906010015030E0E160201FF0400000000000000004B000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400165240310968050015030E0E1909010015030E0E160701FF04000000000000000051000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400175240310968050015030E0E190D010015030E0E160C01FF04000000000000000055000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400185240810968050015030E0E1911010115030E0E161101FF0400000000000000005B000000FFFFFFFF00008813FFFFFFFF0000881300702743B83892FB21000000080F000A00393000001DD40000000000000000000000009001000090015988022604045AD00200A80259800259E0025A5002006C02598C015A9C025984025AAC02FC0103
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400195240310968050015030E0E1916010015030E0E161601FF0400000000000000005F000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054001A5240310968050015030E0E1919010015030E0E161B01FF04000000000000000065000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054001B5240310968050015030E0E191E010015030E0E162001FF04000000000000000069000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F525054001C5240810968050015030E0E192A010115030E0E162501FF0400000000000000006F000000FFFFFFFF00008813FFFFFFFF0000881300702743A03892FB20000000080F000A00393000001DD30000000000000000000000009001000090016D88022604046ED00200A8026D80026DE0026E5002006C026D8C016E9C026D84026EAC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054001D5240310968050015030E0E1933010015030E0E162A01FF04000000000000000073000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054001E5240310968050015030E0E1937010015030E0E162F01FF04000000000000000079000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054001F5240310968050015030E0E193A010015030E0E163401FF0400000000000000007D000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400205240810968050015030E0E1A03010115030E0E163901FF04000000000000000083000000FFFFFFFF00008813FFFFFFFF0000881300702743B03892FB21000000080F000A00393000001DD400000000000000000000000090010000900181880226040482D00200A80281800281D802825002006C02818C01829C0281840282AC02FD0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400215240310968050015030E0E1A07010015030E0E170201FF04000000000000000087000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400225240310968050015030E0E1A0B010015030E0E170701FF0400000000000000008D000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400235240310968050015030E0E1A11010015030E0E170C01FF04000000000000000091000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400245240810968050015030E0E1A15010115030E0E171101FF04000000000000000097000000FFFFFFFF00008813FFFFFFFF0000881300702743C03892FB1F000000080F000A00393000001DD400000000000000000000000090010000900195880290040496D00200A80295800295AC02965002006C02958C01969C0295840295AC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400255240310968050015030E0E1A19010015030E0E171601FF0400000000000000009B000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400265240310968050015030E0E1A1D010015030E0E171B01FF040000000000000000A1000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400275240310968050015030E0E1A21010015030E0E172001FF040000000000000000A5000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400285240810968050015030E0E1A24010115030E0E172501FF040000000000000000AB000000FFFFFFFF00008813FFFFFFFF0000881300702743C03892FB1E000000080F000A00393000001DD4000000000000000000000000900100009001A98802900404AAD00200A802A98002A9AC02AA5002006C02A98C01AA9C02A98402A9AC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400295240310968050015030E0E1A39010015030E0E172A01FF040000000000000000AF000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054002A5240310968050015030E0E1B01010015030E0E172F01FF040000000000000000B5000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054002B5240310968050015030E0E1B09010015030E0E173401FF040000000000000000B9000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F525054002C5240810968050015030E0E1B0E010115030E0E173901FF040000000000000000BF000000FFFFFFFF00008813FFFFFFFF0000881300702743D03892FB1F000000080F000900393000001DD3000000000000000000000000900100009001BD8802900404BED00200A802BD8002BDAC02BE5002006C02BD8C01BE9C02BD8402BDAC02FC0103
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 10,0
+
+OK
+
+Simcom:RSSI = 32 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 10,0
+
+OK
+
+Simcom:RSSI = 32 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054002D5240310968050015030E0E1B13010015030E0E180201FF040000000000000000C3000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054002E5240310968050015030E0E1B17010015030E0E180701FF040000000000000000C9000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054002F5240310968050015030E0E1B1B010015030E0E180C01FF040000000000000000CD000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400305240810968050015030E0E1B1F010115030E0E181101FF040000000000000000D3000000FFFFFFFF00008813FFFFFFFF0000881300702743D83892FB1F000000080F000A00393000001DD3000000000000000000000000900100009001D18802CE0404D2D00200A802D18002D1AC02D25002006C02D18C01D29C02D18402D1AC02FC0103
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 10,0
+
+OK
+
+Simcom:RSSI = 32 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 10,0
+
+OK
+
+Simcom:RSSI = 32 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400315240310968050015030E0E1B23010015030E0E181601FF040000000000000000D7000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400325240310968050015030E0E1B27010015030E0E181B01FF040000000000000000DD000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400335240310968050015030E0E1B2A010015030E0E182001FF040000000000000000E1000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400345240810968050015030E0E1B2E010115030E0E182501FF040000000000000000E7000000FFFFFFFF00008813FFFFFFFF00008813806F2743003992FB1F000000080F000A00393000001DD3000000000000000000000000900100009001E58802E20404E6D00200A802E58002E5AC02E65002006C02E58C01E69C02E58402E5AC02FD0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400355240310968050015030E0E1B32010015030E0E182A01FF040000000000000000EB000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400365240310968050015030E0E1B38010015030E0E182F01FF040000000000000000F1000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400375240310968050015030E0E1C02010015030E0E183401FF040000000000000000F5000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F52505400385240810968050015030E0E1C18010115030E0E183901FF040000000000000000FB000000FFFFFFFF00008813FFFFFFFF00008813806F2743283992FB1F000000080F000A00393000001DD3000000000000000000000000900100009001F98802F60404FAD00200A802F98002F9AC02FA5002006C02F98C01FA9C02F98402FAAC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F52505400395240310968050015030E0E1C1E010015030E0E190201FF040000000000000000FF000000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054003A5240310968050015030E0E1C21010015030E0E190701FF04000000000000000005010000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054003B5240310968050015030E0E1C25010015030E0E190C01FF04000000000000000009010000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=153
+
+> 
+339601000E5643552F3335343331332F525054003C5240810968050015030E0E1C29010115030E0E191101FF0400000000000000000F010000FFFFFFFF00008813FFFFFFFF00008813806E2743203992FB1D000000080F000900393000001DD30000000000000000000000009001000090010D88020A04040ED00200A8020D80020DAC020E5002006C020D8C010E9C020D84020EAC02FC0102
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054003D5240310968050015030E0E1C2D010015030E0E191601FF04000000000000000013010000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CSQ
+
++CSQ: 9,0
+
+OK
+
+Simcom:RSSI = 29 %
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSTATUS
+
+OK
+
+STATE: CONNECT OK
+
+
+=> AT+CIPSEND=72
+
+> 
+3346000E5643552F3335343331332F525054003E5240310968050015030E0E1C30010015030E0E191B01FF04000000000000000019010000FFFFFFFF00008813FFFFFFFF00008813
+
+SEND OK
+
++IPD,4:@
+MQTT:Published
+
+=> AT+CSQ

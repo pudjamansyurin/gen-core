@@ -36,8 +36,8 @@
 #define APP_END_ADDR            (ADDR_FLASH_SECTOR_5 + APP_MAX_SIZE - 1)
 #define BKP_START_ADDR          ADDR_FLASH_SECTOR_10
 #define BKP_END_ADDR            (ADDR_FLASH_SECTOR_10 + APP_MAX_SIZE - 1)
-#define SIZE_OFFSET             (APP_MAX_SIZE - sizeof(uint32_t))
-#define CHECKSUM_OFFSET         (SIZE_OFFSET - sizeof(uint32_t))
+#define SIZE_OFFSET             (APP_MAX_SIZE - 4)
+#define CHECKSUM_OFFSET         (APP_MAX_SIZE - 8)
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t FLASHER_EraseBkpArea(void);
