@@ -27,6 +27,7 @@
 #include "DMA/_dma_simcom.h"
 #include "DMA/_dma_ublox.h"
 #include "DMA/_dma_finger.h"
+#include "Drivers/_iwdg.h"
 #include "Nodes/VCU.h"
 /* USER CODE END Includes */
 
@@ -109,7 +110,7 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-  	MX_IWDG_Reset();
+  	IWDG_Refresh();
 	  GATE_LedToggle();
 	  HAL_Delay(100);
     /* USER CODE END W1_HardFault_IRQn 0 */

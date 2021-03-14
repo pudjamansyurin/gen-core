@@ -9,6 +9,7 @@
 #include "usart.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_bat.h"
+#include "Drivers/_iwdg.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_at.h"
 #if (!BOOTLOADER)
@@ -182,7 +183,7 @@ char* Simcom_Resp(char *keyword, char *from) {
 			start = from;
 
 #if (BOOTLOADER)
-		HAL_IWDG_Refresh(&hiwdg);
+	  IWDG_Refresh();
 #endif
 
 	return strnstr(start, keyword, stop - start);
@@ -369,7 +370,7 @@ static SIM_RESULT Reset(uint8_t hard) {
 			break;
 
 #if (BOOTLOADER)
-		HAL_IWDG_Refresh(&hiwdg);
+    IWDG_Refresh();
 #endif
 
 		_DelayMS(100);

@@ -20,7 +20,7 @@ static mqtt_t MQTT = {
         .command = 0,
         .response = 1,
         .report = 1,
-        .will = 0
+        .will = 1
     },
     .rx = {
         .received = 0

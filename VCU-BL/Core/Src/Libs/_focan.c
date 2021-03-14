@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "iwdg.h"
+#include "Drivers/_iwdg.h"
 #include "Drivers/_canbus.h"
 #include "Libs/_focan.h"
 
@@ -185,7 +186,7 @@ static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout) {
       }
     }
     // reset watchdog
-    HAL_IWDG_Refresh(&hiwdg);
+    IWDG_Refresh();
   } while (_GetTickMS() - tick < timeout);
 
   return response;
@@ -219,7 +220,7 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData, uint32_t t
       }
     }
     // reset watchdog
-    HAL_IWDG_Refresh(&hiwdg);
+    IWDG_Refresh();
   } while ((step < reply) && (_GetTickMS() - tick < timeout));
 
   return (step == reply);

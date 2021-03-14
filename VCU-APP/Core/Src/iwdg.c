@@ -51,9 +51,7 @@ void MX_IWDG_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
-void MX_IWDG_Reset(void) {
-    HAL_IWDG_Refresh(&hiwdg);
-}
+
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
