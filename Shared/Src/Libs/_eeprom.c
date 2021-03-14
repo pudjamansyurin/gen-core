@@ -61,12 +61,10 @@ uint8_t EEPROM_Init(void) {
 void EEPROM_ResetOrLoad(void) {
 	if (!EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
 		// load from EEPROM
-		EEPROM_UnitID(EE_CMD_R, EE_NULL);
 		EEPROM_Odometer(EE_CMD_R, EE_NULL);
 		EEPROM_AesKey(EE_CMD_R, EE_NULL);
 	} else {
 		// save to EEPROM, first
-		EEPROM_UnitID(EE_CMD_W, VCU_UNITID);
 		EEPROM_Odometer(EE_CMD_W, 0);
 
 		// re-write eeprom
@@ -89,10 +87,6 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
 
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
 	return Command(VADDR_ODOMETER, cmd, &value, &(HBAR.d.trip[HBAR_M_TRIP_ODO]), sizeof(value));
-}
-
-uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value) {
-	return Command(VADDR_UNITID, cmd, &value, &(VCU.d.unit_id), sizeof(value));
 }
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {

@@ -660,11 +660,12 @@ SIM_RESULT AT_FtpFileSize(at_ftp_t *param) {
 		ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
 		param->response = ParseNumber(&str[len], &cnt);
+    len += cnt + 1;
 
-		if (param->response == FTP_FINISH) {
-			len += cnt + 1;
+		if (param->response != FTP_FINISH)
+      res = SIM_ERROR;
+		else
 			param->size = ParseNumber(&str[len], &cnt);
-		}
 	}
 	Simcom_Unlock();
 
@@ -690,9 +691,13 @@ SIM_RESULT AT_FtpDownload(at_ftpget_t *param) {
 		// parsing
 		ParseNumber(&str[len], &cnt);
 		len += cnt + 1;
-		if (param->mode == FTPGET_OPEN)
+
+		if (param->mode == FTPGET_OPEN) {
 			param->response = ParseNumber(&str[len], &cnt);
-		else {
+
+		  if (param->response != FTP_READY)
+		    res = SIM_ERROR;
+		} else {
 			param->cnflength = ParseNumber(&str[len], &cnt);
 			len += cnt + 2;
 			// start of file content

@@ -32,7 +32,7 @@ typedef struct __attribute__((packed)) {
 	char prefix[2];
 	//  uint32_t crc;
 	uint8_t size;
-	uint32_t unit_id;
+	uint32_t vin;
 	datetime_t send_time;
 } header_t;
 
@@ -40,7 +40,7 @@ typedef struct __attribute__((packed)) {
 	char prefix[2];
 	//  uint32_t crc;
 	uint8_t size;
-	uint32_t unit_id;
+	uint32_t vin;
 	datetime_t send_time;
 	uint8_t code;
 	uint8_t sub_code;
@@ -137,5 +137,5 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 void RPT_ResponseCapture(response_t *response);
 void RPT_FrameDecider(uint8_t backup, FRAME_TYPE *frame);
 uint8_t RPT_PayloadPending(payload_t *payload);
-uint8_t RPT_WrapPayload(payload_t *payload, uint32_t unit_id);
+uint8_t RPT_WrapPayload(payload_t *payload);
 #endif /* REPORTER_H_ */

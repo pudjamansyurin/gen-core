@@ -135,11 +135,11 @@ uint8_t MQTT_Connect(void) {
   MQTT.willed = 0;
 
   // generate topics
-  sprintf(MQTT.topic.command, "VCU/%lu/CMD", VCU.d.unit_id);
-  sprintf(MQTT.topic.response, "VCU/%lu/RSP", VCU.d.unit_id);
-  sprintf(MQTT.topic.report, "VCU/%lu/RPT", VCU.d.unit_id);
-  sprintf(MQTT.topic.will, "VCU/%lu/STS", VCU.d.unit_id);
-  sprintf(clientId, "VCU-%lu", VCU.d.unit_id);
+  sprintf(MQTT.topic.command, "VCU/%lu/CMD", VIN_VALUE);
+  sprintf(MQTT.topic.response, "VCU/%lu/RSP", VIN_VALUE);
+  sprintf(MQTT.topic.report, "VCU/%lu/RPT", VIN_VALUE);
+  sprintf(MQTT.topic.will, "VCU/%lu/STS", VIN_VALUE);
+  sprintf(clientId, "VCU-%lu", VIN_VALUE);
 
   // subscribe
   data.clientID.cstring = clientId;

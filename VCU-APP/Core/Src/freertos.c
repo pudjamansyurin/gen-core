@@ -800,14 +800,14 @@ void StartIotTask(void *argument)
 
     // Upload Response
     if (RPT_PayloadPending(&pRes))
-      if (RPT_WrapPayload(&pRes, VCU.d.unit_id))
+      if (RPT_WrapPayload(&pRes))
         if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
           if (MQTT_Publish(&pRes))
             pRes.pending = 0;
 
     // Upload Report
     if (RPT_PayloadPending(&pRep))
-      if (RPT_WrapPayload(&pRep, VCU.d.unit_id))
+      if (RPT_WrapPayload(&pRep))
         if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
           if (MQTT_Publish(&pRep))
             pRep.pending = 0;
@@ -881,7 +881,7 @@ void StartCommandTask(void *argument)
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
   // Handle Post-FOTA
-  if (FW_PostFota(&response, &(VCU.d.unit_id), &(VCU.d.bat), &(HMI1.d.version)))
+  if (FW_PostFota(&response, &(VCU.d.bat), &(HMI1.d.version)))
     osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
 
   /* Infinite loop */
@@ -997,10 +997,6 @@ void StartCommandTask(void *argument)
             case CMD_REMOTE_PAIRING :
               osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
               CMD_RemotePairing(&response);
-              break;
-
-            case CMD_REMOTE_UNITID :
-              CMD_RemoteUnitID(&cmd, IotTaskHandle, RemoteTaskHandle);
               break;
 
             default:
@@ -1178,7 +1174,7 @@ void StartRemoteTask(void *argument)
 
   // Initiate
   AES_Init();
-  RMT_Init(&(VCU.d.unit_id));
+  RMT_Init();
 
   /* Infinite loop */
   for (;;) {
@@ -1196,16 +1192,16 @@ void StartRemoteTask(void *argument)
         VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
         RMT_DeInit();
         _osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny, osWaitForever);
-        RMT_Init(&(VCU.d.unit_id));
+        RMT_Init();
       }
 
       // handle address change
       if (notif & EVT_REMOTE_REINIT)
-        RMT_ReInit(&(VCU.d.unit_id));
+        RMT_ReInit();
 
       // handle pairing
       if (notif & EVT_REMOTE_PAIRING)
-        RMT_Pairing(&(VCU.d.unit_id));
+        RMT_Pairing();
 
       // handle incoming payload
       if (notif & EVT_REMOTE_RX_IT) {

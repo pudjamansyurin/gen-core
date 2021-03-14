@@ -43,16 +43,16 @@ static const uint8_t COMMAND[3][8] = {
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static void ChangeMode(RMT_MODE mode, uint32_t *unit_id);
+static void ChangeMode(RMT_MODE mode);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
 static void RMT_GenerateAesKey(uint32_t *aesSwapped);
 static void RawDebugger(void);
 static void Debugger(RMT_CMD command);
 
 /* Public functions implementation --------------------------------------------*/
-void RMT_Init(uint32_t *unit_id) {
+void RMT_Init(void) {
 	nrf_param(RMT.pspi, RMT.rx.payload);
-	RMT_ReInit(unit_id);
+	RMT_ReInit();
 }
 
 void RMT_DeInit(void) {
@@ -61,7 +61,7 @@ void RMT_DeInit(void) {
 	_DelayMS(1000);
 }
 
-void RMT_ReInit(uint32_t *unit_id) {
+void RMT_ReInit(void) {
 	MX_SPI1_Init();
 	do {
 		printf("NRF:Init\n");
@@ -72,7 +72,7 @@ void RMT_ReInit(uint32_t *unit_id) {
 	} while (nrf_check() == NRF_ERROR);
 
 	nrf_configure();
-	ChangeMode(RMT_MODE_NORMAL, unit_id);
+	ChangeMode(RMT_MODE_NORMAL);
 }
 
 
@@ -92,7 +92,7 @@ uint8_t RMT_Ping(void) {
 	return (nrf_send_packet_noack(RMT.tx.payload) == NRF_OK);
 }
 
-void RMT_Pairing(uint32_t *unit_id) {
+void RMT_Pairing(void) {
 	uint32_t aes[4];
 
 	RMT.tick.pairing = _GetTickMS();
@@ -103,11 +103,11 @@ void RMT_Pairing(uint32_t *unit_id) {
 	memcpy(&RMT.tx.payload[0], aes, NRF_DATA_LENGTH);
 	memcpy(&RMT.tx.payload[NRF_DATA_LENGTH ], RMT.tx.address, NRF_ADDR_LENGTH);
 
-	ChangeMode(RMT_MODE_PAIRING, NULL);
+	ChangeMode(RMT_MODE_PAIRING);
 	nrf_send_packet_noack(RMT.tx.payload);
 
 	// back to normal
-	RMT_ReInit(unit_id);
+	RMT_ReInit();
 }
 
 uint8_t RMT_GotPairedResponse(void) {
@@ -186,13 +186,14 @@ static void unlock(void) {
 	#endif
 }
 
-static void ChangeMode(RMT_MODE mode, uint32_t *unit_id) {
+static void ChangeMode(RMT_MODE mode) {
 	uint8_t payload_width;
+	uint32_t vin = VIN_VALUE;
 
 	if (mode == RMT_MODE_NORMAL) {
 		// use VCU_ID as address
-		memcpy(RMT.tx.address, unit_id, sizeof(uint32_t));
-		memcpy(RMT.rx.address, unit_id, sizeof(uint32_t));
+		memcpy(RMT.tx.address, &vin, sizeof(uint32_t));
+		memcpy(RMT.rx.address, &vin, sizeof(uint32_t));
 		payload_width = NRF_DATA_LENGTH;
 	} else {
 		// Set Address (pairing mode)

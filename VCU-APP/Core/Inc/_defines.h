@@ -14,13 +14,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION                  (uint16_t) 610
+#define VCU_VERSION                  (uint16_t) 611
 #define EEPROM_RESET                 (uint16_t) 53
 
 /* Exported constants --------------------------------------------------------*/
 #define VCU_VENDOR                              "GEN"
 #define VCU_BUILD_YEAR               (uint8_t)  21
-#define VCU_UNITID                   (uint32_t) 354313
 
 #define SIMCOM_MIN_VOLTAGE           (uint16_t) 3300                // in mV
 

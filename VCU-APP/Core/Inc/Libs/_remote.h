@@ -46,12 +46,12 @@ typedef struct {
 } remote_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void RMT_Init(uint32_t *unit_id);
+void RMT_Init(void);
 void RMT_DeInit(void);
-void RMT_ReInit(uint32_t *unit_id);
+void RMT_ReInit(void);
 uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote);
 uint8_t RMT_Ping(void);
-void RMT_Pairing(uint32_t *unit_id);
+void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);
 void RMT_RefreshPairing(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);

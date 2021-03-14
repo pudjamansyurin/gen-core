@@ -362,13 +362,6 @@ static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
 }
 
 static SIM_RESULT openFTP(at_ftpget_t *ftpGET) {
-	SIM_RESULT res;
-
 	ftpGET->mode = FTPGET_OPEN;
-	res = AT_FtpDownload(ftpGET);
-
-	if (res == SIM_OK)
-		res = ftpGET->response == FTP_READY;
-
-	return res;
+	return AT_FtpDownload(ftpGET);
 }

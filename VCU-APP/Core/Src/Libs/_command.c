@@ -33,7 +33,7 @@ uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 	if (memcmp(cmd->header.prefix, PREFIX_COMMAND, 2) != 0)
 		return 0;
 
-	uint8_t size = sizeof(cmd->header.unit_id) +
+	uint8_t size = sizeof(cmd->header.vin) +
 			sizeof(cmd->header.send_time) +
 			sizeof(cmd->header.code) +
 			sizeof(cmd->header.sub_code) +
@@ -50,7 +50,7 @@ uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 	//	if (cmd->header.crc != crc)
 	//		return;
 
-	if (cmd->header.unit_id != VCU.d.unit_id)
+	if (cmd->header.vin != VIN_VALUE)
 		return 0;
 
 	// TODO: check length according to command id
@@ -60,7 +60,7 @@ uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 
 void CMD_ExecuteCommand(command_t *cmd) {
 	uint8_t len = cmd->header.size -
-			(sizeof(cmd->header.unit_id) +
+			(sizeof(cmd->header.vin) +
 					sizeof(cmd->header.send_time) +
 					sizeof(cmd->header.code) +
 					sizeof(cmd->header.sub_code));
@@ -190,16 +190,6 @@ void CMD_Finger(response_t *resp) {
 	if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
 		if (notif & EVT_COMMAND_OK)
 			resp->data.res_code = RESPONSE_STATUS_OK;
-}
-
-void CMD_RemoteUnitID(command_t *cmd, osThreadId_t threadIot, osThreadId_t threadRemote) {
-	uint32_t value = *(uint32_t*) cmd->data.value;
-	// persist changes
-	EEPROM_UnitID(EE_CMD_W, value);
-	// resubscribe mqtt topic
-	osThreadFlagsSet(threadIot, EVT_IOT_RESUBSCRIBE);
-	// change nrf address
-	osThreadFlagsSet(threadRemote, EVT_REMOTE_REINIT);
 }
 
 void CMD_RemotePairing(response_t *resp) {

@@ -43,7 +43,6 @@
 #define CMD_FINGER_RST                (uint8_t) 3
 
 #define CMD_REMOTE_PAIRING            (uint8_t) 0
-#define CMD_REMOTE_UNITID             (uint8_t) 1
 
 #define CMD_FOTA_VCU                  (uint8_t) 0
 #define CMD_FOTA_HMI                  (uint8_t) 1
@@ -67,7 +66,6 @@ void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue);
 void CMD_FingerFetch(response_t *resp, osMessageQueueId_t queue);
 void CMD_FingerDelete(response_t *resp, command_t *cmd, osThreadId_t threadId, osMessageQueueId_t queue);
 void CMD_Finger(response_t *resp);
-void CMD_RemoteUnitID(command_t *cmd, osThreadId_t threadIot, osThreadId_t threadRemote);
 void CMD_RemotePairing(response_t *resp);
 void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue);
 

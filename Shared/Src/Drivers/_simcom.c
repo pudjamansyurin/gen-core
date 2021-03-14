@@ -98,7 +98,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
 	SIMCOM_STATE lastState = SIM_STATE_DOWN;
 	SIM_RESULT res = SIM_ERROR;
 	uint32_t tick = _GetTickMS();
-	uint8_t retry = 1;
+	uint8_t retry = 0;
 
 	Simcom_Lock();
 	do {

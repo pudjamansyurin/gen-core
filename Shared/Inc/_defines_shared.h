@@ -27,7 +27,7 @@
 #define BC(var, x)                              (var &= ~(1ULL << x))
 #define BT(var, x)                              (var ^= (1ULL << x))
 
-// FOTA related stuffs
+/* SRAM related */
 #define SRAM_SIZE                    (uint32_t) 0x50000
 #define SRAM_BASE_ADDR               (uint32_t) 0x20000000
 #define SRAM_END_ADDR                           (SRAM_BASE_ADDR + SRAM_SIZE)
@@ -36,9 +36,19 @@
 
 #define FOTA_PROGRESS_FLAG           (uint32_t) 0x89ABCDEF
 #define IAP_FLAG                     (uint32_t) 0xAABBCCDD
-#define IAP_FLAG_ADDR                           (SRAM_END_ADDR - sizeof(uint32_t))
-#define IAP_RESPONSE_ADDR                       (IAP_FLAG_ADDR - sizeof(uint32_t))
-#define IS_VALID_SP(a)                          ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
+#define IAP_FLAG_ADDR                           (SRAM_END_ADDR - 4)
+#define IAP_RESPONSE_ADDR                       (SRAM_END_ADDR - 8)
+#define IS_VALID_SP(a)               ((*(__IO uint32_t*)a & SP_RANGE) == SRAM_BASE_ADDR)
+
+/* FLASH related */
+#define APP_MAX_SIZE                 (uint32_t) 0xA0000
+#define APP_START_ADDR               (uint32_t) 0x08020000
+#define APP_END_ADDR                            (APP_START_ADDR + APP_MAX_SIZE - 1)
+#define BKP_START_ADDR               (uint32_t) 0x080C0000
+#define BKP_END_ADDR                            (BKP_START_ADDR + APP_MAX_SIZE - 1)
+#define SIZE_OFFSET                             (APP_MAX_SIZE - 4)
+#define CHECKSUM_OFFSET                         (APP_MAX_SIZE - 8)
+#define VIN_VALUE                    (*(__IO uint32_t*) (APP_START_ADDR - 4))
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {

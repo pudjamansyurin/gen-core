@@ -59,7 +59,6 @@ typedef struct __attribute__((packed)) {
 } rtos_task_t;
 
 typedef struct {
-	uint32_t unit_id;
 	uint8_t driver_id;
 	uint16_t interval;
 	uint8_t speed;

@@ -107,12 +107,12 @@ uint8_t RPT_PayloadPending(payload_t *payload) {
 	return payload->pending;
 }
 
-uint8_t RPT_WrapPayload(payload_t *payload, uint32_t unit_id) {
+uint8_t RPT_WrapPayload(payload_t *payload) {
 	header_t *header = (header_t*) (payload->pPayload);
 
-	header->size += sizeof(header->unit_id) +
+	header->size += sizeof(header->vin) +
 			sizeof(header->send_time);
-	header->unit_id = unit_id;
+	header->vin = VIN_VALUE;
 	header->send_time = RTC_Read();
 
 	//  // Re-calculate CRC

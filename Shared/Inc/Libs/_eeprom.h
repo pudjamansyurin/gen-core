@@ -12,8 +12,8 @@
 #include "Libs/_utils.h"
 
 /* Exported macro function ---------------------------------------------------*/
-#define EEPROM_ADDR  				(uint16_t) 0xA0
-#define EE_NULL                      (uint8_t) 0
+#define EEPROM_ADDR  				        (uint16_t) 0xA0
+#define EE_NULL                     (uint8_t) 0
 
 /* NOTE: EEPROM is 32 bytes aligned, do not store variable in intersection */
 #define EE_AREA(ad, sz)             (((ad + sz) % 32) >= sz ? (ad) : (ad + (sz - ((ad + sz) % 32))))
@@ -21,9 +21,9 @@
 /* Exported constants --------------------------------------------------------*/
 #define VADDR_RESET                 (uint16_t) EE_AREA(0, 2)
 #define VADDR_ODOMETER              (uint16_t) EE_AREA(VADDR_RESET + 2, 4)
-#define VADDR_UNITID                (uint16_t) EE_AREA(VADDR_ODOMETER + 4, 4)
-#define VADDR_UNUSED_1         	    (uint16_t) EE_AREA(VADDR_UNITID + 4, 2)
-#define VADDR_UNUSED_2       	    (uint16_t) EE_AREA(VADDR_UNUSED_1 + 2, 2)
+#define VADDR_UNUSED_0              (uint16_t) EE_AREA(VADDR_ODOMETER + 4, 4)
+#define VADDR_UNUSED_1         	    (uint16_t) EE_AREA(VADDR_UNUSED_0 + 4, 2)
+#define VADDR_UNUSED_2       	      (uint16_t) EE_AREA(VADDR_UNUSED_1 + 2, 2)
 #define VADDR_AES_KEY               (uint16_t) EE_AREA(VADDR_UNUSED_2 + 2, 16)
 #define VADDR_FOTA_FLAG             (uint16_t) EE_AREA(VADDR_AES_KEY + 16, 4)
 #define VADDR_FOTA_VERSION          (uint16_t) EE_AREA(VADDR_FOTA_FLAG + 4, 2)
@@ -51,7 +51,6 @@ uint8_t EEPROM_Init(void);
 void EEPROM_ResetOrLoad(void);
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
-uint8_t EEPROM_UnitID(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
 #endif
 uint8_t EEPROM_FotaFlag(EEPROM_COMMAND cmd, uint32_t value);
