@@ -16,7 +16,7 @@
 #define FOCAN_RETRY                 (uint8_t) 5
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FOCAN_GetChecksum(uint32_t *checksum);
+uint8_t FOCAN_GetCRC(uint32_t *crc);
 uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent);
 uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data);
 uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32_t total_size);

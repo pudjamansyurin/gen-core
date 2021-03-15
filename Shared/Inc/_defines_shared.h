@@ -47,7 +47,7 @@
 #define BKP_START_ADDR               (uint32_t) 0x080C0000
 #define BKP_END_ADDR                            (BKP_START_ADDR + APP_MAX_SIZE - 1)
 #define SIZE_OFFSET                             (APP_MAX_SIZE - 4)
-#define CHECKSUM_OFFSET                         (APP_MAX_SIZE - 8)
+#define CRC_OFFSET                         (APP_MAX_SIZE - 8)
 #define VIN_VALUE                    (*(__IO uint32_t*) (APP_START_ADDR - 4))
 
 /* Exported typedef ----------------------------------------------------------*/
@@ -67,7 +67,7 @@ typedef enum {
   IAP_SIMCOM_TIMEOUT = 0x035F67B8,
   IAP_DOWNLOAD_ERROR = 0x6AA55122,
   IAP_FIRMWARE_SAME = 0xA5BE5FF3,
-  IAP_CHECKSUM_INVALID = 0xD7E9EF0D,
+  IAP_CRC_INVALID = 0xD7E9EF0D,
   IAP_CANBUS_FAILED = 0x977FC0A3,
   IAP_FOTA_ERROR = 0xFA359EA1,
   IAP_FOTA_SUCCESS = 0x41B0FC9E,

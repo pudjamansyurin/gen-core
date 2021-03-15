@@ -67,8 +67,8 @@ uint8_t FW_PostFota(response_t *response, uint16_t *bat, uint16_t *hmi_version) 
 			case IAP_FIRMWARE_SAME:
 				sprintf(response->data.message, "%s Version Same", node);
 				break;
-			case IAP_CHECKSUM_INVALID:
-				sprintf(response->data.message, "%s Checksum Invalid", node);
+			case IAP_CRC_INVALID:
+				sprintf(response->data.message, "%s CRC Invalid", node);
 				break;
 			case IAP_CANBUS_FAILED:
 				sprintf(response->data.message, "%s Canbus Failed", node);
@@ -133,7 +133,7 @@ static uint8_t FW_ValidResponseIAP(void) {
 			break;
 		case IAP_FIRMWARE_SAME:
 			break;
-		case IAP_CHECKSUM_INVALID:
+		case IAP_CRC_INVALID:
 			break;
 		case IAP_CANBUS_FAILED:
 			break;

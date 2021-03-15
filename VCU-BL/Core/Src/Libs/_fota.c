@@ -26,7 +26,7 @@ static SIM_RESULT openFTP(at_ftpget_t *ftpGET);
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	SIM_RESULT res = SIM_OK;
 	uint32_t timeout = 60000;
-	uint32_t cksumOld = 0, cksumNew = 0, len = 0;
+	uint32_t crcOld = 0, crcNew = 0, len = 0;
 	at_ftpget_t ftpget;
 	at_ftp_t ftp = {
 			.file = "CRC_APP.bin",
@@ -60,13 +60,13 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 			FOTA_SetFlag();
 	}
 
-	/* Get the stored checksum information */
+	/* Get the stored crc information */
 	if (res == SIM_OK) {
 		FOCAN_SetProgress(type, 0.0f);
 		if (type == IAP_HMI)
-			res = FOCAN_GetChecksum(&cksumOld);
+			res = FOCAN_GetCRC(&crcOld);
 		else
-			FOTA_GetChecksum(&cksumOld);
+			FOTA_GetCRC(&crcOld);
 	}
 
 	// Initialise SIMCOM
@@ -90,19 +90,19 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 		res = openFTP(&ftpget);
 	}
 
-	// Get checksum of new firmware
+	// Get crc of new firmware
 	if (res == SIM_OK) {
 		FOCAN_SetProgress(type, 0.0f);
-		res = FOTA_DownloadChecksum(&ftpget, &cksumNew);
+		res = FOTA_DownloadCRC(&ftpget, &crcNew);
 
 		// Only download when image is different
 		if (res == SIM_OK) {
-			res = (cksumOld != cksumNew);
+			res = (crcOld != crcNew);
 
 			if (res <= 0)
 				*(uint32_t*) IAP_RESPONSE_ADDR = IAP_FIRMWARE_SAME;
 			else
-				printf("FOTA:Checksum = 0x%08X => 0x%08X\n", (unsigned int) cksumOld, (unsigned int) cksumNew);
+				printf("FOTA:CRC = 0x%08X => 0x%08X\n", (unsigned int) crcOld, (unsigned int) crcNew);
 		}
 
 		// Decrease the total size
@@ -119,21 +119,21 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 				*(uint32_t*) IAP_RESPONSE_ADDR = IAP_DOWNLOAD_ERROR;
 	}
 
-	// Buffer filled, compare the checksum
+	// Buffer filled, compare the crc
 	if (res == SIM_OK) {
 		if (type == IAP_HMI)
-			res = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &cksumNew);
+			res = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &crcNew);
 		else {
-			res = FOTA_ValidateChecksum(cksumNew, len, APP_START_ADDR);
+			res = FOTA_ValidateCRC(crcNew, len, APP_START_ADDR);
 			// Glue related information to new image
 			if (res == SIM_OK) {
-				FOTA_GlueInfo32(CHECKSUM_OFFSET, &cksumNew);
+				FOTA_GlueInfo32(CRC_OFFSET, &crcNew);
 				FOTA_GlueInfo32(SIZE_OFFSET, &len);
 			}
 		}
 
 		if (res <= 0)
-			*(uint32_t*) IAP_RESPONSE_ADDR = IAP_CHECKSUM_INVALID;
+			*(uint32_t*) IAP_RESPONSE_ADDR = IAP_CRC_INVALID;
 		else
 			_DelayMS(2000);
 	}
@@ -149,7 +149,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	return (res == SIM_OK);
 }
 
-uint8_t FOTA_DownloadChecksum(at_ftpget_t *ftpGET, uint32_t *checksum) {
+uint8_t FOTA_DownloadCRC(at_ftpget_t *ftpGET, uint32_t *crc) {
 	SIM_RESULT res;
 
 	// Initiate Download
@@ -158,7 +158,7 @@ uint8_t FOTA_DownloadChecksum(at_ftpget_t *ftpGET, uint32_t *checksum) {
 	res = AT_FtpDownload(ftpGET);
 
 	if (res == SIM_OK)
-		memcpy(checksum, ftpGET->ptr, sizeof(uint32_t));
+		memcpy(crc, ftpGET->ptr, sizeof(uint32_t));
 
 	return (res == SIM_OK);
 }
@@ -235,27 +235,27 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 	return (res == SIM_OK);
 }
 
-uint8_t FOTA_ValidateChecksum(uint32_t checksum, uint32_t len, uint32_t address) {
+uint8_t FOTA_ValidateCRC(uint32_t crc, uint32_t len, uint32_t address) {
 	uint8_t *addr = (uint8_t*) address;
-	uint32_t crc = 0;
+	uint32_t crcVal = 0;
 
 	// Calculate CRC
-	crc = CRC_Calculate8(addr, len, 1);
+	crcVal = CRC_Calculate8(addr, len, 1);
 
 	// Indicator
-	if (crc == checksum)
-		printf("FOTA:Checksum = MATCH\n");
+	if (crcVal == crc)
+		printf("FOTA:CRC = MATCH\n");
 	else
-		printf("FOTA:Checksum = DIFF (0x%08X != 0x%08X)\n",
-				(unsigned int) checksum, (unsigned int) crc);
+		printf("FOTA:CRC = DIFF (0x%08X != 0x%08X)\n",
+				(unsigned int) crc, (unsigned int) crcVal);
 
 	_DelayMS(1000);
 
-	return (crc == checksum);
+	return (crc == crcVal);
 }
 
 uint8_t FOTA_ValidImage(uint32_t address) {
-	uint32_t size, checksum;
+	uint32_t size, crc;
 	uint8_t p;
 
 	/* Check beginning stack pointer */
@@ -268,13 +268,13 @@ uint8_t FOTA_ValidImage(uint32_t address) {
 		p = (size < APP_MAX_SIZE );
 	}
 
-	/* Check the checksum */
+	/* Check the crc */
 	if (p) {
-		/* Get the stored checksum information */
-		checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
+		/* Get the stored crc information */
+		crc = *(uint32_t*) (address + CRC_OFFSET);
 
-		/* Validate checksum */
-		p = FOTA_ValidateChecksum(checksum, size, address);
+		/* Validate crc */
+		p = FOTA_ValidateCRC(crc, size, address);
 	}
 
 	return p;
@@ -321,13 +321,13 @@ void FOTA_Reboot(IAP_TYPE type) {
 	HAL_NVIC_SystemReset();
 }
 
-void FOTA_GetChecksum(uint32_t *checksum) {
+void FOTA_GetCRC(uint32_t *crc) {
 	uint32_t address = BKP_START_ADDR;
 
 	if (FOTA_NeedBackup())
 		address = APP_START_ADDR;
 
-	*checksum = *(uint32_t*) (address + CHECKSUM_OFFSET);
+	*crc = *(uint32_t*) (address + CRC_OFFSET);
 }
 
 void FOTA_GlueInfo32(uint32_t offset, uint32_t *data) {

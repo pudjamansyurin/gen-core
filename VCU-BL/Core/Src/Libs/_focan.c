@@ -37,7 +37,7 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
   return p;
 }
 
-uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
+uint8_t FOCAN_GetCRC(uint32_t *crc) {
   uint32_t address = CAND_GET_CHECKSUM;
   CAN_DATA RxData = { 0 };
   uint8_t p;
@@ -47,7 +47,7 @@ uint8_t FOCAN_GetChecksum(uint32_t *checksum) {
 
   // process response
   if (p)
-    *checksum = RxData.u32[0];
+    *crc = RxData.u32[0];
 
   return p;
 }
