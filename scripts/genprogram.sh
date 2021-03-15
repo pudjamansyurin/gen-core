@@ -1,60 +1,56 @@
 #!/bin/bash
-
 source .env
-source .prog.env
-
 source "./gencrc.sh"
 
-$CLI -c port=SWD -r32 $VIN_ADDR 0x04
-printf "VIN (above) readed from flash.\n"
+$PROG -c port=SWD -r32 $UNIQID_ADDR 0x04
+printf "UNIQID (above) readed from flash.\n"
 
-printf "Replace VIN (in decimal) [or let empty to use old] : "
-read VIN_INPUT
+printf "Replace UNIQID (Decimal) [or let empty to use old] : "
+read UNIQID_INPUT
 
-if [ -z $VIN_INPUT ]
+if [ -z $UNIQID_INPUT ]
 then
-      $CLI -c port=SWD --read $VIN_ADDR 0x04 $VIN_BIN_FILE
-      printf "Use in-flash VIN, backed up to $VIN_BIN_FILE\n"
+      $PROG -c port=SWD --read $UNIQID_ADDR 0x04 $UNIQID_BIN_FILE
+      printf "Use in-flash UNIQID, backed up to $UNIQID_BIN_FILE\n"
 else
-      printf "Use new VIN (Decimal) = $VIN_INPUT\n"
+      printf "Use new UNIQID (Decimal) = $UNIQID_INPUT\n"
 fi
 sleep 2
 
-$CLI -c port=SWD 
-printf "SWD connected.\n"
-sleep 2
-
-$CLI -c port=SWD --erase all
+$PROG -c port=SWD --erase all
 printf "Flash erased.\n"
 sleep 2
  
-$CLI -c port=SWD --write $BL_BIN_FILE $BL_START_ADDR 
+$PROG -c port=SWD --skipErase --write $BL_BIN_FILE $BL_START_ADDR 
 printf "Bootloader downloaded.\n"
 sleep 2
 
-$CLI -c port=SWD --write $APP_BIN_FILE $APP_START_ADDR 
+$PROG -c port=SWD --skipErase --write $APP_BIN_FILE $APP_START_ADDR 
 printf "Application downloaded.\n"
 sleep 2
  
-$CLI -c port=SWD --write $CRC_BIN_FILE $APP_CRC_ADDR
+$PROG -c port=SWD --skipErase --write $CRC_BIN_FILE $APP_CRC_ADDR 
 printf "Application:CRC inserted.\n"
 sleep 2
 
 APP_SIZE=$(printf "0x%08x" `stat -c %s "$APP_BIN_FILE"`)
-$CLI -c port=SWD -w32 $APP_SIZE_ADDR $APP_SIZE
+$PROG -c port=SWD --skipErase -w32 $APP_SIZE_ADDR $APP_SIZE
 printf "Application:Size inserted.\n"
 sleep 2
 
-if [ -z $VIN_INPUT ]
+if [ -z $UNIQID_INPUT ]
 then
-      $CLI -c port=SWD --write $VIN_BIN_FILE $VIN_ADDR 
-      printf "Bootloader:Old VIN inserted.\n"
+      $PROG -c port=SWD --skipErase --write $UNIQID_BIN_FILE $UNIQID_ADDR 
+      printf "Bootloader:Old UNIQID inserted.\n"
 else
-      VIN_HEX=$(printf "0x%08x" $VIN_INPUT)
-      $CLI -c port=SWD -w32 $VIN_ADDR $VIN_HEX
-      printf "Bootloader:New VIN inserted.\n"
+      UNIQID_HEX=$(printf "0x%08x" $UNIQID_INPUT)
+      $PROG -c port=SWD --skipErase -w32 $UNIQID_ADDR $UNIQID_HEX
+      printf "Bootloader:New UNIQID inserted.\n"
 fi
 sleep 2
 
-$CLI -c port=SWD -swv freq=$SYS_FREQ_MHZ portnumber=0 "swv.log" 
-
+read -p "Do you wish swv tracing [y/n]? " yn
+case $yn in
+      [Yy]* ) $PROG -c port=SWD -swv freq=$SYS_FREQ_MHZ portnumber=0 $SWV_LOG;;
+      * ) $PROG -c port=SWD --go $BL_START_ADDR;;
+esac

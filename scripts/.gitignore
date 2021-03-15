@@ -1,4 +1,2 @@
-*.bin
-*.txt
-.upload.env
-swv.log
+dist/
+.env
