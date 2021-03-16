@@ -19,6 +19,7 @@
 #define PREFIX_REPORT                           "R@"
 #define PREFIX_COMMAND                          "C@"
 #define PREFIX_RESPONSE                         "S@"
+#define PREFIX_ACK                              "A@"
 
 /* Exported enum ---------------------------------------------------------------*/
 typedef enum {

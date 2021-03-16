@@ -21,7 +21,7 @@
 
 /* Exported structs --------------------------------------------------------*/
 typedef struct {
-	MQTTString topicName;
+	char topic[20];
 	unsigned short packetid;
 	unsigned char dup;
 	unsigned char retained;

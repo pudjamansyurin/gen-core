@@ -207,7 +207,7 @@ uint8_t MQTT_GotPublish(void) {
   unsigned char buf[256], *dst;
   int len, buflen = sizeof(buf);
   mqtt_data_t *d = &(MQTT.rx.d);
-
+	MQTTString topic;
 
   d->packettype = MQTTPacket_read(buf, buflen, Simcom_GetData);
   if (d->packettype != PUBLISH)
@@ -217,13 +217,17 @@ uint8_t MQTT_GotPublish(void) {
 
   if (!MQTTDeserialize_publish(
       &(d->dup), &(d->qos), &(d->retained), &(d->packetid),
-      &(d->topicName), &dst, &len,
+      &topic, &dst, &len,
       buf, buflen
   ))
     return 0;
 
   printf("MQTT:Received %d bytes\n", len);
   if (len == 0) return 0;
+
+  sprintf(d->topic, "%.*s", topic.lenstring.len, topic.lenstring.data);
+  if (strcmp(d->topic, MQTT.topic.command) != 0)
+  	return 0;
 
   if (!CMD_ValidateCommand(dst, len)) return 0;
   memcpy(&(MQTT.rx.command), dst, len);

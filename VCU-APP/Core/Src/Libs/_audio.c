@@ -73,7 +73,7 @@ void AUDIO_Init(void) {
   do {
     printf("Audio:Init\n");
 
-    // Mosftet control
+    // Mosfet control
     GATE_AudioReset();
 
     /* Initialize Wave player (Codec, DMA, I2C) */
