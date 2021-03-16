@@ -270,8 +270,7 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
   }
 
   // send ACK (application-level)
-  uint8_t ack = 0x01;
-  if (!Publish(&ack, 1, MQTT.topic.response, MQTT.qos.response))
+  if (!Publish(PREFIX_ACK, 2, MQTT.topic.response, MQTT.qos.response))
      return 0;
 
   return 1;
