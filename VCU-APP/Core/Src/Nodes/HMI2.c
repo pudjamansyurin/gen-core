@@ -16,6 +16,9 @@
 #include "Nodes/HMI2.h"
 #include "Nodes/HMI1.h"
 
+/* External variables ---------------------------------------------------------*/
+extern osThreadId_t Hmi2PowerTaskHandle;
+
 /* Public variables -----------------------------------------------------------*/
 hmi2_t HMI2 = {
 		.d = { 0 },
@@ -42,10 +45,10 @@ void HMI2_Refresh(void) {
 		HMI2.d.started = 0;
 }
 
-void HMI2_PowerByCan(uint8_t state, osThreadId_t hmi2task) {
+void HMI2_PowerByCan(uint8_t state) {
 	if (HMI2.d.power != state) {
 		HMI2.d.power = state;
-		osThreadFlagsSet(hmi2task, EVT_HMI2POWER_CHANGED);
+		osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
 	}
 }
 
@@ -56,9 +59,7 @@ void HMI2_PowerOn(void) {
 
 	// wait until turned ON by CAN
 	tick = _GetTickMS();
-	while (_GetTickMS() - tick < (90 * 1000))
-		if (HMI2.d.started)
-			break;
+	while (!HMI2.d.started && _GetTickMS() - tick < (90 * 1000));
 }
 
 void HMI2_PowerOff(void) {
@@ -66,9 +67,7 @@ void HMI2_PowerOff(void) {
 
 	// wait until turned OFF by CAN
 	tick = _GetTickMS();
-	while (_GetTickMS() - tick < (30 * 1000))
-		if (!HMI2.d.started)
-			break;
+	while (HMI2.d.started && _GetTickMS() - tick < (30 * 1000));
 
 	GATE_Hmi2Stop();
 }

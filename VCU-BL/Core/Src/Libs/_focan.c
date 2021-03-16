@@ -21,7 +21,7 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
-  uint32_t address = CAND_SET_PROGRESS;
+  uint32_t address = CAND_FOCAN_PROGRESS;
   uint32_t retry = 5;
   CAN_DATA TxData;
   uint8_t p;
@@ -38,7 +38,7 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
 }
 
 uint8_t FOCAN_GetCRC(uint32_t *crc) {
-  uint32_t address = CAND_GET_CHECKSUM;
+  uint32_t address = CAND_FOCAN_CRC;
   CAN_DATA RxData = { 0 };
   uint8_t p;
 
@@ -79,7 +79,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
     TxData.u32[0] = offset;
     TxData.u16[2] = tmpBlk - 1;
     // send message
-    p = FOCAN_WriteAndWaitResponse(CAND_INIT_DOWNLOAD, &TxData, 6, 500, 20);
+    p = FOCAN_WriteAndWaitResponse(CAND_FOCAN_INIT, &TxData, 6, 500, 20);
 
     // flash
     if (p)
@@ -87,7 +87,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
 
     // wait final response
     if (p)
-      p = (FOCAN_WaitResponse(CAND_INIT_DOWNLOAD, 5000) == FOCAN_ACK);
+      p = (FOCAN_WaitResponse(CAND_FOCAN_INIT, 5000) == FOCAN_ACK);
 
     // update pointer
     if (p) {
@@ -120,7 +120,7 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
     // set message
     memcpy(&TxData, ptr, tmpSubBlk);
     // send message
-    address = (CAND_DOWNLOADING << 20) | (*tmpBlk - pendingSubBlk);
+    address = (CAND_FOCAN_RUNNING << 20) | (*tmpBlk - pendingSubBlk);
     p = FOCAN_WriteAndWaitResponse(address, &TxData, tmpSubBlk, 5, (100 / 5));
 
     // update pointer

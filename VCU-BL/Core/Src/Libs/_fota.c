@@ -122,7 +122,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 	// Buffer filled, compare the crc
 	if (res == SIM_OK) {
 		if (type == IAP_HMI)
-			res = FOCAN_DownloadHook(CAND_PASCA_DOWNLOAD, &crcNew);
+			res = FOCAN_DownloadHook(CAND_FOCAN_PASCA, &crcNew);
 		else {
 			res = FOTA_ValidateCRC(crcNew, len, APP_START_ADDR);
 			// Glue related information to new image
@@ -171,7 +171,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 
 	// Backup and prepare the area
 	if (type == IAP_HMI)
-		res = FOCAN_DownloadHook(CAND_PRA_DOWNLOAD, &(ftp->size));
+		res = FOCAN_DownloadHook(CAND_FOCAN_PRA, &(ftp->size));
 	else
 		FLASHER_BackupApp();
 

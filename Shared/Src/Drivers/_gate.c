@@ -63,15 +63,16 @@ void GATE_Hmi1Power(GPIO_PinState state) {
 }
 
 #if (!BOOTLOADER)
+void GATE_Hmi2Stop(void) {
+  HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
+}
+
 void GATE_Hmi2Reset(void) {
   GATE_Hmi2Stop();
   _DelayMS(100);
   HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_RESET);
 }
 
-void GATE_Hmi2Stop(void) {
-  HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
-}
 
 void GATE_GyroShutdown(void) {
   HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_RESET);

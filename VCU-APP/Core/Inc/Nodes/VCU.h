@@ -19,6 +19,7 @@
 #define EV_VCU_REMOTE_MISSING                   BIT(2)
 #define EV_VCU_BIKE_FALLEN                      BIT(3)
 #define EV_VCU_BIKE_MOVED	                      BIT(4)
+
 #define EV_BMS_DISCHARGE_OVER_CURRENT           BIT(30)
 #define EV_BMS_CHARGE_OVER_CURRENT              BIT(31)
 #define EV_BMS_SHORT_CIRCUIT                    BIT(32)
@@ -31,10 +32,10 @@
 #define EV_BMS_OVER_DISCHARGE_CAPACITY          BIT(39)
 #define EV_BMS_UNBALANCE                        BIT(40)
 #define EV_BMS_SYSTEM_FAILURE                   BIT(41)
-#define EV_BMS_WARNING_OVER_CURRENT             BIT(42)
-#define EV_BMS_WARNING_OVER_TEMPERATURE         BIT(43)
-#define EV_BMS_WARNING_UNDER_VOLTAGE            BIT(44)
-#define EV_BMS_WARNING_UNBALANCE                BIT(45)
+//#define EV_BMS_WARNING_OVER_CURRENT             BIT(42)
+//#define EV_BMS_WARNING_OVER_TEMPERATURE         BIT(43)
+//#define EV_BMS_WARNING_UNDER_VOLTAGE            BIT(44)
+//#define EV_BMS_WARNING_UNBALANCE                BIT(45)
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {

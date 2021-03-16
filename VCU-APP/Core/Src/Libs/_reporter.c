@@ -34,7 +34,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
 		report->data.req.bms.pack[i].id = bms->pack[i].id;
 		report->data.req.bms.pack[i].voltage = bms->pack[i].voltage * 100;
-		report->data.req.bms.pack[i].current = (bms->pack[i].current + 50) * 100;
+		report->data.req.bms.pack[i].current = bms->pack[i].current * 10;
 	}
 
 	// Optional data
@@ -60,8 +60,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 		report->data.opt.vcu.bat = vcu->bat / 18;
 
 		for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-			report->data.opt.bms.pack[i].soc = bms->pack[i].soc * 100;
-			report->data.opt.bms.pack[i].temperature = (bms->pack[i].temperature + 40) * 10;
+			report->data.opt.bms.pack[i].soc = bms->pack[i].soc;
+			report->data.opt.bms.pack[i].temperature = bms->pack[i].temperature;
 		}
 
 		// Debug data
