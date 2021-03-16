@@ -29,7 +29,7 @@ bms_t BMS = {
 
 /* Private functions prototypes -----------------------------------------------*/
 static void ResetIndex(uint8_t i);
-static uint8_t GetIndex(uint32_t id);
+static uint8_t GetIndex(uint32_t addr);
 static void SetEvents(uint16_t flag);
 static uint16_t MergeFlags(void);
 static uint8_t AverageSOC(void);
@@ -60,7 +60,7 @@ void BMS_RefreshIndex(void) {
 
 /* ====================================== CAN RX =================================== */
 void BMS_CAN_RX_Param1(can_rx_t *Rx) {
-	uint8_t i = GetIndex(Rx->header.ExtId & BMS_ID_MASK);
+	uint8_t i = GetIndex(Rx->header.ExtId);
 
 	// read the content
 	BMS.d.pack[i].voltage = Rx->data.u16[0] * 0.01;
@@ -70,7 +70,7 @@ void BMS_CAN_RX_Param1(can_rx_t *Rx) {
 }
 
 void BMS_CAN_RX_Param2(can_rx_t *Rx) {
-	uint8_t i = GetIndex(Rx->header.ExtId & BMS_ID_MASK);
+	uint8_t i = GetIndex(Rx->header.ExtId);
 
 	// read content
 	BMS.d.pack[i].capacity = Rx->data.u16[0] * 0.1;
@@ -81,20 +81,20 @@ void BMS_CAN_RX_Param2(can_rx_t *Rx) {
 
 	// update index
 	BMS.d.pack[i].tick = _GetTickMS();
-	BMS.d.pack[i].id = Rx->header.ExtId & BMS_ID_MASK;
+	BMS.d.pack[i].id = BMS_ID(Rx->header.ExtId);
 }
 
 /* ====================================== CAN TX =================================== */
 uint8_t BMS_CAN_TX_Setting(BMS_STATE state, uint8_t recover) {
-	CAN_DATA TxData;
+	can_tx_t Tx;
 
 	// set message
-	TxData.u8[0] = state << 1;
-	TxData.u8[1] = recover;
-	TxData.u8[2] = BMS_SCALE_15_85 & 0x03;
+	Tx.data.u8[0] = state << 1;
+	Tx.data.u8[1] = recover;
+	Tx.data.u8[2] = BMS_SCALE_15_85 & 0x03;
 
 	// send message
-	return CANBUS_Write(CAND_BMS_SETTING, &TxData, 3);
+	return CANBUS_Write(&Tx, CAND_BMS_SETTING, 3, 1);
 }
 
 /* Private functions implementation --------------------------------------------*/
@@ -112,12 +112,12 @@ static void ResetIndex(uint8_t i) {
 	BMS.d.pack[i].tick = 0;
 }
 
-static uint8_t GetIndex(uint32_t id) {
+static uint8_t GetIndex(uint32_t addr) {
 	uint8_t i;
 
 	// find index (if already exist)
 	for (i = 0; i < BMS_COUNT ; i++)
-		if (BMS.d.pack[i].id == id)
+		if (BMS.d.pack[i].id == BMS_ID(addr))
 			return i;
 
 	// find index (if not exist)

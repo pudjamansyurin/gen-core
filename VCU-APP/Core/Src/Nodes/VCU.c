@@ -95,77 +95,77 @@ void VCU_SetOdometer(uint8_t meter) {
 
 /* ====================================== CAN TX =================================== */
 uint8_t VCU_CAN_TX_SwitchModeControl(void) {
-  CAN_DATA TxData;
+	can_tx_t Tx;
 
   // set message
-  TxData.u8[0] = HBAR.list[HBAR_K_ABS].state;
-  TxData.u8[0] |= (VCU.d.gps.fix == 0) << 1; //HMI1.d.state.mirroring << 1;
-  TxData.u8[0] |= HBAR.list[HBAR_K_LAMP].state << 2;
-  TxData.u8[0] |= HMI1.d.state.warning << 3;
-  TxData.u8[0] |= HMI1.d.state.overheat << 4;
-  TxData.u8[0] |= (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY) << 5;
-  TxData.u8[0] |= HMI1.d.state.unremote << 6;
-  TxData.u8[0] |= HMI1.d.state.daylight << 7;
+  Tx.data.u8[0] = HBAR.list[HBAR_K_ABS].state;
+  Tx.data.u8[0] |= (VCU.d.gps.fix == 0) << 1; //HMI1.d.state.mirroring << 1;
+  Tx.data.u8[0] |= HBAR.list[HBAR_K_LAMP].state << 2;
+  Tx.data.u8[0] |= HMI1.d.state.warning << 3;
+  Tx.data.u8[0] |= HMI1.d.state.overheat << 4;
+  Tx.data.u8[0] |= (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY) << 5;
+  Tx.data.u8[0] |= HMI1.d.state.unremote << 6;
+  Tx.data.u8[0] |= HMI1.d.state.daylight << 7;
 
   // sein value
   sein_t sein = HBAR_SeinController();
-  TxData.u8[1] = sein.left;
-  TxData.u8[1] |= sein.right << 1;
-  TxData.u8[1] |= HBAR.reverse << 2;
+  Tx.data.u8[1] = sein.left;
+  Tx.data.u8[1] |= sein.right << 1;
+  Tx.data.u8[1] |= HBAR.reverse << 2;
 
   // mode
-  TxData.u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
-  TxData.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
-  TxData.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
-  TxData.u8[2] |= HBAR.m << 5;
-  TxData.u8[2] |= HBAR_ModeController() << 7;
+  Tx.data.u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
+  Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
+  Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
+  Tx.data.u8[2] |= HBAR.m << 5;
+  Tx.data.u8[2] |= HBAR_ModeController() << 7;
 
   // others
-  TxData.u8[3] = VCU.d.speed;
+  Tx.data.u8[3] = VCU.d.speed;
 
   // send message
-  return CANBUS_Write(CAND_VCU_SWITCH, &TxData, 4);
+  return CANBUS_Write(&Tx, CAND_VCU_SWITCH, 4, 0);
 }
 
 uint8_t VCU_CAN_TX_Datetime(datetime_t dt) {
-  CAN_DATA TxData;
+	can_tx_t Tx;
 
   // set message
-  TxData.u8[0] = dt.Seconds;
-  TxData.u8[1] = dt.Minutes;
-  TxData.u8[2] = dt.Hours;
-  TxData.u8[3] = dt.Date;
-  TxData.u8[4] = dt.Month;
-  TxData.u8[5] = dt.Year;
-  TxData.u8[6] = dt.WeekDay;
+  Tx.data.u8[0] = dt.Seconds;
+  Tx.data.u8[1] = dt.Minutes;
+  Tx.data.u8[2] = dt.Hours;
+  Tx.data.u8[3] = dt.Date;
+  Tx.data.u8[4] = dt.Month;
+  Tx.data.u8[5] = dt.Year;
+  Tx.data.u8[6] = dt.WeekDay;
   // HMI2 shutdown request
-  TxData.u8[7] = VCU.d.state.vehicle < VEHICLE_STANDBY;
+  Tx.data.u8[7] = VCU.d.state.vehicle < VEHICLE_STANDBY;
 
   // send message
-  return CANBUS_Write(CAND_VCU_DATETIME, &TxData, 8);
+  return CANBUS_Write(&Tx, CAND_VCU_DATETIME, 8, 0);
 }
 
 uint8_t VCU_CAN_TX_MixedData(void) {
-  CAN_DATA TxData;
+	can_tx_t Tx;
 
   // set message
-  TxData.u8[0] = SIM.signal;
-  TxData.u8[1] = BMS.d.soc;
-  TxData.u8[2] = HBAR.d.report[HBAR_M_REPORT_RANGE];
-  TxData.u8[3] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
+  Tx.data.u8[0] = SIM.signal;
+  Tx.data.u8[1] = BMS.d.soc;
+  Tx.data.u8[2] = HBAR.d.report[HBAR_M_REPORT_RANGE];
+  Tx.data.u8[3] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
   // send message
-  return CANBUS_Write(CAND_VCU_SELECT_SET, &TxData, 4);
+  return CANBUS_Write(&Tx, CAND_VCU_SELECT_SET, 4, 0);
 }
 
 uint8_t VCU_CAN_TX_TripData(void) {
-  CAN_DATA TxData;
+	can_tx_t Tx;
 
   // set message
-  TxData.u16[0] = HBAR.d.trip[HBAR_M_TRIP_A] / 1000;
-  TxData.u16[1] = HBAR.d.trip[HBAR_M_TRIP_B] / 1000;
-  TxData.u32[1] = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
+  Tx.data.u16[0] = HBAR.d.trip[HBAR_M_TRIP_A] / 1000;
+  Tx.data.u16[1] = HBAR.d.trip[HBAR_M_TRIP_B] / 1000;
+  Tx.data.u32[1] = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
 
   // send message
-  return CANBUS_Write(CAND_VCU_TRIP_MODE, &TxData, 8);
+  return CANBUS_Write(&Tx, CAND_VCU_TRIP_MODE, 8, 0);
 }

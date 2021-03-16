@@ -25,7 +25,7 @@ static can_t can = {
 static void lock(void);
 static void unlock(void);
 static uint8_t Activated(void);
-static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC);
+static void CAN_Header(CAN_TxHeaderTypeDef *header, uint32_t address, uint32_t DLC, uint8_t ext);
 static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData);
 static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData);
 
@@ -83,22 +83,21 @@ uint8_t CANBUS_Filter(void) {
 /*----------------------------------------------------------------------------
  write a message to CAN peripheral and transmit it
  *----------------------------------------------------------------------------*/
-uint8_t CANBUS_Write(uint32_t address, CAN_DATA *TxData, uint32_t DLC) {
-  CAN_TxHeaderTypeDef TxHeader;
+uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC, uint8_t ext) {
   HAL_StatusTypeDef status;
 
   if (!Activated())
     return 0;
 
   lock();
-  Header(&TxHeader, address, DLC);
+  CAN_Header(&(Tx->header), address, DLC, ext);
   while (HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0);
 
   /* Start the Transmission process */
-  status = HAL_CAN_AddTxMessage(can.pcan, &TxHeader, TxData->u8, NULL);
+  status = HAL_CAN_AddTxMessage(can.pcan, &(Tx->header), Tx->data.u8, NULL);
 
   // if (status == HAL_OK)
-  //   TxDebugger(&TxHeader, TxData);
+  //   TxDebugger(&(Tx->header), Tx->data);
 
   unlock();
   return (status == HAL_OK);
@@ -156,18 +155,17 @@ static void unlock(void) {
   #endif
 }
 
-static void Header(CAN_TxHeaderTypeDef *TxHeader, uint32_t address, uint32_t DLC) {
-  /* Configure Transmission process */
-  if (address > 0x7FF) {
-    TxHeader->IDE = CAN_ID_EXT;
-    TxHeader->ExtId = address;
+static void CAN_Header(CAN_TxHeaderTypeDef *header, uint32_t address, uint32_t DLC, uint8_t ext) {
+  if (ext) {
+    header->IDE = CAN_ID_EXT;
+    header->ExtId = address;
   } else {
-    TxHeader->IDE = CAN_ID_STD;
-    TxHeader->StdId = address;
+    header->IDE = CAN_ID_STD;
+    header->StdId = address;
   }
-  TxHeader->RTR = (DLC ? CAN_RTR_DATA : CAN_RTR_REMOTE);
-  TxHeader->DLC = DLC;
-  TxHeader->TransmitGlobalTime = DISABLE;
+  header->DLC = DLC;
+  header->RTR = (DLC ? CAN_RTR_DATA : CAN_RTR_REMOTE);
+  header->TransmitGlobalTime = DISABLE;
 }
 
 static uint8_t Activated(void) {

@@ -1392,27 +1392,30 @@ void StartCanRxTask(void *argument)
 		BMS.RefreshIndex();
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
-			switch (CANBUS_ReadID(&(Rx.header))) {
-				case CAND_HMI1 :
-					HMI1.can.r.State(&Rx);
-					break;
-				case CAND_HMI2 :
-					HMI2.can.r.State(&Rx);
-					break;
-				default:
-					// Extended ID
-					switch (CANBUS_ReadID(&(Rx.header)) >> 20) {
-						case CAND_BMS_PARAM_1 :
-							BMS.can.r.Param1(&Rx);
-							break;
-						case CAND_BMS_PARAM_2 :
-							BMS.can.r.Param2(&Rx);
-							break;
-						default:
-							break;
-					}
-					break;
+			if (Rx.header.IDE == CAN_ID_STD) {
+				switch (Rx.header.StdId) {
+					case CAND_HMI1 :
+						HMI1.can.r.State(&Rx);
+						break;
+					case CAND_HMI2 :
+						HMI2.can.r.State(&Rx);
+						break;
+					default:
+						break;
+				}
+			} else {
+				switch (BMS_CAND(Rx.header.ExtId)) {
+					case BMS_CAND(CAND_BMS_PARAM_1) :
+						BMS.can.r.Param1(&Rx);
+						break;
+					case BMS_CAND(CAND_BMS_PARAM_2) :
+						BMS.can.r.Param2(&Rx);
+						break;
+					default:
+						break;
+				}
 			}
+
 		}
 	}
 	/* USER CODE END StartCanRxTask */
