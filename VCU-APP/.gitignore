@@ -1,3 +1,7 @@
-Debug/
 .settings/
-/Release/
+Debug/*
+!Debug/*.bin
+!Debug/*.elf
+Release/*
+!Release/*.bin
+!Release/*.elf
