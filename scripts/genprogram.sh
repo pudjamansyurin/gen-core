@@ -41,7 +41,7 @@ sleep 2
 if [ -z $UNIQID_INPUT ]
 then
       $PROG -c port=SWD --skipErase --write $UNIQID_BIN_FILE $UNIQID_ADDR || exit 1 
-      printf "Bootloader:Old UNIQID inserted.\n"
+      printf "Bootloader:Old UNIQID re-inserted.\n"
 else
       UNIQID_HEX=$(printf "0x%08x" $UNIQID_INPUT)
       $PROG -c port=SWD --skipErase -w32 $UNIQID_ADDR $UNIQID_HEX || exit 1
