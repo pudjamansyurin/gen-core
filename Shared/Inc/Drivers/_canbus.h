@@ -14,17 +14,17 @@
 #define CAN_DATA 	        UNION64
 /* Exported defines ----------------------------------------------------------*/
 typedef enum {
-	CAND_FOCAN_PROGRESS 		= 0x031,
-	CAND_FOCAN_CRC 					= 0x032,
-	CAND_FOCAN_PRA 					= 0x033,
-	CAND_FOCAN_INIT 				= 0x034,
-	CAND_FOCAN_RUNNING 			= 0x035,
-	CAND_FOCAN_PASCA 				= 0x036,
+	CAND_FOCAN_PROGRESS 		= 0x01A,
+	CAND_FOCAN_CRC 					= 0x01B,
+	CAND_FOCAN_PRA 					= 0x01C,
+	CAND_FOCAN_INIT 				= 0x01D,
+	CAND_FOCAN_RUNNING 			= 0x01E,
+	CAND_FOCAN_PASCA 				= 0x01F,
 
-	CAND_VCU_SWITCH 				= 0x050,
-	CAND_VCU_DATETIME 			= 0x051,
-	CAND_VCU_SELECT_SET 		= 0x052,
-	CAND_VCU_TRIP_MODE 			= 0x053,
+	CAND_VCU_SWITCH 				= 0x02A,
+	CAND_VCU_DATETIME 			= 0x02B,
+	CAND_VCU_SELECT_SET 		= 0x02C,
+	CAND_VCU_TRIP_MODE 			= 0x02D,
 
 	CAND_HMI1 							= 0x7C0,
 	CAND_HMI2 							= 0x7D0,
