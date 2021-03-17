@@ -7,10 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
-#if (!BOOTLOADER)
-#include "tim.h"
-#include "Libs/_handlebar.h"
-#endif
 
 /* Public functions implementation --------------------------------------------*/
 #if RTOS_ENABLE
@@ -64,17 +60,8 @@ uint32_t _ByteSwap32(uint32_t x) {
   return y;
 }
 
-#if (!BOOTLOADER)
-void _BuzzerWrite(uint8_t state) {
-  // note: https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
-  if (state)
-    HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
-  else
-    HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
-}
-
-int8_t _BitPosition(uint64_t event_id) {
-  uint8_t pos = -1;
+int8_t _BitPos(uint64_t event_id) {
+  int8_t pos = -1;
 
   for (int8_t i = 0; i < 64; i++)
     if (event_id & BIT(i)) {
@@ -84,4 +71,3 @@ int8_t _BitPosition(uint64_t event_id) {
 
   return pos;
 }
-#endif

@@ -134,19 +134,12 @@ static uint8_t GetIndex(uint32_t addr) {
 }
 
 static void SetEvents(uint16_t flag) {
+	uint8_t start = _BitPos(EV_BMS_DISCHARGE_OVER_CURRENT);
+	uint8_t end = _BitPos(EV_BMS_SYSTEM_FAILURE);
+
 	// Set events
-	VCU.SetEvent(EV_BMS_DISCHARGE_OVER_CURRENT, (flag >> 0) & 0x01);
-	VCU.SetEvent(EV_BMS_CHARGE_OVER_CURRENT, (flag >> 1) & 0x01);
-	VCU.SetEvent(EV_BMS_SHORT_CIRCUIT, (flag >> 2) & 0x01);
-	VCU.SetEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE, (flag >> 3) & 0x01);
-	VCU.SetEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE, (flag >> 4) & 0x01);
-	VCU.SetEvent(EV_BMS_CHARGE_OVER_TEMPERATURE, (flag >> 5) & 0x01);
-	VCU.SetEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE, (flag >> 6) & 0x01);
-	VCU.SetEvent(EV_BMS_UNDER_VOLTAGE, (flag >> 7) & 0x01);
-	VCU.SetEvent(EV_BMS_OVER_VOLTAGE, (flag >> 8) & 0x01);
-	VCU.SetEvent(EV_BMS_OVER_DISCHARGE_CAPACITY, (flag >> 9) & 0x01);
-	VCU.SetEvent(EV_BMS_UNBALANCE, (flag >> 10) & 0x01);
-	VCU.SetEvent(EV_BMS_SYSTEM_FAILURE, (flag >> 11) & 0x01);
+	for (uint8_t i = start; i <= end; i++)
+			VCU.SetEvent(BIT(i), (flag >> (i-start)) & 0x01);
 
 	// Parse event for indicator
 	BMS.d.overheat = VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||

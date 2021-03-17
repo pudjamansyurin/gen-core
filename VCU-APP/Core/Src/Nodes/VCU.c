@@ -52,10 +52,8 @@ void VCU_Init(void) {
 }
 
 void VCU_SetEvent(uint64_t event_id, uint8_t value) {
-  if (value & 1)
-    BV(VCU.d.events, _BitPosition(event_id));
-  else
-    BC(VCU.d.events, _BitPosition(event_id));
+  if (value & 1) BV(VCU.d.events, _BitPos(event_id));
+  else BC(VCU.d.events, _BitPos(event_id));
 }
 
 uint8_t VCU_ReadEvent(uint64_t event_id) {

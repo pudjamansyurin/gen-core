@@ -36,9 +36,5 @@ void _DelayMS(uint32_t ms);
 uint32_t _GetTickMS(void);
 void _Error(char msg[50]);
 uint32_t _ByteSwap32(uint32_t x);
-
-#if (!BOOTLOADER)
-void _BuzzerWrite(uint8_t state);
-int8_t _BitPosition(uint64_t event_id);
-#endif
+int8_t _BitPos(uint64_t event_id);
 #endif /* UTILS_H_ */
