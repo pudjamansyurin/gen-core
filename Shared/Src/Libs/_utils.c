@@ -60,14 +60,14 @@ uint32_t _ByteSwap32(uint32_t x) {
   return y;
 }
 
-int8_t _BitPos(uint64_t event_id) {
-  int8_t pos = -1;
-
-  for (int8_t i = 0; i < 64; i++)
-    if (event_id & BIT(i)) {
-      pos = i;
-      break;
-    }
-
-  return pos;
-}
+//int8_t _BitPos(uint64_t event_id) {
+//  int8_t pos = -1;
+//
+//  for (int8_t i = 0; i < 64; i++)
+//    if (event_id & BIT(i)) {
+//      pos = i;
+//      break;
+//    }
+//
+//  return pos;
+//}

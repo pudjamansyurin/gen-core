@@ -30,6 +30,78 @@ typedef enum {
 	DRIVE_MODE_ECONOMIC
 } MCU_DRIVE_MODE;
 
+typedef enum {
+	MPF_HW_DESATURATION = 0,
+	MPF_HW_OVER_CURRENT,
+	MPF_ACCEL_SHORTED,
+	MPF_ACCEL_OPEN,
+	MPF_CURRENT_L,
+	MPF_CURRENT_H,
+	MPF_MODULE_TEMP_L,
+	MPF_MODULE_TEMP_H,
+	MPF_PCB_TEMP_L,
+	MPF_PCB_TEMP_H,
+	MPF_GATE_TEMP_L,
+	MPF_GATE_TEMP_H,
+	MPF_5V_L,
+	MPF_5V_H,
+	MPF_12V_L,
+	MPF_12V_H,
+	MPF_2v5_L,
+	MPF_2v5_H,
+	MPF_1v5_L,
+	MPF_1v5_H,
+	MPF_DCBUS_VOLT_H,
+	MPF_DCBUS_VOLT_L,
+	MPF_PRECHARGE_TO,
+	MPF_PRECHARGE_FAIL,
+	MPF_EE_CHECKSUM_INVALID,
+	MPF_EE_DATA_OUT_RANGE,
+	MPF_EE_UPDATE_REQ,
+	MPF_RESERVED_1,
+	MPF_RESERVED_2,
+	MPF_RESERVED_3,
+	MPF_BRAKE_SHORTED,
+	MPF_BRAKE_OPEN
+} MCU_POST_FAULT_BIT;
+
+typedef enum {
+	MRF_OVER_SPEED			= 0x00,
+//	Motor Over-speed Fault
+//	Over-current Fault
+//	Over-voltage Fault
+//	Inverter Over-temperature Fault
+//	Accelerator Input Shorted Fault
+//	Accelerator Input Open Fault
+//	Direction Command Fault
+//	Inverter Response Time-out Fault
+//	Hardware Gate/Desaturation Fault
+//	Hardware Over-current Fault
+//	Under-voltage Fault
+//	CAN Command Message Lost Fault
+//	Motor Over-temperature Fault
+//	Reserved
+//	Reserved
+//	Reserved
+//	Brake Input Shorted Fault
+//	Brake Input Open Fault
+//	Module A Over-temperature Fault
+//	Module B Over-temperature Fault
+//	Module C Over-temperature Fault
+//	PCB Over-temperature Fault
+//	Gate Drive Board 1 Over-temperature Fault
+//	Gate Drive Board 2 Over-temperature Fault
+//	Gate Drive Board 3 Over-temperature Fault
+//	Current Sensor Fault
+//	Reserved
+//	Reserved
+//	Reserved
+//	Reserved
+//	Resolver Not Connected
+//	Inverter Discharge Active
+
+} MCU_RUN_FAULT_BIT;
+
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
 	uint32_t rpm;

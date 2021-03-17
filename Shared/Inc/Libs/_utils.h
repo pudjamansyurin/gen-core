@@ -36,5 +36,5 @@ void _DelayMS(uint32_t ms);
 uint32_t _GetTickMS(void);
 void _Error(char msg[50]);
 uint32_t _ByteSwap32(uint32_t x);
-int8_t _BitPos(uint64_t event_id);
+//int8_t _BitPos(uint64_t event_id);
 #endif /* UTILS_H_ */

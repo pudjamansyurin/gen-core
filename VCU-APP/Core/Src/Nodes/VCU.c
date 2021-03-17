@@ -51,13 +51,13 @@ void VCU_Init(void) {
   VCU.d.events = 0;
 }
 
-void VCU_SetEvent(uint64_t event_id, uint8_t value) {
-  if (value & 1) BV(VCU.d.events, _BitPos(event_id));
-  else BC(VCU.d.events, _BitPos(event_id));
+void VCU_SetEvent(uint8_t bit, uint8_t value) {
+  if (value & 1) BV(VCU.d.events, bit);
+  else BC(VCU.d.events, bit);
 }
 
-uint8_t VCU_ReadEvent(uint64_t event_id) {
-  return (VCU.d.events & event_id) == event_id;
+uint8_t VCU_ReadEvent(uint8_t bit) {
+  return (VCU.d.events & BIT(bit)) == BIT(bit);
 }
 
 void VCU_SetDriver(uint8_t driver_id) {

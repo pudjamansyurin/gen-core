@@ -15,25 +15,25 @@
 
 /* Exported define ------------------------------------------------------------*/
 typedef enum {
-	EV_VCU_NET_SOFT_RESET 					      = BIT(0),
-	EV_VCU_NET_HARD_RESET                 = BIT(1),
-	EV_VCU_REMOTE_MISSING                 = BIT(2),
-	EV_VCU_BIKE_FALLEN                    = BIT(3),
-	EV_VCU_BIKE_MOVED	                    = BIT(4),
+	EV_VCU_NET_SOFT_RESET 					 			= 0,
+	EV_VCU_NET_HARD_RESET,
+	EV_VCU_REMOTE_MISSING,
+	EV_VCU_BIKE_FALLEN,
+	EV_VCU_BIKE_MOVED,
 
-  EV_BMS_DISCHARGE_OVER_CURRENT         = BIT(50),
-  EV_BMS_CHARGE_OVER_CURRENT            = BIT(51),
-  EV_BMS_SHORT_CIRCUIT                  = BIT(52),
-  EV_BMS_DISCHARGE_OVER_TEMPERATURE     = BIT(53),
-  EV_BMS_DISCHARGE_UNDER_TEMPERATURE    = BIT(54),
-  EV_BMS_CHARGE_OVER_TEMPERATURE        = BIT(55),
-  EV_BMS_CHARGE_UNDER_TEMPERATURE       = BIT(56),
-  EV_BMS_UNDER_VOLTAGE                  = BIT(57),
-  EV_BMS_OVER_VOLTAGE                   = BIT(58),
-  EV_BMS_OVER_DISCHARGE_CAPACITY        = BIT(59),
-  EV_BMS_UNBALANCE                      = BIT(60),
-  EV_BMS_SYSTEM_FAILURE                 = BIT(61),
-} EVENTS_GROUP;
+  EV_BMS_DISCHARGE_OVER_CURRENT         = 50,
+  EV_BMS_CHARGE_OVER_CURRENT,
+  EV_BMS_SHORT_CIRCUIT,
+  EV_BMS_DISCHARGE_OVER_TEMPERATURE,
+  EV_BMS_DISCHARGE_UNDER_TEMPERATURE,
+  EV_BMS_CHARGE_OVER_TEMPERATURE,
+  EV_BMS_CHARGE_UNDER_TEMPERATURE,
+  EV_BMS_UNDER_VOLTAGE,
+  EV_BMS_OVER_VOLTAGE,
+  EV_BMS_OVER_DISCHARGE_CAPACITY,
+  EV_BMS_UNBALANCE,
+  EV_BMS_SYSTEM_FAILURE,
+} EVENTS_GROUP_BIT;
 
 /* Exported struct --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
@@ -95,8 +95,8 @@ typedef struct {
 	vcu_data_t d;
 	vcu_can_t can;
 	void (*Init)(void);
-	void (*SetEvent)(uint64_t, uint8_t);
-	uint8_t (*ReadEvent)(uint64_t);
+	void (*SetEvent)(uint8_t, uint8_t);
+	uint8_t (*ReadEvent)(uint8_t);
 	void (*SetDriver)(uint8_t);
 	void (*SetOdometer)(uint8_t);
 } vcu_t;
@@ -106,8 +106,8 @@ extern vcu_t VCU;
 
 /* Public functions implementation --------------------------------------------*/
 void VCU_Init(void);
-void VCU_SetEvent(uint64_t event_id, uint8_t value);
-uint8_t VCU_ReadEvent(uint64_t event_id);
+void VCU_SetEvent(uint8_t bit, uint8_t value);
+uint8_t VCU_ReadEvent(uint8_t bit);
 void VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t meter);
 
