@@ -17,7 +17,7 @@
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
-  uint8_t started;
+  uint8_t run;
   uint32_t tick;
   uint16_t version;
   struct {

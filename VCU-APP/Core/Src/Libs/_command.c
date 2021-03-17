@@ -74,7 +74,7 @@ void CMD_GenInfo(response_t *resp) {
 	char msg[20];
 	sprintf(msg, "VCU v.%d,", VCU_VERSION);
 
-	if (HMI1.d.started)
+	if (HMI1.d.run)
 		sprintf(resp->data.message,
 				"%.*s HMI v.%d,",
 				strlen(msg),

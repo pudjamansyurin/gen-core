@@ -14,11 +14,13 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define HMI2_TIMEOUT    							 (uint32_t) 10000					// ms
+#define HMI2_POWER_ON_TIMEOUT					 (uint32_t) 90000					// ms
+#define HMI2_POWER_OFF_TIMEOUT				 (uint32_t) 30000					// ms
 
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
-	uint8_t power;
-	uint8_t started;
+	uint8_t powerRequest;
+	uint8_t run;
 	uint32_t tick;
 } hmi2_data_t;
 

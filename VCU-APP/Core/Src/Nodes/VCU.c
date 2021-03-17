@@ -85,7 +85,6 @@ void VCU_SetOdometer(uint8_t meter) {
     // accumulate (save permanently)
     EEPROM_Odometer(EE_CMD_W, odometer);
   }
-
 }
 
 /* ====================================== CAN TX =================================== */

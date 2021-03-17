@@ -715,6 +715,7 @@ void StartManagerTask(void *argument)
 		VCU.d.state.error = BMS.d.error || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
 		HMI1.d.state.warning = VCU.d.state.error;
 
+		// TODO: Vehicle state should event based, not polling.
 		CheckVehicleState();
 		CheckTaskStack();
 
@@ -1091,7 +1092,6 @@ void StartGpsTask(void *argument)
 		}
 
 		MCU.d.speed = GPS_CalculateSpeed();
-
 		if ((meter = GPS_CalculateOdometer()))
 			VCU.SetOdometer(meter);
 	}
@@ -1381,16 +1381,18 @@ void StartCanRxTask(void *argument)
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 0)) {
+			BMS.Init();
+			MCU.Init();
 			HMI1.Init();
 			HMI2.Init();
-			BMS.Init();
 
 			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
 		}
 
+		BMS.RefreshIndex();
+		MCU.Refresh();
 		HMI1.Refresh();
 		HMI2.Refresh();
-		BMS.RefreshIndex();
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
 			if (Rx.header.IDE == CAN_ID_STD) {
@@ -1400,6 +1402,21 @@ void StartCanRxTask(void *argument)
 						break;
 					case CAND_HMI2 :
 						HMI2.can.r.State(&Rx);
+						break;
+					case CAND_MCU_CURRENT_DC :
+						MCU.can.r.CurrentDC(&Rx);
+						break;
+					case CAND_MCU_VOLTAGE_DC :
+						MCU.can.r.VoltageDC(&Rx);
+						break;
+					case CAND_MCU_TORQUE_SPEED :
+						MCU.can.r.TorqueSpeed(&Rx);
+						break;
+					case CAND_MCU_FAULT_CODE :
+						MCU.can.r.FaultCode(&Rx);
+						break;
+					case CAND_MCU_STATE :
+						MCU.can.r.State(&Rx);
 						break;
 					default:
 						break;
@@ -1459,14 +1476,14 @@ void StartCanTxTask(void *argument)
 		}
 
 		// send every 20ms
-		if (HMI1.d.started)
+		if (HMI1.d.run)
 			VCU.can.t.SwitchModeControl();
 
 		// send every 500ms
 		if (_GetTickMS() - last500ms > 500) {
 			last500ms = _GetTickMS();
 
-			if (HMI1.d.started)
+			if (HMI1.d.run)
 				VCU.can.t.MixedData();
 		}
 
@@ -1474,7 +1491,7 @@ void StartCanTxTask(void *argument)
 		if (_GetTickMS() - last1000ms > 1000) {
 			last1000ms = _GetTickMS();
 
-			if (HMI1.d.started) {
+			if (HMI1.d.run) {
 				VCU.can.t.Datetime(RTC_Read());
 				VCU.can.t.TripData();
 			}
@@ -1505,12 +1522,12 @@ void StartHmi2PowerTask(void *argument)
 
 		if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
 
-			if (HMI2.d.power)
-				while (!HMI2.d.started)
+			if (HMI2.d.powerRequest)
+				while (!HMI2.d.run)
 					HMI2.PowerOn();
 
 			else
-				while (HMI2.d.started)
+				while (HMI2.d.run)
 					HMI2.PowerOff();
 
 		}

@@ -18,8 +18,8 @@ static uint8_t FW_ValidResponseIAP(void);
 
 /* Public functions implementation --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
-	//	if (VCU.d.bat < SIMCOM_MIN_VOLTAGE) {
-	//		sprintf(message, "Battery %u mV (-%u mV)", VCU.d.bat, SIMCOM_MIN_VOLTAGE - VCU.d.bat);
+	//	if (VCU.d.bat < SIMCOM_VOLTAGE_MIN) {
+	//		sprintf(message, "Battery %u mV (-%u mV)", VCU.d.bat, SIMCOM_VOLTAGE_MIN - VCU.d.bat);
 	//		return 0;
 	//	}
 
@@ -58,7 +58,7 @@ uint8_t FW_PostFota(response_t *response) {
 		// check fota response
 		switch (*(uint32_t*) IAP_RESPONSE_ADDR) {
 			case IAP_BATTERY_LOW:
-				sprintf(response->data.message, "%s Battery Low (-%u mV)", node, SIMCOM_MIN_VOLTAGE - VCU.d.bat);
+				sprintf(response->data.message, "%s Battery Low (-%u mV)", node, SIMCOM_VOLTAGE_MIN - VCU.d.bat);
 				break;
 			case IAP_SIMCOM_TIMEOUT:
 				sprintf(response->data.message, "%s Internet Timeout", node);
@@ -111,7 +111,7 @@ static void FW_MakeResponseIAP(char *message, char *node) {
 		do {
 			vNew = HMI1.d.version;
 			_DelayMS(100);
-		} while (!vNew && (_GetTickMS() - tick < COMMAND_HMI_FOTA_TIMEOUT));
+		} while (!vNew && (_GetTickMS() - tick < HMI_FOTA_TIMEOUT));
 
 		/* Handle empty firmware */
 		if (vOld == 0xFFFF)

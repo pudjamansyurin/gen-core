@@ -21,9 +21,13 @@
 #define VCU_VENDOR                              "GEN"
 #define VCU_BUILD_YEAR               (uint8_t)  21
 
-#define SIMCOM_MIN_VOLTAGE           (uint16_t) 3300                // in mV
+#define MCU_SPEED_MAX 			          (uint8_t) 150							// in kph
+#define MCU_RPM_MAX 			           (uint32_t) 99999
+#define ODOMETER_MAX		             (uint32_t) 99999						// in km
+#define BMS_LOWBAT							      (uint8_t) 20
 
-#define COMMAND_HMI_FOTA_TIMEOUT     (uint32_t) 20000               // in ms
+#define SIMCOM_VOLTAGE_MIN           (uint16_t) 3300                // in mV
+#define HMI_FOTA_TIMEOUT             (uint32_t) 20000               // in ms
 
 #define REMOTE_TIMEOUT               (uint32_t) 7000                // in ms
 #define REMOTE_TIMEOUT_RUN           (uint32_t) 30000               // in ms
@@ -95,11 +99,6 @@
 // Events group (for All Threads)
 #define EVENT_MASK                   (uint32_t) 0xFFFFFF
 #define EVENT_READY                             BIT(0)
-
-// Others Parameters
-#define MCU_RPM_MAX                  (uint32_t) 99999
-#define VCU_ODOMETER_KM_MAX          (uint32_t) 99999
-#define MCU_SPEED_KPH_MAX             (uint8_t) 150
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {

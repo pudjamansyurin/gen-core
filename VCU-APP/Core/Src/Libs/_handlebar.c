@@ -107,12 +107,10 @@ uint32_t HBAR_AccumulateTrip(uint8_t meter) {
 	uint32_t *trip = &(HBAR.d.trip[mTrip]);
 	uint32_t limit;
 
-	limit = (mTrip == HBAR_M_TRIP_ODO) ? VCU_ODOMETER_KM_MAX : UINT16_MAX;
+	limit = (mTrip == HBAR_M_TRIP_ODO) ? ODOMETER_MAX : UINT16_MAX;
 
-	if ((*trip / 1000) > limit)
-		*trip = meter;
-	else
-		*trip += meter;
+	if ((*trip / 1000) > limit) *trip = meter;
+	else *trip += meter;
 
 	HBAR.d.trip[HBAR_M_TRIP_ODO] += meter;
 

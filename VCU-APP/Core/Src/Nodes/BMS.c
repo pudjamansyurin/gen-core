@@ -67,6 +67,10 @@ void BMS_CAN_RX_Param1(can_rx_t *Rx) {
 	BMS.d.pack[i].current = Rx->data.u16[1] * 0.1;
 	BMS.d.pack[i].soc = Rx->data.u16[2];
 	BMS.d.pack[i].temperature = Rx->data.u16[3] - 40;
+
+	// update index
+	BMS.d.pack[i].id = BMS_ID(Rx->header.ExtId);
+	BMS.d.pack[i].tick = _GetTickMS();
 }
 
 void BMS_CAN_RX_Param2(can_rx_t *Rx) {
@@ -80,8 +84,8 @@ void BMS_CAN_RX_Param2(can_rx_t *Rx) {
 	BMS.d.pack[i].state = (((Rx->data.u8[7] >> 4) & 0x01) << 1) | ((Rx->data.u8[7] >> 5) & 0x01);
 
 	// update index
-	BMS.d.pack[i].tick = _GetTickMS();
 	BMS.d.pack[i].id = BMS_ID(Rx->header.ExtId);
+	BMS.d.pack[i].tick = _GetTickMS();
 }
 
 /* ====================================== CAN TX =================================== */

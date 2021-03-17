@@ -42,15 +42,15 @@ void HMI1_Refresh(void) {
 
 /* ====================================== CAN RX =================================== */
 void HMI1_CAN_RX_State(can_rx_t *Rx) {
-	// save state
-	HMI1.d.started = 1;
-	HMI1.d.tick = _GetTickMS();
 	HMI1.d.version = Rx->data.u16[0];
+
+	HMI1.d.run = 1;
+	HMI1.d.tick = _GetTickMS();
 }
 
 /* Private functions implementation --------------------------------------------*/
 static void Reset(void) {
-	HMI1.d.started = 0;
+	HMI1.d.run = 0;
 	HMI1.d.tick = 0;
 	HMI1.d.version = 0;
 }

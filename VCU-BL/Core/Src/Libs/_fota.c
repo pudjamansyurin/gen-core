@@ -33,7 +33,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 			.size = 0,
 	};
 
-	if (BAT_ScanValue() < SIMCOM_MIN_VOLTAGE)
+	if (BAT_ScanValue() < SIMCOM_VOLTAGE_MIN)
 		res = SIM_ERROR;
 
 	// Turn ON HMI-Primary.

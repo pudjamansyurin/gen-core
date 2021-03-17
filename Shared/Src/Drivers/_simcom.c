@@ -337,7 +337,7 @@ static SIM_RESULT PowerUp(void) {
 
 	res = Reset(0);
 	if (res != SIM_OK)
-		if (BAT_ScanValue() > SIMCOM_MIN_VOLTAGE)
+		if (BAT_ScanValue() > SIMCOM_VOLTAGE_MIN)
 			return Reset(1);
 
 	return res;
