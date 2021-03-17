@@ -718,10 +718,10 @@ void StartManagerTask(void *argument)
 		CheckVehicleState();
 		CheckTaskStack();
 
-		BAT_ScanValue();
+		VCU.d.bat = BAT_ScanValue();
+		VCU.d.uptime++;
 
 		IWDG_Refresh();
-		VCU.d.uptime++;
 		osDelayUntil(lastWake + 1111);
 	}
 	/* USER CODE END StartManagerTask */

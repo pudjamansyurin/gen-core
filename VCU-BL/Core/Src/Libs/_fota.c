@@ -32,10 +32,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 			.file = "CRC_APP.bin",
 			.size = 0,
 	};
-	uint16_t voltage = 0;
 
-	BAT_ScanValue(&voltage);
-	if (voltage < SIMCOM_MIN_VOLTAGE)
+	if (BAT_ScanValue() < SIMCOM_MIN_VOLTAGE)
 		res = SIM_ERROR;
 
 	// Turn ON HMI-Primary.

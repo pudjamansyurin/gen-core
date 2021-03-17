@@ -8,7 +8,6 @@
 /* Includes -----------------------------------------------------------------*/
 #include "adc.h"
 #include "Drivers/_bat.h"
-#include "Nodes/VCU.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -45,29 +44,25 @@ void BAT_DeInit(void) {
 //	unlock();
 //}
 
-uint8_t BAT_ScanValue(void) {
-	uint16_t *voltage = &(VCU.d.bat);
+uint16_t BAT_ScanValue(void) {
 	uint16_t value;
 	uint8_t res;
 
 	lock();
-
 	HAL_ADC_Start(padc);
 	res = HAL_ADC_PollForConversion(padc, 100) == HAL_OK;
+
 	if (res)
 		value = HAL_ADC_GetValue(padc);
 	HAL_ADC_Stop(padc);
 
 	if (res) {
-		// change to battery value
 		value = (value * BAT_MAX_VOLTAGE ) / ADC_MAX_VALUE;
-		// calculate the moving average
 		value = MovingAverage(BUFFER, AVERAGE_SZ, value);
-		*voltage = value;
 	}
-
 	unlock();
-	return res;
+
+	return value;
 }
 
 /* Private functions implementation --------------------------------------------*/

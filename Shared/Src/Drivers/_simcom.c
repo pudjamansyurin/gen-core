@@ -336,16 +336,9 @@ static SIM_RESULT PowerUp(void) {
 	SIM_RESULT res;
 
 	res = Reset(0);
-	if (res != SIM_OK) {
-#if (BOOTLOADER)
-		uint16_t voltage = 0;
-		BAT_ScanValue(&voltage);
-		if (voltage > SIMCOM_MIN_VOLTAGE)
-#else
-		if (VCU.d.bat > SIMCOM_MIN_VOLTAGE)
-#endif
+	if (res != SIM_OK)
+		if (BAT_ScanValue() > SIMCOM_MIN_VOLTAGE)
 			return Reset(1);
-	}
 
 	return res;
 }
