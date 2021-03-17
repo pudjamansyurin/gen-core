@@ -13,10 +13,12 @@
 #include "Libs/_reporter.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_eeprom.h"
+#include "Nodes/VCU.h"
+#include "Nodes/MCU.h"
 #include "Nodes/BMS.h"
 
 /* Public functions implementation -------------------------------------------*/
-void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_data_t *bms, hbar_data_t *hbar) {
+void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 	header_t *header = (header_t*) report;
 
 	memcpy(header->prefix, PREFIX_REPORT, 2);
@@ -26,48 +28,48 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report, vcu_data_t *vcu, bms_
 
 	report->data.req.frame_id = frame;
 	report->data.req.vcu.log_time = RTC_Read();
-	report->data.req.vcu.driver_id = vcu->driver_id;
-	report->data.req.vcu.events_group = vcu->events;
-	report->data.req.vcu.vehicle = (int8_t) vcu->state.vehicle;
-	report->data.req.vcu.uptime = vcu->uptime * 1.111;
+	report->data.req.vcu.driver_id = VCU.d.driver_id;
+	report->data.req.vcu.events_group = VCU.d.events;
+	report->data.req.vcu.vehicle = (int8_t) VCU.d.state.vehicle;
+	report->data.req.vcu.uptime = VCU.d.uptime * 1.111;
 
 	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-		report->data.req.bms.pack[i].id = bms->pack[i].id;
-		report->data.req.bms.pack[i].voltage = bms->pack[i].voltage * 100;
-		report->data.req.bms.pack[i].current = bms->pack[i].current * 10;
+		report->data.req.bms.pack[i].id = BMS.d.pack[i].id;
+		report->data.req.bms.pack[i].voltage = BMS.d.pack[i].voltage * 100;
+		report->data.req.bms.pack[i].current = BMS.d.pack[i].current * 10;
 	}
 
 	// Optional data
 	if (frame == FR_FULL) {
 		header->size += sizeof(report->data.opt);
 
-		report->data.opt.vcu.gps.latitude = (int32_t) (vcu->gps.latitude * 10000000);
-		report->data.opt.vcu.gps.longitude = (int32_t) (vcu->gps.longitude * 10000000);
-		report->data.opt.vcu.gps.altitude = (uint32_t) vcu->gps.altitude;
-		report->data.opt.vcu.gps.hdop = (uint8_t) (vcu->gps.dop_h * 10);
-		report->data.opt.vcu.gps.vdop = (uint8_t) (vcu->gps.dop_v * 10);
-		report->data.opt.vcu.gps.heading = (uint8_t) (vcu->gps.heading / 2);
-		report->data.opt.vcu.gps.sat_in_use = (uint8_t) vcu->gps.sat_in_use;
+		report->data.opt.vcu.gps.latitude = (int32_t) (VCU.d.gps.latitude * 10000000);
+		report->data.opt.vcu.gps.longitude = (int32_t) (VCU.d.gps.longitude * 10000000);
+		report->data.opt.vcu.gps.altitude = (uint32_t) VCU.d.gps.altitude;
+		report->data.opt.vcu.gps.hdop = (uint8_t) (VCU.d.gps.dop_h * 10);
+		report->data.opt.vcu.gps.vdop = (uint8_t) (VCU.d.gps.dop_v * 10);
+		report->data.opt.vcu.gps.heading = (uint8_t) (VCU.d.gps.heading / 2);
+		report->data.opt.vcu.gps.sat_in_use = (uint8_t) VCU.d.gps.sat_in_use;
 
-		report->data.opt.vcu.odometer = hbar->trip[HBAR_M_TRIP_ODO] / 1000;
-		report->data.opt.vcu.trip.a = hbar->trip[HBAR_M_TRIP_A];
-		report->data.opt.vcu.trip.b = hbar->trip[HBAR_M_TRIP_B];
-		report->data.opt.vcu.report.range = hbar->report[HBAR_M_REPORT_RANGE];
-		report->data.opt.vcu.report.efficiency = hbar->report[HBAR_M_REPORT_AVERAGE];
+		report->data.opt.vcu.odometer =  HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
+		report->data.opt.vcu.trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
+		report->data.opt.vcu.trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
+		report->data.opt.vcu.report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
+		report->data.opt.vcu.report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
-		report->data.opt.vcu.speed = vcu->speed;
+		report->data.opt.vcu.speed = MCU.d.speed;
 		report->data.opt.vcu.signal = SIM.signal;
-		report->data.opt.vcu.bat = vcu->bat / 18;
+		report->data.opt.vcu.bat = VCU.d.bat / 18;
 
 		for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-			report->data.opt.bms.pack[i].soc = bms->pack[i].soc;
-			report->data.opt.bms.pack[i].temperature = bms->pack[i].temperature;
+			report->data.opt.bms.pack[i].soc = BMS.d.pack[i].soc;
+			report->data.opt.bms.pack[i].temperature = BMS.d.pack[i].temperature;
 		}
 
 		// Debug data
 		header->size += sizeof(report->data.debug);
-		memcpy(&(report->data.debug.motion), &(vcu->motion), sizeof(motion_t));
-		memcpy(&(report->data.debug.task), &(vcu->task), sizeof(rtos_task_t));
+		memcpy(&(report->data.debug.motion), &(VCU.d.motion), sizeof(motion_t));
+		memcpy(&(report->data.debug.task), &(VCU.d.task), sizeof(rtos_task_t));
 	}
 }
 

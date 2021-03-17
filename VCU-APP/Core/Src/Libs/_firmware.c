@@ -9,26 +9,28 @@
 #include "Libs/_firmware.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_command.h"
+#include "Nodes/VCU.h"
+#include "Nodes/HMI1.h"
 
 /* Private functions prototypes -----------------------------------------------*/
-static void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version);
+static void FW_MakeResponseIAP(char *message, char *node);
 static uint8_t FW_ValidResponseIAP(void);
 
 /* Public functions implementation --------------------------------------------*/
-uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *hmi_version) {
-	//	if (*bat < SIMCOM_MIN_VOLTAGE) {
-	//		sprintf(message, "Battery %u mV (-%u mV)", *bat, SIMCOM_MIN_VOLTAGE - *bat);
+uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
+	//	if (VCU.d.bat < SIMCOM_MIN_VOLTAGE) {
+	//		sprintf(message, "Battery %u mV (-%u mV)", VCU.d.bat, SIMCOM_MIN_VOLTAGE - VCU.d.bat);
 	//		return 0;
 	//	}
 
-	//  if (type == IAP_HMI && *hmi_version == 0) {
+	//  if (type == IAP_HMI &&  HMI1.d.version == 0) {
 	//    sprintf(message, "HMI not connected");
 	//    return 0;
 	//  }
 
 	/* Retain FOTA */
 	EEPROM_FotaType(EE_CMD_W, type);
-	EEPROM_FotaVersion(EE_CMD_W, (type == IAP_HMI) ? *hmi_version : VCU_VERSION);
+	EEPROM_FotaVersion(EE_CMD_W, (type == IAP_HMI) ? HMI1.d.version : VCU_VERSION);
 
 	/* Set flag to SRAM */
 	*(uint32_t*) IAP_FLAG_ADDR = IAP_FLAG;
@@ -40,7 +42,7 @@ uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message, uint16_t *hmi_version) {
 	return 0;
 }
 
-uint8_t FW_PostFota(response_t *response, uint16_t *bat, uint16_t *hmi_version) {
+uint8_t FW_PostFota(response_t *response) {
 	char node[4];
 	uint8_t valid = 0;
 
@@ -56,7 +58,7 @@ uint8_t FW_PostFota(response_t *response, uint16_t *bat, uint16_t *hmi_version) 
 		// check fota response
 		switch (*(uint32_t*) IAP_RESPONSE_ADDR) {
 			case IAP_BATTERY_LOW:
-				sprintf(response->data.message, "%s Battery Low (-%u mV)", node, SIMCOM_MIN_VOLTAGE - *bat);
+				sprintf(response->data.message, "%s Battery Low (-%u mV)", node, SIMCOM_MIN_VOLTAGE - VCU.d.bat);
 				break;
 			case IAP_SIMCOM_TIMEOUT:
 				sprintf(response->data.message, "%s Internet Timeout", node);
@@ -77,7 +79,7 @@ uint8_t FW_PostFota(response_t *response, uint16_t *bat, uint16_t *hmi_version) 
 				sprintf(response->data.message, "%s FOTA Error", node);
 				break;
 			case IAP_FOTA_SUCCESS:
-				FW_MakeResponseIAP(response->data.message, node, hmi_version);
+				FW_MakeResponseIAP(response->data.message, node);
 
 				response->data.res_code = RESPONSE_STATUS_OK;
 				break;
@@ -99,7 +101,7 @@ uint8_t FW_PostFota(response_t *response, uint16_t *bat, uint16_t *hmi_version) 
 }
 
 /* Private functions implementation --------------------------------------------*/
-static void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version) {
+static void FW_MakeResponseIAP(char *message, char *node) {
 	uint32_t tick;
 	uint16_t vNew = VCU_VERSION;
 	uint16_t vOld = FOTA.VERSION;
@@ -107,7 +109,7 @@ static void FW_MakeResponseIAP(char *message, char *node, uint16_t *hmi_version)
 	if (FOTA.TYPE == IAP_HMI) {
 		tick = _GetTickMS();
 		do {
-			vNew = *hmi_version;
+			vNew = HMI1.d.version;
 			_DelayMS(100);
 		} while (!vNew && (_GetTickMS() - tick < COMMAND_HMI_FOTA_TIMEOUT));
 

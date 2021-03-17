@@ -6,8 +6,9 @@
  */
 
 /* Includes -----------------------------------------------------------------*/
-#include "Drivers/_bat.h"
 #include "adc.h"
+#include "Drivers/_bat.h"
+#include "Nodes/VCU.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -44,9 +45,10 @@ void BAT_DeInit(void) {
 //	unlock();
 //}
 
-uint8_t BAT_ScanValue(uint16_t *voltage) {
-	uint8_t res;
+uint8_t BAT_ScanValue(void) {
+	uint16_t *voltage = &(VCU.d.bat);
 	uint16_t value;
+	uint8_t res;
 
 	lock();
 

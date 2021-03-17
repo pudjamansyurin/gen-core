@@ -50,7 +50,7 @@ void BMS_PowerOverCan(uint8_t on) {
 
 void BMS_RefreshIndex(void) {
 	for (uint8_t i = 0; i < BMS_COUNT ; i++)
-		if ((_GetTickMS() - BMS.d.pack[i].tick) > 500)
+		if ((_GetTickMS() - BMS.d.pack[i].tick) > BMS_TIMEOUT)
 			ResetIndex(i);
 
 	SetEvents(MergeFlags());

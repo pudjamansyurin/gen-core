@@ -54,7 +54,8 @@ void GYRO_DeInit(void) {
   HAL_I2C_DeInit(gyro.pi2c);
 }
 
-void GYRO_Decision(movement_t *movement, motion_t *motion) {
+void GYRO_Decision(movement_t *movement) {
+	motion_t *motion = &(VCU.d.motion);
   mems_t mems;
 
   lock();
@@ -86,7 +87,8 @@ void GYRO_Decision(movement_t *movement, motion_t *motion) {
   unlock();
 }
 
-void GYRO_MonitorMovement(motion_t *motion) {
+void GYRO_MonitorMovement(void) {
+	 motion_t *motion = &(VCU.d.motion);
   static motion_t refference;
 
   lock();

@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_reporter.h"
+#include "Nodes/HMI1.h"
 
 /* Exported define ------------------------------------------------------------*/
 // Response Status List
@@ -54,10 +55,10 @@
 /* Public functions implementation --------------------------------------------*/
 uint8_t CMD_ValidateCommand(void *ptr, uint8_t len);
 void CMD_ExecuteCommand(command_t* cmd);
-void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version);
+void CMD_GenInfo(response_t *resp);
 void CMD_GenLed(command_t *cmd);
-void CMD_GenOverride(command_t *cmd, uint8_t *override_state);
-void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *hmi_version);
+void CMD_GenOverride(command_t *cmd);
+void CMD_Fota(response_t *resp, IAP_TYPE type);
 void CMD_ReportRTC(command_t *cmd);
 void CMD_ReportOdom(command_t *cmd);
 void CMD_AudioBeep(osThreadId_t threadId);

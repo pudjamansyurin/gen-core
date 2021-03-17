@@ -22,6 +22,6 @@
 void BAT_Init(void);
 void BAT_DeInit(void);
 //void BAT_ReInit(void);
-uint8_t BAT_ScanValue(uint16_t *voltage);
+uint8_t BAT_ScanValue(void);
 
 #endif /* INC_LIBS__BAT_H_ */

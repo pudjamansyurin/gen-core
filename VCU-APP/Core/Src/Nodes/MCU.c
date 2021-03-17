@@ -1,56 +1,55 @@
 /*
- * HMI1.c
+ * MCU.c
  *
  *  Created on: May 10, 2020
  *      Author: pudja
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Nodes/HMI1.h"
+#include "Nodes/MCU.h"
 
 /* Public variables -----------------------------------------------------------*/
-hmi1_t HMI1 = {
+mcu_t MCU = {
 		.d = { 0 },
 		.can = {
 				.r = {
-						HMI1_CAN_RX_State,
+						MCU_CAN_RX_State,
 				},
 		},
-		HMI1_Init,
-		HMI1_Refresh,
-		GATE_Hmi1Power
+		MCU_Init,
+		MCU_Refresh,
+		MCU_SpeedToVolume
 };
 
 /* Private functions prototypes -----------------------------------------------*/
 static void Reset(void);
 
 /* Public functions implementation --------------------------------------------*/
-void HMI1_Init(void) {
+void MCU_Init(void) {
 	Reset();
-	HMI1.d.state.mirroring = 0;
-	HMI1.d.state.warning = 0;
-	HMI1.d.state.overheat = 0;
-  HMI1.d.state.unfinger = 1;
-  HMI1.d.state.unremote = 1;
-	HMI1.d.state.daylight = 0;
 }
 
-void HMI1_Refresh(void) {
-	if ((_GetTickMS() - HMI1.d.tick) > HMI1_TIMEOUT)
+void MCU_Refresh(void) {
+	if ((_GetTickMS() - MCU.d.tick) > MCU_TIMEOUT)
 		Reset();
 }
 
+uint16_t MCU_SpeedToVolume(void) {
+  return MCU.d.speed * 100 / MCU_SPEED_KPH_MAX ;
+}
+
 /* ====================================== CAN RX =================================== */
-void HMI1_CAN_RX_State(can_rx_t *Rx) {
+void MCU_CAN_RX_State(can_rx_t *Rx) {
 	// save state
-	HMI1.d.started = 1;
-	HMI1.d.tick = _GetTickMS();
-	HMI1.d.version = Rx->data.u16[0];
+	//	MCU.d.started = 1;
+	MCU.d.tick = _GetTickMS();
+	//	MCU.d.version = Rx->data.u16[0];
 }
 
 /* Private functions implementation --------------------------------------------*/
 static void Reset(void) {
-	HMI1.d.started = 0;
-	HMI1.d.tick = 0;
-	HMI1.d.version = 0;
+	MCU.d.speed = 0;
+	//	MCU.d.started = 0;
+	//	MCU.d.tick = 0;
+	//	MCU.d.version = 0;
 }

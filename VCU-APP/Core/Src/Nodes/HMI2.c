@@ -41,7 +41,7 @@ void HMI2_Init(void) {
 }
 
 void HMI2_Refresh(void) {
-	if ((_GetTickMS() - HMI2.d.tick) > 10000)
+	if ((_GetTickMS() - HMI2.d.tick) > HMI2_TIMEOUT)
 		HMI2.d.started = 0;
 }
 

@@ -12,6 +12,9 @@
 #include "Drivers/_canbus.h"
 #include "Libs/_utils.h"
 
+/* Exported constants --------------------------------------------------------*/
+#define HMI1_TIMEOUT    							 (uint32_t) 10000					// ms
+
 /* Exported struct ------------------------------------------------------------*/
 typedef struct {
   uint8_t started;

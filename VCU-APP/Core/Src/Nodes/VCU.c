@@ -11,6 +11,7 @@
 #include "Libs/_eeprom.h"
 #include "Libs/_handlebar.h"
 #include "Nodes/VCU.h"
+#include "Nodes/MCU.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 
@@ -28,7 +29,6 @@ vcu_t VCU = {
     VCU_Init,
     VCU_SetEvent,
     VCU_ReadEvent,
-    VCU_SpeedToVolume,
     VCU_SetDriver,
     VCU_SetOdometer,
 };
@@ -43,7 +43,6 @@ void VCU_Init(void) {
   VCU.d.interval = RPT_INTERVAL_BACKUP;
   VCU.d.driver_id = DRIVER_ID_NONE;
   VCU.d.bat = 0;
-  VCU.d.speed = 0;
 
   VCU.d.motion.yaw = 0;
   VCU.d.motion.roll = 0;
@@ -61,10 +60,6 @@ void VCU_SetEvent(uint64_t event_id, uint8_t value) {
 
 uint8_t VCU_ReadEvent(uint64_t event_id) {
   return (VCU.d.events & event_id) == event_id;
-}
-
-uint16_t VCU_SpeedToVolume(void) {
-  return VCU.d.speed * 100 / MCU_SPEED_KPH_MAX ;
 }
 
 void VCU_SetDriver(uint8_t driver_id) {
@@ -121,7 +116,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(void) {
   Tx.data.u8[2] |= HBAR_ModeController() << 7;
 
   // others
-  Tx.data.u8[3] = VCU.d.speed;
+  Tx.data.u8[3] = MCU.d.speed;
 
   // send message
   return CANBUS_Write(&Tx, CAND_VCU_SWITCH, 4, 0);

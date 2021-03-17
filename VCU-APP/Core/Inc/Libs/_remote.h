@@ -49,7 +49,7 @@ typedef struct {
 void RMT_Init(void);
 void RMT_DeInit(void);
 void RMT_ReInit(void);
-uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote);
+uint8_t RMT_NeedPing(void);
 uint8_t RMT_Ping(void);
 void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);

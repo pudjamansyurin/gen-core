@@ -70,16 +70,16 @@ void CMD_ExecuteCommand(command_t *cmd) {
 	osMessageQueuePut(CommandQueueHandle, cmd, 0U, 0U);
 }
 
-void CMD_GenInfo(response_t *resp, uint8_t *hmi_started, uint16_t *hmi_version) {
+void CMD_GenInfo(response_t *resp) {
 	char msg[20];
 	sprintf(msg, "VCU v.%d,", VCU_VERSION);
 
-	if (*hmi_started)
+	if (HMI1.d.started)
 		sprintf(resp->data.message,
 				"%.*s HMI v.%d,",
 				strlen(msg),
 				msg,
-				*hmi_version);
+				HMI1.d.version);
 
 	sprintf(resp->data.message,
 			"%.*s "VCU_VENDOR" - 20%d",
@@ -92,12 +92,12 @@ void CMD_GenLed(command_t *cmd) {
 	GATE_LedWrite(*(uint8_t*) cmd->data.value);
 }
 
-void CMD_GenOverride(command_t *cmd, uint8_t *override_state) {
-	*override_state = *(uint8_t*) cmd->data.value;
+void CMD_GenOverride(command_t *cmd) {
+	VCU.d.state.override = *(uint8_t*) cmd->data.value;
 }
 
-void CMD_Fota(response_t *resp, IAP_TYPE type, uint16_t *hmi_version) {
-	FW_EnterModeIAP(type, resp->data.message, hmi_version);
+void CMD_Fota(response_t *resp, IAP_TYPE type) {
+	FW_EnterModeIAP(type, resp->data.message);
 
 	/* This line is never reached (if FOTA is activated) */
 }

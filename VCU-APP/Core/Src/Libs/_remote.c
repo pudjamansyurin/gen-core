@@ -11,6 +11,8 @@
 #include "Drivers/_aes.h"
 #include "Libs/_remote.h"
 #include "Libs/_eeprom.h"
+#include "Nodes/VCU.h"
+#include "Nodes/HMI1.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -76,7 +78,9 @@ void RMT_ReInit(void) {
 }
 
 
-uint8_t RMT_NeedPing(vehicle_state_t *state, uint8_t *unremote) {
+uint8_t RMT_NeedPing(void) {
+	vehicle_state_t *state = &(VCU.d.state.vehicle);
+	uint8_t *unremote = &(HMI1.d.state.unremote);
 	uint32_t timeout = (*state < VEHICLE_RUN) ? REMOTE_TIMEOUT : REMOTE_TIMEOUT_RUN;
 
 	if (RMT.tick.heartbeat)

@@ -62,7 +62,6 @@ typedef struct __attribute__((packed)) {
 typedef struct {
 	uint8_t driver_id;
 	uint16_t interval;
-	uint8_t speed;
 	uint16_t bat;
 	uint64_t events;
 	uint32_t uptime;
@@ -100,7 +99,6 @@ typedef struct {
 	void (*Init)(void);
 	void (*SetEvent)(uint64_t, uint8_t);
 	uint8_t (*ReadEvent)(uint64_t);
-	uint16_t (*SpeedToVolume)(void);
 	void (*SetDriver)(uint8_t);
 	void (*SetOdometer)(uint8_t);
 } vcu_t;
@@ -112,7 +110,6 @@ extern vcu_t VCU;
 void VCU_Init(void);
 void VCU_SetEvent(uint64_t event_id, uint8_t value);
 uint8_t VCU_ReadEvent(uint64_t event_id);
-uint16_t VCU_SpeedToVolume(void);
 void VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t meter);
 

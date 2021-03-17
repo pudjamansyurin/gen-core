@@ -9,6 +9,7 @@
 #include "usart.h"
 #include "DMA/_dma_ublox.h"
 #include "Libs/_gps.h"
+#include "Nodes/VCU.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -71,7 +72,9 @@ void GPS_ProcessBuffer(void *ptr, size_t len) {
   osThreadFlagsSet(GpsTaskHandle, EVT_GPS_RECEIVED);
 }
 
-uint8_t GPS_Capture(gps_data_t *data) {
+uint8_t GPS_Capture(void) {
+	gps_data_t *data = &(VCU.d.gps);
+
   // copy only necessary part
   data->dop_h = gps.nmea.dop_h;
   data->dop_v = gps.nmea.dop_v;
@@ -87,13 +90,17 @@ uint8_t GPS_Capture(gps_data_t *data) {
   return data->fix > 0;
 }
 
-uint8_t GPS_CalculateOdometer(gps_data_t *data) {
+uint8_t GPS_CalculateOdometer(void) {
+	gps_data_t *data = &(VCU.d.gps);
+
   if (data->speed_mps)
     return (data->speed_mps * GPS_INTERVAL );
   return 0;
 }
 
-uint8_t GPS_CalculateSpeed(gps_data_t *data) {
+uint8_t GPS_CalculateSpeed(void) {
+	gps_data_t *data = &(VCU.d.gps);
+
   if (data->speed_kph > 8)
     return data->speed_kph + 8;
   return data->speed_kph * 2;

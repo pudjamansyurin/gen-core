@@ -61,6 +61,7 @@
 
 #include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
+#include "Nodes/MCU.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/HMI2.h"
 /* USER CODE END Includes */
@@ -466,7 +467,7 @@ const osEventFlagsAttr_t GlobalEvent_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-static void CheckTaskStack(rtos_task_t *rtos);
+static void CheckTaskStack(void);
 static void CheckVehicleState(void);
 /* USER CODE END FunctionPrototypes */
 
@@ -670,6 +671,7 @@ void StartManagerTask(void *argument)
 	// Initiate, this task get executed first!
 	VCU.Init();
 	BMS.Init();
+	MCU.Init();
 	HMI1.Init();
 	HMI2.Init();
 
@@ -714,9 +716,9 @@ void StartManagerTask(void *argument)
 		HMI1.d.state.warning = VCU.d.state.error;
 
 		CheckVehicleState();
-		CheckTaskStack(&(VCU.d.task));
+		CheckTaskStack();
 
-		BAT_ScanValue(&(VCU.d.bat));
+		BAT_ScanValue();
 
 		IWDG_Refresh();
 		VCU.d.uptime++;
@@ -846,7 +848,7 @@ void StartReporterTask(void *argument)
 		VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
 
 		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
-		RPT_ReportCapture(frame, &report, &(VCU.d), &(BMS.d), &(HBAR.d));
+		RPT_ReportCapture(frame, &report);
 
 		// reset some events group
 		VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
@@ -881,7 +883,7 @@ void StartCommandTask(void *argument)
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
 	// Handle Post-FOTA
-	if (FW_PostFota(&response, &(VCU.d.bat), &(HMI1.d.version)))
+	if (FW_PostFota(&response))
 		osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
 
 	/* Infinite loop */
@@ -900,7 +902,7 @@ void StartCommandTask(void *argument)
 			if (cmd.header.code == CMD_CODE_GEN) {
 				switch (cmd.header.sub_code) {
 					case CMD_GEN_INFO :
-						CMD_GenInfo(&response, &(HMI1.d.started), &(HMI1.d.version));
+						CMD_GenInfo(&response);
 						break;
 
 					case CMD_GEN_LED :
@@ -912,7 +914,7 @@ void StartCommandTask(void *argument)
 							sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
 							response.data.res_code = RESPONSE_STATUS_ERROR;
 						} else
-							CMD_GenOverride(&cmd, &(VCU.d.state.override));
+							CMD_GenOverride(&cmd);
 						break;
 
 					default:
@@ -1013,11 +1015,11 @@ void StartCommandTask(void *argument)
 				} else
 					switch (cmd.header.sub_code) {
 						case CMD_FOTA_VCU :
-							CMD_Fota(&response, IAP_VCU, &(HMI1.d.version));
+							CMD_Fota(&response, IAP_VCU);
 							break;
 
 						case CMD_FOTA_HMI :
-							CMD_Fota(&response, IAP_HMI, &(HMI1.d.version));
+							CMD_Fota(&response, IAP_HMI);
 							break;
 
 						default:
@@ -1085,12 +1087,12 @@ void StartGpsTask(void *argument)
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, (GPS_INTERVAL * 1000))) {
 			if (notif & EVT_GPS_RECEIVED)
-				GPS_Capture(&(VCU.d.gps));
+				GPS_Capture();
 		}
 
-		VCU.d.speed = GPS_CalculateSpeed(&(VCU.d.gps));
+		MCU.d.speed = GPS_CalculateSpeed();
 
-		if ((meter = GPS_CalculateOdometer(&(VCU.d.gps))))
+		if ((meter = GPS_CalculateOdometer()))
 			VCU.SetOdometer(meter);
 	}
 	/* USER CODE END StartGpsTask */
@@ -1123,7 +1125,7 @@ void StartGyroTask(void *argument)
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
 			if (notif & EVT_GYRO_TASK_STOP) {
-				memset(&(VCU.d.motion), 0x00, sizeof(VCU.d.motion));
+				memset(&(VCU.d.motion), 0x00, sizeof(motion_t));
 				VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
 				VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 
@@ -1137,7 +1139,7 @@ void StartGyroTask(void *argument)
 		}
 
 		// Read all accelerometer, gyroscope (average)
-		GYRO_Decision(&movement, &(VCU.d.motion));
+		GYRO_Decision(&movement);
 		VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
 
 		// Fallen indicators
@@ -1147,7 +1149,7 @@ void StartGyroTask(void *argument)
 
 		// Moved at rest
 		if (VCU.d.state.vehicle < VEHICLE_STANDBY)
-			GYRO_MonitorMovement(&(VCU.d.motion));
+			GYRO_MonitorMovement();
 		else
 			GYRO_ResetDetector();
 	}
@@ -1180,8 +1182,7 @@ void StartRemoteTask(void *argument)
 	for (;;) {
 		VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
-		if (RMT_NeedPing(&(VCU.d.state.vehicle), &(HMI1.d.state.unremote)))
-			RMT_Ping();
+		if (RMT_NeedPing()) RMT_Ping();
 
 		RMT_RefreshPairing();
 
@@ -1325,7 +1326,7 @@ void StartAudioTask(void *argument)
 	for (;;) {
 		VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
 
-		AUDIO_OUT_SetVolume(VCU.SpeedToVolume());
+		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
 			if (notif & EVT_AUDIO_TASK_STOP) {
@@ -1711,7 +1712,7 @@ static void CheckVehicleState(void) {
 						|| VCU.d.state.error
 						|| VCU.d.state.override == VEHICLE_READY)
 					VCU.d.state.vehicle--;
-				else if ((starter && VCU.d.speed == 0)
+				else if ((starter && MCU.d.speed == 0)
 						|| (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY)
 						|| VCU.d.state.override == VEHICLE_STANDBY)
 					VCU.d.state.vehicle -= 2;
@@ -1723,7 +1724,9 @@ static void CheckVehicleState(void) {
 	} while (initialState != VCU.d.state.vehicle);
 }
 
-static void CheckTaskStack(rtos_task_t *rtos) {
+static void CheckTaskStack(void) {
+	rtos_task_t *rtos = &(VCU.d.task);
+
 	rtos->manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
 	rtos->iot.stack = osThreadGetStackSpace(IotTaskHandle);
 	rtos->reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
