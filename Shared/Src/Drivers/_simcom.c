@@ -468,6 +468,10 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 						printf("Simcom:CommandCollision\n");
 						res = SIM_TIMEOUT;
 					}
+
+					if (strcmp(reply, SIM_RSP_SENT) == 0) {
+						res = SIM_OK;
+					}
 				}
 #endif
 				// exception for no response
