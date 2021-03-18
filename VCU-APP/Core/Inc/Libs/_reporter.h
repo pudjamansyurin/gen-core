@@ -16,7 +16,7 @@
 #include "Nodes/BMS.h"
 
 /* Exported define -------------------------------------------------------------*/
-#define PREFIX_REPORT                           "R@"
+#define PREFIX_REPORT                           "N@"
 #define PREFIX_COMMAND                          "C@"
 #define PREFIX_RESPONSE                         "S@"
 #define PREFIX_ACK                              "A@"
@@ -35,7 +35,7 @@ typedef struct __attribute__((packed)) {
 	uint8_t size;
 	uint32_t vin;
 	datetime_t send_time;
-} header_t;
+} report_header_t;
 
 typedef struct __attribute__((packed)) {
 	char prefix[2];
@@ -46,6 +46,32 @@ typedef struct __attribute__((packed)) {
 	uint8_t code;
 	uint8_t sub_code;
 } command_header_t;
+
+typedef struct __attribute__((packed)) {
+	uint32_t rpm;
+	uint8_t speed;
+	uint8_t reverse;
+	uint16_t temperature;
+	uint8_t drive_mode;
+	struct {
+		uint16_t commanded;
+		uint16_t feedback;
+	} torque;
+	struct {
+		uint32_t post;
+		uint32_t run;
+	} fault;
+	struct {
+		uint16_t current;
+		uint16_t voltage;
+	} dcbus;
+	struct {
+		uint8_t can_mode;
+		uint8_t enabled;
+		uint8_t lockout;
+		uint8_t discharge;
+	} inv;
+} mcu_debug_t;
 
 // report frame
 typedef struct __attribute__((packed)) {
@@ -68,19 +94,19 @@ typedef struct __attribute__((packed)) {
 	} req;
 	struct __attribute__((packed)) {
 		struct __attribute__((packed)) {
+			uint8_t bat;
+			uint8_t signal;
+			uint32_t odometer;
 			struct __attribute__((packed)) {
 				int32_t longitude;
 				int32_t latitude;
 				uint32_t altitude;
 				uint8_t hdop;
 				uint8_t vdop;
+				uint8_t speed;
 				uint8_t heading;
 				uint8_t sat_in_use;
 			} gps;
-			uint8_t speed;
-			uint32_t odometer;
-			uint8_t signal;
-			uint8_t bat;
 			struct __attribute__((packed)) {
 				uint8_t range;
 				uint8_t efficiency;
@@ -100,11 +126,12 @@ typedef struct __attribute__((packed)) {
 	struct __attribute__((packed)) {
 		rtos_task_t task;
 		motion_t motion;
+		mcu_debug_t mcu;
 	} debug;
 } report_data_t;
 
 typedef struct __attribute__((packed)) {
-	header_t header;
+	report_header_t header;
 	report_data_t data;
 } report_t;
 

@@ -44,7 +44,8 @@
 
 #define SIM_RSP_NONE                 "\r\n"
 #define SIM_RSP_SEND                 ">"
-#define SIM_RSP_SENT                 "SEND OK\r"
+//#define SIM_RSP_SENT                 "SEND OK\r"
+#define SIM_RSP_ACCEPT               "DATA ACCEPT:"
 #define SIM_RSP_OK                   "OK\r"
 #define SIM_RSP_ERROR                "ERROR"
 #define SIM_RSP_READY                "RDY"

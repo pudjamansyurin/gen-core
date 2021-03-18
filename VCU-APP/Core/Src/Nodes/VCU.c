@@ -103,9 +103,11 @@ uint8_t VCU_CAN_TX_SwitchModeControl(void) {
   sein_t sein = HBAR_SeinController();
   Tx.data.u8[1] = sein.left;
   Tx.data.u8[1] |= sein.right << 1;
+  // TODO: validate MCU reverse state
   Tx.data.u8[1] |= HBAR.reverse << 2;
 
   // mode
+  // TODO: validate MCU drive mode
   Tx.data.u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
   Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
   Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;

@@ -37,10 +37,10 @@ typedef enum {
 
 /* Exported struct -------------------------------------------------------------*/
 typedef struct {
-	uint8_t soc;
-	uint8_t run;
+//	uint8_t run;
 	uint8_t overheat;
 	uint8_t error;
+	uint8_t soc;
 	struct {
 		uint32_t id;
 		float voltage;

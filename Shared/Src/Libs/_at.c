@@ -595,6 +595,10 @@ SIM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
 	return SingleInteger("CLTS", mode, (int32_t*) state, 0);
 }
 
+SIM_RESULT AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND *state) {
+	return SingleInteger("CIPQSEND", mode, (int32_t*) state, 0);
+}
+
 #else
 SIM_RESULT AT_BearerInitialize(void) {
 	SIM_RESULT res;

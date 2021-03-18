@@ -131,6 +131,12 @@ typedef enum {
 } AT_CIPMODE;
 
 typedef enum {
+    CIPQSEND_NORMAL = 0,
+		CIPQSEND_QUICK,
+		CIPQSEND_ForceEnumSize = MAX_ENUM_SIZE
+} AT_CIPQSEND;
+
+typedef enum {
     CIPMUX_SINGLE_IP = 0,
     CIPMUX_MULTI_IP,
     CIPMUX_ForceEnumSize = MAX_ENUM_SIZE
@@ -343,6 +349,7 @@ SIM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state);
 SIM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state);
 SIM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state);
 SIM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state);
+SIM_RESULT AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND *state);
 #else
 SIM_RESULT AT_BearerInitialize(void);
 SIM_RESULT AT_FtpInitialize(at_ftp_t *param);

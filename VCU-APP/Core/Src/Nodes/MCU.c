@@ -19,14 +19,19 @@ mcu_t MCU = {
 						MCU_CAN_RX_FaultCode,
 						MCU_CAN_RX_State,
 				},
+				.t = {
+						MCU_CAN_TX_Setting
+				}
 		},
 		MCU_Init,
+		MCU_PowerOverCan,
 		MCU_Refresh,
 		MCU_SpeedToVolume
 };
 
 /* Private functions prototypes -----------------------------------------------*/
 static void Reset(void);
+static uint8_t IsOverheat(void);
 
 /* Public functions implementation --------------------------------------------*/
 void MCU_Init(void) {
@@ -36,6 +41,24 @@ void MCU_Init(void) {
 void MCU_Refresh(void) {
 	if ((_GetTickMS() - MCU.d.tick) > MCU_TIMEOUT)
 		Reset();
+
+	MCU.d.error = MCU.d.fault.post || MCU.d.fault.run;
+	MCU.d.overheat = IsOverheat();
+	//	MCU.d.run = ?;
+}
+
+void MCU_PowerOverCan(uint8_t on) {
+	if (on) {
+		GATE_McuPower(1);	_DelayMS(500);
+		MCU.can.t.Setting(0);	_DelayMS(50);
+	}
+
+	MCU.can.t.Setting(on);
+
+	if (!on) {
+		_DelayMS(50);
+		GATE_McuPower(0);
+	}
 }
 
 uint16_t MCU_SpeedToVolume(void) {
@@ -77,25 +100,40 @@ void MCU_CAN_RX_FaultCode(can_rx_t *Rx) {
 void MCU_CAN_RX_State(can_rx_t *Rx) {
 	MCU.d.drive_mode = Rx->data.u8[4] & 0x03;
 	MCU.d.inv.discharge = (Rx->data.u8[4] >> 5) & 0x07;
-	MCU.d.inv.can_mode = Rx->data.u8[5];
+	MCU.d.inv.can_mode = Rx->data.u8[5] & 0x01;
 	MCU.d.inv.enabled = Rx->data.u8[6] & 0x01;
 	MCU.d.inv.lockout = (Rx->data.u8[6] >> 7) & 0x01;
-	MCU.d.reverse = Rx->data.u8[7];
+	MCU.d.reverse = Rx->data.u8[7] & 0x01;
 
 	MCU.d.tick = _GetTickMS();
 }
 
+/* ====================================== CAN TX =================================== */
+uint8_t MCU_CAN_TX_Setting(uint8_t on) {
+	can_tx_t Tx;
+
+	// set message
+	Tx.data.u8[4] = HBAR.reverse;
+	Tx.data.u8[5] = on & 0x01;
+	Tx.data.u8[5] |= (0 & 0x01) << 1;
+	Tx.data.u8[5] |= (HBAR.d.mode[HBAR_M_DRIVE] & 0x03) << 2;
+
+	// send message
+	return CANBUS_Write(&Tx, CAND_MCU_SETTING, 5, 0);
+}
 
 /* Private functions implementation --------------------------------------------*/
 static void Reset(void) {
-	MCU.d.run = 0;
+	//	MCU.d.run = 0;
 	MCU.d.tick = 0;
+	MCU.d.overheat = 0;
+	MCU.d.error = 0;
 
 	MCU.d.rpm = 0;
 	MCU.d.speed = 0;
 	MCU.d.reverse = 0;
 	MCU.d.temperature = 0;
-	MCU.d.drive_mode = DRIVE_MODE_ECONOMIC;
+	MCU.d.drive_mode = HBAR_M_DRIVE_ECONOMY;
 
 	MCU.d.torque.commanded = 0;
 	MCU.d.torque.feedback = 0;
@@ -110,4 +148,34 @@ static void Reset(void) {
 	MCU.d.inv.enabled = 0;
 	MCU.d.inv.lockout = 0;
 	MCU.d.inv.discharge = INV_DISCHARGE_DISABLED;
+}
+
+static uint8_t IsOverheat(void) {
+	MCU_POST_FAULT_BIT overheat_post[] = {
+			MPF_MOD_TEMP_L,
+			MPF_MOD_TEMP_H,
+			MPF_PCB_TEMP_L,
+			MPF_PCB_TEMP_H,
+			MPF_GATE_TEMP_L,
+			MPF_GATE_TEMP_H,
+	};
+	MCU_RUN_FAULT_BIT overheat_run[] = {
+			MRF_INV_OVER_TEMP,
+			MRF_MOTOR_OVER_TEMP,
+			MRF_MODA_OVER_TEMP,
+			MRF_MODB_OVER_TEMP,
+			MRF_MODC_OVER_TEMP,
+			MRF_PCB_OVER_TEMP,
+			MRF_GATE1_OVER_TEMP,
+			MRF_GATE2_OVER_TEMP,
+			MRF_GATE3_OVER_TEMP,
+	};
+
+	uint8_t temp = 0;
+	for (uint8_t i=0; i<sizeof(overheat_post); i++)
+		temp |= (MCU.d.fault.post & BIT(overheat_post[i]));
+	for (uint8_t i=0; i<sizeof(overheat_run); i++)
+		temp |= (MCU.d.fault.run & BIT(overheat_run[i]));
+
+	return temp;
 }

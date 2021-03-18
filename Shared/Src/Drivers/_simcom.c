@@ -293,7 +293,7 @@ uint8_t Simcom_Upload(void *payload, uint16_t size) {
 	res = Simcom_Cmd(cmd, SIM_RSP_SEND, 500);
 
 	if (res == SIM_OK)
-		res = Simcom_CmdRaw((char*) payload, size, SIM_RSP_SENT, 30000);
+		res = Simcom_CmdRaw((char*) payload, size, SIM_RSP_ACCEPT, 30000);
 	Simcom_Unlock();
 
 	return res == SIM_OK;
@@ -391,7 +391,7 @@ static SIM_RESULT Simcom_CmdRaw(char *data, uint16_t size, char *reply, uint32_t
 
 	// Debug: print payload
 	if (SIMCOM_DEBUG) {
-		if (strcmp(reply, SIM_RSP_SENT) == 0)
+		if (strcmp(reply, SIM_RSP_ACCEPT) == 0)
 			printf_hex(data, size);
 		else {
 			printf("\n=> ");
@@ -456,14 +456,12 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms, char *repl
 
 #if (!BOOTLOADER)
 				// exception for server command collision
-				else if (Simcom_ReceivedResponse(0)) {
-					if (Simcom_ProcessResponse()) {
-						printf("Simcom:CommandCollision\n");
-						res = SIM_TIMEOUT;
-					}
-
-					if (strcmp(reply, SIM_RSP_SENT) == 0) {
-						res = SIM_OK;
+				else if (strcmp(reply, SIM_RSP_ACCEPT) != 0) {
+					if (Simcom_ReceivedResponse(0)) {
+						if (Simcom_ProcessResponse()) {
+							printf("Simcom:CommandCollision\n");
+							res = SIM_TIMEOUT;
+						}
 					}
 				}
 #endif
@@ -753,6 +751,11 @@ static void SetStatePdpOn(SIM_RESULT *res) {
 		AT_CIPRXGET param = CIPRXGET_DISABLE;
 		*res = AT_ManuallyReceiveData(ATW, &param);
 	}
+	// Set data transmit mode
+	if (*res == SIM_OK) {
+		AT_CIPQSEND param = CIPQSEND_QUICK;
+		*res = AT_DataTransmitMode(ATW, &param);
+	}
 
 	// =========== IP ATTACH
 	// Check PDP status
@@ -847,7 +850,9 @@ static void SetStateServerOn(void) {
 	AT_ConnectionStatus(&(SIM.ipstatus));
 	if (SIM.ipstatus == CIPSTAT_CONNECT_OK)
 		if (MQTT_Connect())
-			valid = 1;
+			if (MQTT_PublishWill(1))
+				if(MQTT_Subscribe())
+					valid = 1;
 
 	// upgrade simcom state
 	if (valid)
@@ -859,11 +864,10 @@ static void SetStateServerOn(void) {
 }
 
 static void SetStateMqttOn(void) {
-	if (!MQTT_Willed())
-		MQTT_PublishWill(1);
-
-	if (!MQTT_Subscribed())
-		MQTT_Subscribe();
+//	if (!MQTT_Willed())
+//		MQTT_PublishWill(1);
+//	if (!MQTT_Subscribed())
+//		MQTT_Subscribe();
 
 	AT_ConnectionStatus(&(SIM.ipstatus));
 	if (SIM.ipstatus != CIPSTAT_CONNECT_OK || !MQTT_Ping())

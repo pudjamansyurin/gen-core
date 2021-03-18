@@ -63,6 +63,10 @@ void GATE_Hmi1Power(GPIO_PinState state) {
 }
 
 #if (!BOOTLOADER)
+void GATE_McuPower(GPIO_PinState state) {
+//	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, state);
+}
+
 void GATE_Hmi2Stop(void) {
   HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
 }
@@ -176,7 +180,9 @@ GPIO_PinState GATE_ReadStarter(void) {
 }
 
 GPIO_PinState GATE_ReadPower5v(void) {
-  return HAL_GPIO_ReadPin(EXT_REG_5V_IRQ_GPIO_Port, EXT_REG_5V_IRQ_Pin);
+	// TODO: Change me back
+	return GPIO_PIN_SET;
+//  return HAL_GPIO_ReadPin(EXT_REG_5V_IRQ_GPIO_Port, EXT_REG_5V_IRQ_Pin);
 }
 #endif
 

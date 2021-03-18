@@ -98,14 +98,6 @@ uint8_t GPS_CalculateOdometer(void) {
   return 0;
 }
 
-uint8_t GPS_CalculateSpeed(void) {
-	gps_data_t *data = &(VCU.d.gps);
-
-  if (data->speed_kph > 8)
-    return data->speed_kph + 8;
-  return data->speed_kph * 2;
-}
-
 /* Private functions implementation --------------------------------------------*/
 static void lock(void) {
   #if (RTOS_ENABLE)

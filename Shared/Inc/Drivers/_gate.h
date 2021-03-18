@@ -24,6 +24,7 @@ void GATE_CanbusReset(void);
 void GATE_Hmi1Power(GPIO_PinState state);
 
 #if (!BOOTLOADER)
+void GATE_McuPower(GPIO_PinState state);
 void GATE_Hmi2Reset(void);
 void GATE_Hmi2Stop(void);
 void GATE_GyroShutdown(void);

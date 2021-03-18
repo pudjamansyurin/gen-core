@@ -19,66 +19,89 @@
 
 /* Public functions implementation -------------------------------------------*/
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
-	header_t *header = (header_t*) report;
+	report_header_t *header = (report_header_t*) report;
+	report_data_t *d = &(report->data);
 
 	memcpy(header->prefix, PREFIX_REPORT, 2);
+	header->size = sizeof(header->vin) +	sizeof(header->send_time);
+	header->vin = VIN_VALUE;
 
 	// Required data
-	header->size = sizeof(report->data.req);
+	header->size += sizeof(d->req);
 
-	report->data.req.frame_id = frame;
-	report->data.req.vcu.log_time = RTC_Read();
-	report->data.req.vcu.driver_id = VCU.d.driver_id;
-	report->data.req.vcu.events_group = VCU.d.events;
-	report->data.req.vcu.vehicle = (int8_t) VCU.d.state.vehicle;
-	report->data.req.vcu.uptime = VCU.d.uptime * 1.111;
+	d->req.frame_id = frame;
+	d->req.vcu.log_time = RTC_Read();
+	d->req.vcu.driver_id = VCU.d.driver_id;
+	d->req.vcu.events_group = VCU.d.events;
+	d->req.vcu.vehicle = (int8_t) VCU.d.state.vehicle;
+	d->req.vcu.uptime = VCU.d.uptime * 1.111;
 
 	for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-		report->data.req.bms.pack[i].id = BMS.d.pack[i].id;
-		report->data.req.bms.pack[i].voltage = BMS.d.pack[i].voltage * 100;
-		report->data.req.bms.pack[i].current = BMS.d.pack[i].current * 10;
+		d->req.bms.pack[i].id = BMS.d.pack[i].id;
+		d->req.bms.pack[i].voltage = BMS.d.pack[i].voltage * 100;
+		d->req.bms.pack[i].current = BMS.d.pack[i].current * 10;
 	}
 
 	// Optional data
 	if (frame == FR_FULL) {
-		header->size += sizeof(report->data.opt);
+		header->size += sizeof(d->opt);
 
-		report->data.opt.vcu.gps.latitude = (int32_t) (VCU.d.gps.latitude * 10000000);
-		report->data.opt.vcu.gps.longitude = (int32_t) (VCU.d.gps.longitude * 10000000);
-		report->data.opt.vcu.gps.altitude = (uint32_t) VCU.d.gps.altitude;
-		report->data.opt.vcu.gps.hdop = (uint8_t) (VCU.d.gps.dop_h * 10);
-		report->data.opt.vcu.gps.vdop = (uint8_t) (VCU.d.gps.dop_v * 10);
-		report->data.opt.vcu.gps.heading = (uint8_t) (VCU.d.gps.heading / 2);
-		report->data.opt.vcu.gps.sat_in_use = (uint8_t) VCU.d.gps.sat_in_use;
+		d->opt.vcu.bat = VCU.d.bat / 18;
+		d->opt.vcu.signal = SIM.signal;
+		d->opt.vcu.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
 
-		report->data.opt.vcu.odometer =  HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
-		report->data.opt.vcu.trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
-		report->data.opt.vcu.trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
-		report->data.opt.vcu.report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
-		report->data.opt.vcu.report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
+		d->opt.vcu.gps.latitude = (int32_t) (VCU.d.gps.latitude * 10000000);
+		d->opt.vcu.gps.longitude = (int32_t) (VCU.d.gps.longitude * 10000000);
+		d->opt.vcu.gps.altitude = (uint32_t) VCU.d.gps.altitude;
+		d->opt.vcu.gps.hdop = (uint8_t) (VCU.d.gps.dop_h * 10);
+		d->opt.vcu.gps.vdop = (uint8_t) (VCU.d.gps.dop_v * 10);
+		d->opt.vcu.gps.speed = (uint8_t) VCU.d.gps.speed_kph;
+		d->opt.vcu.gps.heading = (uint8_t) (VCU.d.gps.heading / 2);
+		d->opt.vcu.gps.sat_in_use = (uint8_t) VCU.d.gps.sat_in_use;
 
-		report->data.opt.vcu.speed = MCU.d.speed;
-		report->data.opt.vcu.signal = SIM.signal;
-		report->data.opt.vcu.bat = VCU.d.bat / 18;
+		d->opt.vcu.trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
+		d->opt.vcu.trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
+		d->opt.vcu.report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
+		d->opt.vcu.report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
+
 
 		for (uint8_t i = 0; i < BMS_COUNT ; i++) {
-			report->data.opt.bms.pack[i].soc = BMS.d.pack[i].soc;
-			report->data.opt.bms.pack[i].temperature = BMS.d.pack[i].temperature;
+			d->opt.bms.pack[i].soc = BMS.d.pack[i].soc;
+			d->opt.bms.pack[i].temperature = BMS.d.pack[i].temperature;
 		}
 
 		// Debug data
-		header->size += sizeof(report->data.debug);
-		memcpy(&(report->data.debug.motion), &(VCU.d.motion), sizeof(motion_t));
-		memcpy(&(report->data.debug.task), &(VCU.d.task), sizeof(rtos_task_t));
+		header->size += sizeof(d->debug);
+		memcpy(&(d->debug.motion), &(VCU.d.motion), sizeof(motion_t));
+		memcpy(&(d->debug.task), &(VCU.d.task), sizeof(rtos_task_t));
+
+		mcu_debug_t *mcu = &(d->debug.mcu);
+		mcu->rpm = MCU.d.rpm;
+		mcu->speed = MCU.d.speed;
+		mcu->reverse = MCU.d.reverse;
+		mcu->temperature = (uint16_t) (MCU.d.temperature * 10);
+		mcu->drive_mode = MCU.d.drive_mode;
+		mcu->torque.commanded = (uint16_t) (MCU.d.torque.commanded * 10);
+		mcu->torque.feedback = (uint16_t) (MCU.d.torque.feedback * 10);
+		mcu->fault.post = MCU.d.fault.post;
+		mcu->fault.run = MCU.d.fault.run;
+		mcu->dcbus.current = (uint16_t) (MCU.d.dcbus.current * 10);
+		mcu->dcbus.voltage = (uint16_t) (MCU.d.dcbus.voltage * 10);
+		mcu->inv.can_mode = MCU.d.inv.can_mode;
+		mcu->inv.enabled = MCU.d.inv.enabled;
+		mcu->inv.lockout = MCU.d.inv.lockout;
+		mcu->inv.discharge = MCU.d.inv.discharge;
 	}
 }
 
 void RPT_ResponseCapture(response_t *response) {
-	header_t *header = (header_t*) response;
+	report_header_t *header = (report_header_t*) response;
 
 	memcpy(header->prefix, PREFIX_RESPONSE, 2);
+	header->size = sizeof(header->vin) +	sizeof(header->send_time);
+	header->vin = VIN_VALUE;
 
-	header->size = sizeof(response->header.code)
+	header->size += sizeof(response->header.code)
 					+sizeof(response->header.sub_code)
 					+sizeof(response->data.res_code)
 					+ strnlen(response->data.message, sizeof(response->data.message)
@@ -110,11 +133,8 @@ uint8_t RPT_PayloadPending(payload_t *payload) {
 }
 
 uint8_t RPT_WrapPayload(payload_t *payload) {
-	header_t *header = (header_t*) (payload->pPayload);
+	report_header_t *header = (report_header_t*) (payload->pPayload);
 
-	header->size += sizeof(header->vin) +
-			sizeof(header->send_time);
-	header->vin = VIN_VALUE;
 	header->send_time = RTC_Read();
 
 	//  // Re-calculate CRC

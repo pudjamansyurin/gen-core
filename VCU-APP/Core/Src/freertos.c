@@ -102,7 +102,7 @@ const osThreadAttr_t ManagerTask_attributes = {
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
-uint32_t IotTaskBuffer[ 768 ];
+uint32_t IotTaskBuffer[ 1536 ];
 osStaticThreadDef_t IotTaskControlBlock;
 const osThreadAttr_t IotTask_attributes = {
   .name = "IotTask",
@@ -721,10 +721,10 @@ void StartManagerTask(void *argument)
 		VCU.d.task.manager.wakeup = _GetTickMS() / 1000;
 		lastWake = _GetTickMS();
 
-		HMI1.d.state.overheat = BMS.d.overheat;
+		VCU.d.state.error = VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
 		HMI1.d.state.daylight = RTC_IsDaylight();
-		VCU.d.state.error = BMS.d.error || VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
-		HMI1.d.state.warning = VCU.d.state.error;
+		HMI1.d.state.overheat = BMS.d.overheat || MCU.d.overheat;
+		HMI1.d.state.warning = VCU.d.state.error || BMS.d.error || MCU.d.error;
 
 		// TODO: Vehicle state should event based, not polling.
 		CheckVehicleState();
@@ -1085,7 +1085,6 @@ void StartGpsTask(void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
 	uint32_t notif;
-	uint8_t meter;
 
 	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 
@@ -1102,9 +1101,8 @@ void StartGpsTask(void *argument)
 				GPS_Capture();
 		}
 
-		MCU.d.speed = GPS_CalculateSpeed();
-		if ((meter = GPS_CalculateOdometer()))
-			VCU.SetOdometer(meter);
+		//		if ((meter = GPS_CalculateOdometer()))
+		//			VCU.SetOdometer(meter);
 	}
   /* USER CODE END StartGpsTask */
 }
@@ -1194,7 +1192,6 @@ void StartRemoteTask(void *argument)
 		VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
 		if (RMT_NeedPing()) RMT_Ping();
-
 		RMT_RefreshPairing();
 
 		VCU.SetEvent(EV_VCU_REMOTE_MISSING, HMI1.d.state.unremote);
@@ -1435,11 +1432,11 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 					case BMS_CAND(CAND_BMS_PARAM_1) :
-						BMS.can.r.Param1(&Rx);
-						break;
+								BMS.can.r.Param1(&Rx);
+					break;
 					case BMS_CAND(CAND_BMS_PARAM_2) :
-						BMS.can.r.Param2(&Rx);
-						break;
+								BMS.can.r.Param2(&Rx);
+					break;
 					default:
 						break;
 				}
@@ -1478,8 +1475,9 @@ void StartCanTxTask(void *argument)
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 20)) {
-			BMS.PowerOverCan(0);
 			HMI2.PowerByCan(0);
+			MCU.PowerOverCan(0);
+			BMS.PowerOverCan(0);
 
 			CANBUS_DeInit();
 			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
@@ -1506,7 +1504,9 @@ void StartCanTxTask(void *argument)
 				VCU.can.t.Datetime(RTC_Read());
 				VCU.can.t.TripData();
 			}
+
 			BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
+			MCU.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
 			HMI2.PowerByCan(VCU.d.state.vehicle >= VEHICLE_STANDBY);
 		}
 	}
@@ -1696,8 +1696,10 @@ static void CheckVehicleState(void) {
 
 				if (!GATE_ReadPower5v())
 					VCU.d.state.vehicle--;
-				else if (starter
-						&& (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY))
+				else if (
+						(starter && !HMI1.d.state.unremote) || VCU.d.state.override >= VEHICLE_STANDBY
+						// starter && (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY)
+				)
 					VCU.d.state.vehicle++;
 				break;
 
@@ -1725,8 +1727,9 @@ static void CheckVehicleState(void) {
 						|| (HMI1.d.state.unfinger && !VCU.d.state.override)
 						|| VCU.d.state.override == VEHICLE_STANDBY)
 					VCU.d.state.vehicle--;
-				else if (!VCU.d.state.error
-						&& (starter || VCU.d.state.override >= VEHICLE_RUN))
+				else if (
+						!HMI1.d.state.warning	&& (starter || VCU.d.state.override >= VEHICLE_RUN)
+				)
 					VCU.d.state.vehicle++;
 				break;
 
@@ -1737,7 +1740,7 @@ static void CheckVehicleState(void) {
 
 				if (!GATE_ReadPower5v()
 						|| normalize
-						|| VCU.d.state.error
+						|| HMI1.d.state.warning
 						|| VCU.d.state.override == VEHICLE_READY)
 					VCU.d.state.vehicle--;
 				else if ((starter && MCU.d.speed == 0)

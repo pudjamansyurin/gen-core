@@ -31,6 +31,7 @@ bms_t BMS = {
 static void ResetIndex(uint8_t i);
 static uint8_t GetIndex(uint32_t addr);
 static void SetEvents(uint16_t flag);
+static uint8_t IsOverheat(void);
 static uint16_t MergeFlags(void);
 static uint8_t AverageSOC(void);
 static void ResetPacks(void);
@@ -53,9 +54,13 @@ void BMS_RefreshIndex(void) {
 		if ((_GetTickMS() - BMS.d.pack[i].tick) > BMS_TIMEOUT)
 			ResetIndex(i);
 
-	SetEvents(MergeFlags());
+	uint16_t flags = MergeFlags();
+	SetEvents(flags);
+
+	BMS.d.error = flags;
+	BMS.d.overheat = IsOverheat();
 	BMS.d.soc = AverageSOC();
-	BMS.d.run = RunPacks(1);
+//	BMS.d.run = RunPacks(1);
 }
 
 /* ====================================== CAN RX =================================== */
@@ -134,27 +139,39 @@ static uint8_t GetIndex(uint32_t addr) {
 }
 
 static void SetEvents(uint16_t flag) {
-	uint8_t start = EV_BMS_DISCHARGE_OVER_CURRENT;
-	uint8_t end = EV_BMS_SYSTEM_FAILURE;
+	EVENTS_GROUP_BIT events[] = {
+			EV_BMS_DISCHARGE_OVER_CURRENT,
+			EV_BMS_CHARGE_OVER_CURRENT,
+			EV_BMS_SHORT_CIRCUIT,
+			EV_BMS_DISCHARGE_OVER_TEMPERATURE,
+			EV_BMS_DISCHARGE_UNDER_TEMPERATURE,
+			EV_BMS_CHARGE_OVER_TEMPERATURE,
+			EV_BMS_CHARGE_UNDER_TEMPERATURE,
+			EV_BMS_UNDER_VOLTAGE,
+			EV_BMS_OVER_VOLTAGE,
+			EV_BMS_OVER_DISCHARGE_CAPACITY,
+			EV_BMS_UNBALANCE,
+			EV_BMS_SYSTEM_FAILURE,
+	};
 
 	// Set events
-	for (uint8_t bit = start; bit <= end; bit++)
-			VCU.SetEvent(bit, (flag >> (bit-start)) & 0x01);
+	for (uint8_t i = 0; i < sizeof(events); i++)
+		VCU.SetEvent(events[i], (flag >> i) & 0x01);
+}
 
-	// Parse event for indicator
-	BMS.d.overheat = VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_TEMPERATURE) ||
-			VCU.ReadEvent(EV_BMS_DISCHARGE_UNDER_TEMPERATURE) ||
-			VCU.ReadEvent(EV_BMS_CHARGE_OVER_TEMPERATURE) ||
-			VCU.ReadEvent(EV_BMS_CHARGE_UNDER_TEMPERATURE);
-	BMS.d.error = BMS.d.overheat ||
-			VCU.ReadEvent(EV_BMS_DISCHARGE_OVER_CURRENT) ||
-			VCU.ReadEvent(EV_BMS_CHARGE_OVER_CURRENT) ||
-			VCU.ReadEvent(EV_BMS_SHORT_CIRCUIT) ||
-			VCU.ReadEvent(EV_BMS_UNDER_VOLTAGE) ||
-			VCU.ReadEvent(EV_BMS_OVER_VOLTAGE) ||
-			VCU.ReadEvent(EV_BMS_OVER_DISCHARGE_CAPACITY) ||
-			VCU.ReadEvent(EV_BMS_UNBALANCE) ||
-			VCU.ReadEvent(EV_BMS_SYSTEM_FAILURE);
+static uint8_t IsOverheat(void) {
+	EVENTS_GROUP_BIT overheat[] = {
+			EV_BMS_DISCHARGE_OVER_TEMPERATURE,
+			EV_BMS_DISCHARGE_UNDER_TEMPERATURE,
+			EV_BMS_CHARGE_OVER_TEMPERATURE,
+			EV_BMS_CHARGE_UNDER_TEMPERATURE,
+	};
+
+	uint8_t temp = 0;
+	for (uint8_t i=0; i<sizeof(overheat); i++)
+		temp |= VCU.ReadEvent(overheat[i]);
+
+	return temp;
 }
 
 static uint16_t MergeFlags(void) {
@@ -183,7 +200,7 @@ static void ResetPacks(void) {
 	for (uint8_t i = 0; i < BMS_COUNT ; i++)
 		ResetIndex(i);
 
-	BMS.d.run = 0;
+//	BMS.d.run = 0;
 	BMS.d.soc = 0;
 	BMS.d.error = 0;
 	BMS.d.overheat = 0;
