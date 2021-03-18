@@ -170,7 +170,7 @@ const osThreadAttr_t RemoteTask_attributes = {
   .cb_size = sizeof(RemoteTaskControlBlock),
   .stack_mem = &RemoteTaskBuffer[0],
   .stack_size = sizeof(RemoteTaskBuffer),
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
@@ -218,7 +218,7 @@ const osThreadAttr_t CanTxTask_attributes = {
   .cb_size = sizeof(CanTxTaskControlBlock),
   .stack_mem = &CanTxTaskBuffer[0],
   .stack_size = sizeof(CanTxTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for Hmi2PowerTask */
 osThreadId_t Hmi2PowerTaskHandle;
@@ -1488,6 +1488,7 @@ void StartCanTxTask(void *argument)
 		if (HMI1.d.run)
 			VCU.can.t.SwitchModeControl();
 
+
 		// send every 500ms
 		if (_GetTickMS() - last500ms > 500) {
 			last500ms = _GetTickMS();
@@ -1504,6 +1505,8 @@ void StartCanTxTask(void *argument)
 				VCU.can.t.Datetime(RTC_Read());
 				VCU.can.t.TripData();
 			}
+
+			VCU.can.t.Heartbeat();
 
 			BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
 			MCU.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);

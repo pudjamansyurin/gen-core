@@ -51,7 +51,7 @@ uint8_t MQTT_PublishWill(uint8_t on) {
   char status[2];
 
   MQTT.willed = on;
-  sprintf(status, "%1d", on);
+  strcpy(status, on ? "1" : "0");
   return Publish(status, strlen(status), MQTT.topic.will, MQTT.qos.will);
 }
 

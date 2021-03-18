@@ -85,7 +85,7 @@ void BMS_CAN_RX_Param2(can_rx_t *Rx) {
 	BMS.d.pack[i].capacity = Rx->data.u16[0] * 0.1;
 	BMS.d.pack[i].soh = Rx->data.u16[1];
 	BMS.d.pack[i].cycle = Rx->data.u16[2];
-	BMS.d.pack[i].flag = Rx->data.u16[3];
+	BMS.d.pack[i].flag = Rx->data.u16[3] & 0x0FFF;
 	BMS.d.pack[i].state = (((Rx->data.u8[7] >> 4) & 0x01) << 1) | ((Rx->data.u8[7] >> 5) & 0x01);
 
 	// update index
@@ -95,7 +95,7 @@ void BMS_CAN_RX_Param2(can_rx_t *Rx) {
 
 /* ====================================== CAN TX =================================== */
 uint8_t BMS_CAN_TX_Setting(BMS_STATE state, uint8_t recover) {
-	can_tx_t Tx;
+	can_tx_t Tx = {0};
 
 	// set message
 	Tx.data.u8[0] = state << 1;
@@ -103,7 +103,7 @@ uint8_t BMS_CAN_TX_Setting(BMS_STATE state, uint8_t recover) {
 	Tx.data.u8[2] = BMS_SCALE_15_85 & 0x03;
 
 	// send message
-	return CANBUS_Write(&Tx, CAND_BMS_SETTING, 3, 1);
+	return CANBUS_Write(&Tx, CAND_BMS_SETTING, 8, 1);
 }
 
 /* Private functions implementation --------------------------------------------*/

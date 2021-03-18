@@ -84,6 +84,7 @@ typedef struct {
 
 typedef struct {
 	struct {
+		uint8_t (*Heartbeat)(void);
 		uint8_t (*SwitchModeControl)(void);
 		uint8_t (*Datetime)(datetime_t);
 		uint8_t (*MixedData)(void);
@@ -111,6 +112,7 @@ uint8_t VCU_ReadEvent(uint8_t bit);
 void VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t meter);
 
+uint8_t VCU_CAN_TX_Heartbeat(void);
 uint8_t VCU_CAN_TX_SwitchModeControl(void);
 uint8_t VCU_CAN_TX_Datetime(datetime_t dt);
 uint8_t VCU_CAN_TX_MixedData(void);

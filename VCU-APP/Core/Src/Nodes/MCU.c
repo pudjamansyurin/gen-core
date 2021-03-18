@@ -26,7 +26,8 @@ mcu_t MCU = {
 		MCU_Init,
 		MCU_PowerOverCan,
 		MCU_Refresh,
-		MCU_SpeedToVolume
+		MCU_SpeedToVolume,
+		MCU_RpmToSpeed
 };
 
 /* Private functions prototypes -----------------------------------------------*/
@@ -49,20 +50,25 @@ void MCU_Refresh(void) {
 
 void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
-		GATE_McuPower(1);	_DelayMS(500);
-		MCU.can.t.Setting(0);	_DelayMS(50);
-	}
-
-	MCU.can.t.Setting(on);
-
-	if (!on) {
-		_DelayMS(50);
-		GATE_McuPower(0);
+		if (!MCU.d.inv.enabled) {
+			GATE_McuPower(1);	_DelayMS(500);
+			MCU.can.t.Setting(0);	_DelayMS(50);
+			MCU.can.t.Setting(1);
+		}
+	} else {
+		if (MCU.d.inv.enabled) {
+			MCU.can.t.Setting(0);	_DelayMS(50);
+			GATE_McuPower(0);
+		}
 	}
 }
 
 uint16_t MCU_SpeedToVolume(void) {
 	return MCU.d.speed * 100 / MCU_SPEED_MAX ;
+}
+
+uint16_t MCU_RpmToSpeed(void) {
+	return  MCU.d.rpm * MCU_SPEED_MAX / MCU_RPM_MAX;
 }
 
 /* ====================================== CAN RX =================================== */
@@ -84,9 +90,7 @@ void MCU_CAN_RX_TorqueSpeed(can_rx_t *Rx) {
 	MCU.d.torque.commanded = Rx->data.u16[2] * 0.1;
 	MCU.d.torque.feedback = Rx->data.u16[3] * 0.1;
 
-	// TODO: convert rpm to speed;
-	MCU.d.speed = MCU.d.rpm * MCU_SPEED_MAX / MCU_RPM_MAX;
-
+	MCU.d.speed = MCU.RpmToSpeed();
 	MCU.d.tick = _GetTickMS();
 }
 
@@ -119,7 +123,7 @@ uint8_t MCU_CAN_TX_Setting(uint8_t on) {
 	Tx.data.u8[5] |= (HBAR.d.mode[HBAR_M_DRIVE] & 0x03) << 2;
 
 	// send message
-	return CANBUS_Write(&Tx, CAND_MCU_SETTING, 5, 0);
+	return CANBUS_Write(&Tx, CAND_MCU_SETTING, 6, 0);
 }
 
 /* Private functions implementation --------------------------------------------*/

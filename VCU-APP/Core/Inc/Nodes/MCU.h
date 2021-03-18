@@ -147,6 +147,7 @@ typedef struct {
 	void (*PowerOverCan)(uint8_t);
 	void (*Refresh)(void);
 	uint16_t (*SpeedToVolume)(void);
+	uint16_t (*RpmToSpeed)(void);
 } mcu_t;
 
 /* Exported variables ---------------------------------------------------------*/
@@ -157,6 +158,7 @@ void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_PowerOverCan(uint8_t on);
 uint16_t MCU_SpeedToVolume(void);
+uint16_t MCU_RpmToSpeed(void);
 void MCU_CAN_RX_CurrentDC(can_rx_t *Rx);
 void MCU_CAN_RX_VoltageDC(can_rx_t *Rx);
 void MCU_CAN_RX_TorqueSpeed(can_rx_t *Rx);
