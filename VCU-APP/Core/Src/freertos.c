@@ -27,43 +27,44 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "adc.h"
+#include "aes.h"
+#include "can.h"
 #include "i2c.h"
 #include "i2s.h"
-#include "spi.h"
-#include "rtc.h"
 #include "iwdg.h"
-#include "can.h"
-#include "aes.h"
-#include "usart.h"
+#include "rtc.h"
+#include "spi.h"
 #include "tim.h"
+#include "usart.h"
 
-#include "DMA/_dma_ublox.h"
 #include "DMA/_dma_finger.h"
+#include "DMA/_dma_ublox.h"
 
-#include "Drivers/_bat.h"
-#include "Drivers/_iwdg.h"
-#include "Drivers/_canbus.h"
-#include "Drivers/_rtc.h"
 #include "Drivers/_aes.h"
+#include "Drivers/_bat.h"
+#include "Drivers/_canbus.h"
+#include "Drivers/_iwdg.h"
+#include "Drivers/_rtc.h"
 #include "Drivers/_simcom.h"
 
-#include "Libs/_command.h"
-#include "Libs/_firmware.h"
-#include "Libs/_eeprom.h"
-#include "Libs/_gyro.h"
-#include "Libs/_gps.h"
-#include "Libs/_finger.h"
 #include "Libs/_audio.h"
-#include "Libs/_remote.h"
-#include "Libs/_reporter.h"
+#include "Libs/_command.h"
+#include "Libs/_eeprom.h"
+#include "Libs/_finger.h"
+#include "Libs/_firmware.h"
+#include "Libs/_gps.h"
+#include "Libs/_gyro.h"
 #include "Libs/_handlebar.h"
 #include "Libs/_mqtt.h"
+#include "Libs/_remote.h"
+#include "Libs/_reporter.h"
 
-#include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
-#include "Nodes/MCU.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/HMI2.h"
+#include "Nodes/MCU.h"
+#include "Nodes/VCU.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -498,18 +499,18 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName);
 
 /* USER CODE BEGIN 4 */
-void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName)
-{
-	/* Run time stack overflow checking is performed if
-   configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
-   called if a stack overflow is detected. */
-	printf("%s is overflowed.\n", pcTaskName);
+void vApplicationStackOverflowHook(TaskHandle_t xTask,
+                                   signed char *pcTaskName) {
+  /* Run time stack overflow checking is performed if
+configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
+called if a stack overflow is detected. */
+  printf("%s is overflowed.\n", pcTaskName);
 
-	while(1) {
-		IWDG_Refresh();
-		GATE_LedToggle();
-		HAL_Delay(100);
-	}
+  while (1) {
+    IWDG_Refresh();
+    GATE_LedToggle();
+    HAL_Delay(100);
+  }
 }
 /* USER CODE END 4 */
 
@@ -573,15 +574,15 @@ void MX_FREERTOS_Init(void) {
   FingerRecMutexHandle = osMutexNew(&FingerRecMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
-	/* add mutexes, ... */
+  /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-	/* add semaphores, ... */
+  /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
-	/* start timers, add new ones, ... */
+  /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
   /* Create the queue(s) */
@@ -610,7 +611,7 @@ void MX_FREERTOS_Init(void) {
   UssdQueueHandle = osMessageQueueNew (1, 20, &UssdQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
-	/* add queues, ... */
+  /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -654,14 +655,14 @@ void MX_FREERTOS_Init(void) {
   GateTaskHandle = osThreadNew(StartGateTask, NULL, &GateTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-	/* add threads, ... */
+  /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* creation of GlobalEvent */
   GlobalEventHandle = osEventFlagsNew(&GlobalEvent_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
-	/* add events, ... */
+  /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
 
 }
@@ -676,58 +677,58 @@ void MX_FREERTOS_Init(void) {
 void StartManagerTask(void *argument)
 {
   /* USER CODE BEGIN StartManagerTask */
-	TickType_t lastWake;
+  TickType_t lastWake;
 
-	// Initiate, this task get executed first!
-	VCU.Init();
-	VCU.NodesInit();
+  // Initiate, this task get executed first!
+  VCU.Init();
+  VCU.NodesInit();
 
-	// Peripheral Initiate
-	BAT_Init();
-	EEPROM_Init();
-	RTC_Init();
+  // Peripheral Initiate
+  BAT_Init();
+  EEPROM_Init();
+  RTC_Init();
 
-	// Threads management:
-	//  osThreadSuspend(IotTaskHandle);
-	//  osThreadSuspend(ReporterTaskHandle);
-	//  osThreadSuspend(CommandTaskHandle);
-	//  osThreadSuspend(GpsTaskHandle);
-	//  osThreadSuspend(GyroTaskHandle);
-	//  osThreadSuspend(RemoteTaskHandle);
-	//  osThreadSuspend(FingerTaskHandle);
-	//  osThreadSuspend(AudioTaskHandle);
-	//  osThreadSuspend(CanRxTaskHandle);
-	//  osThreadSuspend(CanTxTaskHandle);
-	//  osThreadSuspend(GateTaskHandle);
-	osThreadTerminate(Hmi2PowerTaskHandle);
+  // Threads management:
+  //  osThreadSuspend(IotTaskHandle);
+  //  osThreadSuspend(ReporterTaskHandle);
+  //  osThreadSuspend(CommandTaskHandle);
+  //  osThreadSuspend(GpsTaskHandle);
+  //  osThreadSuspend(GyroTaskHandle);
+  //  osThreadSuspend(RemoteTaskHandle);
+  //  osThreadSuspend(FingerTaskHandle);
+  //  osThreadSuspend(AudioTaskHandle);
+  //  osThreadSuspend(CanRxTaskHandle);
+  //  osThreadSuspend(CanTxTaskHandle);
+  //  osThreadSuspend(GateTaskHandle);
+  osThreadTerminate(Hmi2PowerTaskHandle);
 
-	// Check thread creation
-	if (!VCU.CheckRTOS())
-		return;
+  // Check thread creation
+  if (!VCU.CheckRTOS())
+    return;
 
-	// Release threads
-	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
+  // Release threads
+  osEventFlagsSet(GlobalEventHandle, EVENT_READY);
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.manager.wakeup = _GetTickMS() / 1000;
-		lastWake = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.manager.wakeup = _GetTickMS() / 1000;
+    lastWake = _GetTickMS();
 
-		VCU.d.state.error = VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
-		HMI1.d.state.daylight = RTC_IsDaylight();
-		HMI1.d.state.overheat = BMS.d.overheat || MCU.d.overheat;
-		HMI1.d.state.warning = VCU.d.state.error || BMS.d.error || MCU.d.error;
+    VCU.d.state.error = VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
+    HMI1.d.state.daylight = RTC_IsDaylight();
+    HMI1.d.state.overheat = BMS.d.overheat || MCU.d.overheat;
+    HMI1.d.state.warning = VCU.d.state.error || BMS.d.error || MCU.d.error;
 
-		// TODO: Vehicle state should event based, not polling.
-		VCU.CheckStack();
-		VCU.CheckState();
+    // TODO: Vehicle state should event based, not polling.
+    VCU.CheckStack();
+    VCU.CheckState();
 
-		VCU.d.bat = BAT_ScanValue();
-		VCU.d.uptime++;
+    VCU.d.bat = BAT_ScanValue();
+    VCU.d.uptime++;
 
-		IWDG_Refresh();
-		osDelayUntil(lastWake + 111);
-	}
+    IWDG_Refresh();
+    osDelayUntil(lastWake + 111);
+  }
   /* USER CODE END StartManagerTask */
 }
 
@@ -741,92 +742,88 @@ void StartManagerTask(void *argument)
 void StartIotTask(void *argument)
 {
   /* USER CODE BEGIN StartIotTask */
-	uint32_t notif;
-	command_t cmd;
-	response_t response;
-	payload_t pRes = {
-			.type = PAYLOAD_RESPONSE,
-			.pQueue = &ResponseQueueHandle,
-			.pPayload = &response,
-			.pending = 0
-	};
-	report_t report;
-	payload_t pRep = {
-			.type = PAYLOAD_REPORT,
-			.pQueue = &ReportQueueHandle,
-			.pPayload = &report,
-			.pending = 0
-	};
-	uint8_t ok;
-	char buf[200];
+  uint32_t notif;
+  command_t cmd;
+  response_t response;
+  payload_t pRes = {.type = PAYLOAD_RESPONSE,
+                    .pQueue = &ResponseQueueHandle,
+                    .pPayload = &response,
+                    .pending = 0};
+  report_t report;
+  payload_t pRep = {.type = PAYLOAD_REPORT,
+                    .pQueue = &ReportQueueHandle,
+                    .pPayload = &report,
+                    .pending = 0};
+  uint8_t ok;
+  char buf[200];
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
 
-	// Initiate
-	Simcom_Init();
-	Simcom_SetState(SIM_STATE_SERVER_ON, 0);
+  // Initiate
+  Simcom_Init();
+  Simcom_SetState(SIM_STATE_SERVER_ON, 0);
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
-			if (notif & EVT_IOT_RESUBSCRIBE) {
-				MQTT_PublishWill(0);
-				MQTT_Disconnect();
-			}
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
+      if (notif & EVT_IOT_RESUBSCRIBE) {
+        MQTT_PublishWill(0);
+        MQTT_Disconnect();
+      }
 
-			if (notif & EVT_IOT_REPORT_DISCARD)
-				pRep.pending = 0;
+      if (notif & EVT_IOT_REPORT_DISCARD)
+        pRep.pending = 0;
 
+      if (notif & EVT_IOT_READ_SMS || notif & EVT_IOT_SEND_USSD) {
+        memset(buf, 0, sizeof(buf));
+        ok = 0;
 
-			if (notif & EVT_IOT_READ_SMS || notif & EVT_IOT_SEND_USSD) {
-				memset(buf, 0, sizeof(buf));
-				ok = 0;
+        if (notif & EVT_IOT_SEND_USSD) {
+          char ussd[20];
+          if (osMessageQueueGet(UssdQueueHandle, ussd, NULL, 0U) == osOK)
+            ok = Simcom_SendUSSD(ussd, buf, sizeof(buf));
+        } else if (notif & EVT_IOT_READ_SMS)
+          ok = Simcom_ReadNewSMS(buf, sizeof(buf));
 
-				if (notif & EVT_IOT_SEND_USSD) {
-					char ussd[20];
-					if (osMessageQueueGet(UssdQueueHandle, ussd, NULL, 0U) == osOK)
-						ok = Simcom_SendUSSD(ussd, buf, sizeof(buf));
-				} else if (notif & EVT_IOT_READ_SMS)
-					ok = Simcom_ReadNewSMS(buf, sizeof(buf));
+        if (ok) {
+          osMessageQueueReset(QuotaQueueHandle);
+          ok = osMessageQueuePut(QuotaQueueHandle, buf, 0U, 0U) == osOK;
+        }
 
-				if (ok) {
-					osMessageQueueReset(QuotaQueueHandle);
-					ok = osMessageQueuePut(QuotaQueueHandle, buf, 0U, 0U) == osOK;
-				}
+        osThreadFlagsSet(CommandTaskHandle,
+                         ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+      }
+    }
 
-				osThreadFlagsSet(CommandTaskHandle, ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
-			}
-		}
+    // SIMCOM related routines
+    if (RTC_NeedCalibration())
+      Simcom_CalibrateTime();
 
-		// SIMCOM related routines
-		if (RTC_NeedCalibration())
-			Simcom_CalibrateTime();
+    // Upload Response
+    if (RPT_PayloadPending(&pRes))
+      if (RPT_WrapPayload(&pRes))
+        if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+          if (MQTT_Publish(&pRes))
+            pRes.pending = 0;
 
-		// Upload Response
-		if (RPT_PayloadPending(&pRes))
-			if (RPT_WrapPayload(&pRes))
-				if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
-					if (MQTT_Publish(&pRes))
-						pRes.pending = 0;
+    // Upload Report
+    if (RPT_PayloadPending(&pRep))
+      if (RPT_WrapPayload(&pRep))
+        if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+          if (MQTT_Publish(&pRep))
+            pRep.pending = 0;
 
-		// Upload Report
-		if (RPT_PayloadPending(&pRep))
-			if (RPT_WrapPayload(&pRep))
-				if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
-					if (MQTT_Publish(&pRep))
-						pRep.pending = 0;
-
-		// Check Command
-		if (Simcom_SetState(SIM_STATE_MQTT_ON, 0)){
-			if (MQTT_GotCommand()) {
-				MQTT_AckPublish(&cmd);
-				CMD_ExecuteCommand(&cmd);
-			}
-		}
-
-	}
+    // Check Command
+    if (Simcom_SetState(SIM_STATE_MQTT_ON, 0)) {
+      if (MQTT_GotCommand()) {
+        MQTT_AckPublish(&cmd);
+        CMD_ExecuteCommand(&cmd);
+      }
+    }
+  }
   /* USER CODE END StartIotTask */
 }
 
@@ -840,34 +837,36 @@ void StartIotTask(void *argument)
 void StartReporterTask(void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
-	uint32_t notif;
-	report_t report;
-	FRAME_TYPE frame;
-	osStatus_t status;
+  uint32_t notif;
+  report_t report;
+  FRAME_TYPE frame;
+  osStatus_t status;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
 
-		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
-		RPT_ReportCapture(frame, &report);
+    RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
+    RPT_ReportCapture(frame, &report);
 
-		// reset some events group
-		VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
-		VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
+    // reset some events group
+    VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
+    VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
 
-		// Put report to log
-		do {
-			status = osMessageQueuePut(ReportQueueHandle, &report, 0U, 0U);
-			// already full, remove oldest
-			if (status == osErrorResource)
-				osThreadFlagsSet(IotTaskHandle, EVT_IOT_REPORT_DISCARD);
-		} while (status != osOK);
+    // Put report to log
+    do {
+      status = osMessageQueuePut(ReportQueueHandle, &report, 0U, 0U);
+      // already full, remove oldest
+      if (status == osErrorResource)
+        osThreadFlagsSet(IotTaskHandle, EVT_IOT_REPORT_DISCARD);
+    } while (status != osOK);
 
-		_osThreadFlagsWait(&notif, EVT_REPORTER_YIELD, osFlagsWaitAny, VCU.d.interval * 1000);
-	}
+    _osThreadFlagsWait(&notif, EVT_REPORTER_YIELD, osFlagsWaitAny,
+                       VCU.d.interval * 1000);
+  }
   /* USER CODE END StartReporterTask */
 }
 
@@ -881,188 +880,208 @@ void StartReporterTask(void *argument)
 void StartCommandTask(void *argument)
 {
   /* USER CODE BEGIN StartCommandTask */
-	command_t cmd;
-	response_t response;
+  command_t cmd;
+  response_t resp;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
 
-	// Handle Post-FOTA
-	if (FW_PostFota(&response))
-		osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
+  // Handle Post-FOTA
+  if (FW_PostFota(&resp))
+    osMessageQueuePut(ResponseQueueHandle, &resp, 0U, 0U);
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.command.wakeup = _GetTickMS() / 1000;
-		// get command in queue
-		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) == osOK) {
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.command.wakeup = _GetTickMS() / 1000;
+    // get command in queue
+    if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==
+        osOK) {
 
-			// default command response
-			response.header.code = cmd.header.code;
-			response.header.sub_code = cmd.header.sub_code;
-			response.data.res_code = RESPONSE_STATUS_OK;
-			strcpy(response.data.message, "");
+      // default command response
+      resp.header.code = cmd.header.code;
+      resp.header.sub_code = cmd.header.sub_code;
+      resp.data.res_code = RESPONSE_STATUS_OK;
+      strcpy(resp.data.message, "");
 
-			// handle the command
-			if (cmd.header.code == CMD_CODE_GEN) {
-				switch (cmd.header.sub_code) {
-					case CMD_GEN_INFO :
-						CMD_GenInfo(&response);
-						break;
+      // handle the command
+      if (cmd.header.code == CMD_CODE_GEN) {
+        switch (cmd.header.sub_code) {
+        case CMD_GEN_INFO:
+          CMD_GenInfo(&resp);
+          break;
 
-					case CMD_GEN_LED :
-						CMD_GenLed(&cmd);
-						break;
+        case CMD_GEN_LED:
+          GATE_LedWrite(*(uint8_t *)cmd.data.value);
+          break;
 
-					case CMD_GEN_OVERRIDE :
-						if (VCU.d.state.vehicle < VEHICLE_NORMAL){
-							sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
-							response.data.res_code = RESPONSE_STATUS_ERROR;
-						} else
-							CMD_GenOverride(&cmd);
-						break;
+        case CMD_GEN_OVERRIDE:
+          if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
+            sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
+            resp.data.res_code = RESPONSE_STATUS_ERROR;
+          } else
+            VCU.d.state.override = *(uint8_t *)cmd.data.value;
+          break;
 
-					default:
-						response.data.res_code = RESPONSE_STATUS_INVALID;
-						break;
-				}
-			}
+        case CMD_GEN_MODE_DRIVE:
+          HBAR.d.mode[HBAR_M_DRIVE] = *(uint8_t *)cmd.data.value;
+          break;
 
-			else if (cmd.header.code == CMD_CODE_REPORT) {
-				switch (cmd.header.sub_code) {
-					case CMD_REPORT_RTC :
-						CMD_ReportRTC(&cmd);
-						break;
+        case CMD_GEN_MODE_TRIP:
+          HBAR.d.mode[HBAR_M_TRIP] = *(uint8_t *)cmd.data.value;
+          break;
 
-					case CMD_REPORT_ODOM :
-						CMD_ReportOdom(&cmd);
-						break;
+        case CMD_GEN_MODE_REPORT:
+          HBAR.d.mode[HBAR_M_REPORT] = *(uint8_t *)cmd.data.value;
+          break;
 
-					default:
-						response.data.res_code = RESPONSE_STATUS_INVALID;
-						break;
-				}
-			}
+        default:
+          resp.data.res_code = RESPONSE_STATUS_INVALID;
+          break;
+        }
+      }
 
-			else if (cmd.header.code == CMD_CODE_AUDIO) {
-				if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
-					sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
-					response.data.res_code = RESPONSE_STATUS_ERROR;
-				} else
-					switch (cmd.header.sub_code) {
-						case CMD_AUDIO_BEEP :
-							CMD_AudioBeep(AudioTaskHandle);
-							break;
+      else if (cmd.header.code == CMD_CODE_REPORT) {
+        switch (cmd.header.sub_code) {
+        case CMD_REPORT_RTC:
+          RTC_Write(*(datetime_t *)cmd.data.value);
+          break;
 
-						case CMD_AUDIO_MUTE :
-							CMD_AudioMute( &cmd, AudioTaskHandle);
-							break;
+        case CMD_REPORT_ODOM:
+          EEPROM_Odometer(EE_CMD_W, (*(uint32_t *)cmd.data.value) * 1000);
+          break;
 
-						default:
-							response.data.res_code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-			}
+        default:
+          resp.data.res_code = RESPONSE_STATUS_INVALID;
+          break;
+        }
+      }
 
-			else if (cmd.header.code == CMD_CODE_FINGER) {
-				if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
-					sprintf(response.data.message, "State should >= {%d}.", VEHICLE_STANDBY);
-					response.data.res_code = RESPONSE_STATUS_ERROR;
-				} else
-					switch (cmd.header.sub_code) {
-						case CMD_FINGER_FETCH :
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_FETCH);
-							CMD_FingerFetch(&response, FingerDbQueueHandle);
-							break;
+      else if (cmd.header.code == CMD_CODE_AUDIO) {
+        if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
+          sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
+          resp.data.res_code = RESPONSE_STATUS_ERROR;
+        } else
+          switch (cmd.header.sub_code) {
+          case CMD_AUDIO_BEEP:
+            osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
+            break;
 
-						case CMD_FINGER_ADD :
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
-							CMD_FingerAdd(&response, DriverQueueHandle);
-							break;
+          case CMD_AUDIO_MUTE:
+            osThreadFlagsSet(AudioTaskHandle, *(uint8_t *)cmd.data.value
+                                                  ? EVT_AUDIO_MUTE_ON
+                                                  : EVT_AUDIO_MUTE_OFF);
+            break;
 
-						case CMD_FINGER_DEL :
-							CMD_FingerDelete(&response, &cmd, FingerTaskHandle, DriverQueueHandle);
-							break;
+          default:
+            resp.data.res_code = RESPONSE_STATUS_INVALID;
+            break;
+          }
+      }
 
-						case CMD_FINGER_RST :
-							osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
-							CMD_Finger(&response);
-							break;
+      else if (cmd.header.code == CMD_CODE_FINGER) {
+        if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
+          sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_STANDBY);
+          resp.data.res_code = RESPONSE_STATUS_ERROR;
+        } else
+          switch (cmd.header.sub_code) {
+          case CMD_FINGER_FETCH:
+            osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_FETCH);
+            CMD_FingerFetch(&resp, FingerDbQueueHandle);
+            break;
 
-						default:
-							response.data.res_code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-			}
+          case CMD_FINGER_ADD:
+            osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
+            CMD_FingerAdd(&resp, DriverQueueHandle);
+            break;
 
-			else if (cmd.header.code == CMD_CODE_REMOTE) {
-				if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
-					sprintf(response.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
-					response.data.res_code = RESPONSE_STATUS_ERROR;
-				} else
-					switch (cmd.header.sub_code) {
-						case CMD_REMOTE_PAIRING :
-							osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
-							CMD_RemotePairing(&response);
-							break;
+          case CMD_FINGER_DEL:
+            osMessageQueueReset(DriverQueueHandle);
+            osMessageQueuePut(DriverQueueHandle, (uint8_t *)cmd.data.value, 0U,
+                              0U);
+            osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_DEL);
+            CMD_Finger(&resp);
+            break;
 
-						default:
-							response.data.res_code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-			}
+          case CMD_FINGER_RST:
+            osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
+            CMD_Finger(&resp);
+            break;
 
-			else if (cmd.header.code == CMD_CODE_FOTA) {
-				response.data.res_code = RESPONSE_STATUS_ERROR;
+          default:
+            resp.data.res_code = RESPONSE_STATUS_INVALID;
+            break;
+          }
+      }
 
-				if (VCU.d.state.vehicle == VEHICLE_RUN) {
-					sprintf(response.data.message, "State should != {%d}.", VEHICLE_RUN);
-				} else
-					switch (cmd.header.sub_code) {
-						case CMD_FOTA_VCU :
-							CMD_Fota(&response, IAP_VCU);
-							break;
+      else if (cmd.header.code == CMD_CODE_REMOTE) {
+        if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
+          sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
+          resp.data.res_code = RESPONSE_STATUS_ERROR;
+        } else
+          switch (cmd.header.sub_code) {
+          case CMD_REMOTE_PAIRING:
+            osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
+            CMD_RemotePairing(&resp);
+            break;
 
-						case CMD_FOTA_HMI :
-							CMD_Fota(&response, IAP_HMI);
-							break;
+          default:
+            resp.data.res_code = RESPONSE_STATUS_INVALID;
+            break;
+          }
+      }
 
-						default:
-							response.data.res_code = RESPONSE_STATUS_INVALID;
-							break;
-					}
-			}
+      else if (cmd.header.code == CMD_CODE_FOTA) {
+        resp.data.res_code = RESPONSE_STATUS_ERROR;
 
-			else if (cmd.header.code == CMD_CODE_NET) {
-				response.data.res_code = RESPONSE_STATUS_ERROR;
+        if (VCU.d.state.vehicle == VEHICLE_RUN) {
+          sprintf(resp.data.message, "State should != {%d}.", VEHICLE_RUN);
+        } else
+          switch (cmd.header.sub_code) {
+          case CMD_FOTA_VCU:
+            FW_EnterModeIAP(IAP_VCU, resp.data.message);
+            break;
 
-				switch (cmd.header.sub_code) {
-					case CMD_NET_SEND_USSD :
-						osMessageQueueReset(UssdQueueHandle);
-						osMessageQueuePut(UssdQueueHandle, cmd.data.value, 0U, 0U);
-						osThreadFlagsSet(IotTaskHandle, EVT_IOT_SEND_USSD);
-						CMD_NetQuota(&response, QuotaQueueHandle);
-						break;
+          case CMD_FOTA_HMI:
+            FW_EnterModeIAP(IAP_HMI, resp.data.message);
+            break;
 
-					case CMD_NET_READ_SMS :
-						osThreadFlagsSet(IotTaskHandle, EVT_IOT_READ_SMS);
-						CMD_NetQuota(&response, QuotaQueueHandle);
-						break;
+          default:
+            resp.data.res_code = RESPONSE_STATUS_INVALID;
+            break;
+          }
+      }
 
-					default:
-						response.data.res_code = RESPONSE_STATUS_INVALID;
-						break;
-				}
-			}
+      else if (cmd.header.code == CMD_CODE_NET) {
+        resp.data.res_code = RESPONSE_STATUS_ERROR;
 
-			else
-				response.data.res_code = RESPONSE_STATUS_INVALID;
+        switch (cmd.header.sub_code) {
+        case CMD_NET_SEND_USSD:
+          osMessageQueueReset(UssdQueueHandle);
+          osMessageQueuePut(UssdQueueHandle, cmd.data.value, 0U, 0U);
+          osThreadFlagsSet(IotTaskHandle, EVT_IOT_SEND_USSD);
+          CMD_NetQuota(&resp, QuotaQueueHandle);
+          break;
 
-			// Get current snapshot
-			RPT_ResponseCapture(&response);
-			osMessageQueueReset(ResponseQueueHandle);
-			osMessageQueuePut(ResponseQueueHandle, &response, 0U, 0U);
-		}
-	}
+        case CMD_NET_READ_SMS:
+          osThreadFlagsSet(IotTaskHandle, EVT_IOT_READ_SMS);
+          CMD_NetQuota(&resp, QuotaQueueHandle);
+          break;
+
+        default:
+          resp.data.res_code = RESPONSE_STATUS_INVALID;
+          break;
+        }
+      }
+
+      else
+        resp.data.res_code = RESPONSE_STATUS_INVALID;
+
+      // Get current snapshot
+      RPT_ResponseCapture(&resp);
+      osMessageQueueReset(ResponseQueueHandle);
+      osMessageQueuePut(ResponseQueueHandle, &resp, 0U, 0U);
+    }
+  }
   /* USER CODE END StartCommandTask */
 }
 
@@ -1076,26 +1095,28 @@ void StartCommandTask(void *argument)
 void StartGpsTask(void *argument)
 {
   /* USER CODE BEGIN StartGpsTask */
-	uint32_t notif;
+  uint32_t notif;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
 
-	// Initiate
-	GPS_Init();
+  // Initiate
+  GPS_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.gps.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.gps.wakeup = _GetTickMS() / 1000;
 
-		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, (GPS_INTERVAL * 1000))) {
-			if (notif & EVT_GPS_RECEIVED)
-				GPS_Capture();
-		}
+    // Check notifications
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny,
+                           (GPS_INTERVAL * 1000))) {
+      if (notif & EVT_GPS_RECEIVED)
+        GPS_Capture();
+    }
 
-		//		if ((meter = GPS_CalculateOdometer()))
-		//			VCU.SetOdometer(meter);
-	}
+    //		if ((meter = GPS_CalculateOdometer()))
+    //			VCU.SetOdometer(meter);
+  }
   /* USER CODE END StartGpsTask */
 }
 
@@ -1109,51 +1130,54 @@ void StartGpsTask(void *argument)
 void StartGyroTask(void *argument)
 {
   /* USER CODE BEGIN StartGyroTask */
-	uint32_t flag, notif;
-	movement_t movement;
+  uint32_t flag, notif;
+  movement_t movement;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny, osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny,
+                     osWaitForever);
+  osThreadFlagsClear(EVT_MASK);
 
-	/* MPU6050 Initiate*/
-	GYRO_Init();
+  /* MPU6050 Initiate*/
+  GYRO_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
 
-		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
-			if (notif & EVT_GYRO_TASK_STOP) {
-				memset(&(VCU.d.motion), 0x00, sizeof(motion_t));
-				VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
-				VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+    // Check notifications
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+      if (notif & EVT_GYRO_TASK_STOP) {
+        memset(&(VCU.d.motion), 0x00, sizeof(motion_t));
+        VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
+        VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
 
-				GYRO_DeInit();
-				_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny, osWaitForever);
-				GYRO_Init();
-			}
+        GYRO_DeInit();
+        _osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny,
+                           osWaitForever);
+        GYRO_Init();
+      }
 
-			else if (notif & EVT_GYRO_MOVED_RESET)
-				GYRO_ResetDetector();
-		}
+      else if (notif & EVT_GYRO_MOVED_RESET)
+        GYRO_ResetDetector();
+    }
 
-		// Read all accelerometer, gyroscope (average)
-		GYRO_Decision(&movement);
-		VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
+    // Read all accelerometer, gyroscope (average)
+    GYRO_Decision(&movement);
+    VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
 
-		// Fallen indicators
-		//		GATE_LedWrite(movement.fallen);
-		flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
-		osThreadFlagsSet(AudioTaskHandle, flag);
+    // Fallen indicators
+    //		GATE_LedWrite(movement.fallen);
+    flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
+    osThreadFlagsSet(AudioTaskHandle, flag);
 
-		// Moved at rest
-		if (VCU.d.state.vehicle < VEHICLE_STANDBY)
-			GYRO_MonitorMovement();
-		else
-			GYRO_ResetDetector();
-	}
+    // Moved at rest
+    if (VCU.d.state.vehicle < VEHICLE_STANDBY)
+      GYRO_MonitorMovement();
+    else
+      GYRO_ResetDetector();
+  }
   /* USER CODE END StartGyroTask */
 }
 
@@ -1167,64 +1191,67 @@ void StartGyroTask(void *argument)
 void StartRemoteTask(void *argument)
 {
   /* USER CODE BEGIN StartRemoteTask */
-	uint32_t notif;
-	RMT_CMD command;
+  uint32_t notif;
+  RMT_CMD command;
 
-	// wait until needed
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny, osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+  // wait until needed
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny,
+                     osWaitForever);
+  osThreadFlagsClear(EVT_MASK);
 
-	// Initiate
-	AES_Init();
-	RMT_Init();
+  // Initiate
+  AES_Init();
+  RMT_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
-		if (RMT_NeedPing()) RMT_Ping();
-		RMT_RefreshPairing();
+    if (RMT_NeedPing())
+      RMT_Ping();
+    RMT_RefreshPairing();
 
-		VCU.SetEvent(EV_VCU_REMOTE_MISSING, HMI1.d.state.unremote);
+    VCU.SetEvent(EV_VCU_REMOTE_MISSING, HMI1.d.state.unremote);
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
-			if (notif & EVT_REMOTE_TASK_STOP) {
-				VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
-				RMT_DeInit();
-				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny, osWaitForever);
-				RMT_Init();
-			}
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
+      if (notif & EVT_REMOTE_TASK_STOP) {
+        VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
+        RMT_DeInit();
+        _osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny,
+                           osWaitForever);
+        RMT_Init();
+      }
 
-			// handle address change
-			if (notif & EVT_REMOTE_REINIT)
-				RMT_ReInit();
+      // handle address change
+      if (notif & EVT_REMOTE_REINIT)
+        RMT_ReInit();
 
-			// handle pairing
-			if (notif & EVT_REMOTE_PAIRING)
-				RMT_Pairing();
+      // handle pairing
+      if (notif & EVT_REMOTE_PAIRING)
+        RMT_Pairing();
 
-			// handle incoming payload
-			if (notif & EVT_REMOTE_RX_IT) {
-				// process command
-				if (RMT_ValidateCommand(&command)) {
-					if (command == RMT_CMD_PING) {
-						if (RMT_GotPairedResponse())
-							osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
-					}
-					else if (command == RMT_CMD_SEAT)
-						GATE_SeatToggle();
-					else if (command == RMT_CMD_ALARM) {
-						GATE_HornToggle(&(HBAR.hazard));
+      // handle incoming payload
+      if (notif & EVT_REMOTE_RX_IT) {
+        // process command
+        if (RMT_ValidateCommand(&command)) {
+          if (command == RMT_CMD_PING) {
+            if (RMT_GotPairedResponse())
+              osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+          } else if (command == RMT_CMD_SEAT)
+            GATE_SeatToggle();
+          else if (command == RMT_CMD_ALARM) {
+            GATE_HornToggle(&(HBAR.hazard));
 
-						if (VCU.ReadEvent(EV_VCU_BIKE_MOVED))
-							osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_MOVED_RESET);
-					}
-				}
-			}
-			//			osThreadFlagsClear(EVT_MASK);
-		}
-	}
+            if (VCU.ReadEvent(EV_VCU_BIKE_MOVED))
+              osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_MOVED_RESET);
+          }
+        }
+      }
+      //			osThreadFlagsClear(EVT_MASK);
+    }
+  }
   /* USER CODE END StartRemoteTask */
 }
 
@@ -1238,68 +1265,69 @@ void StartRemoteTask(void *argument)
 void StartFingerTask(void *argument)
 {
   /* USER CODE BEGIN StartFingerTask */
-	uint32_t notif;
-	finger_db_t finger;
-	uint8_t  id, driver, ok = 0;
+  uint32_t notif;
+  finger_db_t finger;
+  uint8_t id, driver, ok = 0;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAny, osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAny,
+                     osWaitForever);
+  osThreadFlagsClear(EVT_MASK);
 
-	// Initiate
-	FINGER_Init();
+  // Initiate
+  FINGER_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.finger.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.finger.wakeup = _GetTickMS() / 1000;
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
-			if (notif & EVT_FINGER_TASK_STOP) {
-				VCU.SetDriver(DRIVER_ID_NONE);
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+      if (notif & EVT_FINGER_TASK_STOP) {
+        VCU.SetDriver(DRIVER_ID_NONE);
 
-				FINGER_DeInit();
-				_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAny, osWaitForever);
-				FINGER_Init();
-			}
+        FINGER_DeInit();
+        _osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAny,
+                           osWaitForever);
+        FINGER_Init();
+      }
 
-			else if (notif & EVT_FINGER_PLACED) {
-				if ((id = FINGER_Auth()) > 0) {
-					VCU.SetDriver(HMI1.d.state.unfinger ? id : DRIVER_ID_NONE);
-					GATE_LedBlink(200);
-					_DelayMS(100);
-					GATE_LedBlink(200);
-				} else
-					GATE_LedBlink(1000);
-			}
+      else if (notif & EVT_FINGER_PLACED) {
+        if ((id = FINGER_Auth()) > 0) {
+          VCU.SetDriver(HMI1.d.state.unfinger ? id : DRIVER_ID_NONE);
+          GATE_LedBlink(200);
+          _DelayMS(100);
+          GATE_LedBlink(200);
+        } else
+          GATE_LedBlink(1000);
+      }
 
-			else {
-				if (notif & EVT_FINGER_FETCH) {
-					if ((ok = FINGER_Fetch(finger.db))) {
-						osMessageQueueReset(FingerDbQueueHandle);
-						osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
-					}
-				}
-				else if (notif & EVT_FINGER_ADD) {
-					if (FINGER_Enroll(&id, &ok)) {
-						osMessageQueueReset(FingerDbQueueHandle);
-						osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
-					}
-				}
-				else if (notif & EVT_FINGER_DEL) {
-					if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK)
-						ok = FINGER_DeleteID(driver);
-				}
-				else if (notif & EVT_FINGER_RST)
-					ok = FINGER_Flush();
+      else {
+        if (notif & EVT_FINGER_FETCH) {
+          if ((ok = FINGER_Fetch(finger.db))) {
+            osMessageQueueReset(FingerDbQueueHandle);
+            osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
+          }
+        } else if (notif & EVT_FINGER_ADD) {
+          if (FINGER_Enroll(&id, &ok)) {
+            osMessageQueueReset(FingerDbQueueHandle);
+            osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
+          }
+        } else if (notif & EVT_FINGER_DEL) {
+          if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK)
+            ok = FINGER_DeleteID(driver);
+        } else if (notif & EVT_FINGER_RST)
+          ok = FINGER_Flush();
 
-				osThreadFlagsSet(CommandTaskHandle, ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
-			}
+        osThreadFlagsSet(CommandTaskHandle,
+                         ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+      }
 
-			// Handle bounce effect
-			// _DelayMS(1000);
-			// osThreadFlagsClear(EVT_MASK);
-		}
-	}
+      // Handle bounce effect
+      // _DelayMS(1000);
+      // osThreadFlagsClear(EVT_MASK);
+    }
+  }
   /* USER CODE END StartFingerTask */
 }
 
@@ -1313,48 +1341,51 @@ void StartFingerTask(void *argument)
 void StartAudioTask(void *argument)
 {
   /* USER CODE BEGIN StartAudioTask */
-	uint32_t notif;
+  uint32_t notif;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAny, osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAny,
+                     osWaitForever);
+  osThreadFlagsClear(EVT_MASK);
 
-	/* Initiate Wave player (Codec, DMA, I2C) */
-	AUDIO_Init();
+  /* Initiate Wave player (Codec, DMA, I2C) */
+  AUDIO_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
 
-		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
+    AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
-			if (notif & EVT_AUDIO_TASK_STOP) {
-				AUDIO_DeInit();
-				_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAny, osWaitForever);
-				AUDIO_Init();
-			}
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
+      if (notif & EVT_AUDIO_TASK_STOP) {
+        AUDIO_DeInit();
+        _osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAny,
+                           osWaitForever);
+        AUDIO_Init();
+      }
 
-			// Beep command
-			if (notif & EVT_AUDIO_BEEP) {
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
-				_DelayMS(250);
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
-			}
+      // Beep command
+      if (notif & EVT_AUDIO_BEEP) {
+        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
+        _DelayMS(250);
+        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
+      }
 
-			// Long-Beep Command
-			if (notif & EVT_AUDIO_BEEP_START)
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
-			if (notif & EVT_AUDIO_BEEP_STOP)
-				AUDIO_BeepStop();
+      // Long-Beep Command
+      if (notif & EVT_AUDIO_BEEP_START)
+        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
+      if (notif & EVT_AUDIO_BEEP_STOP)
+        AUDIO_BeepStop();
 
-			// Mute command
-			if (notif & EVT_AUDIO_MUTE_ON)
-				AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
-			if (notif & EVT_AUDIO_MUTE_OFF)
-				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
-		}
-	}
+      // Mute command
+      if (notif & EVT_AUDIO_MUTE_ON)
+        AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
+      if (notif & EVT_AUDIO_MUTE_OFF)
+        AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
+    }
+  }
   /* USER CODE END StartAudioTask */
 }
 
@@ -1368,66 +1399,68 @@ void StartAudioTask(void *argument)
 void StartCanRxTask(void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
-	uint32_t notif;
-	can_rx_t Rx;
+  uint32_t notif;
+  can_rx_t Rx;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
+  osThreadFlagsClear(EVT_MASK);
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
 
-		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 0)) {
-			VCU.NodesInit();
-			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
-		}
+    // Check notifications
+    if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 0)) {
+      VCU.NodesInit();
+      _osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny,
+                         osWaitForever);
+    }
 
-		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
-			if (Rx.header.IDE == CAN_ID_STD) {
-				switch (Rx.header.StdId) {
-					case CAND_HMI1 :
-						HMI1.can.r.State(&Rx);
-						break;
-					case CAND_HMI2 :
-						HMI2.can.r.State(&Rx);
-						break;
-					case CAND_MCU_CURRENT_DC :
-						MCU.can.r.CurrentDC(&Rx);
-						break;
-					case CAND_MCU_VOLTAGE_DC :
-						MCU.can.r.VoltageDC(&Rx);
-						break;
-					case CAND_MCU_TORQUE_SPEED :
-						MCU.can.r.TorqueSpeed(&Rx);
-						break;
-					case CAND_MCU_FAULT_CODE :
-						MCU.can.r.FaultCode(&Rx);
-						break;
-					case CAND_MCU_STATE :
-						MCU.can.r.State(&Rx);
-						break;
-					default:
-						break;
-				}
-			} else {
-				switch (BMS_CAND(Rx.header.ExtId)) {
-					case BMS_CAND(CAND_BMS_PARAM_1) :
-								BMS.can.r.Param1(&Rx);
-					break;
-					case BMS_CAND(CAND_BMS_PARAM_2) :
-								BMS.can.r.Param2(&Rx);
-					break;
-					default:
-						break;
-				}
-			}
-		}
+    if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
+      if (Rx.header.IDE == CAN_ID_STD) {
+        switch (Rx.header.StdId) {
+        case CAND_HMI1:
+          HMI1.can.r.State(&Rx);
+          break;
+        case CAND_HMI2:
+          HMI2.can.r.State(&Rx);
+          break;
+        case CAND_MCU_CURRENT_DC:
+          MCU.can.r.CurrentDC(&Rx);
+          break;
+        case CAND_MCU_VOLTAGE_DC:
+          MCU.can.r.VoltageDC(&Rx);
+          break;
+        case CAND_MCU_TORQUE_SPEED:
+          MCU.can.r.TorqueSpeed(&Rx);
+          break;
+        case CAND_MCU_FAULT_CODE:
+          MCU.can.r.FaultCode(&Rx);
+          break;
+        case CAND_MCU_STATE:
+          MCU.can.r.State(&Rx);
+          break;
+        default:
+          break;
+        }
+      } else {
+        switch (BMS_CAND(Rx.header.ExtId)) {
+        case BMS_CAND(CAND_BMS_PARAM_1):
+          BMS.can.r.Param1(&Rx);
+          break;
+        case BMS_CAND(CAND_BMS_PARAM_2):
+          BMS.can.r.Param2(&Rx);
+          break;
+        default:
+          break;
+        }
+      }
+    }
 
-		VCU.NodesRefresh();
-	}
+    VCU.NodesRefresh();
+  }
   /* USER CODE END StartCanRxTask */
 }
 
@@ -1441,61 +1474,63 @@ void StartCanRxTask(void *argument)
 void StartCanTxTask(void *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
-	uint32_t notif;
-	TickType_t last500ms, last1000ms;
+  uint32_t notif;
+  TickType_t last500ms, last1000ms;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
+  _osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
+  osThreadFlagsClear(EVT_MASK);
 
-	// initiate
-	CANBUS_Init();
+  // initiate
+  CANBUS_Init();
 
-	/* Infinite loop */
-	last500ms = _GetTickMS();
-	last1000ms = _GetTickMS();
-	for (;;) {
-		VCU.d.task.canTx.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  last500ms = _GetTickMS();
+  last1000ms = _GetTickMS();
+  for (;;) {
+    VCU.d.task.canTx.wakeup = _GetTickMS() / 1000;
 
-		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 20)) {
-			HMI2.PowerByCan(0);
-			MCU.PowerOverCan(0);
-			BMS.PowerOverCan(0);
+    // Check notifications
+    if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 20)) {
+      HMI2.PowerByCan(0);
+      MCU.PowerOverCan(0);
+      BMS.PowerOverCan(0);
 
-			CANBUS_DeInit();
-			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
-			CANBUS_Init();
-		}
+      CANBUS_DeInit();
+      _osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny,
+                         osWaitForever);
+      CANBUS_Init();
+    }
 
-		// send every 20ms
-		if (HMI1.d.run)
-			VCU.can.t.SwitchModeControl();
+    // send every 20ms
+    if (HMI1.d.run)
+      VCU.can.t.SwitchModeControl();
 
-		// send every 500ms
-		if (_GetTickMS() - last500ms > 500) {
-			last500ms = _GetTickMS();
+    // send every 500ms
+    if (_GetTickMS() - last500ms > 500) {
+      last500ms = _GetTickMS();
 
-			if (HMI1.d.run)
-				VCU.can.t.MixedData();
-		}
+      if (HMI1.d.run)
+        VCU.can.t.MixedData();
+    }
 
-		// send every 1000ms
-		if (_GetTickMS() - last1000ms > 1000) {
-			last1000ms = _GetTickMS();
+    // send every 1000ms
+    if (_GetTickMS() - last1000ms > 1000) {
+      last1000ms = _GetTickMS();
 
-			if (HMI1.d.run) {
-				VCU.can.t.Datetime(RTC_Read());
-				VCU.can.t.TripData();
-			}
+      if (HMI1.d.run) {
+        VCU.can.t.Datetime(RTC_Read());
+        VCU.can.t.TripData();
+      }
 
-			VCU.can.t.Heartbeat();
+      VCU.can.t.Heartbeat();
 
-			BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
-			MCU.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
-			HMI2.PowerByCan(VCU.d.state.vehicle >= VEHICLE_STANDBY);
-		}
-	}
+      BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
+      MCU.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
+      HMI2.PowerByCan(VCU.d.state.vehicle >= VEHICLE_STANDBY);
+    }
+  }
   /* USER CODE END StartCanTxTask */
 }
 
@@ -1509,26 +1544,27 @@ void StartCanTxTask(void *argument)
 void StartHmi2PowerTask(void *argument)
 {
   /* USER CODE BEGIN StartHmi2PowerTask */
-	uint32_t notif;
+  uint32_t notif;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
 
-	/* Infinite loop */
-	for (;;) {
-		//    VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    //    VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
 
-		if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny, osWaitForever)) {
+    if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny,
+                           osWaitForever)) {
 
-			if (HMI2.d.powerRequest)
-				while (!HMI2.d.run)
-					HMI2.PowerOn();
+      if (HMI2.d.powerRequest)
+        while (!HMI2.d.run)
+          HMI2.PowerOn();
 
-			else
-				while (HMI2.d.run)
-					HMI2.PowerOff();
-
-		}
-	}
+      else
+        while (HMI2.d.run)
+          HMI2.PowerOff();
+    }
+  }
   /* USER CODE END StartHmi2PowerTask */
 }
 
@@ -1542,72 +1578,73 @@ void StartHmi2PowerTask(void *argument)
 void StartGateTask(void *argument)
 {
   /* USER CODE BEGIN StartGateTask */
-	uint32_t notif, tick = 0;
+  uint32_t notif, tick = 0;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
+  osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
+                   osWaitForever);
 
-	// Initiate
-	HBAR_Init();
-	HBAR_ReadStates();
+  // Initiate
+  HBAR_Init();
+  HBAR_ReadStates();
 
-	/* Infinite loop */
-	for (;;) {
-		VCU.d.task.gate.wakeup = _GetTickMS() / 1000;
+  /* Infinite loop */
+  for (;;) {
+    VCU.d.task.gate.wakeup = _GetTickMS() / 1000;
 
-		// wait forever
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
-			// handle bounce effect
-			_DelayMS(50);
-			//      osThreadFlagsClear(EVT_MASK);
+    // wait forever
+    if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
+      // handle bounce effect
+      _DelayMS(50);
+      //      osThreadFlagsClear(EVT_MASK);
 
-			// Starter Button IRQ
-			if (notif & EVT_GATE_STARTER_IRQ) {
-				if (GATE_ReadStarter())
-					tick = _GetTickMS();
-				else
-					VCU.d.gpio.starter.tick = _GetTickMS() - tick;
-			}
+      // Starter Button IRQ
+      if (notif & EVT_GATE_STARTER_IRQ) {
+        if (GATE_ReadStarter())
+          tick = _GetTickMS();
+        else
+          VCU.d.gpio.starter.tick = _GetTickMS() - tick;
+      }
 
-			// Handle switch EXTI interrupt
-			if (notif & EVT_GATE_HBAR) {
-				HBAR_ReadStates();
-				HBAR_TimerSelectSet();
-				HBAR_RunSelectOrSet();
-			}
-		}
+      // Handle switch EXTI interrupt
+      if (notif & EVT_GATE_HBAR) {
+        HBAR_ReadStates();
+        HBAR_TimerSelectSet();
+        HBAR_RunSelectOrSet();
+      }
+    }
 
-		// GATE Output Control
-		HMI1.Power(VCU.d.state.vehicle >= VEHICLE_STANDBY);
-		GATE_FanBMS(BMS.d.overheat);
-	}
+    // GATE Output Control
+    HMI1.Power(VCU.d.state.vehicle >= VEHICLE_STANDBY);
+    GATE_FanBMS(BMS.d.overheat);
+  }
   /* USER CODE END StartGateTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (osKernelGetState() != osKernelRunning)
-		return;
+  if (osKernelGetState() != osKernelRunning)
+    return;
 
-	if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY)
-		return;
+  if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY)
+    return;
 
-	if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
-		if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
-			osThreadFlagsSet(GateTaskHandle, EVT_GATE_STARTER_IRQ);
+  if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
+    if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
+      osThreadFlagsSet(GateTaskHandle, EVT_GATE_STARTER_IRQ);
 
-	if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
-		if (GPIO_Pin == INT_REMOTE_IRQ_Pin)
-			RMT_IrqHandler();
+  if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
+    if (GPIO_Pin == INT_REMOTE_IRQ_Pin)
+      RMT_IrqHandler();
 
-	if (VCU.d.state.vehicle >= VEHICLE_STANDBY)
-		if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
-			osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
+  if (VCU.d.state.vehicle >= VEHICLE_STANDBY)
+    if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
+      osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
 
-	if (VCU.d.state.vehicle >= VEHICLE_STANDBY)
-		for (uint8_t i = 0; i < HBAR_K_MAX; i++)
-			if (GPIO_Pin == HBAR.list[i].pin)
-				osThreadFlagsSet(GateTaskHandle, EVT_GATE_HBAR);
+  if (VCU.d.state.vehicle >= VEHICLE_STANDBY)
+    for (uint8_t i = 0; i < HBAR_K_MAX; i++)
+      if (GPIO_Pin == HBAR.list[i].pin)
+        osThreadFlagsSet(GateTaskHandle, EVT_GATE_HBAR);
 }
 
 /* USER CODE END Application */

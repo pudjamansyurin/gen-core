@@ -6,10 +6,10 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "usart.h"
-#include "DMA/_dma_ublox.h"
 #include "Libs/_gps.h"
+#include "DMA/_dma_ublox.h"
 #include "Nodes/VCU.h"
+#include "usart.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -17,10 +17,11 @@ extern osThreadId_t GpsTaskHandle;
 extern osMutexId_t GpsMutexHandle;
 #endif
 
-/* Private variables ----------------------------------------------------------*/
+/* Private variables
+ * ----------------------------------------------------------*/
 static gps_t gps = {
-		.puart = &huart2,
-		.pdma = &hdma_usart2_rx,
+    .puart = &huart2,
+    .pdma = &hdma_usart2_rx,
 };
 
 /* Private functions declaration ---------------------------------------------*/
@@ -29,7 +30,8 @@ static void unlock(void);
 static uint8_t DataAvailable(void);
 static void Debugger(char *ptr, size_t len);
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void GPS_Init(void) {
   uint32_t tick;
 
@@ -57,7 +59,7 @@ void GPS_Init(void) {
 }
 
 void GPS_DeInit(void) {
-	lock();
+  lock();
   GATE_GpsShutdown();
   UBLOX_DMA_Stop();
   HAL_UART_DeInit(gps.puart);
@@ -65,15 +67,16 @@ void GPS_DeInit(void) {
 }
 
 void GPS_ProcessBuffer(void *ptr, size_t len) {
-	if (!DataAvailable()) return;
+  if (!DataAvailable())
+    return;
 
-  nmea_process(&(gps.nmea), (char*) ptr, len);
+  nmea_process(&(gps.nmea), (char *)ptr, len);
   //  Debugger(ptr, len);
   osThreadFlagsSet(GpsTaskHandle, EVT_GPS_RECEIVED);
 }
 
 uint8_t GPS_Capture(void) {
-	gps_data_t *data = &(VCU.d.gps);
+  gps_data_t *data = &(VCU.d.gps);
 
   // copy only necessary part
   data->dop_h = gps.nmea.dop_h;
@@ -91,30 +94,29 @@ uint8_t GPS_Capture(void) {
 }
 
 uint8_t GPS_CalculateOdometer(void) {
-	gps_data_t *data = &(VCU.d.gps);
+  gps_data_t *data = &(VCU.d.gps);
 
   if (data->speed_mps)
-    return (data->speed_mps * GPS_INTERVAL );
+    return (data->speed_mps * GPS_INTERVAL);
   return 0;
 }
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions implementation
+ * --------------------------------------------*/
 static void lock(void) {
-  #if (RTOS_ENABLE)
+#if (RTOS_ENABLE)
   osMutexAcquire(GpsMutexHandle, osWaitForever);
-  #endif
+#endif
 }
 
 static void unlock(void) {
-  #if (RTOS_ENABLE)
+#if (RTOS_ENABLE)
   osMutexRelease(GpsMutexHandle);
-  #endif
+#endif
 }
 
 static uint8_t DataAvailable(void) {
-	return strnlen(UBLOX_UART_RX, UBLOX_UART_RX_SZ) > GPS_MIN_LENGTH;
+  return strnlen(UBLOX_UART_RX, UBLOX_UART_RX_SZ) > GPS_MIN_LENGTH;
 }
 
-static void Debugger(char *ptr, size_t len) {
-  printf("\n%.*s\n", len, ptr);
-}
+static void Debugger(char *ptr, size_t len) { printf("\n%.*s\n", len, ptr); }

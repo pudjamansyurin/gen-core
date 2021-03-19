@@ -6,30 +6,26 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Drivers/_simcom.h"
 #include "Libs/_mqtt.h"
+#include "Drivers/_simcom.h"
 #include "Nodes/VCU.h"
 
-/* Private variables ----------------------------------------------------------*/
+/* Private variables
+ * ----------------------------------------------------------*/
 static mqtt_t MQTT = {
     .tick = 0,
     .packetid = 0,
     .willed = 0,
     .subscribed = 0,
-    .qos = {
-        .command = 0,
-        .response = 1,
-        .report = 0,
-        .will = 1
-    },
-    .rx = {
-        .received = 0
-    }
-};
+    .qos = {.command = 0, .response = 1, .report = 0, .will = 1},
+    .rx = {.received = 0}};
 
-/* Private functions prototype ------------------------------------------------*/
-static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos);
-static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,  uint16_t timeout);
+/* Private functions prototype
+ * ------------------------------------------------*/
+static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic,
+                       int qos);
+static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,
+                      uint16_t timeout);
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t MQTT_Publish(payload_t *payload) {
@@ -57,23 +53,21 @@ uint8_t MQTT_PublishWill(uint8_t on) {
 
 uint8_t MQTT_Subscribe(void) {
   int count = 1, count_rx;
-  MQTTString topicFilters[] = { MQTTString_initializer };
-  int grantedQos, qoss_rx[count], qoss[] = { MQTT.qos.command };
+  MQTTString topicFilters[] = {MQTTString_initializer};
+  int grantedQos, qoss_rx[count], qoss[] = {MQTT.qos.command};
   unsigned char buf[100];
   int len, buflen = sizeof(buf);
   mqtt_data_t d;
 
   topicFilters[0].cstring = MQTT.topic.command;
-  len = MQTTSerialize_subscribe(
-      buf, buflen,
-      0, ++MQTT.packetid, count,
-      topicFilters, qoss
-  );
+  len = MQTTSerialize_subscribe(buf, buflen, 0, ++MQTT.packetid, count,
+                                topicFilters, qoss);
 
   if (!Upload(buf, len, SUBACK, 5000))
     return 0;
 
-  if (!MQTTDeserialize_suback(&(d.packetid), count, &count_rx, qoss_rx, buf, buflen)) {
+  if (!MQTTDeserialize_suback(&(d.packetid), count, &count_rx, qoss_rx, buf,
+                              buflen)) {
     printf("MQTT:Subscribe failed\n");
     return 0;
   }
@@ -105,7 +99,8 @@ uint8_t MQTT_Unsubscribe(void) {
   mqtt_data_t d;
 
   topicFilters.cstring = MQTT.topic.command;
-  len = MQTTSerialize_unsubscribe(buf, buflen, 0, ++MQTT.packetid, count, &topicFilters);
+  len = MQTTSerialize_unsubscribe(buf, buflen, 0, ++MQTT.packetid, count,
+                                  &topicFilters);
 
   if (!Upload(buf, len, UNSUBACK, 5000))
     return 0;
@@ -161,7 +156,8 @@ uint8_t MQTT_Connect(void) {
   if (!Upload(buf, len, CONNACK, 5000))
     return 0;
 
-  if (!MQTTDeserialize_connack(&sessionPresent, &connack_rc, buf, buflen) || connack_rc != 0) {
+  if (!MQTTDeserialize_connack(&sessionPresent, &connack_rc, buf, buflen) ||
+      connack_rc != 0) {
     printf("MQTT:Connect failed, RC %d\n", connack_rc);
     return 0;
   }
@@ -193,7 +189,7 @@ uint8_t MQTT_Ping(void) {
   unsigned char buf[2];
   int len, buflen = sizeof(buf);
 
-  if ((_GetTickMS() - MQTT.tick) <= (MQTT_KEEPALIVE *1000))
+  if ((_GetTickMS() - MQTT.tick) <= (MQTT_KEEPALIVE * 1000))
     return 1;
 
   len = MQTTSerialize_pingreq(buf, buflen);
@@ -210,29 +206,29 @@ uint8_t MQTT_GotPublish(void) {
   unsigned char buf[256], *dst;
   int len, buflen = sizeof(buf);
   mqtt_data_t *d = &(MQTT.rx.d);
-	MQTTString topic;
+  MQTTString topic;
 
   d->packettype = MQTTPacket_read(buf, buflen, Simcom_GetData);
   if (d->packettype != PUBLISH)
     return 0;
 
-  if (MQTT.rx.received) return 0;
+  if (MQTT.rx.received)
+    return 0;
 
-  if (!MQTTDeserialize_publish(
-      &(d->dup), &(d->qos), &(d->retained), &(d->packetid),
-      &topic, &dst, &len,
-      buf, buflen
-  ))
+  if (!MQTTDeserialize_publish(&(d->dup), &(d->qos), &(d->retained),
+                               &(d->packetid), &topic, &dst, &len, buf, buflen))
     return 0;
 
   printf("MQTT:Received %d bytes\n", len);
-  if (len == 0) return 0;
+  if (len == 0)
+    return 0;
 
   sprintf(d->topic, "%.*s", topic.lenstring.len, topic.lenstring.data);
   if (strcmp(d->topic, MQTT.topic.command) != 0)
-  	return 0;
+    return 0;
 
-  if (!CMD_ValidateCommand(dst, len)) return 0;
+  if (!CMD_ValidateCommand(dst, len))
+    return 0;
   memcpy(&(MQTT.rx.command), dst, len);
 
   MQTT.rx.received = 1;
@@ -272,7 +268,7 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
 
   // send ACK (application-level)
   if (!Publish(PREFIX_ACK, 2, MQTT.topic.response, MQTT.qos.response))
-     return 0;
+    return 0;
 
   memcpy(cmd, &(MQTT.rx.command), sizeof(command_t));
   MQTT.rx.received = 0;
@@ -280,20 +276,16 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
   return 1;
 }
 
-uint8_t MQTT_GotCommand(void) {
-  return MQTT.rx.received;
-}
+uint8_t MQTT_GotCommand(void) { return MQTT.rx.received; }
 
-uint8_t MQTT_Subscribed(void) {
-  return MQTT.subscribed;
-}
+uint8_t MQTT_Subscribed(void) { return MQTT.subscribed; }
 
-uint8_t MQTT_Willed(void) {
-  return MQTT.willed;
-}
+uint8_t MQTT_Willed(void) { return MQTT.willed; }
 
-/* Private functions implementation -------------------------------------------*/
-static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos) {
+/* Private functions implementation
+ * -------------------------------------------*/
+static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic,
+                       int qos) {
   MQTTString topicName = MQTTString_initializer;
   unsigned char buf[512];
   int len, buflen = sizeof(buf);
@@ -301,11 +293,8 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos)
   uint8_t reply = 0;
 
   topicName.cstring = topic;
-  len = MQTTSerialize_publish(
-      buf, buflen,
-      0, qos, 1, ++MQTT.packetid,
-      topicName, payload, payloadlen
-  );
+  len = MQTTSerialize_publish(buf, buflen, 0, qos, 1, ++MQTT.packetid,
+                              topicName, payload, payloadlen);
 
   if (qos)
     reply = (qos == 1) ? PUBACK : PUBREC;
@@ -314,7 +303,8 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos)
     return 0;
 
   if (qos == 1) {
-    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf, buflen))
+    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf,
+                             buflen))
       return 0;
 
     if (MQTT.packetid != d.packetid) {
@@ -325,7 +315,8 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos)
   }
 
   else if (qos == 2) {
-    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf, buflen))
+    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf,
+                             buflen))
       return 0;
 
     if (MQTT.packetid != d.packetid) {
@@ -338,7 +329,8 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos)
     if (!Upload(buf, len, PUBCOMP, 5000))
       return 0;
 
-    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf, buflen))
+    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf,
+                             buflen))
       return 0;
 
     if (MQTT.packetid != d.packetid) {
@@ -353,7 +345,8 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos)
   return 1;
 }
 
-static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply, uint16_t timeout) {
+static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,
+                      uint16_t timeout) {
   if (!Simcom_Upload(buf, len))
     return 0;
 

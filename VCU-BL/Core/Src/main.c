@@ -33,12 +33,13 @@
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
+#include "Drivers/_errata.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_simcom.h"
-#include "Drivers/_errata.h"
-#include "Libs/_utils.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_fota.h"
+#include "Libs/_utils.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -107,7 +108,7 @@ int main(void)
   MX_UART9_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-	BAT_Init();
+  BAT_Init();
   EEPROM_Init();
   CANBUS_Init();
   Simcom_Init();
@@ -119,17 +120,17 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
   /* IAP flag has been set, initiate firmware download procedure */
-  if (*(uint32_t*) IAP_FLAG_ADDR == IAP_FLAG) {
+  if (*(uint32_t *)IAP_FLAG_ADDR == IAP_FLAG) {
     printf("IAP set, do FOTA.\n");
     /* Everything went well */
     if (FOTA_Upgrade(FOTA.TYPE)) {
       /* Reset IAP flag */
-      *(uint32_t*) IAP_FLAG_ADDR = 0;
+      *(uint32_t *)IAP_FLAG_ADDR = 0;
       /* Take branching decision on next reboot */
       FOTA_Reboot(FOTA.TYPE);
     }
     /* Reset IAP flag */
-    *(uint32_t*) IAP_FLAG_ADDR = 0;
+    *(uint32_t *)IAP_FLAG_ADDR = 0;
     /* FOTA failed */
     HAL_NVIC_SystemReset();
   }
@@ -251,9 +252,11 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-     printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* User can add his own implementation to report the file name and line
+     number,
+     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line)
+   */
+  printf("Wrong parameters value: file %s on line %d\r\n", file, line) * /
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

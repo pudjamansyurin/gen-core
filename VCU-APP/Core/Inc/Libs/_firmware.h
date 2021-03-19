@@ -9,8 +9,8 @@
 #define INC_LIBS__FIRMWARE_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
 #include "Libs/_reporter.h"
+#include "Libs/_utils.h"
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message);

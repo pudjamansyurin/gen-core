@@ -9,12 +9,14 @@
 #define DMA_FINGER_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
 #include "Libs/_usart_ring.h"
+#include "Libs/_utils.h"
+
 
 /* Exported constants --------------------------------------------------------*/
-#define FINGER_UART_RX_SZ    (uint16_t) 256
-#define FINGER_DMA_RX_SZ     (uint16_t) (FINGER_UART_RX_SZ/(FINGER_UART_RX_SZ/128))
+#define FINGER_UART_RX_SZ (uint16_t)256
+#define FINGER_DMA_RX_SZ                                                       \
+  (uint16_t)(FINGER_UART_RX_SZ / (FINGER_UART_RX_SZ / 128))
 
 /* Exported variables --------------------------------------------------------*/
 extern char FINGER_UART_RX[FINGER_UART_RX_SZ];

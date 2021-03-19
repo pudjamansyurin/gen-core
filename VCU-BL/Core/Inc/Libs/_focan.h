@@ -11,14 +11,17 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_fota.h"
 
-/* Exported macro -------------------------------------------------------------*/
-#define BLK_SIZE                   (uint16_t) (256*5)
-#define FOCAN_RETRY                 (uint8_t) 5
+/* Exported macro
+ * -------------------------------------------------------------*/
+#define BLK_SIZE (uint16_t)(256 * 5)
+#define FOCAN_RETRY (uint8_t)5
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 uint8_t FOCAN_GetCRC(uint32_t *crc);
 uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent);
 uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data);
-uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32_t total_size);
+uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset,
+                            uint32_t total_size);
 
 #endif /* INC_LIBS__FOCAN_H_ */

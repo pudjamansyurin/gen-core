@@ -13,37 +13,40 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define HMI2_TIMEOUT    							 (uint32_t) 10000					// ms
-#define HMI2_POWER_ON_TIMEOUT					 (uint32_t) 90000					// ms
-#define HMI2_POWER_OFF_TIMEOUT				 (uint32_t) 30000					// ms
+#define HMI2_TIMEOUT (uint32_t)10000           // ms
+#define HMI2_POWER_ON_TIMEOUT (uint32_t)90000  // ms
+#define HMI2_POWER_OFF_TIMEOUT (uint32_t)30000 // ms
 
-/* Exported struct ------------------------------------------------------------*/
+/* Exported struct
+ * ------------------------------------------------------------*/
 typedef struct {
-	uint8_t powerRequest;
-	uint8_t run;
-	uint32_t tick;
+  uint8_t powerRequest;
+  uint8_t run;
+  uint32_t tick;
 } hmi2_data_t;
 
 typedef struct {
-	struct {
-		void (*State)(can_rx_t*);
-	} r;
+  struct {
+    void (*State)(can_rx_t *);
+  } r;
 } hmi2_can_t;
 
 typedef struct {
-	hmi2_data_t d;
-	hmi2_can_t can;
-	void (*Init)(void);
-	void (*Refresh)(void);
-	void (*PowerByCan)(uint8_t);
-	void (*PowerOn)(void);
-	void (*PowerOff)(void);
+  hmi2_data_t d;
+  hmi2_can_t can;
+  void (*Init)(void);
+  void (*Refresh)(void);
+  void (*PowerByCan)(uint8_t);
+  void (*PowerOn)(void);
+  void (*PowerOff)(void);
 } hmi2_t;
 
-/* Exported variables ---------------------------------------------------------*/
+/* Exported variables
+ * ---------------------------------------------------------*/
 extern hmi2_t HMI2;
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void HMI2_Init(void);
 void HMI2_Refresh(void);
 void HMI2_PowerByCan(uint8_t state);

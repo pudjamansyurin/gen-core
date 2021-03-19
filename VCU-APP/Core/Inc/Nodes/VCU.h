@@ -10,18 +10,19 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_rtc.h"
-#include "Libs/_gyro.h"
 #include "Libs/_gps.h"
+#include "Libs/_gyro.h"
 
-/* Exported define ------------------------------------------------------------*/
+/* Exported define
+ * ------------------------------------------------------------*/
 typedef enum {
-	EV_VCU_NET_SOFT_RESET 					 			= 0,
-	EV_VCU_NET_HARD_RESET,
-	EV_VCU_REMOTE_MISSING,
-	EV_VCU_BIKE_FALLEN,
-	EV_VCU_BIKE_MOVED,
+  EV_VCU_NET_SOFT_RESET = 0,
+  EV_VCU_NET_HARD_RESET,
+  EV_VCU_REMOTE_MISSING,
+  EV_VCU_BIKE_FALLEN,
+  EV_VCU_BIKE_MOVED,
 
-  EV_BMS_DISCHARGE_OVER_CURRENT         = 50,
+  EV_BMS_DISCHARGE_OVER_CURRENT = 50,
   EV_BMS_CHARGE_OVER_CURRENT,
   EV_BMS_SHORT_CIRCUIT,
   EV_BMS_DISCHARGE_OVER_TEMPERATURE,
@@ -35,82 +36,85 @@ typedef enum {
   EV_BMS_SYSTEM_FAILURE,
 } EVENTS_GROUP_BIT;
 
-/* Exported struct --------------------------------------------------------------*/
+/* Exported struct
+ * --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
-	uint8_t wakeup;
-	uint16_t stack;
+  uint8_t wakeup;
+  uint16_t stack;
 } task_t;
 
 typedef struct __attribute__((packed)) {
-	task_t manager;
-	task_t iot;
-	task_t reporter;
-	task_t command;
-	task_t gps;
-	task_t gyro;
-	task_t remote;
-	task_t finger;
-	task_t audio;
-	task_t gate;
-	task_t canRx;
-	task_t canTx;
-	//  task_t hmi2Power;
+  task_t manager;
+  task_t iot;
+  task_t reporter;
+  task_t command;
+  task_t gps;
+  task_t gyro;
+  task_t remote;
+  task_t finger;
+  task_t audio;
+  task_t gate;
+  task_t canRx;
+  task_t canTx;
+  //  task_t hmi2Power;
 } rtos_task_t;
 
 typedef struct {
-	uint8_t driver_id;
-	uint16_t interval;
-	uint16_t bat;
-	uint64_t events;
-	uint32_t uptime;
-	struct {
-		uint8_t error;
-		uint8_t override;
-		vehicle_state_t vehicle;
-	} state;
-	struct {
-		//    uint8_t power5v;
-		struct {
-			uint32_t tick;
-		} starter;
-	} gpio;
-	struct {
-		uint32_t independent;
-	} tick;
-	motion_t motion;
-	gps_data_t gps;
-	rtos_task_t task;
+  uint8_t driver_id;
+  uint16_t interval;
+  uint16_t bat;
+  uint64_t events;
+  uint32_t uptime;
+  struct {
+    uint8_t error;
+    uint8_t override;
+    vehicle_state_t vehicle;
+  } state;
+  struct {
+    //    uint8_t power5v;
+    struct {
+      uint32_t tick;
+    } starter;
+  } gpio;
+  struct {
+    uint32_t independent;
+  } tick;
+  motion_t motion;
+  gps_data_t gps;
+  rtos_task_t task;
 } vcu_data_t;
 
 typedef struct {
-	struct {
-		uint8_t (*Heartbeat)(void);
-		uint8_t (*SwitchModeControl)(void);
-		uint8_t (*Datetime)(datetime_t);
-		uint8_t (*MixedData)(void);
-		uint8_t (*TripData)(void);
-	} t;
+  struct {
+    uint8_t (*Heartbeat)(void);
+    uint8_t (*SwitchModeControl)(void);
+    uint8_t (*Datetime)(datetime_t);
+    uint8_t (*MixedData)(void);
+    uint8_t (*TripData)(void);
+  } t;
 } vcu_can_t;
 
 typedef struct {
-	vcu_data_t d;
-	vcu_can_t can;
-	void (*Init)(void);
-	void (*NodesInit)(void);
-	void (*NodesRefresh)(void);
-	void (*CheckState)(void);
-	uint8_t (*CheckRTOS)(void);
-	void (*CheckStack)(void);
-	void (*SetEvent)(uint8_t, uint8_t);
-	uint8_t (*ReadEvent)(uint8_t);
-	void (*SetDriver)(uint8_t);
-	void (*SetOdometer)(uint8_t);
+  vcu_data_t d;
+  vcu_can_t can;
+  void (*Init)(void);
+  void (*NodesInit)(void);
+  void (*NodesRefresh)(void);
+  void (*CheckState)(void);
+  uint8_t (*CheckRTOS)(void);
+  void (*CheckStack)(void);
+  void (*SetEvent)(uint8_t, uint8_t);
+  uint8_t (*ReadEvent)(uint8_t);
+  void (*SetDriver)(uint8_t);
+  void (*SetOdometer)(uint8_t);
 } vcu_t;
 
-/* Exported variables ---------------------------------------------------------*/
+/* Exported variables
+ * ---------------------------------------------------------*/
 extern vcu_t VCU;
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void VCU_Init(void);
 void VCU_NodesInit(void);
 void VCU_NodesRefresh(void);

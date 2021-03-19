@@ -6,19 +6,26 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "iwdg.h"
-#include "Drivers/_iwdg.h"
-#include "Drivers/_canbus.h"
 #include "Libs/_focan.h"
+#include "Drivers/_canbus.h"
+#include "Drivers/_iwdg.h"
+#include "iwdg.h"
 
-/* Private functions prototypes -----------------------------------------------*/
-static uint8_t FOCAN_WriteAndWaitResponse(can_tx_t *Tx, uint32_t address, uint32_t DLC, uint32_t timeout, uint32_t retry);
-static uint8_t FOCAN_WriteAndWaitSqueezed(can_tx_t *Tx, uint32_t address, uint32_t DLC, CAN_DATA *RxData, uint32_t timeout, uint32_t retry);
+/* Private functions prototypes
+ * -----------------------------------------------*/
+static uint8_t FOCAN_WriteAndWaitResponse(can_tx_t *Tx, uint32_t address,
+                                          uint32_t DLC, uint32_t timeout,
+                                          uint32_t retry);
+static uint8_t FOCAN_WriteAndWaitSqueezed(can_tx_t *Tx, uint32_t address,
+                                          uint32_t DLC, CAN_DATA *RxData,
+                                          uint32_t timeout, uint32_t retry);
 static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout);
-static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData, uint32_t timeout);
+static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData,
+                                  uint32_t timeout);
 static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
   uint32_t address = CAND_FOCAN_PROGRESS;
   uint32_t retry = 5;
@@ -38,7 +45,7 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
 
 uint8_t FOCAN_GetCRC(uint32_t *crc) {
   uint32_t address = CAND_FOCAN_CRC;
-  CAN_DATA RxData = { 0 };
+  CAN_DATA RxData = {0};
   can_tx_t Tx;
   uint8_t p;
 
@@ -64,7 +71,8 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
   return p;
 }
 
-uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32_t total_size) {
+uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset,
+                            uint32_t total_size) {
   can_tx_t Tx;
   uint32_t pendingBlk, tmpBlk;
   uint8_t p;
@@ -96,7 +104,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
       ptr += tmpBlk;
 
       // indicator
-      percent = (float) (offset * 100.0f / total_size);
+      percent = (float)(offset * 100.0f / total_size);
       FOCAN_SetProgress(IAP_HMI, percent);
     }
 
@@ -105,7 +113,8 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset, uint32
   return p;
 }
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions implementation
+ * --------------------------------------------*/
 static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
   can_tx_t Tx;
   uint32_t pendingSubBlk, tmpSubBlk;
@@ -133,7 +142,9 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
   return p;
 }
 
-static uint8_t FOCAN_WriteAndWaitResponse(can_tx_t *Tx, uint32_t address, uint32_t DLC, uint32_t timeout, uint32_t retry) {
+static uint8_t FOCAN_WriteAndWaitResponse(can_tx_t *Tx, uint32_t address,
+                                          uint32_t DLC, uint32_t timeout,
+                                          uint32_t retry) {
   uint8_t p;
 
   do {
@@ -146,12 +157,14 @@ static uint8_t FOCAN_WriteAndWaitResponse(can_tx_t *Tx, uint32_t address, uint32
 
   // handle error
   if (!p)
-    *(uint32_t*) IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
+    *(uint32_t *)IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
 
   return p;
 }
 
-static uint8_t FOCAN_WriteAndWaitSqueezed(can_tx_t *Tx, uint32_t address, uint32_t DLC, CAN_DATA *RxData, uint32_t timeout, uint32_t retry) {
+static uint8_t FOCAN_WriteAndWaitSqueezed(can_tx_t *Tx, uint32_t address,
+                                          uint32_t DLC, CAN_DATA *RxData,
+                                          uint32_t timeout, uint32_t retry) {
   uint8_t p;
 
   do {
@@ -164,7 +177,7 @@ static uint8_t FOCAN_WriteAndWaitSqueezed(can_tx_t *Tx, uint32_t address, uint32
 
   // handle error
   if (!p)
-    *(uint32_t*) IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
+    *(uint32_t *)IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
 
   return p;
 }
@@ -191,7 +204,8 @@ static uint8_t FOCAN_WaitResponse(uint32_t address, uint32_t timeout) {
   return response;
 }
 
-static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData, uint32_t timeout) {
+static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData,
+                                  uint32_t timeout) {
   uint8_t step = 0, reply = 3;
   can_rx_t Rx;
   uint32_t tick;
@@ -203,18 +217,18 @@ static uint8_t FOCAN_WaitSqueezed(uint32_t address, CAN_DATA *RxData, uint32_t t
     if (CANBUS_Read(&Rx)) {
       if (CANBUS_ReadID(&(Rx.header)) == address) {
         switch (step) {
-          case 0: // ack
-            step += (Rx.data.u8[0] == FOCAN_ACK);
-            break;
-          case 1: // data
-            memcpy(RxData, &(Rx.data), 8);
-            step++;
-            break;
-          case 2: // ack
-            step += (Rx.data.u8[0] == FOCAN_ACK);
-            break;
-          default:
-            break;
+        case 0: // ack
+          step += (Rx.data.u8[0] == FOCAN_ACK);
+          break;
+        case 1: // data
+          memcpy(RxData, &(Rx.data), 8);
+          step++;
+          break;
+        case 2: // ack
+          step += (Rx.data.u8[0] == FOCAN_ACK);
+          break;
+        default:
+          break;
         }
       }
     }

@@ -9,34 +9,36 @@
  *
  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ *modification, are permitted provided that the following conditions are met:
  *   1. Redistributions of source code must retain the above copyright notice,
  *      this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright notice,
- *      this list of conditions and the following disclaimer in the documentation
- *      and/or other materials provided with the distribution.
+ *   2. Redistributions in binary form must reproduce the above copyright
+ *notice, this list of conditions and the following disclaimer in the
+ *documentation and/or other materials provided with the distribution.
  *   3. Neither the name of STMicroelectronics nor the names of its contributors
  *      may be used to endorse or promote products derived from this software
  *      without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  ******************************************************************************
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "i2s.h"
 #include "Libs/_audio.h"
+#include "i2s.h"
+
 
 /* External variables --------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -49,24 +51,28 @@ extern uint16_t SOUND_SAMPLE[];
 /* Private variables ---------------------------------------------------------*/
 static audio_t audio = {
     .initial_volume = 10,
-    .size = { 0 },
-		.pi2s = &hi2s3,
+    .size = {0},
+    .pi2s = &hi2s3,
 };
 
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
-static const uint32_t I2SFreq[8] = { 8000, 11025, 16000, 22050, 32000, 44100, 48000, 96000 };
-static const uint32_t I2SPLLN[8] = { 256, 429, 213, 429, 426, 271, 258, 344 };
-static const uint32_t I2SPLLR[8] = { 5, 4, 4, 4, 4, 6, 3, 1 };
+static const uint32_t I2SFreq[8] = {8000,  11025, 16000, 22050,
+                                    32000, 44100, 48000, 96000};
+static const uint32_t I2SPLLN[8] = {256, 429, 213, 429, 426, 271, 258, 344};
+static const uint32_t I2SPLLR[8] = {5, 4, 4, 4, 4, 6, 3, 1};
 
-/* Private functions prototype ------------------------------------------------*/
+/* Private functions prototype
+ * ------------------------------------------------*/
 static uint8_t I2S_Init(uint32_t AudioFreq);
-static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
+static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume,
+                              uint32_t AudioFreq);
 static void AUDIO_OUT_DeInit(void);
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
 static void lock(void);
 static void unlock(void);
 
-/* Public functions implementation ---------------------------------------------*/
+/* Public functions implementation
+ * ---------------------------------------------*/
 void AUDIO_Init(void) {
   uint8_t ret;
 
@@ -77,7 +83,8 @@ void AUDIO_Init(void) {
     GATE_AudioReset();
 
     /* Initialize Wave player (Codec, DMA, I2C) */
-    ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, audio.initial_volume, SOUND_FREQ);
+    ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, audio.initial_volume,
+                         SOUND_FREQ);
 
     _DelayMS(500);
   } while (ret != AUDIO_OK);
@@ -100,7 +107,7 @@ void AUDIO_Play(void) {
     audio.size.played = SOUND_SIZE;
 
   /* Start playing Wave */
-  AUDIO_OUT_Play((uint16_t*) SOUND_SAMPLE, audio.size.played);
+  AUDIO_OUT_Play((uint16_t *)SOUND_SAMPLE, audio.size.played);
 }
 
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
@@ -133,15 +140,15 @@ void AUDIO_BeepStop(void) {
  * @param  Size: Number of data to be written
  */
 void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
-  HAL_I2S_Transmit_DMA(audio.pi2s, pData, DMA_MAX(Size/AUDIODATA_SIZE));
+  HAL_I2S_Transmit_DMA(audio.pi2s, pData, DMA_MAX(Size / AUDIODATA_SIZE));
 }
 
 /**
  * @brief   Pauses the audio file stream. In case of using DMA, the DMA Pause
  *          feature is used.
  * WARNING: When calling AUDIO_OUT_Pause() function for pause, only the
- *          AUDIO_OUT_Resume() function should be called for resume (use of AUDIO_OUT_Play()
- *          function for resume could lead to unexpected behavior).
+ *          AUDIO_OUT_Resume() function should be called for resume (use of
+ * AUDIO_OUT_Play() function for resume could lead to unexpected behavior).
  * @retval  AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_Pause(void) {
@@ -160,8 +167,8 @@ uint8_t AUDIO_OUT_Pause(void) {
 /**
  * @brief   Resumes the audio file streaming.
  * WARNING: When calling AUDIO_OUT_Pause() function for pause, only
- *          AUDIO_OUT_Resume() function should be called for resume (use of AUDIO_OUT_Play()
- *          function for resume could lead to unexpected behavior).
+ *          AUDIO_OUT_Resume() function should be called for resume (use of
+ * AUDIO_OUT_Play() function for resume could lead to unexpected behavior).
  * @retval  AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_Resume(void) {
@@ -238,7 +245,8 @@ uint8_t AUDIO_OUT_SetMute(uint32_t Cmd) {
 /**
  * @brief  Switch dynamically (while audio file is played) the output target
  *         (speaker or headphone).
- * @note   This function modifies a global variable of the audio codec driver: OutputDev.
+ * @note   This function modifies a global variable of the audio codec driver:
+ * OutputDev.
  * @param  Output: specifies the audio output target: OUTPUT_DEVICE_SPEAKER,
  *         OUTPUT_DEVICE_HEADPHONE, OUTPUT_DEVICE_BOTH or OUTPUT_DEVICE_AUTO
  * @retval AUDIO_OK if correct communication, else wrong communication
@@ -274,7 +282,8 @@ void AUDIO_OUT_SetFrequency(uint32_t AudioFreq) {
  *         Being __weak it can be overwritten by the application
  * @param  Params : pointer on additional configuration parameters, can be NULL.
  */
-__weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq, void *Params) {
+__weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq,
+                                  void *Params) {
   RCC_PeriphCLKInitTypeDef rccclkinit;
   uint8_t index = 0, freqindex = 0xFF;
 
@@ -287,16 +296,13 @@ __weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq, v
 
   /* Enable PLLI2S clock */
   HAL_RCCEx_GetPeriphCLKConfig(&rccclkinit);
-  if ((freqindex & 0x7) == 0)
-  {
+  if ((freqindex & 0x7) == 0) {
     /* I2S clock config
          PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) \D7 (PLLI2SN/PLLM)
          I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
     rccclkinit.PLLI2S.PLLI2SN = I2SPLLN[freqindex];
     rccclkinit.PLLI2S.PLLI2SR = I2SPLLR[freqindex];
-  }
-  else
-  {
+  } else {
     /* I2S clock config
          PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) \D7 (PLLI2SN/PLLM)
          I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
@@ -349,15 +355,16 @@ __weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
  */
 __weak void AUDIO_OUT_TransferComplete_CallBack(void) {
   // play it
-  AUDIO_OUT_ChangeBuffer((uint16_t*) (SOUND_SAMPLE + ((SOUND_SIZE - audio.size.remaining) / AUDIODATA_SIZE)),
+  AUDIO_OUT_ChangeBuffer(
+      (uint16_t *)(SOUND_SAMPLE +
+                   ((SOUND_SIZE - audio.size.remaining) / AUDIODATA_SIZE)),
       audio.size.played);
 }
 
 /**
  * @brief  Manages the DMA FIFO error event.
  */
-__weak void AUDIO_OUT_Error_CallBack(void) {
-}
+__weak void AUDIO_OUT_Error_CallBack(void) {}
 
 /**
  * @brief  Tx Transfer completed callbacks.
@@ -375,12 +382,14 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
  */
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
   if (hi2s->Instance == audio.pi2s->Instance)
-    /* Manage the remaining file size and new address offset: This function should
-         be coded by user (its prototype is already declared in stm32f4_discovery_audio.h) */
+    /* Manage the remaining file size and new address offset: This function
+       should be coded by user (its prototype is already declared in
+       stm32f4_discovery_audio.h) */
     AUDIO_OUT_HalfTransfer_CallBack();
 }
 
-/* Private functions implementation ---------------------------------------------*/
+/* Private functions implementation
+ * ---------------------------------------------*/
 /**
  * @brief  Configures the audio peripherals.
  * @param  OutputDevice: OUTPUT_DEVICE_SPEAKER, OUTPUT_DEVICE_HEADPHONE,
@@ -389,20 +398,24 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
  * @param  AudioFreq: Audio frequency used to play the audio stream.
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
-static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq) {
+static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume,
+                              uint32_t AudioFreq) {
   uint8_t ret = AUDIO_OK;
 
   /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
   AUDIO_OUT_ClockConfig(audio.pi2s, AudioFreq, NULL);
 
   /* I2S data transfer preparation:
-     Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
+     Prepare the Media to be used for the audio transfer from memory to I2S
+     peripheral */
   if (HAL_I2S_GetState(audio.pi2s) == HAL_I2S_STATE_RESET)
-    /* Init the I2S MSP: this __weak function can be redefined by the application*/
+    /* Init the I2S MSP: this __weak function can be redefined by the
+     * application*/
     AUDIO_OUT_MspInit(audio.pi2s, NULL);
 
   /* I2S data transfer preparation:
-     Prepare the Media to be used for the audio transfer from memory to I2S peripheral */
+     Prepare the Media to be used for the audio transfer from memory to I2S
+     peripheral */
   /* Configure the I2S peripheral */
   if (I2S_Init(AudioFreq) != AUDIO_OK)
     ret = AUDIO_ERROR;
@@ -435,7 +448,7 @@ static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
     return AUDIO_ERROR;
 
   /* Update the Media layer and enable it for play */
-  HAL_I2S_Transmit_DMA(audio.pi2s, pBuffer, DMA_MAX(Size/AUDIODATA_SIZE));
+  HAL_I2S_Transmit_DMA(audio.pi2s, pBuffer, DMA_MAX(Size / AUDIODATA_SIZE));
   /* Return AUDIO_OK when all operations are correctly done */
   return AUDIO_OK;
 }
@@ -465,14 +478,14 @@ static uint8_t I2S_Init(uint32_t AudioFreq) {
 }
 
 static void lock(void) {
-  #if (RTOS_ENABLE)
+#if (RTOS_ENABLE)
   osMutexAcquire(AudioMutexHandle, osWaitForever);
-  #endif
+#endif
 }
 
 static void unlock(void) {
-  #if (RTOS_ENABLE)
+#if (RTOS_ENABLE)
   osMutexRelease(AudioMutexHandle);
-  #endif
+#endif
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -9,48 +9,48 @@
 #define INC_LIBS__MQTT_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "MQTTPacket.h"
-#include "Libs/_utils.h"
 #include "Libs/_command.h"
+#include "Libs/_utils.h"
+#include "MQTTPacket.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MQTT_USERNAME          						""
-#define MQTT_PASSWORD          						""
-#define MQTT_KEEPALIVE          (uint8_t) 30				// in second
-#define MQTT_PERSISTENT         (uint8_t) 0
+#define MQTT_USERNAME ""
+#define MQTT_PASSWORD ""
+#define MQTT_KEEPALIVE (uint8_t)30 // in second
+#define MQTT_PERSISTENT (uint8_t)0
 
 /* Exported structs --------------------------------------------------------*/
 typedef struct {
-	char topic[20];
-	unsigned short packetid;
-	unsigned char dup;
-	unsigned char retained;
-	unsigned char packettype;
-	int qos;
+  char topic[20];
+  unsigned short packetid;
+  unsigned char dup;
+  unsigned char retained;
+  unsigned char packettype;
+  int qos;
 } mqtt_data_t;
 
 typedef struct {
-	unsigned short packetid;
+  unsigned short packetid;
   uint8_t subscribed;
   uint8_t willed;
-	uint32_t tick;
-	struct {
-		int command;
-		int response;
-		int report;
-		int will;
-	} qos;
-	struct {
-		char command[20];
-		char response[20];
-		char report[20];
-		char will[20];
-	} topic;
-	struct {
-		command_t command;
-		uint8_t received;
-		mqtt_data_t d;
-	} rx;
+  uint32_t tick;
+  struct {
+    int command;
+    int response;
+    int report;
+    int will;
+  } qos;
+  struct {
+    char command[20];
+    char response[20];
+    char report[20];
+    char will[20];
+  } topic;
+  struct {
+    command_t command;
+    uint8_t received;
+    mqtt_data_t d;
+  } rx;
 } mqtt_t;
 
 /* Public functions prototypes ----------------------------------------------*/

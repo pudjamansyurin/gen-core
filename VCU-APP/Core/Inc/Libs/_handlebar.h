@@ -12,9 +12,10 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MODE_TIME_GUARD              (uint16_t) 3000
+#define MODE_TIME_GUARD (uint16_t)3000
 
-/* Exported enum ----------------------------------------------------------------*/
+/* Exported enum
+ * ----------------------------------------------------------------*/
 typedef enum {
   HBAR_K_SELECT = 0,
   HBAR_K_SET,
@@ -53,7 +54,8 @@ typedef enum {
   HBAR_M_REPORT_MAX = 2
 } HBAR_MODE_REPORT;
 
-/* Exported struct --------------------------------------------------------------*/
+/* Exported struct
+ * --------------------------------------------------------------*/
 typedef struct {
   uint8_t max[HBAR_M_MAX];
   uint8_t mode[HBAR_M_MAX];
@@ -88,7 +90,8 @@ typedef struct {
   uint8_t right;
 } sein_t;
 
-/* Exported variables ---------------------------------------------------------*/
+/* Exported variables
+ * ---------------------------------------------------------*/
 extern hbar_t HBAR;
 
 /* Public functions prototype ------------------------------------------------*/

@@ -12,14 +12,15 @@
 #include "Drivers/_fz3387.h"
 #include "Libs/_utils.h"
 
-/* Structs --------------------------------------------------------------------*/
+/* Structs
+ * --------------------------------------------------------------------*/
 typedef struct {
-	uint8_t db[FINGER_USER_MAX];
+  uint8_t db[FINGER_USER_MAX];
 } finger_db_t;
 
 typedef struct {
-	UART_HandleTypeDef *puart;
-	DMA_HandleTypeDef *pdma;
+  UART_HandleTypeDef *puart;
+  DMA_HandleTypeDef *pdma;
 } finger_t;
 
 /* Public functions prototype ------------------------------------------------*/

@@ -12,10 +12,12 @@
 #include "Drivers/_simcom.h"
 #include "Libs/_at.h"
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type);
 uint8_t FOTA_DownloadCRC(at_ftpget_t *ftpGET, uint32_t *crc);
-uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len, IAP_TYPE type, uint32_t timeout);
+uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
+                              IAP_TYPE type, uint32_t timeout);
 uint8_t FOTA_ValidateCRC(uint32_t crc, uint32_t len, uint32_t address);
 uint8_t FOTA_ValidImage(uint32_t address);
 void FOTA_JumpToApplication(void);

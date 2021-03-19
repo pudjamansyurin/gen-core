@@ -13,27 +13,27 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define GPS_INTERVAL          (uint16_t) 1				// in second
-#define GPS_MIN_LENGTH				 (uint8_t) 100
+#define GPS_INTERVAL (uint16_t)1 // in second
+#define GPS_MIN_LENGTH (uint8_t)100
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-	float dop_h;
-	float dop_v;
-	float altitude;
-	float latitude;
-	float longitude;
-	float heading;
-	float speed_kph;
-	float speed_mps;
-	uint8_t sat_in_use;
-	uint8_t fix;
+  float dop_h;
+  float dop_v;
+  float altitude;
+  float latitude;
+  float longitude;
+  float heading;
+  float speed_kph;
+  float speed_mps;
+  uint8_t sat_in_use;
+  uint8_t fix;
 } gps_data_t;
 
 typedef struct {
-	nmea_t nmea;
-	UART_HandleTypeDef *puart;
-	DMA_HandleTypeDef *pdma;
+  nmea_t nmea;
+  UART_HandleTypeDef *puart;
+  DMA_HandleTypeDef *pdma;
 } gps_t;
 
 /* Public functions prototype ------------------------------------------------*/

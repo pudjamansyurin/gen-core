@@ -19,13 +19,13 @@ typedef struct {
 } timestamp_t;
 
 typedef struct __attribute__((packed)) {
-	uint8_t Year;
-	uint8_t Month;
-	uint8_t Date;
-	uint8_t Hours;
-	uint8_t Minutes;
-	uint8_t Seconds;
-	uint8_t WeekDay;
+  uint8_t Year;
+  uint8_t Month;
+  uint8_t Date;
+  uint8_t Hours;
+  uint8_t Minutes;
+  uint8_t Seconds;
+  uint8_t WeekDay;
 } datetime_t;
 
 /* Public functions prototype ------------------------------------------------*/

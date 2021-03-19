@@ -9,19 +9,21 @@
 #define GYRO_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
 #include "Drivers/_mpu6050.h"
+#include "Libs/_utils.h"
+
 
 /* Exported constants --------------------------------------------------------*/
-#define GRAVITY_FORCE                    (float) 9.8
+#define GRAVITY_FORCE (float)9.8
 
-#define MOVED_LIMIT                    (uint8_t) (5)
-#define GYROSCOPE_LIMIT                (uint8_t) (45)
-#define ACCELEROMETER_LIMIT           (uint32_t) (7000)
+#define MOVED_LIMIT (uint8_t)(5)
+#define GYROSCOPE_LIMIT (uint8_t)(45)
+#define ACCELEROMETER_LIMIT (uint32_t)(7000)
 
-#define RAD2DEG(rad)                             ((rad) * 180.0 / M_PI)
+#define RAD2DEG(rad) ((rad)*180.0 / M_PI)
 
-/* Exported struct ------------------------------------------------------------*/
+/* Exported struct
+ * ------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
   int8_t yaw;
   int8_t pitch;

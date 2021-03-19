@@ -6,46 +6,46 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdarg.h>
 #include "Drivers/_log.h"
 #include "Libs/_utils.h"
+#include <stdarg.h>
 
-/* External variables ----------------------------------------------------------*/
+/* External variables
+ * ----------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t LogRecMutexHandle;
 #endif
 
-/* Private functions declarations ----------------------------------------------*/
+/* Private functions declarations
+ * ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 static void SendITM(char ch);
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 int __io_putchar(int ch) {
   SendITM(ch);
   return ch;
 }
 
-int _write(int file, char *ptr, int len)
-{
-	int DataIdx;
+int _write(int file, char *ptr, int len) {
+  int DataIdx;
 
   lock();
-	for (DataIdx = 0; DataIdx < len; DataIdx++)
-		__io_putchar(*ptr++);
+  for (DataIdx = 0; DataIdx < len; DataIdx++)
+    __io_putchar(*ptr++);
   unlock();
 
-	return len;
+  return len;
 }
 
-void printf_init(void) {
-  setvbuf(stdout, NULL, _IONBF, 0);
-}
+void printf_init(void) { setvbuf(stdout, NULL, _IONBF, 0); }
 
 void printf_hex(char *data, uint16_t size) {
   lock();
-  for(uint32_t i=0; i<size; i++)
-    printf("%02X", *(data+i));
+  for (uint32_t i = 0; i < size; i++)
+    printf("%02X", *(data + i));
   unlock();
 }
 // void Log(const char *fmt, ...) {
@@ -57,7 +57,8 @@ void printf_hex(char *data, uint16_t size) {
 //   unlock();
 // }
 
-/* Private functions implementations ----------------------------------------------*/
+/* Private functions implementations
+ * ----------------------------------------------*/
 static void lock(void) {
 #if (RTOS_ENABLE)
   osMutexAcquire(LogRecMutexHandle, osWaitForever);
@@ -78,11 +79,10 @@ static void SendITM(char ch) {
   tick = _GetTickMS();
   while (_GetTickMS() - tick <= 3) {
     if (ITM->PORT[0].u32 != 0) {
-      ITM->PORT[0].u8 = (uint8_t) ch;
+      ITM->PORT[0].u8 = (uint8_t)ch;
       break;
     }
     _DelayMS(1);
   }
 #endif
 }
-

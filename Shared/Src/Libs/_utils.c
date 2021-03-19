@@ -8,13 +8,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 #if RTOS_ENABLE
-uint8_t _osThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout) {
-	*notif = osThreadFlagsWait(flags, options, timeout);
+uint8_t _osThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options,
+                           uint32_t timeout) {
+  *notif = osThreadFlagsWait(flags, options, timeout);
 
   if (*notif > EVT_MASK)
-  	return 0;
+    return 0;
 
   return (*notif & flags) > 0;
 }
@@ -60,7 +62,7 @@ uint32_t _ByteSwap32(uint32_t x) {
   return y;
 }
 
-//int8_t _BitPos(uint64_t event_id) {
+// int8_t _BitPos(uint64_t event_id) {
 //  int8_t pos = -1;
 //
 //  for (int8_t i = 0; i < 64; i++)

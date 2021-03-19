@@ -8,16 +8,19 @@
 #include "Drivers/_nrf24l01.h"
 #include "Libs/_remote.h"
 
-/* Private variables ----------------------------------------------------------*/
+/* Private variables
+ * ----------------------------------------------------------*/
 static nrf24l01 NRF;
 
-/* Private functions prototype ------------------------------------------------*/
+/* Private functions prototype
+ * ------------------------------------------------*/
 static void csn_set(void);
 static void csn_reset(void);
 static void ce_set(void);
 static void ce_reset(void);
 
-/* Public functions implementation ---------------------------------------------*/
+/* Public functions implementation
+ * ---------------------------------------------*/
 void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
   NRF.config.addr_width = NRF_ADDR_LENGTH - 2;
   NRF.config.payload_length = NRF_DATA_LENGTH;
@@ -26,7 +29,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
   NRF.config.data_rate = NRF_DATA_RATE_250KBPS;
   NRF.config.tx_power = NRF_TX_PWR_M6dBm;
   NRF.config.crc_width = NRF_CRC_WIDTH_1B;
-  NRF.config.retransmit_count = 0x0F;   // maximum is 15 times
+  NRF.config.retransmit_count = 0x0F; // maximum is 15 times
   NRF.config.retransmit_delay = 0x0F; // 4000us, LSB:250us
   NRF.config.rf_channel = 110;
   NRF.config.spi = hspi;
@@ -37,7 +40,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
 NRF_RESULT nrf_check(void) {
   char *nRF24_TEST_ADDR = "nRF24";
   uint8_t buflen = strlen(nRF24_TEST_ADDR);
-  uint8_t *txbuf = (uint8_t*) nRF24_TEST_ADDR;
+  uint8_t *txbuf = (uint8_t *)nRF24_TEST_ADDR;
   uint8_t rxbuf[buflen];
 
   nrf_write_register_mb(NRF_TX_ADDR, txbuf, buflen);
@@ -47,7 +50,8 @@ NRF_RESULT nrf_check(void) {
   return (memcmp(rxbuf, txbuf, buflen) == 0) ? NRF_OK : NRF_ERROR;
 }
 
-NRF_RESULT nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address, uint8_t payload_width) {
+NRF_RESULT nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address,
+                           uint8_t payload_width) {
   ce_reset();
   nrf_set_tx_address(tx_address);
   nrf_set_rx_address_p0(rx_address);
@@ -113,8 +117,8 @@ NRF_RESULT nrf_configure(void) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
-    uint8_t *rx, uint8_t len) {
+NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *rx,
+                            uint8_t len) {
   uint8_t myTX[len + 1];
   uint8_t myRX[len + 1];
   myTX[0] = cmd;
@@ -132,7 +136,7 @@ NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
     ;
 
   if (HAL_SPI_TransmitReceive(NRF.config.spi, myTX, myRX, 1 + len,
-      NRF.config.spi_timeout) != HAL_OK) {
+                              NRF.config.spi_timeout) != HAL_OK) {
     return NRF_ERROR;
   }
 
@@ -155,22 +159,20 @@ uint8_t nrf_send_command_single(uint8_t data) {
     ;
 
   HAL_SPI_TransmitReceive(NRF.config.spi, &data, &rx, 1,
-      NRF.config.spi_timeout);
+                          NRF.config.spi_timeout);
 
   return rx;
 }
 
 NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data) {
   uint8_t tx = 0;
-  if (nrf_send_command(NRF_CMD_R_REGISTER | reg, &tx, data, 1)
-      != NRF_OK) {
+  if (nrf_send_command(NRF_CMD_R_REGISTER | reg, &tx, data, 1) != NRF_OK) {
     return NRF_ERROR;
   }
   return NRF_OK;
 }
 
-NRF_RESULT nrf_read_register_mb(uint8_t reg, uint8_t *data,
-    uint8_t count) {
+NRF_RESULT nrf_read_register_mb(uint8_t reg, uint8_t *data, uint8_t count) {
   csn_reset();
   nrf_send_command_single(NRF_CMD_R_REGISTER | reg);
   while (count--) {
@@ -182,15 +184,13 @@ NRF_RESULT nrf_read_register_mb(uint8_t reg, uint8_t *data,
 
 NRF_RESULT nrf_write_register(uint8_t reg, uint8_t *data) {
   uint8_t rx = 0;
-  if (nrf_send_command(NRF_CMD_W_REGISTER | reg, data, &rx, 1)
-      != NRF_OK) {
+  if (nrf_send_command(NRF_CMD_W_REGISTER | reg, data, &rx, 1) != NRF_OK) {
     return NRF_ERROR;
   }
   return NRF_OK;
 }
 
-NRF_RESULT nrf_write_register_mb(uint8_t reg, uint8_t *data,
-    uint8_t count) {
+NRF_RESULT nrf_write_register_mb(uint8_t reg, uint8_t *data, uint8_t count) {
   csn_reset();
   nrf_send_command_single(NRF_CMD_W_REGISTER | reg);
   while (count--) {
@@ -203,7 +203,7 @@ NRF_RESULT nrf_write_register_mb(uint8_t reg, uint8_t *data,
 NRF_RESULT nrf_read_rx_payload(uint8_t *data) {
   uint8_t tx[NRF.config.payload_length];
   if (nrf_send_command(NRF_CMD_R_RX_PAYLOAD, tx, data,
-      NRF.config.payload_length) != NRF_OK) {
+                       NRF.config.payload_length) != NRF_OK) {
     return NRF_ERROR;
   }
   return NRF_OK;
@@ -212,7 +212,7 @@ NRF_RESULT nrf_read_rx_payload(uint8_t *data) {
 NRF_RESULT nrf_write_tx_payload(const uint8_t *data) {
   uint8_t rx[NRF.config.payload_length];
   if (nrf_send_command(NRF_CMD_W_TX_PAYLOAD, data, rx,
-      NRF.config.payload_length) != NRF_OK) {
+                       NRF.config.payload_length) != NRF_OK) {
     return NRF_ERROR;
   }
   return NRF_OK;
@@ -221,7 +221,7 @@ NRF_RESULT nrf_write_tx_payload(const uint8_t *data) {
 NRF_RESULT nrf_write_tx_payload_noack(const uint8_t *data) {
   uint8_t rx[NRF.config.payload_length];
   if (nrf_send_command(NRF_CMD_W_TX_PAYLOAD_NOACK, data, rx,
-      NRF.config.payload_length) != NRF_OK) {
+                       NRF.config.payload_length) != NRF_OK) {
     return NRF_ERROR;
   }
   return NRF_OK;
@@ -540,8 +540,8 @@ NRF_RESULT nrf_enable_max_retransmit_irq(uint8_t activate) {
 
 NRF_RESULT nrf_set_rx_address_p0(const uint8_t *address) {
   uint8_t rx[5];
-  if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_RX_ADDR_P0, address, rx,
-      5) != NRF_OK) {
+  if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_RX_ADDR_P0, address, rx, 5) !=
+      NRF_OK) {
     return NRF_ERROR;
   }
   NRF.config.rx_address = address;
@@ -550,8 +550,8 @@ NRF_RESULT nrf_set_rx_address_p0(const uint8_t *address) {
 
 NRF_RESULT nrf_set_rx_address_p1(const uint8_t *address) {
   uint8_t rx[5];
-  if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_RX_ADDR_P1, address, rx,
-      5) != NRF_OK) {
+  if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_RX_ADDR_P1, address, rx, 5) !=
+      NRF_OK) {
     return NRF_ERROR;
   }
   NRF.config.rx_address = address;
@@ -560,8 +560,8 @@ NRF_RESULT nrf_set_rx_address_p1(const uint8_t *address) {
 
 NRF_RESULT nrf_set_tx_address(const uint8_t *address) {
   uint8_t rx[5];
-  if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_TX_ADDR, address, rx, 5)
-      != NRF_OK) {
+  if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_TX_ADDR, address, rx, 5) !=
+      NRF_OK) {
     return NRF_ERROR;
   }
   NRF.config.tx_address = address;
@@ -695,10 +695,9 @@ void nrf_irq_handler(void) {
       nrf_packet_received_callback(rx_buffer);
     }
     ce_set();
-
   }
   if ((status & (1 << 5))) { // TX Data Sent Interrupt
-    status |= 1 << 5;      // clear the interrupt flag
+    status |= 1 << 5;        // clear the interrupt flag
 
     ce_reset();
     //    nrf_rx_tx_control(NRF_STATE_RX);
@@ -710,7 +709,7 @@ void nrf_irq_handler(void) {
     NRF.tx_busy = 0;
   }
   if ((status & (1 << 4))) { // MaxRetransmits reached
-    status |= 1 << 4;      // clear the interrupt flag
+    status |= 1 << 4;        // clear the interrupt flag
 
     ce_reset();
     nrf_flush_tx();
@@ -734,19 +733,12 @@ __weak void nrf_packet_received_callback(uint8_t *data) {
   RMT_PacketReceived(data);
 }
 
-/* Private functions implementation --------------------------------------------*/
-static void csn_set(void) {
-  GATE_RemoteCSN(GPIO_PIN_SET);
-}
+/* Private functions implementation
+ * --------------------------------------------*/
+static void csn_set(void) { GATE_RemoteCSN(GPIO_PIN_SET); }
 
-static void csn_reset(void) {
-  GATE_RemoteCSN(GPIO_PIN_RESET);
-}
+static void csn_reset(void) { GATE_RemoteCSN(GPIO_PIN_RESET); }
 
-static void ce_set(void) {
-  GATE_RemoteCE(GPIO_PIN_SET);
-}
+static void ce_set(void) { GATE_RemoteCE(GPIO_PIN_SET); }
 
-static void ce_reset(void) {
-  GATE_RemoteCE(GPIO_PIN_RESET);
-}
+static void ce_reset(void) { GATE_RemoteCE(GPIO_PIN_RESET); }

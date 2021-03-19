@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "iwdg.h"
 #include "Drivers/_iwdg.h"
+#include "iwdg.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -28,7 +28,8 @@ void IWDG_Refresh(void) {
   unlock();
 }
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions implementation
+ * --------------------------------------------*/
 static void lock(void) {
 #if (RTOS_ENABLE)
   osMutexAcquire(IwdgMutexHandle, osWaitForever);

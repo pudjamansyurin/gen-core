@@ -5,16 +5,18 @@
  *      Author: Puja
  */
 /* Includes ------------------------------------------------------------------*/
-#include "i2c.h"
 #include "Libs/_gyro.h"
 #include "Nodes/VCU.h"
+#include "i2c.h"
+
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t GyroMutexHandle;
 #endif
 
-/* Private variables ----------------------------------------------------------*/
+/* Private variables
+ * ----------------------------------------------------------*/
 static gyro_t gyro = {
     .detector_init = 1,
     .pi2c = &hi2c3,
@@ -29,7 +31,8 @@ static uint8_t GYRO_Moved(motion_t *refference, motion_t *current);
 static void Debugger(movement_t *movement);
 static void RawDebugger(mems_t *mems);
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void GYRO_Init(void) {
   MPU6050_Result result;
 
@@ -41,9 +44,8 @@ void GYRO_Init(void) {
     GATE_GyroReset();
 
     // module initiate
-    result = MPU6050_Init(gyro.pi2c, &(gyro.mpu),
-        MPU6050_Device_0, MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s
-    );
+    result = MPU6050_Init(gyro.pi2c, &(gyro.mpu), MPU6050_Device_0,
+                          MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
 
   } while (result != MPU6050_Result_Ok);
   unlock();
@@ -55,7 +57,7 @@ void GYRO_DeInit(void) {
 }
 
 void GYRO_Decision(movement_t *movement) {
-	motion_t *motion = &(VCU.d.motion);
+  motion_t *motion = &(VCU.d.motion);
   mems_t mems;
 
   lock();
@@ -64,19 +66,15 @@ void GYRO_Decision(movement_t *movement) {
   Convert(motion, &(mems.gyroscope));
 
   // calculate accel
-  movement->crash.value = sqrt(
-      pow(mems.accelerometer.x, 2) +
-      pow(mems.accelerometer.y, 2) +
-      pow(mems.accelerometer.z, 2)
-  ) / GRAVITY_FORCE;
+  movement->crash.value =
+      sqrt(pow(mems.accelerometer.x, 2) + pow(mems.accelerometer.y, 2) +
+           pow(mems.accelerometer.z, 2)) /
+      GRAVITY_FORCE;
   movement->crash.state = movement->crash.value > ACCELEROMETER_LIMIT;
 
   // calculate gyro
-  movement->fall.value = sqrt(
-      pow(motion->roll, 2) +
-      pow(motion->pitch, 2) +
-      pow(motion->yaw, 2)
-  );
+  movement->fall.value =
+      sqrt(pow(motion->roll, 2) + pow(motion->pitch, 2) + pow(motion->yaw, 2));
   movement->fall.state = movement->fall.value > GYROSCOPE_LIMIT;
 
   // fallen indicator
@@ -88,7 +86,7 @@ void GYRO_Decision(movement_t *movement) {
 }
 
 void GYRO_MonitorMovement(void) {
-	 motion_t *motion = &(VCU.d.motion);
+  motion_t *motion = &(VCU.d.motion);
   static motion_t refference;
 
   lock();
@@ -110,7 +108,8 @@ void GYRO_ResetDetector(void) {
   unlock();
 }
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions implementation
+ * --------------------------------------------*/
 static void lock(void) {
 #if (RTOS_ENABLE)
   osMutexAcquire(GyroMutexHandle, osWaitForever);
@@ -165,11 +164,9 @@ static void Convert(motion_t *motion, coordinate_t *gyro) {
 static uint8_t GYRO_Moved(motion_t *refference, motion_t *current) {
   uint8_t euclidean;
 
-  euclidean = sqrt(
-      pow(refference->roll - current->roll, 2) +
-      pow(refference->pitch - current->pitch, 2) +
-      pow(refference->yaw - current->yaw, 2)
-  );
+  euclidean = sqrt(pow(refference->roll - current->roll, 2) +
+                   pow(refference->pitch - current->pitch, 2) +
+                   pow(refference->yaw - current->yaw, 2));
 
   if (euclidean > MOVED_LIMIT)
     printf("IMU:Gyro moved = %d\n", euclidean);
@@ -178,24 +175,18 @@ static uint8_t GYRO_Moved(motion_t *refference, motion_t *current) {
 
 static void Debugger(movement_t *movement) {
   printf("IMU:Accel[%lu %%] = %lu / %lu\n",
-      movement->crash.value * 100 / ACCELEROMETER_LIMIT,
-      movement->crash.value,
-      ACCELEROMETER_LIMIT
-  );
+         movement->crash.value * 100 / ACCELEROMETER_LIMIT,
+         movement->crash.value, ACCELEROMETER_LIMIT);
   printf("IMU:Gyros[%lu %%] = %lu / %u\n",
-      movement->fall.value * 100 / GYROSCOPE_LIMIT,
-      movement->fall.value,
-      GYROSCOPE_LIMIT
-  );
+         movement->fall.value * 100 / GYROSCOPE_LIMIT, movement->fall.value,
+         GYROSCOPE_LIMIT);
 }
 
 static void RawDebugger(mems_t *mems) {
-  printf(
-      "Acce:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-      "Gyro:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-      "Temp: %d\n\n",
-      mems->accelerometer.x, mems->accelerometer.y, mems->accelerometer.z,
-      mems->gyroscope.x, mems->gyroscope.y, mems->gyroscope.z,
-      (int8_t) mems->temperature
-  );
+  printf("Acce:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+         "Gyro:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+         "Temp: %d\n\n",
+         mems->accelerometer.x, mems->accelerometer.y, mems->accelerometer.z,
+         mems->gyroscope.x, mems->gyroscope.y, mems->gyroscope.z,
+         (int8_t)mems->temperature);
 }

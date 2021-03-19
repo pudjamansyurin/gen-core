@@ -13,9 +13,10 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define HMI1_TIMEOUT    							 (uint32_t) 10000					// ms
+#define HMI1_TIMEOUT (uint32_t)10000 // ms
 
-/* Exported struct ------------------------------------------------------------*/
+/* Exported struct
+ * ------------------------------------------------------------*/
 typedef struct {
   uint8_t run;
   uint32_t tick;
@@ -34,7 +35,7 @@ typedef struct {
 
 typedef struct {
   struct {
-    void (*State)(can_rx_t*);
+    void (*State)(can_rx_t *);
   } r;
 } hmi1_can_t;
 
@@ -46,10 +47,12 @@ typedef struct {
   void (*Power)(GPIO_PinState);
 } hmi1_t;
 
-/* Exported variables ---------------------------------------------------------*/
+/* Exported variables
+ * ---------------------------------------------------------*/
 extern hmi1_t HMI1;
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void HMI1_Init(void);
 void HMI1_Refresh(void);
 void HMI1_CAN_RX_State(can_rx_t *Rx);

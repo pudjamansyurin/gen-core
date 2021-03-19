@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "rng.h"
 #include "Drivers/_rng.h"
+#include "rng.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -23,26 +23,27 @@ static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t RNG_Generate32(uint32_t *payload, uint8_t size) {
-	uint8_t ok = 1;
+  uint8_t ok = 1;
 
-	lock();
-	while(ok && size--){
-		ok = HAL_RNG_GenerateRandomNumber(prng, payload++) == HAL_OK;
-	}
-	unlock();
+  lock();
+  while (ok && size--) {
+    ok = HAL_RNG_GenerateRandomNumber(prng, payload++) == HAL_OK;
+  }
+  unlock();
 
-	return ok;
+  return ok;
 }
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions implementation
+ * --------------------------------------------*/
 static void lock(void) {
-  #if (RTOS_ENABLE)
+#if (RTOS_ENABLE)
   osMutexAcquire(RngMutexHandle, osWaitForever);
-	#endif
+#endif
 }
 
 static void unlock(void) {
-  #if (RTOS_ENABLE)
+#if (RTOS_ENABLE)
   osMutexRelease(RngMutexHandle);
-	#endif
+#endif
 }

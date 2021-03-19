@@ -6,8 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "aes.h"
 #include "Drivers/_aes.h"
+#include "aes.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -26,10 +26,10 @@ static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t AES_Init(void) {
-	uint8_t ok = 0;
+  uint8_t ok = 0;
 
   do {
-  	ok = AES_ChangeKey(NULL);
+    ok = AES_ChangeKey(NULL);
     _DelayMS(100);
   } while (!ok);
 
@@ -55,7 +55,8 @@ uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
   uint8_t ret;
 
   lock();
-  ret = (HAL_CRYP_Encrypt(pcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+  ret = (HAL_CRYP_Encrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst,
+                          1000) == HAL_OK);
   unlock();
 
   return ret;
@@ -65,21 +66,23 @@ uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
   uint8_t ret;
 
   lock();
-  ret = (HAL_CRYP_Decrypt(pcryp, (uint32_t*) pSrc, Sz, (uint32_t*) pDst, 1000) == HAL_OK);
+  ret = (HAL_CRYP_Decrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst,
+                          1000) == HAL_OK);
   unlock();
 
   return ret;
 }
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions implementation
+ * --------------------------------------------*/
 static void lock(void) {
-  #if (RTOS_ENABLE)
+#if (RTOS_ENABLE)
   osMutexAcquire(AesMutexHandle, osWaitForever);
-  #endif
+#endif
 }
 
 static void unlock(void) {
-  #if (RTOS_ENABLE)
+#if (RTOS_ENABLE)
   osMutexRelease(AesMutexHandle);
-  #endif
+#endif
 }

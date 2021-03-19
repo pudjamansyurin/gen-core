@@ -6,30 +6,32 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "can.h"
 #include "Drivers/_canbus.h"
+#include "can.h"
 
-/* External variables ----------------------------------------------------------*/
+/* External variables
+ * ----------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMessageQueueId_t CanRxQueueHandle;
 extern osMutexId_t CanTxMutexHandle;
 #endif
 
-/* Private variables ----------------------------------------------------------*/
-static can_t can = {
-    .active = 0,
-		.pcan = &hcan1
-};
+/* Private variables
+ * ----------------------------------------------------------*/
+static can_t can = {.active = 0, .pcan = &hcan1};
 
-/* Private functions declaration ----------------------------------------------*/
+/* Private functions declaration
+ * ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 static uint8_t Activated(void);
-static void CAN_Header(CAN_TxHeaderTypeDef *header, uint32_t address, uint32_t DLC, uint8_t ext);
+static void CAN_Header(CAN_TxHeaderTypeDef *header, uint32_t address,
+                       uint32_t DLC, uint8_t ext);
 static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData);
 static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData);
 
-/* Public functions implementation ---------------------------------------------*/
+/* Public functions implementation
+ * ---------------------------------------------*/
 void CANBUS_Init(void) {
   uint8_t e;
 
@@ -43,7 +45,8 @@ void CANBUS_Init(void) {
 
 #if (RTOS_ENABLE)
   if (!e)
-    e = (HAL_CAN_ActivateNotification(can.pcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK);
+    e = (HAL_CAN_ActivateNotification(can.pcan, CAN_IT_RX_FIFO0_MSG_PENDING) !=
+         HAL_OK);
 #endif
 
   if (e)
@@ -83,7 +86,8 @@ uint8_t CANBUS_Filter(void) {
 /*----------------------------------------------------------------------------
  write a message to CAN peripheral and transmit it
  *----------------------------------------------------------------------------*/
-uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC, uint8_t ext) {
+uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC,
+                     uint8_t ext) {
   HAL_StatusTypeDef status;
 
   if (!Activated())
@@ -91,7 +95,8 @@ uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC, uint8_t ext) 
 
   lock();
   CAN_Header(&(Tx->header), address, DLC, ext);
-  while (HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0);
+  while (HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0)
+    ;
 
   /* Start the Transmission process */
   status = HAL_CAN_AddTxMessage(can.pcan, &(Tx->header), Tx->data.u8, NULL);
@@ -114,11 +119,11 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
 
   lock();
   if (HAL_CAN_GetRxFifoFillLevel(can.pcan, CAN_RX_FIFO0)) {
-    status = HAL_CAN_GetRxMessage(can.pcan, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
+    status = HAL_CAN_GetRxMessage(can.pcan, CAN_RX_FIFO0, &(Rx->header),
+                                  Rx->data.u8);
 
     // if (status == HAL_OK)
     //   RxDebugger(&(Rx->header), &(Rx->data));
-
   }
   unlock();
 
@@ -138,24 +143,25 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
   if (CANBUS_Read(&Rx))
     if (osKernelGetState() == osKernelRunning)
       osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
-
 }
 #endif
 
-/* Private functions implementation --------------------------------------------*/
+/* Private functions implementation
+ * --------------------------------------------*/
 static void lock(void) {
-  #if (RTOS_ENABLE)
-   osMutexAcquire(CanTxMutexHandle, osWaitForever);
-  #endif
+#if (RTOS_ENABLE)
+  osMutexAcquire(CanTxMutexHandle, osWaitForever);
+#endif
 }
 
 static void unlock(void) {
-  #if (RTOS_ENABLE)
-   osMutexRelease(CanTxMutexHandle);
-  #endif
+#if (RTOS_ENABLE)
+  osMutexRelease(CanTxMutexHandle);
+#endif
 }
 
-static void CAN_Header(CAN_TxHeaderTypeDef *header, uint32_t address, uint32_t DLC, uint8_t ext) {
+static void CAN_Header(CAN_TxHeaderTypeDef *header, uint32_t address,
+                       uint32_t DLC, uint8_t ext) {
   if (ext) {
     header->IDE = CAN_ID_EXT;
     header->ExtId = address;
@@ -178,17 +184,14 @@ static uint8_t Activated(void) {
 
 static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
   printf("CAN:[TX] 0x%08X => %.*s\n",
-      (unsigned int) ((TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId : TxHeader->ExtId),
-          (TxHeader->RTR == CAN_RTR_DATA) ? (int) TxHeader->DLC : strlen("RTR"),
-              (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR"
-  );
+         (unsigned int)((TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId
+                                                      : TxHeader->ExtId),
+         (TxHeader->RTR == CAN_RTR_DATA) ? (int)TxHeader->DLC : strlen("RTR"),
+         (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR");
 }
 
 static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData) {
-  printf("CAN:[RX] 0x%08X <=  %.*s\n",
-      (unsigned int) CANBUS_ReadID(RxHeader),
-      (RxHeader->RTR == CAN_RTR_DATA) ? (int) RxHeader->DLC : strlen("RTR"),
-          (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR"
-  );
+  printf("CAN:[RX] 0x%08X <=  %.*s\n", (unsigned int)CANBUS_ReadID(RxHeader),
+         (RxHeader->RTR == CAN_RTR_DATA) ? (int)RxHeader->DLC : strlen("RTR"),
+         (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR");
 }
-
