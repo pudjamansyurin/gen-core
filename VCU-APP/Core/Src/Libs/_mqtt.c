@@ -17,7 +17,7 @@ static mqtt_t MQTT = {
     .packetid = 0,
     .willed = 0,
     .subscribed = 0,
-    .qos = {.command = 0, .response = 1, .report = 0, .will = 1},
+    .qos = {.command = 0, .response = 1, .report = 1, .will = 1},
     .rx = {.received = 0}};
 
 /* Private functions prototype

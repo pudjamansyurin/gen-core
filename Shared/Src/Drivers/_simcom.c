@@ -226,7 +226,7 @@ uint8_t Simcom_SendUSSD(char *ussd, char *buf, uint8_t buflen) {
   // Dial USSD (check quota)
   if (res == SIM_OK) {
     at_cusd_t param = {.n = CUSD_ENABLE, .dcs = 15};
-    strncpy(param.str, ussd, sizeof(param.str));
+    strncpy(param.str, ussd, sizeof(param.str)-1);
     res = AT_ServiceDataUSSD(ATW, &param, buf, buflen);
   }
 

@@ -34,7 +34,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
   d->req.driver_id = VCU.d.driver_id;
   d->req.events_group = VCU.d.events;
   d->req.vehicle = (int8_t)VCU.d.state;
-  d->req.uptime = VCU.d.uptime * (MANAGER_WAKEUP / 1000);
+  d->req.uptime = (VCU.d.uptime * MANAGER_WAKEUP) / 1000;
 
   // Optional data
   if (frame == FR_FULL) {

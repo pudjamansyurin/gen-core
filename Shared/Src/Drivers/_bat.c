@@ -46,7 +46,7 @@ void BAT_DeInit(void) {
 //}
 
 uint16_t BAT_ScanValue(void) {
-  uint16_t value;
+  uint16_t value = 0;
   uint8_t res;
 
   lock();
