@@ -475,8 +475,7 @@ const osEventFlagsAttr_t GlobalEvent_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-static void CheckTaskStack(void);
-static void CheckVehicleState(void);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartManagerTask(void *argument);
@@ -681,10 +680,7 @@ void StartManagerTask(void *argument)
 
 	// Initiate, this task get executed first!
 	VCU.Init();
-	BMS.Init();
-	MCU.Init();
-	HMI1.Init();
-	HMI2.Init();
+	VCU.NodesInit();
 
 	// Peripheral Initiate
 	BAT_Init();
@@ -706,12 +702,8 @@ void StartManagerTask(void *argument)
 	osThreadTerminate(Hmi2PowerTaskHandle);
 
 	// Check thread creation
-	uint8_t expectedThread = (sizeof(rtos_task_t) / sizeof(task_t));
-	uint8_t activeThread = (uint8_t) (osThreadGetCount() - 2);
-	if (activeThread < expectedThread) {
-		printf("RTOS:Failed, active thread %d < %d\n", activeThread, expectedThread);
+	if (!VCU.CheckRTOS())
 		return;
-	}
 
 	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
@@ -727,14 +719,14 @@ void StartManagerTask(void *argument)
 		HMI1.d.state.warning = VCU.d.state.error || BMS.d.error || MCU.d.error;
 
 		// TODO: Vehicle state should event based, not polling.
-		CheckVehicleState();
-		CheckTaskStack();
+		VCU.CheckStack();
+		VCU.CheckState();
 
 		VCU.d.bat = BAT_ScanValue();
 		VCU.d.uptime++;
 
 		IWDG_Refresh();
-		osDelayUntil(lastWake + 1111);
+		osDelayUntil(lastWake + 111);
 	}
   /* USER CODE END StartManagerTask */
 }
@@ -1389,18 +1381,9 @@ void StartCanRxTask(void *argument)
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 0)) {
-			BMS.Init();
-			MCU.Init();
-			HMI1.Init();
-			HMI2.Init();
-
+			VCU.NodesInit();
 			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
 		}
-
-		BMS.RefreshIndex();
-		MCU.Refresh();
-		HMI1.Refresh();
-		HMI2.Refresh();
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
 			if (Rx.header.IDE == CAN_ID_STD) {
@@ -1441,8 +1424,9 @@ void StartCanRxTask(void *argument)
 						break;
 				}
 			}
-
 		}
+
+		VCU.NodesRefresh();
 	}
   /* USER CODE END StartCanRxTask */
 }
@@ -1487,7 +1471,6 @@ void StartCanTxTask(void *argument)
 		// send every 20ms
 		if (HMI1.d.run)
 			VCU.can.t.SwitchModeControl();
-
 
 		// send every 500ms
 		if (_GetTickMS() - last500ms > 500) {
@@ -1625,155 +1608,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		for (uint8_t i = 0; i < HBAR_K_MAX; i++)
 			if (GPIO_Pin == HBAR.list[i].pin)
 				osThreadFlagsSet(GateTaskHandle, EVT_GATE_HBAR);
-}
-
-static void CheckVehicleState(void) {
-	static vehicle_state_t lastState = VEHICLE_UNKNOWN;
-	uint8_t starter, normalize = 0;
-	vehicle_state_t initialState;
-
-	do {
-		initialState = VCU.d.state.vehicle;
-		starter = 0;
-
-		if (VCU.d.gpio.starter.tick > 0) {
-			if (VCU.d.gpio.starter.tick > 1000) {
-				if (lastState > VEHICLE_NORMAL)
-					normalize = 1;
-			} else
-				starter = 1;
-			VCU.d.gpio.starter.tick = 0;
-		}
-
-		switch (VCU.d.state.vehicle) {
-			case VEHICLE_LOST:
-				if (lastState != VEHICLE_LOST) {
-					lastState = VEHICLE_LOST;
-					VCU.d.interval = RPT_INTERVAL_LOST;
-					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
-				}
-
-				if (GATE_ReadPower5v())
-					VCU.d.state.vehicle += 2;
-				break;
-
-			case VEHICLE_BACKUP:
-				if (lastState != VEHICLE_BACKUP) {
-					lastState = VEHICLE_BACKUP;
-					VCU.d.interval = RPT_INTERVAL_BACKUP;
-					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
-
-					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
-					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
-					osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
-					osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_STOP);
-					osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
-
-					VCU.d.tick.independent = _GetTickMS();
-					VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
-				}
-
-				if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST ) * 1000)
-					VCU.d.state.vehicle--;
-				else if (GATE_ReadPower5v())
-					VCU.d.state.vehicle++;
-				break;
-
-			case VEHICLE_NORMAL:
-				if (lastState != VEHICLE_NORMAL) {
-					lastState = VEHICLE_NORMAL;
-					VCU.d.interval = RPT_INTERVAL_NORMAL;
-					osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
-
-					osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
-					osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
-					osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_START);
-					osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_START);
-					osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_START);
-					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
-
-					normalize = 0;
-					VCU.d.state.override = VEHICLE_NORMAL;
-					HBAR_Init();
-				}
-
-				if (!GATE_ReadPower5v())
-					VCU.d.state.vehicle--;
-				else if (
-						(starter && !HMI1.d.state.unremote) || VCU.d.state.override >= VEHICLE_STANDBY
-						// starter && (!HMI1.d.state.unremote || VCU.d.state.override >= VEHICLE_STANDBY)
-				)
-					VCU.d.state.vehicle++;
-				break;
-
-			case VEHICLE_STANDBY:
-				if (lastState != VEHICLE_STANDBY) {
-					lastState = VEHICLE_STANDBY;
-
-					osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_START);
-				}
-
-				if (!GATE_ReadPower5v()
-						|| normalize)
-					VCU.d.state.vehicle--;
-				else if (!HMI1.d.state.unfinger || VCU.d.state.override >= VEHICLE_READY)
-					VCU.d.state.vehicle++;
-				break;
-
-			case VEHICLE_READY:
-				if (lastState != VEHICLE_READY) {
-					lastState = VEHICLE_READY;
-				}
-
-				if (!GATE_ReadPower5v()
-						|| normalize
-						|| (HMI1.d.state.unfinger && !VCU.d.state.override)
-						|| VCU.d.state.override == VEHICLE_STANDBY)
-					VCU.d.state.vehicle--;
-				else if (
-						!HMI1.d.state.warning	&& (starter || VCU.d.state.override >= VEHICLE_RUN)
-				)
-					VCU.d.state.vehicle++;
-				break;
-
-			case VEHICLE_RUN:
-				if (lastState != VEHICLE_RUN) {
-					lastState = VEHICLE_RUN;
-				}
-
-				if (!GATE_ReadPower5v()
-						|| normalize
-						|| HMI1.d.state.warning
-						|| VCU.d.state.override == VEHICLE_READY)
-					VCU.d.state.vehicle--;
-				else if ((starter && MCU.d.speed == 0)
-						|| (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY)
-						|| VCU.d.state.override == VEHICLE_STANDBY)
-					VCU.d.state.vehicle -= 2;
-				break;
-
-			default:
-				break;
-		}
-	} while (initialState != VCU.d.state.vehicle);
-}
-
-static void CheckTaskStack(void) {
-	rtos_task_t *rtos = &(VCU.d.task);
-
-	rtos->manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
-	rtos->iot.stack = osThreadGetStackSpace(IotTaskHandle);
-	rtos->reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
-	rtos->command.stack = osThreadGetStackSpace(CommandTaskHandle);
-	rtos->gps.stack = osThreadGetStackSpace(GpsTaskHandle);
-	rtos->gyro.stack = osThreadGetStackSpace(GyroTaskHandle);
-	rtos->remote.stack = osThreadGetStackSpace(RemoteTaskHandle);
-	rtos->finger.stack = osThreadGetStackSpace(FingerTaskHandle);
-	rtos->audio.stack = osThreadGetStackSpace(AudioTaskHandle);
-	rtos->gate.stack = osThreadGetStackSpace(GateTaskHandle);
-	rtos->canRx.stack = osThreadGetStackSpace(CanRxTaskHandle);
-	rtos->canTx.stack = osThreadGetStackSpace(CanTxTaskHandle);
-	//  rtos->hmi2Power.stack = osThreadGetStackSpace(Hmi2PowerTaskHandle);
 }
 
 /* USER CODE END Application */

@@ -96,6 +96,11 @@ typedef struct {
 	vcu_data_t d;
 	vcu_can_t can;
 	void (*Init)(void);
+	void (*NodesInit)(void);
+	void (*NodesRefresh)(void);
+	void (*CheckState)(void);
+	uint8_t (*CheckRTOS)(void);
+	void (*CheckStack)(void);
 	void (*SetEvent)(uint8_t, uint8_t);
 	uint8_t (*ReadEvent)(uint8_t);
 	void (*SetDriver)(uint8_t);
@@ -107,10 +112,15 @@ extern vcu_t VCU;
 
 /* Public functions implementation --------------------------------------------*/
 void VCU_Init(void);
+void VCU_NodesInit(void);
+void VCU_NodesRefresh(void);
 void VCU_SetEvent(uint8_t bit, uint8_t value);
 uint8_t VCU_ReadEvent(uint8_t bit);
 void VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t meter);
+void VCU_CheckState(void);
+uint8_t VCU_CheckRTOS(void);
+void VCU_CheckStack(void);
 
 uint8_t VCU_CAN_TX_Heartbeat(void);
 uint8_t VCU_CAN_TX_SwitchModeControl(void);
