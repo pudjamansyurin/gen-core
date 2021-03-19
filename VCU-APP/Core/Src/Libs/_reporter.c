@@ -30,49 +30,48 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
   header->size += sizeof(d->req);
 
   d->req.frame_id = frame;
-  d->req.vcu.log_time = RTC_Read();
-  d->req.vcu.driver_id = VCU.d.driver_id;
-  d->req.vcu.events_group = VCU.d.events;
-  d->req.vcu.vehicle = (int8_t)VCU.d.state.vehicle;
-  d->req.vcu.uptime = VCU.d.uptime * 1.111;
-
-  for (uint8_t i = 0; i < BMS_COUNT; i++) {
-    d->req.bms.pack[i].id = BMS.d.pack[i].id;
-    d->req.bms.pack[i].voltage = BMS.d.pack[i].voltage * 100;
-    d->req.bms.pack[i].current = BMS.d.pack[i].current * 10;
-  }
+  d->req.log_time = RTC_Read();
+  d->req.driver_id = VCU.d.driver_id;
+  d->req.events_group = VCU.d.events;
+  d->req.vehicle = (int8_t)VCU.d.state;
+  d->req.uptime = VCU.d.uptime * (MANAGER_WAKEUP / 1000);
 
   // Optional data
   if (frame == FR_FULL) {
     header->size += sizeof(d->opt);
 
-    d->opt.vcu.bat = VCU.d.bat / 18;
-    d->opt.vcu.signal = SIM.signal;
-    d->opt.vcu.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
+    d->opt.bat = VCU.d.bat / 18;
+    d->opt.signal = SIM.signal;
+    d->opt.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
 
-    d->opt.vcu.gps.latitude = (int32_t)(VCU.d.gps.latitude * 10000000);
-    d->opt.vcu.gps.longitude = (int32_t)(VCU.d.gps.longitude * 10000000);
-    d->opt.vcu.gps.altitude = (uint32_t)VCU.d.gps.altitude;
-    d->opt.vcu.gps.hdop = (uint8_t)(VCU.d.gps.dop_h * 10);
-    d->opt.vcu.gps.vdop = (uint8_t)(VCU.d.gps.dop_v * 10);
-    d->opt.vcu.gps.speed = (uint8_t)VCU.d.gps.speed_kph;
-    d->opt.vcu.gps.heading = (uint8_t)(VCU.d.gps.heading / 2);
-    d->opt.vcu.gps.sat_in_use = (uint8_t)VCU.d.gps.sat_in_use;
+    d->opt.gps.latitude = (int32_t)(VCU.d.gps.latitude * 10000000);
+    d->opt.gps.longitude = (int32_t)(VCU.d.gps.longitude * 10000000);
+    d->opt.gps.altitude = (uint32_t)VCU.d.gps.altitude;
+    d->opt.gps.hdop = (uint8_t)(VCU.d.gps.dop_h * 10);
+    d->opt.gps.vdop = (uint8_t)(VCU.d.gps.dop_v * 10);
+    d->opt.gps.speed = (uint8_t)VCU.d.gps.speed_kph;
+    d->opt.gps.heading = (uint8_t)(VCU.d.gps.heading / 2);
+    d->opt.gps.sat_in_use = (uint8_t)VCU.d.gps.sat_in_use;
 
-    d->opt.vcu.trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
-    d->opt.vcu.trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
-    d->opt.vcu.report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
-    d->opt.vcu.report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
-
-    for (uint8_t i = 0; i < BMS_COUNT; i++) {
-      d->opt.bms.pack[i].soc = BMS.d.pack[i].soc;
-      d->opt.bms.pack[i].temperature = BMS.d.pack[i].temperature;
-    }
+    d->opt.trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
+    d->opt.trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
+    d->opt.report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
+    d->opt.report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
     // Debug data
     header->size += sizeof(d->debug);
     memcpy(&(d->debug.motion), &(VCU.d.motion), sizeof(motion_t));
-    memcpy(&(d->debug.task), &(VCU.d.task), sizeof(rtos_task_t));
+
+    bms_debug_t *bms = &(d->debug.bms);
+    bms->soc= BMS.d.soc;
+    bms->fault = BMS.d.fault;
+    for (uint8_t i = 0; i < BMS_COUNT; i++) {
+      bms->pack[i].id = BMS.d.pack[i].id;
+      bms->pack[i].voltage = BMS.d.pack[i].voltage * 100;
+      bms->pack[i].current = BMS.d.pack[i].current * 10;
+      bms->pack[i].soc = BMS.d.pack[i].soc;
+      bms->pack[i].temperature = BMS.d.pack[i].temperature;
+    }
 
     mcu_debug_t *mcu = &(d->debug.mcu);
     mcu->rpm = MCU.d.rpm;
@@ -90,6 +89,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     mcu->inv.enabled = MCU.d.inv.enabled;
     mcu->inv.lockout = MCU.d.inv.lockout;
     mcu->inv.discharge = MCU.d.inv.discharge;
+
+    memcpy(&(d->debug.task), &(VCU.d.task), sizeof(rtos_task_t));
   }
 }
 

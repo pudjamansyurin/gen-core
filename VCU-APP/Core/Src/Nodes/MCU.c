@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/MCU.h"
+#include "Nodes/VCU.h"
 
 /* Public variables
  * -----------------------------------------------------------*/
@@ -42,6 +43,8 @@ void MCU_Refresh(void) {
   MCU.d.error = MCU.d.fault.post || MCU.d.fault.run;
   MCU.d.overheat = IsOverheat();
   //	MCU.d.run = ?;
+
+  VCU.SetEvent(EVG_MCU_ERROR, MCU.d.error);
 }
 
 void MCU_PowerOverCan(uint8_t on) {
@@ -138,13 +141,10 @@ static void Reset(void) {
   MCU.d.reverse = 0;
   MCU.d.temperature = 0;
   MCU.d.drive_mode = HBAR_M_DRIVE_STANDARD;
-
   MCU.d.torque.commanded = 0;
   MCU.d.torque.feedback = 0;
-
   MCU.d.fault.post = 0;
   MCU.d.fault.run = 0;
-
   MCU.d.dcbus.current = 0;
   MCU.d.dcbus.voltage = 0;
 
@@ -156,8 +156,8 @@ static void Reset(void) {
 
 static uint8_t IsOverheat(void) {
   MCU_POST_FAULT_BIT overheat_post[] = {
-      MPF_MOD_TEMP_L, MPF_MOD_TEMP_H,  MPF_PCB_TEMP_L,
-      MPF_PCB_TEMP_H, MPF_GATE_TEMP_L, MPF_GATE_TEMP_H,
+      MPF_MOD_TEMP_LOW, MPF_MOD_TEMP_HIGH,  MPF_PCB_TEMP_LOW,
+      MPF_PCB_TEMP_HIGH, MPF_GATE_TEMP_LOW, MPF_GATE_TEMP_HIGH,
   };
   MCU_RUN_FAULT_BIT overheat_run[] = {
       MRF_INV_OVER_TEMP,   MRF_MOTOR_OVER_TEMP, MRF_MODA_OVER_TEMP,

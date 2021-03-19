@@ -16,24 +16,13 @@
 /* Exported define
  * ------------------------------------------------------------*/
 typedef enum {
-  EV_VCU_NET_SOFT_RESET = 0,
-  EV_VCU_NET_HARD_RESET,
-  EV_VCU_REMOTE_MISSING,
-  EV_VCU_BIKE_FALLEN,
-  EV_VCU_BIKE_MOVED,
-
-  EV_BMS_DISCHARGE_OVER_CURRENT = 50,
-  EV_BMS_CHARGE_OVER_CURRENT,
-  EV_BMS_SHORT_CIRCUIT,
-  EV_BMS_DISCHARGE_OVER_TEMPERATURE,
-  EV_BMS_DISCHARGE_UNDER_TEMPERATURE,
-  EV_BMS_CHARGE_OVER_TEMPERATURE,
-  EV_BMS_CHARGE_UNDER_TEMPERATURE,
-  EV_BMS_UNDER_VOLTAGE,
-  EV_BMS_OVER_VOLTAGE,
-  EV_BMS_OVER_DISCHARGE_CAPACITY,
-  EV_BMS_UNBALANCE,
-  EV_BMS_SYSTEM_FAILURE,
+  EVG_NET_SOFT_RESET = 0,
+  EVG_NET_HARD_RESET,
+  EVG_REMOTE_MISSING,
+  EVG_BIKE_FALLEN,
+  EVG_BIKE_MOVED,
+	EVG_BMS_ERROR,
+	EVG_MCU_ERROR
 } EVENTS_GROUP_BIT;
 
 /* Exported struct
@@ -60,21 +49,16 @@ typedef struct __attribute__((packed)) {
 } rtos_task_t;
 
 typedef struct {
+  uint8_t error;
+  uint8_t override;
+  vehicle_state_t state;
+  uint16_t bat;
+  uint16_t events;
+  uint32_t uptime;
   uint8_t driver_id;
   uint16_t interval;
-  uint16_t bat;
-  uint64_t events;
-  uint32_t uptime;
   struct {
-    uint8_t error;
-    uint8_t override;
-    vehicle_state_t vehicle;
-  } state;
-  struct {
-    //    uint8_t power5v;
-    struct {
-      uint32_t tick;
-    } starter;
+    uint32_t starter;
   } gpio;
   struct {
     uint32_t independent;
@@ -98,6 +82,7 @@ typedef struct {
   vcu_data_t d;
   vcu_can_t can;
   void (*Init)(void);
+  void (*Refresh)(void);
   void (*NodesInit)(void);
   void (*NodesRefresh)(void);
   void (*CheckState)(void);
@@ -116,6 +101,7 @@ extern vcu_t VCU;
 /* Public functions implementation
  * --------------------------------------------*/
 void VCU_Init(void);
+void VCU_Refresh(void);
 void VCU_NodesInit(void);
 void VCU_NodesRefresh(void);
 void VCU_SetEvent(uint8_t bit, uint8_t value);

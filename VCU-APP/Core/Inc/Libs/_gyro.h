@@ -16,7 +16,7 @@
 /* Exported constants --------------------------------------------------------*/
 #define GRAVITY_FORCE (float)9.8
 
-#define MOVED_LIMIT (uint8_t)(5)
+#define MOVED_LIMIT (uint8_t)(10)
 #define GYROSCOPE_LIMIT (uint8_t)(45)
 #define ACCELEROMETER_LIMIT (uint32_t)(7000)
 

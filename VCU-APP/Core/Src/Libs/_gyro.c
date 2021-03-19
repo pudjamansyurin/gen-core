@@ -93,18 +93,18 @@ void GYRO_MonitorMovement(void) {
   if (gyro.detector_init) {
     gyro.detector_init = 0;
     memcpy(&refference, motion, sizeof(motion_t));
-    VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+    VCU.SetEvent(EVG_BIKE_MOVED, 0);
   }
 
   if (GYRO_Moved(&refference, motion))
-    VCU.SetEvent(EV_VCU_BIKE_MOVED, 1);
+    VCU.SetEvent(EVG_BIKE_MOVED, 1);
   unlock();
 }
 
 void GYRO_ResetDetector(void) {
   lock();
   gyro.detector_init = 1;
-  VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+  VCU.SetEvent(EVG_BIKE_MOVED, 0);
   unlock();
 }
 

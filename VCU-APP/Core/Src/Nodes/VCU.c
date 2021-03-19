@@ -9,6 +9,7 @@
 #include "Nodes/VCU.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_simcom.h"
+#include "Drivers/_bat.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_handlebar.h"
 #include "Nodes/BMS.h"
@@ -40,6 +41,7 @@ vcu_t VCU = {
                   VCU_CAN_TX_Datetime, VCU_CAN_TX_MixedData,
                   VCU_CAN_TX_TripData}},
     VCU_Init,
+		VCU_Refresh,
     VCU_NodesInit,
     VCU_NodesRefresh,
     VCU_CheckState,
@@ -55,9 +57,9 @@ vcu_t VCU = {
  * --------------------------------------------*/
 void VCU_Init(void) {
   // reset VCU data
-  VCU.d.state.error = 0;
-  VCU.d.state.override = 0;
-  VCU.d.state.vehicle = VEHICLE_BACKUP;
+  VCU.d.error = 0;
+  VCU.d.override = 0;
+  VCU.d.state = VEHICLE_BACKUP;
 
   VCU.d.interval = RPT_INTERVAL_BACKUP;
   VCU.d.driver_id = DRIVER_ID_NONE;
@@ -68,6 +70,12 @@ void VCU_Init(void) {
   VCU.d.motion.pitch = 0;
 
   VCU.d.events = 0;
+}
+
+void VCU_Refresh(void) {
+  VCU.d.uptime++;
+  VCU.d.bat = BAT_ScanValue();
+  VCU.d.error = VCU.ReadEvent(EVG_BIKE_FALLEN);
 }
 
 void VCU_NodesInit(void) {
@@ -85,10 +93,8 @@ void VCU_NodesRefresh(void) {
 }
 
 void VCU_SetEvent(uint8_t bit, uint8_t value) {
-  if (value & 1)
-    BV(VCU.d.events, bit);
-  else
-    BC(VCU.d.events, bit);
+  if (value & 1) BV(VCU.d.events, bit);
+  else BC(VCU.d.events, bit);
 }
 
 uint8_t VCU_ReadEvent(uint8_t bit) {
@@ -126,19 +132,19 @@ void VCU_CheckState(void) {
   vehicle_state_t initialState;
 
   do {
-    initialState = VCU.d.state.vehicle;
+    initialState = VCU.d.state;
     starter = 0;
 
-    if (VCU.d.gpio.starter.tick > 0) {
-      if (VCU.d.gpio.starter.tick > 1000) {
+    if (VCU.d.gpio.starter > 0) {
+      if (VCU.d.gpio.starter > 1000) {
         if (lastState > VEHICLE_NORMAL)
           normalize = 1;
       } else
         starter = 1;
-      VCU.d.gpio.starter.tick = 0;
+      VCU.d.gpio.starter = 0;
     }
 
-    switch (VCU.d.state.vehicle) {
+    switch (VCU.d.state) {
     case VEHICLE_LOST:
       if (lastState != VEHICLE_LOST) {
         lastState = VEHICLE_LOST;
@@ -147,7 +153,7 @@ void VCU_CheckState(void) {
       }
 
       if (GATE_ReadPower5v())
-        VCU.d.state.vehicle += 2;
+        VCU.d.state += 2;
       break;
 
     case VEHICLE_BACKUP:
@@ -163,13 +169,13 @@ void VCU_CheckState(void) {
         osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
 
         VCU.d.tick.independent = _GetTickMS();
-        VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
+        VCU.SetEvent(EVG_REMOTE_MISSING, 1);
       }
 
       if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST)*1000)
-        VCU.d.state.vehicle--;
+        VCU.d.state--;
       else if (GATE_ReadPower5v())
-        VCU.d.state.vehicle++;
+        VCU.d.state++;
       break;
 
     case VEHICLE_NORMAL:
@@ -186,18 +192,18 @@ void VCU_CheckState(void) {
         osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
 
         normalize = 0;
-        VCU.d.state.override = VEHICLE_NORMAL;
+        VCU.d.override = VEHICLE_NORMAL;
         HBAR_Init();
       }
 
       if (!GATE_ReadPower5v())
-        VCU.d.state.vehicle--;
+        VCU.d.state--;
       else if ((starter && !HMI1.d.state.unremote) ||
-               VCU.d.state.override >= VEHICLE_STANDBY
-               // starter && (!HMI1.d.state.unremote || VCU.d.state.override >=
+               VCU.d.override >= VEHICLE_STANDBY
+               // starter && (!HMI1.d.state.unremote || VCU.d.override >=
                // VEHICLE_STANDBY)
       )
-        VCU.d.state.vehicle++;
+        VCU.d.state++;
       break;
 
     case VEHICLE_STANDBY:
@@ -208,9 +214,9 @@ void VCU_CheckState(void) {
       }
 
       if (!GATE_ReadPower5v() || normalize)
-        VCU.d.state.vehicle--;
-      else if (!HMI1.d.state.unfinger || VCU.d.state.override >= VEHICLE_READY)
-        VCU.d.state.vehicle++;
+        VCU.d.state--;
+      else if (!HMI1.d.state.unfinger || VCU.d.override >= VEHICLE_READY)
+        VCU.d.state++;
       break;
 
     case VEHICLE_READY:
@@ -219,12 +225,12 @@ void VCU_CheckState(void) {
       }
 
       if (!GATE_ReadPower5v() || normalize ||
-          (HMI1.d.state.unfinger && !VCU.d.state.override) ||
-          VCU.d.state.override == VEHICLE_STANDBY)
-        VCU.d.state.vehicle--;
+          (HMI1.d.state.unfinger && !VCU.d.override) ||
+          VCU.d.override == VEHICLE_STANDBY)
+        VCU.d.state--;
       else if (!HMI1.d.state.warning &&
-               (starter || VCU.d.state.override >= VEHICLE_RUN))
-        VCU.d.state.vehicle++;
+               (starter || VCU.d.override >= VEHICLE_RUN))
+        VCU.d.state++;
       break;
 
     case VEHICLE_RUN:
@@ -233,19 +239,19 @@ void VCU_CheckState(void) {
       }
 
       if (!GATE_ReadPower5v() || normalize || HMI1.d.state.warning ||
-          VCU.d.state.override == VEHICLE_READY)
-        VCU.d.state.vehicle--;
+          VCU.d.override == VEHICLE_READY)
+        VCU.d.state--;
       else if ((starter && MCU.d.speed == 0) ||
                (HMI1.d.state.unfinger &&
-                VCU.d.state.override < VEHICLE_READY) ||
-               VCU.d.state.override == VEHICLE_STANDBY)
-        VCU.d.state.vehicle -= 2;
+                VCU.d.override < VEHICLE_READY) ||
+               VCU.d.override == VEHICLE_STANDBY)
+        VCU.d.state -= 2;
       break;
 
     default:
       break;
     }
-  } while (initialState != VCU.d.state.vehicle);
+  } while (initialState != VCU.d.state);
 }
 
 uint8_t VCU_CheckRTOS(void) {
@@ -296,7 +302,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(void) {
   Tx.data.u8[0] |= HMI1.d.state.warning << 3;
   Tx.data.u8[0] |= HMI1.d.state.overheat << 4;
   Tx.data.u8[0] |=
-      (HMI1.d.state.unfinger && VCU.d.state.override < VEHICLE_READY) << 5;
+      (HMI1.d.state.unfinger && VCU.d.override < VEHICLE_READY) << 5;
   Tx.data.u8[0] |= HMI1.d.state.unremote << 6;
   Tx.data.u8[0] |= HMI1.d.state.daylight << 7;
 
@@ -325,7 +331,7 @@ uint8_t VCU_CAN_TX_SwitchModeControl(void) {
 
 uint8_t VCU_CAN_TX_Datetime(datetime_t dt) {
   can_tx_t Tx;
-  uint8_t hmi2shutdown = VCU.d.state.vehicle < VEHICLE_STANDBY;
+  uint8_t hmi2shutdown = VCU.d.state < VEHICLE_STANDBY;
 
   Tx.data.u8[0] = dt.Seconds;
   Tx.data.u8[1] = dt.Minutes;

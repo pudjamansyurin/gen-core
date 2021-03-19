@@ -21,6 +21,8 @@
 #define VCU_VENDOR "GEN"
 #define VCU_BUILD_YEAR (uint8_t)21
 
+#define MANAGER_WAKEUP (uint16_t) 111 // in ms
+
 #define MCU_SPEED_MAX (uint8_t)150 // in kph
 #define MCU_RPM_MAX (uint32_t)99999
 #define ODOMETER_MAX (uint32_t)99999 // in km

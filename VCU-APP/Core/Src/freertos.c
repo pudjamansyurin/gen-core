@@ -714,20 +714,16 @@ void StartManagerTask(void *argument)
     VCU.d.task.manager.wakeup = _GetTickMS() / 1000;
     lastWake = _GetTickMS();
 
-    VCU.d.state.error = VCU.ReadEvent(EV_VCU_BIKE_FALLEN);
+    VCU.Refresh();
+    VCU.CheckState();
+    VCU.CheckStack();
+
     HMI1.d.state.daylight = RTC_IsDaylight();
     HMI1.d.state.overheat = BMS.d.overheat || MCU.d.overheat;
-    HMI1.d.state.warning = VCU.d.state.error || BMS.d.error || MCU.d.error;
-
-    // TODO: Vehicle state should event based, not polling.
-    VCU.CheckStack();
-    VCU.CheckState();
-
-    VCU.d.bat = BAT_ScanValue();
-    VCU.d.uptime++;
+    HMI1.d.state.warning = VCU.d.error || BMS.d.error || MCU.d.error;
 
     IWDG_Refresh();
-    osDelayUntil(lastWake + 111);
+    osDelayUntil(lastWake + MANAGER_WAKEUP);
   }
   /* USER CODE END StartManagerTask */
 }
@@ -853,8 +849,8 @@ void StartReporterTask(void *argument)
     RPT_ReportCapture(frame, &report);
 
     // reset some events group
-    VCU.SetEvent(EV_VCU_NET_SOFT_RESET, 0);
-    VCU.SetEvent(EV_VCU_NET_HARD_RESET, 0);
+    VCU.SetEvent(EVG_NET_SOFT_RESET, 0);
+    VCU.SetEvent(EVG_NET_HARD_RESET, 0);
 
     // Put report to log
     do {
@@ -915,11 +911,11 @@ void StartCommandTask(void *argument)
           break;
 
         case CMD_GEN_OVERRIDE:
-          if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
+          if (VCU.d.state < VEHICLE_NORMAL) {
             sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
             resp.data.res_code = RESPONSE_STATUS_ERROR;
           } else
-            VCU.d.state.override = *(uint8_t *)cmd.data.value;
+            VCU.d.override = *(uint8_t *)cmd.data.value;
           break;
 
         case CMD_GEN_MODE_DRIVE:
@@ -957,7 +953,7 @@ void StartCommandTask(void *argument)
       }
 
       else if (cmd.header.code == CMD_CODE_AUDIO) {
-        if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
+        if (VCU.d.state < VEHICLE_NORMAL) {
           sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
           resp.data.res_code = RESPONSE_STATUS_ERROR;
         } else
@@ -979,7 +975,7 @@ void StartCommandTask(void *argument)
       }
 
       else if (cmd.header.code == CMD_CODE_FINGER) {
-        if (VCU.d.state.vehicle < VEHICLE_STANDBY) {
+        if (VCU.d.state < VEHICLE_STANDBY) {
           sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_STANDBY);
           resp.data.res_code = RESPONSE_STATUS_ERROR;
         } else
@@ -1014,7 +1010,7 @@ void StartCommandTask(void *argument)
       }
 
       else if (cmd.header.code == CMD_CODE_REMOTE) {
-        if (VCU.d.state.vehicle < VEHICLE_NORMAL) {
+        if (VCU.d.state < VEHICLE_NORMAL) {
           sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
           resp.data.res_code = RESPONSE_STATUS_ERROR;
         } else
@@ -1033,7 +1029,7 @@ void StartCommandTask(void *argument)
       else if (cmd.header.code == CMD_CODE_FOTA) {
         resp.data.res_code = RESPONSE_STATUS_ERROR;
 
-        if (VCU.d.state.vehicle == VEHICLE_RUN) {
+        if (VCU.d.state == VEHICLE_RUN) {
           sprintf(resp.data.message, "State should != {%d}.", VEHICLE_RUN);
         } else
           switch (cmd.header.sub_code) {
@@ -1150,8 +1146,8 @@ void StartGyroTask(void *argument)
     if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
       if (notif & EVT_GYRO_TASK_STOP) {
         memset(&(VCU.d.motion), 0x00, sizeof(motion_t));
-        VCU.SetEvent(EV_VCU_BIKE_FALLEN, 0);
-        VCU.SetEvent(EV_VCU_BIKE_MOVED, 0);
+        VCU.SetEvent(EVG_BIKE_FALLEN, 0);
+        VCU.SetEvent(EVG_BIKE_MOVED, 0);
 
         GYRO_DeInit();
         _osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny,
@@ -1165,7 +1161,7 @@ void StartGyroTask(void *argument)
 
     // Read all accelerometer, gyroscope (average)
     GYRO_Decision(&movement);
-    VCU.SetEvent(EV_VCU_BIKE_FALLEN, movement.fallen);
+    VCU.SetEvent(EVG_BIKE_FALLEN, movement.fallen);
 
     // Fallen indicators
     //		GATE_LedWrite(movement.fallen);
@@ -1173,7 +1169,7 @@ void StartGyroTask(void *argument)
     osThreadFlagsSet(AudioTaskHandle, flag);
 
     // Moved at rest
-    if (VCU.d.state.vehicle < VEHICLE_STANDBY)
+    if (VCU.d.state < VEHICLE_STANDBY)
       GYRO_MonitorMovement();
     else
       GYRO_ResetDetector();
@@ -1213,11 +1209,11 @@ void StartRemoteTask(void *argument)
       RMT_Ping();
     RMT_RefreshPairing();
 
-    VCU.SetEvent(EV_VCU_REMOTE_MISSING, HMI1.d.state.unremote);
+    VCU.SetEvent(EVG_REMOTE_MISSING, HMI1.d.state.unremote);
 
     if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
       if (notif & EVT_REMOTE_TASK_STOP) {
-        VCU.SetEvent(EV_VCU_REMOTE_MISSING, 1);
+        VCU.SetEvent(EVG_REMOTE_MISSING, 1);
         RMT_DeInit();
         _osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny,
                            osWaitForever);
@@ -1244,7 +1240,7 @@ void StartRemoteTask(void *argument)
           else if (command == RMT_CMD_ALARM) {
             GATE_HornToggle(&(HBAR.hazard));
 
-            if (VCU.ReadEvent(EV_VCU_BIKE_MOVED))
+            if (VCU.ReadEvent(EVG_BIKE_MOVED))
               osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_MOVED_RESET);
           }
         }
@@ -1526,9 +1522,9 @@ void StartCanTxTask(void *argument)
 
       VCU.can.t.Heartbeat();
 
-      BMS.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
-      MCU.PowerOverCan(VCU.d.state.vehicle == VEHICLE_RUN);
-      HMI2.PowerByCan(VCU.d.state.vehicle >= VEHICLE_STANDBY);
+      BMS.PowerOverCan(VCU.d.state == VEHICLE_RUN);
+      MCU.PowerOverCan(VCU.d.state == VEHICLE_RUN);
+      HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
     }
   }
   /* USER CODE END StartCanTxTask */
@@ -1599,10 +1595,8 @@ void StartGateTask(void *argument)
 
       // Starter Button IRQ
       if (notif & EVT_GATE_STARTER_IRQ) {
-        if (GATE_ReadStarter())
-          tick = _GetTickMS();
-        else
-          VCU.d.gpio.starter.tick = _GetTickMS() - tick;
+        if (GATE_ReadStarter()) tick = _GetTickMS();
+        else VCU.d.gpio.starter = _GetTickMS() - tick;
       }
 
       // Handle switch EXTI interrupt
@@ -1614,7 +1608,7 @@ void StartGateTask(void *argument)
     }
 
     // GATE Output Control
-    HMI1.Power(VCU.d.state.vehicle >= VEHICLE_STANDBY);
+    HMI1.Power(VCU.d.state >= VEHICLE_STANDBY);
     GATE_FanBMS(BMS.d.overheat);
   }
   /* USER CODE END StartGateTask */
@@ -1629,19 +1623,19 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY)
     return;
 
-  if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
+  if (VCU.d.state >= VEHICLE_NORMAL)
     if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
       osThreadFlagsSet(GateTaskHandle, EVT_GATE_STARTER_IRQ);
 
-  if (VCU.d.state.vehicle >= VEHICLE_NORMAL)
+  if (VCU.d.state >= VEHICLE_NORMAL)
     if (GPIO_Pin == INT_REMOTE_IRQ_Pin)
       RMT_IrqHandler();
 
-  if (VCU.d.state.vehicle >= VEHICLE_STANDBY)
+  if (VCU.d.state >= VEHICLE_STANDBY)
     if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
       osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
 
-  if (VCU.d.state.vehicle >= VEHICLE_STANDBY)
+  if (VCU.d.state >= VEHICLE_STANDBY)
     for (uint8_t i = 0; i < HBAR_K_MAX; i++)
       if (GPIO_Pin == HBAR.list[i].pin)
         osThreadFlagsSet(GateTaskHandle, EVT_GATE_HBAR);

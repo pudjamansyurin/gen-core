@@ -81,7 +81,7 @@ void RMT_ReInit(void) {
 }
 
 uint8_t RMT_NeedPing(void) {
-  vehicle_state_t *state = &(VCU.d.state.vehicle);
+  vehicle_state_t *state = &(VCU.d.state);
   uint8_t *unremote = &(HMI1.d.state.unremote);
   uint32_t timeout =
       (*state < VEHICLE_RUN) ? REMOTE_TIMEOUT : REMOTE_TIMEOUT_RUN;
