@@ -14,8 +14,8 @@
  * -----------------------------------------------------------*/
 bms_t BMS = {
     .d = {0},
-    .can = {.r = {BMS_CAN_RX_Param1, BMS_CAN_RX_Param2},
-            .t = {BMS_CAN_TX_Setting}},
+    .r = {BMS_RX_Param1, BMS_RX_Param2},
+    .t = {BMS_TX_Setting},
     BMS_Init,
     BMS_PowerOverCan,
     BMS_RefreshIndex,
@@ -26,7 +26,7 @@ bms_t BMS = {
 static void ResetIndex(uint8_t i);
 static uint8_t GetIndex(uint32_t addr);
 static uint8_t IsOverheat(void);
-static uint16_t MegeFault(void);
+static uint16_t MergeFault(void);
 static uint8_t AverageSOC(void);
 static void ResetPacks(void);
 //static uint8_t RunPacks(uint8_t on);
@@ -39,7 +39,7 @@ void BMS_PowerOverCan(uint8_t on) {
   BMS_STATE state = on ? BMS_STATE_FULL : BMS_STATE_IDLE;
   uint8_t recover = on && (BMS.d.fault & BIT(BMSF_SHORT_CIRCUIT));
 
-  BMS.can.t.Setting(state, recover);
+  BMS.t.Setting(state, recover);
 }
 
 void BMS_RefreshIndex(void) {
@@ -48,9 +48,9 @@ void BMS_RefreshIndex(void) {
       ResetIndex(i);
 
   BMS.d.soc = AverageSOC();
-  BMS.d.fault = MegeFault();
+  BMS.d.fault = MergeFault();
   BMS.d.overheat = IsOverheat();
-  BMS.d.error = BMS.d.fault != 0;
+  BMS.d.error = BMS.d.fault > 0;
   //	BMS.d.run = RunPacks(1);
 
   VCU.SetEvent(EVG_BMS_ERROR, BMS.d.error);
@@ -58,7 +58,7 @@ void BMS_RefreshIndex(void) {
 
 /* ====================================== CAN RX
  * =================================== */
-void BMS_CAN_RX_Param1(can_rx_t *Rx) {
+void BMS_RX_Param1(can_rx_t *Rx) {
   uint8_t i = GetIndex(Rx->header.ExtId);
 
   // read the content
@@ -72,7 +72,7 @@ void BMS_CAN_RX_Param1(can_rx_t *Rx) {
   BMS.d.pack[i].tick = _GetTickMS();
 }
 
-void BMS_CAN_RX_Param2(can_rx_t *Rx) {
+void BMS_RX_Param2(can_rx_t *Rx) {
   uint8_t i = GetIndex(Rx->header.ExtId);
 
   // read content
@@ -90,7 +90,7 @@ void BMS_CAN_RX_Param2(can_rx_t *Rx) {
 
 /* ====================================== CAN TX
  * =================================== */
-uint8_t BMS_CAN_TX_Setting(BMS_STATE state, uint8_t recover) {
+uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t recover) {
   can_tx_t Tx = {0};
 
   // set message
@@ -119,15 +119,13 @@ static void ResetIndex(uint8_t i) {
 }
 
 static uint8_t GetIndex(uint32_t addr) {
-  uint8_t i;
-
   // find index (if already exist)
-  for (i = 0; i < BMS_COUNT; i++)
+  for (uint8_t i = 0; i < BMS_COUNT; i++)
     if (BMS.d.pack[i].id == BMS_ID(addr))
       return i;
 
   // find index (if not exist)
-  for (i = 0; i < BMS_COUNT; i++)
+  for (uint8_t i = 0; i < BMS_COUNT; i++)
     if (BMS.d.pack[i].id == BMS_ID_NONE)
       return i;
 
@@ -150,7 +148,7 @@ static uint8_t IsOverheat(void) {
   return temp;
 }
 
-static uint16_t MegeFault(void) {
+static uint16_t MergeFault(void) {
   uint16_t fault = 0;
 
   for (uint8_t i = 0; i < BMS_COUNT; i++)

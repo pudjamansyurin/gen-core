@@ -75,7 +75,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 
     mcu_debug_t *mcu = &(d->debug.mcu);
     mcu->rpm = MCU.d.rpm;
-    mcu->speed = MCU.d.speed;
+    mcu->speed = MCU.RpmToSpeed();
     mcu->reverse = MCU.d.reverse;
     mcu->temperature = (uint16_t)(MCU.d.temperature * 10);
     mcu->drive_mode = MCU.d.drive_mode;

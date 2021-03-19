@@ -26,14 +26,10 @@ typedef struct {
 } hmi2_data_t;
 
 typedef struct {
+  hmi2_data_t d;
   struct {
     void (*State)(can_rx_t *);
   } r;
-} hmi2_can_t;
-
-typedef struct {
-  hmi2_data_t d;
-  hmi2_can_t can;
   void (*Init)(void);
   void (*Refresh)(void);
   void (*PowerByCan)(uint8_t);
@@ -50,7 +46,7 @@ extern hmi2_t HMI2;
 void HMI2_Init(void);
 void HMI2_Refresh(void);
 void HMI2_PowerByCan(uint8_t state);
-void HMI2_CAN_RX_State(can_rx_t *Rx);
+void HMI2_RX_State(can_rx_t *Rx);
 void HMI2_PowerOn(void);
 void HMI2_PowerOff(void);
 

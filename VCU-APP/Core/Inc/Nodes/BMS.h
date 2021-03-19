@@ -76,6 +76,7 @@ typedef struct {
 } bms_data_t;
 
 typedef struct {
+	bms_data_t d;
 	struct {
 		void (*Param1)(can_rx_t *);
 		void (*Param2)(can_rx_t *);
@@ -83,11 +84,6 @@ typedef struct {
 	struct {
 		uint8_t (*Setting)(BMS_STATE, uint8_t);
 	} t;
-} bms_can_t;
-
-typedef struct {
-	bms_data_t d;
-	bms_can_t can;
 	void (*Init)(void);
 	void (*PowerOverCan)(uint8_t);
 	void (*RefreshIndex)(void);
@@ -103,8 +99,8 @@ void BMS_Init(void);
 void BMS_PowerOverCan(uint8_t on);
 void BMS_RefreshIndex(void);
 
-void BMS_CAN_RX_Param1(can_rx_t *Rx);
-void BMS_CAN_RX_Param2(can_rx_t *Rx);
-uint8_t BMS_CAN_TX_Setting(BMS_STATE state, uint8_t recover);
+void BMS_RX_Param1(can_rx_t *Rx);
+void BMS_RX_Param2(can_rx_t *Rx);
+uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t recover);
 
 #endif /* INC_NODES_BMS_H_ */

@@ -34,14 +34,10 @@ typedef struct {
 } hmi1_data_t;
 
 typedef struct {
+  hmi1_data_t d;
   struct {
     void (*State)(can_rx_t *);
   } r;
-} hmi1_can_t;
-
-typedef struct {
-  hmi1_data_t d;
-  hmi1_can_t can;
   void (*Init)(void);
   void (*Refresh)(void);
   void (*Power)(GPIO_PinState);
@@ -55,6 +51,6 @@ extern hmi1_t HMI1;
  * --------------------------------------------*/
 void HMI1_Init(void);
 void HMI1_Refresh(void);
-void HMI1_CAN_RX_State(can_rx_t *Rx);
+void HMI1_RX_State(can_rx_t *Rx);
 
 #endif /* INC_NODES_HMI1_H_ */

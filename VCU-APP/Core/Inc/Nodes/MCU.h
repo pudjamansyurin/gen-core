@@ -104,7 +104,6 @@ typedef struct {
   uint32_t tick;
 
   uint32_t rpm;
-  uint8_t speed;
   uint8_t reverse;
   float temperature;
   HBAR_MODE_DRIVE drive_mode;
@@ -129,6 +128,7 @@ typedef struct {
 } mcu_data_t;
 
 typedef struct {
+  mcu_data_t d;
   struct {
     void (*CurrentDC)(can_rx_t *);
     void (*VoltageDC)(can_rx_t *);
@@ -139,11 +139,6 @@ typedef struct {
   struct {
     uint8_t (*Setting)(uint8_t);
   } t;
-} mcu_can_t;
-
-typedef struct {
-  mcu_data_t d;
-  mcu_can_t can;
   void (*Init)(void);
   void (*PowerOverCan)(uint8_t);
   void (*Refresh)(void);
@@ -162,11 +157,11 @@ void MCU_Refresh(void);
 void MCU_PowerOverCan(uint8_t on);
 uint16_t MCU_SpeedToVolume(void);
 uint16_t MCU_RpmToSpeed(void);
-void MCU_CAN_RX_CurrentDC(can_rx_t *Rx);
-void MCU_CAN_RX_VoltageDC(can_rx_t *Rx);
-void MCU_CAN_RX_TorqueSpeed(can_rx_t *Rx);
-void MCU_CAN_RX_FaultCode(can_rx_t *Rx);
-void MCU_CAN_RX_State(can_rx_t *Rx);
-uint8_t MCU_CAN_TX_Setting(uint8_t on);
+void MCU_RX_CurrentDC(can_rx_t *Rx);
+void MCU_RX_VoltageDC(can_rx_t *Rx);
+void MCU_RX_TorqueSpeed(can_rx_t *Rx);
+void MCU_RX_FaultCode(can_rx_t *Rx);
+void MCU_RX_State(can_rx_t *Rx);
+uint8_t MCU_TX_Setting(uint8_t on);
 
 #endif /* INC_NODES_MCU_H_ */

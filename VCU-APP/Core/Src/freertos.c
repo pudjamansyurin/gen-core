@@ -1418,25 +1418,25 @@ void StartCanRxTask(void *argument)
       if (Rx.header.IDE == CAN_ID_STD) {
         switch (Rx.header.StdId) {
         case CAND_HMI1:
-          HMI1.can.r.State(&Rx);
+          HMI1.r.State(&Rx);
           break;
         case CAND_HMI2:
-          HMI2.can.r.State(&Rx);
+          HMI2.r.State(&Rx);
           break;
         case CAND_MCU_CURRENT_DC:
-          MCU.can.r.CurrentDC(&Rx);
+          MCU.r.CurrentDC(&Rx);
           break;
         case CAND_MCU_VOLTAGE_DC:
-          MCU.can.r.VoltageDC(&Rx);
+          MCU.r.VoltageDC(&Rx);
           break;
         case CAND_MCU_TORQUE_SPEED:
-          MCU.can.r.TorqueSpeed(&Rx);
+          MCU.r.TorqueSpeed(&Rx);
           break;
         case CAND_MCU_FAULT_CODE:
-          MCU.can.r.FaultCode(&Rx);
+          MCU.r.FaultCode(&Rx);
           break;
         case CAND_MCU_STATE:
-          MCU.can.r.State(&Rx);
+          MCU.r.State(&Rx);
           break;
         default:
           break;
@@ -1444,10 +1444,10 @@ void StartCanRxTask(void *argument)
       } else {
         switch (BMS_CAND(Rx.header.ExtId)) {
         case BMS_CAND(CAND_BMS_PARAM_1):
-          BMS.can.r.Param1(&Rx);
+          BMS.r.Param1(&Rx);
           break;
         case BMS_CAND(CAND_BMS_PARAM_2):
-          BMS.can.r.Param2(&Rx);
+          BMS.r.Param2(&Rx);
           break;
         default:
           break;
@@ -1501,14 +1501,14 @@ void StartCanTxTask(void *argument)
 
     // send every 20ms
     if (HMI1.d.run)
-      VCU.can.t.SwitchModeControl();
+      VCU.t.SwitchModeControl();
 
     // send every 500ms
     if (_GetTickMS() - last500ms > 500) {
       last500ms = _GetTickMS();
 
       if (HMI1.d.run)
-        VCU.can.t.MixedData();
+        VCU.t.MixedData();
     }
 
     // send every 1000ms
@@ -1516,11 +1516,11 @@ void StartCanTxTask(void *argument)
       last1000ms = _GetTickMS();
 
       if (HMI1.d.run) {
-        VCU.can.t.Datetime(RTC_Read());
-        VCU.can.t.TripData();
+        VCU.t.Datetime(RTC_Read());
+        VCU.t.TripData();
       }
 
-      VCU.can.t.Heartbeat();
+      VCU.t.Heartbeat();
 
       BMS.PowerOverCan(VCU.d.state == VEHICLE_RUN);
       MCU.PowerOverCan(VCU.d.state == VEHICLE_RUN);

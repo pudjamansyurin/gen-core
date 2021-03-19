@@ -69,6 +69,7 @@ typedef struct {
 } vcu_data_t;
 
 typedef struct {
+  vcu_data_t d;
   struct {
     uint8_t (*Heartbeat)(void);
     uint8_t (*SwitchModeControl)(void);
@@ -76,11 +77,6 @@ typedef struct {
     uint8_t (*MixedData)(void);
     uint8_t (*TripData)(void);
   } t;
-} vcu_can_t;
-
-typedef struct {
-  vcu_data_t d;
-  vcu_can_t can;
   void (*Init)(void);
   void (*Refresh)(void);
   void (*NodesInit)(void);
@@ -112,10 +108,10 @@ void VCU_CheckState(void);
 uint8_t VCU_CheckRTOS(void);
 void VCU_CheckStack(void);
 
-uint8_t VCU_CAN_TX_Heartbeat(void);
-uint8_t VCU_CAN_TX_SwitchModeControl(void);
-uint8_t VCU_CAN_TX_Datetime(datetime_t dt);
-uint8_t VCU_CAN_TX_MixedData(void);
-uint8_t VCU_CAN_TX_TripData(void);
+uint8_t VCU_TX_Heartbeat(void);
+uint8_t VCU_TX_SwitchModeControl(void);
+uint8_t VCU_TX_Datetime(datetime_t dt);
+uint8_t VCU_TX_MixedData(void);
+uint8_t VCU_TX_TripData(void);
 
 #endif /* INC_NODES_VCU_H_ */
