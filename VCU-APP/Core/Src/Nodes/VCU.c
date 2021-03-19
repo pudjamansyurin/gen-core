@@ -125,10 +125,10 @@ uint8_t VCU_CAN_TX_SwitchModeControl(void) {
 
 	// others
 	Tx.data.u8[3] = MCU.d.speed;
-	Tx.data.u16[2] = (uint16_t) (MCU.d.dcbus.current * 10);
+	Tx.data.u8[4] = (uint8_t) MCU.d.dcbus.current;
 
 	// send message
-	return CANBUS_Write(&Tx, CAND_VCU_SWITCH, 6, 0);
+	return CANBUS_Write(&Tx, CAND_VCU_SWITCH, 5, 0);
 }
 
 uint8_t VCU_CAN_TX_Datetime(datetime_t dt) {
