@@ -42,8 +42,8 @@ void MCU_Refresh(void) {
 		Reset();
 
 	MCU.d.overheat = IsOverheat();
-	MCU.d.error = (MCU.d.fault.post || MCU.d.fault.run) > 0;
-	//	MCU.d.run = ?;
+	MCU.d.run = MCU.d.inv.enabled;
+	MCU.d.error = (VCU.d.state == VEHICLE_RUN && !MCU.d.run) || ((MCU.d.fault.post || MCU.d.fault.run) > 0);
 
 	VCU.SetEvent(EVG_MCU_ERROR, MCU.d.error);
 }
@@ -131,7 +131,7 @@ uint8_t MCU_TX_Setting(uint8_t on) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void Reset(void) {
-	//	MCU.d.run = 0;
+	MCU.d.run = 0;
 	MCU.d.tick = 0;
 	MCU.d.overheat = 0;
 	MCU.d.error = 0;

@@ -51,10 +51,11 @@ typedef enum {
 	BMSF_UNBALANCE,
 	BMSF_SYSTEM_FAILURE,
 } BMS_FAULT_BIT;
+
 /* Exported struct
  * -------------------------------------------------------------*/
 typedef struct {
-	//	uint8_t run;
+	uint8_t run;
 	uint8_t overheat;
 	uint8_t error;
 	uint16_t fault;
@@ -101,6 +102,6 @@ void BMS_RefreshIndex(void);
 
 void BMS_RX_Param1(can_rx_t *Rx);
 void BMS_RX_Param2(can_rx_t *Rx);
-uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t recover);
+uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t sc);
 
 #endif /* INC_NODES_BMS_H_ */

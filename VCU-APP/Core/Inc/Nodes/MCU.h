@@ -98,7 +98,7 @@ typedef enum {
 /* Exported struct
  * ------------------------------------------------------------*/
 typedef struct {
-  //	uint8_t run;
+  uint8_t run;
   uint8_t overheat;
   uint8_t error;
   uint32_t tick;

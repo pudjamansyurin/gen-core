@@ -1396,6 +1396,7 @@ void StartCanRxTask(void *argument)
 {
   /* USER CODE BEGIN StartCanRxTask */
   uint32_t notif;
+  TickType_t last1000ms;
   can_rx_t Rx;
 
   osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
@@ -1404,6 +1405,7 @@ void StartCanRxTask(void *argument)
   osThreadFlagsClear(EVT_MASK);
 
   /* Infinite loop */
+  last1000ms = _GetTickMS();
   for (;;) {
     VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
 
@@ -1455,7 +1457,11 @@ void StartCanRxTask(void *argument)
       }
     }
 
-    VCU.NodesRefresh();
+    // every 1000ms
+    if (_GetTickMS() - last1000ms > 1000) {
+      last1000ms = _GetTickMS();
+      VCU.NodesRefresh();
+    }
   }
   /* USER CODE END StartCanRxTask */
 }
