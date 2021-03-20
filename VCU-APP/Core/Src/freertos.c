@@ -1169,10 +1169,8 @@ void StartGyroTask(void *argument)
     osThreadFlagsSet(AudioTaskHandle, flag);
 
     // Moved at rest
-    if (VCU.d.state < VEHICLE_STANDBY)
-      GYRO_MonitorMovement();
-    else
-      GYRO_ResetDetector();
+    if (VCU.d.state < VEHICLE_STANDBY) GYRO_MonitorMovement();
+    else GYRO_ResetDetector();
   }
   /* USER CODE END StartGyroTask */
 }
@@ -1205,11 +1203,7 @@ void StartRemoteTask(void *argument)
   for (;;) {
     VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
 
-    if (RMT_NeedPing())
-      RMT_Ping();
-    RMT_RefreshPairing();
-
-    VCU.SetEvent(EVG_REMOTE_MISSING, HMI1.d.state.unremote);
+    RMT_Refresh();
 
     if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
       if (notif & EVT_REMOTE_TASK_STOP) {
@@ -1530,7 +1524,7 @@ void StartCanTxTask(void *argument)
 
       HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
       BMS.PowerOverCan(VCU.d.state == VEHICLE_RUN);
-      MCU.PowerOverCan(VCU.d.state == VEHICLE_RUN);
+      MCU.PowerOverCan(BMS.d.run && VCU.d.state == VEHICLE_RUN);
     }
   }
   /* USER CODE END StartCanTxTask */

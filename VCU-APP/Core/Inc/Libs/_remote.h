@@ -44,7 +44,7 @@ uint8_t RMT_NeedPing(void);
 uint8_t RMT_Ping(void);
 void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);
-void RMT_RefreshPairing(void);
+void RMT_Refresh(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
 void RMT_IrqHandler(void);
 void RMT_PacketReceived(uint8_t *data);

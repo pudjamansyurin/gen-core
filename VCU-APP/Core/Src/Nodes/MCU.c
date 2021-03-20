@@ -7,7 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/MCU.h"
-#include "Nodes/BMS.h"
 #include "Nodes/VCU.h"
 
 /* Public variables
@@ -45,7 +44,6 @@ void MCU_Init(void) { Reset(); }
 
 void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
-		if (!BMS.d.run) return;
 		if (tickOn == 0) tickOn = _GetTickMS();
 
 		if (!MCU.d.run) {
