@@ -44,7 +44,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     _DelayMS(1000);
 
     /* Set FTP directory */
-    sprintf(ftp.path, "/%s/", (type == IAP_HMI) ? "hmi" : "vcu");
+    sprintf(ftp.path, "/%s/", (type == IAP_HMI) ? "HMI" : "VCU");
 
     /* Set current IAP type */
     *(uint32_t *)IAP_RESPONSE_ADDR = IAP_FOTA_ERROR;
