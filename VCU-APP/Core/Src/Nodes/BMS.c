@@ -21,6 +21,10 @@ bms_t BMS = {
 		BMS_RefreshIndex,
 };
 
+/* Private variables
+ * -----------------------------------------------------------*/
+static TickType_t tickOn = 0;
+
 /* Private functions prototypes
  * -----------------------------------------------*/
 static void ResetIndex(uint8_t i);
@@ -40,6 +44,12 @@ void BMS_PowerOverCan(uint8_t on) {
 	uint8_t sc = on && (BMS.d.fault & BIT(BMSF_SHORT_CIRCUIT));
 
 	BMS.t.Setting(state, sc);
+
+	if (on) {
+		if (tickOn == 0) tickOn = _GetTickMS();
+	} else {
+		tickOn = 0;
+	}
 }
 
 void BMS_RefreshIndex(void) {
@@ -51,7 +61,14 @@ void BMS_RefreshIndex(void) {
 	BMS.d.fault = MergeFault();
 	BMS.d.overheat = IsOverheat();
 	BMS.d.run = RunPacks(1);
-	BMS.d.error = (VCU.d.state == VEHICLE_RUN && !BMS.d.run) || BMS.d.fault > 0;
+	BMS.d.error = BMS.d.fault > 0;
+
+	if (tickOn && !BMS.d.run) {
+		if (_GetTickMS() - tickOn > BMS_TIMEOUT) {
+			BMS.d.error = 1;
+			tickOn = 0;
+		}
+	}
 
 	VCU.SetEvent(EVG_BMS_ERROR, BMS.d.error);
 }

@@ -14,7 +14,7 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MCU_TIMEOUT (uint32_t)1000 // ms
+#define MCU_TIMEOUT (uint32_t)3000 // ms
 
 /* Exported enum ------------------------------------------------------------*/
 typedef enum {

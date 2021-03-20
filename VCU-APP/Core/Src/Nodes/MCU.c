@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/MCU.h"
+#include "Nodes/BMS.h"
 #include "Nodes/VCU.h"
 
 /* Public variables
@@ -26,7 +27,12 @@ mcu_t MCU = {
 		MCU_PowerOverCan,
 		MCU_Refresh,
 		MCU_SpeedToVolume,
-		MCU_RpmToSpeed};
+		MCU_RpmToSpeed
+};
+
+/* Private variables
+ * -----------------------------------------------------------*/
+static TickType_t tickOn = 0;
 
 /* Private functions prototypes
  * -----------------------------------------------*/
@@ -37,20 +43,12 @@ static uint8_t IsOverheat(void);
  * --------------------------------------------*/
 void MCU_Init(void) { Reset(); }
 
-void MCU_Refresh(void) {
-	if ((_GetTickMS() - MCU.d.tick) > MCU_TIMEOUT)
-		Reset();
-
-	MCU.d.overheat = IsOverheat();
-	MCU.d.run = MCU.d.inv.enabled;
-	MCU.d.error = (VCU.d.state == VEHICLE_RUN && !MCU.d.run) || ((MCU.d.fault.post || MCU.d.fault.run) > 0);
-
-	VCU.SetEvent(EVG_MCU_ERROR, MCU.d.error);
-}
-
 void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
-		if (!MCU.d.inv.enabled) {
+		if (!BMS.d.run) return;
+		if (tickOn == 0) tickOn = _GetTickMS();
+
+		if (!MCU.d.run) {
 			GATE_McuPower(1);
 			_DelayMS(500);
 			MCU.t.Setting(0);
@@ -58,12 +56,31 @@ void MCU_PowerOverCan(uint8_t on) {
 			MCU.t.Setting(1);
 		}
 	} else {
-		if (MCU.d.inv.enabled) {
+		if (MCU.d.run) {
 			MCU.t.Setting(0);
 			_DelayMS(50);
 			GATE_McuPower(0);
 		}
+		tickOn = 0;
 	}
+}
+
+void MCU_Refresh(void) {
+	if ((_GetTickMS() - MCU.d.tick) > MCU_TIMEOUT)
+		Reset();
+
+	MCU.d.overheat = IsOverheat();
+	MCU.d.run = MCU.d.inv.enabled;
+	MCU.d.error = (MCU.d.fault.post || MCU.d.fault.run) > 0;
+
+	if (tickOn && !MCU.d.run) {
+		if (_GetTickMS() - tickOn > MCU_TIMEOUT) {
+			MCU.d.error = 1;
+			tickOn = 0;
+		}
+	}
+
+	VCU.SetEvent(EVG_MCU_ERROR, MCU.d.error);
 }
 
 uint16_t MCU_SpeedToVolume(void) { return MCU.RpmToSpeed() * 100 / MCU_SPEED_MAX; }

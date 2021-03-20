@@ -103,7 +103,7 @@ const osThreadAttr_t ManagerTask_attributes = {
 };
 /* Definitions for IotTask */
 osThreadId_t IotTaskHandle;
-uint32_t IotTaskBuffer[ 1536 ];
+uint32_t IotTaskBuffer[ 896 ];
 osStaticThreadDef_t IotTaskControlBlock;
 const osThreadAttr_t IotTask_attributes = {
   .name = "IotTask",
@@ -1528,9 +1528,9 @@ void StartCanTxTask(void *argument)
 
       VCU.t.Heartbeat();
 
+      HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
       BMS.PowerOverCan(VCU.d.state == VEHICLE_RUN);
       MCU.PowerOverCan(VCU.d.state == VEHICLE_RUN);
-      HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
     }
   }
   /* USER CODE END StartCanTxTask */
