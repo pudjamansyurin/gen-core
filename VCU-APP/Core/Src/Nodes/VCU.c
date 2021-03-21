@@ -48,7 +48,7 @@ vcu_t VCU = {
 		VCU_NodesRefresh,
 		VCU_CheckState,
 		VCU_CheckRTOS,
-		VCU_CheckStack,
+		VCU_CheckTasks,
 		VCU_SetEvent,
 		VCU_ReadEvent,
 		VCU_SetDriver,
@@ -257,7 +257,7 @@ void VCU_CheckState(void) {
 }
 
 uint8_t VCU_CheckRTOS(void) {
-	uint8_t expectedThread = (sizeof(rtos_task_t) / sizeof(task_t));
+	uint8_t expectedThread = sizeof(tasks_wakeup_t);
 	uint8_t activeThread = (uint8_t)(osThreadGetCount() - 2);
 	if (activeThread < expectedThread) {
 		printf("RTOS:Failed, active thread %d < %d\n", activeThread,
@@ -267,22 +267,36 @@ uint8_t VCU_CheckRTOS(void) {
 	return 1;
 }
 
-void VCU_CheckStack(void) {
-	rtos_task_t *rtos = &(VCU.d.task);
+void VCU_CheckTasks(void) {
+	tasks_t *t = &(VCU.d.task);
 
-	rtos->manager.stack = osThreadGetStackSpace(ManagerTaskHandle);
-	rtos->iot.stack = osThreadGetStackSpace(IotTaskHandle);
-	rtos->reporter.stack = osThreadGetStackSpace(ReporterTaskHandle);
-	rtos->command.stack = osThreadGetStackSpace(CommandTaskHandle);
-	rtos->gps.stack = osThreadGetStackSpace(GpsTaskHandle);
-	rtos->gyro.stack = osThreadGetStackSpace(GyroTaskHandle);
-	rtos->remote.stack = osThreadGetStackSpace(RemoteTaskHandle);
-	rtos->finger.stack = osThreadGetStackSpace(FingerTaskHandle);
-	rtos->audio.stack = osThreadGetStackSpace(AudioTaskHandle);
-	rtos->gate.stack = osThreadGetStackSpace(GateTaskHandle);
-	rtos->canRx.stack = osThreadGetStackSpace(CanRxTaskHandle);
-	rtos->canTx.stack = osThreadGetStackSpace(CanTxTaskHandle);
-	//  rtos->hmi2Power.stack = osThreadGetStackSpace(Hmi2PowerTaskHandle);
+	t->stack.manager = osThreadGetStackSpace(ManagerTaskHandle);
+	t->stack.iot = osThreadGetStackSpace(IotTaskHandle);
+	t->stack.reporter = osThreadGetStackSpace(ReporterTaskHandle);
+	t->stack.command = osThreadGetStackSpace(CommandTaskHandle);
+	t->stack.gps = osThreadGetStackSpace(GpsTaskHandle);
+	t->stack.gyro = osThreadGetStackSpace(GyroTaskHandle);
+	t->stack.remote = osThreadGetStackSpace(RemoteTaskHandle);
+	t->stack.finger = osThreadGetStackSpace(FingerTaskHandle);
+	t->stack.audio = osThreadGetStackSpace(AudioTaskHandle);
+	t->stack.gate = osThreadGetStackSpace(GateTaskHandle);
+	t->stack.canRx = osThreadGetStackSpace(CanRxTaskHandle);
+	t->stack.canTx = osThreadGetStackSpace(CanTxTaskHandle);
+	//  t->stack.hmi2Power = osThreadGetStackSpace(Hmi2PowerTaskHandle);
+
+	TickType_t now = _GetTickMS();
+	t->wakeup.manager = TO_U8((now - t->tick.manager)/1000);
+	t->wakeup.iot = TO_U8((now - t->tick.iot)/1000);
+	t->wakeup.reporter = TO_U8((now - t->tick.reporter)/1000);
+	t->wakeup.command = TO_U8((now - t->tick.command)/1000);
+	t->wakeup.gps = TO_U8((now - t->tick.gps)/1000);
+	t->wakeup.gyro = TO_U8((now - t->tick.gyro)/1000);
+	t->wakeup.remote = TO_U8((now - t->tick.remote)/1000);
+	t->wakeup.finger = TO_U8((now - t->tick.finger)/1000);
+	t->wakeup.audio = TO_U8((now - t->tick.audio)/1000);
+	t->wakeup.gate = TO_U8((now - t->tick.gate)/1000);
+	t->wakeup.canRx = TO_U8((now - t->tick.canRx)/1000);
+	t->wakeup.canTx = TO_U8((now - t->tick.canTx)/1000);
 }
 
 /* ====================================== CAN TX

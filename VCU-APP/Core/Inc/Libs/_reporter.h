@@ -98,6 +98,11 @@ typedef struct __attribute__((packed)) {
 	} inv;
 } mcu_debug_t;
 
+typedef struct __attribute__((packed)) {
+	tasks_stack_t stack;
+	tasks_wakeup_t wakeup;
+} tasks_debug_t;
+
 // report frame
 typedef struct __attribute__((packed)) {
 	struct __attribute__((packed)) {
@@ -136,7 +141,7 @@ typedef struct __attribute__((packed)) {
 		hmi1_debug_t hmi1;
 		bms_debug_t bms;
 		mcu_debug_t mcu;
-		rtos_task_t task;
+		tasks_debug_t task;
 	} debug;
 } report_data_t;
 

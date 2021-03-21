@@ -98,7 +98,9 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     mcu->inv.lockout = MCU.d.inv.lockout;
     mcu->inv.discharge = MCU.d.inv.discharge;
 
-    memcpy(&(d->debug.task), &(VCU.d.task), sizeof(rtos_task_t));
+    tasks_debug_t *tasks = &(d->debug.task);
+    memcpy(&(tasks->stack), &(VCU.d.task.stack), sizeof(tasks_stack_t));
+    memcpy(&(tasks->wakeup), &(VCU.d.task.wakeup), sizeof(tasks_wakeup_t));
   }
 }
 

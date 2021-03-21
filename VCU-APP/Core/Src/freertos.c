@@ -711,12 +711,12 @@ void StartManagerTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.manager.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.manager = _GetTickMS();
 		lastWake = _GetTickMS();
 
 		VCU.Refresh();
 		VCU.CheckState();
-		VCU.CheckStack();
+		VCU.CheckTasks();
 
 		HMI1.d.state.daylight = RTC_IsDaylight();
 		HMI1.d.state.overheat = BMS.d.overheat || MCU.d.overheat;
@@ -762,7 +762,7 @@ void StartIotTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.iot.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.iot = _GetTickMS();
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
 			if (notif & EVT_IOT_RESUBSCRIBE) {
@@ -843,7 +843,7 @@ void StartReporterTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.reporter.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.reporter = _GetTickMS();
 
 		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
 		RPT_ReportCapture(frame, &report);
@@ -888,7 +888,7 @@ void StartCommandTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.command.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.command = _GetTickMS();
 		// get command in queue
 		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==
 				osOK) {
@@ -1113,7 +1113,7 @@ void StartGpsTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.gps.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.gps = _GetTickMS();
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny,
@@ -1152,7 +1152,7 @@ void StartGyroTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.gyro.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.gyro = _GetTickMS();
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
@@ -1213,7 +1213,7 @@ void StartRemoteTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.remote.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.remote = _GetTickMS();
 
 		RMT_Refresh();
 
@@ -1282,7 +1282,7 @@ void StartFingerTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.finger.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.finger = _GetTickMS();
 
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
 			if (notif & EVT_FINGER_TASK_STOP) {
@@ -1356,7 +1356,7 @@ void StartAudioTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.audio.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.audio = _GetTickMS();
 
 		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
 
@@ -1413,7 +1413,7 @@ void StartCanRxTask(void *argument)
 	/* Infinite loop */
 	last1000ms = _GetTickMS();
 	for (;;) {
-		VCU.d.task.canRx.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.canRx = _GetTickMS();
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 0)) {
@@ -1500,7 +1500,7 @@ void StartCanTxTask(void *argument)
 	last500ms = _GetTickMS();
 	last1000ms = _GetTickMS();
 	for (;;) {
-		VCU.d.task.canTx.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.canTx = _GetTickMS();
 
 		// Check notifications
 		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 20)) {
@@ -1562,7 +1562,7 @@ void StartHmi2PowerTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		//    VCU.d.task.hmi2Power.wakeup = _GetTickMS() / 1000;
+		//    VCU.d.task.tick.hmi2Power = _GetTickMS();
 
 		if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny,
 				osWaitForever)) {
@@ -1600,7 +1600,7 @@ void StartGateTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.gate.wakeup = _GetTickMS() / 1000;
+		VCU.d.task.tick.gate = _GetTickMS();
 
 		// wait forever
 		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
