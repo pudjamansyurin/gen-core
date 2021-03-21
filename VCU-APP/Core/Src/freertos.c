@@ -910,24 +910,12 @@ void StartCommandTask(void *argument)
 					GATE_LedWrite(*(uint8_t *)cmd.data.value);
 					break;
 
-				case CMD_GEN_OVERRIDE:
-					if (VCU.d.state < VEHICLE_NORMAL) {
-						sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
-						resp.data.res_code = RESPONSE_STATUS_ERROR;
-					} else
-						VCU.d.override = *(uint8_t *)cmd.data.value;
+				case CMD_GEN_RTC:
+					RTC_Write(*(datetime_t *)cmd.data.value);
 					break;
 
-				case CMD_GEN_MODE_DRIVE:
-					HBAR.d.mode[HBAR_M_DRIVE] = *(uint8_t *)cmd.data.value;
-					break;
-
-				case CMD_GEN_MODE_TRIP:
-					HBAR.d.mode[HBAR_M_TRIP] = *(uint8_t *)cmd.data.value;
-					break;
-
-				case CMD_GEN_MODE_REPORT:
-					HBAR.d.mode[HBAR_M_REPORT] = *(uint8_t *)cmd.data.value;
+				case CMD_GEN_ODOM:
+					EEPROM_Odometer(EE_CMD_W, (*(uint32_t *)cmd.data.value) * 1000);
 					break;
 
 				default:
@@ -936,15 +924,17 @@ void StartCommandTask(void *argument)
 				}
 			}
 
-			else if (cmd.header.code == CMD_CODE_REPORT) {
+			else if (cmd.header.code == CMD_CODE_OVERRIDE) {
 				switch (cmd.header.sub_code) {
-				case CMD_REPORT_RTC:
-					RTC_Write(*(datetime_t *)cmd.data.value);
+
+				case CMD_OVERRIDE_STATE:
+					if (VCU.d.state < VEHICLE_NORMAL) {
+						sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
+						resp.data.res_code = RESPONSE_STATUS_ERROR;
+					} else
+						VCU.d.override = *(uint8_t *)cmd.data.value;
 					break;
 
-				case CMD_REPORT_ODOM:
-					EEPROM_Odometer(EE_CMD_W, (*(uint32_t *)cmd.data.value) * 1000);
-					break;
 
 				default:
 					resp.data.res_code = RESPONSE_STATUS_INVALID;
@@ -1062,6 +1052,28 @@ void StartCommandTask(void *argument)
 					osThreadFlagsSet(IotTaskHandle, EVT_IOT_READ_SMS);
 					CMD_NetQuota(&resp, QuotaQueueHandle);
 					break;
+
+				default:
+					resp.data.res_code = RESPONSE_STATUS_INVALID;
+					break;
+				}
+			}
+
+			else if (cmd.header.code == CMD_CODE_HBAR) {
+				switch (cmd.header.sub_code) {
+
+				case CMD_HBAR_DRIVE:
+					HBAR.d.mode[HBAR_M_DRIVE] = *(uint8_t *)cmd.data.value;
+					break;
+
+				case CMD_HBAR_TRIP:
+					HBAR.d.mode[HBAR_M_TRIP] = *(uint8_t *)cmd.data.value;
+					break;
+
+				case CMD_HBAR_REPORT:
+					HBAR.d.mode[HBAR_M_REPORT] = *(uint8_t *)cmd.data.value;
+					break;
+
 
 				default:
 					resp.data.res_code = RESPONSE_STATUS_INVALID;

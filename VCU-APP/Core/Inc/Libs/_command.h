@@ -21,23 +21,21 @@
 
 // Command Code List
 #define CMD_CODE_GEN (uint8_t)0
-#define CMD_CODE_REPORT (uint8_t)1
+#define CMD_CODE_OVERRIDE (uint8_t)1
 #define CMD_CODE_AUDIO (uint8_t)2
 #define CMD_CODE_FINGER (uint8_t)3
 #define CMD_CODE_REMOTE (uint8_t)4
 #define CMD_CODE_FOTA (uint8_t)5
 #define CMD_CODE_NET (uint8_t)6
+#define CMD_CODE_HBAR (uint8_t)7
 
 // Command Sub-Code List
 #define CMD_GEN_INFO (uint8_t)0
 #define CMD_GEN_LED (uint8_t)1
-#define CMD_GEN_OVERRIDE (uint8_t)2
-#define CMD_GEN_MODE_DRIVE (uint8_t)3
-#define CMD_GEN_MODE_TRIP (uint8_t)4
-#define CMD_GEN_MODE_REPORT (uint8_t)5
+#define CMD_GEN_RTC (uint8_t)2
+#define CMD_GEN_ODOM (uint8_t)3
 
-#define CMD_REPORT_RTC (uint8_t)0
-#define CMD_REPORT_ODOM (uint8_t)1
+#define CMD_OVERRIDE_STATE (uint8_t)0
 
 #define CMD_AUDIO_BEEP (uint8_t)0
 #define CMD_AUDIO_MUTE (uint8_t)1
@@ -54,6 +52,10 @@
 
 #define CMD_NET_SEND_USSD (uint8_t)0
 #define CMD_NET_READ_SMS (uint8_t)1
+
+#define CMD_HBAR_DRIVE (uint8_t)0
+#define CMD_HBAR_TRIP (uint8_t)1
+#define CMD_HBAR_REPORT (uint8_t)2
 
 /* Public functions implementation
  * --------------------------------------------*/
