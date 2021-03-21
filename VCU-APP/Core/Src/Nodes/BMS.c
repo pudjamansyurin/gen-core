@@ -37,7 +37,15 @@ static uint8_t RunPacks(uint8_t on);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void BMS_Init(void) { ResetPacks(); }
+void BMS_Init(void) {
+	ResetPacks();
+	BMS.d.active = 0;
+	BMS.d.run = 0;
+	BMS.d.soc = 0;
+	BMS.d.fault = 0;
+	BMS.d.error = 0;
+	BMS.d.overheat = 0;
+}
 
 void BMS_PowerOverCan(uint8_t on) {
 	BMS_STATE state = on ? BMS_STATE_FULL : BMS_STATE_IDLE;
@@ -53,14 +61,20 @@ void BMS_PowerOverCan(uint8_t on) {
 }
 
 void BMS_RefreshIndex(void) {
-	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		if ((_GetTickMS() - BMS.d.pack[i].tick) > BMS_TIMEOUT)
+	uint8_t active = 1;
+	for (uint8_t i = 0; i < BMS_COUNT; i++) {
+		BMS.d.pack[i].active = BMS.d.pack[i].tick && (_GetTickMS() - BMS.d.pack[i].tick) < BMS_TIMEOUT;
+		if (!BMS.d.pack[i].active) {
 			ResetIndex(i);
+			active = 0;
+		}
+	}
 
+	BMS.d.active = active;
+	BMS.d.run = BMS.d.active && RunPacks(1);
 	BMS.d.soc = AverageSOC();
 	BMS.d.fault = MergeFault();
 	BMS.d.overheat = IsOverheat();
-	BMS.d.run = RunPacks(1);
 	BMS.d.error = BMS.d.fault > 0;
 
 	if (tickOn && !BMS.d.run) {
@@ -116,12 +130,13 @@ uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t sc) {
 	Tx.data.u8[2] = BMS_SCALE_15_85 & 0x03;
 
 	// send message
-	return CANBUS_Write(&Tx, CAND_BMS_SETTING, 8, 1);
+	return CANBUS_Write(&Tx, CAND_BMS_SETTING, 3, 1);
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
 static void ResetIndex(uint8_t i) {
+	BMS.d.pack[i].run = 0;
 	BMS.d.pack[i].tick = 0;
 	BMS.d.pack[i].state = BMS_STATE_OFF;
 	BMS.d.pack[i].id = BMS_ID_NONE;
@@ -190,12 +205,6 @@ static uint8_t AverageSOC(void) {
 static void ResetPacks(void) {
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
 		ResetIndex(i);
-
-	BMS.d.run = RunPacks(0);
-	BMS.d.soc = 0;
-	BMS.d.fault = 0;
-	BMS.d.error = 0;
-	BMS.d.overheat = 0;
 }
 
 static uint8_t RunPacks(uint8_t on) {
@@ -204,7 +213,7 @@ static uint8_t RunPacks(uint8_t on) {
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
 		if (BMS.d.pack[i].state != state)
 			return 0;
-		if (on && BMS.d.pack[i].fault != 0)
+		if (on && BMS.d.pack[i].fault)
 			return 0;
 	}
 	return 1;

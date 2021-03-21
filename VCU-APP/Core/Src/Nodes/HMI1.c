@@ -24,19 +24,20 @@ static void Reset(void);
 /* Public functions implementation
  * --------------------------------------------*/
 void HMI1_Init(void) {
-	Reset();
 	HMI1.d.state.mirroring = 0;
 	HMI1.d.state.warning = 0;
 	HMI1.d.state.overheat = 0;
 	HMI1.d.state.unfinger = 1;
 	HMI1.d.state.unremote = 1;
 	HMI1.d.state.daylight = 0;
+
+	Reset();
 }
 
 void HMI1_Refresh(void) {
-	if ((_GetTickMS() - HMI1.d.tick) <= HMI1_TIMEOUT)
-		HMI1.d.run = 1;
-	else
+	HMI1.d.run = HMI1.d.tick && (_GetTickMS() - HMI1.d.tick) < HMI1_TIMEOUT;
+
+	if (!HMI1.d.run)
 		Reset();
 }
 

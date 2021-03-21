@@ -51,7 +51,14 @@ typedef struct __attribute__((packed)) {
 	uint8_t sub_code;
 } command_header_t;
 
+
 typedef struct __attribute__((packed)) {
+	uint8_t run;
+} hmi1_debug_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t active;
+	uint8_t run;
 	uint16_t fault;
 	uint8_t soc;
 	struct __attribute__((packed)) {
@@ -64,6 +71,8 @@ typedef struct __attribute__((packed)) {
 } bms_debug_t;
 
 typedef struct __attribute__((packed)) {
+	uint8_t active;
+	uint8_t run;
 	uint32_t rpm;
 	uint8_t speed;
 	uint8_t reverse;
@@ -124,6 +133,7 @@ typedef struct __attribute__((packed)) {
 	} opt;
 	struct __attribute__((packed)) {
 		motion_t motion;
+		hmi1_debug_t hmi1;
 		bms_debug_t bms;
 		mcu_debug_t mcu;
 		rtos_task_t task;

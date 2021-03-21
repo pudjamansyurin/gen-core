@@ -13,15 +13,18 @@
  * -----------------------------------------------------------*/
 mcu_t MCU = {
 		.d = {0},
-		.r =
-		{
+		.r = {
 				MCU_RX_CurrentDC,
 				MCU_RX_VoltageDC,
 				MCU_RX_TorqueSpeed,
 				MCU_RX_FaultCode,
 				MCU_RX_State,
+				MCU_RX_Template
 		},
-		.t = {MCU_TX_Setting},
+		.t = {
+				MCU_TX_Setting,
+				MCU_TX_Template
+		},
 		MCU_Init,
 		MCU_PowerOverCan,
 		MCU_Refresh,
@@ -32,6 +35,7 @@ mcu_t MCU = {
 /* Private variables
  * -----------------------------------------------------------*/
 static TickType_t tickOn = 0;
+static mcu_template_addr_t tplAddr[HBAR_M_DRIVE_MAX];
 
 /* Private functions prototypes
  * -----------------------------------------------*/
@@ -40,7 +44,15 @@ static uint8_t IsOverheat(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void MCU_Init(void) { Reset(); }
+void MCU_Init(void) {
+	for (uint8_t i=0; i<HBAR_M_DRIVE_MAX; i++) {
+		tplAddr[i].discur_max = (i*3) + MTP_1_DISCUR_MAX;
+		tplAddr[i].torque_max = (i*3) + MTP_1_TORQUE_MAX;
+		//		tplAddr[i].rbs_switch = (i*3) + MTP_1_RBS_SWITCH;
+	}
+
+	Reset();
+}
 
 void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
@@ -61,14 +73,17 @@ void MCU_PowerOverCan(uint8_t on) {
 		}
 		tickOn = 0;
 	}
+
+	if (MCU.d.active && !MCU.d.run)
+		MCU_GetTemplates();
 }
 
 void MCU_Refresh(void) {
-	if ((_GetTickMS() - MCU.d.tick) > MCU_TIMEOUT)
-		Reset();
+	MCU.d.active = MCU.d.tick && (_GetTickMS() - MCU.d.tick) < MCU_TIMEOUT;
+	if (!MCU.d.active) Reset();
 
+	MCU.d.run = MCU.d.active && MCU.d.inv.enabled;
 	MCU.d.overheat = IsOverheat();
-	MCU.d.run = MCU.d.inv.enabled;
 	MCU.d.error = (MCU.d.fault.post || MCU.d.fault.run) > 0;
 
 	if (tickOn && !MCU.d.run) {
@@ -81,7 +96,27 @@ void MCU_Refresh(void) {
 	VCU.SetEvent(EVG_MCU_ERROR, MCU.d.error);
 }
 
-uint16_t MCU_SpeedToVolume(void) { return MCU.RpmToSpeed() * 100 / MCU_SPEED_MAX; }
+void MCU_GetTemplates(void) {
+	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
+		MCU.t.Template(tplAddr[m].discur_max, 0, 0);
+		MCU.t.Template(tplAddr[m].torque_max, 0, 0);
+		//		MCU.t.Template(tplAddr[m].rbs_switch, 0, 0);
+	}
+}
+
+void MCU_SetTemplate(HBAR_MODE_DRIVE m, mcu_template_t* t) {
+	MCU.t.Template(tplAddr[m].discur_max, 1, t->discur_max);
+	MCU.t.Template(tplAddr[m].torque_max, 1, t->torque_max * 10);
+	//	MCU.t.Template(tplAddr[m].rbs_switch, 1, t->rbs_switch);
+}
+
+void MCU_SetSpeedMax(int16_t max) {
+	MCU.t.Template(MTP_SPEED_MAX, 1, max);
+}
+
+uint16_t MCU_SpeedToVolume(void) {
+	return MCU.RpmToSpeed() * 100 / MCU_SPEED_MAX;
+}
 
 uint16_t MCU_RpmToSpeed(void) {
 	return MCU.d.rpm * MCU_SPEED_MAX / MCU_RPM_MAX;
@@ -106,7 +141,7 @@ void MCU_RX_TorqueSpeed(can_rx_t *Rx) {
 	MCU.d.rpm = Rx->data.u16[1];
 	MCU.d.torque.commanded = Rx->data.u16[2] * 0.1;
 	MCU.d.torque.feedback = Rx->data.u16[3] * 0.1;
-	;
+
 	MCU.d.tick = _GetTickMS();
 }
 
@@ -128,10 +163,36 @@ void MCU_RX_State(can_rx_t *Rx) {
 	MCU.d.tick = _GetTickMS();
 }
 
+void MCU_RX_Template(can_rx_t *Rx) {
+	uint16_t param = Rx->data.u16[0];
+	//	uint8_t write = Rx->data.u8[2];
+	int16_t data = Rx->data.s16[2];
+
+	if (param == MTP_SPEED_MAX) {
+		MCU.d.tpl.speed_max = data;
+		return;
+	}
+
+	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
+		if (param == tplAddr[m].discur_max) {
+			MCU.d.tpl.template[m].discur_max = data;
+			return;
+		}
+		else if (param == tplAddr[m].torque_max) {
+			MCU.d.tpl.template[m].torque_max = data * 0.1;
+			return;
+		}
+		//		else if (param == tplAddr[m].rbs_switch) {
+		//			MCU.d.tpl.template[m].rbs_switch = data;
+		//			return;
+		//		}
+	}
+}
+
 /* ====================================== CAN TX
  * =================================== */
 uint8_t MCU_TX_Setting(uint8_t on) {
-	can_tx_t Tx;
+	can_tx_t Tx = {0};
 
 	// set message
 	Tx.data.u8[4] = HBAR.reverse;
@@ -141,6 +202,18 @@ uint8_t MCU_TX_Setting(uint8_t on) {
 
 	// send message
 	return CANBUS_Write(&Tx, CAND_MCU_SETTING, 6, 0);
+}
+
+uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
+	can_tx_t Tx = {0};
+
+	// set message
+	Tx.data.u16[0] = param;
+	Tx.data.u8[2] = write;
+	Tx.data.s16[2] = data;
+
+	// send message
+	return CANBUS_Write(&Tx, CAND_MCU_TEMPLATE_W, 6, 0);
 }
 
 /* Private functions implementation
@@ -166,6 +239,13 @@ static void Reset(void) {
 	MCU.d.inv.enabled = 0;
 	MCU.d.inv.lockout = 0;
 	MCU.d.inv.discharge = INV_DISCHARGE_DISABLED;
+
+	MCU.d.tpl.speed_max = 0;
+	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
+		MCU.d.tpl.template[m].discur_max = 0;
+		MCU.d.tpl.template[m].torque_max = 0;
+		//		MCU.d.tpl.template[m].rbs_switch = 0;
+	}
 }
 
 static uint8_t IsOverheat(void) {

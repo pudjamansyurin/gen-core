@@ -15,6 +15,7 @@
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
 #include "Nodes/VCU.h"
+#include "Nodes/HMI1.h"
 
 
 /* Public functions implementation -------------------------------------------*/
@@ -62,7 +63,12 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     header->size += sizeof(d->debug);
     memcpy(&(d->debug.motion), &(VCU.d.motion), sizeof(motion_t));
 
+    hmi1_debug_t *hmi1 = &(d->debug.hmi1);
+    hmi1->run = HMI1.d.run;
+
     bms_debug_t *bms = &(d->debug.bms);
+    bms->active = BMS.d.active;
+    bms->run = BMS.d.run;
     bms->soc= BMS.d.soc;
     bms->fault = BMS.d.fault;
     for (uint8_t i = 0; i < BMS_COUNT; i++) {
@@ -74,6 +80,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     }
 
     mcu_debug_t *mcu = &(d->debug.mcu);
+    mcu->active = MCU.d.active;
+    mcu->run = MCU.d.run;
     mcu->rpm = MCU.d.rpm;
     mcu->speed = MCU.RpmToSpeed();
     mcu->reverse = MCU.d.reverse;

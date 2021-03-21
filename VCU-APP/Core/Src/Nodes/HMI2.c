@@ -39,7 +39,7 @@ void HMI2_Init(void) {
 }
 
 void HMI2_Refresh(void) {
-	HMI2.d.run = (_GetTickMS() - HMI2.d.tick) <= HMI2_TIMEOUT;
+	HMI2.d.run = HMI2.d.tick && (_GetTickMS() - HMI2.d.tick) < HMI2_TIMEOUT;
 }
 
 void HMI2_PowerByCan(uint8_t state) {

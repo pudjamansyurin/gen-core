@@ -56,11 +56,14 @@ typedef enum {
  * -------------------------------------------------------------*/
 typedef struct {
 	uint8_t run;
+	uint8_t active;
 	uint8_t overheat;
 	uint8_t error;
 	uint16_t fault;
 	uint8_t soc;
 	struct {
+		uint8_t run;
+		uint8_t active;
 		uint32_t id;
 		float voltage;
 		float current;
@@ -70,7 +73,6 @@ typedef struct {
 		float soh;
 		uint16_t cycle;
 		uint16_t fault;
-
 		BMS_STATE state;
 		uint32_t tick;
 	} pack[BMS_COUNT];

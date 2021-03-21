@@ -114,8 +114,8 @@ uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC,
 uint8_t CANBUS_Read(can_rx_t *Rx) {
   HAL_StatusTypeDef status = HAL_ERROR;
 
-  if (!Activated())
-    return 0;
+  if (!Activated()) return 0;
+  memset(Rx, 0x00, sizeof(can_rx_t));
 
   lock();
   if (HAL_CAN_GetRxFifoFillLevel(can.pcan, CAN_RX_FIFO0)) {

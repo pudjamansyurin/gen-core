@@ -288,7 +288,7 @@ void VCU_CheckStack(void) {
 /* ====================================== CAN TX
  * =================================== */
 uint8_t VCU_TX_Heartbeat(void) {
-	can_tx_t Tx;
+	can_tx_t Tx = {0};
 
 	Tx.data.u16[0] = VCU_VERSION;
 
@@ -296,7 +296,7 @@ uint8_t VCU_TX_Heartbeat(void) {
 }
 
 uint8_t VCU_TX_SwitchModeControl(void) {
-	can_tx_t Tx;
+	can_tx_t Tx = {0};
 
 	Tx.data.u8[0] = HBAR.list[HBAR_K_ABS].state;
 	Tx.data.u8[0] |= (VCU.d.gps.fix == 0) << 1; // HMI1.d.state.mirroring << 1;
@@ -332,7 +332,7 @@ uint8_t VCU_TX_SwitchModeControl(void) {
 }
 
 uint8_t VCU_TX_Datetime(datetime_t dt) {
-	can_tx_t Tx;
+	can_tx_t Tx = {0};
 	uint8_t hmi2shutdown = VCU.d.state < VEHICLE_STANDBY;
 
 	Tx.data.u8[0] = dt.Seconds;
@@ -348,7 +348,7 @@ uint8_t VCU_TX_Datetime(datetime_t dt) {
 }
 
 uint8_t VCU_TX_MixedData(void) {
-	can_tx_t Tx;
+	can_tx_t Tx = {0};
 
 	Tx.data.u8[0] = SIM.signal;
 	Tx.data.u8[1] = BMS.d.soc;
@@ -359,7 +359,7 @@ uint8_t VCU_TX_MixedData(void) {
 }
 
 uint8_t VCU_TX_TripData(void) {
-	can_tx_t Tx;
+	can_tx_t Tx = {0};
 
 	Tx.data.u16[0] = HBAR.d.trip[HBAR_M_TRIP_A] / 1000;
 	Tx.data.u16[1] = HBAR.d.trip[HBAR_M_TRIP_B] / 1000;

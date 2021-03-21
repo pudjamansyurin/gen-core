@@ -29,7 +29,7 @@ static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
   uint32_t address = CAND_FOCAN_PROGRESS;
   uint32_t retry = 5;
-  can_tx_t Tx;
+	can_tx_t Tx = {0};
   uint8_t p;
 
   // set message
@@ -46,7 +46,7 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
 uint8_t FOCAN_GetCRC(uint32_t *crc) {
   uint32_t address = CAND_FOCAN_CRC;
   CAN_DATA RxData = {0};
-  can_tx_t Tx;
+	can_tx_t Tx = {0};
   uint8_t p;
 
   // send message
@@ -60,7 +60,7 @@ uint8_t FOCAN_GetCRC(uint32_t *crc) {
 }
 
 uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
-  can_tx_t Tx;
+	can_tx_t Tx = {0};
   uint8_t p;
 
   // set message
@@ -73,7 +73,7 @@ uint8_t FOCAN_DownloadHook(uint32_t address, uint32_t *data) {
 
 uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset,
                             uint32_t total_size) {
-  can_tx_t Tx;
+	can_tx_t Tx = {0};
   uint32_t pendingBlk, tmpBlk;
   uint8_t p;
   float percent;
@@ -116,7 +116,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset,
 /* Private functions implementation
  * --------------------------------------------*/
 static uint8_t FOCAN_FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
-  can_tx_t Tx;
+	can_tx_t Tx = {0};
   uint32_t pendingSubBlk, tmpSubBlk;
   uint32_t address;
   uint8_t p;
