@@ -10,18 +10,6 @@
 
 /* Public functions implementation
  * --------------------------------------------*/
-#if RTOS_ENABLE
-uint8_t _osThreadFlagsWait(uint32_t *notif, uint32_t flags, uint32_t options,
-                           uint32_t timeout) {
-  *notif = osThreadFlagsWait(flags, options, timeout);
-
-  if (*notif > EVT_MASK)
-    return 0;
-
-  return (*notif & flags) > 0;
-}
-#endif
-
 void _DelayMS(uint32_t ms) {
 #if RTOS_ENABLE
   osDelay(ms);
@@ -45,12 +33,6 @@ void _Error(char msg[50]) {
 #else
   printf(msg);
 #endif
-
-  // indicator error
-  //	while (1) {
-  //		GATE_LedToggle();
-  //		HAL_Delay(50);
-  //	}
 }
 
 uint32_t _ByteSwap32(uint32_t x) {

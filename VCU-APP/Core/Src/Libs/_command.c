@@ -88,9 +88,8 @@ void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue) {
 
   // wait response until timeout
   resp->data.res_code = RESPONSE_STATUS_ERROR;
-  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny,
-                         FINGER_SCAN_TIMEOUT + 3000)) {
-    if (notif & EVT_COMMAND_OK) {
+  if (_osFlagAny(&notif, FINGER_SCAN_TIMEOUT + 3000)) {
+    if (notif & FLAG_COMMAND_OK) {
       if (osMessageQueueGet(queue, &id, NULL, 0U) == osOK) {
         sprintf(resp->data.message, "%u", id);
         resp->data.res_code = RESPONSE_STATUS_OK;
@@ -110,8 +109,8 @@ void CMD_FingerFetch(response_t *resp, osMessageQueueId_t queue) {
 
   // wait response until timeout
   resp->data.res_code = RESPONSE_STATUS_ERROR;
-  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
-    if (notif & EVT_COMMAND_OK) {
+  if (_osFlagAny(&notif, 5000))
+    if (notif & FLAG_COMMAND_OK) {
       if (osMessageQueueGet(queue, finger.db, NULL, 0U) == osOK) {
         resp->data.res_code = RESPONSE_STATUS_OK;
 
@@ -135,8 +134,8 @@ void CMD_Finger(response_t *resp) {
 
   // wait response until timeout
   resp->data.res_code = RESPONSE_STATUS_ERROR;
-  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
-    if (notif & EVT_COMMAND_OK)
+  if (_osFlagAny(&notif, 5000))
+    if (notif & FLAG_COMMAND_OK)
       resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
@@ -145,8 +144,8 @@ void CMD_RemotePairing(response_t *resp) {
 
   // wait response until timeout
   resp->data.res_code = RESPONSE_STATUS_ERROR;
-  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 5000))
-    if (notif & EVT_COMMAND_OK)
+  if (_osFlagAny(&notif, 5000))
+    if (notif & FLAG_COMMAND_OK)
       resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
@@ -155,8 +154,8 @@ void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue) {
 
   // wait response until timeout
   resp->data.res_code = RESPONSE_STATUS_ERROR;
-  if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 40000))
-    if (notif & EVT_COMMAND_OK)
+  if (_osFlagAny(&notif, 40000))
+    if (notif & FLAG_COMMAND_OK)
       if (osMessageQueueGet(queue, resp->data.message, NULL, 0U) == osOK)
         resp->data.res_code = RESPONSE_STATUS_OK;
 }

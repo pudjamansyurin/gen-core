@@ -22,22 +22,21 @@ extern osMutexId_t RemoteRecMutexHandle;
 
 /* Private variables
  * -----------------------------------------------------------*/
-static remote_t RMT = {.tx =
-{
-		.address = {0x00, 0x00, 0x00, 0x00, 0xAB},
-		.payload = {0},
-},
-.rx =
-{
-		.address = {0x00, 0x00, 0x00, 0x00, 0xCD},
-		.payload = {0},
-},
-.tick =
-{
-		.heartbeat = 0,
-		.pairing = 0,
-},
-.pspi = &hspi1};
+static remote_t RMT = {
+		.tx = {
+				.address = {0x00, 0x00, 0x00, 0x00, 0xAB},
+				.payload = {0},
+		},
+		.rx = {
+				.address = {0x00, 0x00, 0x00, 0x00, 0xCD},
+				.payload = {0},
+		},
+		.tick = {
+				.heartbeat = 0,
+				.pairing = 0,
+		},
+		.pspi = &hspi1
+};
 static const uint8_t COMMAND[3][8] = {
 		{0x5e, 0x6c, 0xa7, 0x74, 0xfd, 0xe3, 0xdf, 0xbc},
 		{0xf7, 0xda, 0x4a, 0x4f, 0x65, 0x2d, 0x6e, 0xf0},
@@ -50,8 +49,10 @@ static void unlock(void);
 static void ChangeMode(RMT_MODE mode);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
 static void RMT_GenerateAesKey(uint32_t *aesSwapped);
+#if REMOTE_DEBUG
 static void RawDebugger(void);
 static void Debugger(RMT_CMD command);
+#endif
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -82,12 +83,9 @@ void RMT_ReInit(void) {
 
 uint8_t RMT_NeedPing(void) {
 	vehicle_state_t *state = &(VCU.d.state);
-	uint8_t *unremote = &(HMI1.d.state.unremote);
-	uint32_t timeout =
-			(*state < VEHICLE_RUN) ? REMOTE_TIMEOUT : REMOTE_TIMEOUT_RUN;
+	uint32_t timeout = (*state < VEHICLE_RUN) ? REMOTE_TIMEOUT : REMOTE_TIMEOUT_RUN;
 
-	if (RMT.tick.heartbeat)
-		*unremote = (_GetTickMS() - RMT.tick.heartbeat) > timeout;
+	VCU.d.mod.remote = RMT.tick.heartbeat && (_GetTickMS() - RMT.tick.heartbeat) < timeout;
 
 	if (*state >= VEHICLE_RUN)
 		return (_GetTickMS() - RMT.tick.heartbeat) > (timeout - 3000);
@@ -142,7 +140,7 @@ void RMT_Refresh(void) {
 		}
 	}
 
-	VCU.SetEvent(EVG_REMOTE_MISSING, HMI1.d.state.unremote);
+	VCU.SetEvent(EVG_REMOTE_MISSING, VCU.d.mod.remote);
 }
 
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
@@ -170,8 +168,10 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	}
 	unlock();
 
-	//	if (valid)
-	//		Debugger(*cmd);
+#if REMOTE_DEBUG
+	if (valid)
+		Debugger(*cmd);
+#endif
 
 	return valid;
 }
@@ -179,8 +179,11 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 void RMT_IrqHandler(void) { nrf_irq_handler(); }
 
 void RMT_PacketReceived(uint8_t *data) {
-	// Debugger();
-	osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_RX_IT);
+#if REMOTE_DEBUG
+	RawDebugger
+	Debugger();
+#endif
+	osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RX_IT);
 }
 
 /* Private functions implementation
@@ -244,6 +247,7 @@ static void RMT_GenerateAesKey(uint32_t *aesSwapped) {
 	}
 }
 
+#if REMOTE_DEBUG
 static void RawDebugger(void) {
 	printf("NRF:Receive = %.*s\n", NRF_DATA_LENGTH, (char *)RMT.rx.payload);
 }
@@ -256,3 +260,4 @@ static void Debugger(RMT_CMD command) {
 	else if (command == RMT_CMD_ALARM)
 		printf("NRF:Command = ALARM\n");
 }
+#endif

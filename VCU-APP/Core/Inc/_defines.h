@@ -14,8 +14,18 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION (uint16_t)626
+#define VCU_VERSION (uint16_t)630
 #define EEPROM_RESET (uint16_t)53
+
+#define CAN_DEBUG		0
+#define GPS_DEBUG		0
+#define GYRO_DEBUG		0
+#define REMOTE_DEBUG 	0
+
+#define AT_USE_CLK		1
+#define AT_USE_SMS   	1
+#define AT_USE_TCP	 	1
+#define AT_USE_FTP	 	0
 
 /* Exported constants --------------------------------------------------------*/
 #define VCU_VENDOR "GEN"
@@ -46,61 +56,6 @@
 #define RPT_INTERVAL_LOST (uint16_t)60   // in second
 
 #define VCU_ACTIVATE_LOST (uint16_t)(5 * 60) // in second
-
-// Events (for Individual Thread)
-#define EVT_MASK (uint32_t)0x7FFFFFFF
-
-#define EVT_IOT_REPORT_DISCARD BIT(0)
-#define EVT_IOT_RESUBSCRIBE BIT(1)
-#define EVT_IOT_SEND_USSD BIT(2)
-#define EVT_IOT_READ_SMS BIT(3)
-
-#define EVT_REPORTER_YIELD BIT(0)
-
-#define EVT_COMMAND_ERROR BIT(0)
-#define EVT_COMMAND_OK BIT(1)
-
-#define EVT_GPS_TASK_START BIT(0)
-#define EVT_GPS_TASK_STOP BIT(1)
-#define EVT_GPS_RECEIVED BIT(2)
-
-#define EVT_GYRO_TASK_START BIT(0)
-#define EVT_GYRO_TASK_STOP BIT(1)
-#define EVT_GYRO_MOVED_RESET BIT(2)
-
-#define EVT_REMOTE_TASK_START BIT(0)
-#define EVT_REMOTE_TASK_STOP BIT(1)
-#define EVT_REMOTE_REINIT BIT(2)
-#define EVT_REMOTE_RX_IT BIT(3)
-#define EVT_REMOTE_PAIRING BIT(4)
-
-#define EVT_FINGER_TASK_START BIT(0)
-#define EVT_FINGER_TASK_STOP BIT(1)
-#define EVT_FINGER_PLACED BIT(2)
-#define EVT_FINGER_FETCH BIT(3)
-#define EVT_FINGER_ADD BIT(4)
-#define EVT_FINGER_DEL BIT(5)
-#define EVT_FINGER_RST BIT(6)
-
-#define EVT_AUDIO_TASK_START BIT(0)
-#define EVT_AUDIO_TASK_STOP BIT(1)
-#define EVT_AUDIO_BEEP BIT(2)
-#define EVT_AUDIO_BEEP_START BIT(3)
-#define EVT_AUDIO_BEEP_STOP BIT(4)
-#define EVT_AUDIO_MUTE_ON BIT(5)
-#define EVT_AUDIO_MUTE_OFF BIT(6)
-
-#define EVT_CAN_TASK_START BIT(0)
-#define EVT_CAN_TASK_STOP BIT(1)
-
-#define EVT_GATE_HBAR BIT(0)
-#define EVT_GATE_STARTER_IRQ BIT(1)
-
-#define EVT_HMI2POWER_CHANGED BIT(0)
-
-// Events group (for All Threads)
-#define EVENT_MASK (uint32_t)0xFFFFFF
-#define EVENT_READY BIT(0)
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {

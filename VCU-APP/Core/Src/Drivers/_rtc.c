@@ -60,7 +60,7 @@ void RTC_Calibrate(timestamp_t *ts) {
     RTC_WriteRaw(ts);
 }
 
-uint8_t RTC_IsDaylight() {
+uint8_t RTC_Daylight() {
   timestamp_t ts;
 
   RTC_ReadRaw(&ts);

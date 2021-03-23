@@ -17,22 +17,6 @@
 #include "Nodes/HMI2.h"
 #include "Nodes/MCU.h"
 
-/* extern variables
- * -----------------------------------------------------------*/
-extern osThreadId_t ManagerTaskHandle;
-extern osThreadId_t IotTaskHandle;
-extern osThreadId_t ReporterTaskHandle;
-extern osThreadId_t CommandTaskHandle;
-extern osThreadId_t GpsTaskHandle;
-extern osThreadId_t GyroTaskHandle;
-extern osThreadId_t RemoteTaskHandle;
-extern osThreadId_t FingerTaskHandle;
-extern osThreadId_t AudioTaskHandle;
-extern osThreadId_t GateTaskHandle;
-extern osThreadId_t CanRxTaskHandle;
-extern osThreadId_t CanTxTaskHandle;
-extern osThreadId_t Hmi2PowerTaskHandle;
-
 /* Public variables
  * -----------------------------------------------------------*/
 vcu_t VCU = {
@@ -47,31 +31,30 @@ vcu_t VCU = {
 		VCU_NodesInit,
 		VCU_NodesRefresh,
 		VCU_CheckState,
-		VCU_CheckRTOS,
-		VCU_CheckTasks,
 		VCU_SetEvent,
 		VCU_ReadEvent,
+		VCU_Is,
 		VCU_SetDriver,
 		VCU_SetOdometer,
 };
+
+
+/* Private functions declaration -------------------------------------------*/
 
 /* Public functions implementation
  * --------------------------------------------*/
 void VCU_Init(void) {
 	// reset VCU data
 	VCU.d.error = 0;
-	VCU.d.override = 0;
 	VCU.d.state = VEHICLE_BACKUP;
-
 	VCU.d.interval = RPT_INTERVAL_BACKUP;
 	VCU.d.driver_id = DRIVER_ID_NONE;
 	VCU.d.bat = 0;
-
-	VCU.d.motion.yaw = 0;
-	VCU.d.motion.roll = 0;
-	VCU.d.motion.pitch = 0;
-
 	VCU.d.events = 0;
+
+	VCU.d.mod.remote = 0;
+	VCU.d.mod.finger = 0;
+	VCU.d.override.state = VEHICLE_UNKNOWN;
 }
 
 void VCU_Refresh(void) {
@@ -92,40 +75,6 @@ void VCU_NodesRefresh(void) {
 	MCU.Refresh();
 	HMI1.Refresh();
 	HMI2.Refresh();
-}
-
-void VCU_SetEvent(uint8_t bit, uint8_t value) {
-	if (value & 1) BV(VCU.d.events, bit);
-	else BC(VCU.d.events, bit);
-}
-
-uint8_t VCU_ReadEvent(uint8_t bit) {
-	return (VCU.d.events & BIT(bit)) == BIT(bit);
-}
-
-void VCU_SetDriver(uint8_t driver_id) {
-	VCU.d.driver_id = driver_id;
-	HMI1.d.state.unfinger = driver_id == DRIVER_ID_NONE;
-}
-
-void VCU_SetOdometer(uint8_t meter) {
-	static uint32_t last_km = 0;
-	uint32_t odometer, odometer_km;
-
-	odometer = HBAR_AccumulateTrip(meter);
-	odometer_km = odometer / 1000;
-
-	// init hook
-	if (last_km == 0)
-		last_km = odometer_km;
-
-	// check every 1km
-	if (odometer_km > last_km) {
-		last_km = odometer_km;
-
-		// accumulate (save permanently)
-		EEPROM_Odometer(EE_CMD_W, odometer);
-	}
 }
 
 void VCU_CheckState(void) {
@@ -150,8 +99,9 @@ void VCU_CheckState(void) {
 		case VEHICLE_LOST:
 			if (lastState != VEHICLE_LOST) {
 				lastState = VEHICLE_LOST;
+				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
+
 				VCU.d.interval = RPT_INTERVAL_LOST;
-				osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
 			}
 
 			if (GATE_ReadPower5v())
@@ -161,15 +111,14 @@ void VCU_CheckState(void) {
 		case VEHICLE_BACKUP:
 			if (lastState != VEHICLE_BACKUP) {
 				lastState = VEHICLE_BACKUP;
+				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
+				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_STOP);
+				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_STOP);
+				osThreadFlagsSet(GyroTaskHandle, FLAG_GYRO_TASK_STOP);
+				osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_STOP);
+				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_STOP);
+
 				VCU.d.interval = RPT_INTERVAL_BACKUP;
-				osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
-
-				osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_STOP);
-				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_STOP);
-				osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_STOP);
-				osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_STOP);
-				osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_STOP);
-
 				VCU.d.tick.independent = _GetTickMS();
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 			}
@@ -183,55 +132,51 @@ void VCU_CheckState(void) {
 		case VEHICLE_NORMAL:
 			if (lastState != VEHICLE_NORMAL) {
 				lastState = VEHICLE_NORMAL;
-				VCU.d.interval = RPT_INTERVAL_NORMAL;
-				osThreadFlagsSet(ReporterTaskHandle, EVT_REPORTER_YIELD);
+				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
+				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_START);
+				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_START);
+				osThreadFlagsSet(GyroTaskHandle, FLAG_GYRO_TASK_START);
+				osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_START);
+				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_START);
+				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_TASK_STOP);
 
-				osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_TASK_START);
-				osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_TASK_START);
-				osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_TASK_START);
-				osThreadFlagsSet(CanTxTaskHandle, EVT_CAN_TASK_START);
-				osThreadFlagsSet(CanRxTaskHandle, EVT_CAN_TASK_START);
-				osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_STOP);
-
-				normalize = 0;
-				VCU.d.override = VEHICLE_NORMAL;
 				HBAR_Init();
+				normalize = 0;
+				VCU.d.interval = RPT_INTERVAL_NORMAL;
+				VCU.d.override.state = VEHICLE_UNKNOWN;
 			}
 
 			if (!GATE_ReadPower5v())
 				VCU.d.state--;
-			else if ((starter && !HMI1.d.state.unremote) ||
-					VCU.d.override >= VEHICLE_STANDBY
-					// starter && (!HMI1.d.state.unremote || VCU.d.override >=
-							// VEHICLE_STANDBY)
-			)
+			else if ((starter && VCU.d.mod.remote) || VCU.Is(VCU.d.override.state > VEHICLE_NORMAL))
 				VCU.d.state++;
 			break;
 
 		case VEHICLE_STANDBY:
 			if (lastState != VEHICLE_STANDBY) {
+				if (lastState > VEHICLE_STANDBY && VCU.Is(VCU.d.override.state > VEHICLE_STANDBY))
+					VCU.d.override.state = VEHICLE_STANDBY;
 				lastState = VEHICLE_STANDBY;
 
-				osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_TASK_START);
+				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_TASK_START);
 			}
 
-			if (!GATE_ReadPower5v() || normalize)
+			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_STANDBY))
 				VCU.d.state--;
-			else if (!HMI1.d.state.unfinger || VCU.d.override >= VEHICLE_READY)
+			else if (VCU.d.mod.finger || VCU.Is(VCU.d.override.state > VEHICLE_STANDBY))
 				VCU.d.state++;
 			break;
 
 		case VEHICLE_READY:
 			if (lastState != VEHICLE_READY) {
+				if (lastState > VEHICLE_READY && VCU.Is(VCU.d.override.state > VEHICLE_READY))
+					VCU.d.override.state = VEHICLE_READY;
 				lastState = VEHICLE_READY;
 			}
 
-			if (!GATE_ReadPower5v() || normalize ||
-					(HMI1.d.state.unfinger && !VCU.d.override) ||
-					VCU.d.override == VEHICLE_STANDBY)
+			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_READY))
 				VCU.d.state--;
-			else if (!HMI1.d.state.warning &&
-					(starter || VCU.d.override >= VEHICLE_RUN))
+			else if (!HMI1.d.state.warning && (starter || VCU.Is(VCU.d.override.state > VEHICLE_READY)))
 				VCU.d.state++;
 			break;
 
@@ -240,13 +185,9 @@ void VCU_CheckState(void) {
 				lastState = VEHICLE_RUN;
 			}
 
-			if (!GATE_ReadPower5v() || normalize || HMI1.d.state.warning ||
-					VCU.d.override == VEHICLE_READY)
+			if (!GATE_ReadPower5v() || normalize || HMI1.d.state.warning ||	VCU.Is(VCU.d.override.state == VEHICLE_READY))
 				VCU.d.state--;
-			else if ((starter && MCU.RpmToSpeed() == 0) ||
-					(HMI1.d.state.unfinger &&
-							VCU.d.override < VEHICLE_READY) ||
-							VCU.d.override == VEHICLE_STANDBY)
+			else if ((starter && MCU.RpmToSpeed() == 0) || VCU.Is(VCU.d.override.state < VEHICLE_READY))
 				VCU.d.state -= 2;
 			break;
 
@@ -256,48 +197,44 @@ void VCU_CheckState(void) {
 	} while (initialState != VCU.d.state);
 }
 
-uint8_t VCU_CheckRTOS(void) {
-	uint8_t expectedThread = sizeof(tasks_wakeup_t);
-	uint8_t activeThread = (uint8_t)(osThreadGetCount() - 2);
-	if (activeThread < expectedThread) {
-		printf("RTOS:Failed, active thread %d < %d\n", activeThread,
-				expectedThread);
-		return 0;
+void VCU_SetEvent(uint8_t bit, uint8_t value) {
+	if (value & 1) BV(VCU.d.events, bit);
+	else BC(VCU.d.events, bit);
+}
+
+uint8_t VCU_ReadEvent(uint8_t bit) {
+	return (VCU.d.events & BIT(bit)) == BIT(bit);
+}
+
+uint8_t VCU_Is(uint8_t state) {
+	return (VCU.d.override.state != VEHICLE_UNKNOWN) && state;
+}
+
+void VCU_SetDriver(uint8_t driver_id) {
+	VCU.d.driver_id = VCU.d.mod.finger ? DRIVER_ID_NONE : driver_id;
+	VCU.d.mod.finger = VCU.d.driver_id != DRIVER_ID_NONE;
+}
+
+void VCU_SetOdometer(uint8_t meter) {
+	static uint32_t last_km = 0;
+	uint32_t odometer, odometer_km;
+
+	odometer = HBAR_AccumulateTrip(meter);
+	odometer_km = odometer / 1000;
+
+	// init hook
+	if (last_km == 0)
+		last_km = odometer_km;
+
+	// check every 1km
+	if (odometer_km > last_km) {
+		last_km = odometer_km;
+
+		// accumulate (save permanently)
+		EEPROM_Odometer(EE_CMD_W, odometer);
 	}
-	return 1;
 }
 
-void VCU_CheckTasks(void) {
-	tasks_t *t = &(VCU.d.task);
-
-	t->stack.manager = osThreadGetStackSpace(ManagerTaskHandle);
-	t->stack.iot = osThreadGetStackSpace(IotTaskHandle);
-	t->stack.reporter = osThreadGetStackSpace(ReporterTaskHandle);
-	t->stack.command = osThreadGetStackSpace(CommandTaskHandle);
-	t->stack.gps = osThreadGetStackSpace(GpsTaskHandle);
-	t->stack.gyro = osThreadGetStackSpace(GyroTaskHandle);
-	t->stack.remote = osThreadGetStackSpace(RemoteTaskHandle);
-	t->stack.finger = osThreadGetStackSpace(FingerTaskHandle);
-	t->stack.audio = osThreadGetStackSpace(AudioTaskHandle);
-	t->stack.gate = osThreadGetStackSpace(GateTaskHandle);
-	t->stack.canRx = osThreadGetStackSpace(CanRxTaskHandle);
-	t->stack.canTx = osThreadGetStackSpace(CanTxTaskHandle);
-	//  t->stack.hmi2Power = osThreadGetStackSpace(Hmi2PowerTaskHandle);
-
-	TickType_t now = _GetTickMS();
-	t->wakeup.manager = TO_U8((now - t->tick.manager)/1000);
-	t->wakeup.iot = TO_U8((now - t->tick.iot)/1000);
-	t->wakeup.reporter = TO_U8((now - t->tick.reporter)/1000);
-	t->wakeup.command = TO_U8((now - t->tick.command)/1000);
-	t->wakeup.gps = TO_U8((now - t->tick.gps)/1000);
-	t->wakeup.gyro = TO_U8((now - t->tick.gyro)/1000);
-	t->wakeup.remote = TO_U8((now - t->tick.remote)/1000);
-	t->wakeup.finger = TO_U8((now - t->tick.finger)/1000);
-	t->wakeup.audio = TO_U8((now - t->tick.audio)/1000);
-	t->wakeup.gate = TO_U8((now - t->tick.gate)/1000);
-	t->wakeup.canRx = TO_U8((now - t->tick.canRx)/1000);
-	t->wakeup.canTx = TO_U8((now - t->tick.canTx)/1000);
-}
 
 /* ====================================== CAN TX
  * =================================== */
@@ -313,21 +250,20 @@ uint8_t VCU_TX_SwitchModeControl(void) {
 	can_tx_t Tx = {0};
 
 	Tx.data.u8[0] = HBAR.list[HBAR_K_ABS].state;
-	Tx.data.u8[0] |= (VCU.d.gps.fix == 0) << 1; // HMI1.d.state.mirroring << 1;
+	Tx.data.u8[0] |= HMI1.d.state.mirroring << 1;
 	Tx.data.u8[0] |= HBAR.list[HBAR_K_LAMP].state << 2;
 	Tx.data.u8[0] |= HMI1.d.state.warning << 3;
 	Tx.data.u8[0] |= HMI1.d.state.overheat << 4;
-	Tx.data.u8[0] |=
-			(HMI1.d.state.unfinger && VCU.d.override < VEHICLE_READY) << 5;
-	Tx.data.u8[0] |= HMI1.d.state.unremote << 6;
-	Tx.data.u8[0] |= HMI1.d.state.daylight << 7;
+	Tx.data.u8[0] |= !VCU.d.mod.finger << 5;
+	Tx.data.u8[0] |= !VCU.d.mod.remote << 6;
+	Tx.data.u8[0] |= RTC_Daylight() << 7;
 
 	// sein value
 	sein_t sein = HBAR_SeinController();
 	Tx.data.u8[1] = sein.left;
 	Tx.data.u8[1] |= sein.right << 1;
 	// TODO: validate MCU reverse state
-	Tx.data.u8[1] |= HBAR.reverse << 2;
+	Tx.data.u8[1] |= HBAR.d.reverse << 2;
 
 	// mode
 	// TODO: validate MCU drive mode
@@ -381,3 +317,6 @@ uint8_t VCU_TX_TripData(void) {
 
 	return CANBUS_Write(&Tx, CAND_VCU_TRIP_MODE, 8, 0);
 }
+
+
+/* Private functions implementation -------------------------------------------*/

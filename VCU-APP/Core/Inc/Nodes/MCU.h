@@ -129,18 +129,18 @@ typedef struct {
 	uint8_t error;
 	uint32_t tick;
 
-	uint32_t rpm;
+	uint16_t rpm;
 	uint8_t reverse;
 	float temperature;
 	HBAR_MODE_DRIVE drive_mode;
 	struct {
-		float commanded;
-		float feedback;
-	} torque;
-	struct {
 		uint32_t post;
 		uint32_t run;
 	} fault;
+	struct {
+		float commanded;
+		float feedback;
+	} torque;
 	struct {
 		float current;
 		float voltage;
@@ -152,7 +152,7 @@ typedef struct {
 		MCU_INV_DISCHARGE discharge;
 	} inv;
 	struct {
-		int16_t speed_max;
+		uint8_t speed_max;
 		mcu_template_t template[HBAR_M_DRIVE_MAX];
 	} tpl;
 } mcu_data_t;
@@ -174,6 +174,9 @@ typedef struct {
 	void (*Init)(void);
 	void (*PowerOverCan)(uint8_t);
 	void (*Refresh)(void);
+	void (*GetTemplate)(HBAR_MODE_DRIVE m);
+	void (*SetTemplate)(HBAR_MODE_DRIVE m, mcu_template_t* t);
+	void (*SetSpeedMax)(uint8_t max);
 	uint16_t (*SpeedToVolume)(void);
 	uint16_t (*RpmToSpeed)(void);
 } mcu_t;
@@ -187,9 +190,9 @@ extern mcu_t MCU;
 void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_PowerOverCan(uint8_t on);
-void MCU_GetTemplates(void);
+void MCU_GetTemplate(HBAR_MODE_DRIVE m);
 void MCU_SetTemplate(HBAR_MODE_DRIVE m, mcu_template_t* t);
-void MCU_SetSpeedMax(int16_t max);
+void MCU_SetSpeedMax(uint8_t max);
 uint16_t MCU_SpeedToVolume(void);
 uint16_t MCU_RpmToSpeed(void);
 void MCU_RX_CurrentDC(can_rx_t *Rx);

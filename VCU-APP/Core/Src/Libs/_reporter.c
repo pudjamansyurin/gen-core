@@ -43,28 +43,33 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 
     d->opt.bat = VCU.d.bat / 18;
     d->opt.signal = SIM.signal;
-    d->opt.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
-
-    d->opt.gps.latitude = (int32_t)(VCU.d.gps.latitude * 10000000);
-    d->opt.gps.longitude = (int32_t)(VCU.d.gps.longitude * 10000000);
-    d->opt.gps.altitude = (uint32_t)VCU.d.gps.altitude;
-    d->opt.gps.hdop = (uint8_t)(VCU.d.gps.dop_h * 10);
-    d->opt.gps.vdop = (uint8_t)(VCU.d.gps.dop_v * 10);
-    d->opt.gps.speed = (uint8_t)VCU.d.gps.speed_kph;
-    d->opt.gps.heading = (uint8_t)(VCU.d.gps.heading / 2);
-    d->opt.gps.sat_in_use = (uint8_t)VCU.d.gps.sat_in_use;
-
-    d->opt.trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
-    d->opt.trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
-    d->opt.report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
-    d->opt.report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
     // Debug data
     header->size += sizeof(d->debug);
-    memcpy(&(d->debug.motion), &(VCU.d.motion), sizeof(motion_t));
 
-    hmi1_debug_t *hmi1 = &(d->debug.hmi1);
-    hmi1->run = HMI1.d.run;
+    hbar_debug_t *hbar = &(d->debug.hbar);
+    hbar->reverse = HBAR.d.reverse;
+    hbar->mode.drive = HBAR.d.mode[HBAR_M_DRIVE];
+    hbar->mode.trip = HBAR.d.mode[HBAR_M_TRIP];
+    hbar->mode.report = HBAR.d.mode[HBAR_M_REPORT];
+    hbar->trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
+    hbar->trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
+    hbar->trip.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
+    hbar->report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
+    hbar->report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
+
+    gps_debug_t *gps = &(d->debug.gps);
+    gps->latitude = (int32_t)(GPS.latitude * 10000000);
+    gps->longitude = (int32_t)(GPS.longitude * 10000000);
+    gps->altitude = (uint32_t)GPS.altitude;
+    gps->hdop = (uint8_t)(GPS.dop_h * 10);
+    gps->vdop = (uint8_t)(GPS.dop_v * 10);
+    gps->speed = (uint8_t)nmea_to_speed(GPS.speed, nmea_speed_kph);
+    gps->heading = (uint8_t)(GPS.coarse / 2);
+    gps->sat_in_use = (uint8_t)GPS.sats_in_use;
+
+    memcpy(&(d->debug.gyro), &GYRO, sizeof(motion_t));
+    d->debug.hmi1.run = HMI1.d.run;
 
     bms_debug_t *bms = &(d->debug.bms);
     bms->active = BMS.d.active;
@@ -97,10 +102,15 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     mcu->inv.enabled = MCU.d.inv.enabled;
     mcu->inv.lockout = MCU.d.inv.lockout;
     mcu->inv.discharge = MCU.d.inv.discharge;
+    mcu->tpl.speed_max = MCU.d.tpl.speed_max;
+    for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
+    	mcu->tpl.template[m].discur_max = MCU.d.tpl.template[m].discur_max;
+    	mcu->tpl.template[m].torque_max = MCU.d.tpl.template[m].torque_max * 10;
+    }
 
     tasks_debug_t *tasks = &(d->debug.task);
-    memcpy(&(tasks->stack), &(VCU.d.task.stack), sizeof(tasks_stack_t));
-    memcpy(&(tasks->wakeup), &(VCU.d.task.wakeup), sizeof(tasks_wakeup_t));
+    memcpy(&(tasks->stack), &(TASKS.stack), sizeof(tasks_stack_t));
+    memcpy(&(tasks->wakeup), &(TASKS.wakeup), sizeof(tasks_wakeup_t));
   }
 }
 

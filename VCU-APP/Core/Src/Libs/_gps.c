@@ -17,106 +17,91 @@ extern osThreadId_t GpsTaskHandle;
 extern osMutexId_t GpsMutexHandle;
 #endif
 
+/* Public variables
+ * ----------------------------------------------------------*/
+nmea_t GPS = {0};
+
 /* Private variables
  * ----------------------------------------------------------*/
 static gps_t gps = {
-    .puart = &huart2,
-    .pdma = &hdma_usart2_rx,
+		.puart = &huart2,
+		.pdma = &hdma_usart2_rx,
 };
 
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint8_t DataAvailable(void);
+static uint8_t DataInvalid(void);
+#if GPS_DEBUG
 static void Debugger(char *ptr, size_t len);
+#endif
 
 /* Public functions implementation
  * --------------------------------------------*/
 void GPS_Init(void) {
-  uint32_t tick;
+	lock();
+	MX_USART2_UART_Init();
+	UBLOX_DMA_Start(gps.puart, gps.pdma, GPS_ProcessBuffer);
 
-  lock();
-  MX_USART2_UART_Init();
-  UBLOX_DMA_Start(gps.puart, gps.pdma, GPS_ProcessBuffer);
+	// Initiate Module
+	do {
+		printf("GPS:Init\n");
 
-  // Initiate Module
-  do {
-    printf("GPS:Init\n");
+		GATE_GpsReset();
+		_DelayMS(5000);
+	} while (DataInvalid());
 
-    GATE_GpsReset();
-
-    // set timeout guard
-    tick = _GetTickMS();
-    while ((_GetTickMS() - tick) < 5000) {
-      if (DataAvailable())
-        break;
-      _DelayMS(10);
-    }
-  } while (!DataAvailable());
-
-  nmea_init(&(gps.nmea));
-  unlock();
+	nmea_init(&GPS);
+	unlock();
 }
 
 void GPS_DeInit(void) {
-  lock();
-  GATE_GpsShutdown();
-  UBLOX_DMA_Stop();
-  HAL_UART_DeInit(gps.puart);
-  unlock();
+	lock();
+	GATE_GpsShutdown();
+	UBLOX_DMA_Stop();
+	HAL_UART_DeInit(gps.puart);
+	unlock();
 }
 
 void GPS_ProcessBuffer(void *ptr, size_t len) {
-  if (!DataAvailable())
-    return;
+	if (DataInvalid())
+		return;
 
-  nmea_process(&(gps.nmea), (char *)ptr, len);
-  //  Debugger(ptr, len);
-  osThreadFlagsSet(GpsTaskHandle, EVT_GPS_RECEIVED);
-}
-
-uint8_t GPS_Capture(void) {
-  gps_data_t *data = &(VCU.d.gps);
-
-  // copy only necessary part
-  data->dop_h = gps.nmea.dop_h;
-  data->dop_v = gps.nmea.dop_v;
-  data->altitude = gps.nmea.altitude;
-  data->latitude = gps.nmea.latitude;
-  data->longitude = gps.nmea.longitude;
-  data->heading = gps.nmea.coarse;
-  data->sat_in_use = gps.nmea.sats_in_use;
-  data->speed_kph = nmea_to_speed(gps.nmea.speed, nmea_speed_kph);
-  data->speed_mps = nmea_to_speed(gps.nmea.speed, nmea_speed_mps);
-  data->fix = gps.nmea.fix;
-
-  return data->fix > 0;
+#if GPS_DEBUG
+	Debugger(ptr, len);
+#endif
+	nmea_process(&GPS, (char *)ptr, len);
+	osThreadFlagsSet(GpsTaskHandle, FLAG_GPS_RECEIVED);
 }
 
 uint8_t GPS_CalculateOdometer(void) {
-  gps_data_t *data = &(VCU.d.gps);
+	float speed_mps = nmea_to_speed(GPS.speed, nmea_speed_mps);
 
-  if (data->speed_mps)
-    return (data->speed_mps * GPS_INTERVAL);
-  return 0;
+	if (speed_mps)
+		return (speed_mps * GPS_INTERVAL);
+	return 0;
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
 #if (RTOS_ENABLE)
-  osMutexAcquire(GpsMutexHandle, osWaitForever);
+	osMutexAcquire(GpsMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
 #if (RTOS_ENABLE)
-  osMutexRelease(GpsMutexHandle);
+	osMutexRelease(GpsMutexHandle);
 #endif
 }
 
-static uint8_t DataAvailable(void) {
-  return strnlen(UBLOX_UART_RX, UBLOX_UART_RX_SZ) > GPS_MIN_LENGTH;
+static uint8_t DataInvalid(void) {
+	return strnlen(UBLOX_UART_RX, UBLOX_UART_RX_SZ) < GPS_LENGTH_MIN;
 }
 
-static void Debugger(char *ptr, size_t len) { printf("\n%.*s\n", len, ptr); }
+#if GPS_DEBUG
+static void Debugger(char *ptr, size_t len) {
+	printf("\n%.*s\n", len, ptr);
+}
+#endif

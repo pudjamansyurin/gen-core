@@ -15,7 +15,6 @@
 #include "Nodes/BMS.h"
 #include "Nodes/VCU.h"
 
-
 /* Exported define
  * -------------------------------------------------------------*/
 #define PREFIX_ACK "A@"
@@ -51,6 +50,34 @@ typedef struct __attribute__((packed)) {
 	uint8_t sub_code;
 } command_header_t;
 
+typedef struct __attribute__((packed)) {
+	int32_t longitude;
+	int32_t latitude;
+	uint32_t altitude;
+	uint8_t hdop;
+	uint8_t vdop;
+	uint8_t speed;
+	uint8_t heading;
+	uint8_t sat_in_use;
+} gps_debug_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t reverse;
+	struct __attribute__((packed)) {
+		uint8_t drive;
+		uint8_t trip;
+		uint8_t report;
+	} mode;
+	struct __attribute__((packed)) {
+		uint32_t a;
+		uint32_t b;
+		uint32_t odometer;
+	} trip;
+	struct __attribute__((packed)) {
+		uint8_t range;
+		uint8_t efficiency;
+	} report;
+} hbar_debug_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t run;
@@ -59,8 +86,8 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	uint8_t active;
 	uint8_t run;
-	uint16_t fault;
 	uint8_t soc;
+	uint16_t fault;
 	struct __attribute__((packed)) {
 		uint32_t id;
 		uint16_t voltage;
@@ -73,19 +100,19 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	uint8_t active;
 	uint8_t run;
-	uint32_t rpm;
+	uint16_t rpm;
 	uint8_t speed;
 	uint8_t reverse;
 	uint16_t temperature;
 	uint8_t drive_mode;
 	struct {
-		uint16_t commanded;
-		uint16_t feedback;
-	} torque;
-	struct {
 		uint32_t post;
 		uint32_t run;
 	} fault;
+	struct {
+		uint16_t commanded;
+		uint16_t feedback;
+	} torque;
 	struct {
 		uint16_t current;
 		uint16_t voltage;
@@ -96,6 +123,14 @@ typedef struct __attribute__((packed)) {
 		uint8_t lockout;
 		uint8_t discharge;
 	} inv;
+	struct __attribute__((packed)) {
+		uint8_t speed_max;
+		struct __attribute__((packed)) {
+			uint16_t discur_max;
+			uint16_t torque_max;
+			//	uint8_t rbs_switch;
+		} template[HBAR_M_DRIVE_MAX];
+	} tpl;
 } mcu_debug_t;
 
 typedef struct __attribute__((packed)) {
@@ -116,28 +151,11 @@ typedef struct __attribute__((packed)) {
 	struct __attribute__((packed)) {
 		uint8_t bat;
 		uint8_t signal;
-		uint32_t odometer;
-		struct __attribute__((packed)) {
-			int32_t longitude;
-			int32_t latitude;
-			uint32_t altitude;
-			uint8_t hdop;
-			uint8_t vdop;
-			uint8_t speed;
-			uint8_t heading;
-			uint8_t sat_in_use;
-		} gps;
-		struct __attribute__((packed)) {
-			uint8_t range;
-			uint8_t efficiency;
-		} report;
-		struct __attribute__((packed)) {
-			uint32_t a;
-			uint32_t b;
-		} trip;
 	} opt;
 	struct __attribute__((packed)) {
-		motion_t motion;
+		hbar_debug_t hbar;
+		gps_debug_t gps;
+		motion_t gyro;
 		hmi1_debug_t hmi1;
 		bms_debug_t bms;
 		mcu_debug_t mcu;

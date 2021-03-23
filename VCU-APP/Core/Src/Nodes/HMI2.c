@@ -45,7 +45,7 @@ void HMI2_Refresh(void) {
 void HMI2_PowerByCan(uint8_t state) {
 	if (HMI2.d.powerRequest != state) {
 		HMI2.d.powerRequest = state;
-		osThreadFlagsSet(Hmi2PowerTaskHandle, EVT_HMI2POWER_CHANGED);
+		osThreadFlagsSet(Hmi2PowerTaskHandle, FLAG_HMI2POWER_CHANGED);
 	}
 }
 

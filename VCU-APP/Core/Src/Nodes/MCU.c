@@ -28,13 +28,15 @@ mcu_t MCU = {
 		MCU_Init,
 		MCU_PowerOverCan,
 		MCU_Refresh,
+		MCU_GetTemplate,
+		MCU_SetTemplate,
+		MCU_SetSpeedMax,
 		MCU_SpeedToVolume,
 		MCU_RpmToSpeed
 };
 
 /* Private variables
  * -----------------------------------------------------------*/
-static TickType_t tickOn = 0;
 static mcu_template_addr_t tplAddr[HBAR_M_DRIVE_MAX];
 
 /* Private functions prototypes
@@ -56,8 +58,6 @@ void MCU_Init(void) {
 
 void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
-		if (tickOn == 0) tickOn = _GetTickMS();
-
 		if (!MCU.d.run) {
 			GATE_McuPower(1);
 			_DelayMS(500);
@@ -71,37 +71,24 @@ void MCU_PowerOverCan(uint8_t on) {
 			_DelayMS(50);
 			GATE_McuPower(0);
 		}
-		tickOn = 0;
 	}
-
-	if (MCU.d.active && !MCU.d.run)
-		MCU_GetTemplates();
 }
 
 void MCU_Refresh(void) {
 	MCU.d.active = MCU.d.tick && (_GetTickMS() - MCU.d.tick) < MCU_TIMEOUT;
 	if (!MCU.d.active) Reset();
 
-	MCU.d.run = MCU.d.active && MCU.d.inv.enabled;
 	MCU.d.overheat = IsOverheat();
+	MCU.d.run = MCU.d.active && MCU.d.inv.enabled;
 	MCU.d.error = (MCU.d.fault.post || MCU.d.fault.run) > 0;
-
-	if (tickOn && !MCU.d.run) {
-		if (_GetTickMS() - tickOn > MCU_TIMEOUT) {
-			MCU.d.error = 1;
-			tickOn = 0;
-		}
-	}
 
 	VCU.SetEvent(EVG_MCU_ERROR, MCU.d.error);
 }
 
-void MCU_GetTemplates(void) {
-	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
-		MCU.t.Template(tplAddr[m].discur_max, 0, 0);
-		MCU.t.Template(tplAddr[m].torque_max, 0, 0);
-		//		MCU.t.Template(tplAddr[m].rbs_switch, 0, 0);
-	}
+void MCU_GetTemplate(HBAR_MODE_DRIVE m) {
+	MCU.t.Template(tplAddr[m].discur_max, 0, 0);
+	MCU.t.Template(tplAddr[m].torque_max, 0, 0);
+	//		MCU.t.Template(tplAddr[m].rbs_switch, 0, 0);
 }
 
 void MCU_SetTemplate(HBAR_MODE_DRIVE m, mcu_template_t* t) {
@@ -110,7 +97,7 @@ void MCU_SetTemplate(HBAR_MODE_DRIVE m, mcu_template_t* t) {
 	//	MCU.t.Template(tplAddr[m].rbs_switch, 1, t->rbs_switch);
 }
 
-void MCU_SetSpeedMax(int16_t max) {
+void MCU_SetSpeedMax(uint8_t max) {
 	MCU.t.Template(MTP_SPEED_MAX, 1, max);
 }
 
@@ -195,7 +182,7 @@ uint8_t MCU_TX_Setting(uint8_t on) {
 	can_tx_t Tx = {0};
 
 	// set message
-	Tx.data.u8[4] = HBAR.reverse;
+	Tx.data.u8[4] = HBAR.d.reverse;
 	Tx.data.u8[5] = on & 0x01;
 	Tx.data.u8[5] |= (0 & 0x01) << 1;
 	Tx.data.u8[5] |= (HBAR.d.mode[HBAR_M_DRIVE] & 0x03) << 2;

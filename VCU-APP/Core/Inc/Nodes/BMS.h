@@ -14,7 +14,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define BMS_COUNT (uint8_t)2
-#define BMS_TIMEOUT (uint32_t)3000 // ms
+#define BMS_TIMEOUT (uint32_t)10000 // ms
 #define BMS_ID_NONE (uint32_t)0xFFFFFFFF
 #define BMS_CAND(_X_) ((_X_) >> 20)
 #define BMS_ID(_X_) ((_X_)&0xFFFFF)
@@ -25,8 +25,8 @@ typedef enum {
 	BMS_STATE_OFF = -1,
 	BMS_STATE_IDLE = 0,
 	BMS_STATE_DISCHARGE,
-	BMS_STATE_CHARG,
-	BMS_STATE_FULL
+	BMS_STATE_CHARGE,
+	BMS_STATE_FULL = 1
 } BMS_STATE;
 
 typedef enum {
@@ -35,7 +35,6 @@ typedef enum {
 	BMS_SCALE_10_90,
 	BMS_SCALE_0_100,
 } BMS_SCALE;
-
 
 typedef enum {
 	BMSF_DISCHARGE_OVER_CURRENT = 0,

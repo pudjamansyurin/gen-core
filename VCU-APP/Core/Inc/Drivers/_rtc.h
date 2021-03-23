@@ -34,6 +34,6 @@ datetime_t RTC_Read(void);
 void RTC_Write(datetime_t dt);
 uint8_t RTC_NeedCalibration(void);
 void RTC_Calibrate(timestamp_t *ts);
-uint8_t RTC_IsDaylight(void);
+uint8_t RTC_Daylight(void);
 
 #endif /* RTC_H_ */

@@ -9,7 +9,9 @@
 #include "Libs/_at.h"
 
 /* Private functions prototype -----------------------------------------------*/
+#if AT_USE_FTP
 static uint8_t FindInBuffer(char *prefix, char **str);
+#endif
 static SIM_RESULT SingleString(char *command, AT_MODE mode, char *string,
                                uint8_t size, uint8_t executor);
 static SIM_RESULT SingleInteger(char *command, AT_MODE mode, int32_t *value,
@@ -254,48 +256,56 @@ SIM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
   return SingleInteger("CGATT", mode, (int32_t *)state, 0);
 }
 
-#if (!BOOTLOADER)
-SIM_RESULT AT_CharacterSetTE(AT_MODE mode, char *chset, uint8_t len) {
-  return SingleString("CSCS", mode, chset, len, 0);
+#if AT_USE_CLK
+SIM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
+  return SingleInteger("CLTS", mode, (int32_t *)state, 0);
 }
 
-SIM_RESULT AT_MessageIndicationSMS(uint8_t mode, uint8_t mt) {
+SIM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
   SIM_RESULT res = SIM_ERROR;
-  char cmd[30];
+  uint8_t cnt, len = 0;
+  char *str = NULL, cmd[39];
 
   Simcom_Lock();
-  sprintf(cmd, "AT+CNMI=%d,%d,0,0,0\r", mode, mt);
-  res = CmdWrite(cmd, SIM_RSP_OK, 500);
+  if (mode == ATW) {
+    // Write
+    sprintf(cmd, "AT+CCLK=\"%d/%d/%d,%d:%d:%d%+d\"\r", tm->date.Year,
+            tm->date.Month, tm->date.Date, tm->time.Hours, tm->time.Minutes,
+            tm->time.Seconds, tm->tzQuarterHour);
+    res = CmdWrite(cmd, SIM_RSP_OK, 500);
+
+  } else {
+    // Read
+    res = CmdRead("AT+CCLK?\r", "+CCLK: ", 500, &str);
+    if (res == SIM_OK) {
+      len = 1;
+      tm->date.Year = ParseNumber(&str[len], &cnt);
+      len += cnt + 1;
+      tm->date.Month = ParseNumber(&str[len], &cnt);
+      len += cnt + 1;
+      tm->date.Date = ParseNumber(&str[len], &cnt);
+      len += cnt + 1;
+      tm->time.Hours = ParseNumber(&str[len], &cnt);
+      len += cnt + 1;
+      tm->time.Minutes = ParseNumber(&str[len], &cnt);
+      len += cnt + 1;
+      tm->time.Seconds = ParseNumber(&str[len], &cnt);
+      len += cnt + 1;
+      tm->tzQuarterHour = ParseNumber(&str[len], NULL);
+
+      // Formatting
+      tm->date.WeekDay = RTC_WEEKDAY_MONDAY;
+    }
+  }
   Simcom_Unlock();
 
   return res;
 }
+#endif
 
-SIM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF *state) {
-  return SingleInteger("CMGF", mode, (int32_t *)state, 0);
-}
-
-uint8_t AT_WaitMessageSMS(at_cmti_t *param, uint32_t timeout) {
-  char *str = NULL, *prefix = "+CMTI: ";
-  uint8_t cnt, len = 0;
-  uint32_t tick;
-
-  // get message index
-  tick = _GetTickMS();
-  do {
-    str = Simcom_Resp(prefix, NULL);
-  } while (_GetTickMS() - tick < timeout && str == NULL);
-
-  if (str != NULL) {
-    str += strlen(prefix);
-    // parsing
-    ParseText(&str[len], &cnt, param->mem, sizeof(param->mem));
-    len += cnt + 1;
-    param->index = ParseNumber(&str[len], &cnt);
-    len += cnt + 1;
-  }
-
-  return str != NULL;
+#if AT_USE_SMS
+SIM_RESULT AT_CharacterSetTE(AT_MODE mode, char *chset, uint8_t len) {
+  return SingleString("CSCS", mode, chset, len, 0);
 }
 
 SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param, char *buf,
@@ -343,6 +353,45 @@ SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param, char *buf,
   Simcom_Unlock();
 
   return res;
+}
+
+SIM_RESULT AT_MessageIndicationSMS(uint8_t mode, uint8_t mt) {
+  SIM_RESULT res = SIM_ERROR;
+  char cmd[30];
+
+  Simcom_Lock();
+  sprintf(cmd, "AT+CNMI=%d,%d,0,0,0\r", mode, mt);
+  res = CmdWrite(cmd, SIM_RSP_OK, 500);
+  Simcom_Unlock();
+
+  return res;
+}
+
+SIM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF *state) {
+  return SingleInteger("CMGF", mode, (int32_t *)state, 0);
+}
+
+uint8_t AT_WaitMessageSMS(at_cmti_t *param, uint32_t timeout) {
+  char *str = NULL, *prefix = "+CMTI: ";
+  uint8_t cnt, len = 0;
+  uint32_t tick;
+
+  // get message index
+  tick = _GetTickMS();
+  do {
+    str = Simcom_Resp(prefix, NULL);
+  } while (_GetTickMS() - tick < timeout && str == NULL);
+
+  if (str != NULL) {
+    str += strlen(prefix);
+    // parsing
+    ParseText(&str[len], &cnt, param->mem, sizeof(param->mem));
+    len += cnt + 1;
+    param->index = ParseNumber(&str[len], &cnt);
+    len += cnt + 1;
+  }
+
+  return str != NULL;
 }
 
 SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param) {
@@ -451,7 +500,9 @@ SIM_RESULT AT_ListMessageSMS(at_cmgl_t *param) {
 
   return res;
 }
+#endif
 
+#if AT_USE_TCP
 SIM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
@@ -524,47 +575,6 @@ SIM_RESULT AT_StartConnection(at_cipstart_t *param) {
   return res;
 }
 
-SIM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
-  SIM_RESULT res = SIM_ERROR;
-  uint8_t cnt, len = 0;
-  char *str = NULL, cmd[39];
-
-  Simcom_Lock();
-  if (mode == ATW) {
-    // Write
-    sprintf(cmd, "AT+CCLK=\"%d/%d/%d,%d:%d:%d%+d\"\r", tm->date.Year,
-            tm->date.Month, tm->date.Date, tm->time.Hours, tm->time.Minutes,
-            tm->time.Seconds, tm->tzQuarterHour);
-    res = CmdWrite(cmd, SIM_RSP_OK, 500);
-
-  } else {
-    // Read
-    res = CmdRead("AT+CCLK?\r", "+CCLK: ", 500, &str);
-    if (res == SIM_OK) {
-      len = 1;
-      tm->date.Year = ParseNumber(&str[len], &cnt);
-      len += cnt + 1;
-      tm->date.Month = ParseNumber(&str[len], &cnt);
-      len += cnt + 1;
-      tm->date.Date = ParseNumber(&str[len], &cnt);
-      len += cnt + 1;
-      tm->time.Hours = ParseNumber(&str[len], &cnt);
-      len += cnt + 1;
-      tm->time.Minutes = ParseNumber(&str[len], &cnt);
-      len += cnt + 1;
-      tm->time.Seconds = ParseNumber(&str[len], &cnt);
-      len += cnt + 1;
-      tm->tzQuarterHour = ParseNumber(&str[len], NULL);
-
-      // Formatting
-      tm->date.WeekDay = RTC_WEEKDAY_MONDAY;
-    }
-  }
-  Simcom_Unlock();
-
-  return res;
-}
-
 SIM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state) {
   return SingleInteger("CIPRXGET", mode, (int32_t *)state, 0);
 }
@@ -585,15 +595,12 @@ SIM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state) {
   return SingleInteger("CIPHEAD", mode, (int32_t *)state, 0);
 }
 
-SIM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
-  return SingleInteger("CLTS", mode, (int32_t *)state, 0);
-}
-
 SIM_RESULT AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND *state) {
   return SingleInteger("CIPQSEND", mode, (int32_t *)state, 0);
 }
+#endif
 
-#else
+#if AT_USE_FTP
 SIM_RESULT AT_BearerInitialize(void) {
   SIM_RESULT res;
   at_sapbr_t getBEARER, setBEARER = {
@@ -616,6 +623,67 @@ SIM_RESULT AT_BearerInitialize(void) {
 
   if (res == SIM_OK && getBEARER.status != SAPBR_CONNECTED)
     res = SIM_ERROR;
+
+  return res;
+}
+
+
+SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
+  SIM_RESULT res = SIM_ERROR;
+  uint8_t cnt, len = 0;
+  char *str = NULL, cmd[80];
+
+  // Copy by value
+  at_sapbr_t tmp = *param;
+
+  Simcom_Lock();
+  // Read
+  sprintf(cmd, "AT+SAPBR=%d,1\r", SAPBR_BEARER_QUERY);
+  res = CmdRead(cmd, "+SAPBR: ", 500, &str);
+  if (res == SIM_OK) {
+    tmp.cmd_type = ParseNumber(&str[len], &cnt);
+    len += cnt + 1;
+    tmp.status = ParseNumber(&str[len], &cnt);
+
+    // Read parameters
+    res = CmdRead("AT+SAPBR=4,1\r", "+SAPBR:", 500, &str);
+    if (res == SIM_OK) {
+      if (FindInBuffer("APN: ", &str))
+        ParseText(&str[0], NULL, tmp.con.apn, sizeof(tmp.con.apn));
+
+      if (FindInBuffer("USER: ", &str))
+        ParseText(&str[0], NULL, tmp.con.username, sizeof(tmp.con.username));
+
+      if (FindInBuffer("PWD: ", &str))
+        ParseText(&str[0], NULL, tmp.con.password, sizeof(tmp.con.password));
+    }
+
+    // Write
+    if (mode == ATW) {
+      if (memcmp(tmp.con.apn, param->con.apn, sizeof(param->con.apn)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", param->con.apn);
+        res = CmdWrite(cmd, SIM_RSP_OK, 500);
+      }
+      if (memcmp(tmp.con.username, param->con.username,
+                 sizeof(param->con.username)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->con.username);
+        res = CmdWrite(cmd, SIM_RSP_OK, 500);
+      }
+      if (memcmp(tmp.con.password, param->con.password,
+                 sizeof(param->con.password)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->con.password);
+        res = CmdWrite(cmd, SIM_RSP_OK, 500);
+      }
+
+      // open or close
+      if (tmp.status != param->status) {
+        sprintf(cmd, "AT+SAPBR=%d,1\r", param->cmd_type);
+        res = CmdWrite(cmd, SIM_RSP_OK, 30000);
+      }
+    } else
+      *param = tmp;
+  }
+  Simcom_Unlock();
 
   return res;
 }
@@ -729,70 +797,11 @@ SIM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state) {
 SIM_RESULT AT_FtpResume(uint32_t start) {
   return SingleInteger("FTPREST", ATW, (int32_t *)&start, 0);
 }
-
-SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
-  SIM_RESULT res = SIM_ERROR;
-  uint8_t cnt, len = 0;
-  char *str = NULL, cmd[80];
-
-  // Copy by value
-  at_sapbr_t tmp = *param;
-
-  Simcom_Lock();
-  // Read
-  sprintf(cmd, "AT+SAPBR=%d,1\r", SAPBR_BEARER_QUERY);
-  res = CmdRead(cmd, "+SAPBR: ", 500, &str);
-  if (res == SIM_OK) {
-    tmp.cmd_type = ParseNumber(&str[len], &cnt);
-    len += cnt + 1;
-    tmp.status = ParseNumber(&str[len], &cnt);
-
-    // Read parameters
-    res = CmdRead("AT+SAPBR=4,1\r", "+SAPBR:", 500, &str);
-    if (res == SIM_OK) {
-      if (FindInBuffer("APN: ", &str))
-        ParseText(&str[0], NULL, tmp.con.apn, sizeof(tmp.con.apn));
-
-      if (FindInBuffer("USER: ", &str))
-        ParseText(&str[0], NULL, tmp.con.username, sizeof(tmp.con.username));
-
-      if (FindInBuffer("PWD: ", &str))
-        ParseText(&str[0], NULL, tmp.con.password, sizeof(tmp.con.password));
-    }
-
-    // Write
-    if (mode == ATW) {
-      if (memcmp(tmp.con.apn, param->con.apn, sizeof(param->con.apn)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", param->con.apn);
-        res = CmdWrite(cmd, SIM_RSP_OK, 500);
-      }
-      if (memcmp(tmp.con.username, param->con.username,
-                 sizeof(param->con.username)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->con.username);
-        res = CmdWrite(cmd, SIM_RSP_OK, 500);
-      }
-      if (memcmp(tmp.con.password, param->con.password,
-                 sizeof(param->con.password)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->con.password);
-        res = CmdWrite(cmd, SIM_RSP_OK, 500);
-      }
-
-      // open or close
-      if (tmp.status != param->status) {
-        sprintf(cmd, "AT+SAPBR=%d,1\r", param->cmd_type);
-        res = CmdWrite(cmd, SIM_RSP_OK, 30000);
-      }
-    } else
-      *param = tmp;
-  }
-  Simcom_Unlock();
-
-  return res;
-}
 #endif
 
 /* Private functions implementation
  * --------------------------------------------*/
+#if AT_USE_FTP
 static uint8_t FindInBuffer(char *prefix, char **str) {
   *str = Simcom_Resp(prefix, NULL);
 
@@ -801,6 +810,7 @@ static uint8_t FindInBuffer(char *prefix, char **str) {
 
   return *str != NULL;
 }
+#endif
 
 static SIM_RESULT SingleString(char *command, AT_MODE mode, char *string,
                                uint8_t size, uint8_t executor) {

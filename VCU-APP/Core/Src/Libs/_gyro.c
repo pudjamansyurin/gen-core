@@ -9,15 +9,18 @@
 #include "Nodes/VCU.h"
 #include "i2c.h"
 
-
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t GyroMutexHandle;
 #endif
 
+/* Public variables
+ * ----------------------------------------------------------*/
+motion_t GYRO = {0};
+
 /* Private variables
  * ----------------------------------------------------------*/
-static gyro_t gyro = {
+static mpu_t mpu = {
     .detector_init = 1,
     .pi2c = &hi2c3,
 };
@@ -28,8 +31,10 @@ static void unlock(void);
 static void Capture(mems_t *mems);
 static void Convert(motion_t *motion, coordinate_t *gyro);
 static uint8_t GYRO_Moved(motion_t *refference, motion_t *current);
+#if GYRO_DEBUG
 static void Debugger(movement_t *movement);
 static void RawDebugger(mems_t *mems);
+#endif
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -44,7 +49,7 @@ void GYRO_Init(void) {
     GATE_GyroReset();
 
     // module initiate
-    result = MPU6050_Init(gyro.pi2c, &(gyro.mpu), MPU6050_Device_0,
+    result = MPU6050_Init(mpu.pi2c, &(mpu.dev), MPU6050_Device_0,
                           MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s);
 
   } while (result != MPU6050_Result_Ok);
@@ -53,17 +58,16 @@ void GYRO_Init(void) {
 
 void GYRO_DeInit(void) {
   GATE_GyroShutdown();
-  HAL_I2C_DeInit(gyro.pi2c);
+  HAL_I2C_DeInit(mpu.pi2c);
 }
 
 void GYRO_Decision(movement_t *movement) {
-  motion_t *motion = &(VCU.d.motion);
   mems_t mems;
 
   lock();
   // get mems data
   Capture(&mems);
-  Convert(motion, &(mems.gyroscope));
+  Convert(&GYRO, &(mems.gyroscope));
 
   // calculate accel
   movement->crash.value =
@@ -74,38 +78,43 @@ void GYRO_Decision(movement_t *movement) {
 
   // calculate gyro
   movement->fall.value =
-      sqrt(pow(motion->roll, 2) + pow(motion->pitch, 2) + pow(motion->yaw, 2));
+      sqrt(pow(GYRO.roll, 2) + pow(GYRO.pitch, 2) + pow(GYRO.yaw, 2));
   movement->fall.state = movement->fall.value > GYROSCOPE_LIMIT;
 
   // fallen indicator
   movement->fallen = movement->crash.state || movement->fall.state;
 
-  //  RawDebugger(&mems);
-  //  Debugger(movement);
+#if GYRO_DEBUG
+    RawDebugger(&mems);
+    Debugger(movement);
+#endif
   unlock();
 }
 
 void GYRO_MonitorMovement(void) {
-  motion_t *motion = &(VCU.d.motion);
   static motion_t refference;
 
   lock();
-  if (gyro.detector_init) {
-    gyro.detector_init = 0;
-    memcpy(&refference, motion, sizeof(motion_t));
+  if (mpu.detector_init) {
+    mpu.detector_init = 0;
+    memcpy(&refference, &GYRO, sizeof(motion_t));
     VCU.SetEvent(EVG_BIKE_MOVED, 0);
   }
 
-  if (GYRO_Moved(&refference, motion))
+  if (GYRO_Moved(&refference, &GYRO))
     VCU.SetEvent(EVG_BIKE_MOVED, 1);
   unlock();
 }
 
 void GYRO_ResetDetector(void) {
   lock();
-  gyro.detector_init = 1;
+  mpu.detector_init = 1;
   VCU.SetEvent(EVG_BIKE_MOVED, 0);
   unlock();
+}
+
+void GYRO_Flush(void) {
+	memset(&GYRO, 0x00, sizeof(motion_t));
 }
 
 /* Private functions implementation
@@ -127,22 +136,22 @@ static void Capture(mems_t *mems) {
 
   // read sensor
   do {
-    status = MPU6050_ReadAll(gyro.pi2c, &(gyro.mpu));
+    status = MPU6050_ReadAll(mpu.pi2c, &(mpu.dev));
 
     if (status != MPU6050_Result_Ok)
       GYRO_Init();
   } while (status != MPU6050_Result_Ok);
 
   // convert the RAW values into dps (deg/s)
-  mems->accelerometer.x = gyro.mpu.Gyroscope_X / gyro.mpu.Gyro_Mult;
-  mems->accelerometer.y = gyro.mpu.Gyroscope_Y / gyro.mpu.Gyro_Mult;
-  mems->accelerometer.z = gyro.mpu.Gyroscope_Z / gyro.mpu.Gyro_Mult;
+  mems->accelerometer.x = mpu.dev.Gyroscope_X / mpu.dev.Gyro_Mult;
+  mems->accelerometer.y = mpu.dev.Gyroscope_Y / mpu.dev.Gyro_Mult;
+  mems->accelerometer.z = mpu.dev.Gyroscope_Z / mpu.dev.Gyro_Mult;
   // convert the RAW values into acceleration in 'g'
-  mems->gyroscope.x = gyro.mpu.Accelerometer_X / gyro.mpu.Acce_Mult;
-  mems->gyroscope.y = gyro.mpu.Accelerometer_Y / gyro.mpu.Acce_Mult;
-  mems->gyroscope.z = gyro.mpu.Accelerometer_Z / gyro.mpu.Acce_Mult;
+  mems->gyroscope.x = mpu.dev.Accelerometer_X / mpu.dev.Acce_Mult;
+  mems->gyroscope.y = mpu.dev.Accelerometer_Y / mpu.dev.Acce_Mult;
+  mems->gyroscope.z = mpu.dev.Accelerometer_Z / mpu.dev.Acce_Mult;
   // temperature
-  mems->temperature = gyro.mpu.Temperature;
+  mems->temperature = mpu.dev.Temperature;
 }
 
 static void Convert(motion_t *motion, coordinate_t *gyro) {
@@ -173,6 +182,7 @@ static uint8_t GYRO_Moved(motion_t *refference, motion_t *current) {
   return euclidean > MOVED_LIMIT;
 }
 
+#if GYRO_DEBUG
 static void Debugger(movement_t *movement) {
   printf("IMU:Accel[%lu %%] = %lu / %lu\n",
          movement->crash.value * 100 / ACCELEROMETER_LIMIT,
@@ -190,3 +200,4 @@ static void RawDebugger(mems_t *mems) {
          mems->gyroscope.x, mems->gyroscope.y, mems->gyroscope.z,
          (int8_t)mems->temperature);
 }
+#endif

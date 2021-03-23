@@ -27,8 +27,10 @@ static void unlock(void);
 static uint8_t Activated(void);
 static void CAN_Header(CAN_TxHeaderTypeDef *header, uint32_t address,
                        uint32_t DLC, uint8_t ext);
+#if CAN_DEBUG
 static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData);
 static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData);
+#endif
 
 /* Public functions implementation
  * ---------------------------------------------*/
@@ -101,8 +103,10 @@ uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC,
   /* Start the Transmission process */
   status = HAL_CAN_AddTxMessage(can.pcan, &(Tx->header), Tx->data.u8, NULL);
 
-  // if (status == HAL_OK)
-  //   TxDebugger(&(Tx->header), Tx->data);
+#if CAN_DEBUG
+   if (status == HAL_OK)
+     TxDebugger(&(Tx->header), &(Tx->data));
+#endif
 
   unlock();
   return (status == HAL_OK);
@@ -122,8 +126,11 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
     status = HAL_CAN_GetRxMessage(can.pcan, CAN_RX_FIFO0, &(Rx->header),
                                   Rx->data.u8);
 
-    // if (status == HAL_OK)
-    //   RxDebugger(&(Rx->header), &(Rx->data));
+#if CAN_DEBUG
+     if (status == HAL_OK)
+       RxDebugger(&(Rx->header), &(Rx->data));
+#endif
+
   }
   unlock();
 
@@ -182,6 +189,7 @@ static uint8_t Activated(void) {
   return can.active;
 }
 
+#if CAN_DEBUG
 static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
   printf("CAN:[TX] 0x%08X => %.*s\n",
          (unsigned int)((TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId
@@ -195,3 +203,4 @@ static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData) {
          (RxHeader->RTR == CAN_RTR_DATA) ? (int)RxHeader->DLC : strlen("RTR"),
          (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR");
 }
+#endif

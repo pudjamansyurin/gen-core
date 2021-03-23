@@ -11,7 +11,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
 
-#define CAN_DATA UNION64
+#define CAN_DATA 	UNION64
+
 /* Exported defines ----------------------------------------------------------*/
 typedef enum {
   CAND_FOCAN_PROGRESS = 0x01A,

@@ -36,6 +36,7 @@
 #define CMD_GEN_ODOM (uint8_t)3
 
 #define CMD_OVERRIDE_STATE (uint8_t)0
+#define CMD_OVERRIDE_REVERSE (uint8_t)1
 
 #define CMD_AUDIO_BEEP (uint8_t)0
 #define CMD_AUDIO_MUTE (uint8_t)1

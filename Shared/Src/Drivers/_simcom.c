@@ -713,7 +713,7 @@ static void SetStateGprsOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout) {
 #if (BOOTLOADER)
 static void SetStatePdpOn(SIM_RESULT *res) {
   // =========== FTP CONFIGURATION
-  // Initialise bearer for TCP based applications.
+  // Initiate bearer for TCP based applications.
   *res = AT_BearerInitialize();
 
   // upgrade simcom state

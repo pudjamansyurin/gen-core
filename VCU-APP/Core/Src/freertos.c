@@ -703,7 +703,7 @@ void StartManagerTask(void *argument)
 	osThreadTerminate(Hmi2PowerTaskHandle);
 
 	// Check thread creation
-	if (!VCU.CheckRTOS())
+	if (!_osCheckRTOS())
 		return;
 
 	// Release threads
@@ -711,14 +711,14 @@ void StartManagerTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.manager = _GetTickMS();
+		TASKS.tick.manager = _GetTickMS();
 		lastWake = _GetTickMS();
+
+		_osCheckTasks();
 
 		VCU.Refresh();
 		VCU.CheckState();
-		VCU.CheckTasks();
 
-		HMI1.d.state.daylight = RTC_IsDaylight();
 		HMI1.d.state.overheat = BMS.d.overheat || MCU.d.overheat;
 		HMI1.d.state.warning = VCU.d.error || BMS.d.error || MCU.d.error;
 
@@ -740,21 +740,24 @@ void StartIotTask(void *argument)
 	/* USER CODE BEGIN StartIotTask */
 	uint32_t notif;
 	command_t cmd;
-	response_t response;
-	payload_t pRes = {.type = PAYLOAD_RESPONSE,
-			.pQueue = &ResponseQueueHandle,
-			.pPayload = &response,
-			.pending = 0};
-	report_t report;
-	payload_t pRep = {.type = PAYLOAD_REPORT,
-			.pQueue = &ReportQueueHandle,
-			.pPayload = &report,
-			.pending = 0};
 	uint8_t ok;
 	char buf[200];
+	response_t response;
+	report_t report;
+	payload_t pRes = {
+			.type = PAYLOAD_RESPONSE,
+			.pQueue = &ResponseQueueHandle,
+			.pPayload = &response,
+			.pending = 0
+	};
+	payload_t pRep = {
+			.type = PAYLOAD_REPORT,
+			.pQueue = &ReportQueueHandle,
+			.pPayload = &report,
+			.pending = 0
+	};
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
+	_osEventManager();
 
 	// Initiate
 	Simcom_Init();
@@ -762,26 +765,26 @@ void StartIotTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.iot = _GetTickMS();
+		TASKS.tick.iot = _GetTickMS();
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 100)) {
-			if (notif & EVT_IOT_RESUBSCRIBE) {
+		if (_osFlagAny(&notif, 100)) {
+			if (notif & FLAG_IOT_RESUBSCRIBE) {
 				MQTT_PublishWill(0);
 				MQTT_Disconnect();
 			}
 
-			if (notif & EVT_IOT_REPORT_DISCARD)
+			if (notif & FLAG_IOT_REPORT_DISCARD)
 				pRep.pending = 0;
 
-			if (notif & EVT_IOT_READ_SMS || notif & EVT_IOT_SEND_USSD) {
+			if (notif & FLAG_IOT_READ_SMS || notif & FLAG_IOT_SEND_USSD) {
 				memset(buf, 0, sizeof(buf));
 				ok = 0;
 
-				if (notif & EVT_IOT_SEND_USSD) {
+				if (notif & FLAG_IOT_SEND_USSD) {
 					char ussd[20];
 					if (osMessageQueueGet(UssdQueueHandle, ussd, NULL, 0U) == osOK)
 						ok = Simcom_SendUSSD(ussd, buf, sizeof(buf));
-				} else if (notif & EVT_IOT_READ_SMS)
+				} else if (notif & FLAG_IOT_READ_SMS)
 					ok = Simcom_ReadNewSMS(buf, sizeof(buf));
 
 				if (ok) {
@@ -790,7 +793,7 @@ void StartIotTask(void *argument)
 				}
 
 				osThreadFlagsSet(CommandTaskHandle,
-						ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+						ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
 			}
 		}
 
@@ -838,12 +841,11 @@ void StartReporterTask(void *argument)
 	FRAME_TYPE frame;
 	osStatus_t status;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
+	_osEventManager();
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.reporter = _GetTickMS();
+		TASKS.tick.reporter = _GetTickMS();
 
 		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
 		RPT_ReportCapture(frame, &report);
@@ -857,11 +859,10 @@ void StartReporterTask(void *argument)
 			status = osMessageQueuePut(ReportQueueHandle, &report, 0U, 0U);
 			// already full, remove oldest
 			if (status == osErrorResource)
-				osThreadFlagsSet(IotTaskHandle, EVT_IOT_REPORT_DISCARD);
+				osThreadFlagsSet(IotTaskHandle, FLAG_IOT_REPORT_DISCARD);
 		} while (status != osOK);
 
-		_osThreadFlagsWait(&notif, EVT_REPORTER_YIELD, osFlagsWaitAny,
-				VCU.d.interval * 1000);
+		_osFlagOne(&notif, FLAG_REPORTER_YIELD, VCU.d.interval * 1000);
 	}
 	/* USER CODE END StartReporterTask */
 }
@@ -879,8 +880,7 @@ void StartCommandTask(void *argument)
 	command_t cmd;
 	response_t resp;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
+	_osEventManager();
 
 	// Handle Post-FOTA
 	if (FW_PostFota(&resp))
@@ -888,10 +888,9 @@ void StartCommandTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.command = _GetTickMS();
+		TASKS.tick.command = _GetTickMS();
 		// get command in queue
-		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==
-				osOK) {
+		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==	osOK) {
 
 			// default command response
 			resp.header.code = cmd.header.code;
@@ -932,9 +931,12 @@ void StartCommandTask(void *argument)
 						sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
 						resp.data.res_code = RESPONSE_STATUS_ERROR;
 					} else
-						VCU.d.override = *(uint8_t *)cmd.data.value;
+						VCU.d.override.state = *(uint8_t *)cmd.data.value;
 					break;
 
+				case CMD_OVERRIDE_REVERSE:
+					HBAR_SetReverse(*(uint8_t *)cmd.data.value);
+					break;
 
 				default:
 					resp.data.res_code = RESPONSE_STATUS_INVALID;
@@ -949,13 +951,13 @@ void StartCommandTask(void *argument)
 				} else
 					switch (cmd.header.sub_code) {
 					case CMD_AUDIO_BEEP:
-						osThreadFlagsSet(AudioTaskHandle, EVT_AUDIO_BEEP);
+						osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_BEEP);
 						break;
 
 					case CMD_AUDIO_MUTE:
 						osThreadFlagsSet(AudioTaskHandle, *(uint8_t *)cmd.data.value
-								? EVT_AUDIO_MUTE_ON
-										: EVT_AUDIO_MUTE_OFF);
+								? FLAG_AUDIO_MUTE_ON
+										: FLAG_AUDIO_MUTE_OFF);
 						break;
 
 					default:
@@ -971,12 +973,12 @@ void StartCommandTask(void *argument)
 				} else
 					switch (cmd.header.sub_code) {
 					case CMD_FINGER_FETCH:
-						osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_FETCH);
+						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_FETCH);
 						CMD_FingerFetch(&resp, FingerDbQueueHandle);
 						break;
 
 					case CMD_FINGER_ADD:
-						osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_ADD);
+						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_ADD);
 						CMD_FingerAdd(&resp, DriverQueueHandle);
 						break;
 
@@ -984,12 +986,12 @@ void StartCommandTask(void *argument)
 						osMessageQueueReset(DriverQueueHandle);
 						osMessageQueuePut(DriverQueueHandle, (uint8_t *)cmd.data.value, 0U,
 								0U);
-						osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_DEL);
+						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_DEL);
 						CMD_Finger(&resp);
 						break;
 
 					case CMD_FINGER_RST:
-						osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_RST);
+						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_RST);
 						CMD_Finger(&resp);
 						break;
 
@@ -1006,7 +1008,7 @@ void StartCommandTask(void *argument)
 				} else
 					switch (cmd.header.sub_code) {
 					case CMD_REMOTE_PAIRING:
-						osThreadFlagsSet(RemoteTaskHandle, EVT_REMOTE_PAIRING);
+						osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_PAIRING);
 						CMD_RemotePairing(&resp);
 						break;
 
@@ -1044,12 +1046,12 @@ void StartCommandTask(void *argument)
 				case CMD_NET_SEND_USSD:
 					osMessageQueueReset(UssdQueueHandle);
 					osMessageQueuePut(UssdQueueHandle, cmd.data.value, 0U, 0U);
-					osThreadFlagsSet(IotTaskHandle, EVT_IOT_SEND_USSD);
+					osThreadFlagsSet(IotTaskHandle, FLAG_IOT_SEND_USSD);
 					CMD_NetQuota(&resp, QuotaQueueHandle);
 					break;
 
 				case CMD_NET_READ_SMS:
-					osThreadFlagsSet(IotTaskHandle, EVT_IOT_READ_SMS);
+					osThreadFlagsSet(IotTaskHandle, FLAG_IOT_READ_SMS);
 					CMD_NetQuota(&resp, QuotaQueueHandle);
 					break;
 
@@ -1105,21 +1107,21 @@ void StartGpsTask(void *argument)
 	/* USER CODE BEGIN StartGpsTask */
 	uint32_t notif;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
+	_osEventManager();
 
 	// Initiate
 	GPS_Init();
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.gps = _GetTickMS();
+		TASKS.tick.gps = _GetTickMS();
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny,
-				(GPS_INTERVAL * 1000))) {
-			if (notif & EVT_GPS_RECEIVED)
-				GPS_Capture();
+		if (_osFlagAny(&notif, (GPS_INTERVAL * 1000))) {
+			if (notif & FLAG_GPS_RECEIVED) {
+				// nmea ready
+			}
+
 		}
 
 		//		if ((meter = GPS_CalculateOdometer()))
@@ -1141,33 +1143,30 @@ void StartGyroTask(void *argument)
 	uint32_t flag, notif;
 	movement_t movement;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny,
-			osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+	_osEventManager();
+	_osFlagOne(&notif, FLAG_GYRO_TASK_START, osWaitForever);
+	osThreadFlagsClear(FLAG_MASK);
 
 	/* MPU6050 Initiate*/
 	GYRO_Init();
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.gyro = _GetTickMS();
+		TASKS.tick.gyro = _GetTickMS();
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
-			if (notif & EVT_GYRO_TASK_STOP) {
-				memset(&(VCU.d.motion), 0x00, sizeof(motion_t));
+		if (_osFlagAny(&notif, 1000)) {
+			if (notif & FLAG_GYRO_TASK_STOP) {
+				GYRO_Flush();
 				VCU.SetEvent(EVG_BIKE_FALLEN, 0);
 				VCU.SetEvent(EVG_BIKE_MOVED, 0);
 
 				GYRO_DeInit();
-				_osThreadFlagsWait(&notif, EVT_GYRO_TASK_START, osFlagsWaitAny,
-						osWaitForever);
+				_osFlagOne(&notif, FLAG_GYRO_TASK_START, osWaitForever);
 				GYRO_Init();
 			}
 
-			else if (notif & EVT_GYRO_MOVED_RESET)
+			else if (notif & FLAG_GYRO_MOVED_RESET)
 				GYRO_ResetDetector();
 		}
 
@@ -1177,7 +1176,7 @@ void StartGyroTask(void *argument)
 
 		// Fallen indicators
 		//		GATE_LedWrite(movement.fallen);
-		flag = movement.fallen ? EVT_AUDIO_BEEP_START : EVT_AUDIO_BEEP_STOP;
+		flag = movement.fallen ? FLAG_AUDIO_BEEP_START : FLAG_AUDIO_BEEP_STOP;
 		osThreadFlagsSet(AudioTaskHandle, flag);
 
 		// Moved at rest
@@ -1201,11 +1200,9 @@ void StartRemoteTask(void *argument)
 	RMT_CMD command;
 
 	// wait until needed
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny,
-			osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+	_osEventManager();
+	_osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
+	osThreadFlagsClear(FLAG_MASK);
 
 	// Initiate
 	AES_Init();
@@ -1213,45 +1210,44 @@ void StartRemoteTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.remote = _GetTickMS();
+		TASKS.tick.remote = _GetTickMS();
 
 		RMT_Refresh();
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 4)) {
-			if (notif & EVT_REMOTE_TASK_STOP) {
+		if (_osFlagAny(&notif, 4)) {
+			if (notif & FLAG_REMOTE_TASK_STOP) {
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 				RMT_DeInit();
-				_osThreadFlagsWait(&notif, EVT_REMOTE_TASK_START, osFlagsWaitAny,
-						osWaitForever);
+				_osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
 				RMT_Init();
 			}
 
 			// handle address change
-			if (notif & EVT_REMOTE_REINIT)
+			if (notif & FLAG_REMOTE_REINIT)
 				RMT_ReInit();
 
 			// handle pairing
-			if (notif & EVT_REMOTE_PAIRING)
+			if (notif & FLAG_REMOTE_PAIRING)
 				RMT_Pairing();
 
 			// handle incoming payload
-			if (notif & EVT_REMOTE_RX_IT) {
+			if (notif & FLAG_REMOTE_RX_IT) {
 				// process command
 				if (RMT_ValidateCommand(&command)) {
 					if (command == RMT_CMD_PING) {
 						if (RMT_GotPairedResponse())
-							osThreadFlagsSet(CommandTaskHandle, EVT_COMMAND_OK);
+							osThreadFlagsSet(CommandTaskHandle, FLAG_COMMAND_OK);
 					} else if (command == RMT_CMD_SEAT)
 						GATE_SeatToggle();
 					else if (command == RMT_CMD_ALARM) {
-						GATE_HornToggle(&(HBAR.hazard));
+						GATE_HornToggle(&(HBAR.d.hazard));
 
 						if (VCU.ReadEvent(EVG_BIKE_MOVED))
-							osThreadFlagsSet(GyroTaskHandle, EVT_GYRO_MOVED_RESET);
+							osThreadFlagsSet(GyroTaskHandle, FLAG_GYRO_MOVED_RESET);
 					}
 				}
 			}
-			//			osThreadFlagsClear(EVT_MASK);
+			//			osThreadFlagsClear(FLAG_MASK);
 		}
 	}
 	/* USER CODE END StartRemoteTask */
@@ -1271,32 +1267,29 @@ void StartFingerTask(void *argument)
 	finger_db_t finger;
 	uint8_t id, driver, ok = 0;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAny,
-			osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+	_osEventManager();
+	_osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
+	osThreadFlagsClear(FLAG_MASK);
 
 	// Initiate
 	FINGER_Init();
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.finger = _GetTickMS();
+		TASKS.tick.finger = _GetTickMS();
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
-			if (notif & EVT_FINGER_TASK_STOP) {
+		if (_osFlagAny(&notif, 1000)) {
+			if (notif & FLAG_FINGER_TASK_STOP) {
 				VCU.SetDriver(DRIVER_ID_NONE);
 
 				FINGER_DeInit();
-				_osThreadFlagsWait(&notif, EVT_FINGER_TASK_START, osFlagsWaitAny,
-						osWaitForever);
+				_osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
 				FINGER_Init();
 			}
 
-			else if (notif & EVT_FINGER_PLACED) {
+			else if (notif & FLAG_FINGER_PLACED) {
 				if ((id = FINGER_Auth()) > 0) {
-					VCU.SetDriver(HMI1.d.state.unfinger ? id : DRIVER_ID_NONE);
+					VCU.SetDriver(id);
 					GATE_LedBlink(200);
 					_DelayMS(100);
 					GATE_LedBlink(200);
@@ -1305,29 +1298,29 @@ void StartFingerTask(void *argument)
 			}
 
 			else {
-				if (notif & EVT_FINGER_FETCH) {
+				if (notif & FLAG_FINGER_FETCH) {
 					if ((ok = FINGER_Fetch(finger.db))) {
 						osMessageQueueReset(FingerDbQueueHandle);
 						osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
 					}
-				} else if (notif & EVT_FINGER_ADD) {
+				} else if (notif & FLAG_FINGER_ADD) {
 					if (FINGER_Enroll(&id, &ok)) {
 						osMessageQueueReset(FingerDbQueueHandle);
 						osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
 					}
-				} else if (notif & EVT_FINGER_DEL) {
+				} else if (notif & FLAG_FINGER_DEL) {
 					if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK)
 						ok = FINGER_DeleteID(driver);
-				} else if (notif & EVT_FINGER_RST)
+				} else if (notif & FLAG_FINGER_RST)
 					ok = FINGER_Flush();
 
 				osThreadFlagsSet(CommandTaskHandle,
-						ok ? EVT_COMMAND_OK : EVT_COMMAND_ERROR);
+						ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
 			}
 
 			// Handle bounce effect
 			// _DelayMS(1000);
-			// osThreadFlagsClear(EVT_MASK);
+			// osThreadFlagsClear(FLAG_MASK);
 		}
 	}
 	/* USER CODE END StartFingerTask */
@@ -1345,46 +1338,43 @@ void StartAudioTask(void *argument)
 	/* USER CODE BEGIN StartAudioTask */
 	uint32_t notif;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAny,
-			osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+	_osEventManager();
+	_osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
+	osThreadFlagsClear(FLAG_MASK);
 
 	/* Initiate Wave player (Codec, DMA, I2C) */
 	AUDIO_Init();
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.audio = _GetTickMS();
+		TASKS.tick.audio = _GetTickMS();
 
 		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
 
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 1000)) {
-			if (notif & EVT_AUDIO_TASK_STOP) {
+		if (_osFlagAny(&notif, 1000)) {
+			if (notif & FLAG_AUDIO_TASK_STOP) {
 				AUDIO_DeInit();
-				_osThreadFlagsWait(&notif, EVT_AUDIO_TASK_START, osFlagsWaitAny,
-						osWaitForever);
+				_osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
 				AUDIO_Init();
 			}
 
 			// Beep command
-			if (notif & EVT_AUDIO_BEEP) {
+			if (notif & FLAG_AUDIO_BEEP) {
 				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
 				_DelayMS(250);
 				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
 			}
 
 			// Long-Beep Command
-			if (notif & EVT_AUDIO_BEEP_START)
+			if (notif & FLAG_AUDIO_BEEP_START)
 				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
-			if (notif & EVT_AUDIO_BEEP_STOP)
+			if (notif & FLAG_AUDIO_BEEP_STOP)
 				AUDIO_BeepStop();
 
 			// Mute command
-			if (notif & EVT_AUDIO_MUTE_ON)
+			if (notif & FLAG_AUDIO_MUTE_ON)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_ON);
-			if (notif & EVT_AUDIO_MUTE_OFF)
+			if (notif & FLAG_AUDIO_MUTE_OFF)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 		}
 	}
@@ -1405,21 +1395,19 @@ void StartCanRxTask(void *argument)
 	TickType_t last1000ms;
 	can_rx_t Rx;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+	_osEventManager();
+	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+	osThreadFlagsClear(FLAG_MASK);
 
 	/* Infinite loop */
 	last1000ms = _GetTickMS();
 	for (;;) {
-		VCU.d.task.tick.canRx = _GetTickMS();
+		TASKS.tick.canRx = _GetTickMS();
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 0)) {
+		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 0)) {
 			VCU.NodesInit();
-			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny,
-					osWaitForever);
+			_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
 		}
 
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
@@ -1488,10 +1476,9 @@ void StartCanTxTask(void *argument)
 	uint32_t notif;
 	TickType_t last500ms, last1000ms;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
-	_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny, osWaitForever);
-	osThreadFlagsClear(EVT_MASK);
+	_osEventManager();
+	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+	osThreadFlagsClear(FLAG_MASK);
 
 	// initiate
 	CANBUS_Init();
@@ -1500,17 +1487,16 @@ void StartCanTxTask(void *argument)
 	last500ms = _GetTickMS();
 	last1000ms = _GetTickMS();
 	for (;;) {
-		VCU.d.task.tick.canTx = _GetTickMS();
+		TASKS.tick.canTx = _GetTickMS();
 
 		// Check notifications
-		if (_osThreadFlagsWait(&notif, EVT_CAN_TASK_STOP, osFlagsWaitAny, 20)) {
+		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 20)) {
 			HMI2.PowerByCan(0);
 			MCU.PowerOverCan(0);
 			BMS.PowerOverCan(0);
 
 			CANBUS_DeInit();
-			_osThreadFlagsWait(&notif, EVT_CAN_TASK_START, osFlagsWaitAny,
-					osWaitForever);
+			_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
 			CANBUS_Init();
 		}
 
@@ -1557,15 +1543,13 @@ void StartHmi2PowerTask(void *argument)
 	/* USER CODE BEGIN StartHmi2PowerTask */
 	uint32_t notif;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
+	_osEventManager();
 
 	/* Infinite loop */
 	for (;;) {
-		//    VCU.d.task.tick.hmi2Power = _GetTickMS();
+		//    TASKS.tick.hmi2Power = _GetTickMS();
 
-		if (_osThreadFlagsWait(&notif, EVT_HMI2POWER_CHANGED, osFlagsWaitAny,
-				osWaitForever)) {
+		if (_osFlagOne(&notif, FLAG_HMI2POWER_CHANGED, osWaitForever)) {
 
 			if (HMI2.d.powerRequest)
 				while (!HMI2.d.run)
@@ -1591,8 +1575,7 @@ void StartGateTask(void *argument)
 	/* USER CODE BEGIN StartGateTask */
 	uint32_t notif, tick = 0;
 
-	osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear,
-			osWaitForever);
+	_osEventManager();
 
 	// Initiate
 	HBAR_Init();
@@ -1600,22 +1583,22 @@ void StartGateTask(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		VCU.d.task.tick.gate = _GetTickMS();
+		TASKS.tick.gate = _GetTickMS();
 
 		// wait forever
-		if (_osThreadFlagsWait(&notif, EVT_MASK, osFlagsWaitAny, 500)) {
+		if (_osFlagAny(&notif, 500)) {
 			// handle bounce effect
 			_DelayMS(50);
-			//      osThreadFlagsClear(EVT_MASK);
+			//      osThreadFlagsClear(FLAG_MASK);
 
 			// Starter Button IRQ
-			if (notif & EVT_GATE_STARTER_IRQ) {
+			if (notif & FLAG_GATE_STARTER_IRQ) {
 				if (GATE_ReadStarter()) tick = _GetTickMS();
 				else VCU.d.gpio.starter = _GetTickMS() - tick;
 			}
 
 			// Handle switch EXTI interrupt
-			if (notif & EVT_GATE_HBAR) {
+			if (notif & FLAG_GATE_HBAR) {
 				HBAR_ReadStates();
 				HBAR_TimerSelectSet();
 				HBAR_RunSelectOrSet();
@@ -1640,7 +1623,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 	if (VCU.d.state >= VEHICLE_NORMAL)
 		if (GPIO_Pin == EXT_STARTER_IRQ_Pin)
-			osThreadFlagsSet(GateTaskHandle, EVT_GATE_STARTER_IRQ);
+			osThreadFlagsSet(GateTaskHandle, FLAG_GATE_STARTER_IRQ);
 
 	if (VCU.d.state >= VEHICLE_NORMAL)
 		if (GPIO_Pin == INT_REMOTE_IRQ_Pin)
@@ -1648,12 +1631,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 	if (VCU.d.state >= VEHICLE_STANDBY)
 		if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
-			osThreadFlagsSet(FingerTaskHandle, EVT_FINGER_PLACED);
+			osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_PLACED);
 
 	if (VCU.d.state >= VEHICLE_STANDBY)
 		for (uint8_t i = 0; i < HBAR_K_MAX; i++)
 			if (GPIO_Pin == HBAR.list[i].pin)
-				osThreadFlagsSet(GateTaskHandle, EVT_GATE_HBAR);
+				osThreadFlagsSet(GateTaskHandle, FLAG_GATE_HBAR);
 }
 
 /* USER CODE END Application */
