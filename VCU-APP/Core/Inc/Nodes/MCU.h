@@ -116,11 +116,22 @@ typedef struct {
 	//	uint16_t rbs_switch;
 } mcu_template_addr_t;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
 	int16_t discur_max;
-	float torque_max;
+	int16_t torque_max;
 	//	uint8_t rbs_switch;
 } mcu_template_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t mode;
+	mcu_template_t par;
+	//	uint8_t rbs_switch;
+} mcu_template_set_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t speed_max;
+	mcu_template_t par[HBAR_M_DRIVE_MAX];
+} tpl_t;
 
 typedef struct {
 	uint8_t run;
@@ -129,10 +140,10 @@ typedef struct {
 	uint8_t error;
 	uint32_t tick;
 
-	uint16_t rpm;
-	uint8_t reverse;
-	float temperature;
 	HBAR_MODE_DRIVE drive_mode;
+	uint8_t reverse;
+	int16_t rpm;
+	float temperature;
 	struct {
 		uint32_t post;
 		uint32_t run;
@@ -152,8 +163,8 @@ typedef struct {
 		MCU_INV_DISCHARGE discharge;
 	} inv;
 	struct {
-		uint8_t speed_max;
-		mcu_template_t template[HBAR_M_DRIVE_MAX];
+		tpl_t r;
+		tpl_t w;
 	} tpl;
 } mcu_data_t;
 

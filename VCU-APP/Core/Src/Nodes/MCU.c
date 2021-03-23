@@ -42,6 +42,7 @@ static mcu_template_addr_t tplAddr[HBAR_M_DRIVE_MAX];
 /* Private functions prototypes
  * -----------------------------------------------*/
 static void Reset(void);
+static void ResetTemplate(void);
 static uint8_t IsOverheat(void);
 
 /* Public functions implementation
@@ -59,18 +60,13 @@ void MCU_Init(void) {
 void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
 		if (!MCU.d.run) {
-			GATE_McuPower(1);
-			_DelayMS(500);
-			MCU.t.Setting(0);
-			_DelayMS(50);
-			MCU.t.Setting(1);
+			GATE_McuPower(0); _DelayMS(500);
+			GATE_McuPower(1); _DelayMS(500);
+			MCU.t.Setting(0); _DelayMS(50);
 		}
+		MCU.t.Setting(1);
 	} else {
-		if (MCU.d.run) {
-			MCU.t.Setting(0);
-			_DelayMS(50);
-			GATE_McuPower(0);
-		}
+		MCU.t.Setting(0);
 	}
 }
 
@@ -112,22 +108,22 @@ uint16_t MCU_RpmToSpeed(void) {
 /* ====================================== CAN RX
  * =================================== */
 void MCU_RX_CurrentDC(can_rx_t *Rx) {
-	MCU.d.dcbus.current = Rx->data.u16[3] * 0.1;
+	MCU.d.dcbus.current = Rx->data.s16[3] * 0.1;
 
 	MCU.d.tick = _GetTickMS();
 }
 
 void MCU_RX_VoltageDC(can_rx_t *Rx) {
-	MCU.d.dcbus.voltage = Rx->data.u16[1] * 0.1;
+	MCU.d.dcbus.voltage = Rx->data.s16[1] * 0.1;
 
 	MCU.d.tick = _GetTickMS();
 }
 
 void MCU_RX_TorqueSpeed(can_rx_t *Rx) {
-	MCU.d.temperature = Rx->data.u16[0] * 0.1;
-	MCU.d.rpm = Rx->data.u16[1];
-	MCU.d.torque.commanded = Rx->data.u16[2] * 0.1;
-	MCU.d.torque.feedback = Rx->data.u16[3] * 0.1;
+	MCU.d.temperature = Rx->data.s16[0] * 0.1;
+	MCU.d.rpm = Rx->data.s16[1];
+	MCU.d.torque.commanded = Rx->data.s16[2] * 0.1;
+	MCU.d.torque.feedback = Rx->data.s16[3] * 0.1;
 
 	MCU.d.tick = _GetTickMS();
 }
@@ -156,21 +152,21 @@ void MCU_RX_Template(can_rx_t *Rx) {
 	int16_t data = Rx->data.s16[2];
 
 	if (param == MTP_SPEED_MAX) {
-		MCU.d.tpl.speed_max = data;
+		MCU.d.tpl.r.speed_max = data;
 		return;
 	}
 
 	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
 		if (param == tplAddr[m].discur_max) {
-			MCU.d.tpl.template[m].discur_max = data;
+			MCU.d.tpl.r.par[m].discur_max = data;
 			return;
 		}
 		else if (param == tplAddr[m].torque_max) {
-			MCU.d.tpl.template[m].torque_max = data * 0.1;
+			MCU.d.tpl.r.par[m].torque_max = data * 0.1;
 			return;
 		}
 		//		else if (param == tplAddr[m].rbs_switch) {
-		//			MCU.d.tpl.template[m].rbs_switch = data;
+		//			MCU.d.tpl.r.par[m].rbs_switch = data;
 		//			return;
 		//		}
 	}
@@ -227,11 +223,19 @@ static void Reset(void) {
 	MCU.d.inv.lockout = 0;
 	MCU.d.inv.discharge = INV_DISCHARGE_DISABLED;
 
-	MCU.d.tpl.speed_max = 0;
+	ResetTemplate();
+}
+
+static void ResetTemplate(void) {
+	MCU.d.tpl.w.speed_max = 0;
+	MCU.d.tpl.r.speed_max = 0;
 	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
-		MCU.d.tpl.template[m].discur_max = 0;
-		MCU.d.tpl.template[m].torque_max = 0;
-		//		MCU.d.tpl.template[m].rbs_switch = 0;
+		MCU.d.tpl.w.par[m].discur_max = 0;
+		MCU.d.tpl.w.par[m].torque_max = 0;
+		//		MCU.d.tpl.w.par[m].rbs_switch = 0;
+		MCU.d.tpl.r.par[m].discur_max = 0;
+		MCU.d.tpl.r.par[m].torque_max = 0;
+		//		MCU.d.tpl.r.par[m].rbs_switch = 0;
 	}
 }
 

@@ -64,6 +64,7 @@
 #include "Nodes/HMI2.h"
 #include "Nodes/MCU.h"
 #include "Nodes/VCU.h"
+#include "Nodes/NODE.h"
 
 /* USER CODE END Includes */
 
@@ -681,7 +682,7 @@ void StartManagerTask(void *argument)
 
 	// Initiate, this task get executed first!
 	VCU.Init();
-	VCU.NodesInit();
+	NODE.Init();
 
 	// Peripheral Initiate
 	BAT_Init();
@@ -847,7 +848,8 @@ void StartReporterTask(void *argument)
 	for (;;) {
 		TASKS.tick.reporter = _GetTickMS();
 
-		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
+		//		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
+		frame = FR_FULL;
 		RPT_ReportCapture(frame, &report);
 
 		// reset some events group
@@ -932,10 +934,6 @@ void StartCommandTask(void *argument)
 						resp.data.res_code = RESPONSE_STATUS_ERROR;
 					} else
 						VCU.d.override.state = *(uint8_t *)cmd.data.value;
-					break;
-
-				case CMD_OVERRIDE_REVERSE:
-					HBAR_SetReverse(*(uint8_t *)cmd.data.value);
 					break;
 
 				default:
@@ -1076,11 +1074,31 @@ void StartCommandTask(void *argument)
 					HBAR.d.mode[HBAR_M_REPORT] = *(uint8_t *)cmd.data.value;
 					break;
 
+				case CMD_HBAR_REVERSE:
+					HBAR_SetReverse(*(uint8_t *)cmd.data.value);
+					break;
 
 				default:
 					resp.data.res_code = RESPONSE_STATUS_INVALID;
 					break;
 				}
+			}
+
+			else if (cmd.header.code == CMD_CODE_MCU) {
+				if (!MCU.d.active) {
+					sprintf(resp.data.message, "MCU not active!");
+					resp.data.res_code = RESPONSE_STATUS_ERROR;
+				} else
+					switch (cmd.header.sub_code) {
+
+					case CMD_MCU_SET_TEMPLATE:
+						CMD_McuSetTemplate(&cmd);
+						break;
+
+					default:
+						resp.data.res_code = RESPONSE_STATUS_INVALID;
+						break;
+					}
 			}
 
 			else
@@ -1404,60 +1422,14 @@ void StartCanRxTask(void *argument)
 	for (;;) {
 		TASKS.tick.canRx = _GetTickMS();
 
-		// Check notifications
-		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 0)) {
-			VCU.NodesInit();
-			_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-		}
-
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
-			if (Rx.header.IDE == CAN_ID_STD) {
-				switch (Rx.header.StdId) {
-				case CAND_HMI1:
-					HMI1.r.State(&Rx);
-					break;
-				case CAND_HMI2:
-					HMI2.r.State(&Rx);
-					break;
-				case CAND_MCU_CURRENT_DC:
-					MCU.r.CurrentDC(&Rx);
-					break;
-				case CAND_MCU_VOLTAGE_DC:
-					MCU.r.VoltageDC(&Rx);
-					break;
-				case CAND_MCU_TORQUE_SPEED:
-					MCU.r.TorqueSpeed(&Rx);
-					break;
-				case CAND_MCU_FAULT_CODE:
-					MCU.r.FaultCode(&Rx);
-					break;
-				case CAND_MCU_STATE:
-					MCU.r.State(&Rx);
-					break;
-				case CAND_MCU_TEMPLATE_R:
-					MCU.r.Template(&Rx);
-					break;
-				default:
-					break;
-				}
-			} else {
-				switch (BMS_CAND(Rx.header.ExtId)) {
-				case BMS_CAND(CAND_BMS_PARAM_1):
-        		  BMS.r.Param1(&Rx);
-				break;
-				case BMS_CAND(CAND_BMS_PARAM_2):
-        		  BMS.r.Param2(&Rx);
-				break;
-				default:
-					break;
-				}
-			}
+			// handle by IT
 		}
 
 		// every 1000ms
 		if (_GetTickMS() - last1000ms > 1000) {
 			last1000ms = _GetTickMS();
-			VCU.NodesRefresh();
+			NODE.Refresh();
 		}
 	}
 	/* USER CODE END StartCanRxTask */
@@ -1488,6 +1460,12 @@ void StartCanTxTask(void *argument)
 	last1000ms = _GetTickMS();
 	for (;;) {
 		TASKS.tick.canTx = _GetTickMS();
+
+		// Check notifications
+		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 0)) {
+			NODE.Init();
+			_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+		}
 
 		// Check notifications
 		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 20)) {

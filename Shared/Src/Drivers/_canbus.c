@@ -8,6 +8,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_canbus.h"
 #include "can.h"
+#if (RTOS_ENABLE)
+#include "Nodes/NODE.h"
+#endif
 
 /* External variables
  * ----------------------------------------------------------*/
@@ -149,7 +152,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 
   if (CANBUS_Read(&Rx))
     if (osKernelGetState() == osKernelRunning)
-      osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
+    	NODE.r.Handler(&Rx);
+//      osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
 }
 #endif
 

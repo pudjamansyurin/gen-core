@@ -14,6 +14,7 @@
 #include "Libs/_utils.h"
 #include "Nodes/BMS.h"
 #include "Nodes/VCU.h"
+#include "Nodes/MCU.h"
 
 /* Exported define
  * -------------------------------------------------------------*/
@@ -100,22 +101,22 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	uint8_t active;
 	uint8_t run;
-	uint16_t rpm;
 	uint8_t speed;
 	uint8_t reverse;
-	uint16_t temperature;
 	uint8_t drive_mode;
+	int16_t rpm;
+	int16_t temperature;
 	struct {
 		uint32_t post;
 		uint32_t run;
 	} fault;
 	struct {
-		uint16_t commanded;
-		uint16_t feedback;
+		int16_t commanded;
+		int16_t feedback;
 	} torque;
 	struct {
-		uint16_t current;
-		uint16_t voltage;
+		int16_t current;
+		int16_t voltage;
 	} dcbus;
 	struct {
 		uint8_t can_mode;
@@ -123,14 +124,7 @@ typedef struct __attribute__((packed)) {
 		uint8_t lockout;
 		uint8_t discharge;
 	} inv;
-	struct __attribute__((packed)) {
-		uint8_t speed_max;
-		struct __attribute__((packed)) {
-			uint16_t discur_max;
-			uint16_t torque_max;
-			//	uint8_t rbs_switch;
-		} template[HBAR_M_DRIVE_MAX];
-	} tpl;
+	tpl_t tpl;
 } mcu_debug_t;
 
 typedef struct __attribute__((packed)) {

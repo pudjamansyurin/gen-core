@@ -63,8 +63,6 @@ typedef struct {
 	} t;
 	void (*Init)(void);
 	void (*Refresh)(void);
-	void (*NodesInit)(void);
-	void (*NodesRefresh)(void);
 	void (*CheckState)(void);
 	void (*SetEvent)(uint8_t, uint8_t);
 	uint8_t (*ReadEvent)(uint8_t);
@@ -81,8 +79,6 @@ extern vcu_t VCU;
  * --------------------------------------------*/
 void VCU_Init(void);
 void VCU_Refresh(void);
-void VCU_NodesInit(void);
-void VCU_NodesRefresh(void);
 void VCU_CheckState(void);
 void VCU_SetEvent(uint8_t bit, uint8_t value);
 uint8_t VCU_ReadEvent(uint8_t bit);

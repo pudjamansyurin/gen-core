@@ -28,8 +28,6 @@ vcu_t VCU = {
 		},
 		VCU_Init,
 		VCU_Refresh,
-		VCU_NodesInit,
-		VCU_NodesRefresh,
 		VCU_CheckState,
 		VCU_SetEvent,
 		VCU_ReadEvent,
@@ -37,7 +35,6 @@ vcu_t VCU = {
 		VCU_SetDriver,
 		VCU_SetOdometer,
 };
-
 
 /* Private functions declaration -------------------------------------------*/
 
@@ -61,20 +58,6 @@ void VCU_Refresh(void) {
 	VCU.d.uptime++;
 	VCU.d.bat = BAT_ScanValue();
 	VCU.d.error = VCU.ReadEvent(EVG_BIKE_FALLEN);
-}
-
-void VCU_NodesInit(void) {
-	BMS.Init();
-	MCU.Init();
-	HMI1.Init();
-	HMI2.Init();
-}
-
-void VCU_NodesRefresh(void) {
-	BMS.RefreshIndex();
-	MCU.Refresh();
-	HMI1.Refresh();
-	HMI2.Refresh();
 }
 
 void VCU_CheckState(void) {

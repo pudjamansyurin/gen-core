@@ -64,7 +64,7 @@ void GATE_Hmi1Power(GPIO_PinState state) {
 
 #if (!BOOTLOADER)
 void GATE_McuPower(GPIO_PinState state) {
-  //	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, state);
+  	HAL_GPIO_WritePin(EXT_GPIO_OUT1_GPIO_Port, EXT_GPIO_OUT1_Pin, state);
 }
 
 void GATE_Hmi2Stop(void) {
