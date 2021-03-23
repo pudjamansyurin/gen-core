@@ -15,9 +15,6 @@
 /* Exported struct
  * ------------------------------------------------------------*/
 typedef struct {
-	struct {
-		void (*Handler)(can_rx_t*);
-	} r;
 	void (*Init)(void);
 	void (*Refresh)(void);
 } node_t;
@@ -30,7 +27,6 @@ extern node_t NODE;
  * --------------------------------------------*/
 void NODE_Init(void);
 void NODE_Refresh(void);
-void NODE_RX_Handler(can_rx_t *Rx);
 
 
 #endif /* INC_NODES_NODE_H_ */

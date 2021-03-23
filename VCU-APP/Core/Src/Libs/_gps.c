@@ -41,7 +41,7 @@ static void Debugger(char *ptr, size_t len);
 void GPS_Init(void) {
 	lock();
 	MX_USART2_UART_Init();
-	UBLOX_DMA_Start(gps.puart, gps.pdma, GPS_ProcessBuffer);
+	UBLOX_DMA_Start(gps.puart, gps.pdma, GPS_ReceiveCallback);
 
 	// Initiate Module
 	do {
@@ -63,7 +63,7 @@ void GPS_DeInit(void) {
 	unlock();
 }
 
-void GPS_ProcessBuffer(void *ptr, size_t len) {
+void GPS_ReceiveCallback(void *ptr, size_t len) {
 	if (DataInvalid())
 		return;
 

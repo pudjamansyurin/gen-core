@@ -39,6 +39,10 @@ uint32_t _osFlagAny(uint32_t *notif, uint32_t timeout) {
 	return _osFlag(notif, FLAG_MASK, osFlagsWaitAny, timeout);
 }
 
+uint8_t _osQueuePut(osMessageQueueId_t mq_id, const void *msg_ptr) {
+	return osMessageQueuePut(mq_id, msg_ptr, 0U, 0U) == osOK;
+}
+
 uint8_t _osCheckRTOS(void) {
 	uint8_t expectedThread = sizeof(tasks_wakeup_t);
 	uint8_t activeThread = (uint8_t)(osThreadGetCount() - 2);

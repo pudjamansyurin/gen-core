@@ -69,13 +69,12 @@ void VCU_CheckState(void) {
 		initialState = VCU.d.state;
 		starter = 0;
 
-		if (VCU.d.gpio.starter > 0) {
-			if (VCU.d.gpio.starter > 1000) {
-				if (lastState > VEHICLE_NORMAL)
-					normalize = 1;
-			} else
+		if (VCU.d.tick.starter > 0) {
+			if (VCU.d.tick.starter > 1000 && lastState > VEHICLE_NORMAL)
+				normalize = 1;
+			else
 				starter = 1;
-			VCU.d.gpio.starter = 0;
+			VCU.d.tick.starter = 0;
 		}
 
 		switch (VCU.d.state) {

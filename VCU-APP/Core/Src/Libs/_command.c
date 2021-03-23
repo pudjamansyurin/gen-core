@@ -67,7 +67,7 @@ void CMD_ExecuteCommand(command_t *cmd) {
 
 	Debugger(cmd, len);
 	osMessageQueueReset(CommandQueueHandle);
-	osMessageQueuePut(CommandQueueHandle, cmd, 0U, 0U);
+	_osQueuePut(CommandQueueHandle, cmd);
 }
 
 void CMD_GenInfo(response_t *resp) {
@@ -158,13 +158,6 @@ void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue) {
 		if (notif & FLAG_COMMAND_OK)
 			if (osMessageQueueGet(queue, resp->data.message, NULL, 0U) == osOK)
 				resp->data.res_code = RESPONSE_STATUS_OK;
-}
-
-void CMD_McuSetTemplate(command_t *cmd) {
-	mcu_template_set_t t = *(mcu_template_set_t*) cmd->data.value;
-
-	MCU.d.tpl.w.par[t.mode].discur_max = t.par.discur_max;
-	MCU.d.tpl.w.par[t.mode].torque_max = t.par.torque_max;
 }
 
 /* Private functions implementation

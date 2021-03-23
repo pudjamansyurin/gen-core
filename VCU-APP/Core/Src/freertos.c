@@ -334,6 +334,28 @@ const osMessageQueueAttr_t UssdQueue_attributes = {
 		.mq_mem = &UssdQueueBuffer,
 		.mq_size = sizeof(UssdQueueBuffer)
 };
+/* Definitions for McuSpeedQueue */
+osMessageQueueId_t McuSpeedQueueHandle;
+uint8_t McuSpeedQueueBuffer[ 1 * sizeof( uint8_t ) ];
+osStaticMessageQDef_t McuSpeedQueueControlBlock;
+const osMessageQueueAttr_t McuSpeedQueue_attributes = {
+		.name = "McuSpeedQueue",
+		.cb_mem = &McuSpeedQueueControlBlock,
+		.cb_size = sizeof(McuSpeedQueueControlBlock),
+		.mq_mem = &McuSpeedQueueBuffer,
+		.mq_size = sizeof(McuSpeedQueueBuffer)
+};
+/* Definitions for McuTemplatesQueue */
+osMessageQueueId_t McuTemplatesQueueHandle;
+uint8_t McuTemplatesQueueBuffer[ 1 * sizeof( mcu_templates_t ) ];
+osStaticMessageQDef_t McuTemplatesQueueControlBlock;
+const osMessageQueueAttr_t McuTemplatesQueue_attributes = {
+		.name = "McuTemplatesQueue",
+		.cb_mem = &McuTemplatesQueueControlBlock,
+		.cb_size = sizeof(McuTemplatesQueueControlBlock),
+		.mq_mem = &McuTemplatesQueueBuffer,
+		.mq_size = sizeof(McuTemplatesQueueBuffer)
+};
 /* Definitions for EepromMutex */
 osMutexId_t EepromMutexHandle;
 osStaticMutexDef_t EepromMutexControlBlock;
@@ -611,6 +633,12 @@ void MX_FREERTOS_Init(void) {
 	/* creation of UssdQueue */
 	UssdQueueHandle = osMessageQueueNew (1, 20, &UssdQueue_attributes);
 
+	/* creation of McuSpeedQueue */
+	McuSpeedQueueHandle = osMessageQueueNew (1, sizeof(uint8_t), &McuSpeedQueue_attributes);
+
+	/* creation of McuTemplatesQueue */
+	McuTemplatesQueueHandle = osMessageQueueNew (1, sizeof(mcu_templates_t), &McuTemplatesQueue_attributes);
+
 	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
 	/* USER CODE END RTOS_QUEUES */
@@ -741,8 +769,6 @@ void StartIotTask(void *argument)
 	/* USER CODE BEGIN StartIotTask */
 	uint32_t notif;
 	command_t cmd;
-	uint8_t ok;
-	char buf[200];
 	response_t response;
 	report_t report;
 	payload_t pRes = {
@@ -769,17 +795,12 @@ void StartIotTask(void *argument)
 		TASKS.tick.iot = _GetTickMS();
 
 		if (_osFlagAny(&notif, 100)) {
-			if (notif & FLAG_IOT_RESUBSCRIBE) {
-				MQTT_PublishWill(0);
-				MQTT_Disconnect();
-			}
-
 			if (notif & FLAG_IOT_REPORT_DISCARD)
 				pRep.pending = 0;
 
 			if (notif & FLAG_IOT_READ_SMS || notif & FLAG_IOT_SEND_USSD) {
-				memset(buf, 0, sizeof(buf));
-				ok = 0;
+				char buf[200] = {0};
+				uint8_t ok = 0;
 
 				if (notif & FLAG_IOT_SEND_USSD) {
 					char ussd[20];
@@ -790,11 +811,10 @@ void StartIotTask(void *argument)
 
 				if (ok) {
 					osMessageQueueReset(QuotaQueueHandle);
-					ok = osMessageQueuePut(QuotaQueueHandle, buf, 0U, 0U) == osOK;
+					ok = _osQueuePut(QuotaQueueHandle, buf);
 				}
 
-				osThreadFlagsSet(CommandTaskHandle,
-						ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
+				osThreadFlagsSet(CommandTaskHandle,	ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
 			}
 		}
 
@@ -840,7 +860,6 @@ void StartReporterTask(void *argument)
 	uint32_t notif;
 	report_t report;
 	FRAME_TYPE frame;
-	osStatus_t status;
 
 	_osEventManager();
 
@@ -848,8 +867,7 @@ void StartReporterTask(void *argument)
 	for (;;) {
 		TASKS.tick.reporter = _GetTickMS();
 
-		//		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
-		frame = FR_FULL;
+		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
 		RPT_ReportCapture(frame, &report);
 
 		// reset some events group
@@ -857,12 +875,10 @@ void StartReporterTask(void *argument)
 		VCU.SetEvent(EVG_NET_HARD_RESET, 0);
 
 		// Put report to log
-		do {
-			status = osMessageQueuePut(ReportQueueHandle, &report, 0U, 0U);
-			// already full, remove oldest
-			if (status == osErrorResource)
-				osThreadFlagsSet(IotTaskHandle, FLAG_IOT_REPORT_DISCARD);
-		} while (status != osOK);
+		while(_osQueuePut(ReportQueueHandle, &report) == 0) {
+			osThreadFlagsSet(IotTaskHandle, FLAG_IOT_REPORT_DISCARD);
+			_DelayMS(1);
+		}
 
 		_osFlagOne(&notif, FLAG_REPORTER_YIELD, VCU.d.interval * 1000);
 	}
@@ -886,13 +902,14 @@ void StartCommandTask(void *argument)
 
 	// Handle Post-FOTA
 	if (FW_PostFota(&resp))
-		osMessageQueuePut(ResponseQueueHandle, &resp, 0U, 0U);
+		_osQueuePut(ResponseQueueHandle, &resp);
 
 	/* Infinite loop */
 	for (;;) {
 		TASKS.tick.command = _GetTickMS();
 		// get command in queue
 		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==	osOK) {
+			uint8_t val = *(uint8_t *)cmd.data.value;
 
 			// default command response
 			resp.header.code = cmd.header.code;
@@ -908,7 +925,7 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_GEN_LED:
-					GATE_LedWrite(*(uint8_t *)cmd.data.value);
+					GATE_LedWrite(val);
 					break;
 
 				case CMD_GEN_RTC:
@@ -933,7 +950,7 @@ void StartCommandTask(void *argument)
 						sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
 						resp.data.res_code = RESPONSE_STATUS_ERROR;
 					} else
-						VCU.d.override.state = *(uint8_t *)cmd.data.value;
+						VCU.d.override.state = val;
 					break;
 
 				default:
@@ -953,9 +970,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					case CMD_AUDIO_MUTE:
-						osThreadFlagsSet(AudioTaskHandle, *(uint8_t *)cmd.data.value
-								? FLAG_AUDIO_MUTE_ON
-										: FLAG_AUDIO_MUTE_OFF);
+						osThreadFlagsSet(AudioTaskHandle, val ? FLAG_AUDIO_MUTE_ON : FLAG_AUDIO_MUTE_OFF);
 						break;
 
 					default:
@@ -982,8 +997,7 @@ void StartCommandTask(void *argument)
 
 					case CMD_FINGER_DEL:
 						osMessageQueueReset(DriverQueueHandle);
-						osMessageQueuePut(DriverQueueHandle, (uint8_t *)cmd.data.value, 0U,
-								0U);
+						_osQueuePut(DriverQueueHandle, &val);
 						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_DEL);
 						CMD_Finger(&resp);
 						break;
@@ -1043,7 +1057,7 @@ void StartCommandTask(void *argument)
 				switch (cmd.header.sub_code) {
 				case CMD_NET_SEND_USSD:
 					osMessageQueueReset(UssdQueueHandle);
-					osMessageQueuePut(UssdQueueHandle, cmd.data.value, 0U, 0U);
+					_osQueuePut(UssdQueueHandle, cmd.data.value);
 					osThreadFlagsSet(IotTaskHandle, FLAG_IOT_SEND_USSD);
 					CMD_NetQuota(&resp, QuotaQueueHandle);
 					break;
@@ -1063,19 +1077,19 @@ void StartCommandTask(void *argument)
 				switch (cmd.header.sub_code) {
 
 				case CMD_HBAR_DRIVE:
-					HBAR.d.mode[HBAR_M_DRIVE] = *(uint8_t *)cmd.data.value;
+					HBAR.d.mode[HBAR_M_DRIVE] = val;
 					break;
 
 				case CMD_HBAR_TRIP:
-					HBAR.d.mode[HBAR_M_TRIP] = *(uint8_t *)cmd.data.value;
+					HBAR.d.mode[HBAR_M_TRIP] = val;
 					break;
 
 				case CMD_HBAR_REPORT:
-					HBAR.d.mode[HBAR_M_REPORT] = *(uint8_t *)cmd.data.value;
+					HBAR.d.mode[HBAR_M_REPORT] = val;
 					break;
 
 				case CMD_HBAR_REVERSE:
-					HBAR_SetReverse(*(uint8_t *)cmd.data.value);
+					HBAR_SetReverse(val);
 					break;
 
 				default:
@@ -1091,8 +1105,21 @@ void StartCommandTask(void *argument)
 				} else
 					switch (cmd.header.sub_code) {
 
-					case CMD_MCU_SET_TEMPLATE:
-						CMD_McuSetTemplate(&cmd);
+					case CMD_MCU_SET_SPEED_MAX:
+						osMessageQueueReset(McuSpeedQueueHandle);
+						_osQueuePut(McuSpeedQueueHandle, &val);
+						osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_MCU_SET_SPEED_MAX);
+						break;
+
+					case CMD_MCU_SET_TEMPLATES:
+						break;
+
+					case CMD_MCU_FETCH_SPEED_MAX:
+						osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_MCU_GET_SPEED_MAX);
+						break;
+
+					case CMD_MCU_FETCH_TEMPLATES:
+						osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_MCU_GET_TEMPLATES);
 						break;
 
 					default:
@@ -1107,7 +1134,7 @@ void StartCommandTask(void *argument)
 			// Get current snapshot
 			RPT_ResponseCapture(&resp);
 			osMessageQueueReset(ResponseQueueHandle);
-			osMessageQueuePut(ResponseQueueHandle, &resp, 0U, 0U);
+			_osQueuePut(ResponseQueueHandle, &resp);
 		}
 	}
 	/* USER CODE END StartCommandTask */
@@ -1137,7 +1164,7 @@ void StartGpsTask(void *argument)
 		// Check notifications
 		if (_osFlagAny(&notif, (GPS_INTERVAL * 1000))) {
 			if (notif & FLAG_GPS_RECEIVED) {
-				// nmea ready
+				// nmea ready, do something
 			}
 
 		}
@@ -1184,7 +1211,7 @@ void StartGyroTask(void *argument)
 				GYRO_Init();
 			}
 
-			else if (notif & FLAG_GYRO_MOVED_RESET)
+			if (notif & FLAG_GYRO_MOVED_RESET)
 				GYRO_ResetDetector();
 		}
 
@@ -1265,7 +1292,6 @@ void StartRemoteTask(void *argument)
 					}
 				}
 			}
-			//			osThreadFlagsClear(FLAG_MASK);
 		}
 	}
 	/* USER CODE END StartRemoteTask */
@@ -1282,8 +1308,7 @@ void StartFingerTask(void *argument)
 {
 	/* USER CODE BEGIN StartFingerTask */
 	uint32_t notif;
-	finger_db_t finger;
-	uint8_t id, driver, ok = 0;
+	uint8_t driver;
 
 	_osEventManager();
 	_osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
@@ -1305,9 +1330,9 @@ void StartFingerTask(void *argument)
 				FINGER_Init();
 			}
 
-			else if (notif & FLAG_FINGER_PLACED) {
-				if ((id = FINGER_Auth()) > 0) {
-					VCU.SetDriver(id);
+			if (notif & FLAG_FINGER_PLACED) {
+				if ((driver = FINGER_Auth()) > 0) {
+					VCU.SetDriver(driver);
 					GATE_LedBlink(200);
 					_DelayMS(100);
 					GATE_LedBlink(200);
@@ -1316,29 +1341,31 @@ void StartFingerTask(void *argument)
 			}
 
 			else {
+				uint8_t ok = 0;
+
 				if (notif & FLAG_FINGER_FETCH) {
+					finger_db_t finger;
+
 					if ((ok = FINGER_Fetch(finger.db))) {
 						osMessageQueueReset(FingerDbQueueHandle);
-						osMessageQueuePut(FingerDbQueueHandle, finger.db, 0U, 0U);
+						_osQueuePut(FingerDbQueueHandle, finger.db);
 					}
-				} else if (notif & FLAG_FINGER_ADD) {
-					if (FINGER_Enroll(&id, &ok)) {
-						osMessageQueueReset(FingerDbQueueHandle);
-						osMessageQueuePut(DriverQueueHandle, &id, 0U, 0U);
+				}
+				if (notif & FLAG_FINGER_ADD) {
+					if (FINGER_Enroll(&driver, &ok)) {
+						osMessageQueueReset(DriverQueueHandle);
+						_osQueuePut(DriverQueueHandle, &driver);
 					}
-				} else if (notif & FLAG_FINGER_DEL) {
+				}
+				if (notif & FLAG_FINGER_DEL) {
 					if (osMessageQueueGet(DriverQueueHandle, &driver, NULL, 0U) == osOK)
 						ok = FINGER_DeleteID(driver);
-				} else if (notif & FLAG_FINGER_RST)
+				}
+				if (notif & FLAG_FINGER_RST)
 					ok = FINGER_Flush();
 
-				osThreadFlagsSet(CommandTaskHandle,
-						ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
+				osThreadFlagsSet(CommandTaskHandle, ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
 			}
-
-			// Handle bounce effect
-			// _DelayMS(1000);
-			// osThreadFlagsClear(FLAG_MASK);
 		}
 	}
 	/* USER CODE END StartFingerTask */
@@ -1422,8 +1449,54 @@ void StartCanRxTask(void *argument)
 	for (;;) {
 		TASKS.tick.canRx = _GetTickMS();
 
+		// Check notifications
+		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 0)) {
+			NODE.Init();
+			_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+		}
+
 		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
-			// handle by IT
+			if (Rx.header.IDE == CAN_ID_STD) {
+				switch (Rx.header.StdId) {
+				case CAND_HMI1:
+					HMI1.r.State(&Rx);
+					break;
+				case CAND_HMI2:
+					HMI2.r.State(&Rx);
+					break;
+				case CAND_MCU_CURRENT_DC:
+					MCU.r.CurrentDC(&Rx);
+					break;
+				case CAND_MCU_VOLTAGE_DC:
+					MCU.r.VoltageDC(&Rx);
+					break;
+				case CAND_MCU_TORQUE_SPEED:
+					MCU.r.TorqueSpeed(&Rx);
+					break;
+				case CAND_MCU_FAULT_CODE:
+					MCU.r.FaultCode(&Rx);
+					break;
+				case CAND_MCU_STATE:
+					MCU.r.State(&Rx);
+					break;
+				case CAND_MCU_TEMPLATE_R:
+					MCU.r.Template(&Rx);
+					break;
+				default:
+					break;
+				}
+			} else {
+				switch (BMS_CAND(Rx.header.ExtId)) {
+				case BMS_CAND(CAND_BMS_PARAM_1):
+												  BMS.r.Param1(&Rx);
+				break;
+				case BMS_CAND(CAND_BMS_PARAM_2):
+												  BMS.r.Param2(&Rx);
+				break;
+				default:
+					break;
+				}
+			}
 		}
 
 		// every 1000ms
@@ -1462,20 +1535,34 @@ void StartCanTxTask(void *argument)
 		TASKS.tick.canTx = _GetTickMS();
 
 		// Check notifications
-		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 0)) {
-			NODE.Init();
-			_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-		}
+		if (_osFlagAny(&notif, 20)) {
+			if (notif & FLAG_CAN_TASK_STOP) {
+				HMI2.PowerByCan(0);
+				MCU.PowerOverCan(0);
+				BMS.PowerOverCan(0);
 
-		// Check notifications
-		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 20)) {
-			HMI2.PowerByCan(0);
-			MCU.PowerOverCan(0);
-			BMS.PowerOverCan(0);
+				CANBUS_DeInit();
+				_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+				CANBUS_Init();
+			}
 
-			CANBUS_DeInit();
-			_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-			CANBUS_Init();
+			if (notif & FLAG_CAN_MCU_SET_SPEED_MAX) {
+				uint8_t speed_max;
+				if (osMessageQueueGet(McuSpeedQueueHandle, &speed_max, NULL, 0U) == osOK)
+					MCU.SetSpeedMax(speed_max);
+			}
+
+			if (notif & FLAG_CAN_MCU_SET_TEMPLATES) {
+
+			}
+
+			if (notif & FLAG_CAN_MCU_GET_SPEED_MAX) {
+				MCU.GetSpeedMax();
+			}
+
+			if (notif & FLAG_CAN_MCU_GET_TEMPLATES) {
+				MCU.GetTemplates();
+			}
 		}
 
 		// send every 20ms
@@ -1567,12 +1654,11 @@ void StartGateTask(void *argument)
 		if (_osFlagAny(&notif, 500)) {
 			// handle bounce effect
 			_DelayMS(50);
-			//      osThreadFlagsClear(FLAG_MASK);
 
 			// Starter Button IRQ
 			if (notif & FLAG_GATE_STARTER_IRQ) {
 				if (GATE_ReadStarter()) tick = _GetTickMS();
-				else VCU.d.gpio.starter = _GetTickMS() - tick;
+				else VCU.d.tick.starter = _GetTickMS() - tick;
 			}
 
 			// Handle switch EXTI interrupt

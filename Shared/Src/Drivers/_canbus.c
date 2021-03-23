@@ -152,8 +152,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 
   if (CANBUS_Read(&Rx))
     if (osKernelGetState() == osKernelRunning)
-    	NODE.r.Handler(&Rx);
-//      osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
+    	osMessageQueuePut(CanRxQueueHandle, &Rx, 0U, 0U);
 }
 #endif
 

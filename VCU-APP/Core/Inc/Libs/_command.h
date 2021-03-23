@@ -59,7 +59,10 @@
 #define CMD_HBAR_REPORT (uint8_t)2
 #define CMD_HBAR_REVERSE (uint8_t)3
 
-#define CMD_MCU_SET_TEMPLATE (uint8_t)0
+#define CMD_MCU_SET_SPEED_MAX (uint8_t)0
+#define CMD_MCU_SET_TEMPLATES (uint8_t)1
+#define CMD_MCU_FETCH_SPEED_MAX (uint8_t)2
+#define CMD_MCU_FETCH_TEMPLATES (uint8_t)3
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -72,6 +75,5 @@ void CMD_FingerFetch(response_t *resp, osMessageQueueId_t queue);
 void CMD_Finger(response_t *resp);
 void CMD_RemotePairing(response_t *resp);
 void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue);
-void CMD_McuSetTemplate(command_t *cmd);
 
 #endif /* INC_LIBS__COMMAND_H_ */

@@ -13,24 +13,38 @@
 /* Public variables
  * -----------------------------------------------------------*/
 hbar_t HBAR = {
-		.list =
-		{{.pin = EXT_HBAR_SELECT_Pin,
-				.port = EXT_HBAR_SELECT_GPIO_Port,
-				.state = 0},
-				{.pin = EXT_HBAR_SET_Pin, .port = EXT_HBAR_SET_GPIO_Port, .state = 0},
-				{.pin = EXT_HBAR_SEIN_L_Pin,
+		.list = {
+				{
+						.pin = EXT_HBAR_SELECT_Pin,
+						.port = EXT_HBAR_SELECT_GPIO_Port,
+						.state = 0
+				},
+				{
+						.pin = EXT_HBAR_SET_Pin, .port = EXT_HBAR_SET_GPIO_Port, .state = 0
+				},
+				{
+						.pin = EXT_HBAR_SEIN_L_Pin,
 						.port = EXT_HBAR_SEIN_L_GPIO_Port,
-						.state = 0},
-						{.pin = EXT_HBAR_SEIN_R_Pin,
-								.port = EXT_HBAR_SEIN_R_GPIO_Port,
-								.state = 0},
-								{.pin = EXT_HBAR_REVERSE_Pin,
-										.port = EXT_HBAR_REVERSE_GPIO_Port,
-										.state = 0},
-										{.pin = EXT_ABS_IRQ_Pin, .port = EXT_ABS_IRQ_GPIO_Port, .state = 0},
-										{.pin = EXT_HBAR_LAMP_Pin,
-												.port = EXT_HBAR_LAMP_GPIO_Port,
-												.state = 0}},
+						.state = 0
+				},
+				{
+						.pin = EXT_HBAR_SEIN_R_Pin,
+						.port = EXT_HBAR_SEIN_R_GPIO_Port,
+						.state = 0
+				},
+				{
+						.pin = EXT_HBAR_REVERSE_Pin,
+						.port = EXT_HBAR_REVERSE_GPIO_Port,
+						.state = 0
+				},
+				{
+						.pin = EXT_ABS_IRQ_Pin, .port = EXT_ABS_IRQ_GPIO_Port, .state = 0
+				},
+				{
+						.pin = EXT_HBAR_LAMP_Pin,
+						.port = EXT_HBAR_LAMP_GPIO_Port,
+						.state = 0}
+		},
 };
 
 /* Private functions prototype -----------------------------------------------*/
@@ -40,12 +54,10 @@ static void RunSet(void);
 /* Public functions implementation
  * --------------------------------------------*/
 void HBAR_Init(void) {
-	uint8_t i;
-
-	for (i = 0; i < HBAR_K_MAX; i++)
+	for (uint8_t i = 0; i < HBAR_K_MAX; i++)
 		HBAR.list[i].state = 0;
 
-	for (i = 0; i < sizeof(HBAR.timer) / sizeof(HBAR.timer[0]); i++) {
+	for (uint8_t i = 0; i < sizeof(HBAR.timer) / sizeof(HBAR.timer[0]); i++) {
 		HBAR.timer[i].start = 0;
 		HBAR.timer[i].running = 0;
 		HBAR.timer[i].time = 0;
@@ -196,12 +208,12 @@ uint8_t HBAR_ModeController(void) {
 }
 
 void HBAR_RunSelectOrSet(void) {
-	if (!HBAR.list[HBAR_K_REVERSE].state) {
-		if (HBAR.list[HBAR_K_SELECT].state)
-			RunSelect();
-		else if (HBAR.list[HBAR_K_SET].state)
-			RunSet();
-	}
+	if (HBAR.list[HBAR_K_REVERSE].state) return;
+
+	if (HBAR.list[HBAR_K_SELECT].state)
+		RunSelect();
+	else if (HBAR.list[HBAR_K_SET].state)
+		RunSet();
 }
 
 /* Private functions implementation

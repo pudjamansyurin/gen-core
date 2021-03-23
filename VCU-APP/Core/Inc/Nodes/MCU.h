@@ -123,15 +123,13 @@ typedef struct __attribute__((packed)) {
 } mcu_template_t;
 
 typedef struct __attribute__((packed)) {
-	uint8_t mode;
-	mcu_template_t par;
-	//	uint8_t rbs_switch;
-} mcu_template_set_t;
+	mcu_template_t template[HBAR_M_DRIVE_MAX];
+} mcu_templates_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t speed_max;
-	mcu_template_t par[HBAR_M_DRIVE_MAX];
-} tpl_t;
+	mcu_template_t template[HBAR_M_DRIVE_MAX];
+} mcu_param_t;
 
 typedef struct {
 	uint8_t run;
@@ -162,10 +160,7 @@ typedef struct {
 		uint8_t lockout;
 		MCU_INV_DISCHARGE discharge;
 	} inv;
-	struct {
-		tpl_t r;
-		tpl_t w;
-	} tpl;
+	mcu_param_t par;
 } mcu_data_t;
 
 typedef struct {
@@ -185,11 +180,12 @@ typedef struct {
 	void (*Init)(void);
 	void (*PowerOverCan)(uint8_t);
 	void (*Refresh)(void);
-	void (*GetTemplate)(HBAR_MODE_DRIVE m);
-	void (*SetTemplate)(HBAR_MODE_DRIVE m, mcu_template_t* t);
+	void (*GetTemplates)(void);
+	void (*SetTemplates)(mcu_template_t[3]);
+	void (*GetSpeedMax)(void);
 	void (*SetSpeedMax)(uint8_t max);
-	uint16_t (*SpeedToVolume)(void);
 	uint16_t (*RpmToSpeed)(void);
+	uint16_t (*SpeedToVolume)(void);
 } mcu_t;
 
 /* Exported variables
@@ -201,11 +197,12 @@ extern mcu_t MCU;
 void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_PowerOverCan(uint8_t on);
-void MCU_GetTemplate(HBAR_MODE_DRIVE m);
-void MCU_SetTemplate(HBAR_MODE_DRIVE m, mcu_template_t* t);
+void MCU_GetTemplates(void);
+void MCU_SetTemplates(mcu_template_t templates[3]);
+void MCU_GetSpeedMax(void);
 void MCU_SetSpeedMax(uint8_t max);
-uint16_t MCU_SpeedToVolume(void);
 uint16_t MCU_RpmToSpeed(void);
+uint16_t MCU_SpeedToVolume(void);
 void MCU_RX_CurrentDC(can_rx_t *Rx);
 void MCU_RX_VoltageDC(can_rx_t *Rx);
 void MCU_RX_TorqueSpeed(can_rx_t *Rx);

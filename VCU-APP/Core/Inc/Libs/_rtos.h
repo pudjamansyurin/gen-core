@@ -21,9 +21,8 @@
 #define FLAG_MASK (uint32_t)0x7FFFFFFF
 
 #define FLAG_IOT_REPORT_DISCARD BIT(0)
-#define FLAG_IOT_RESUBSCRIBE BIT(1)
-#define FLAG_IOT_SEND_USSD BIT(2)
-#define FLAG_IOT_READ_SMS BIT(3)
+#define FLAG_IOT_SEND_USSD BIT(1)
+#define FLAG_IOT_READ_SMS BIT(2)
 
 #define FLAG_REPORTER_YIELD BIT(0)
 
@@ -62,6 +61,10 @@
 
 #define FLAG_CAN_TASK_START BIT(0)
 #define FLAG_CAN_TASK_STOP BIT(1)
+#define FLAG_CAN_MCU_SET_SPEED_MAX BIT(2)
+#define FLAG_CAN_MCU_SET_TEMPLATES BIT(3)
+#define FLAG_CAN_MCU_GET_SPEED_MAX BIT(4)
+#define FLAG_CAN_MCU_GET_TEMPLATES BIT(5)
 
 #define FLAG_GATE_HBAR BIT(0)
 #define FLAG_GATE_STARTER_IRQ BIT(1)
@@ -147,6 +150,7 @@ uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t time
 uint32_t _osEventManager(void);
 uint32_t _osFlagOne(uint32_t *notif, uint32_t flag, uint32_t timeout);
 uint32_t _osFlagAny(uint32_t *notif, uint32_t timeout);
+uint8_t _osQueuePut(osMessageQueueId_t mq_id, const void *msg_ptr);
 uint8_t _osCheckRTOS(void);
 void _osCheckTasks(void);
 

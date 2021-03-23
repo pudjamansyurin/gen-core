@@ -45,10 +45,8 @@ typedef struct {
 //		uint8_t finger;
 	} override;
 	struct {
-		uint32_t starter;
-	} gpio;
-	struct {
 		uint32_t independent;
+		uint32_t starter;
 	} tick;
 } vcu_data_t;
 

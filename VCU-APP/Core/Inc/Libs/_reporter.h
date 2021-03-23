@@ -124,7 +124,7 @@ typedef struct __attribute__((packed)) {
 		uint8_t lockout;
 		uint8_t discharge;
 	} inv;
-	tpl_t tpl;
+	mcu_param_t par;
 } mcu_debug_t;
 
 typedef struct __attribute__((packed)) {
