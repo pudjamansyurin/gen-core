@@ -155,7 +155,6 @@ typedef struct {
 		float voltage;
 	} dcbus;
 	struct {
-		uint8_t can_mode;
 		uint8_t enabled;
 		uint8_t lockout;
 		MCU_INV_DISCHARGE discharge;

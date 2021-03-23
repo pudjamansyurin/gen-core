@@ -98,7 +98,6 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     mcu->fault.run = MCU.d.fault.run;
     mcu->dcbus.current = (uint16_t)(MCU.d.dcbus.current * 10);
     mcu->dcbus.voltage = (uint16_t)(MCU.d.dcbus.voltage * 10);
-    mcu->inv.can_mode = MCU.d.inv.can_mode;
     mcu->inv.enabled = MCU.d.inv.enabled;
     mcu->inv.lockout = MCU.d.inv.lockout;
     mcu->inv.discharge = MCU.d.inv.discharge;

@@ -152,7 +152,7 @@ void MCU_RX_FaultCode(can_rx_t *Rx) {
 void MCU_RX_State(can_rx_t *Rx) {
 	MCU.d.drive_mode = Rx->data.u8[4] & 0x03;
 	MCU.d.inv.discharge = (Rx->data.u8[4] >> 5) & 0x07;
-	MCU.d.inv.can_mode = Rx->data.u8[5] & 0x01;
+//	MCU.d.inv.can_mode = Rx->data.u8[5] & 0x01;
 	MCU.d.inv.enabled = Rx->data.u8[6] & 0x01;
 	MCU.d.inv.lockout = (Rx->data.u8[6] >> 7) & 0x01;
 	MCU.d.reverse = Rx->data.u8[7] & 0x01;
@@ -232,7 +232,6 @@ static void Reset(void) {
 	MCU.d.dcbus.current = 0;
 	MCU.d.dcbus.voltage = 0;
 
-	MCU.d.inv.can_mode = 0;
 	MCU.d.inv.enabled = 0;
 	MCU.d.inv.lockout = 0;
 	MCU.d.inv.discharge = INV_DISCHARGE_DISABLED;

@@ -119,7 +119,6 @@ typedef struct __attribute__((packed)) {
 		int16_t voltage;
 	} dcbus;
 	struct {
-		uint8_t can_mode;
 		uint8_t enabled;
 		uint8_t lockout;
 		uint8_t discharge;
