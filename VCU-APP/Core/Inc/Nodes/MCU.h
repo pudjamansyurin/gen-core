@@ -160,11 +160,15 @@ typedef struct {
 		MCU_INV_DISCHARGE discharge;
 	} inv;
 	mcu_param_t par;
-	mcu_param_t set;
 } mcu_data_t;
 
 typedef struct {
 	mcu_data_t d;
+	struct {
+		uint8_t speed_max;
+		uint8_t template;
+		mcu_param_t par;
+	} set;
 	struct {
 		void (*CurrentDC)(can_rx_t *);
 		void (*VoltageDC)(can_rx_t *);

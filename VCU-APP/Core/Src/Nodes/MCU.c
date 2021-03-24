@@ -13,6 +13,7 @@
  * -----------------------------------------------------------*/
 mcu_t MCU = {
 		.d = {0},
+		.set = {0},
 		.r = {
 				MCU_RX_CurrentDC,
 				MCU_RX_VoltageDC,
@@ -45,6 +46,8 @@ static mcu_template_addr_t tplAddr[HBAR_M_DRIVE_MAX];
 static void Reset(void);
 static void SetTemplateAddr(void);
 static void ResetTemplates(void);
+static uint8_t SyncedSpeedMax(void);
+static uint8_t SyncedTemplates(void);
 static uint8_t IsOverheat(void);
 
 /* Public functions implementation
@@ -63,21 +66,26 @@ void MCU_PowerOverCan(uint8_t on) {
 
 		}
 		MCU.t.Setting(1);
-	} else {
+	} else
 		MCU.t.Setting(0);
-	}
 
 	if (MCU.d.active) {
-		MCU.SpeedMax(1);
-		MCU.Templates(1);
+		if (!SyncedSpeedMax())
+			MCU.SpeedMax(MCU.set.speed_max);
+		if (!SyncedTemplates())
+			MCU.Templates(MCU.set.template);
 	}
 }
 
 void MCU_Refresh(void) {
 	MCU.d.active = MCU.d.tick && (_GetTickMS() - MCU.d.tick) < MCU_TIMEOUT;
-	if (!MCU.d.active) {
+	if (MCU.d.active) {
+		if (MCU.set.speed_max && SyncedSpeedMax())
+			MCU.set.speed_max = 0;
+		if (MCU.set.template && SyncedTemplates())
+			MCU.set.template = 0;
+	} else
 		Reset();
-	}
 
 	MCU.d.overheat = IsOverheat();
 	MCU.d.run = MCU.d.active && MCU.d.inv.enabled;
@@ -88,7 +96,8 @@ void MCU_Refresh(void) {
 
 
 void MCU_SetSpeedMax(uint8_t max) {
-	MCU.d.set.speed_max = max;
+	MCU.set.par.speed_max = max;
+	MCU.set.speed_max = 1;
 }
 
 void MCU_SetTemplates(uint8_t v) {
@@ -99,18 +108,19 @@ void MCU_SetTemplates(uint8_t v) {
 			{ 70 + v, 300 + v }
 	};
 
-	memcpy(MCU.d.set.tpl, t, sizeof(t));
+	memcpy(MCU.set.par.tpl, t, sizeof(t));
+	MCU.set.template = 1;
 }
 
 void MCU_SpeedMax(uint8_t write) {
-	MCU.t.Template(MTP_SPEED_MAX, write, write ? MCU.d.set.speed_max : 0);
+	MCU.t.Template(MTP_SPEED_MAX, write, write ? MCU.set.par.speed_max : 0);
 }
 
 void MCU_Templates(uint8_t write) {
 	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
-		MCU.t.Template(tplAddr[m].discur_max, write, write ? MCU.d.set.tpl[m].discur_max : 0);
-		MCU.t.Template(tplAddr[m].torque_max, write, write ? MCU.d.set.tpl[m].torque_max : 0);
-		//		MCU.t.Template(tplAddr[m].rbs_switch, write, write ? MCU.d.set.tpl[m].rbs_switch : 0);
+		MCU.t.Template(tplAddr[m].discur_max, write, write ? MCU.set.par.tpl[m].discur_max : 0);
+		MCU.t.Template(tplAddr[m].torque_max, write, write ? MCU.set.par.tpl[m].torque_max : 0);
+		//		MCU.t.Template(tplAddr[m].rbs_switch, write, write ? MCU.set.par.tpl[m].rbs_switch : 0);
 	}
 }
 
@@ -216,7 +226,7 @@ uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
 
 	// send message
 	ok = CANBUS_Write(&Tx, CAND_MCU_TEMPLATE_W, 6, 0);
-	_DelayMS(200);
+	_DelayMS(100);
 
 	return ok;
 }
@@ -262,6 +272,14 @@ static void ResetTemplates(void) {
 		MCU.d.par.tpl[m].torque_max = 0;
 		//		MCU.d.par.tpl[m].rbs_switch = 0;
 	}
+}
+
+static uint8_t SyncedSpeedMax(void) {
+	return MCU.d.par.speed_max == MCU.set.par.speed_max;
+}
+
+static uint8_t SyncedTemplates(void) {
+	return memcmp(MCU.d.par.tpl, MCU.set.par.tpl, sizeof(MCU.d.par.tpl)) == 0;
 }
 
 static uint8_t IsOverheat(void) {
