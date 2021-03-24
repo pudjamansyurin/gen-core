@@ -196,6 +196,7 @@ extern mcu_t MCU;
 void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_PowerOverCan(uint8_t on);
+void MCU_SetMockTemplates(void);
 void MCU_GetTemplates(void);
 void MCU_SetTemplates(mcu_template_t templates[3]);
 void MCU_GetSpeedMax(void);

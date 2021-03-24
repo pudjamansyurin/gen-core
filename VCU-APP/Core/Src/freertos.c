@@ -1112,6 +1112,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					case CMD_MCU_SET_TEMPLATES:
+						osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_MCU_SET_TEMPLATES);
 						break;
 
 					case CMD_MCU_FETCH_SPEED_MAX:
@@ -1553,7 +1554,7 @@ void StartCanTxTask(void *argument)
 			}
 
 			if (notif & FLAG_CAN_MCU_SET_TEMPLATES) {
-
+				MCU_SetMockTemplates();
 			}
 
 			if (notif & FLAG_CAN_MCU_GET_SPEED_MAX) {

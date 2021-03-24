@@ -55,20 +55,15 @@ void MCU_Init(void) {
 }
 
 void MCU_PowerOverCan(uint8_t on) {
-	mcu_template_t t[] = {
-			{ 100, 111 },
-			{ 200, 222 },
-			{ 300, 333 }
-	};
 
 	if (on) {
 		if (!MCU.d.run) {
-			GATE_McuPower(0); _DelayMS(500);
-			GATE_McuPower(1); _DelayMS(500);
+//			GATE_McuPower(0); _DelayMS(500);
+//			GATE_McuPower(1); _DelayMS(500);
 			MCU.t.Setting(0); _DelayMS(50);
 
-			MCU.SetSpeedMax(100);
-			MCU.SetTemplates(t);
+			MCU.GetSpeedMax();
+			MCU.GetTemplates();
 		}
 		MCU.t.Setting(1);
 	} else {
@@ -87,7 +82,19 @@ void MCU_Refresh(void) {
 	VCU.SetEvent(EVG_MCU_ERROR, MCU.d.error);
 }
 
+void MCU_SetMockTemplates(void) {
+	mcu_template_t t[] = {
+			{ 60, 66 },
+			{ 120, 77 },
+			{ 180, 88 }
+	};
+
+	MCU.SetTemplates(t);
+}
+
 void MCU_GetTemplates(void) {
+	memset(MCU.d.par.template, 0, sizeof(MCU.d.par.template));
+
 	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
 		MCU.t.Template(tplAddr[m].discur_max, 0, 0);
 		MCU.t.Template(tplAddr[m].torque_max, 0, 0);
@@ -96,6 +103,8 @@ void MCU_GetTemplates(void) {
 }
 
 void MCU_SetTemplates(mcu_template_t templates[3]) {
+	memset(MCU.d.par.template, 0, sizeof(MCU.d.par.template));
+
 	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
 		MCU.t.Template(tplAddr[m].discur_max, 1, templates[m].discur_max);
 		MCU.t.Template(tplAddr[m].torque_max, 1, templates[m].torque_max * 10);
@@ -104,15 +113,19 @@ void MCU_SetTemplates(mcu_template_t templates[3]) {
 }
 
 void MCU_GetSpeedMax(void) {
+	memset(&(MCU.d.par.speed_max), 0, sizeof(MCU.d.par.speed_max));
+
 	MCU.t.Template(MTP_SPEED_MAX, 0, 0);
 }
 
 void MCU_SetSpeedMax(uint8_t max) {
+	memset(&(MCU.d.par.speed_max), 0, sizeof(MCU.d.par.speed_max));
+
 	MCU.t.Template(MTP_SPEED_MAX, 1, max);
 }
 
 uint16_t MCU_RpmToSpeed(void) {
-	return MCU.d.rpm * MCU_SPEED_MAX / MCU_RPM_MAX;
+	return (abs(MCU.d.rpm) * 60 * 1.58) / (8.26 * 1000); //* MCU_SPEED_MAX / MCU_RPM_MAX;
 }
 
 uint16_t MCU_SpeedToVolume(void) {
@@ -203,6 +216,7 @@ uint8_t MCU_TX_Setting(uint8_t on) {
 
 uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
 	can_tx_t Tx = {0};
+	uint8_t ok;
 
 	// set message
 	Tx.data.u16[0] = param;
@@ -210,7 +224,10 @@ uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
 	Tx.data.s16[2] = data;
 
 	// send message
-	return CANBUS_Write(&Tx, CAND_MCU_TEMPLATE_W, 6, 0);
+	ok = CANBUS_Write(&Tx, CAND_MCU_TEMPLATE_W, 6, 0);
+	_DelayMS(200);
+
+	return ok;
 }
 
 /* Private functions implementation
