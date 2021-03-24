@@ -4,7 +4,7 @@
 
 | No  | Sub Module                  | Chip           | ST-Periph. | FW  | HW  | Note             |
 | :-: | --------------------------- | -------------- | :--------: | :-: | :-: | ---------------- |
-|  1  | IoT                         | SIM5300e       |   USART1   |  ✔  |  ✔  | **Done**         |
+|  1  | Network                     | SIM5300e       |   USART1   |  ✔  |  ✔  | **Done**         |
 |  2  | GPS                         | Ublox NEO-6M   |   USART2   |  ✔  |  ✔  | **Done**: Module |
 |  3  | IMU (Gyro & Accel)          | MPU6050        |    I2C3    |  ✔  |  ✔  | **Done**         |
 |  4  | Remote/RF                   | nRF24L01       |    SPI1    |  ✔  |  ✔  | **Done**: Module |

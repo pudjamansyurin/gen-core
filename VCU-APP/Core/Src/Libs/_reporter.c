@@ -103,8 +103,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     mcu->inv.discharge = MCU.d.inv.discharge;
     mcu->par.speed_max = MCU.d.par.speed_max;
     for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
-    	mcu->par.template[m].discur_max = MCU.d.par.template[m].discur_max;
-    	mcu->par.template[m].torque_max = MCU.d.par.template[m].torque_max * 10;
+    	mcu->par.tpl[m].discur_max = MCU.d.par.tpl[m].discur_max;
+    	mcu->par.tpl[m].torque_max = MCU.d.par.tpl[m].torque_max * 10;
     }
 
     tasks_debug_t *tasks = &(d->debug.task);

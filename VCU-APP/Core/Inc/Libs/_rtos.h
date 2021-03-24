@@ -20,9 +20,9 @@
 
 #define FLAG_MASK (uint32_t)0x7FFFFFFF
 
-#define FLAG_IOT_REPORT_DISCARD BIT(0)
-#define FLAG_IOT_SEND_USSD BIT(1)
-#define FLAG_IOT_READ_SMS BIT(2)
+#define FLAG_NET_REPORT_DISCARD BIT(0)
+#define FLAG_NET_SEND_USSD BIT(1)
+#define FLAG_NET_READ_SMS BIT(2)
 
 #define FLAG_REPORTER_YIELD BIT(0)
 
@@ -61,10 +61,6 @@
 
 #define FLAG_CAN_TASK_START BIT(0)
 #define FLAG_CAN_TASK_STOP BIT(1)
-#define FLAG_CAN_MCU_SET_SPEED_MAX BIT(2)
-#define FLAG_CAN_MCU_SET_TEMPLATES BIT(3)
-#define FLAG_CAN_MCU_GET_SPEED_MAX BIT(4)
-#define FLAG_CAN_MCU_GET_TEMPLATES BIT(5)
 
 #define FLAG_GATE_HBAR BIT(0)
 #define FLAG_GATE_STARTER_IRQ BIT(1)
@@ -75,7 +71,7 @@
  * --------------------------------------------------------------*/
 typedef struct __attribute__((packed)) {
 	TickType_t manager;
-	TickType_t iot;
+	TickType_t network;
 	TickType_t reporter;
 	TickType_t command;
 	TickType_t gps;
@@ -91,7 +87,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	uint16_t manager;
-	uint16_t iot;
+	uint16_t network;
 	uint16_t reporter;
 	uint16_t command;
 	uint16_t gps;
@@ -107,7 +103,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	uint8_t manager;
-	uint8_t iot;
+	uint8_t network;
 	uint8_t reporter;
 	uint8_t command;
 	uint8_t gps;
@@ -130,7 +126,7 @@ typedef struct __attribute__((packed)) {
 /* Exported variable
  * ------------------------------------------------------------*/
 extern osThreadId_t ManagerTaskHandle;
-extern osThreadId_t IotTaskHandle;
+extern osThreadId_t NetworkTaskHandle;
 extern osThreadId_t ReporterTaskHandle;
 extern osThreadId_t CommandTaskHandle;
 extern osThreadId_t GpsTaskHandle;
@@ -151,6 +147,7 @@ uint32_t _osEventManager(void);
 uint32_t _osFlagOne(uint32_t *notif, uint32_t flag, uint32_t timeout);
 uint32_t _osFlagAny(uint32_t *notif, uint32_t timeout);
 uint8_t _osQueuePut(osMessageQueueId_t mq_id, const void *msg_ptr);
+uint8_t _osQueuePutRst(osMessageQueueId_t mq_id, const void *msg_ptr);
 uint8_t _osCheckRTOS(void);
 void _osCheckTasks(void);
 

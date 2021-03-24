@@ -43,6 +43,11 @@ uint8_t _osQueuePut(osMessageQueueId_t mq_id, const void *msg_ptr) {
 	return osMessageQueuePut(mq_id, msg_ptr, 0U, 0U) == osOK;
 }
 
+uint8_t _osQueuePutRst(osMessageQueueId_t mq_id, const void *msg_ptr) {
+	osMessageQueueReset(mq_id);
+	return osMessageQueuePut(mq_id, msg_ptr, 0U, 0U) == osOK;
+}
+
 uint8_t _osCheckRTOS(void) {
 	uint8_t expectedThread = sizeof(tasks_wakeup_t);
 	uint8_t activeThread = (uint8_t)(osThreadGetCount() - 2);
@@ -55,9 +60,24 @@ uint8_t _osCheckRTOS(void) {
 
 void _osCheckTasks(void) {
 	tasks_t *t = &TASKS;
+	TickType_t now = osKernelGetTickCount();
+
+	t->wakeup.manager = MAX_U8((now - t->tick.manager)/1000);
+	t->wakeup.network = MAX_U8((now - t->tick.network)/1000);
+	t->wakeup.reporter = MAX_U8((now - t->tick.reporter)/1000);
+	t->wakeup.command = MAX_U8((now - t->tick.command)/1000);
+	t->wakeup.gps = MAX_U8((now - t->tick.gps)/1000);
+	t->wakeup.gyro = MAX_U8((now - t->tick.gyro)/1000);
+	t->wakeup.remote = MAX_U8((now - t->tick.remote)/1000);
+	t->wakeup.finger = MAX_U8((now - t->tick.finger)/1000);
+	t->wakeup.audio = MAX_U8((now - t->tick.audio)/1000);
+	t->wakeup.gate = MAX_U8((now - t->tick.gate)/1000);
+	t->wakeup.canRx = MAX_U8((now - t->tick.canRx)/1000);
+	t->wakeup.canTx = MAX_U8((now - t->tick.canTx)/1000);
+	// t->wakeup.hmi2Power = MAX_U8((now - t->tick.canTx)/1000);
 
 	t->stack.manager = osThreadGetStackSpace(ManagerTaskHandle);
-	t->stack.iot = osThreadGetStackSpace(IotTaskHandle);
+	t->stack.network = osThreadGetStackSpace(NetworkTaskHandle);
 	t->stack.reporter = osThreadGetStackSpace(ReporterTaskHandle);
 	t->stack.command = osThreadGetStackSpace(CommandTaskHandle);
 	t->stack.gps = osThreadGetStackSpace(GpsTaskHandle);
@@ -69,18 +89,4 @@ void _osCheckTasks(void) {
 	t->stack.canRx = osThreadGetStackSpace(CanRxTaskHandle);
 	t->stack.canTx = osThreadGetStackSpace(CanTxTaskHandle);
 	//  t->stack.hmi2Power = osThreadGetStackSpace(Hmi2PowerTaskHandle);
-
-	TickType_t now = osKernelGetTickCount();
-	t->wakeup.manager = MAX_U8((now - t->tick.manager)/1000);
-	t->wakeup.iot = MAX_U8((now - t->tick.iot)/1000);
-	t->wakeup.reporter = MAX_U8((now - t->tick.reporter)/1000);
-	t->wakeup.command = MAX_U8((now - t->tick.command)/1000);
-	t->wakeup.gps = MAX_U8((now - t->tick.gps)/1000);
-	t->wakeup.gyro = MAX_U8((now - t->tick.gyro)/1000);
-	t->wakeup.remote = MAX_U8((now - t->tick.remote)/1000);
-	t->wakeup.finger = MAX_U8((now - t->tick.finger)/1000);
-	t->wakeup.audio = MAX_U8((now - t->tick.audio)/1000);
-	t->wakeup.gate = MAX_U8((now - t->tick.gate)/1000);
-	t->wakeup.canRx = MAX_U8((now - t->tick.canRx)/1000);
-	t->wakeup.canTx = MAX_U8((now - t->tick.canTx)/1000);
 }

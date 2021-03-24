@@ -14,7 +14,7 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MCU_TIMEOUT (uint32_t)3000 // ms
+#define MCU_TIMEOUT (uint32_t)2000 // ms
 
 /* Exported enum ------------------------------------------------------------*/
 typedef enum {
@@ -122,13 +122,13 @@ typedef struct __attribute__((packed)) {
 	//	uint8_t rbs_switch;
 } mcu_template_t;
 
-typedef struct __attribute__((packed)) {
-	mcu_template_t template[HBAR_M_DRIVE_MAX];
-} mcu_templates_t;
+//typedef struct __attribute__((packed)) {
+//	mcu_template_t template[HBAR_M_DRIVE_MAX];
+//} mcu_templates_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t speed_max;
-	mcu_template_t template[HBAR_M_DRIVE_MAX];
+	mcu_template_t tpl[HBAR_M_DRIVE_MAX];
 } mcu_param_t;
 
 typedef struct {
@@ -160,6 +160,7 @@ typedef struct {
 		MCU_INV_DISCHARGE discharge;
 	} inv;
 	mcu_param_t par;
+	mcu_param_t set;
 } mcu_data_t;
 
 typedef struct {
@@ -179,10 +180,10 @@ typedef struct {
 	void (*Init)(void);
 	void (*PowerOverCan)(uint8_t);
 	void (*Refresh)(void);
-	void (*GetTemplates)(void);
-	void (*SetTemplates)(mcu_template_t[3]);
-	void (*GetSpeedMax)(void);
-	void (*SetSpeedMax)(uint8_t max);
+	void (*SetSpeedMax)(uint8_t);
+	void (*SetTemplates)(uint8_t);
+	void (*SpeedMax)(uint8_t);
+	void (*Templates)(uint8_t);
 	uint16_t (*RpmToSpeed)(void);
 	uint16_t (*SpeedToVolume)(void);
 } mcu_t;
@@ -196,11 +197,10 @@ extern mcu_t MCU;
 void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_PowerOverCan(uint8_t on);
-void MCU_SetMockTemplates(void);
-void MCU_GetTemplates(void);
-void MCU_SetTemplates(mcu_template_t templates[3]);
-void MCU_GetSpeedMax(void);
 void MCU_SetSpeedMax(uint8_t max);
+void MCU_SetTemplates(uint8_t v);
+void MCU_SpeedMax(uint8_t write);
+void MCU_Templates(uint8_t write);
 uint16_t MCU_RpmToSpeed(void);
 uint16_t MCU_SpeedToVolume(void);
 void MCU_RX_CurrentDC(can_rx_t *Rx);

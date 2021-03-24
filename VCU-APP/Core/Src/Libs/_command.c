@@ -66,8 +66,7 @@ void CMD_ExecuteCommand(command_t *cmd) {
 					sizeof(cmd->header.code) + sizeof(cmd->header.sub_code));
 
 	Debugger(cmd, len);
-	osMessageQueueReset(CommandQueueHandle);
-	_osQueuePut(CommandQueueHandle, cmd);
+	_osQueuePutRst(CommandQueueHandle, cmd);
 }
 
 void CMD_GenInfo(response_t *resp) {

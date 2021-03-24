@@ -59,10 +59,8 @@
 #define CMD_HBAR_REPORT (uint8_t)2
 #define CMD_HBAR_REVERSE (uint8_t)3
 
-#define CMD_MCU_SET_SPEED_MAX (uint8_t)0
-#define CMD_MCU_SET_TEMPLATES (uint8_t)1
-#define CMD_MCU_FETCH_SPEED_MAX (uint8_t)2
-#define CMD_MCU_FETCH_TEMPLATES (uint8_t)3
+#define CMD_MCU_SPEED_MAX (uint8_t)0
+#define CMD_MCU_TEMPLATES (uint8_t)1
 
 /* Public functions implementation
  * --------------------------------------------*/

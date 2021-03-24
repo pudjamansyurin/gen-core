@@ -14,7 +14,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION (uint16_t)630
+#define VCU_VERSION (uint16_t)631
 #define EEPROM_RESET (uint16_t)53
 
 #define CAN_DEBUG		0
@@ -34,7 +34,6 @@
 #define MANAGER_WAKEUP (uint16_t) 111 // in ms
 
 #define MCU_SPEED_MAX (uint8_t)150 // in kph
-#define MCU_RPM_MAX (uint32_t)99999
 #define ODOMETER_MAX (uint32_t)99999 // in km
 #define BMS_LOWBAT (uint8_t)20
 
@@ -48,7 +47,7 @@
 #define FINGER_CONFIDENCE_MIN (uint8_t)75  // in %
 #define FINGER_SCAN_TIMEOUT (uint32_t)5000 // in ms
 #define FINGER_USER_MAX (uint8_t)5
-#define DRIVER_ID_NONE (uint8_t)0xFF
+#define DRIVER_ID_NONE (uint8_t)0
 
 #define RPT_FRAME_FULL (uint16_t)20      // in second
 #define RPT_INTERVAL_NORMAL (uint16_t)5  // in second
