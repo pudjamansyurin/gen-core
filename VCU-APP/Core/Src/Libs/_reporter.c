@@ -88,7 +88,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     mcu->active = MCU.d.active;
     mcu->run = MCU.d.run;
     mcu->rpm = MCU.d.rpm;
-    mcu->speed = MCU.RpmToSpeed();
+    mcu->speed = MCU.RpmToSpeed(MCU.d.rpm);
     mcu->reverse = MCU.d.reverse;
     mcu->temperature = (uint16_t)(MCU.d.temperature * 10);
     mcu->drive_mode = MCU.d.drive_mode;
@@ -101,7 +101,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     mcu->inv.enabled = MCU.d.inv.enabled;
     mcu->inv.lockout = MCU.d.inv.lockout;
     mcu->inv.discharge = MCU.d.inv.discharge;
-    mcu->par.speed_max = MCU.d.par.speed_max;
+    mcu->par.rpm_max = MCU.d.par.rpm_max;
+    mcu->par.speed_max = MCU.RpmToSpeed(MCU.d.par.rpm_max);
     for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
     	mcu->par.tpl[m].discur_max = MCU.d.par.tpl[m].discur_max;
     	mcu->par.tpl[m].torque_max = MCU.d.par.tpl[m].torque_max * 10;

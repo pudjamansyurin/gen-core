@@ -169,7 +169,7 @@ void VCU_CheckState(void) {
 
 			if (!GATE_ReadPower5v() || normalize || HMI1.d.state.warning ||	VCU.Is(VCU.d.override.state == VEHICLE_READY))
 				VCU.d.state--;
-			else if ((starter && MCU.RpmToSpeed() == 0) || VCU.Is(VCU.d.override.state < VEHICLE_READY))
+			else if ((starter && MCU.RpmToSpeed(MCU.d.rpm) == 0) || VCU.Is(VCU.d.override.state < VEHICLE_READY))
 				VCU.d.state -= 2;
 			break;
 
@@ -256,7 +256,7 @@ uint8_t VCU_TX_SwitchModeControl(void) {
 	Tx.data.u8[2] |= HBAR_ModeController() << 7;
 
 	// others
-	Tx.data.u8[3] = MCU.RpmToSpeed();
+	Tx.data.u8[3] = MCU.RpmToSpeed(MCU.d.rpm);
 	Tx.data.u8[4] = (uint8_t)MCU.d.dcbus.current;
 
 	// send message

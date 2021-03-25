@@ -881,7 +881,7 @@ void StartCommandTask(void *argument)
 		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==	osOK) {
 			uint8_t val = *(uint8_t *)cmd.data.value;
 			uint8_t code = cmd.header.code;
-			uint8_t sub_code = sub_code;
+			uint8_t sub_code = cmd.header.sub_code;
 
 			// default command response
 			uint8_t *res_code = &(resp.data.res_code);
@@ -1528,8 +1528,8 @@ void StartCanTxTask(void *argument)
 			VCU.t.Heartbeat();
 
 			HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
-			BMS.PowerOverCan(VCU.d.state == VEHICLE_RUN);
 			MCU.PowerOverCan(BMS.d.run && VCU.d.state == VEHICLE_RUN);
+			BMS.PowerOverCan(VCU.d.state == VEHICLE_RUN);
 		}
 	}
   /* USER CODE END StartCanTxTask */

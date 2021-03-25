@@ -24,16 +24,17 @@ mcu_t MCU = {
 		},
 		.t = {
 				MCU_TX_Setting,
-				MCU_TX_Template
+				MCU_TX_Template,
+				MCU_RpmMax,
+				MCU_Templates,
 		},
 		.Init = MCU_Init,
 		.PowerOverCan = MCU_PowerOverCan,
 		.Refresh = MCU_Refresh,
 		.SetSpeedMax = MCU_SetSpeedMax,
 		.SetTemplates = MCU_SetTemplates,
-		.SpeedMax = MCU_SpeedMax,
-		.Templates = MCU_Templates,
 		.RpmToSpeed = MCU_RpmToSpeed,
+		.SpeedToRpm = MCU_SpeedToRpm,
 		.SpeedToVolume = MCU_SpeedToVolume,
 };
 
@@ -70,18 +71,16 @@ void MCU_PowerOverCan(uint8_t on) {
 		MCU.t.Setting(0);
 
 	if (MCU.d.active) {
-		if (!SyncedSpeedMax())
-			MCU.SpeedMax(MCU.set.speed_max);
-		if (!SyncedTemplates())
-			MCU.Templates(MCU.set.template);
+		MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
+		MCU.t.Templates(MCU.set.template && !SyncedTemplates());
 	}
 }
 
 void MCU_Refresh(void) {
 	MCU.d.active = MCU.d.tick && (_GetTickMS() - MCU.d.tick) < MCU_TIMEOUT;
 	if (MCU.d.active) {
-		if (MCU.set.speed_max && SyncedSpeedMax())
-			MCU.set.speed_max = 0;
+		if (MCU.set.rpm_max && SyncedSpeedMax())
+			MCU.set.rpm_max = 0;
 		if (MCU.set.template && SyncedTemplates())
 			MCU.set.template = 0;
 	} else
@@ -95,13 +94,12 @@ void MCU_Refresh(void) {
 }
 
 
-void MCU_SetSpeedMax(uint8_t max) {
-	MCU.set.par.speed_max = max;
-	MCU.set.speed_max = 1;
+void MCU_SetSpeedMax(uint8_t speed_max) {
+	MCU.set.par.rpm_max = MCU.SpeedToRpm(speed_max);
+	MCU.set.rpm_max = 1;
 }
 
 void MCU_SetTemplates(uint8_t v) {
-	v = v*10;
 	mcu_template_t t[] = {
 			{ 50 + v, 100 + v },
 			{ 60 + v, 200 + v },
@@ -112,25 +110,28 @@ void MCU_SetTemplates(uint8_t v) {
 	MCU.set.template = 1;
 }
 
-void MCU_SpeedMax(uint8_t write) {
-	MCU.t.Template(MTP_SPEED_MAX, write, write ? MCU.set.par.speed_max : 0);
+void MCU_RpmMax(uint8_t write) {
+	MCU.t.Template(MTP_RPM_MAX, write, write ? MCU.set.par.rpm_max : 0);
 }
 
 void MCU_Templates(uint8_t write) {
 	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
 		MCU.t.Template(tplAddr[m].discur_max, write, write ? MCU.set.par.tpl[m].discur_max : 0);
-		MCU.t.Template(tplAddr[m].torque_max, write, write ? MCU.set.par.tpl[m].torque_max : 0);
+		MCU.t.Template(tplAddr[m].torque_max, write, write ? MCU.set.par.tpl[m].torque_max * 10 : 0);
 		//		MCU.t.Template(tplAddr[m].rbs_switch, write, write ? MCU.set.par.tpl[m].rbs_switch : 0);
 	}
 }
 
+uint8_t MCU_RpmToSpeed(int16_t rpm) {
+	return (abs(rpm) * 60 * 1.58) / (8.26 * 1000);
+}
 
-uint16_t MCU_RpmToSpeed(void) {
-	return (abs(MCU.d.rpm) * 60 * 1.58) / (8.26 * 1000);
+int16_t MCU_SpeedToRpm(uint8_t speed) {
+	return  (speed * 8.26 * 1000) / (60 * 1.58);
 }
 
 uint16_t MCU_SpeedToVolume(void) {
-	return MCU.RpmToSpeed() * 100 / MCU_SPEED_MAX;
+	return MCU.RpmToSpeed(MCU.d.rpm) * 100 / MCU_SPEED_MAX;
 }
 
 /* ====================================== CAN RX
@@ -179,8 +180,8 @@ void MCU_RX_Template(can_rx_t *Rx) {
 	//	uint8_t write = Rx->data.u8[2];
 	int16_t data = Rx->data.s16[2];
 
-	if (param == MTP_SPEED_MAX) {
-		MCU.d.par.speed_max = data;
+	if (param == MTP_RPM_MAX) {
+		MCU.d.par.rpm_max = data;
 		return;
 	}
 
@@ -254,7 +255,7 @@ static void Reset(void) {
 	MCU.d.inv.lockout = 0;
 	MCU.d.inv.discharge = INV_DISCHARGE_DISABLED;
 
-	MCU.d.par.speed_max = 0;
+	MCU.d.par.rpm_max = 0;
 	ResetTemplates();
 }
 
@@ -275,7 +276,7 @@ static void ResetTemplates(void) {
 }
 
 static uint8_t SyncedSpeedMax(void) {
-	return MCU.d.par.speed_max == MCU.set.par.speed_max;
+	return MCU.d.par.rpm_max == MCU.set.par.rpm_max;
 }
 
 static uint8_t SyncedTemplates(void) {

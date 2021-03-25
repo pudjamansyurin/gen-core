@@ -101,10 +101,10 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	uint8_t active;
 	uint8_t run;
-	uint8_t speed;
 	uint8_t reverse;
 	uint8_t drive_mode;
 	int16_t rpm;
+	uint8_t speed;
 	int16_t temperature;
 	struct {
 		uint32_t post;
@@ -123,7 +123,11 @@ typedef struct __attribute__((packed)) {
 		uint8_t lockout;
 		uint8_t discharge;
 	} inv;
-	mcu_param_t par;
+	struct __attribute__((packed)) {
+		int16_t rpm_max;
+		uint8_t speed_max;
+		mcu_template_t tpl[HBAR_M_DRIVE_MAX];
+	} par;
 } mcu_debug_t;
 
 typedef struct __attribute__((packed)) {

@@ -27,7 +27,7 @@ typedef enum {
 	MTP_3_DISCUR_MAX,
 	MTP_3_TORQUE_MAX,
 	MTP_3_RBS_SWITCH,
-	MTP_SPEED_MAX = 128,
+	MTP_RPM_MAX = 128,
 } MCU_TEMPLATE_PARAM_ADDR;
 
 typedef enum {
@@ -122,24 +122,20 @@ typedef struct __attribute__((packed)) {
 	//	uint8_t rbs_switch;
 } mcu_template_t;
 
-//typedef struct __attribute__((packed)) {
-//	mcu_template_t template[HBAR_M_DRIVE_MAX];
-//} mcu_templates_t;
-
-typedef struct __attribute__((packed)) {
-	uint8_t speed_max;
+typedef struct {
+	int16_t rpm_max;
 	mcu_template_t tpl[HBAR_M_DRIVE_MAX];
 } mcu_param_t;
 
 typedef struct {
-	uint8_t run;
-	uint8_t active;
 	uint8_t overheat;
 	uint8_t error;
 	uint32_t tick;
 
-	HBAR_MODE_DRIVE drive_mode;
+	uint8_t active;
+	uint8_t run;
 	uint8_t reverse;
+	HBAR_MODE_DRIVE drive_mode;
 	int16_t rpm;
 	float temperature;
 	struct {
@@ -165,7 +161,7 @@ typedef struct {
 typedef struct {
 	mcu_data_t d;
 	struct {
-		uint8_t speed_max;
+		uint8_t rpm_max;
 		uint8_t template;
 		mcu_param_t par;
 	} set;
@@ -180,15 +176,16 @@ typedef struct {
 	struct {
 		uint8_t (*Setting)(uint8_t);
 		uint8_t (*Template)(uint16_t, uint8_t, int16_t);
+		void (*RpmMax)(uint8_t);
+		void (*Templates)(uint8_t);
 	} t;
 	void (*Init)(void);
 	void (*PowerOverCan)(uint8_t);
 	void (*Refresh)(void);
 	void (*SetSpeedMax)(uint8_t);
 	void (*SetTemplates)(uint8_t);
-	void (*SpeedMax)(uint8_t);
-	void (*Templates)(uint8_t);
-	uint16_t (*RpmToSpeed)(void);
+	uint8_t (*RpmToSpeed)(int16_t);
+	int16_t (*SpeedToRpm)(uint8_t);
 	uint16_t (*SpeedToVolume)(void);
 } mcu_t;
 
@@ -201,11 +198,12 @@ extern mcu_t MCU;
 void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_PowerOverCan(uint8_t on);
-void MCU_SetSpeedMax(uint8_t max);
+void MCU_SetSpeedMax(uint8_t speed_max);
 void MCU_SetTemplates(uint8_t v);
-void MCU_SpeedMax(uint8_t write);
+void MCU_RpmMax(uint8_t write);
 void MCU_Templates(uint8_t write);
-uint16_t MCU_RpmToSpeed(void);
+uint8_t MCU_RpmToSpeed(int16_t rpm);
+int16_t MCU_SpeedToRpm(uint8_t speed);
 uint16_t MCU_SpeedToVolume(void);
 void MCU_RX_CurrentDC(can_rx_t *Rx);
 void MCU_RX_VoltageDC(can_rx_t *Rx);
