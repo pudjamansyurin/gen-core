@@ -64,7 +64,6 @@ void MCU_PowerOverCan(uint8_t on) {
 			GATE_McuPower(0); _DelayMS(500);
 			GATE_McuPower(1); _DelayMS(500);
 			MCU.t.Setting(0); _DelayMS(50);
-
 		}
 		MCU.t.Setting(1);
 	} else
@@ -101,9 +100,9 @@ void MCU_SetSpeedMax(uint8_t speed_max) {
 
 void MCU_SetTemplates(uint8_t v) {
 	mcu_template_t t[] = {
-			{ 50 + v, 100 + v },
-			{ 60 + v, 200 + v },
-			{ 70 + v, 300 + v }
+			{ 5 + v, 100 + v },
+			{ 10 + v, 200 + v },
+			{ 15 + v, 300 + v }
 	};
 
 	memcpy(MCU.set.par.tpl, t, sizeof(t));
