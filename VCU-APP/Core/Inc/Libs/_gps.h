@@ -17,7 +17,8 @@
 extern nmea_t GPS;
 
 /* Exported constants --------------------------------------------------------*/
-#define GPS_INTERVAL (uint16_t)1 // in second
+#define GPS_INTERVAL (uint16_t)5000 // in ms
+#define GPS_TIMEOUT (uint16_t)5000 // in ms
 #define GPS_LENGTH_MIN (uint8_t)100
 
 /* Exported struct -----------------------------------------------------------*/

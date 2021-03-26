@@ -10,7 +10,7 @@
 
 /* public variable
  * ------------------------------------------------------------*/
-tasks_t TASKS;
+tasks_t TASKS = {0};
 
 /* external variables
  * -----------------------------------------------------------*/
@@ -19,12 +19,12 @@ extern osEventFlagsId_t GlobalEventHandle;
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout) {
-  *notif = osThreadFlagsWait(flags, options, timeout);
+	*notif = osThreadFlagsWait(flags, options, timeout);
 
-  if (*notif > FLAG_MASK)
-    return 0;
+	if (*notif > FLAG_MASK)
+		return 0;
 
-  return (*notif & flags) > 0;
+	return (*notif & flags) > 0;
 }
 
 uint32_t _osEventManager(void) {
@@ -74,7 +74,7 @@ void _osCheckTasks(void) {
 	t->wakeup.gate = MAX_U8((now - t->tick.gate)/1000);
 	t->wakeup.canRx = MAX_U8((now - t->tick.canRx)/1000);
 	t->wakeup.canTx = MAX_U8((now - t->tick.canTx)/1000);
-	// t->wakeup.hmi2Power = MAX_U8((now - t->tick.canTx)/1000);
+	t->wakeup.hmi2Power = MAX_U8((now - t->tick.hmi2Power)/1000);
 
 	t->stack.manager = osThreadGetStackSpace(ManagerTaskHandle);
 	t->stack.network = osThreadGetStackSpace(NetworkTaskHandle);
@@ -88,5 +88,5 @@ void _osCheckTasks(void) {
 	t->stack.gate = osThreadGetStackSpace(GateTaskHandle);
 	t->stack.canRx = osThreadGetStackSpace(CanRxTaskHandle);
 	t->stack.canTx = osThreadGetStackSpace(CanTxTaskHandle);
-	//  t->stack.hmi2Power = osThreadGetStackSpace(Hmi2PowerTaskHandle);
+	t->stack.hmi2Power = osThreadGetStackSpace(Hmi2PowerTaskHandle);
 }

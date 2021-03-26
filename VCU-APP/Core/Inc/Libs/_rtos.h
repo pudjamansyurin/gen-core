@@ -82,7 +82,7 @@ typedef struct __attribute__((packed)) {
 	TickType_t gate;
 	TickType_t canRx;
 	TickType_t canTx;
-	//  TickType_t hmi2Power;
+	TickType_t hmi2Power;
 } tasks_tick_t;
 
 typedef struct __attribute__((packed)) {
@@ -98,7 +98,7 @@ typedef struct __attribute__((packed)) {
 	uint16_t gate;
 	uint16_t canRx;
 	uint16_t canTx;
-	//  uint16_t hmi2Power;
+	uint16_t hmi2Power;
 } tasks_stack_t;
 
 typedef struct __attribute__((packed)) {
@@ -114,7 +114,7 @@ typedef struct __attribute__((packed)) {
 	uint8_t gate;
 	uint8_t canRx;
 	uint8_t canTx;
-	//  uint8_t hmi2Power;
+	uint8_t hmi2Power;
 } tasks_wakeup_t;
 
 typedef struct __attribute__((packed)) {

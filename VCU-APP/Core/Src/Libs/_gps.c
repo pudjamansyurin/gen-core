@@ -44,12 +44,13 @@ void GPS_Init(void) {
 	UBLOX_DMA_Start(gps.puart, gps.pdma, GPS_ReceiveCallback);
 
 	// Initiate Module
+	TickType_t tick = _GetTickMS();
 	do {
 		printf("GPS:Init\n");
 
 		GATE_GpsReset();
 		_DelayMS(5000);
-	} while (DataInvalid());
+	} while (DataInvalid() && _GetTickMS() - tick < GPS_TIMEOUT);
 
 	nmea_init(&GPS);
 	unlock();
@@ -78,7 +79,7 @@ uint8_t GPS_CalculateOdometer(void) {
 	float speed_mps = nmea_to_speed(GPS.speed, nmea_speed_mps);
 
 	if (speed_mps)
-		return (speed_mps * GPS_INTERVAL);
+		return (speed_mps * (GPS_INTERVAL/1000));
 	return 0;
 }
 
