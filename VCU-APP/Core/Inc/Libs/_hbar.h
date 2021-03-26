@@ -1,12 +1,12 @@
 /*
- * _handlebar.h
+ * _hbar.h
  *
  *  Created on: Apr 16, 2020
  *      Author: pudja
  */
 
-#ifndef LIBS__HANDLEBAR_H_
-#define LIBS__HANDLEBAR_H_
+#ifndef LIBS__HBAR_H_
+#define LIBS__HBAR_H_
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
@@ -104,4 +104,4 @@ void HBAR_TimerSelectSet(void);
 void HBAR_RunSelectOrSet(void);
 uint8_t HBAR_ModeController(void);
 
-#endif /* LIBS__HANDLEBAR_H_ */
+#endif /* LIBS__HBAR_H_ */

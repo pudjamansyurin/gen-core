@@ -64,8 +64,9 @@ void MCU_PowerOverCan(uint8_t on) {
 			GATE_McuPower(0); _DelayMS(500);
 			GATE_McuPower(1); _DelayMS(500);
 			MCU.t.Setting(0); _DelayMS(50);
-		}
-		MCU.t.Setting(1);
+			MCU.t.Setting(1); _DelayMS(1000);
+		} else
+			MCU.t.Setting(1);
 	} else
 		MCU.t.Setting(0);
 
