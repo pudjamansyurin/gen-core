@@ -717,6 +717,7 @@ void StartManagerTask(void *argument)
 
 		_osCheckTasks();
 
+		GPS_Refresh();
 		VCU.Refresh();
 		VCU.CheckState();
 
@@ -1171,7 +1172,7 @@ void StartGyroTask(void *argument)
 				GYRO_Init();
 			}
 
-			if (notif & FLAG_GYRO_MOVED_RESET)
+			if (notif & FLAG_GYRO_DETECTOR_RESET)
 				GYRO_ResetDetector();
 		}
 
@@ -1184,7 +1185,7 @@ void StartGyroTask(void *argument)
 		osThreadFlagsSet(AudioTaskHandle, flag);
 
 		// Moved at rest
-		//		if (VCU.d.state < VEHICLE_STANDBY) GYRO_MonitorMovement();
+		//		if (VCU.d.state < VEHICLE_STANDBY) GYRO_ActivateDetector();
 		//		else GYRO_ResetDetector();
 	}
 	/* USER CODE END StartGyroTask */
@@ -1247,7 +1248,7 @@ void StartRemoteTask(void *argument)
 						GATE_HornToggle(&(HBAR.d.hazard));
 
 						if (VCU.ReadEvent(EVG_BIKE_MOVED))
-							osThreadFlagsSet(GyroTaskHandle, FLAG_GYRO_MOVED_RESET);
+							osThreadFlagsSet(GyroTaskHandle, FLAG_GYRO_DETECTOR_RESET);
 					}
 				}
 			}

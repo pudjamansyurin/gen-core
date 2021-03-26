@@ -30,7 +30,7 @@ static void lock(void);
 static void unlock(void);
 static void Capture(mems_t *mems);
 static void Convert(motion_t *motion, coordinate_t *gyro);
-static uint8_t GYRO_Moved(motion_t *refference, motion_t *current);
+static uint8_t Moved(motion_t *refference, motion_t *current);
 #if GYRO_DEBUG
 static void Debugger(movement_t *movement);
 static void RawDebugger(mems_t *mems);
@@ -45,6 +45,7 @@ void GYRO_Init(void) {
   do {
     printf("Gyro:Init\n");
 
+    GATE_GyroShutdown();
     MX_I2C3_Init();
     GATE_GyroReset();
 
@@ -91,7 +92,7 @@ void GYRO_Decision(movement_t *movement) {
   unlock();
 }
 
-void GYRO_MonitorMovement(void) {
+void GYRO_ActivateDetector(void) {
   static motion_t refference;
 
   lock();
@@ -101,7 +102,7 @@ void GYRO_MonitorMovement(void) {
     VCU.SetEvent(EVG_BIKE_MOVED, 0);
   }
 
-  if (GYRO_Moved(&refference, &GYRO))
+  if (Moved(&refference, &GYRO))
     VCU.SetEvent(EVG_BIKE_MOVED, 1);
   unlock();
 }
@@ -114,7 +115,7 @@ void GYRO_ResetDetector(void) {
 }
 
 void GYRO_Flush(void) {
-	memset(&GYRO, 0x00, sizeof(motion_t));
+	memset(&GYRO, 0, sizeof(GYRO));
 }
 
 /* Private functions implementation
@@ -170,7 +171,7 @@ static void Convert(motion_t *motion, coordinate_t *gyro) {
   motion->yaw -= 90;
 }
 
-static uint8_t GYRO_Moved(motion_t *refference, motion_t *current) {
+static uint8_t Moved(motion_t *refference, motion_t *current) {
   uint8_t euclidean;
 
   euclidean = sqrt(pow(refference->roll - current->roll, 2) +

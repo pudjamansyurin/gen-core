@@ -20,9 +20,13 @@ extern osThreadId_t RemoteTaskHandle;
 extern osMutexId_t RemoteRecMutexHandle;
 #endif
 
+/* Public variables
+ * -----------------------------------------------------------*/
+remote_data_t RMT = { 0 };
+
 /* Private variables
  * -----------------------------------------------------------*/
-static remote_t RMT = {
+static remote_t rmt = {
 		.tx = {
 				.address = {0x00, 0x00, 0x00, 0x00, 0xAB},
 				.payload = {0},
@@ -30,10 +34,6 @@ static remote_t RMT = {
 		.rx = {
 				.address = {0x00, 0x00, 0x00, 0x00, 0xCD},
 				.payload = {0},
-		},
-		.tick = {
-				.heartbeat = 0,
-				.pairing = 0,
 		},
 		.pspi = &hspi1
 };
@@ -57,13 +57,13 @@ static void Debugger(RMT_CMD command);
 /* Public functions implementation
  * --------------------------------------------*/
 void RMT_Init(void) {
-	nrf_param(RMT.pspi, RMT.rx.payload);
+	nrf_param(rmt.pspi, rmt.rx.payload);
 	RMT_ReInit();
 }
 
 void RMT_DeInit(void) {
 	GATE_RemoteShutdown();
-	HAL_SPI_DeInit(RMT.pspi);
+	HAL_SPI_DeInit(rmt.pspi);
 	_DelayMS(1000);
 }
 
@@ -81,35 +81,49 @@ void RMT_ReInit(void) {
 	ChangeMode(RMT_MODE_NORMAL);
 }
 
+void RMT_Refresh(void) {
+	if (RMT_NeedPing())
+		RMT_Ping();
+
+	if (RMT.pairing > 0) {
+		if (_GetTickMS() - RMT.pairing > REMOTE_PAIRING_TIMEOUT) {
+			RMT.pairing = 0;
+			AES_ChangeKey(NULL);
+		}
+	}
+}
+
 uint8_t RMT_NeedPing(void) {
 	vehicle_state_t *state = &(VCU.d.state);
 	uint32_t timeout = (*state < VEHICLE_RUN) ? REMOTE_TIMEOUT : REMOTE_TIMEOUT_RUN;
 
-	VCU.d.mod.remote = RMT.tick.heartbeat && (_GetTickMS() - RMT.tick.heartbeat) < timeout;
+	RMT.active = RMT.heartbeat && (_GetTickMS() - RMT.heartbeat) < timeout;
+	VCU.SetEvent(EVG_REMOTE_MISSING, RMT.active);
+	VCU.d.mod.remote = RMT.active;
 
 	if (*state >= VEHICLE_RUN)
-		return (_GetTickMS() - RMT.tick.heartbeat) > (timeout - 3000);
+		return (_GetTickMS() - RMT.heartbeat) > (timeout - 3000);
 	return 1;
 }
 
 uint8_t RMT_Ping(void) {
-	RNG_Generate32((uint32_t *)RMT.tx.payload, NRF_DATA_LENGTH / 4);
-	return (nrf_send_packet_noack(RMT.tx.payload) == NRF_OK);
+	RNG_Generate32((uint32_t *)rmt.tx.payload, NRF_DATA_LENGTH / 4);
+	return (nrf_send_packet_noack(rmt.tx.payload) == NRF_OK);
 }
 
 void RMT_Pairing(void) {
 	uint32_t aes[4];
 
-	RMT.tick.pairing = _GetTickMS();
+	RMT.pairing = _GetTickMS();
 	RMT_GenerateAesKey(aes);
-	AES_ChangeKey(RMT.pairingAes);
+	AES_ChangeKey(rmt.pairingAes);
 
 	// Insert to payload
-	memcpy(&RMT.tx.payload[0], aes, NRF_DATA_LENGTH);
-	memcpy(&RMT.tx.payload[NRF_DATA_LENGTH], RMT.tx.address, NRF_ADDR_LENGTH);
+	memcpy(&rmt.tx.payload[0], aes, NRF_DATA_LENGTH);
+	memcpy(&rmt.tx.payload[NRF_DATA_LENGTH], rmt.tx.address, NRF_ADDR_LENGTH);
 
 	ChangeMode(RMT_MODE_PAIRING);
-	nrf_send_packet_noack(RMT.tx.payload);
+	nrf_send_packet_noack(rmt.tx.payload);
 
 	// back to normal
 	RMT_ReInit();
@@ -118,33 +132,19 @@ void RMT_Pairing(void) {
 uint8_t RMT_GotPairedResponse(void) {
 	uint8_t paired = 0;
 
-	if (RMT.tick.pairing > 0) {
-		RMT.tick.pairing = 0;
+	if (RMT.pairing > 0) {
+		RMT.pairing = 0;
 		paired = 1;
 
-		EEPROM_AesKey(EE_CMD_W, RMT.pairingAes);
+		EEPROM_AesKey(EE_CMD_W, rmt.pairingAes);
 		AES_ChangeKey(NULL);
 	}
 
 	return paired;
 }
 
-void RMT_Refresh(void) {
-	if (RMT_NeedPing())
-		RMT_Ping();
-
-	if (RMT.tick.pairing > 0) {
-		if (_GetTickMS() - RMT.tick.pairing > REMOTE_PAIRING_TIMEOUT) {
-			RMT.tick.pairing = 0;
-			AES_ChangeKey(NULL);
-		}
-	}
-
-	VCU.SetEvent(EVG_REMOTE_MISSING, VCU.d.mod.remote);
-}
-
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
-	uint8_t *payload = RMT.tx.payload;
+	uint8_t *payload = rmt.tx.payload;
 	uint8_t valid = 0, plain[NRF_DATA_LENGTH];
 	uint8_t rng = NRF_DATA_LENGTH / 2;
 
@@ -162,7 +162,7 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	// Is ping response
 	if (valid) {
 		if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT) {
-			RMT.tick.heartbeat = _GetTickMS();
+			RMT.heartbeat = _GetTickMS();
 			valid = (memcmp(&plain[rng], &payload[rng], rng) == 0);
 		}
 	}
@@ -206,18 +206,18 @@ static void ChangeMode(RMT_MODE mode) {
 
 	if (mode == RMT_MODE_NORMAL) {
 		// use VCU_ID as address
-		memcpy(RMT.tx.address, &vin, sizeof(uint32_t));
-		memcpy(RMT.rx.address, &vin, sizeof(uint32_t));
+		memcpy(rmt.tx.address, &vin, sizeof(uint32_t));
+		memcpy(rmt.rx.address, &vin, sizeof(uint32_t));
 		payload_width = NRF_DATA_LENGTH;
 	} else {
 		// Set Address (pairing mode)
-		memset(RMT.tx.address, 0x00, sizeof(uint32_t));
-		memset(RMT.rx.address, 0x00, sizeof(uint32_t));
+		memset(rmt.tx.address, 0x00, sizeof(uint32_t));
+		memset(rmt.rx.address, 0x00, sizeof(uint32_t));
 		payload_width = NRF_DATA_PAIR_LENGTH;
 	}
 
 	// Set NRF Config (pairing mode)
-	nrf_change_mode(RMT.tx.address, RMT.rx.address, payload_width);
+	nrf_change_mode(rmt.tx.address, rmt.rx.address, payload_width);
 }
 
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
@@ -226,9 +226,9 @@ static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
 	// Process Payload
 	lock();
 	if (action == RMT_ACTION_R)
-		ret = AES_Decrypt(payload, RMT.rx.payload, NRF_DATA_LENGTH);
+		ret = AES_Decrypt(payload, rmt.rx.payload, NRF_DATA_LENGTH);
 	else
-		ret = AES_Encrypt(RMT.tx.payload, payload, NRF_DATA_LENGTH);
+		ret = AES_Encrypt(rmt.tx.payload, payload, NRF_DATA_LENGTH);
 
 	unlock();
 
@@ -238,18 +238,18 @@ static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
 static void RMT_GenerateAesKey(uint32_t *aesSwapped) {
 	const uint8_t len = sizeof(uint32_t);
 
-	RNG_Generate32(RMT.pairingAes, len);
+	RNG_Generate32(rmt.pairingAes, len);
 
 	// swap byte order
 	for (uint8_t i = 0; i < len; i++) {
-		*aesSwapped = _ByteSwap32(RMT.pairingAes[i]);
+		*aesSwapped = _ByteSwap32(rmt.pairingAes[i]);
 		aesSwapped++;
 	}
 }
 
 #if REMOTE_DEBUG
 static void RawDebugger(void) {
-	printf("NRF:Receive = %.*s\n", NRF_DATA_LENGTH, (char *)RMT.rx.payload);
+	printf("NRF:Receive = %.*s\n", NRF_DATA_LENGTH, (char *)rmt.rx.payload);
 }
 
 static void Debugger(RMT_CMD command) {

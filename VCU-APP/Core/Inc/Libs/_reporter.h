@@ -52,17 +52,6 @@ typedef struct __attribute__((packed)) {
 } command_header_t;
 
 typedef struct __attribute__((packed)) {
-	int32_t longitude;
-	int32_t latitude;
-	uint32_t altitude;
-	uint8_t hdop;
-	uint8_t vdop;
-	uint8_t speed;
-	uint8_t heading;
-	uint8_t sat_in_use;
-} gps_debug_t;
-
-typedef struct __attribute__((packed)) {
 	uint8_t reverse;
 	struct __attribute__((packed)) {
 		uint8_t drive;
@@ -79,6 +68,22 @@ typedef struct __attribute__((packed)) {
 		uint8_t efficiency;
 	} report;
 } hbar_debug_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t active;
+	int32_t longitude;
+	int32_t latitude;
+	uint32_t altitude;
+	uint8_t hdop;
+	uint8_t vdop;
+	uint8_t speed;
+	uint8_t heading;
+	uint8_t sat_in_use;
+} gps_debug_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t active;
+} remote_debug_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t run;
@@ -153,6 +158,7 @@ typedef struct __attribute__((packed)) {
 		hbar_debug_t hbar;
 		gps_debug_t gps;
 		motion_t gyro;
+		remote_debug_t rmt;
 		hmi1_debug_t hmi1;
 		bms_debug_t bms;
 		mcu_debug_t mcu;

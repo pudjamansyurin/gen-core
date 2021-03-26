@@ -74,7 +74,7 @@ extern motion_t GYRO;
 void GYRO_Init(void);
 void GYRO_DeInit(void);
 void GYRO_Decision(movement_t *movement);
-void GYRO_MonitorMovement(void);
+void GYRO_ActivateDetector(void);
 void GYRO_ResetDetector(void);
 void GYRO_Flush(void);
 

@@ -20,31 +20,37 @@ typedef enum { RMT_MODE_NORMAL = 0, RMT_MODE_PAIRING } RMT_MODE;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
-  struct {
-    uint8_t address[NRF_ADDR_LENGTH];
-    uint8_t payload[NRF_DATA_PAIR_LENGTH];
-  } tx;
-  struct {
-    uint8_t address[NRF_ADDR_LENGTH];
-    uint8_t payload[NRF_DATA_PAIR_LENGTH];
-  } rx;
-  struct {
-    uint32_t heartbeat;
-    uint32_t pairing;
-  } tick;
-  uint32_t pairingAes[4];
-  SPI_HandleTypeDef *pspi;
+	uint8_t active;
+	uint32_t heartbeat;
+	uint32_t pairing;
+} remote_data_t;
+
+typedef struct {
+	struct {
+		uint8_t address[NRF_ADDR_LENGTH];
+		uint8_t payload[NRF_DATA_PAIR_LENGTH];
+	} tx;
+	struct {
+		uint8_t address[NRF_ADDR_LENGTH];
+		uint8_t payload[NRF_DATA_PAIR_LENGTH];
+	} rx;
+	uint32_t pairingAes[4];
+	SPI_HandleTypeDef *pspi;
 } remote_t;
+
+/* Exported variables
+ * ----------------------------------------------------------*/
+extern remote_data_t RMT;
 
 /* Public functions prototype ------------------------------------------------*/
 void RMT_Init(void);
 void RMT_DeInit(void);
 void RMT_ReInit(void);
+void RMT_Refresh(void);
 uint8_t RMT_NeedPing(void);
 uint8_t RMT_Ping(void);
 void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);
-void RMT_Refresh(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
 void RMT_IrqHandler(void);
 void RMT_PacketReceived(uint8_t *data);
