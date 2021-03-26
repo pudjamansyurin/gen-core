@@ -42,7 +42,7 @@
 
 /* External variables --------------------------------------------------------*/
 #if (RTOS_ENABLE)
-extern osMutexId_t AudioMutexHandle;
+extern osMutexId_t AudioRecMutexHandle;
 #endif
 extern uint32_t SOUND_FREQ;
 extern uint32_t SOUND_SIZE;
@@ -50,22 +50,20 @@ extern uint16_t SOUND_SAMPLE[];
 
 /* Private variables ---------------------------------------------------------*/
 static audio_t audio = {
-    .initial_volume = 10,
+    .volume = 10,
     .size = {0},
     .pi2s = &hi2s3,
 };
 
 /* These PLL parameters are valid when the f(VCO clock) = 1Mhz */
-static const uint32_t I2SFreq[8] = {8000,  11025, 16000, 22050,
-                                    32000, 44100, 48000, 96000};
+static const uint32_t I2SFreq[8] = {8000,  11025, 16000, 22050, 32000, 44100, 48000, 96000};
 static const uint32_t I2SPLLN[8] = {256, 429, 213, 429, 426, 271, 258, 344};
 static const uint32_t I2SPLLR[8] = {5, 4, 4, 4, 4, 6, 3, 1};
 
 /* Private functions prototype
  * ------------------------------------------------*/
 static uint8_t I2S_Init(uint32_t AudioFreq);
-static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume,
-                              uint32_t AudioFreq);
+static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
 static void AUDIO_OUT_DeInit(void);
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
 static void lock(void);
@@ -79,12 +77,9 @@ void AUDIO_Init(void) {
   do {
     printf("Audio:Init\n");
 
-    // Mosfet control
-    GATE_AudioReset();
-
     /* Initialize Wave player (Codec, DMA, I2C) */
-    ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, audio.initial_volume,
-                         SOUND_FREQ);
+    GATE_AudioReset();
+    ret = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, audio.volume,  SOUND_FREQ);
 
     _DelayMS(500);
   } while (ret != AUDIO_OK);
@@ -117,9 +112,7 @@ void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
   cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_CONTINUOUS, BEEP_MIX_ON);
 
   if (TimeMS > 0) {
-    // delay with RTOS
     _DelayMS(TimeMS);
-    // than stop
     cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
   }
 
@@ -479,13 +472,13 @@ static uint8_t I2S_Init(uint32_t AudioFreq) {
 
 static void lock(void) {
 #if (RTOS_ENABLE)
-  osMutexAcquire(AudioMutexHandle, osWaitForever);
+  osMutexAcquire(AudioRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
 #if (RTOS_ENABLE)
-  osMutexRelease(AudioMutexHandle);
+  osMutexRelease(AudioRecMutexHandle);
 #endif
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

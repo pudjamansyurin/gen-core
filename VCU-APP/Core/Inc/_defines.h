@@ -19,8 +19,9 @@
 
 #define CAN_DEBUG		0
 #define GPS_DEBUG		0
-#define GYRO_DEBUG		0
+#define MEMS_DEBUG		0
 #define REMOTE_DEBUG 	0
+#define FINGER_DEBUG    1
 
 #define AT_USE_CLK		1
 #define AT_USE_SMS   	1
@@ -39,20 +40,6 @@
 
 #define SIMCOM_VOLTAGE_MIN (uint16_t)3300 // in mV
 #define HMI_FOTA_TIMEOUT (uint32_t)20000  // in ms
-
-#define REMOTE_TIMEOUT (uint32_t)7000         // in ms
-#define REMOTE_TIMEOUT_RUN (uint32_t)30000    // in ms
-#define REMOTE_PAIRING_TIMEOUT (uint32_t)5000 // in ms
-
-#define FINGER_CONFIDENCE_MIN (uint8_t)75  // in %
-#define FINGER_SCAN_TIMEOUT (uint32_t)5000 // in ms
-#define FINGER_USER_MAX (uint8_t)5
-#define DRIVER_ID_NONE (uint8_t)0
-
-#define RPT_FRAME_FULL (uint16_t)20      // in second
-#define RPT_INTERVAL_NORMAL (uint16_t)5  // in second
-#define RPT_INTERVAL_BACKUP (uint16_t)20 // in second
-#define RPT_INTERVAL_LOST (uint16_t)60   // in second
 
 #define VCU_ACTIVATE_LOST (uint16_t)(5 * 60) // in second
 

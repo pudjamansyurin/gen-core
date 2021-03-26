@@ -67,7 +67,7 @@ void _osCheckTasks(void) {
 	t->wakeup.reporter = MAX_U8((now - t->tick.reporter)/1000);
 	t->wakeup.command = MAX_U8((now - t->tick.command)/1000);
 	t->wakeup.gps = MAX_U8((now - t->tick.gps)/1000);
-	t->wakeup.gyro = MAX_U8((now - t->tick.gyro)/1000);
+	t->wakeup.mems = MAX_U8((now - t->tick.mems)/1000);
 	t->wakeup.remote = MAX_U8((now - t->tick.remote)/1000);
 	t->wakeup.finger = MAX_U8((now - t->tick.finger)/1000);
 	t->wakeup.audio = MAX_U8((now - t->tick.audio)/1000);
@@ -81,7 +81,7 @@ void _osCheckTasks(void) {
 	t->stack.reporter = osThreadGetStackSpace(ReporterTaskHandle);
 	t->stack.command = osThreadGetStackSpace(CommandTaskHandle);
 	t->stack.gps = osThreadGetStackSpace(GpsTaskHandle);
-	t->stack.gyro = osThreadGetStackSpace(GyroTaskHandle);
+	t->stack.mems = osThreadGetStackSpace(MemsTaskHandle);
 	t->stack.remote = osThreadGetStackSpace(RemoteTaskHandle);
 	t->stack.finger = osThreadGetStackSpace(FingerTaskHandle);
 	t->stack.audio = osThreadGetStackSpace(AudioTaskHandle);

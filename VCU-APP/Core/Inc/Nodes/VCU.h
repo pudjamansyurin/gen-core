@@ -11,7 +11,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_rtc.h"
 #include "Libs/_gps.h"
-#include "Libs/_gyro.h"
+#include "Libs/_mems.h"
 
 /* Exported enum
  * ------------------------------------------------------------*/
@@ -32,17 +32,10 @@ typedef struct {
 	uint16_t bat;
 	uint16_t events;
 	uint32_t uptime;
-	uint8_t driver_id;
 	uint16_t interval;
 	vehicle_state_t state;
 	struct {
-		uint8_t remote;
-		uint8_t finger;
-	} mod;
-	struct {
 		int8_t state;
-//		uint8_t remote;
-//		uint8_t finger;
 	} override;
 	struct {
 		uint32_t independent;
@@ -65,7 +58,6 @@ typedef struct {
 	void (*SetEvent)(uint8_t, uint8_t);
 	uint8_t (*ReadEvent)(uint8_t);
 	uint8_t (*Is)(uint8_t);
-	void (*SetDriver)(uint8_t);
 	void (*SetOdometer)(uint8_t);
 } vcu_t;
 
@@ -81,7 +73,6 @@ void VCU_CheckState(void);
 void VCU_SetEvent(uint8_t bit, uint8_t value);
 uint8_t VCU_ReadEvent(uint8_t bit);
 uint8_t VCU_Is(uint8_t state);
-void VCU_SetDriver(uint8_t driver_id);
 void VCU_SetOdometer(uint8_t meter);
 
 uint8_t VCU_TX_Heartbeat(void);

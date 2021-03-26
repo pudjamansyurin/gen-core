@@ -73,7 +73,7 @@ void CMD_GenInfo(response_t *resp) {
 	char msg[20];
 	sprintf(msg, "VCU v.%d,", VCU_VERSION);
 
-	if (HMI1.d.run)
+	if (HMI1.d.active)
 		sprintf(resp->data.message, "%.*s HMI v.%d,", strlen(msg), msg,
 				HMI1.d.version);
 
@@ -101,31 +101,28 @@ void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue) {
 	}
 }
 
-void CMD_FingerFetch(response_t *resp, osMessageQueueId_t queue) {
+void CMD_FingerFetch(response_t *resp) {
 	uint32_t notif, len;
-	finger_db_t finger;
 	char fingers[3];
 
 	// wait response until timeout
+	memset(FGR.d.db, 0, FINGER_USER_MAX);
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
-	if (_osFlagAny(&notif, 5000))
-		if (notif & FLAG_COMMAND_OK) {
-			if (osMessageQueueGet(queue, finger.db, NULL, 0U) == osOK) {
-				resp->data.res_code = RESPONSE_STATUS_OK;
+	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)){
+		resp->data.res_code = RESPONSE_STATUS_OK;
 
-				for (uint8_t id = 1; id <= FINGER_USER_MAX; id++) {
-					if (finger.db[id - 1]) {
-						sprintf(fingers, "%1d,", id);
-						strcat(resp->data.message, fingers);
-					}
-				}
-
-				// remove last comma
-				len = strnlen(resp->data.message, sizeof(resp->data.message));
-				if (len > 0)
-					resp->data.message[len - 1] = '\0';
+		for (uint8_t id = 1; id <= FINGER_USER_MAX; id++) {
+			if (FGR.d.db[id - 1]) {
+				sprintf(fingers, "%1d,", id);
+				strcat(resp->data.message, fingers);
 			}
 		}
+
+		// remove last comma
+		len = strnlen(resp->data.message, sizeof(resp->data.message));
+		if (len > 0)
+			resp->data.message[len - 1] = '\0';
+	}
 }
 
 void CMD_Finger(response_t *resp) {
@@ -133,9 +130,8 @@ void CMD_Finger(response_t *resp) {
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
-	if (_osFlagAny(&notif, 5000))
-		if (notif & FLAG_COMMAND_OK)
-			resp->data.res_code = RESPONSE_STATUS_OK;
+	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000))
+		resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
 void CMD_RemotePairing(response_t *resp) {
@@ -143,9 +139,8 @@ void CMD_RemotePairing(response_t *resp) {
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
-	if (_osFlagAny(&notif, 5000))
-		if (notif & FLAG_COMMAND_OK)
-			resp->data.res_code = RESPONSE_STATUS_OK;
+	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000))
+		resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
 void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue) {
@@ -153,10 +148,9 @@ void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue) {
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
-	if (_osFlagAny(&notif, 40000))
-		if (notif & FLAG_COMMAND_OK)
-			if (osMessageQueueGet(queue, resp->data.message, NULL, 0U) == osOK)
-				resp->data.res_code = RESPONSE_STATUS_OK;
+	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 40000))
+		if (osMessageQueueGet(queue, resp->data.message, NULL, 0U) == osOK)
+			resp->data.res_code = RESPONSE_STATUS_OK;
 }
 
 /* Private functions implementation

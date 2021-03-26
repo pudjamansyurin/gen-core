@@ -18,15 +18,15 @@
 /* Exported struct
  * ------------------------------------------------------------*/
 typedef struct {
-	uint8_t run;
+	uint8_t active;
 	uint32_t tick;
 	uint16_t version;
 	struct {
 		//	uint8_t abs;
 		//  uint8_t lamp;
 		uint8_t mirroring;
-		uint8_t warning;
-		uint8_t overheat;
+		//		uint8_t warning;
+		//		uint8_t overheat;
 		//    uint8_t unfinger;
 		//    uint8_t unremote;
 		//	  uint8_t daylight;

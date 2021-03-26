@@ -26,8 +26,8 @@ static void Reset(void);
  * --------------------------------------------*/
 void HMI1_Init(void) {
 	HMI1.d.state.mirroring = 0;
-	HMI1.d.state.warning = 0;
-	HMI1.d.state.overheat = 0;
+//	HMI1.d.state.warning = 0;
+//	HMI1.d.state.overheat = 0;
 //	HMI1.d.state.unfinger = 1;
 //	HMI1.d.state.unremote = 1;
 //	HMI1.d.state.daylight = 0;
@@ -36,9 +36,9 @@ void HMI1_Init(void) {
 }
 
 void HMI1_Refresh(void) {
-	HMI1.d.run = HMI1.d.tick && (_GetTickMS() - HMI1.d.tick) < HMI1_TIMEOUT;
+	HMI1.d.active = HMI1.d.tick && (_GetTickMS() - HMI1.d.tick) < HMI1_TIMEOUT;
 
-	if (!HMI1.d.run)
+	if (!HMI1.d.active)
 		Reset();
 }
 
@@ -53,7 +53,7 @@ void HMI1_RX_State(can_rx_t *Rx) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void Reset(void) {
-	HMI1.d.run = 0;
+	HMI1.d.active = 0;
 	HMI1.d.tick = 0;
 	HMI1.d.version = 0;
 }

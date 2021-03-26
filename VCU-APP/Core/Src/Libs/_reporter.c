@@ -12,6 +12,7 @@
 #include "Libs/_eeprom.h"
 #include "Libs/_hbar.h"
 #include "Libs/_remote.h"
+#include "Libs/_finger.h"
 #include "Libs/_reporter.h"
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
@@ -33,7 +34,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 
   d->req.frame_id = frame;
   d->req.log_time = RTC_Read();
-  d->req.driver_id = VCU.d.driver_id;
+  d->req.driver_id = FGR.d.id;
   d->req.events_group = VCU.d.events;
   d->req.vehicle = (int8_t)VCU.d.state;
   d->req.uptime = (VCU.d.uptime * MANAGER_WAKEUP) / 1000;
@@ -60,24 +61,25 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     hbar->report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
     gps_debug_t *gps = &(d->debug.gps);
-    gps->active = GPS.active;
-    gps->latitude = (int32_t)(GPS.nmea.latitude * 10000000);
-    gps->longitude = (int32_t)(GPS.nmea.longitude * 10000000);
-    gps->altitude = (uint32_t)GPS.nmea.altitude;
-    gps->hdop = (uint8_t)(GPS.nmea.dop_h * 10);
-    gps->vdop = (uint8_t)(GPS.nmea.dop_v * 10);
-    gps->speed = (uint8_t)nmea_to_speed(GPS.nmea.speed, nmea_speed_kph);
-    gps->heading = (uint8_t)(GPS.nmea.coarse / 2);
-    gps->sat_in_use = (uint8_t)GPS.nmea.sats_in_use;
+    gps->active = GPS.d.active;
+    gps->latitude = (int32_t)(GPS.d.nmea.latitude * 10000000);
+    gps->longitude = (int32_t)(GPS.d.nmea.longitude * 10000000);
+    gps->altitude = (uint32_t)GPS.d.nmea.altitude;
+    gps->hdop = (uint8_t)(GPS.d.nmea.dop_h * 10);
+    gps->vdop = (uint8_t)(GPS.d.nmea.dop_v * 10);
+    gps->speed = (uint8_t)nmea_to_speed(GPS.d.nmea.speed, nmea_speed_kph);
+    gps->heading = (uint8_t)(GPS.d.nmea.coarse / 2);
+    gps->sat_in_use = (uint8_t)GPS.d.nmea.sats_in_use;
 
-    motion_t *gyro = &(d->debug.gyro);
-    memcpy(gyro, &GYRO, sizeof(motion_t));
+    mems_debug_t *mems = &(d->debug.mems);
+    mems->active = MEMS.d.active;
+    memcpy(&(mems->gyro), &(MEMS.d.gyro), sizeof(gyroscope_t));
 
     remote_debug_t *rmt = &(d->debug.rmt);
-    rmt->active = RMT.active;
+    rmt->active = RMT.d.active;
 
     // NODEs
-    d->debug.hmi1.run = HMI1.d.run;
+    d->debug.hmi1.active = HMI1.d.active;
 
     bms_debug_t *bms = &(d->debug.bms);
     bms->active = BMS.d.active;

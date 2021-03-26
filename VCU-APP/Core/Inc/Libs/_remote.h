@@ -11,6 +11,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_nrf24l01.h"
 
+/* Exported constants --------------------------------------------------------*/
+#define RMT_TIMEOUT (uint16_t)3000 // in ms
+#define RMT_BEAT_TIMEOUT (uint32_t)7000         // in ms
+#define RMT_BEAT_TIMEOUT_RUN (uint32_t)30000    // in ms
+#define RMT_PAIRING_TIMEOUT (uint32_t)5000 // in ms
+
 /* Exported enum -------------------------------------------------------------*/
 typedef enum { RMT_CMD_PING = 0, RMT_CMD_ALARM, RMT_CMD_SEAT } RMT_CMD;
 
@@ -20,34 +26,35 @@ typedef enum { RMT_MODE_NORMAL = 0, RMT_MODE_PAIRING } RMT_MODE;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
+	uint8_t verified;
 	uint8_t active;
 	uint32_t heartbeat;
 	uint32_t pairing;
 } remote_data_t;
 
 typedef struct {
-	struct {
-		uint8_t address[NRF_ADDR_LENGTH];
-		uint8_t payload[NRF_DATA_PAIR_LENGTH];
-	} tx;
-	struct {
-		uint8_t address[NRF_ADDR_LENGTH];
-		uint8_t payload[NRF_DATA_PAIR_LENGTH];
-	} rx;
-	uint32_t pairingAes[4];
+	uint8_t address[NRF_ADDR_LENGTH];
+	uint8_t payload[NRF_DATA_PAIR_LENGTH];
+} remote_packet_t;
+
+typedef struct {
+	remote_data_t d;
+	remote_packet_t t;
+	remote_packet_t r;
+	uint32_t pairing_aes[4];
 	SPI_HandleTypeDef *pspi;
 } remote_t;
 
 /* Exported variables
  * ----------------------------------------------------------*/
-extern remote_data_t RMT;
+extern remote_t RMT;
 
 /* Public functions prototype ------------------------------------------------*/
-void RMT_Init(void);
+uint8_t RMT_Init(void);
 void RMT_DeInit(void);
-void RMT_ReInit(void);
+void RMT_Verify(void);
 void RMT_Refresh(void);
-uint8_t RMT_NeedPing(void);
+void RMT_Flush(void);
 uint8_t RMT_Ping(void);
 void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);

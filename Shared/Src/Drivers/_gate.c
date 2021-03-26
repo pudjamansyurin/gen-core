@@ -77,14 +77,14 @@ void GATE_Hmi2Reset(void) {
   HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_RESET);
 }
 
-void GATE_GyroShutdown(void) {
-  HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_RESET);
+void GATE_MemsShutdown(void) {
+  HAL_GPIO_WritePin(INT_MEMS_PWR_GPIO_Port, INT_MEMS_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(500);
 }
 
-void GATE_GyroReset(void) {
-  GATE_GyroShutdown();
-  HAL_GPIO_WritePin(INT_GYRO_PWR_GPIO_Port, INT_GYRO_PWR_Pin, GPIO_PIN_SET);
+void GATE_MemsReset(void) {
+  GATE_MemsShutdown();
+  HAL_GPIO_WritePin(INT_MEMS_PWR_GPIO_Port, INT_MEMS_PWR_Pin, GPIO_PIN_SET);
   _DelayMS(500);
 }
 
@@ -163,12 +163,10 @@ void GATE_FanBMS(GPIO_PinState state) {
   HAL_GPIO_WritePin(EXT_BMS_FAN_PWR_GPIO_Port, EXT_BMS_FAN_PWR_Pin, state);
 }
 
-void GATE_HornToggle(uint8_t *hazard) {
+void GATE_HornToggle(void) {
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_SET);
-  *hazard = GPIO_PIN_SET;
   _DelayMS(500);
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_RESET);
-  *hazard = GPIO_PIN_RESET;
   _DelayMS(200);
 }
 

@@ -14,16 +14,13 @@
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osThreadId_t GpsTaskHandle;
-extern osMutexId_t GpsMutexHandle;
+extern osMutexId_t GpsRecMutexHandle;
 #endif
 
 /* Public variables
  * ----------------------------------------------------------*/
-gps_data_t GPS = {0};
-
-/* Private variables
- * ----------------------------------------------------------*/
-static gps_t gps = {
+gps_t GPS = {
+		.d = {0},
 		.puart = &huart2,
 		.pdma = &hdma_usart2_rx,
 };
@@ -38,68 +35,70 @@ static void Debugger(char *ptr, size_t len);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void GPS_Init(void) {
+uint8_t GPS_Init(void) {
 	lock();
+
+	printf("GPS:Init\n");
 	MX_USART2_UART_Init();
-	UBLOX_DMA_Start(gps.puart, gps.pdma, GPS_ReceiveCallback);
-	GPS.active = 0;
+	UBLOX_DMA_Start(GPS.puart, GPS.pdma, GPS_ReceiveCallback);
+	GATE_GpsReset();
+	_DelayMS(GPS_TIMEOUT);
 
-	// Initiate Module
-	TickType_t tick = _GetTickMS();
-	do {
-		printf("GPS:Init\n");
-
-		GATE_GpsReset();
-		_DelayMS(5000);
-	} while (DataInvalid() && _GetTickMS() - tick < GPS_TIMEOUT);
-
-	nmea_init(&(GPS.nmea));
+	if (!DataInvalid())
+		nmea_init(&(GPS.d.nmea));
 	unlock();
+
+	return DataInvalid();
 }
 
 void GPS_DeInit(void) {
 	lock();
+	GPS_Flush();
 	GATE_GpsShutdown();
 	UBLOX_DMA_Stop();
-	HAL_UART_DeInit(gps.puart);
+	HAL_UART_DeInit(GPS.puart);
 	unlock();
 }
 
 void GPS_Refresh(void) {
-	GPS.active = GPS.tick && (_GetTickMS() - GPS.tick) < GPS_TIMEOUT;
+	lock();
+	GPS.d.active = GPS.d.tick && (_GetTickMS() - GPS.d.tick) < GPS_TIMEOUT;
+	if (!GPS.d.active) {
+		GPS_DeInit();
+		_DelayMS(500);
+		GPS_Init();
+	}
+	unlock();
+}
+
+void GPS_Flush(void) {
+	lock();
+	memset(&(GPS.d), 0, sizeof(gps_data_t));
+	unlock();
 }
 
 void GPS_ReceiveCallback(void *ptr, size_t len) {
-	if (DataInvalid())
-		return;
+	if (DataInvalid()) return;
 
 #if GPS_DEBUG
 	Debugger(ptr, len);
 #endif
-	GPS.tick = _GetTickMS();
-	nmea_process(&(GPS.nmea), (char *)ptr, len);
+	GPS.d.tick = _GetTickMS();
+	nmea_process(&(GPS.d.nmea), (char *)ptr, len);
 	osThreadFlagsSet(GpsTaskHandle, FLAG_GPS_RECEIVED);
-}
-
-uint8_t GPS_CalculateOdometer(void) {
-	float speed_mps = nmea_to_speed(GPS.nmea.speed, nmea_speed_mps);
-
-	if (speed_mps)
-		return (speed_mps * (GPS_INTERVAL/1000));
-	return 0;
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
 #if (RTOS_ENABLE)
-	osMutexAcquire(GpsMutexHandle, osWaitForever);
+	osMutexAcquire(GpsRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
 #if (RTOS_ENABLE)
-	osMutexRelease(GpsMutexHandle);
+	osMutexRelease(GpsRecMutexHandle);
 #endif
 }
 

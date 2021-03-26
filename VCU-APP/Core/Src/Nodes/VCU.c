@@ -10,30 +10,35 @@
 #include "Drivers/_canbus.h"
 #include "Drivers/_simcom.h"
 #include "Drivers/_bat.h"
+#include "Libs/_reporter.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_hbar.h"
+#include "Libs/_remote.h"
+#include "Libs/_finger.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/HMI2.h"
 #include "Nodes/MCU.h"
+#include "Nodes/NODE.h"
 
 /* Public variables
  * -----------------------------------------------------------*/
 vcu_t VCU = {
 		.d = {0},
 		.t = {
-				VCU_TX_Heartbeat, VCU_TX_SwitchModeControl,
-				VCU_TX_Datetime, VCU_TX_MixedData,
+				VCU_TX_Heartbeat,
+				VCU_TX_SwitchModeControl,
+				VCU_TX_Datetime,
+				VCU_TX_MixedData,
 				VCU_TX_TripData
 		},
-		VCU_Init,
-		VCU_Refresh,
-		VCU_CheckState,
-		VCU_SetEvent,
-		VCU_ReadEvent,
-		VCU_Is,
-		VCU_SetDriver,
-		VCU_SetOdometer,
+		.Init = VCU_Init,
+		.Refresh = VCU_Refresh,
+		.CheckState = VCU_CheckState,
+		.SetEvent = VCU_SetEvent,
+		.ReadEvent = VCU_ReadEvent,
+		.Is = VCU_Is,
+		.SetOdometer = VCU_SetOdometer,
 };
 
 /* Private functions declaration -------------------------------------------*/
@@ -41,16 +46,12 @@ vcu_t VCU = {
 /* Public functions implementation
  * --------------------------------------------*/
 void VCU_Init(void) {
-	// reset VCU data
 	VCU.d.error = 0;
 	VCU.d.state = VEHICLE_BACKUP;
 	VCU.d.interval = RPT_INTERVAL_BACKUP;
-	VCU.d.driver_id = DRIVER_ID_NONE;
 	VCU.d.bat = 0;
 	VCU.d.events = 0;
 
-	VCU.d.mod.remote = 0;
-	VCU.d.mod.finger = 0;
 	VCU.d.override.state = VEHICLE_UNKNOWN;
 }
 
@@ -96,7 +97,7 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
 				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_STOP);
 				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_STOP);
-				osThreadFlagsSet(GyroTaskHandle, FLAG_GYRO_TASK_STOP);
+				osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_TASK_STOP);
 				osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_STOP);
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_STOP);
 
@@ -117,7 +118,7 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
 				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_START);
 				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_START);
-				osThreadFlagsSet(GyroTaskHandle, FLAG_GYRO_TASK_START);
+				osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_TASK_START);
 				osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_START);
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_START);
 				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_TASK_STOP);
@@ -130,7 +131,7 @@ void VCU_CheckState(void) {
 
 			if (!GATE_ReadPower5v())
 				VCU.d.state--;
-			else if ((starter && VCU.d.mod.remote) || VCU.Is(VCU.d.override.state > VEHICLE_NORMAL))
+			else if ((starter && RMT.d.active) || VCU.Is(VCU.d.override.state > VEHICLE_NORMAL))
 				VCU.d.state++;
 			break;
 
@@ -145,7 +146,7 @@ void VCU_CheckState(void) {
 
 			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_STANDBY))
 				VCU.d.state--;
-			else if (VCU.d.mod.finger || VCU.Is(VCU.d.override.state > VEHICLE_STANDBY))
+			else if (FGR.d.id || VCU.Is(VCU.d.override.state > VEHICLE_STANDBY))
 				VCU.d.state++;
 			break;
 
@@ -158,7 +159,7 @@ void VCU_CheckState(void) {
 
 			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_READY))
 				VCU.d.state--;
-			else if (!HMI1.d.state.warning && (starter || VCU.Is(VCU.d.override.state > VEHICLE_READY)))
+			else if (!NODE.d.error && (starter || VCU.Is(VCU.d.override.state > VEHICLE_READY)))
 				VCU.d.state++;
 			break;
 
@@ -167,7 +168,7 @@ void VCU_CheckState(void) {
 				lastState = VEHICLE_RUN;
 			}
 
-			if (!GATE_ReadPower5v() || normalize || HMI1.d.state.warning ||	VCU.Is(VCU.d.override.state == VEHICLE_READY))
+			if (!GATE_ReadPower5v() || normalize || NODE.d.error ||	VCU.Is(VCU.d.override.state == VEHICLE_READY))
 				VCU.d.state--;
 			else if ((starter && MCU.RpmToSpeed(MCU.d.rpm) == 0) || VCU.Is(VCU.d.override.state < VEHICLE_READY))
 				VCU.d.state -= 2;
@@ -190,11 +191,6 @@ uint8_t VCU_ReadEvent(uint8_t bit) {
 
 uint8_t VCU_Is(uint8_t state) {
 	return (VCU.d.override.state != VEHICLE_UNKNOWN) && state;
-}
-
-void VCU_SetDriver(uint8_t driver_id) {
-	VCU.d.driver_id = VCU.d.mod.finger ? DRIVER_ID_NONE : driver_id;
-	VCU.d.mod.finger = VCU.d.driver_id != DRIVER_ID_NONE;
 }
 
 void VCU_SetOdometer(uint8_t meter) {
@@ -234,10 +230,10 @@ uint8_t VCU_TX_SwitchModeControl(void) {
 	Tx.data.u8[0] = HBAR.list[HBAR_K_ABS].state;
 	Tx.data.u8[0] |= HMI1.d.state.mirroring << 1;
 	Tx.data.u8[0] |= HBAR.list[HBAR_K_LAMP].state << 2;
-	Tx.data.u8[0] |= HMI1.d.state.warning << 3;
-	Tx.data.u8[0] |= HMI1.d.state.overheat << 4;
-	Tx.data.u8[0] |= !VCU.d.mod.finger << 5;
-	Tx.data.u8[0] |= !VCU.d.mod.remote << 6;
+	Tx.data.u8[0] |= NODE.d.error << 3;
+	Tx.data.u8[0] |= NODE.d.overheat << 4;
+	Tx.data.u8[0] |= !FGR.d.id << 5;
+	Tx.data.u8[0] |= !RMT.d.active << 6;
 	Tx.data.u8[0] |= RTC_Daylight() << 7;
 
 	// sein value

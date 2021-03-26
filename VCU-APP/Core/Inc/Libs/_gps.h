@@ -13,7 +13,6 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define GPS_INTERVAL (uint16_t)5000 // in ms
 #define GPS_TIMEOUT (uint16_t)5000 // in ms
 #define GPS_LENGTH_MIN (uint8_t)100
 
@@ -25,19 +24,20 @@ typedef struct {
 } gps_data_t;
 
 typedef struct {
+	gps_data_t d;
 	UART_HandleTypeDef *puart;
 	DMA_HandleTypeDef *pdma;
 } gps_t;
 
 /* Exported variables
  * ----------------------------------------------------------*/
-extern gps_data_t GPS;
+extern gps_t GPS;
 
 /* Public functions prototype ------------------------------------------------*/
-void GPS_Init(void);
+uint8_t GPS_Init(void);
 void GPS_DeInit(void);
 void GPS_Refresh(void);
+void GPS_Flush(void);
 void GPS_ReceiveCallback(void *ptr, size_t len);
-uint8_t GPS_CalculateOdometer(void);
 
 #endif /* GPS_H_ */

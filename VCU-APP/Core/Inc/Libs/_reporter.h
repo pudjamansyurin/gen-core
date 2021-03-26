@@ -9,7 +9,7 @@
 #define REPORTER_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_gyro.h"
+#include "Libs/_mems.h"
 #include "Libs/_hbar.h"
 #include "Libs/_utils.h"
 #include "Nodes/BMS.h"
@@ -18,6 +18,11 @@
 
 /* Exported define
  * -------------------------------------------------------------*/
+#define RPT_FRAME_FULL (uint8_t)20      // in second
+#define RPT_INTERVAL_NORMAL (uint8_t)5  // in second
+#define RPT_INTERVAL_BACKUP (uint8_t)20 // in second
+#define RPT_INTERVAL_LOST (uint8_t)60   // in second
+
 #define PREFIX_ACK "A@"
 #define PREFIX_REPORT "T@"
 #define PREFIX_COMMAND "C@"
@@ -83,10 +88,15 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
+	gyroscope_t gyro;
+} mems_debug_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t active;
 } remote_debug_t;
 
 typedef struct __attribute__((packed)) {
-	uint8_t run;
+	uint8_t active;
 } hmi1_debug_t;
 
 typedef struct __attribute__((packed)) {
@@ -157,7 +167,7 @@ typedef struct __attribute__((packed)) {
 	struct __attribute__((packed)) {
 		hbar_debug_t hbar;
 		gps_debug_t gps;
-		motion_t gyro;
+		mems_debug_t mems;
 		remote_debug_t rmt;
 		hmi1_debug_t hmi1;
 		bms_debug_t bms;

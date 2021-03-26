@@ -63,7 +63,7 @@
 /* Structs
  * --------------------------------------------------------------------*/
 typedef struct {
-  uint8_t initial_volume;
+  uint8_t volume;
   struct {
     uint16_t played;
     uint32_t remaining;

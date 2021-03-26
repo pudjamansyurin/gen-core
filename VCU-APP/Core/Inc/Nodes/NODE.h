@@ -15,6 +15,12 @@
 /* Exported struct
  * ------------------------------------------------------------*/
 typedef struct {
+	uint8_t error;
+	uint8_t overheat;
+} node_data_t;
+
+typedef struct {
+	node_data_t d;
 	void (*Init)(void);
 	void (*Refresh)(void);
 } node_t;

@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/NODE.h"
+#include "Nodes/VCU.h"
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
 #include "Nodes/HMI1.h"
@@ -15,6 +16,7 @@
 /* Public variables
  * -----------------------------------------------------------*/
 node_t NODE = {
+		.d = {0},
 		NODE_Init,
 		NODE_Refresh,
 };
@@ -29,6 +31,9 @@ void NODE_Init(void) {
 }
 
 void NODE_Refresh(void) {
+	NODE.d.overheat = BMS.d.overheat || MCU.d.overheat;
+	NODE.d.error = VCU.d.error || BMS.d.error || MCU.d.error;
+
 	BMS.RefreshIndex();
 	MCU.Refresh();
 	HMI1.Refresh();

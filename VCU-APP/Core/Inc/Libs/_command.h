@@ -69,7 +69,7 @@ void CMD_ExecuteCommand(command_t *cmd);
 void CMD_GenInfo(response_t *resp);
 void CMD_ReportRTC(command_t *cmd);
 void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue);
-void CMD_FingerFetch(response_t *resp, osMessageQueueId_t queue);
+void CMD_FingerFetch(response_t *resp);
 void CMD_Finger(response_t *resp);
 void CMD_RemotePairing(response_t *resp);
 void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue);

@@ -62,7 +62,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, EXT_SEAT_PWR_Pin|INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_GYRO_PWR_Pin
+  HAL_GPIO_WritePin(GPIOB, EXT_SEAT_PWR_Pin|INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_MEMS_PWR_Pin
                           |INT_REMOTE_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -126,7 +126,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PEPin PEPin PEPin */
-  GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin|EXT_GPIO_IN1_Pin|INT_GYRO_IRQ_Pin;
+  GPIO_InitStruct.Pin = EXT_FINGER_IRQ_Pin|EXT_GPIO_IN1_Pin|INT_MEMS_IRQ_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -150,7 +150,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_GYRO_PWR_Pin|INT_REMOTE_PWR_Pin;
+  GPIO_InitStruct.Pin = INT_NET_RST_Pin|INT_NET_DTR_Pin|INT_MEMS_PWR_Pin|INT_REMOTE_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

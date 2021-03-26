@@ -33,15 +33,14 @@
 #define FLAG_GPS_TASK_STOP BIT(1)
 #define FLAG_GPS_RECEIVED BIT(2)
 
-#define FLAG_GYRO_TASK_START BIT(0)
-#define FLAG_GYRO_TASK_STOP BIT(1)
-#define FLAG_GYRO_DETECTOR_RESET BIT(2)
+#define FLAG_MEMS_TASK_START BIT(0)
+#define FLAG_MEMS_TASK_STOP BIT(1)
+#define FLAG_MEMS_DETECTOR_RESET BIT(2)
 
 #define FLAG_REMOTE_TASK_START BIT(0)
 #define FLAG_REMOTE_TASK_STOP BIT(1)
-#define FLAG_REMOTE_REINIT BIT(2)
-#define FLAG_REMOTE_RX_IT BIT(3)
-#define FLAG_REMOTE_PAIRING BIT(4)
+#define FLAG_REMOTE_RX_IT BIT(2)
+#define FLAG_REMOTE_PAIRING BIT(3)
 
 #define FLAG_FINGER_TASK_START BIT(0)
 #define FLAG_FINGER_TASK_STOP BIT(1)
@@ -75,7 +74,7 @@ typedef struct __attribute__((packed)) {
 	TickType_t reporter;
 	TickType_t command;
 	TickType_t gps;
-	TickType_t gyro;
+	TickType_t mems;
 	TickType_t remote;
 	TickType_t finger;
 	TickType_t audio;
@@ -91,7 +90,7 @@ typedef struct __attribute__((packed)) {
 	uint16_t reporter;
 	uint16_t command;
 	uint16_t gps;
-	uint16_t gyro;
+	uint16_t mems;
 	uint16_t remote;
 	uint16_t finger;
 	uint16_t audio;
@@ -107,7 +106,7 @@ typedef struct __attribute__((packed)) {
 	uint8_t reporter;
 	uint8_t command;
 	uint8_t gps;
-	uint8_t gyro;
+	uint8_t mems;
 	uint8_t remote;
 	uint8_t finger;
 	uint8_t audio;
@@ -130,7 +129,7 @@ extern osThreadId_t NetworkTaskHandle;
 extern osThreadId_t ReporterTaskHandle;
 extern osThreadId_t CommandTaskHandle;
 extern osThreadId_t GpsTaskHandle;
-extern osThreadId_t GyroTaskHandle;
+extern osThreadId_t MemsTaskHandle;
 extern osThreadId_t RemoteTaskHandle;
 extern osThreadId_t FingerTaskHandle;
 extern osThreadId_t AudioTaskHandle;
