@@ -1229,7 +1229,7 @@ void StartRemoteTask(void *argument)
 			}
 		}
 
-		RMT_Refresh();
+		RMT_Refresh(VCU.d.state);
 	}
   /* USER CODE END StartRemoteTask */
 }
@@ -1321,8 +1321,6 @@ void StartAudioTask(void *argument)
 	for (;;) {
 		TASKS.tick.audio = _GetTickMS();
 
-		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
-
 		if (_osFlagAny(&notif, 1000)) {
 			if (notif & FLAG_AUDIO_TASK_STOP) {
 				AUDIO_DeInit();
@@ -1349,6 +1347,10 @@ void StartAudioTask(void *argument)
 			if (notif & FLAG_AUDIO_MUTE_OFF)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 		}
+
+		if (AUDIO.d.volume != MCU.SpeedToVolume())
+			AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
+		AUDIO_Refresh();
 	}
   /* USER CODE END StartAudioTask */
 }

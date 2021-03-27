@@ -72,7 +72,13 @@ typedef struct __attribute__((packed)) {
 		uint8_t range;
 		uint8_t efficiency;
 	} report;
-} hbar_debug_t;
+} hbar_report_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t signal;
+	int8_t state;
+	int8_t ipstatus;
+} net_report_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
@@ -84,20 +90,37 @@ typedef struct __attribute__((packed)) {
 	uint8_t speed;
 	uint8_t heading;
 	uint8_t sat_in_use;
-} gps_debug_t;
+} gps_report_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
 	gyroscope_t gyro;
-} mems_debug_t;
+	struct __attribute__((packed)) {
+		uint32_t accelerometer;
+		uint32_t gyroscope;
+		uint16_t temperature;
+	} total;
+} mems_report_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
-} remote_debug_t;
+	uint8_t nearby;
+} remote_report_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t verified;
+	uint8_t driver_id;
+} finger_report_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
-} hmi1_debug_t;
+	uint8_t mute;
+	uint8_t volume;
+} audio_report_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t active;
+} hmi1_report_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
@@ -106,12 +129,13 @@ typedef struct __attribute__((packed)) {
 	uint16_t fault;
 	struct __attribute__((packed)) {
 		uint32_t id;
+		uint16_t fault;
 		uint16_t voltage;
 		uint16_t current;
 		uint8_t soc;
 		uint16_t temperature;
 	} pack[2];
-} bms_debug_t;
+} bms_report_t;
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
@@ -143,37 +167,38 @@ typedef struct __attribute__((packed)) {
 		uint8_t speed_max;
 		mcu_template_t tpl[HBAR_M_DRIVE_MAX];
 	} par;
-} mcu_debug_t;
+} mcu_report_t;
 
 typedef struct __attribute__((packed)) {
 	tasks_stack_t stack;
 	tasks_wakeup_t wakeup;
-} tasks_debug_t;
+} tasks_report_t;
 
 // report frame
 typedef struct __attribute__((packed)) {
 	struct __attribute__((packed)) {
 		uint8_t frame_id;
 		datetime_t log_time;
-		uint8_t driver_id;
 		uint16_t events_group;
 		int8_t vehicle;
 		uint32_t uptime;
+		uint8_t bat;
 	} req;
 	struct __attribute__((packed)) {
-		uint8_t bat;
-		uint8_t signal;
+		hbar_report_t hbar;
+
+		net_report_t net;
+		gps_report_t gps;
+		mems_report_t mems;
+		remote_report_t rmt;
+		finger_report_t fgr;
+		audio_report_t audio;
+
+		hmi1_report_t hmi1;
+		bms_report_t bms;
+		mcu_report_t mcu;
+		tasks_report_t task;
 	} opt;
-	struct __attribute__((packed)) {
-		hbar_debug_t hbar;
-		gps_debug_t gps;
-		mems_debug_t mems;
-		remote_debug_t rmt;
-		hmi1_debug_t hmi1;
-		bms_debug_t bms;
-		mcu_debug_t mcu;
-		tasks_debug_t task;
-	} debug;
 } report_data_t;
 
 typedef struct __attribute__((packed)) {

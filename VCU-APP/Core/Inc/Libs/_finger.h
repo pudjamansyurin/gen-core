@@ -40,7 +40,7 @@ extern finger_t FGR;
 /* Public functions prototype ------------------------------------------------*/
 uint8_t FINGER_Init(void);
 void FINGER_DeInit(void);
-void FINGER_Verify(void);
+uint8_t FINGER_Verify(void);
 void FINGER_Flush(void);
 uint8_t FINGER_Fetch(void);
 uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid);

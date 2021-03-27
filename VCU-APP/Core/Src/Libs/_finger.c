@@ -37,6 +37,8 @@ static void DebugResponse(uint8_t res, char *msg);
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t FINGER_Init(void) {
+	uint8_t ok;
+
 	lock();
 	uint32_t tick = _GetTickMS();
 	do {
@@ -46,12 +48,13 @@ uint8_t FINGER_Init(void) {
 		FINGER_DMA_Start(FGR.puart, FGR.pdma);
 		GATE_FingerReset();
 
-		FGR.d.verified = fz3387_verifyPassword();
+		ok = fz3387_verifyPassword();
 		_DelayMS(500);
-	} while (!FGR.d.verified && _GetTickMS() - tick < FINGER_TIMEOUT);
+	} while (!ok && _GetTickMS() - tick < FINGER_TIMEOUT);
 	unlock();
 
-	return FGR.d.verified;
+	FGR.d.verified = ok;
+	return ok;
 }
 
 void FINGER_DeInit(void) {
@@ -63,7 +66,7 @@ void FINGER_DeInit(void) {
 	unlock();
 }
 
-void FINGER_Verify(void) {
+uint8_t FINGER_Verify(void) {
 	lock();
 	FGR.d.verified = fz3387_verifyPassword();
 	if (!FGR.d.verified) {
@@ -72,6 +75,8 @@ void FINGER_Verify(void) {
 		FINGER_Init();
 	}
 	unlock();
+
+	return FGR.d.verified;
 }
 
 void FINGER_Flush(void) {

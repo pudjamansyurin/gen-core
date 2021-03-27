@@ -28,31 +28,24 @@ typedef struct {
 	int32_t x;
 	int32_t y;
 	int32_t z;
-} coordinate_t;
+} mems_axis_t;
 
 typedef struct {
-	coordinate_t accelerometer;
-	coordinate_t gyroscope;
+	mems_axis_t accelerometer;
+	mems_axis_t gyroscope;
 	float temperature;
 } mems_raw_t;
+
+typedef struct {
+	uint32_t accelerometer;
+	uint32_t gyroscope;
+} mems_resultant_t;
 
 typedef struct __attribute__((packed)) {
 	int8_t yaw;
 	int8_t pitch;
 	int8_t roll;
 } gyroscope_t;
-
-typedef struct {
-	struct {
-		uint8_t state;
-		uint32_t value;
-	} fall;
-	struct {
-		uint8_t state;
-		int32_t value;
-	} crash;
-	uint8_t fallen;
-} move_t;
 
 typedef struct {
 	uint8_t init;
@@ -62,13 +55,15 @@ typedef struct {
 typedef struct {
 	uint8_t active;
 	uint32_t tick;
-	gyroscope_t gyro;
+	uint8_t fall;
+	uint8_t crash;
 	mems_raw_t raw;
+	gyroscope_t gyro;
+	mems_resultant_t tot;
 } mems_data_t;
 
 typedef struct {
 	mems_data_t d;
-	move_t move;
 	drag_t drag;
 	MPU6050 dev;
 	I2C_HandleTypeDef *pi2c;

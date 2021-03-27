@@ -78,6 +78,7 @@ uint8_t RMT_Init(void) {
 	}
 	unlock();
 
+	RMT.d.active = ok;
 	return ok;
 }
 
@@ -89,28 +90,29 @@ void RMT_DeInit(void) {
 	unlock();
 }
 
-void RMT_Verify(void) {
+uint8_t RMT_Verify(void) {
 	lock();
-	RMT.d.verified = (nrf_check() != NRF_ERROR);
-	if (!RMT.d.verified) {
+	RMT.d.active = (nrf_check() != NRF_ERROR);
+	if (!RMT.d.active) {
 		RMT_DeInit();
 		_DelayMS(500);
 		RMT_Init();
 	}
 	unlock();
+
+	return RMT.d.active;
 }
 
 
-void RMT_Refresh(void) {
-	vehicle_state_t state = VCU.d.state;
+void RMT_Refresh(vehicle_state_t state) {
 	uint32_t timeout;
 
 	lock();
 	timeout = TimeoutDecider(state);
-	RMT.d.active = RMT.d.heartbeat && (_GetTickMS() - RMT.d.heartbeat) < timeout;
-	VCU.SetEvent(EVG_REMOTE_MISSING, RMT.d.active);
+	RMT.d.nearby = RMT.d.heartbeat && (_GetTickMS() - RMT.d.heartbeat) < timeout;
+	VCU.SetEvent(EVG_REMOTE_MISSING, RMT.d.nearby);
 
-	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.active))
+	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
 		if (!RMT_Ping())
 			RMT_Verify();
 

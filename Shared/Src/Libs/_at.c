@@ -875,7 +875,7 @@ static SIM_RESULT SingleInteger(char *command, AT_MODE mode, int32_t *value,
 static SIM_RESULT CmdWrite(char *cmd, char *reply, uint32_t ms) {
   SIM_RESULT res = SIM_ERROR;
 
-  if (SIM.state >= SIM_STATE_READY)
+  if (SIM.d.state >= SIM_STATE_READY)
     res = Simcom_Cmd(cmd, reply, ms);
 
   return res;
@@ -884,7 +884,7 @@ static SIM_RESULT CmdWrite(char *cmd, char *reply, uint32_t ms) {
 static SIM_RESULT CmdRead(char *cmd, char *reply, uint32_t ms, char **str) {
   SIM_RESULT res = SIM_ERROR;
 
-  if (SIM.state >= SIM_STATE_READY) {
+  if (SIM.d.state >= SIM_STATE_READY) {
     res = Simcom_Cmd(cmd, reply, ms);
 
     if (res == SIM_OK) {

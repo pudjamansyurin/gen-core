@@ -182,7 +182,6 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
     // Prepare, start timer
     printf("FOTA:Start\n");
     timer = _GetTickMS();
-    SIM.downloading = 1;
 
     // Copy chunk by chunk
     do {

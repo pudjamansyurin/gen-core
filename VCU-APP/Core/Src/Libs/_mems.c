@@ -18,11 +18,6 @@ extern osMutexId_t MemsRecMutexHandle;
  * ----------------------------------------------------------*/
 mems_t MEMS = {
 		.d = {0},
-		.move = {
-				.fall = {0},
-				.crash = {0},
-				.fallen = 0,
-		},
 		.drag = {0},
 		.pi2c = &hi2c3,
 };
@@ -31,7 +26,7 @@ mems_t MEMS = {
 static void lock(void);
 static void unlock(void);
 static uint8_t Capture(mems_raw_t *raw);
-static void ConvertGyro(gyroscope_t *gyro, coordinate_t *coor);
+static void ConvertGyro(gyroscope_t *gyro, mems_axis_t *axis);
 static uint8_t Moved(gyroscope_t *ref, gyroscope_t *now);
 #if MEMS_DEBUG
 static void Debugger(move_t *move);
@@ -81,7 +76,6 @@ void MEMS_Refresh(void) {
 
 void MEMS_Flush(void) {
 	memset(&(MEMS.d), 0, sizeof(mems_data_t));
-	memset(&(MEMS.move), 0, sizeof(move_t));
 	memset(&(MEMS.drag), 0, sizeof(drag_t));
 }
 
@@ -109,29 +103,24 @@ uint8_t MEMS_Capture(void) {
 uint8_t MEMS_Process(void) {
 	gyroscope_t *gyro = &(MEMS.d.gyro);
 	mems_raw_t *raw = &(MEMS.d.raw);
-	move_t *move = &(MEMS.move);
 
 	lock();
-	// calculate accel
-	move->crash.value =
-			sqrt(
+	MEMS.d.tot.accelerometer = sqrt(
 					pow(raw->accelerometer.x, 2) + pow(raw->accelerometer.y, 2) + pow(raw->accelerometer.z, 2)
 			) /	GRAVITY_FORCE;
-	move->crash.state = move->crash.value > ACCELEROMETER_LIMIT;
+	MEMS.d.tot.gyroscope = sqrt(
+			pow(gyro->roll, 2) + pow(gyro->pitch, 2) + pow(gyro->yaw, 2)
+			);
 
-	// calculate gyro
-	move->fall.value = sqrt(pow(gyro->roll, 2) + pow(gyro->pitch, 2) + pow(gyro->yaw, 2));
-	move->fall.state = move->fall.value > GYROSCOPE_LIMIT;
-
-	// fallen indicator
-	move->fallen = move->crash.state || move->fall.state;
+	MEMS.d.crash = MEMS.d.tot.accelerometer > ACCELEROMETER_LIMIT;
+	MEMS.d.fall = MEMS.d.tot.gyroscope > GYROSCOPE_LIMIT;
 
 #if MEMS_DEBUG
 	Debugger(move);
 #endif
 	unlock();
 
-	return move->fallen;
+	return (MEMS.d.crash || MEMS.d.fall);
 }
 
 void MEMS_ActivateDetector(void) {
@@ -193,19 +182,19 @@ static uint8_t Capture(mems_raw_t *raw) {
 	return ok;
 }
 
-static void ConvertGyro(gyroscope_t *gyro, coordinate_t *coor) {
+static void ConvertGyro(gyroscope_t *gyro, mems_axis_t *axis) {
 	float yaw, pitch, roll;
 
 	// Calculating Roll and Pitch from the accelerometer data
-	yaw = sqrt(pow(coor->x, 2) + pow(coor->y, 2));
-	roll = sqrt(pow(coor->x, 2) + pow(coor->z, 2));
-	pitch = sqrt(pow(coor->y, 2) + pow(coor->z, 2));
+	yaw = sqrt(pow(axis->x, 2) + pow(axis->y, 2));
+	roll = sqrt(pow(axis->x, 2) + pow(axis->z, 2));
+	pitch = sqrt(pow(axis->y, 2) + pow(axis->z, 2));
 
-	gyro->yaw = yaw == 0 ? 0 : RAD2DEG(atan(coor->z / yaw));
-	gyro->roll = roll == 0 ? 0 : RAD2DEG(atan(coor->y / roll));
-	gyro->pitch = pitch == 0 ? 0 : RAD2DEG(atan(coor->x / pitch));
+	gyro->yaw = yaw == 0 ? 0 : RAD2DEG(atan(axis->z / yaw));
+	gyro->roll = roll == 0 ? 0 : RAD2DEG(atan(axis->y / roll));
+	gyro->pitch = pitch == 0 ? 0 : RAD2DEG(atan(axis->x / pitch));
 
-	// normalize yaw axes
+	// normalize yaw axis
 	gyro->yaw -= 90;
 }
 

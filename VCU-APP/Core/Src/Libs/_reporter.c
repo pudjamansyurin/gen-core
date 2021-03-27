@@ -11,6 +11,7 @@
 #include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_hbar.h"
+#include "Libs/_audio.h"
 #include "Libs/_remote.h"
 #include "Libs/_finger.h"
 #include "Libs/_reporter.h"
@@ -34,22 +35,16 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 
   d->req.frame_id = frame;
   d->req.log_time = RTC_Read();
-  d->req.driver_id = FGR.d.id;
   d->req.events_group = VCU.d.events;
   d->req.vehicle = (int8_t)VCU.d.state;
   d->req.uptime = (VCU.d.uptime * MANAGER_WAKEUP) / 1000;
+  d->req.bat = VCU.d.bat / 18;
 
   // Optional data
   if (frame == FR_FULL) {
     header->size += sizeof(d->opt);
 
-    d->opt.bat = VCU.d.bat / 18;
-    d->opt.signal = SIM.signal;
-
-    // Debug data
-    header->size += sizeof(d->debug);
-
-    hbar_debug_t *hbar = &(d->debug.hbar);
+    hbar_report_t *hbar = &(d->opt.hbar);
     hbar->reverse = HBAR.d.reverse;
     hbar->mode.drive = HBAR.d.mode[HBAR_M_DRIVE];
     hbar->mode.trip = HBAR.d.mode[HBAR_M_TRIP];
@@ -60,7 +55,12 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     hbar->report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
     hbar->report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
-    gps_debug_t *gps = &(d->debug.gps);
+    net_report_t *net = &(d->opt.net);
+    net->signal = SIM.d.signal;
+    net->state = SIM.d.state;
+    net->ipstatus = SIM.d.ipstatus;
+
+    gps_report_t *gps = &(d->opt.gps);
     gps->active = GPS.d.active;
     gps->latitude = (int32_t)(GPS.d.nmea.latitude * 10000000);
     gps->longitude = (int32_t)(GPS.d.nmea.longitude * 10000000);
@@ -71,30 +71,44 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     gps->heading = (uint8_t)(GPS.d.nmea.coarse / 2);
     gps->sat_in_use = (uint8_t)GPS.d.nmea.sats_in_use;
 
-    mems_debug_t *mems = &(d->debug.mems);
+    mems_report_t *mems = &(d->opt.mems);
     mems->active = MEMS.d.active;
     memcpy(&(mems->gyro), &(MEMS.d.gyro), sizeof(gyroscope_t));
+    mems->total.accelerometer = MEMS.d.tot.accelerometer;
+    mems->total.gyroscope = MEMS.d.tot.gyroscope;
+    mems->total.temperature = MEMS.d.raw.temperature * 10;
 
-    remote_debug_t *rmt = &(d->debug.rmt);
+    remote_report_t *rmt = &(d->opt.rmt);
     rmt->active = RMT.d.active;
+    rmt->nearby = RMT.d.nearby;
+
+    finger_report_t *fgr = &(d->opt.fgr);
+    fgr->verified = FGR.d.verified;
+    fgr->driver_id = FGR.d.id;
+
+    audio_report_t *audio = &(d->opt.audio);
+    audio->active = AUDIO.d.active;
+	audio->mute = AUDIO.d.mute;
+    audio->volume = AUDIO.d.volume;
 
     // NODEs
-    d->debug.hmi1.active = HMI1.d.active;
+    d->opt.hmi1.active = HMI1.d.active;
 
-    bms_debug_t *bms = &(d->debug.bms);
+    bms_report_t *bms = &(d->opt.bms);
     bms->active = BMS.d.active;
     bms->run = BMS.d.run;
     bms->soc= BMS.d.soc;
     bms->fault = BMS.d.fault;
     for (uint8_t i = 0; i < BMS_COUNT; i++) {
       bms->pack[i].id = BMS.d.pack[i].id;
+      bms->pack[i].fault = BMS.d.pack[i].fault;
       bms->pack[i].voltage = BMS.d.pack[i].voltage * 100;
       bms->pack[i].current = BMS.d.pack[i].current * 10;
       bms->pack[i].soc = BMS.d.pack[i].soc;
       bms->pack[i].temperature = BMS.d.pack[i].temperature;
     }
 
-    mcu_debug_t *mcu = &(d->debug.mcu);
+    mcu_report_t *mcu = &(d->opt.mcu);
     mcu->active = MCU.d.active;
     mcu->run = MCU.d.run;
     mcu->rpm = MCU.d.rpm;
@@ -118,7 +132,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     	mcu->par.tpl[m].torque_max = MCU.d.par.tpl[m].torque_max * 10;
     }
 
-    tasks_debug_t *tasks = &(d->debug.task);
+    tasks_report_t *tasks = &(d->opt.task);
     memcpy(&(tasks->stack), &(TASKS.stack), sizeof(tasks_stack_t));
     memcpy(&(tasks->wakeup), &(TASKS.wakeup), sizeof(tasks_wakeup_t));
   }

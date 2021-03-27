@@ -278,7 +278,7 @@ uint8_t VCU_TX_Datetime(datetime_t dt) {
 uint8_t VCU_TX_MixedData(void) {
 	can_tx_t Tx = {0};
 
-	Tx.data.u8[0] = SIM.signal;
+	Tx.data.u8[0] = SIM.d.signal;
 	Tx.data.u8[1] = BMS.d.soc;
 	Tx.data.u8[2] = HBAR.d.report[HBAR_M_REPORT_RANGE];
 	Tx.data.u8[3] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];

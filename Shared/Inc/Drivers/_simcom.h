@@ -55,53 +55,56 @@
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum {
-  SIM_RESTARTED = -3,
-  SIM_NORESPONSE = -2,
-  SIM_TIMEOUT = -1,
-  SIM_ERROR = 0,
-  SIM_OK = 1,
+	SIM_RESTARTED = -3,
+	SIM_NORESPONSE = -2,
+	SIM_TIMEOUT = -1,
+	SIM_ERROR = 0,
+	SIM_OK = 1,
 } SIM_RESULT;
 
 typedef enum {
-  SIM_STATE_DOWN = -1,
-  SIM_STATE_READY = 0,
-  SIM_STATE_CONFIGURED = 1,
-  SIM_STATE_NETWORK_ON = 2,
-  SIM_STATE_GPRS_ON = 3,
-  SIM_STATE_PDP_ON = 4,
+	SIM_STATE_DOWN = -1,
+	SIM_STATE_READY = 0,
+	SIM_STATE_CONFIGURED = 1,
+	SIM_STATE_NETWORK_ON = 2,
+	SIM_STATE_GPRS_ON = 3,
+	SIM_STATE_PDP_ON = 4,
 #if (BOOTLOADER)
-  SIM_STATE_BEARER_ON = 5,
+	SIM_STATE_BEARER_ON = 5,
 #else
-  SIM_STATE_INTERNET_ON = 5,
-  SIM_STATE_SERVER_ON = 6,
-  SIM_STATE_MQTT_ON = 7
+	SIM_STATE_INTERNET_ON = 5,
+	SIM_STATE_SERVER_ON = 6,
+	SIM_STATE_MQTT_ON = 7
 #endif
 } SIMCOM_STATE;
 
 typedef enum {
-  CIPSTAT_UNKNOWN = -1,
-  CIPSTAT_IP_INITIAL = 0,
-  CIPSTAT_IP_START,
-  CIPSTAT_IP_CONFIG,
-  CIPSTAT_IP_GPRSACT,
-  CIPSTAT_IP_STATUS,
-  CIPSTAT_CONNECTING,
-  CIPSTAT_CONNECT_OK,
-  CIPSTAT_CLOSING,
-  CIPSTAT_CLOSED,
-  CIPSTAT_PDP_DEACT,
-  CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
+	CIPSTAT_UNKNOWN = -1,
+	CIPSTAT_IP_INITIAL = 0,
+	CIPSTAT_IP_START,
+	CIPSTAT_IP_CONFIG,
+	CIPSTAT_IP_GPRSACT,
+	CIPSTAT_IP_STATUS,
+	CIPSTAT_CONNECTING,
+	CIPSTAT_CONNECT_OK,
+	CIPSTAT_CLOSING,
+	CIPSTAT_CLOSED,
+	CIPSTAT_PDP_DEACT,
+	CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_CIPSTATUS;
 
 /* Struct -------------------------------------------------------------------*/
 typedef struct {
-  SIMCOM_STATE state;
-  AT_CIPSTATUS ipstatus;
-  uint8_t signal;
-  uint8_t downloading;
-  char *response;
-  UART_HandleTypeDef *puart;
-  DMA_HandleTypeDef *pdma;
+	uint8_t signal;
+	SIMCOM_STATE state;
+	AT_CIPSTATUS ipstatus;
+	char *response;
+} sim_data_t;
+
+typedef struct {
+	sim_data_t d;
+	UART_HandleTypeDef *puart;
+	DMA_HandleTypeDef *pdma;
 } sim_t;
 
 /* Exported variables --------------------------------------------------------*/
