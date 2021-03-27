@@ -94,10 +94,19 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
-	gyroscope_t gyro;
 	struct __attribute__((packed)) {
-		uint32_t accelerometer;
-		uint32_t gyroscope;
+		int16_t x;
+		int16_t y;
+		int16_t z;
+	} accel;
+	struct __attribute__((packed)) {
+		int16_t yaw;
+		int16_t pitch;
+		int16_t roll;
+	} gyro;
+	struct __attribute__((packed)) {
+		uint16_t accelerometer;
+		uint16_t gyroscope;
 		uint16_t temperature;
 	} total;
 } mems_report_t;

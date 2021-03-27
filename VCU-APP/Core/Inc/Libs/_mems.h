@@ -16,18 +16,18 @@
 #define MEMS_TIMEOUT (uint16_t) 5000 // in ms
 #define GRAVITY_FORCE (float)9.8
 
-#define MOVED_LIMIT (uint8_t)(10)
+#define DRAGGED_LIMIT (uint8_t)(10)
 #define GYROSCOPE_LIMIT (uint8_t)(45)
-#define ACCELEROMETER_LIMIT (uint32_t)(7000)
+#define ACCELEROMETER_LIMIT (uint8_t)(16)
 
 #define RAD2DEG(rad) ((rad)*180.0 / M_PI)
 
 /* Exported struct
  * ------------------------------------------------------------*/
 typedef struct {
-	int32_t x;
-	int32_t y;
-	int32_t z;
+	float x;
+	float y;
+	float z;
 } mems_axis_t;
 
 typedef struct {
@@ -37,19 +37,20 @@ typedef struct {
 } mems_raw_t;
 
 typedef struct {
-	uint32_t accelerometer;
-	uint32_t gyroscope;
-} mems_resultant_t;
+	float accelerometer;
+	float gyroscope;
+} mems_total_t;
 
 typedef struct __attribute__((packed)) {
-	int8_t yaw;
-	int8_t pitch;
-	int8_t roll;
+	float yaw;
+	float pitch;
+	float roll;
 } gyroscope_t;
 
 typedef struct {
 	uint8_t init;
-	gyroscope_t gyro;
+	gyroscope_t gyro_cur;
+	gyroscope_t gyro_ref;
 } drag_t;
 
 typedef struct {
@@ -58,8 +59,7 @@ typedef struct {
 	uint8_t fall;
 	uint8_t crash;
 	mems_raw_t raw;
-	gyroscope_t gyro;
-	mems_resultant_t tot;
+	mems_total_t tot;
 } mems_data_t;
 
 typedef struct {
