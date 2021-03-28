@@ -27,7 +27,7 @@ static void lock(void);
 static void unlock(void);
 static uint8_t Capture(mems_raw_t *raw);
 static void ConvertGyro(gyroscope_t *gyro, mems_axis_t *axis);
-static uint8_t Dragged(gyroscope_t *ref, gyroscope_t *now);
+static uint8_t Dragged(gyroscope_t *ref, gyroscope_t *cur);
 #if MEMS_DEBUG
 static void Debugger(move_t *move);
 static void RawDebugger(mems_raw_t *raw);
@@ -202,12 +202,12 @@ static void ConvertGyro(gyroscope_t *gyro, mems_axis_t *axis) {
 	gyro->yaw -= 90;
 }
 
-static uint8_t Dragged(gyroscope_t *ref, gyroscope_t *now) {
+static uint8_t Dragged(gyroscope_t *ref, gyroscope_t *cur) {
 	uint8_t euclidean;
 
-	euclidean = sqrt(pow(ref->roll - now->roll, 2) +
-			pow(ref->pitch - now->pitch, 2) +
-			pow(ref->yaw - now->yaw, 2));
+	euclidean = sqrt(pow(ref->roll - cur->roll, 2) +
+			pow(ref->pitch - cur->pitch, 2) +
+			pow(ref->yaw - cur->yaw, 2));
 
 	if (euclidean > DRAGGED_LIMIT)
 		printf("MEMS:Gyro dragged = %d\n", euclidean);

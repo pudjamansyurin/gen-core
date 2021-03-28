@@ -176,13 +176,33 @@ void GATE_SeatToggle(void) {
   HAL_GPIO_WritePin(EXT_SEAT_PWR_GPIO_Port, EXT_SEAT_PWR_Pin, GPIO_PIN_RESET);
 }
 
-GPIO_PinState GATE_ReadStarter(void) {
-  return HAL_GPIO_ReadPin(EXT_STARTER_IRQ_GPIO_Port, EXT_STARTER_IRQ_Pin);
-}
-
 GPIO_PinState GATE_ReadPower5v(void) {
   // TODO: Change me back
   return GPIO_PIN_SET;
   //  return HAL_GPIO_ReadPin(EXT_REG_5V_IRQ_GPIO_Port, EXT_REG_5V_IRQ_Pin);
+}
+GPIO_PinState GATE_ReadStarter(void) {
+  return HAL_GPIO_ReadPin(EXT_STARTER_IRQ_GPIO_Port, EXT_STARTER_IRQ_Pin);
+}
+GPIO_PinState GATE_ReadABS(void) {
+  return HAL_GPIO_ReadPin(EXT_ABS_IRQ_GPIO_Port, EXT_ABS_IRQ_Pin);
+}
+GPIO_PinState GATE_ReadSelect(void) {
+  return HAL_GPIO_ReadPin(EXT_HBAR_SELECT_GPIO_Port, EXT_HBAR_SELECT_Pin);
+}
+GPIO_PinState GATE_ReadSet(void) {
+  return HAL_GPIO_ReadPin(EXT_HBAR_SET_GPIO_Port, EXT_HBAR_SET_Pin);
+}
+GPIO_PinState GATE_ReadReverse(void) {
+  return HAL_GPIO_ReadPin(EXT_HBAR_REVERSE_GPIO_Port, EXT_HBAR_REVERSE_Pin);
+}
+GPIO_PinState GATE_ReadLamp(void) {
+  return HAL_GPIO_ReadPin(EXT_HBAR_LAMP_GPIO_Port, EXT_HBAR_LAMP_Pin);
+}
+GPIO_PinState GATE_ReadSeinL(void) {
+  return HAL_GPIO_ReadPin(EXT_HBAR_SEIN_L_GPIO_Port, EXT_HBAR_SEIN_L_Pin);
+}
+GPIO_PinState GATE_ReadSeinR(void) {
+  return HAL_GPIO_ReadPin(EXT_HBAR_SEIN_R_GPIO_Port, EXT_HBAR_SEIN_R_Pin);
 }
 #endif

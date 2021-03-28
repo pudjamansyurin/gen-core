@@ -63,6 +63,7 @@ void VCU_Refresh(void) {
 
 void VCU_CheckState(void) {
 	static vehicle_state_t lastState = VEHICLE_UNKNOWN;
+	static uint32_t starterTick = 0;
 	uint8_t starter, normalize = 0;
 	vehicle_state_t initialState;
 
@@ -70,12 +71,11 @@ void VCU_CheckState(void) {
 		initialState = VCU.d.state;
 		starter = 0;
 
-		if (VCU.d.tick.starter > 0) {
-			if (VCU.d.tick.starter > 1000 && lastState > VEHICLE_NORMAL)
+		if (starterTick != HBAR.d.starter_tick) {
+			if (HBAR.d.starter_tick > 3000 && lastState > VEHICLE_NORMAL)
 				normalize = 1;
-			else
-				starter = 1;
-			VCU.d.tick.starter = 0;
+			else starter = 1;
+			starterTick = HBAR.d.starter_tick;
 		}
 
 		switch (VCU.d.state) {
@@ -227,9 +227,9 @@ uint8_t VCU_TX_Heartbeat(void) {
 uint8_t VCU_TX_SwitchModeControl(void) {
 	can_tx_t Tx = {0};
 
-	Tx.data.u8[0] = HBAR.list[HBAR_K_ABS].state;
-	Tx.data.u8[0] |= HMI1.d.state.mirroring << 1;
-	Tx.data.u8[0] |= HBAR.list[HBAR_K_LAMP].state << 2;
+	Tx.data.u8[0] = HBAR.state[HBAR_K_ABS];
+	Tx.data.u8[0] |= HMI2.d.mirroring << 1;
+	Tx.data.u8[0] |= HBAR.state[HBAR_K_LAMP] << 2;
 	Tx.data.u8[0] |= NODE.d.error << 3;
 	Tx.data.u8[0] |= NODE.d.overheat << 4;
 	Tx.data.u8[0] |= !FGR.d.id << 5;
@@ -237,18 +237,17 @@ uint8_t VCU_TX_SwitchModeControl(void) {
 	Tx.data.u8[0] |= RTC_Daylight() << 7;
 
 	// sein value
-	sein_t sein = HBAR_SeinController();
-	Tx.data.u8[1] = sein.left;
-	Tx.data.u8[1] |= sein.right << 1;
+	Tx.data.u8[1] = HBAR.state[HBAR_K_SEIN_L];
+	Tx.data.u8[1] |= HBAR.state[HBAR_K_SEIN_R] << 1;
 	// TODO: validate MCU reverse state
-	Tx.data.u8[1] |= HBAR.d.reverse << 2;
+	Tx.data.u8[1] |= HBAR.state[HBAR_K_REVERSE] << 2;
 
 	// mode
 	// TODO: validate MCU drive mode
 	Tx.data.u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
 	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
 	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
-	Tx.data.u8[2] |= HBAR.m << 5;
+	Tx.data.u8[2] |= HBAR.d.m << 5;
 	Tx.data.u8[2] |= HBAR_ModeController() << 7;
 
 	// others

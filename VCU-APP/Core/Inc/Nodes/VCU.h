@@ -36,10 +36,11 @@ typedef struct {
 	vehicle_state_t state;
 	struct {
 		int8_t state;
+		uint16_t interval;
+		uint8_t full;
 	} override;
 	struct {
 		uint32_t independent;
-		uint32_t starter;
 	} tick;
 } vcu_data_t;
 

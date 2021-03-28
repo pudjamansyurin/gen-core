@@ -46,8 +46,15 @@ void GATE_FanBMS(GPIO_PinState state);
 void GATE_HornToggle(void);
 void GATE_SeatToggle(void);
 
-GPIO_PinState GATE_ReadStarter(void);
 GPIO_PinState GATE_ReadPower5v(void);
+GPIO_PinState GATE_ReadABS(void);
+GPIO_PinState GATE_ReadStarter(void);
+GPIO_PinState GATE_ReadSelect(void);
+GPIO_PinState GATE_ReadSet(void);
+GPIO_PinState GATE_ReadReverse(void);
+GPIO_PinState GATE_ReadLamp(void);
+GPIO_PinState GATE_ReadSeinL(void);
+GPIO_PinState GATE_ReadSeinR(void);
 #endif
 
 #endif /* INC_DRIVERS__GATE_H_ */

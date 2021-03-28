@@ -14,7 +14,6 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define MEMS_TIMEOUT (uint16_t) 5000 // in ms
-#define GRAVITY_FORCE (float)9.8
 
 #define DRAGGED_LIMIT (uint8_t)(10)
 #define GYROSCOPE_LIMIT (uint8_t)(45)
@@ -30,6 +29,12 @@ typedef struct {
 	float z;
 } mems_axis_t;
 
+typedef struct __attribute__((packed)) {
+	float yaw;
+	float pitch;
+	float roll;
+} gyroscope_t;
+
 typedef struct {
 	mems_axis_t accelerometer;
 	mems_axis_t gyroscope;
@@ -40,12 +45,6 @@ typedef struct {
 	float accelerometer;
 	float gyroscope;
 } mems_total_t;
-
-typedef struct __attribute__((packed)) {
-	float yaw;
-	float pitch;
-	float roll;
-} gyroscope_t;
 
 typedef struct {
 	uint8_t init;

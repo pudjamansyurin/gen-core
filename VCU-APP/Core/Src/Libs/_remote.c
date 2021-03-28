@@ -132,8 +132,10 @@ void RMT_Flush(void) {
 uint8_t RMT_Ping(void) {
 	uint8_t ok;
 
+	lock();
 	RNG_Generate32((uint32_t *)RMT.t.payload, NRF_DATA_LENGTH / 4);
 	ok = (nrf_send_packet_noack(RMT.t.payload) == NRF_OK);
+	unlock();
 
 	return ok;
 }
@@ -141,6 +143,7 @@ uint8_t RMT_Ping(void) {
 void RMT_Pairing(void) {
 	uint32_t aes[4];
 
+	lock();
 	RMT.d.pairing = _GetTickMS();
 	GenerateAesKey(aes);
 	AES_ChangeKey(RMT.pairing_aes);
@@ -154,11 +157,13 @@ void RMT_Pairing(void) {
 
 	// back to normal
 	RMT_Init();
+	unlock();
 }
 
 uint8_t RMT_GotPairedResponse(void) {
 	uint8_t paired = 0;
 
+	lock();
 	if (RMT.d.pairing > 0) {
 		RMT.d.pairing = 0;
 		paired = 1;
@@ -166,6 +171,7 @@ uint8_t RMT_GotPairedResponse(void) {
 		EEPROM_AesKey(EE_CMD_W, RMT.pairing_aes);
 		AES_ChangeKey(NULL);
 	}
+	unlock();
 
 	return paired;
 }
@@ -201,6 +207,20 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 #endif
 
 	return valid;
+}
+
+void RMT_OpenSeat(void) {
+	lock();
+	GATE_SeatToggle();
+	unlock();
+}
+
+void RMT_BeepAlarm(void) {
+	lock();
+	GATE_HornToggle();
+	if (VCU.ReadEvent(EVG_BIKE_MOVED))
+		osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
+	unlock();
 }
 
 void RMT_IrqHandler(void) { nrf_irq_handler(); }
@@ -264,13 +284,10 @@ static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
 	uint8_t ret = 0;
 
 	// Process Payload
-	lock();
 	if (action == RMT_ACTION_R)
 		ret = AES_Decrypt(payload, RMT.r.payload, NRF_DATA_LENGTH);
 	else
 		ret = AES_Encrypt(RMT.t.payload, payload, NRF_DATA_LENGTH);
-
-	unlock();
 
 	return ret;
 }
@@ -279,7 +296,6 @@ static void GenerateAesKey(uint32_t *aesSwapped) {
 	const uint8_t len = sizeof(uint32_t);
 
 	RNG_Generate32(RMT.pairing_aes, len);
-
 	// swap byte order
 	for (uint8_t i = 0; i < len; i++) {
 		*aesSwapped = _ByteSwap32(RMT.pairing_aes[i]);

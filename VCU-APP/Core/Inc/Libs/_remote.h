@@ -59,6 +59,8 @@ uint8_t RMT_Ping(void);
 void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
+void RMT_OpenSeat(void);
+void RMT_BeepAlarm(void);
 void RMT_IrqHandler(void);
 void RMT_PacketReceived(uint8_t *data);
 

@@ -45,7 +45,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     header->size += sizeof(d->opt);
 
     hbar_report_t *hbar = &(d->opt.hbar);
-    hbar->reverse = HBAR.d.reverse;
+    hbar->reverse = HBAR.state[HBAR_K_REVERSE];
     hbar->mode.drive = HBAR.d.mode[HBAR_M_DRIVE];
     hbar->mode.trip = HBAR.d.mode[HBAR_M_TRIP];
     hbar->mode.report = HBAR.d.mode[HBAR_M_REPORT];
@@ -97,7 +97,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
     audio->volume = AUDIO.d.volume;
 
     // NODEs
-    d->opt.hmi1.active = HMI1.d.active;
+    hmi1_report_t *hmi1 = &(d->opt.hmi1);
+    hmi1->active = HMI1.d.active;
 
     bms_report_t *bms = &(d->opt.bms);
     bms->active = BMS.d.active;

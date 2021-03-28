@@ -13,38 +13,7 @@
 /* Public variables
  * -----------------------------------------------------------*/
 hbar_t HBAR = {
-		.list = {
-				{
-						.pin = EXT_HBAR_SELECT_Pin,
-						.port = EXT_HBAR_SELECT_GPIO_Port,
-						.state = 0
-				},
-				{
-						.pin = EXT_HBAR_SET_Pin, .port = EXT_HBAR_SET_GPIO_Port, .state = 0
-				},
-				{
-						.pin = EXT_HBAR_SEIN_L_Pin,
-						.port = EXT_HBAR_SEIN_L_GPIO_Port,
-						.state = 0
-				},
-				{
-						.pin = EXT_HBAR_SEIN_R_Pin,
-						.port = EXT_HBAR_SEIN_R_GPIO_Port,
-						.state = 0
-				},
-				{
-						.pin = EXT_HBAR_REVERSE_Pin,
-						.port = EXT_HBAR_REVERSE_GPIO_Port,
-						.state = 0
-				},
-				{
-						.pin = EXT_ABS_IRQ_Pin, .port = EXT_ABS_IRQ_GPIO_Port, .state = 0
-				},
-				{
-						.pin = EXT_HBAR_LAMP_Pin,
-						.port = EXT_HBAR_LAMP_GPIO_Port,
-						.state = 0}
-		},
+		.state = {0},
 };
 
 /* Private functions prototype -----------------------------------------------*/
@@ -54,20 +23,16 @@ static void RunSet(void);
 /* Public functions implementation
  * --------------------------------------------*/
 void HBAR_Init(void) {
-	for (uint8_t i = 0; i < HBAR_K_MAX; i++)
-		HBAR.list[i].state = 0;
-
 	for (uint8_t i = 0; i < sizeof(HBAR.timer) / sizeof(HBAR.timer[0]); i++) {
 		HBAR.timer[i].start = 0;
 		HBAR.timer[i].running = 0;
 		HBAR.timer[i].time = 0;
 	}
 
-	HBAR.d.hazard = 0;
-	HBAR.d.reverse = 0;
+	HBAR.d.starter_tick = 0;
 	HBAR.d.listening = 0;
 
-	HBAR.m = HBAR_M_DRIVE;
+	HBAR.d.m = HBAR_M_DRIVE;
 	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
 	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
 	HBAR.d.mode[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
@@ -79,24 +44,33 @@ void HBAR_Init(void) {
 	HBAR.d.report[HBAR_M_REPORT_RANGE] = 0;
 	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = 0;
 
-	//	HBAR.d.trip[HBAR_M_TRIP_ODO] = 0;
 	HBAR.d.trip[HBAR_M_TRIP_A] = 0;
 	HBAR.d.trip[HBAR_M_TRIP_B] = 0;
+	//	HBAR.d.trip[HBAR_M_TRIP_ODO] = 0;
+}
+
+void HBAR_ReadStarter(void) {
+	static uint32_t tick = 0;
+
+	HBAR.state[HBAR_K_STARTER] = GATE_ReadStarter();
+	if (!HBAR.state[HBAR_K_STARTER]) {
+		HBAR.d.starter_tick = tick ? _GetTickMS() - tick : 0;
+		tick = 0;
+	}
+	else tick = _GetTickMS();
 }
 
 void HBAR_ReadStates(void) {
-	hbar_list_t *list;
+	HBAR.state[HBAR_K_SELECT] = GATE_ReadSelect();
+	HBAR.state[HBAR_K_SET] = GATE_ReadSet();
+	HBAR.state[HBAR_K_SEIN_L] = GATE_ReadSeinL();
+	HBAR.state[HBAR_K_SEIN_R] = GATE_ReadSeinR();
+	HBAR.state[HBAR_K_REVERSE] = GATE_ReadReverse();
+	HBAR.state[HBAR_K_LAMP] = GATE_ReadLamp();
+	HBAR.state[HBAR_K_ABS] = GATE_ReadABS();
 
-	for (uint8_t i = 0; i < HBAR_K_MAX; i++) {
-		list = &(HBAR.list[i]);
-		list->state = HAL_GPIO_ReadPin(list->port, list->pin);
-	}
-	HBAR_SetReverse(HBAR.list[HBAR_K_REVERSE].state);
-}
-
-void HBAR_SetReverse(uint8_t state) {
-	HBAR.d.reverse = state;
-	HBAR.d.hazard = HBAR.d.reverse;
+	HBAR_TimerSelectSet();
+	HBAR_RunSelectOrSet();
 }
 
 uint32_t HBAR_AccumulateTrip(uint8_t meter) {
@@ -114,63 +88,6 @@ uint32_t HBAR_AccumulateTrip(uint8_t meter) {
 	return HBAR.d.trip[HBAR_M_TRIP_ODO];
 }
 
-sein_t HBAR_SeinController(void) {
-	static sein_t sein = {0, 0};
-	static TickType_t tickSein;
-
-	if ((_GetTickMS() - tickSein) >= 500) {
-		if (HBAR.d.hazard) {
-			tickSein = _GetTickMS();
-			sein.left = !sein.left;
-			sein.right = !sein.right;
-		} else if (HBAR.list[HBAR_K_SEIN_LEFT].state) {
-			tickSein = _GetTickMS();
-			sein.left = !sein.left;
-			sein.right = 0;
-		} else if (HBAR.list[HBAR_K_SEIN_RIGHT].state) {
-			tickSein = _GetTickMS();
-			sein.left = 0;
-			sein.right = !sein.right;
-		} else {
-			sein.left = 0;
-			sein.right = 0;
-		}
-	}
-
-	return sein;
-}
-
-void HBAR_TimerSelectSet(void) {
-	hbar_list_t *list;
-	hbar_timer_t *timer;
-
-	for (uint8_t i = HBAR_K_SELECT; i <= HBAR_K_SET; i++) {
-		list = &(HBAR.list[i]);
-		timer = &(HBAR.timer[i]);
-		timer->time = 0;
-
-		// next job
-		if (list->state) {
-			if (!timer->running) {
-				if (i == HBAR_K_SELECT || (i == HBAR_K_SET && HBAR.d.listening)) {
-					timer->running = 1;
-					timer->start = _GetTickMS();
-				}
-			}
-			// reverse it
-			list->state = 0;
-
-		} else {
-			if (timer->running) {
-				timer->running = 0;
-				timer->time = (_GetTickMS() - timer->start) / 1000;
-				// reverse it
-				list->state = 1;
-			}
-		}
-	}
-}
-
 uint8_t HBAR_ModeController(void) {
 	static int8_t iName = -1, iValue = -1;
 	static TickType_t tick, tickPeriod;
@@ -179,18 +96,18 @@ uint8_t HBAR_ModeController(void) {
 	// MODE Show/Hide Manipulator
 	if (HBAR.d.listening) {
 		// mode changed
-		if (iName != HBAR.m) {
-			iName = HBAR.m;
+		if (iName != HBAR.d.m) {
+			iName = HBAR.d.m;
 			tickPeriod = _GetTickMS();
 		}
 		// value changed
-		else if (iValue != HBAR.d.mode[HBAR.m]) {
-			iValue = HBAR.d.mode[HBAR.m];
+		else if (iValue != HBAR.d.mode[HBAR.d.m]) {
+			iValue = HBAR.d.mode[HBAR.d.m];
 			tickPeriod = _GetTickMS();
 		}
 
 		// stop listening
-		if ((_GetTickMS() - tickPeriod) >= MODE_TIME_GUARD || HBAR.d.reverse) {
+		if ((_GetTickMS() - tickPeriod) >= MODE_TIME_GUARD || HBAR.state[HBAR_K_REVERSE]) {
 			HBAR.d.listening = 0;
 			iHide = 0;
 			iName = -1;
@@ -207,37 +124,64 @@ uint8_t HBAR_ModeController(void) {
 	return iHide;
 }
 
-void HBAR_RunSelectOrSet(void) {
-	if (HBAR.list[HBAR_K_REVERSE].state) return;
+void HBAR_TimerSelectSet(void) {
+	uint8_t keys[] = { HBAR_K_SELECT, HBAR_K_SET };
+	hbar_timer_t *timer;
 
-	if (HBAR.list[HBAR_K_SELECT].state)
-		RunSelect();
-	else if (HBAR.list[HBAR_K_SET].state)
-		RunSet();
+	for (uint8_t i = 0; i <= sizeof(keys); i++) {
+		uint8_t key = keys[i];
+
+		timer = &(HBAR.timer[key]);
+		timer->time = 0;
+
+		// next job
+		if (HBAR.state[key]) {
+			if (!timer->running) {
+				if (key == HBAR_K_SELECT || (key == HBAR_K_SET && HBAR.d.listening)) {
+					timer->running = 1;
+					timer->start = _GetTickMS();
+				}
+			}
+			// reverse it
+			// HBAR.state[key] = 0;
+
+		} else if (timer->running) {
+			timer->running = 0;
+			timer->time = (_GetTickMS() - timer->start) / 1000;
+			// reverse it
+			// HBAR.state[key] = 1;
+		}
+	}
+}
+
+void HBAR_RunSelectOrSet(void) {
+	if (HBAR.state[HBAR_K_REVERSE]) return;
+
+	if (HBAR.state[HBAR_K_SELECT]) RunSelect();
+	else if (HBAR.state[HBAR_K_SET]) RunSet();
 }
 
 /* Private functions implementation
  * -------------------------------------------*/
 static void RunSelect(void) {
 	if (HBAR.d.listening) {
-		if (HBAR.m == (HBAR_M_MAX - 1)) HBAR.m = 0;
-		else HBAR.m++;
+		if (HBAR.d.m == (HBAR_M_MAX - 1)) HBAR.d.m = 0;
+		else HBAR.d.m++;
 	}
 	HBAR.d.listening = 1;
 }
 
 static void RunSet(void) {
 	if (HBAR.d.listening) {
-		if (HBAR.d.mode[HBAR.m] == HBAR.d.max[HBAR.m])
-			HBAR.d.mode[HBAR.m] = 0;
+		if (HBAR.d.mode[HBAR.d.m] == HBAR.d.max[HBAR.d.m])
+			HBAR.d.mode[HBAR.d.m] = 0;
 		else
-			HBAR.d.mode[HBAR.m]++;
+			HBAR.d.mode[HBAR.d.m]++;
 	}
 
 	else {
 		if (HBAR.timer[HBAR_K_SET].time >= 3)
-			if (HBAR.m == HBAR_M_TRIP)
-				if (HBAR.d.mode[HBAR.m] != HBAR_M_TRIP_ODO)
-					HBAR.d.trip[HBAR.d.mode[HBAR.m]] = 0;
+			if (HBAR.d.m == HBAR_M_TRIP && HBAR.d.mode[HBAR.d.m] != HBAR_M_TRIP_ODO)
+				HBAR.d.trip[HBAR.d.mode[HBAR.d.m]] = 0;
 	}
 }

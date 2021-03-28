@@ -40,6 +40,8 @@ void HMI2_Init(void) {
 
 void HMI2_Refresh(void) {
 	HMI2.d.run = HMI2.d.tick && (_GetTickMS() - HMI2.d.tick) < HMI2_TIMEOUT;
+
+	if (!HMI2.d.run) HMI2.d.mirroring = 0;
 }
 
 void HMI2_PowerByCan(uint8_t state) {
@@ -74,7 +76,7 @@ void HMI2_PowerOff(void) {
 /* ====================================== CAN RX
  * =================================== */
 void HMI2_RX_State(can_rx_t *Rx) {
-	HMI1.d.state.mirroring = (Rx->data.u8[0] >> 0) & 0x01;
+	HMI2.d.mirroring = (Rx->data.u8[0] >> 0) & 0x01;
 
 	// save state
 	HMI2.d.tick = _GetTickMS();

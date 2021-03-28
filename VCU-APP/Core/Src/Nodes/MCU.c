@@ -207,7 +207,7 @@ uint8_t MCU_TX_Setting(uint8_t on) {
 	can_tx_t Tx = {0};
 
 	// set message
-	Tx.data.u8[4] = HBAR.d.reverse;
+	Tx.data.u8[4] = HBAR.state[HBAR_K_REVERSE];
 	Tx.data.u8[5] = on & 0x01;
 	Tx.data.u8[5] |= (0 & 0x01) << 1;
 	Tx.data.u8[5] |= (HBAR.d.mode[HBAR_M_DRIVE] & 0x03) << 2;
