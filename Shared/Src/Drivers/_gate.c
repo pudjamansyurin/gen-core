@@ -165,7 +165,7 @@ void GATE_FanBMS(GPIO_PinState state) {
 
 void GATE_HornToggle(void) {
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(500);
+  _DelayMS(200);
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(200);
 }

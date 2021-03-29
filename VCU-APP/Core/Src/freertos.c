@@ -1432,10 +1432,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																	BMS.r.Param1(&Rx);
+																			BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																	BMS.r.Param2(&Rx);
+																			BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;
@@ -1487,7 +1487,7 @@ void StartCanTxTask(void *argument)
 
 		// send every 20ms
 		if (HMI1.d.active)
-			VCU.t.SwitchModeControl();
+			VCU.t.SwitchControl();
 
 		// send every 500ms
 		if (_GetTickMS() - last500ms > 500) {
@@ -1571,21 +1571,18 @@ void StartGateTask(void *argument)
 		TASKS.tick.gate = _GetTickMS();
 
 		// wait forever
-		if (_osFlagAny(&notif, 500)) {
+		if (_osFlagOne(&notif, FLAG_GATE_HBAR, 10)) {
 			// handle bounce effect
 			_DelayMS(50);
 
-			// Handle switch EXTI interrupt
-			if (notif & FLAG_GATE_HBAR) {
-				HBAR_ReadStarter();
-				if (VCU.d.state >= VEHICLE_STANDBY)
-					HBAR_ReadStates();
-			}
+			HBAR_ReadStarter();
+			if (VCU.d.state >= VEHICLE_STANDBY)
+				HBAR_ReadStates();
 		}
 
 		// GATE Output Control
 		HMI1.Power(VCU.d.state >= VEHICLE_STANDBY);
-		GATE_FanBMS(BMS.d.overheat);
+		// GATE_FanBMS(BMS.d.overheat);
 	}
 	/* USER CODE END StartGateTask */
 }

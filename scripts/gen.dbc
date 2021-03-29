@@ -1,0 +1,121 @@
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: HMI1 HMI2 VCU BMS MCU
+
+
+BO_ 1984 HMI1Heartbeat: 2 HMI1
+ SG_ HMI1Version : 0|16@1+ (1,0) [0|65535] ""  VCU
+
+BO_ 1968 VCUHeartbeat: 2 VCU
+ SG_ VCUVersion : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+
+BO_ 2000 HMI2Heartbeat: 2 HMI2
+ SG_ HMI2Version : 0|16@1+ (1,0) [0|65535] ""  VCU
+
+BO_ 42 VCUSwitchControl: 5 VCU
+ SG_ ABSState : 0|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ MirroringState : 1|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ LampState : 2|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ ErrorState : 3|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ OverheatState : 4|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ FingerState : 5|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ RemoteState : 6|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ DaylightState : 7|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ SeinLeftState : 8|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ SeinRightState : 9|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ HbarReverseState : 10|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ DriveMode : 16|2@1+ (1,0) [0|2] ""  HMI1
+ SG_ TripMode : 18|2@1+ (1,0) [0|2] ""  HMI1
+ SG_ ReportMode : 20|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ ModeState : 21|2@1+ (1,0) [0|2] ""  HMI1
+ SG_ ModeHide : 23|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ SpeedVal : 24|8@1+ (1,0) [0|0] "km/h"  HMI1
+ SG_ DiscurVal : 32|8@1+ (1,0) [0|0] "A"  HMI1
+
+BO_ 43 VCUDatetime: 8 VCU
+ SG_ Seconds : 0|8@1+ (1,0) [0|60] ""  HMI2
+ SG_ Minutes : 8|8@1+ (1,0) [0|60] ""  HMI2
+ SG_ Hours : 16|8@1+ (1,0) [0|24] ""  HMI2
+ SG_ Date : 24|8@1+ (1,0) [0|31] ""  HMI2
+ SG_ Month : 32|8@1+ (1,0) [0|12] ""  HMI2
+ SG_ Year : 40|8@1+ (1,0) [0|0] ""  HMI2
+ SG_ HMI2ShutdownReq : 48|8@1+ (1,0) [0|1] ""  HMI2
+
+BO_ 44 VCUMixedData: 4 VCU
+ SG_ NetSignalVal : 0|8@1+ (1,0) [0|100] "%"  HMI1
+ SG_ BMSSocVal : 8|8@1+ (1,0) [0|100] "%"  HMI1
+ SG_ RangeReportVal : 16|8@1+ (1,0) [0|0] "km"  HMI1
+ SG_ AverageReportVal : 24|8@1+ (1,0) [0|0] "km/kwh"  HMI1
+
+BO_ 45 VCUTripData: 8 VCU
+ SG_ TripAVal : 0|16@1+ (1,0) [0|0] "m"  HMI1
+ SG_ TripBVal : 16|16@1+ (1,0) [0|0] "m"  HMI1
+ SG_ OdomVal : 32|32@1+ (1,0) [0|99999] "km"  HMI1
+
+BO_ 2147484082 BMSSetting: 8 VCU
+ SG_ BMSState : 1|2@1+ (1,0) [0|3] ""  BMS
+ SG_ RecoverShortCircuit : 8|1@1+ (1,0) [0|1] ""  BMS
+ SG_ SocScalling : 16|2@1+ (1,0) [0|3] ""  BMS
+
+BO_ 192 MCUSetting: 7 VCU
+ SG_ DirectionCommand : 32|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ InverterEnable : 40|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ InverterDischargeEnable : 41|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DrivingMode : 42|2@1+ (1,0) [0|0] "" Vector__XXX
+
+
+
+BA_DEF_ BO_  "GenMsgBackgroundColor" STRING ;
+BA_DEF_ BO_  "GenMsgForegroundColor" STRING ;
+BA_DEF_ BO_  "matchingcriteria" INT 0 0;
+BA_DEF_ BO_  "filterlabeling" INT 0 0;
+BA_DEF_ BO_  "matchingcriteria" INT 0 0;
+BA_DEF_ BO_  "filterlabeling" INT 0 0;
+BA_DEF_DEF_  "GenMsgBackgroundColor" "#ffffff";
+BA_DEF_DEF_  "GenMsgForegroundColor" "#000000";
+BA_DEF_DEF_  "matchingcriteria" 0;
+BA_DEF_DEF_  "filterlabeling" 0;
+BA_DEF_DEF_  "matchingcriteria" 0;
+BA_DEF_DEF_  "filterlabeling" 0;
+VAL_ 42 DriveMode 0 "Economy" 1 "Standard" 2 "Sport" ;
+VAL_ 42 TripMode 0 "TripA" 1 "TripB" 2 "Odometer" ;
+VAL_ 42 ReportMode 0 "Range" 1 "Average" ;
+VAL_ 42 ModeState 0 "Drive" 1 "Trip" 2 "Report" ;
+VAL_ 2147484082 BMSState 0 "Idle" 1 "Discharge" 2 "Charge" 3 "Full" ;
+VAL_ 2147484082 SocScalling 0 "15_85" 1 "20_80" 2 "10_90" 3 "0_100" ;
+VAL_ 192 DirectionCommand 0 "CW" 1 "CCW" ;
+VAL_ 192 DrivingMode 0 "Economic" 1 "Standard" 2 "Sport" ;
+
