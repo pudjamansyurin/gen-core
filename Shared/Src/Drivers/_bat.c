@@ -15,8 +15,10 @@ extern osMutexId_t BatMutexHandle;
 #endif
 
 /* Private variables --------------------------------------------------------*/
-static uint16_t BUFFER[AVERAGE_SZ];
-static ADC_HandleTypeDef *padc = &hadc1;
+static bat_t BAT = {
+		.buf = {0},
+		.padc = &hadc1,
+};
 
 /* Private functions declaration
  * ----------------------------------------------*/
@@ -33,33 +35,25 @@ void BAT_Init(void) {
 
 void BAT_DeInit(void) {
   lock();
-  HAL_ADC_DeInit(padc);
+  HAL_ADC_DeInit(BAT.padc);
   unlock();
 }
-
-// void BAT_ReInit(void) {
-//	lock();
-//	BAT_DeInit();
-//	_DelayMS(500);
-//	BAT_Init();
-//	unlock();
-//}
 
 uint16_t BAT_ScanValue(void) {
   uint16_t value = 0;
   uint8_t res;
 
   lock();
-  HAL_ADC_Start(padc);
-  res = HAL_ADC_PollForConversion(padc, 100) == HAL_OK;
+  HAL_ADC_Start(BAT.padc);
+  res = HAL_ADC_PollForConversion(BAT.padc, 100) == HAL_OK;
 
   if (res)
-    value = HAL_ADC_GetValue(padc);
-  HAL_ADC_Stop(padc);
+    value = HAL_ADC_GetValue(BAT.padc);
+  HAL_ADC_Stop(BAT.padc);
 
   if (res) {
     value = (value * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
-    value = MovingAverage(BUFFER, AVERAGE_SZ, value);
+    value = MovingAverage(BAT.buf, AVERAGE_SZ, value);
   }
   unlock();
 

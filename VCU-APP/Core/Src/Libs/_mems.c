@@ -18,7 +18,11 @@ extern osMutexId_t MemsRecMutexHandle;
  * ----------------------------------------------------------*/
 mems_t MEMS = {
 		.d = {0},
-		.drag = {0},
+		.drag = {
+				.init = 1,
+				.ypr_cur = {0},
+				.ypr_ref = {0},
+		},
 		.pi2c = &hi2c3,
 };
 
@@ -26,8 +30,8 @@ mems_t MEMS = {
 static void lock(void);
 static void unlock(void);
 static uint8_t Capture(mems_raw_t *raw);
-static void ConvertGyro(gyroscope_t *gyro, mems_axis_t *axis);
-static uint8_t Dragged(gyroscope_t *ref, gyroscope_t *cur);
+static void ConvertAccel(mems_ypr_t *ypr, mems_axis_t *axis);
+static uint8_t Dragged(mems_ypr_t *ref, mems_ypr_t *cur);
 #if MEMS_DEBUG
 static void Debugger(move_t *move);
 static void RawDebugger(mems_raw_t *raw);
@@ -102,23 +106,28 @@ uint8_t MEMS_Capture(void) {
 
 uint8_t MEMS_Process(void) {
 	mems_raw_t *raw = &(MEMS.d.raw);
-	gyroscope_t *gyro = &(MEMS.drag.gyro_cur);
+	mems_ypr_t *ypr = &(MEMS.drag.ypr_cur);
 
 	lock();
-	ConvertGyro(gyro, &(raw->gyroscope));
+	ConvertAccel(ypr, &(raw->accelerometer));
 	MEMS.d.tot.accelerometer = sqrt(
 			pow(raw->accelerometer.x, 2) +
 			pow(raw->accelerometer.y, 2) +
 			pow(raw->accelerometer.z, 2)
 	);
 	MEMS.d.tot.gyroscope = sqrt(
-			pow(gyro->roll, 2) +
-			pow(gyro->pitch, 2) +
-			pow(gyro->yaw, 2)
+			pow(raw->gyroscope.x, 2) +
+			pow(raw->gyroscope.y, 2) +
+			pow(raw->gyroscope.z, 2)
+	);
+	MEMS.d.tot.ypr = sqrt(
+			pow(ypr->roll, 2) +
+			pow(ypr->pitch, 2) +
+			pow(ypr->yaw, 2)
 	);
 
-	MEMS.d.crash = MEMS.d.tot.accelerometer > ACCELEROMETER_LIMIT;
-	MEMS.d.fall = MEMS.d.tot.gyroscope > GYROSCOPE_LIMIT;
+	MEMS.d.crash = MEMS.d.tot.accelerometer > CRASH_LIMIT;
+	MEMS.d.fall = MEMS.d.tot.ypr > FALL_LIMIT;
 
 #if MEMS_DEBUG
 	Debugger(move);
@@ -129,16 +138,16 @@ uint8_t MEMS_Process(void) {
 }
 
 void MEMS_ActivateDetector(void) {
-	gyroscope_t *gyro_cur = &(MEMS.drag.gyro_cur);
-	gyroscope_t *gyro_ref = &(MEMS.drag.gyro_ref);
+	mems_ypr_t *cur = &(MEMS.drag.ypr_cur);
+	mems_ypr_t *ref = &(MEMS.drag.ypr_ref);
 
 	lock();
 	if (MEMS.drag.init) {
 		MEMS.drag.init = 0;
-		memcpy(gyro_ref, gyro_cur, sizeof(gyroscope_t));
+		memcpy(ref, cur, sizeof(mems_ypr_t));
 		VCU.SetEvent(EVG_BIKE_MOVED, 0);
 	}
-	else if (Dragged(gyro_ref, gyro_cur))
+	else if (Dragged(ref, cur))
 		VCU.SetEvent(EVG_BIKE_MOVED, 1);
 	unlock();
 }
@@ -187,22 +196,22 @@ static uint8_t Capture(mems_raw_t *raw) {
 	return ok;
 }
 
-static void ConvertGyro(gyroscope_t *gyro, mems_axis_t *axis) {
+static void ConvertAccel(mems_ypr_t *ypr, mems_axis_t *axis) {
 	float yaw, pitch, roll;
 
 	yaw = sqrt(pow(axis->x, 2) + pow(axis->y, 2));
 	roll = sqrt(pow(axis->x, 2) + pow(axis->z, 2));
 	pitch = sqrt(pow(axis->y, 2) + pow(axis->z, 2));
 
-	gyro->yaw = yaw == 0 ? 0 : RAD2DEG(atan(axis->z / yaw));
-	gyro->roll = roll == 0 ? 0 : RAD2DEG(atan(axis->y / roll));
-	gyro->pitch = pitch == 0 ? 0 : RAD2DEG(atan(axis->x / pitch));
+	ypr->yaw = yaw == 0 ? 0 : RAD2DEG(atan(axis->z / yaw));
+	ypr->roll = roll == 0 ? 0 : RAD2DEG(atan(axis->y / roll));
+	ypr->pitch = pitch == 0 ? 0 : RAD2DEG(atan(axis->x / pitch));
 
 	// normalize yaw axis
-	gyro->yaw -= 90;
+	ypr->yaw -= 90;
 }
 
-static uint8_t Dragged(gyroscope_t *ref, gyroscope_t *cur) {
+static uint8_t Dragged(mems_ypr_t *ref, mems_ypr_t *cur) {
 	uint8_t euclidean;
 
 	euclidean = sqrt(pow(ref->roll - cur->roll, 2) +

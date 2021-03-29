@@ -825,17 +825,9 @@ void StartReporterTask(void *argument)
 	for (;;) {
 		TASKS.tick.reporter = _GetTickMS();
 
-		RPT_FrameDecider(!GATE_ReadPower5v(), &frame);
-		if (VCU.d.override.full)
-			frame = FR_FULL;
+		frame = RPT_FrameDecider();
+		interval = RPT_IntervalDecider();
 
-		interval = VCU.d.interval;
-		if (VCU.d.override.interval)
-			interval = VCU.d.override.interval;
-
-		// reset some events group
-		VCU.SetEvent(EVG_NET_SOFT_RESET, 0);
-		VCU.SetEvent(EVG_NET_HARD_RESET, 0);
 
 		RPT_ReportCapture(frame, &report);
 
@@ -844,6 +836,10 @@ void StartReporterTask(void *argument)
 			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
 			_DelayMS(1);
 		}
+
+		// reset some events group
+		VCU.SetEvent(EVG_NET_SOFT_RESET, 0);
+		VCU.SetEvent(EVG_NET_HARD_RESET, 0);
 
 		_osFlagOne(&notif, FLAG_REPORTER_YIELD, interval * 1000);
 	}
@@ -922,11 +918,11 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_OVERRIDE_RPT_INTERVAL:
-					VCU.d.override.interval = *(uint16_t *)cmd.data.value;
+					RPT.override.interval = *(uint16_t *)cmd.data.value;
 					break;
 
 				case CMD_OVERRIDE_RPT_FRAME:
-					VCU.d.override.full = val;
+					RPT.override.frame = val;
 					break;
 
 				case CMD_OVERRIDE_RMT_SEAT:
@@ -1223,7 +1219,9 @@ void StartRemoteTask(void *argument)
 	for (;;) {
 		TASKS.tick.remote = _GetTickMS();
 
-		if (_osFlagAny(&notif, 4)) {
+		RMT_Refresh(VCU.d.state);
+
+		if (_osFlagAny(&notif, 2)) {
 			if (notif & FLAG_REMOTE_TASK_STOP) {
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 
@@ -1249,7 +1247,6 @@ void StartRemoteTask(void *argument)
 			}
 		}
 
-		RMT_Refresh(VCU.d.state);
 	}
 	/* USER CODE END StartRemoteTask */
 }

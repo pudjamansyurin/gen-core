@@ -48,22 +48,21 @@ vcu_t VCU = {
 void VCU_Init(void) {
 	VCU.d.error = 0;
 	VCU.d.state = VEHICLE_BACKUP;
-	VCU.d.interval = RPT_INTERVAL_BACKUP;
-	VCU.d.bat = 0;
 	VCU.d.events = 0;
 
 	VCU.d.override.state = VEHICLE_UNKNOWN;
 }
 
 void VCU_Refresh(void) {
+	BAT_ScanValue();
+
 	VCU.d.uptime++;
-	VCU.d.bat = BAT_ScanValue();
 	VCU.d.error = VCU.ReadEvent(EVG_BIKE_FALLEN);
 }
 
 void VCU_CheckState(void) {
 	static vehicle_state_t lastState = VEHICLE_UNKNOWN;
-	static uint32_t starterTick = 0;
+	static uint32_t starterTick = 0, independentTick = 0;
 	uint8_t starter, normalize = 0;
 	vehicle_state_t initialState;
 
@@ -83,8 +82,6 @@ void VCU_CheckState(void) {
 			if (lastState != VEHICLE_LOST) {
 				lastState = VEHICLE_LOST;
 				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
-
-				VCU.d.interval = RPT_INTERVAL_LOST;
 			}
 
 			if (GATE_ReadPower5v())
@@ -101,12 +98,11 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_STOP);
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_STOP);
 
-				VCU.d.interval = RPT_INTERVAL_BACKUP;
-				VCU.d.tick.independent = _GetTickMS();
+				independentTick = _GetTickMS();
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 			}
 
-			if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST)*1000)
+			if (_GetTickMS() - independentTick > (VCU_ACTIVATE_LOST)*1000)
 				VCU.d.state--;
 			else if (GATE_ReadPower5v())
 				VCU.d.state++;
@@ -125,7 +121,6 @@ void VCU_CheckState(void) {
 
 				HBAR_Init();
 				normalize = 0;
-				VCU.d.interval = RPT_INTERVAL_NORMAL;
 				VCU.d.override.state = VEHICLE_UNKNOWN;
 			}
 

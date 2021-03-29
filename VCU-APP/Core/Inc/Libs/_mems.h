@@ -16,8 +16,8 @@
 #define MEMS_TIMEOUT (uint16_t) 5000 // in ms
 
 #define DRAGGED_LIMIT (uint8_t)(10)
-#define GYROSCOPE_LIMIT (uint8_t)(45)
-#define ACCELEROMETER_LIMIT (uint8_t)(16)
+#define FALL_LIMIT (uint8_t)(45)
+#define CRASH_LIMIT (uint8_t)(16)
 
 #define RAD2DEG(rad) ((rad)*180.0 / M_PI)
 
@@ -33,7 +33,7 @@ typedef struct __attribute__((packed)) {
 	float yaw;
 	float pitch;
 	float roll;
-} gyroscope_t;
+} mems_ypr_t;
 
 typedef struct {
 	mems_axis_t accelerometer;
@@ -44,12 +44,13 @@ typedef struct {
 typedef struct {
 	float accelerometer;
 	float gyroscope;
+	float ypr;
 } mems_total_t;
 
 typedef struct {
 	uint8_t init;
-	gyroscope_t gyro_cur;
-	gyroscope_t gyro_ref;
+	mems_ypr_t ypr_cur;
+	mems_ypr_t ypr_ref;
 } drag_t;
 
 typedef struct {

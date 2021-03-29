@@ -6,6 +6,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "Drivers/_bat.h"
 #include "Libs/_firmware.h"
 #include "Libs/_command.h"
 #include "Libs/_eeprom.h"
@@ -63,7 +64,7 @@ uint8_t FW_PostFota(response_t *response) {
     switch (*(uint32_t *)IAP_RESPONSE_ADDR) {
     case IAP_BATTERY_LOW:
       sprintf(response->data.message, "%s Battery Low (-%u mV)", node,
-              SIMCOM_VOLTAGE_MIN - VCU.d.bat);
+              SIMCOM_VOLTAGE_MIN - BAT_ScanValue());
       break;
     case IAP_SIMCOM_TIMEOUT:
       sprintf(response->data.message, "%s Internet Timeout", node);

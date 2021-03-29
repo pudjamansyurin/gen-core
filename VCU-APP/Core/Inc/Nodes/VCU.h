@@ -29,19 +29,12 @@ typedef enum {
  * --------------------------------------------------------------*/
 typedef struct {
 	uint8_t error;
-	uint16_t bat;
 	uint16_t events;
 	uint32_t uptime;
-	uint16_t interval;
 	vehicle_state_t state;
 	struct {
 		int8_t state;
-		uint16_t interval;
-		uint8_t full;
 	} override;
-	struct {
-		uint32_t independent;
-	} tick;
 } vcu_data_t;
 
 typedef struct {

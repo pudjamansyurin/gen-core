@@ -14,7 +14,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION (uint16_t)631
+#define VCU_VERSION (uint16_t)632
 #define EEPROM_RESET (uint16_t)53
 
 #define CAN_DEBUG		0

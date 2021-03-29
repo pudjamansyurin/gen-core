@@ -31,16 +31,22 @@
 /* Exported enum
  * ---------------------------------------------------------------*/
 typedef enum {
-	FR_SIMPLE = 0,
-	FR_FULL = 1,
+	FR_SIMPLE = 1,
+	FR_FULL = 2,
 } FRAME_TYPE;
 
 /* Exported struct
  * --------------------------------------------------------------*/
+typedef struct __attribute__((packed)) {
+	struct {
+		uint16_t interval;
+		uint8_t frame;
+	} override;
+} reporter_t;
+
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {
 	char prefix[2];
-	//  uint32_t crc;
 	uint8_t size;
 	uint32_t vin;
 	datetime_t send_time;
@@ -48,7 +54,6 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	char prefix[2];
-	//  uint32_t crc;
 	uint8_t size;
 	uint32_t vin;
 	datetime_t send_time;
@@ -100,13 +105,19 @@ typedef struct __attribute__((packed)) {
 		int16_t z;
 	} accel;
 	struct __attribute__((packed)) {
+		int16_t x;
+		int16_t y;
+		int16_t z;
+	} gyro;
+	struct __attribute__((packed)) {
 		int16_t yaw;
 		int16_t pitch;
 		int16_t roll;
-	} gyro;
+	} ypr;
 	struct __attribute__((packed)) {
 		uint16_t accelerometer;
 		uint16_t gyroscope;
+		uint16_t ypr;
 		uint16_t temperature;
 	} total;
 } mems_report_t;
@@ -134,8 +145,8 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
 	uint8_t active;
 	uint8_t run;
-	uint8_t soc;
 	uint16_t fault;
+	uint8_t soc;
 	struct __attribute__((packed)) {
 		uint32_t id;
 		uint16_t fault;
@@ -240,10 +251,15 @@ typedef struct {
 	uint8_t size;
 } payload_t;
 
+/* Exported variables
+ * ----------------------------------------------------------*/
+extern reporter_t RPT;
+
 /* Public functions prototype ------------------------------------------------*/
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report);
 void RPT_ResponseCapture(response_t *response);
-void RPT_FrameDecider(uint8_t backup, FRAME_TYPE *frame);
+FRAME_TYPE RPT_FrameDecider(void);
+uint16_t RPT_IntervalDecider(void);
 uint8_t RPT_PayloadPending(payload_t *payload);
 uint8_t RPT_WrapPayload(payload_t *payload);
 #endif /* REPORTER_H_ */

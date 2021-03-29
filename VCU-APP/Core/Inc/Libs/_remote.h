@@ -13,7 +13,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define RMT_TIMEOUT (uint16_t)3000 // in ms
-#define RMT_BEAT_TIMEOUT (uint32_t)7000         // in ms
+#define RMT_BEAT_TIMEOUT (uint32_t)10000         // in ms
 #define RMT_BEAT_TIMEOUT_RUN (uint32_t)30000    // in ms
 #define RMT_PAIRING_TIMEOUT (uint32_t)5000 // in ms
 

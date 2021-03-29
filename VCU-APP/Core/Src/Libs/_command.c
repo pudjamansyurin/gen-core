@@ -7,7 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_command.h"
-#include "Drivers/_crc.h"
 #include "Drivers/_rtc.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
@@ -42,15 +41,6 @@ uint8_t CMD_ValidateCommand(void *ptr, uint8_t len) {
 			sizeof(cmd->data);
 	if (cmd->header.size > size)
 		return 0;
-
-	//  uint32_t crc;
-	//	crc = CRC_Calculate8(
-	//			(uint8_t*) &(cmd->header.size),
-	//			sizeof(cmd->header.size) + size,
-	//			0);
-	//
-	//	if (cmd->header.crc != crc)
-	//		return;
 
 	if (cmd->header.vin != VIN_VALUE)
 		return 0;
