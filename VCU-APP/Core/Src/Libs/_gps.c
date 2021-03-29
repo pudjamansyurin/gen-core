@@ -28,7 +28,6 @@ gps_t GPS = {
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint8_t DataInvalid(void);
 #if GPS_DEBUG
 static void Debugger(char *ptr, size_t len);
 #endif
@@ -44,11 +43,10 @@ uint8_t GPS_Init(void) {
 	GATE_GpsReset();
 	_DelayMS(GPS_TIMEOUT);
 
-	if (!DataInvalid())
-		nmea_init(&(GPS.d.nmea));
+	nmea_init(&(GPS.d.nmea));
 	unlock();
 
-	return DataInvalid();
+	return GPS.d.tick > 0;
 }
 
 void GPS_DeInit(void) {
@@ -78,14 +76,13 @@ void GPS_Flush(void) {
 }
 
 void GPS_ReceiveCallback(void *ptr, size_t len) {
-	if (DataInvalid()) return;
-
 #if GPS_DEBUG
 	Debugger(ptr, len);
 #endif
-	GPS.d.tick = _GetTickMS();
-	nmea_process(&(GPS.d.nmea), (char *)ptr, len);
-	osThreadFlagsSet(GpsTaskHandle, FLAG_GPS_RECEIVED);
+	if (nmea_process(&(GPS.d.nmea), (char *)ptr, len))  {
+		GPS.d.tick = _GetTickMS();
+		osThreadFlagsSet(GpsTaskHandle, FLAG_GPS_RECEIVED);
+	}
 }
 
 /* Private functions implementation
@@ -100,10 +97,6 @@ static void unlock(void) {
 #if (RTOS_ENABLE)
 	osMutexRelease(GpsRecMutexHandle);
 #endif
-}
-
-static uint8_t DataInvalid(void) {
-	return strnlen(UBLOX_UART_RX, UBLOX_UART_RX_SZ) < GPS_LENGTH_MIN;
 }
 
 #if GPS_DEBUG
