@@ -91,10 +91,63 @@ BO_ 2147484082 BMSSetting: 8 VCU
  SG_ SocScalling : 16|2@1+ (1,0) [0|3] ""  BMS
 
 BO_ 192 MCUSetting: 7 VCU
- SG_ DirectionCommand : 32|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ InverterEnable : 40|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ InverterDischargeEnable : 41|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DrivingMode : 42|2@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DirectionCommand : 32|1@1+ (1,0) [0|0] ""  MCU
+ SG_ InverterEnable : 40|1@1+ (1,0) [0|0] ""  MCU
+ SG_ InverterDischargeEnable : 41|1@1+ (1,0) [0|0] ""  MCU
+ SG_ DrivingMode : 42|2@1+ (1,0) [0|0] ""  MCU
+
+BO_ 193 MCUParamTX: 6 VCU
+ SG_ ParamTX : 0|16@1+ (1,0) [0|0] ""  MCU
+ SG_ CommandTX : 16|8@1+ (1,0) [0|0] ""  MCU
+ SG_ DataTX : 32|16@1+ (1,0) [0|0] ""  MCU
+
+BO_ 194 MCUParamRX: 6 MCU
+ SG_ ParamRX : 0|16@1+ (1,0) [0|0] ""  VCU
+ SG_ CommandRX : 16|8@1+ (1,0) [0|0] ""  VCU
+ SG_ DataRX : 32|16@1+ (1,0) [0|0] ""  VCU
+
+BO_ 160 MCUTemperatures: 8 MCU
+ SG_ ModuleTempA : 0|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
+ SG_ ModuleTempB : 16|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
+ SG_ ModuleTempC : 32|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
+ SG_ ControlBoardTemp : 48|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
+
+BO_ 161 MCUTorque: 8 MCU
+ SG_ MotorTemp : 0|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
+ SG_ MotorRPM : 16|16@1- (1,0) [0|0] "rpm" Vector__XXX
+ SG_ TorqueCommanded : 32|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
+ SG_ TorqueFeedback : 48|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
+
+BO_ 162 MCUCurrent: 8 MCU
+ SG_ PhaseCurrentA : 0|16@1- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ PhaseCurrentB : 16|16@1- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ PhaseCurrentC : 32|16@1- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ DCBusCurrent : 48|16@1- (0.1,0) [0|0] "A" Vector__XXX
+
+BO_ 163 MCUCurrentDQ: 8 MCU
+ SG_ Commanded_D : 0|16@1- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ Commanded_Q : 16|16@1- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ Feedback_D : 32|16@1- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ Feedback_Q : 48|16@1- (0.1,0) [0|0] "A" Vector__XXX
+
+BO_ 164 MCUFaultCodes: 8 MCU
+ SG_ FaultPOST : 0|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ FaultRUN : 32|32@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 165 MCUModulation: 8 MCU
+ SG_ ModulationIndex : 0|16@1- (0.001,0) [0|0] "" Vector__XXX
+ SG_ DCBusVoltage : 16|16@1- (0.1,0) [0|0] "Volt" Vector__XXX
+ SG_ Uptime : 32|32@1+ (0.003,0) [0|0] "Second" Vector__XXX
+
+BO_ 166 MCUInternalStates: 8 MCU
+ SG_ VSMState : 0|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ InverterState : 16|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DrivingModeStatus : 32|2@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ InverterActiveDischarge : 37|3@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ InverterCommandMode : 40|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ InverterEnabled : 48|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ InverterLockout : 55|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DirectionForward : 56|8@1+ (1,0) [0|0] "" Vector__XXX
 
 
 
@@ -118,4 +171,28 @@ VAL_ 2147484082 BMSState 0 "Idle" 1 "Discharge" 2 "Charge" 3 "Full" ;
 VAL_ 2147484082 SocScalling 0 "15_85" 1 "20_80" 2 "10_90" 3 "0_100" ;
 VAL_ 192 DirectionCommand 0 "CW" 1 "CCW" ;
 VAL_ 192 DrivingMode 0 "Economic" 1 "Standard" 2 "Sport" ;
+VAL_ 193 ParamTX 80 "EconomicDiscurMax" 81 "EconomicTorqueMax" 82 "EconomicRBSSwitch" 83 "StandardDiscurMax" 84 "StandardTorqueMax" 85 "StandardRBSSwitch" 86 "SportDiscurMax" 87 "SportTorqueMax" 88 "SportRBSSwitch" 128 "SpeedMax" ;
+VAL_ 193 CommandTX 0 "Read" 1 "Write" ;
+VAL_ 166 VSMState 0 "Start" 1 "Pre-charge Init" 2 "Pre-charge Active" 3 "Pre-charge Complete" 4 "Wait" 5 "Ready" 6 "Motor Running" 7 "Blink Fault Code" 14 "Shutdown in Process" 15 "Recycle Power" ;
+VAL_ 166 InverterState 0 "Power on" 1 "Stop" 2 "Open Loop" 3 "Closed Loop" 4 "Wait" 8 "Idle Run" 9 "Idle Stop" ;
+VAL_ 166 DrivingModeStatus 0 "Economic" 1 "Standard" 2 "Sport" ;
+VAL_ 166 InverterActiveDischarge 0 "DischargeDisabled" 1 "DischargeEnabled" 2 "SpeedCheck" 3 "DischargeActive" 4 "DischargeCompleted" ;
+VAL_ 166 InverterCommandMode 0 "ModeCAN" 1 "ModeVSM" ;
+SIG_VALTYPE_ 160 ModuleTempA : 1;
+SIG_VALTYPE_ 160 ModuleTempB : 1;
+SIG_VALTYPE_ 160 ModuleTempC : 1;
+SIG_VALTYPE_ 160 ControlBoardTemp : 1;
+SIG_VALTYPE_ 161 MotorTemp : 1;
+SIG_VALTYPE_ 161 MotorRPM : 1;
+SIG_VALTYPE_ 161 TorqueCommanded : 1;
+SIG_VALTYPE_ 161 TorqueFeedback : 1;
+SIG_VALTYPE_ 162 PhaseCurrentA : 1;
+SIG_VALTYPE_ 162 PhaseCurrentB : 1;
+SIG_VALTYPE_ 162 PhaseCurrentC : 1;
+SIG_VALTYPE_ 162 DCBusCurrent : 1;
+SIG_VALTYPE_ 163 Commanded_D : 1;
+SIG_VALTYPE_ 163 Commanded_Q : 1;
+SIG_VALTYPE_ 163 Feedback_D : 1;
+SIG_VALTYPE_ 163 Feedback_Q : 1;
+SIG_VALTYPE_ 165 DCBusVoltage : 1;
 
