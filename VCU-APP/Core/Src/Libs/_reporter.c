@@ -86,13 +86,12 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 		mems->gyro.y = MEMS.d.raw.gyroscope.y * 10;
 		mems->gyro.z = MEMS.d.raw.gyroscope.z * 10;
 
-		mems->ypr.yaw = MEMS.drag.ypr_cur.yaw * 10;
-		mems->ypr.pitch = MEMS.drag.ypr_cur.pitch * 10;
-		mems->ypr.roll = MEMS.drag.ypr_cur.roll * 10;
+		mems->ypr.pitch = MEMS.drag.tilt_cur.pitch * 10;
+		mems->ypr.roll = MEMS.drag.tilt_cur.roll * 10;
 
 		mems->total.accelerometer = MEMS.d.tot.accelerometer * 100;
 		mems->total.gyroscope = MEMS.d.tot.gyroscope * 10;
-		mems->total.ypr = MEMS.d.tot.ypr * 10;
+		mems->total.tilt = MEMS.d.tot.tilt * 10;
 		mems->total.temperature = MEMS.d.raw.temperature * 10;
 
 		remote_report_t *rmt = &(d->opt.rmt);

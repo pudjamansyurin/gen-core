@@ -110,14 +110,13 @@ typedef struct __attribute__((packed)) {
 		int16_t z;
 	} gyro;
 	struct __attribute__((packed)) {
-		int16_t yaw;
 		int16_t pitch;
 		int16_t roll;
 	} ypr;
 	struct __attribute__((packed)) {
 		uint16_t accelerometer;
 		uint16_t gyroscope;
-		uint16_t ypr;
+		uint16_t tilt;
 		uint16_t temperature;
 	} total;
 } mems_report_t;

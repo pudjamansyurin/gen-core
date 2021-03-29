@@ -30,10 +30,9 @@ typedef struct {
 } mems_axis_t;
 
 typedef struct __attribute__((packed)) {
-	float yaw;
 	float pitch;
 	float roll;
-} mems_ypr_t;
+} mems_tilt_t;
 
 typedef struct {
 	mems_axis_t accelerometer;
@@ -44,13 +43,13 @@ typedef struct {
 typedef struct {
 	float accelerometer;
 	float gyroscope;
-	float ypr;
+	float tilt;
 } mems_total_t;
 
 typedef struct {
 	uint8_t init;
-	mems_ypr_t ypr_cur;
-	mems_ypr_t ypr_ref;
+	mems_tilt_t tilt_cur;
+	mems_tilt_t tilt_ref;
 } drag_t;
 
 typedef struct {
