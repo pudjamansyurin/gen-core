@@ -63,7 +63,7 @@ uint8_t MQTT_Subscribe(void) {
   len = MQTTSerialize_subscribe(buf, buflen, 0, ++MQTT.packetid, count,
                                 topicFilters, qoss);
 
-  if (!Upload(buf, len, SUBACK, 5000))
+  if (!Upload(buf, len, SUBACK, MQTT_UPLOAD_TIME))
     return 0;
 
   if (!MQTTDeserialize_suback(&(d.packetid), count, &count_rx, qoss_rx, buf,
@@ -102,7 +102,7 @@ uint8_t MQTT_Unsubscribe(void) {
   len = MQTTSerialize_unsubscribe(buf, buflen, 0, ++MQTT.packetid, count,
                                   &topicFilters);
 
-  if (!Upload(buf, len, UNSUBACK, 5000))
+  if (!Upload(buf, len, UNSUBACK, MQTT_UPLOAD_TIME))
     return 0;
 
   if (!MQTTDeserialize_unsuback(&(d.packetid), buf, buflen)) {
@@ -140,7 +140,7 @@ uint8_t MQTT_Connect(void) {
 
   // subscribe
   data.clientID.cstring = clientId;
-  data.cleansession = !MQTT_PERSISTENT;
+  data.cleansession = !MQTT_PERSIST_SESSION;
   data.keepAliveInterval = MQTT_KEEPALIVE;
   data.username.cstring = MQTT_USERNAME;
   data.password.cstring = MQTT_PASSWORD;
@@ -153,7 +153,7 @@ uint8_t MQTT_Connect(void) {
 
   len = MQTTSerialize_connect(buf, buflen, &data);
 
-  if (!Upload(buf, len, CONNACK, 5000))
+  if (!Upload(buf, len, CONNACK, MQTT_UPLOAD_TIME))
     return 0;
 
   if (!MQTTDeserialize_connack(&sessionPresent, &connack_rc, buf, buflen) ||
@@ -194,7 +194,7 @@ uint8_t MQTT_Ping(void) {
 
   len = MQTTSerialize_pingreq(buf, buflen);
 
-  if (!Upload(buf, len, PINGRESP, 5000))
+  if (!Upload(buf, len, PINGRESP, MQTT_UPLOAD_TIME))
     return 0;
 
   printf("MQTT:Pinged\n");
@@ -243,13 +243,13 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
 
   if (d->qos == 1) {
     len = MQTTSerialize_puback(buf, buflen, d->packetid);
-    if (!Upload(buf, len, 0, 5000))
+    if (!Upload(buf, len, 0, MQTT_UPLOAD_TIME))
       return 0;
   }
 
   else if (d->qos == 2) {
     len = MQTTSerialize_ack(buf, buflen, PUBREC, 0, d->packetid);
-    if (!Upload(buf, len, PUBREL, 5000))
+    if (!Upload(buf, len, PUBREL, MQTT_UPLOAD_TIME))
       return 0;
 
     if (!MQTTDeserialize_ack(&packettype, &(d->dup), &packetid, buf, buflen))
@@ -262,7 +262,7 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
     printf("MQTT:PUBREL packet mismatched\n");
 
     len = MQTTSerialize_pubcomp(buf, buflen, d->packetid);
-    if (!Upload(buf, len, 0, 5000))
+    if (!Upload(buf, len, 0, MQTT_UPLOAD_TIME))
       return 0;
   }
 
@@ -284,8 +284,7 @@ uint8_t MQTT_Willed(void) { return MQTT.willed; }
 
 /* Private functions implementation
  * -------------------------------------------*/
-static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic,
-                       int qos) {
+static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos) {
   MQTTString topicName = MQTTString_initializer;
   unsigned char buf[512];
   int len, buflen = sizeof(buf);
@@ -293,18 +292,16 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic,
   uint8_t reply = 0;
 
   topicName.cstring = topic;
-  len = MQTTSerialize_publish(buf, buflen, 0, qos, 1, ++MQTT.packetid,
-                              topicName, payload, payloadlen);
+  len = MQTTSerialize_publish(buf, buflen, 0, qos, 1, ++MQTT.packetid, topicName, payload, payloadlen);
 
   if (qos)
     reply = (qos == 1) ? PUBACK : PUBREC;
 
-  if (!Upload(buf, len, reply, 5000))
+  if (!Upload(buf, len, reply, MQTT_UPLOAD_TIME))
     return 0;
 
   if (qos == 1) {
-    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf,
-                             buflen))
+    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf, buflen))
       return 0;
 
     if (MQTT.packetid != d.packetid) {
@@ -315,8 +312,7 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic,
   }
 
   else if (qos == 2) {
-    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf,
-                             buflen))
+    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf, buflen))
       return 0;
 
     if (MQTT.packetid != d.packetid) {
@@ -326,11 +322,10 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic,
     printf("MQTT:PUBREC\n");
 
     len = MQTTSerialize_pubrel(buf, buflen, 0, MQTT.packetid);
-    if (!Upload(buf, len, PUBCOMP, 5000))
+    if (!Upload(buf, len, PUBCOMP, MQTT_UPLOAD_TIME))
       return 0;
 
-    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf,
-                             buflen))
+    if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf, buflen))
       return 0;
 
     if (MQTT.packetid != d.packetid) {
@@ -345,8 +340,7 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic,
   return 1;
 }
 
-static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,
-                      uint16_t timeout) {
+static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply, uint16_t timeout) {
   if (!Simcom_Upload(buf, len))
     return 0;
 
