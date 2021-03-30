@@ -122,6 +122,10 @@ typedef struct __attribute__((packed)) {
 	//	uint8_t rbs_switch;
 } mcu_template_t;
 
+typedef struct __attribute__((packed)) {
+	mcu_template_t tpl[HBAR_M_DRIVE_MAX];
+} mcu_templates_t;
+
 typedef struct {
 	int16_t rpm_max;
 	mcu_template_t tpl[HBAR_M_DRIVE_MAX];
@@ -183,7 +187,7 @@ typedef struct {
 	void (*PowerOverCan)(uint8_t);
 	void (*Refresh)(void);
 	void (*SetSpeedMax)(uint8_t);
-	void (*SetTemplates)(uint8_t);
+	void (*SetTemplates)(mcu_templates_t t);
 	uint8_t (*RpmToSpeed)(int16_t);
 	int16_t (*SpeedToRpm)(uint8_t);
 	uint16_t (*SpeedToVolume)(void);
@@ -199,7 +203,7 @@ void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_PowerOverCan(uint8_t on);
 void MCU_SetSpeedMax(uint8_t speed_max);
-void MCU_SetTemplates(uint8_t v);
+void MCU_SetTemplates(mcu_templates_t t);
 void MCU_RpmMax(uint8_t write);
 void MCU_Templates(uint8_t write);
 uint8_t MCU_RpmToSpeed(int16_t rpm);

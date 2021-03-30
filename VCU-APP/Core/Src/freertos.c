@@ -1088,7 +1088,7 @@ void StartCommandTask(void *argument)
 						break;
 
 					case CMD_MCU_TEMPLATES:
-						MCU.SetTemplates(val);
+						MCU.SetTemplates(*(mcu_templates_t*)cmd.data.value);
 						break;
 
 					default:

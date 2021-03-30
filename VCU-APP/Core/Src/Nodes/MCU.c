@@ -99,15 +99,18 @@ void MCU_SetSpeedMax(uint8_t speed_max) {
 	MCU.set.rpm_max = 1;
 }
 
-void MCU_SetTemplates(uint8_t v) {
-	mcu_template_t t[] = {
-			{ 5 + v, 100 + v },
-			{ 10 + v, 200 + v },
-			{ 15 + v, 300 + v }
-	};
+void MCU_SetTemplates(mcu_templates_t t) {
+	//	mcu_template_t t[] = {
+	//			{ 5 + v, 100 + v },
+	//			{ 10 + v, 200 + v },
+	//			{ 15 + v, 300 + v }
+	//	};
 
-	memcpy(MCU.set.par.tpl, t, sizeof(t));
-	MCU.set.template = 1;
+
+	// Debug value here
+
+	//memcpy(MCU.set.par.tpl, t.tpl, sizeof(t.tpl));
+	//MCU.set.template = 1;
 }
 
 void MCU_RpmMax(uint8_t write) {
