@@ -82,7 +82,6 @@ typedef struct {
 } hbar_control_t;
 
 typedef struct {
-	hbar_control_t ctl;
 	hbar_sein_t sein;
 	HBAR_MODE m;
 	uint8_t max[HBAR_M_MAX];
@@ -99,6 +98,7 @@ typedef struct {
 
 typedef struct {
 	hbar_data_t d;
+	hbar_control_t ctl;
 	uint8_t state[HBAR_K_MAX];
 	hbar_timer_t timer[2];
 } hbar_t;

@@ -1603,8 +1603,8 @@ void StartGateTask(void *argument)
 		}
 
 		HBAR_RefreshSelectSet();
-		HMI1.Power(VCU.d.state >= VEHICLE_STANDBY);
 		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
+		HMI1.Power(VCU.d.state >= VEHICLE_STANDBY);
 	}
 	/* USER CODE END StartGateTask */
 }

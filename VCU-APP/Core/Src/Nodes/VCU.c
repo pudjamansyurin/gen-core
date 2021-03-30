@@ -239,7 +239,7 @@ uint8_t VCU_TX_SwitchControl(void) {
 	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
 	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
 	Tx.data.u8[2] |= HBAR.d.m << 5;
-	Tx.data.u8[2] |= HBAR.d.ctl.blink << 7;
+	Tx.data.u8[2] |= HBAR.ctl.blink << 7;
 
 	// others
 	Tx.data.u8[3] = MCU.RpmToSpeed(MCU.d.rpm);
