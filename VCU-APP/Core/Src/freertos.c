@@ -668,6 +668,7 @@ void StartManagerTask(void *argument)
 {
 	/* USER CODE BEGIN StartManagerTask */
 	TickType_t lastWake;
+	float mps;
 
 	// Initiate, this task get executed first!
 	VCU.Init();
@@ -709,6 +710,9 @@ void StartManagerTask(void *argument)
 		VCU.Refresh();
 		VCU.CheckState();
 		NODE.Refresh();
+
+		mps = (float) MCU.RpmToSpeed(MCU.d.rpm) / 3.6;
+		VCU.SetOdometer(mps * MANAGER_WAKEUP / 1000);
 
 		IWDG_Refresh();
 		osDelayUntil(lastWake + MANAGER_WAKEUP);
