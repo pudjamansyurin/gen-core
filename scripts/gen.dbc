@@ -149,6 +149,27 @@ BO_ 166 MCUInternalStates: 8 MCU
  SG_ InverterLockout : 55|1@1+ (1,0) [0|0] ""  VCU
  SG_ DirectionForward : 56|8@1+ (1,0) [0|0] ""  VCU
 
+BO_ 26 DFUProgress: 8 VCU
+ SG_ DeviceType : 0|32@1+ (1,0) [0|0] ""  HMI1
+ SG_ Progress : 32|32@1- (1,0) [0|0] "%"  HMI1
+
+BO_ 27 DFUCrc: 4 HMI1
+ SG_ CrcOldVal : 0|32@1+ (1,0) [0|0] ""  VCU
+
+BO_ 28 DFUPra: 4 VCU
+ SG_ FirmwareSize : 0|32@1+ (1,0) [0|0] ""  HMI1
+
+BO_ 29 DFUInit: 6 VCU
+ SG_ FirmwareOffset : 0|32@1+ (1,0) [0|0] ""  HMI1
+ SG_ BlockOffset : 32|16@1+ (1,0) [0|0] ""  HMI1
+
+BO_ 30 DFURun: 8 VCU
+ SG_ SubBlockOffset : 0|16@1+ (1,0) [0|0] ""  HMI1
+ SG_ FirmwareData : 32|32@1+ (1,0) [0|0] ""  HMI1
+
+BO_ 31 DFUPasca: 4 VCU
+ SG_ CrcNewVal : 0|32@1+ (1,0) [0|0] ""  HMI1
+
 
 
 BA_DEF_ BO_  "GenMsgBackgroundColor" STRING ;
@@ -195,4 +216,5 @@ SIG_VALTYPE_ 163 Commanded_Q : 1;
 SIG_VALTYPE_ 163 Feedback_D : 1;
 SIG_VALTYPE_ 163 Feedback_Q : 1;
 SIG_VALTYPE_ 165 DCBusVoltage : 1;
+SIG_VALTYPE_ 26 Progress : 1;
 
