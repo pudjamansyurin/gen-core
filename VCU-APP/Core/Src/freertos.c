@@ -1187,7 +1187,15 @@ void StartMemsTask(void *argument)
 			osThreadFlagsSet(AudioTaskHandle, fallen ? FLAG_AUDIO_BEEP_START : FLAG_AUDIO_BEEP_STOP);
 
 			// Drag detector
-			if (VCU.d.state < VEHICLE_STANDBY) MEMS_ActivateDetector();
+			if (VCU.d.state < VEHICLE_STANDBY) {
+				if (MEMS.drag.init) {
+					MEMS_ActivateDetector();
+				} else if (MEMS_Dragged()) {
+					GATE_HornToggle(250);
+					GATE_HornToggle(250);
+					VCU.SetEvent(EVG_BIKE_MOVED, 1);
+				}
+			}
 			else MEMS_ResetDetector();
 		}
 

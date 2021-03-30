@@ -80,6 +80,7 @@ void MEMS_Flush(void);
 uint8_t MEMS_Capture(void);
 uint8_t MEMS_Process(void);
 void MEMS_ActivateDetector(void);
+uint8_t MEMS_Dragged(void);
 void MEMS_ResetDetector(void);
 
 #endif /* MEMS_H_ */

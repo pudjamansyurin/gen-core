@@ -219,7 +219,7 @@ void RMT_OpenSeat(void) {
 
 void RMT_BeepAlarm(void) {
 	lock();
-	GATE_HornToggle();
+	GATE_HornToggle(200);
 	if (VCU.ReadEvent(EVG_BIKE_MOVED))
 		osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
 	unlock();

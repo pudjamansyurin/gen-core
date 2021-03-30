@@ -31,7 +31,6 @@ static void lock(void);
 static void unlock(void);
 static uint8_t Capture(mems_raw_t *raw);
 static void ConvertAccel(mems_tilt_t *tilt, mems_axis_t *axis);
-static uint8_t Dragged(mems_tilt_t *ref, mems_tilt_t *cur);
 #if MEMS_DEBUG
 static void Debugger(move_t *move);
 static void RawDebugger(mems_raw_t *raw);
@@ -141,14 +140,29 @@ void MEMS_ActivateDetector(void) {
 	mems_tilt_t *ref = &(MEMS.drag.tilt_ref);
 
 	lock();
-	if (MEMS.drag.init) {
-		MEMS.drag.init = 0;
-		memcpy(ref, cur, sizeof(mems_tilt_t));
-		VCU.SetEvent(EVG_BIKE_MOVED, 0);
-	}
-	else if (Dragged(ref, cur))
-		VCU.SetEvent(EVG_BIKE_MOVED, 1);
+	MEMS.drag.init = 0;
+	memcpy(ref, cur, sizeof(mems_tilt_t));
+	VCU.SetEvent(EVG_BIKE_MOVED, 0);
 	unlock();
+}
+
+uint8_t MEMS_Dragged(void) {
+	mems_tilt_t *cur = &(MEMS.drag.tilt_cur);
+	mems_tilt_t *ref = &(MEMS.drag.tilt_ref);
+	uint8_t euclidean, dragged;
+
+	lock();
+	euclidean = sqrt(
+			pow(ref->roll - cur->roll, 2) +
+			pow(ref->pitch - cur->pitch, 2)
+	);
+
+	dragged = euclidean > DRAGGED_LIMIT;
+	if (dragged)
+		printf("MEMS:Gyro dragged = %d\n", euclidean);
+	unlock();
+
+	return dragged;
 }
 
 void MEMS_ResetDetector(void) {
@@ -203,19 +217,6 @@ static void ConvertAccel(mems_tilt_t *tilt, mems_axis_t *axis) {
 
 	tilt->roll = roll == 0 ? 0 : RAD2DEG(atan(axis->y / roll));
 	tilt->pitch = pitch == 0 ? 0 : RAD2DEG(atan(axis->x / pitch));
-}
-
-static uint8_t Dragged(mems_tilt_t *ref, mems_tilt_t *cur) {
-	uint8_t euclidean;
-
-	euclidean = sqrt(
-			pow(ref->roll - cur->roll, 2) +
-			pow(ref->pitch - cur->pitch, 2)
-	);
-
-	if (euclidean > DRAGGED_LIMIT)
-		printf("MEMS:Gyro dragged = %d\n", euclidean);
-	return euclidean > DRAGGED_LIMIT;
 }
 
 #if MEMS_DEBUG

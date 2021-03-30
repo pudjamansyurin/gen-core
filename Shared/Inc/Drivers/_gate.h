@@ -43,7 +43,7 @@ void GATE_AudioShutdown(void);
 void GATE_AudioReset(void);
 void GATE_AudioCodecStop(void);
 void GATE_AudioCodecReset(void);
-void GATE_HornToggle(void);
+void GATE_HornToggle(uint32_t ms);
 void GATE_SeatToggle(void);
 
 GPIO_PinState GATE_ReadPower5v(void);
