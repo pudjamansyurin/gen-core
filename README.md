@@ -22,7 +22,7 @@
 | 16  | FW upgrade oTA (FOTA)       | -              |   FLASH    |  ✔  |  -  | **Done**         |
 | 17  | FW upgrade oCAN (FOCAN)     | -              | FLASH, CAN |  ✔  |  -  | **Done**         |
 | 18  | MQTT                        | -              |     -      |  ✔  |  -  | **Done**         |
-| 19  | SLL/TLS                     | -              |  MbedTLS   | 0%  |  -  | Waiting          |
+| 19  | SSL/TLS                     | -              |  MbedTLS   | 0%  |  -  | Waiting          |
 
 ## Software Progress:
 
