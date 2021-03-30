@@ -732,19 +732,20 @@ void StartNetworkTask(void *argument)
 	/* USER CODE BEGIN StartNetworkTask */
 	uint32_t notif;
 	command_t cmd;
-	response_t response;
 	report_t report;
-	payload_t pRes = {
-			.type = PAYLOAD_RESPONSE,
-			.pQueue = &ResponseQueueHandle,
-			.pPayload = &response,
-			.pending = 0
-	};
-	payload_t pRep = {
-			.type = PAYLOAD_REPORT,
-			.pQueue = &ReportQueueHandle,
-			.pPayload = &report,
-			.pending = 0
+	response_t response;
+	payload_t payloads[] = {
+			{
+					.type = PAYLOAD_RESPONSE,
+					.pQueue = &ResponseQueueHandle,
+					.pPayload = &response,
+					.pending = 0
+			}, {
+					.type = PAYLOAD_REPORT,
+					.pQueue = &ReportQueueHandle,
+					.pPayload = &report,
+					.pending = 0
+			}
 	};
 
 	_osEventManager();
@@ -759,7 +760,7 @@ void StartNetworkTask(void *argument)
 
 		if (_osFlagAny(&notif, 100)) {
 			if (notif & FLAG_NET_REPORT_DISCARD)
-				pRep.pending = 0;
+				payloads[PAYLOAD_REPORT].pending = 0;
 
 			if (notif & FLAG_NET_READ_SMS || notif & FLAG_NET_SEND_USSD) {
 				char buf[200] = {0};
@@ -783,19 +784,13 @@ void StartNetworkTask(void *argument)
 		if (RTC_NeedCalibration())
 			Simcom_CalibrateTime();
 
-		// Upload Response
-		if (RPT_PayloadPending(&pRes))
-			if (RPT_WrapPayload(&pRes))
-				if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
-					if (MQTT_Publish(&pRes))
-						pRes.pending = 0;
-
-		// Upload Report
-		if (RPT_PayloadPending(&pRep))
-			if (RPT_WrapPayload(&pRep))
-				if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
-					if (MQTT_Publish(&pRep))
-						pRep.pending = 0;
+		// Upload Payloads (Report & Response)
+		for (uint8_t i=0; i<PAYLOAD_MAX; i++)
+			if (RPT_PayloadPending(&payloads[i]))
+				if (RPT_WrapPayload(&payloads[i]))
+					if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+						if (MQTT_Publish(&payloads[i]))
+							payloads[i].pending = 0;
 
 		// Check Command
 		if (Simcom_SetState(SIM_STATE_MQTT_ON, 0)) {
@@ -831,7 +826,6 @@ void StartReporterTask(void *argument)
 
 		frame = RPT_FrameDecider();
 		interval = RPT_IntervalDecider();
-
 
 		RPT_ReportCapture(frame, &report);
 
@@ -1445,10 +1439,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																			BMS.r.Param1(&Rx);
+																							BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																			BMS.r.Param2(&Rx);
+																							BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;

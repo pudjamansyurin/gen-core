@@ -57,7 +57,7 @@ typedef enum {
 typedef enum {
   PAYLOAD_RESPONSE = 0,
   PAYLOAD_REPORT,
-  PAYLOAD_MAX = 1,
+  PAYLOAD_MAX = 2,
 } PAYLOAD_TYPE;
 
 #endif /* DEFINES_H_ */
