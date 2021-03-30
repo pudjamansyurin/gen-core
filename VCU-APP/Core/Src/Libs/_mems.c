@@ -135,15 +135,20 @@ uint8_t MEMS_Process(void) {
 	return (MEMS.d.crash || MEMS.d.fall);
 }
 
-void MEMS_ActivateDetector(void) {
+uint8_t MEMS_ActivateDetector(void) {
 	mems_tilt_t *cur = &(MEMS.drag.tilt_cur);
 	mems_tilt_t *ref = &(MEMS.drag.tilt_ref);
+	uint8_t init = MEMS.drag.init;
 
 	lock();
-	MEMS.drag.init = 0;
-	memcpy(ref, cur, sizeof(mems_tilt_t));
-	VCU.SetEvent(EVG_BIKE_MOVED, 0);
+	if (init) {
+		MEMS.drag.init = 0;
+		memcpy(ref, cur, sizeof(mems_tilt_t));
+		VCU.SetEvent(EVG_BIKE_MOVED, 0);
+	}
 	unlock();
+
+	return init == 0;
 }
 
 uint8_t MEMS_Dragged(void) {

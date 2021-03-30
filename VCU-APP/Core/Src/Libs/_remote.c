@@ -211,20 +211,6 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	return valid;
 }
 
-void RMT_OpenSeat(void) {
-	lock();
-	GATE_SeatToggle();
-	unlock();
-}
-
-void RMT_BeepAlarm(void) {
-	lock();
-	GATE_HornToggle(200);
-	if (VCU.ReadEvent(EVG_BIKE_MOVED))
-		osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
-	unlock();
-}
-
 void RMT_IrqHandler(void) { nrf_irq_handler(); }
 
 void RMT_PacketReceived(uint8_t *data) {

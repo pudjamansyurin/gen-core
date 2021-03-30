@@ -924,11 +924,13 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_OVERRIDE_RMT_SEAT:
-					RMT_OpenSeat();
+					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
 					break;
 
 				case CMD_OVERRIDE_RMT_ALARM:
-					RMT_BeepAlarm();
+					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
+					if (VCU.ReadEvent(EVG_BIKE_MOVED))
+						osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
 					break;
 
 				default:
@@ -1186,12 +1188,11 @@ void StartMemsTask(void *argument)
 
 			// Drag detector
 			if (VCU.d.state < VEHICLE_STANDBY) {
-				if (MEMS.drag.init) {
-					MEMS_ActivateDetector();
-				} else if (MEMS_Dragged()) {
-					GATE_HornToggle(250);
-					GATE_HornToggle(250);
-					VCU.SetEvent(EVG_BIKE_MOVED, 1);
+				if (MEMS_ActivateDetector()) {
+					if (MEMS_Dragged()) {
+						osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
+						VCU.SetEvent(EVG_BIKE_MOVED, 1);
+					}
 				}
 			}
 			else MEMS_ResetDetector();
@@ -1246,10 +1247,13 @@ void StartRemoteTask(void *argument)
 						if (RMT_GotPairedResponse())
 							osThreadFlagsSet(CommandTaskHandle, FLAG_COMMAND_OK);
 					}
-					else if (command == RMT_CMD_ALARM)
-						RMT_BeepAlarm();
+					else if (command == RMT_CMD_ALARM) {
+						osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
+						if (VCU.ReadEvent(EVG_BIKE_MOVED))
+							osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
+					}
 					else if (command == RMT_CMD_SEAT)
-						RMT_OpenSeat();
+						osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
 				}
 			}
 		}
@@ -1439,10 +1443,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																							BMS.r.Param1(&Rx);
+																											BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																							BMS.r.Param2(&Rx);
+																											BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;
@@ -1578,15 +1582,24 @@ void StartGateTask(void *argument)
 		TASKS.tick.gate = _GetTickMS();
 
 		// wait forever
-		if (_osFlagOne(&notif, FLAG_GATE_HBAR, 10)) {
-			// handle bounce effect
-			_DelayMS(50);
+		if (_osFlagAny(&notif, 10)) {
+			if (notif & FLAG_GATE_HBAR) {
+				// handle bounce effect
+				_DelayMS(50);
+				osThreadFlagsClear(FLAG_GATE_HBAR);
 
-			HBAR_ReadStarter();
-			if (VCU.d.state >= VEHICLE_STANDBY)
-				HBAR_ReadStates();
+				HBAR_ReadStarter();
+				if (VCU.d.state >= VEHICLE_STANDBY)
+					HBAR_ReadStates();
+			}
 
-			osThreadFlagsClear(FLAG_GATE_HBAR);
+			if (notif & FLAG_GATE_BEEP_HORN) {
+				GATE_HornToggle(200);
+			}
+
+			if (notif & FLAG_GATE_OPEN_SEAT) {
+				GATE_SeatToggle();
+			}
 		}
 
 		HBAR_RefreshSelectSet();
