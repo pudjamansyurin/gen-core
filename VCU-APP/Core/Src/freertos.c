@@ -1136,6 +1136,7 @@ void StartGpsTask(void *argument)
 			//			VCU.SetOdometer(meter);
 		}
 
+		HBAR_AccumulateTrip(255);
 		GPS_Refresh();
 	}
 	/* USER CODE END StartGpsTask */
@@ -1578,11 +1579,13 @@ void StartGateTask(void *argument)
 			HBAR_ReadStarter();
 			if (VCU.d.state >= VEHICLE_STANDBY)
 				HBAR_ReadStates();
+
+			osThreadFlagsClear(FLAG_GATE_HBAR);
 		}
 
-		// GATE Output Control
+		HBAR_RefreshSelectSet();
 		HMI1.Power(VCU.d.state >= VEHICLE_STANDBY);
-		// GATE_FanBMS(BMS.d.overheat);
+		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
 	}
 	/* USER CODE END StartGateTask */
 }

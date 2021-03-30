@@ -35,6 +35,9 @@ typedef struct {
 	struct {
 		int8_t state;
 	} override;
+	struct {
+		uint32_t independent;
+	} tick;
 } vcu_data_t;
 
 typedef struct {

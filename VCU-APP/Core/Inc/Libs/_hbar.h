@@ -12,7 +12,10 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MODE_TIME_GUARD (uint16_t)3000
+#define MODE_SESSION_MS (uint16_t)4000
+#define MODE_BLINK_MS (uint16_t) 250
+#define MODE_RESET_MS (uint16_t)3000
+#define STARTER_LONG_PRESS (uint16_t)2000 // in ms
 
 /* Exported enum
  * ----------------------------------------------------------------*/
@@ -55,12 +58,33 @@ typedef enum {
 	HBAR_M_REPORT_MAX = 2
 } HBAR_MODE_REPORT;
 
+typedef enum {
+	HBAR_STARTER_UNKNOWN = 0,
+	HBAR_STARTER_ON,
+	HBAR_STARTER_OFF
+} HBAR_STARTER;
+
 /* Exported struct
  * --------------------------------------------------------------*/
 typedef struct {
-	HBAR_MODE m;
-	uint32_t starter_tick;
+	uint8_t left;
+	uint8_t right;
+} hbar_sein_t;
+
+typedef struct {
 	uint8_t listening;
+	uint8_t blink;
+	struct {
+		uint32_t starter;
+		uint32_t session;
+		uint32_t blink;
+	} tick;
+} hbar_control_t;
+
+typedef struct {
+	hbar_control_t ctl;
+	hbar_sein_t sein;
+	HBAR_MODE m;
 	uint8_t max[HBAR_M_MAX];
 	uint8_t mode[HBAR_M_MAX];
 	uint8_t report[HBAR_M_REPORT_MAX];
@@ -79,6 +103,8 @@ typedef struct {
 	hbar_timer_t timer[2];
 } hbar_t;
 
+
+
 /* Exported variables
  * ---------------------------------------------------------*/
 extern hbar_t HBAR;
@@ -87,9 +113,10 @@ extern hbar_t HBAR;
 void HBAR_Init(void);
 void HBAR_ReadStarter(void);
 void HBAR_ReadStates(void);
+HBAR_STARTER HBAR_RefreshStarter(vehicle_state_t lastState);
+hbar_sein_t HBAR_SeinController(void);
 uint32_t HBAR_AccumulateTrip(uint8_t meter);
-uint8_t HBAR_ModeController(void);
+void HBAR_RefreshSelectSet(void);
 void HBAR_TimerSelectSet(void);
-void HBAR_RunSelectOrSet(void);
 
 #endif /* LIBS__HBAR_H_ */

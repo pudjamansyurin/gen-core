@@ -24,6 +24,7 @@ void GATE_CanbusReset(void);
 void GATE_Hmi1Power(GPIO_PinState state);
 
 #if (!BOOTLOADER)
+void GATE_System12v(GPIO_PinState state);
 void GATE_McuPower(GPIO_PinState state);
 void GATE_Hmi2Reset(void);
 void GATE_Hmi2Stop(void);
@@ -42,7 +43,6 @@ void GATE_AudioShutdown(void);
 void GATE_AudioReset(void);
 void GATE_AudioCodecStop(void);
 void GATE_AudioCodecReset(void);
-void GATE_FanBMS(GPIO_PinState state);
 void GATE_HornToggle(void);
 void GATE_SeatToggle(void);
 

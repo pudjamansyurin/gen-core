@@ -61,21 +61,17 @@ void VCU_Refresh(void) {
 }
 
 void VCU_CheckState(void) {
-	static vehicle_state_t lastState = VEHICLE_UNKNOWN;
-	static uint32_t starterTick = 0, independentTick = 0;
-	uint8_t starter, normalize = 0;
+	static vehicle_state_t lastState = VEHICLE_UNKNOWN;;
 	vehicle_state_t initialState;
+	HBAR_STARTER starter;
+	uint8_t normalize, start;
 
 	do {
 		initialState = VCU.d.state;
-		starter = 0;
 
-		if (starterTick != HBAR.d.starter_tick) {
-			if (HBAR.d.starter_tick > 3000 && lastState > VEHICLE_NORMAL)
-				normalize = 1;
-			else starter = 1;
-			starterTick = HBAR.d.starter_tick;
-		}
+		starter = HBAR_RefreshStarter(lastState);
+		normalize = starter == HBAR_STARTER_OFF;
+		start = starter == HBAR_STARTER_ON;
 
 		switch (VCU.d.state) {
 		case VEHICLE_LOST:
@@ -98,11 +94,11 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_STOP);
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_STOP);
 
-				independentTick = _GetTickMS();
+				VCU.d.tick.independent = _GetTickMS();
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 			}
 
-			if (_GetTickMS() - independentTick > (VCU_ACTIVATE_LOST)*1000)
+			if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST)*1000)
 				VCU.d.state--;
 			else if (GATE_ReadPower5v())
 				VCU.d.state++;
@@ -120,13 +116,12 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_TASK_STOP);
 
 				HBAR_Init();
-				normalize = 0;
 				VCU.d.override.state = VEHICLE_UNKNOWN;
 			}
 
 			if (!GATE_ReadPower5v())
 				VCU.d.state--;
-			else if ((starter && RMT.d.active) || VCU.Is(VCU.d.override.state > VEHICLE_NORMAL))
+			else if ((start && RMT.d.nearby) || VCU.Is(VCU.d.override.state > VEHICLE_NORMAL))
 				VCU.d.state++;
 			break;
 
@@ -154,7 +149,7 @@ void VCU_CheckState(void) {
 
 			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_READY))
 				VCU.d.state--;
-			else if (!NODE.d.error && (starter || VCU.Is(VCU.d.override.state > VEHICLE_READY)))
+			else if (!NODE.d.error && (start || VCU.Is(VCU.d.override.state > VEHICLE_READY)))
 				VCU.d.state++;
 			break;
 
@@ -165,7 +160,7 @@ void VCU_CheckState(void) {
 
 			if (!GATE_ReadPower5v() || normalize || NODE.d.error ||	VCU.Is(VCU.d.override.state == VEHICLE_READY))
 				VCU.d.state--;
-			else if ((starter && MCU.RpmToSpeed(MCU.d.rpm) == 0) || VCU.Is(VCU.d.override.state < VEHICLE_READY))
+			else if ((start && MCU.RpmToSpeed(MCU.d.rpm) == 0) || VCU.Is(VCU.d.override.state < VEHICLE_READY))
 				VCU.d.state -= 2;
 			break;
 
@@ -228,12 +223,13 @@ uint8_t VCU_TX_SwitchControl(void) {
 	Tx.data.u8[0] |= NODE.d.error << 3;
 	Tx.data.u8[0] |= NODE.d.overheat << 4;
 	Tx.data.u8[0] |= !FGR.d.id << 5;
-	Tx.data.u8[0] |= !RMT.d.active << 6;
+	Tx.data.u8[0] |= !RMT.d.nearby << 6;
 	Tx.data.u8[0] |= RTC_Daylight() << 7;
 
 	// sein value
-	Tx.data.u8[1] = HBAR.state[HBAR_K_SEIN_L];
-	Tx.data.u8[1] |= HBAR.state[HBAR_K_SEIN_R] << 1;
+	hbar_sein_t sein = HBAR_SeinController();
+	Tx.data.u8[1] = sein.left;
+	Tx.data.u8[1] |= sein.right << 1;
 	// TODO: validate MCU reverse state
 	Tx.data.u8[1] |= HBAR.state[HBAR_K_REVERSE] << 2;
 
@@ -243,7 +239,7 @@ uint8_t VCU_TX_SwitchControl(void) {
 	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
 	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
 	Tx.data.u8[2] |= HBAR.d.m << 5;
-	Tx.data.u8[2] |= HBAR_ModeController() << 7;
+	Tx.data.u8[2] |= HBAR.d.ctl.blink << 7;
 
 	// others
 	Tx.data.u8[3] = MCU.RpmToSpeed(MCU.d.rpm);

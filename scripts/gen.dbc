@@ -107,47 +107,47 @@ BO_ 194 MCUParamRX: 6 MCU
  SG_ DataRX : 32|16@1+ (1,0) [0|0] ""  VCU
 
 BO_ 160 MCUTemperatures: 8 MCU
- SG_ ModuleTempA : 0|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
- SG_ ModuleTempB : 16|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
- SG_ ModuleTempC : 32|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
- SG_ ControlBoardTemp : 48|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
+ SG_ ModuleTempA : 0|16@1- (0.1,0) [0|0] "Celcius"  VCU
+ SG_ ModuleTempB : 16|16@1- (0.1,0) [0|0] "Celcius"  VCU
+ SG_ ModuleTempC : 32|16@1- (0.1,0) [0|0] "Celcius"  VCU
+ SG_ ControlBoardTemp : 48|16@1- (0.1,0) [0|0] "Celcius"  VCU
 
 BO_ 161 MCUTorque: 8 MCU
- SG_ MotorTemp : 0|16@1- (0.1,0) [0|0] "Celcius" Vector__XXX
- SG_ MotorRPM : 16|16@1- (1,0) [0|0] "rpm" Vector__XXX
- SG_ TorqueCommanded : 32|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
- SG_ TorqueFeedback : 48|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
+ SG_ MotorTemp : 0|16@1- (0.1,0) [0|0] "Celcius"  VCU
+ SG_ MotorRPM : 16|16@1- (1,0) [0|0] "rpm"  VCU
+ SG_ TorqueCommanded : 32|16@1- (0.1,0) [0|0] "Nm"  VCU
+ SG_ TorqueFeedback : 48|16@1- (0.1,0) [0|0] "Nm"  VCU
 
 BO_ 162 MCUCurrent: 8 MCU
- SG_ PhaseCurrentA : 0|16@1- (0.1,0) [0|0] "A" Vector__XXX
- SG_ PhaseCurrentB : 16|16@1- (0.1,0) [0|0] "A" Vector__XXX
- SG_ PhaseCurrentC : 32|16@1- (0.1,0) [0|0] "A" Vector__XXX
- SG_ DCBusCurrent : 48|16@1- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ PhaseCurrentA : 0|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ PhaseCurrentB : 16|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ PhaseCurrentC : 32|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ DCBusCurrent : 48|16@1- (0.1,0) [0|0] "A"  VCU
 
 BO_ 163 MCUCurrentDQ: 8 MCU
- SG_ Commanded_D : 0|16@1- (0.1,0) [0|0] "A" Vector__XXX
- SG_ Commanded_Q : 16|16@1- (0.1,0) [0|0] "A" Vector__XXX
- SG_ Feedback_D : 32|16@1- (0.1,0) [0|0] "A" Vector__XXX
- SG_ Feedback_Q : 48|16@1- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ Commanded_D : 0|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ Commanded_Q : 16|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ Feedback_D : 32|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ Feedback_Q : 48|16@1- (0.1,0) [0|0] "A"  VCU
 
 BO_ 164 MCUFaultCodes: 8 MCU
- SG_ FaultPOST : 0|32@1+ (1,0) [0|0] "" Vector__XXX
- SG_ FaultRUN : 32|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ FaultPOST : 0|32@1+ (1,0) [0|0] ""  VCU
+ SG_ FaultRUN : 32|32@1+ (1,0) [0|0] ""  VCU
 
 BO_ 165 MCUModulation: 8 MCU
- SG_ ModulationIndex : 0|16@1- (0.001,0) [0|0] "" Vector__XXX
- SG_ DCBusVoltage : 16|16@1- (0.1,0) [0|0] "Volt" Vector__XXX
- SG_ Uptime : 32|32@1+ (0.003,0) [0|0] "Second" Vector__XXX
+ SG_ ModulationIndex : 0|16@1- (0.001,0) [0|0] ""  VCU
+ SG_ DCBusVoltage : 16|16@1- (0.1,0) [0|0] "Volt"  VCU
+ SG_ Uptime : 32|32@1+ (0.003,0) [0|0] "Second"  VCU
 
 BO_ 166 MCUInternalStates: 8 MCU
- SG_ VSMState : 0|16@1+ (1,0) [0|0] "" Vector__XXX
- SG_ InverterState : 16|8@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DrivingModeStatus : 32|2@1+ (1,0) [0|0] "" Vector__XXX
- SG_ InverterActiveDischarge : 37|3@1+ (1,0) [0|0] "" Vector__XXX
- SG_ InverterCommandMode : 40|8@1+ (1,0) [0|0] "" Vector__XXX
- SG_ InverterEnabled : 48|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ InverterLockout : 55|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DirectionForward : 56|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ VSMState : 0|16@1+ (1,0) [0|0] ""  VCU
+ SG_ InverterState : 16|8@1+ (1,0) [0|0] ""  VCU
+ SG_ DrivingModeStatus : 32|2@1+ (1,0) [0|0] ""  VCU
+ SG_ InverterActiveDischarge : 37|3@1+ (1,0) [0|0] ""  VCU
+ SG_ InverterCommandMode : 40|8@1+ (1,0) [0|0] ""  VCU
+ SG_ InverterEnabled : 48|1@1+ (1,0) [0|0] ""  VCU
+ SG_ InverterLockout : 55|1@1+ (1,0) [0|0] ""  VCU
+ SG_ DirectionForward : 56|8@1+ (1,0) [0|0] ""  VCU
 
 
 
