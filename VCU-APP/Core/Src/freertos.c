@@ -176,7 +176,7 @@ const osThreadAttr_t RemoteTask_attributes = {
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
-uint32_t FingerTaskBuffer[ 224 ];
+uint32_t FingerTaskBuffer[ 256 ];
 osStaticThreadDef_t FingerTaskControlBlock;
 const osThreadAttr_t FingerTask_attributes = {
 		.name = "FingerTask",
@@ -683,19 +683,18 @@ void StartManagerTask(void *argument)
 	//  osThreadSuspend(NetworkTaskHandle);
 	//  osThreadSuspend(ReporterTaskHandle);
 	//  osThreadSuspend(CommandTaskHandle);
-	//  osThreadSuspend(GpsTaskHandle);
-	//  osThreadSuspend(MemsTaskHandle);
-	//  osThreadSuspend(RemoteTaskHandle);
+	//	osThreadSuspend(GpsTaskHandle);
+	//	osThreadSuspend(MemsTaskHandle);
+	//	osThreadSuspend(RemoteTaskHandle);
 	//  osThreadSuspend(FingerTaskHandle);
-	osThreadSuspend(AudioTaskHandle);
-	//  osThreadSuspend(CanRxTaskHandle);
-	//  osThreadSuspend(CanTxTaskHandle);
+	//	osThreadSuspend(AudioTaskHandle);
+	//	osThreadSuspend(CanRxTaskHandle);
+	//	osThreadSuspend(CanTxTaskHandle);
 	//  osThreadSuspend(GateTaskHandle);
 	osThreadSuspend(Hmi2PowerTaskHandle);
 
 	// Check thread creation
-	if (!_osCheckRTOS())
-		return;
+	if (!_osCheckRTOS()) return;
 
 	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
@@ -1308,6 +1307,7 @@ void StartFingerTask(void *argument)
 				if (notif & FLAG_FINGER_ADD) {
 					if (FINGER_Enroll(&id, &ok))
 						_osQueuePutRst(DriverQueueHandle, &id);
+					osThreadFlagsClear(FLAG_FINGER_PLACED);
 				}
 				if (notif & FLAG_FINGER_DEL) {
 					if (osMessageQueueGet(DriverQueueHandle, &id, NULL, 0U) == osOK)
@@ -1443,10 +1443,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																											BMS.r.Param1(&Rx);
+																															BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																											BMS.r.Param2(&Rx);
+																															BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;

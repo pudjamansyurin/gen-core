@@ -76,25 +76,19 @@
 /* Exported struct
  * --------------------------------------------------------------*/
 typedef struct {
-  uint16_t start_code; ///< "Wakeup" code for packet detection
-  uint8_t address[4];  ///< 32-bit Fingerprint sensor address
-  uint8_t type;        ///< Type of packet
-  uint16_t length;     ///< Length of packet
-  uint8_t data[64];    ///< The raw buffer for packet payload
+	uint16_t start_code; ///< "Wakeup" code for packet detection
+	uint8_t address[4];  ///< 32-bit Fingerprint sensor address
+	uint8_t type;        ///< Type of packet
+	uint16_t length;     ///< Length of packet
+	uint8_t data[64];    ///< The raw buffer for packet payload
 } packet_t;
 
 typedef struct {
-  uint16_t id;
-  uint16_t confidence;
-  uint16_t templateCount;
-} scanner_t;
+	packet_t tx;
+	packet_t rx;
+} fz3387_t;
 
 /* Public functions prototype ------------------------------------------------*/
-void fz3387_writeStructuredPacket(void);
-uint8_t fz3387_getStructuredPacket(void);
-uint8_t fz3387_SendCmdPacket(uint8_t *data, uint8_t size);
-void fz3387_setPacket(uint8_t type, uint16_t length, uint8_t *data);
-
 uint8_t fz3387_verifyPassword(void);
 uint8_t fz3387_checkPassword(void);
 uint8_t fz3387_getImage(void);

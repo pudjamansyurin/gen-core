@@ -120,9 +120,14 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 		GATE_LedWrite(1);
 		*valid = Scan(*id, 2, 5000);
 	}
+
 	GATE_LedWrite(0);
 
 	if (*valid) {
+		while (fz3387_getImage() != FINGERPRINT_NOFINGER) {
+			_DelayMS(50);
+		}
+
 		printf("Finger:Creating model for #%u\n", *id);
 		res = fz3387_createModel();
 		DebugResponse(res, "Prints matched!");
