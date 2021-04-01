@@ -40,12 +40,12 @@ static void RawDebugger(mems_raw_t *raw);
  * --------------------------------------------*/
 uint8_t MEMS_Init(void) {
 	uint8_t ok;
+	uint32_t tick;
 
 	lock();
-	uint32_t tick = _GetTickMS();
+	printf("MEMS:Init\n");
+	tick = _GetTickMS();
 	do {
-		printf("MEMS:Init\n");
-
 		MX_I2C3_Init();
 		GATE_MemsReset();
 

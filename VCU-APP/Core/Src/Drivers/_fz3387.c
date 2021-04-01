@@ -43,10 +43,6 @@ static void setPacket(uint8_t type, uint16_t length, uint8_t *data);
  @returns True if password is correct
  */
 /**************************************************************************/
-uint8_t fz3387_verifyPassword(void) {
-	return fz3387_checkPassword() == FINGERPRINT_OK;
-}
-
 uint8_t fz3387_checkPassword(void) {
 	uint8_t data[] = {
 			FINGERPRINT_VERIFYPASSWORD,
@@ -56,7 +52,9 @@ uint8_t fz3387_checkPassword(void) {
 			(uint8_t)(FINGERPRINT_PASSWORD & 0xFF)
 	};
 
-	sendCmdPacket(data, sizeof(data));
+	if (sendCmdPacket(data, sizeof(data)) != FINGERPRINT_OK)
+		return FINGERPRINT_PACKETRECIEVEERR;
+
 	if (FZ.rx.data[0] == FINGERPRINT_OK)
 		return FINGERPRINT_OK;
 	else
@@ -377,8 +375,9 @@ static uint8_t getStructuredPacket(void) {
 /**************************************************************************/
 static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
 	setPacket(FINGERPRINT_COMMANDPACKET, size, data);
-	writeStructuredPacket();
-
+	if (!writeStructuredPacket()){
+		return FINGERPRINT_PACKETRECIEVEERR;
+	}
 	if (getStructuredPacket() != FINGERPRINT_OK) {
 		return FINGERPRINT_PACKETRECIEVEERR;
 	}

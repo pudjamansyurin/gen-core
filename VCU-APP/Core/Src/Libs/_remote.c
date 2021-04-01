@@ -59,16 +59,18 @@ static void Debugger(RMT_CMD command);
  * --------------------------------------------*/
 uint8_t RMT_Init(void) {
 	uint8_t ok;
+	uint32_t tick;
 
 	lock();
+	printf("NRF:Init\n");
 	nrf_param(RMT.pspi, RMT.r.payload);
-	uint32_t tick = _GetTickMS();
+
+	tick = _GetTickMS();
 	do {
-		printf("NRF:Init\n");
 		MX_SPI1_Init();
 		GATE_RemoteReset();
 
-		ok = nrf_check() != NRF_ERROR;
+		ok = RMT_Probe();
 		_DelayMS(500);
 	} while (!ok && _GetTickMS() - tick < RMT_TIMEOUT);
 
@@ -79,7 +81,6 @@ uint8_t RMT_Init(void) {
 	unlock();
 
 	printf("NRF:%s\n", ok ? "OK" : "Error");
-	RMT.d.active = ok;
 	return ok;
 }
 
@@ -91,19 +92,15 @@ void RMT_DeInit(void) {
 	unlock();
 }
 
-uint8_t RMT_Verify(void) {
+uint8_t RMT_Probe(void) {
+	uint8_t ok;
+
 	lock();
-	RMT.d.active = (nrf_check() != NRF_ERROR);
-	if (!RMT.d.active) {
-		RMT_DeInit();
-		_DelayMS(500);
-		RMT_Init();
-	}
+	ok = (nrf_check() != NRF_ERROR);
 	unlock();
 
-	return RMT.d.active;
+	return ok;
 }
-
 
 void RMT_Refresh(vehicle_state_t state) {
 	uint32_t timeout;
@@ -113,10 +110,15 @@ void RMT_Refresh(vehicle_state_t state) {
 	RMT.d.nearby = RMT.d.heartbeat && (_GetTickMS() - RMT.d.heartbeat) < timeout;
 	VCU.SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
 
-//	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
-//		if (!RMT_Ping())
-//			RMT_Verify();
-	RMT.d.active = RMT_Ping();
+	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
+		RMT_Ping();
+
+	RMT.d.active = (RMT.d.tick && (_GetTickMS() - RMT.d.tick) < RMT_TIMEOUT) || RMT.d.nearby;
+	if (!RMT.d.active) {
+		RMT_DeInit();
+		_DelayMS(500);
+		RMT_Init();
+	}
 
 	if (RMT.d.pairing && (_GetTickMS() - RMT.d.pairing) > RMT_PAIRING_TIMEOUT) {
 		RMT.d.pairing = 0;
@@ -138,6 +140,8 @@ uint8_t RMT_Ping(void) {
 	RNG_Generate32((uint32_t *)RMT.t.payload, NRF_DATA_LENGTH / 4);
 	ok = (nrf_send_packet_noack(RMT.t.payload) == NRF_OK);
 	unlock();
+
+	if (ok) RMT.d.tick = _GetTickMS();
 
 	return ok;
 }

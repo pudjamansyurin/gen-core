@@ -684,10 +684,10 @@ void StartManagerTask(void *argument)
 	//	  osThreadSuspend(ReporterTaskHandle);
 	//	  osThreadSuspend(CommandTaskHandle);
 	//		osThreadSuspend(GpsTaskHandle);
-	//		osThreadSuspend(MemsTaskHandle);
-	//		osThreadSuspend(RemoteTaskHandle);
-	//	  osThreadSuspend(FingerTaskHandle);
-	//		osThreadSuspend(AudioTaskHandle);
+	//	osThreadSuspend(MemsTaskHandle);
+	//	osThreadSuspend(RemoteTaskHandle);
+	//	osThreadSuspend(FingerTaskHandle);
+	//	osThreadSuspend(AudioTaskHandle);
 	//		osThreadSuspend(CanRxTaskHandle);
 	//		osThreadSuspend(CanTxTaskHandle);
 	//	  osThreadSuspend(GateTaskHandle);
@@ -1135,7 +1135,7 @@ void StartGpsTask(void *argument)
 			//			VCU.SetOdometer(meter);
 		}
 
-		HBAR_AccumulateTrip(255);
+		// HBAR_AccumulateTrip(255);
 		GPS_Refresh();
 	}
 	/* USER CODE END StartGpsTask */
@@ -1291,37 +1291,41 @@ void StartFingerTask(void *argument)
 				FINGER_Init();
 			}
 
-			if (notif & FLAG_FINGER_PLACED) {
-				id = FINGER_Auth();
-				if (id > 0) {
-					FGR.d.id = FGR.d.id ? 0: id;
-					GATE_LedBlink(200);	_DelayMS(100);
-					GATE_LedBlink(200);
-				} else
-					GATE_LedBlink(1000);
-			}
-
-			else {
-				uint8_t ok = 0;
-
-				if (notif & FLAG_FINGER_ADD) {
-					if (FINGER_Enroll(&id, &ok))
-						_osQueuePutRst(DriverQueueHandle, &id);
-					osThreadFlagsClear(FLAG_FINGER_PLACED);
+			if (VCU.d.state >= VEHICLE_STANDBY) {
+				if (notif & FLAG_FINGER_PLACED) {
+					id = FINGER_Auth();
+					if (id > 0) {
+						FGR.d.id = FGR.d.id ? 0: id;
+						GATE_LedBlink(200);	_DelayMS(100);
+						GATE_LedBlink(200);
+					} else
+						GATE_LedBlink(1000);
 				}
-				if (notif & FLAG_FINGER_DEL) {
-					if (osMessageQueueGet(DriverQueueHandle, &id, NULL, 0U) == osOK)
-						ok = FINGER_DeleteID(id);
-				}
-				if (notif & FLAG_FINGER_FETCH) {
-					ok = FINGER_Fetch();
-				}
-				if (notif & FLAG_FINGER_RST)
-					ok = FINGER_ResetDB();
 
-				osThreadFlagsSet(CommandTaskHandle, ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
+				else {
+					uint8_t ok = 0;
+
+					if (notif & FLAG_FINGER_ADD) {
+						if (FINGER_Enroll(&id, &ok))
+							_osQueuePutRst(DriverQueueHandle, &id);
+						osThreadFlagsClear(FLAG_FINGER_PLACED);
+					}
+					if (notif & FLAG_FINGER_DEL) {
+						if (osMessageQueueGet(DriverQueueHandle, &id, NULL, 0U) == osOK)
+							ok = FINGER_DeleteID(id);
+					}
+					if (notif & FLAG_FINGER_FETCH) {
+						ok = FINGER_Fetch();
+					}
+					if (notif & FLAG_FINGER_RST)
+						ok = FINGER_ResetDB();
+
+					osThreadFlagsSet(CommandTaskHandle, ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
+				}
 			}
 		}
+
+		if (!FGR.d.verified) FINGER_Verify();
 	}
 	/* USER CODE END StartFingerTask */
 }
@@ -1442,10 +1446,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																																			BMS.r.Param1(&Rx);
+																																							BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																																			BMS.r.Param2(&Rx);
+																																							BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;

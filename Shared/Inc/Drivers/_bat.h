@@ -21,6 +21,7 @@
 /* Exported struct
  * --------------------------------------------------------------*/
 typedef struct {
+	uint16_t voltage;
 	uint16_t buf[AVERAGE_SZ];
 	ADC_HandleTypeDef *padc;
 } bat_t;

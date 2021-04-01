@@ -35,19 +35,27 @@ static void Debugger(char *ptr, size_t len);
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t GPS_Init(void) {
-	lock();
+	uint8_t ok;
+	uint32_t tick;
 
+	lock();
 	printf("GPS:Init\n");
+
+	nmea_init(&(GPS.d.nmea));
 	MX_USART2_UART_Init();
 	UBLOX_DMA_Start(GPS.puart, GPS.pdma, GPS_ReceiveCallback);
 	GATE_GpsReset();
-	_DelayMS(GPS_TIMEOUT);
 
-	nmea_init(&(GPS.d.nmea));
+	tick = _GetTickMS();
+	while(_GetTickMS() - tick < GPS_TIMEOUT)
+		if (GPS.d.tick)
+			break;
+
+	ok = GPS.d.tick > 0;
 	unlock();
 
-	printf("GPS:%s\n", GPS.d.tick ? "OK" : "Error");
-	return GPS.d.tick > 0;
+	printf("GPS:%s\n", ok ? "OK" : "Error");
+	return ok;
 }
 
 void GPS_DeInit(void) {

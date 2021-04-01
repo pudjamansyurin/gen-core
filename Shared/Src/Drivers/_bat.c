@@ -16,6 +16,7 @@ extern osMutexId_t BatMutexHandle;
 
 /* Private variables --------------------------------------------------------*/
 static bat_t BAT = {
+		.voltage = {0},
 		.buf = {0},
 		.padc = &hadc1,
 };
@@ -35,6 +36,7 @@ void BAT_Init(void) {
 
 void BAT_DeInit(void) {
   lock();
+  BAT.voltage = 0;
   HAL_ADC_DeInit(BAT.padc);
   unlock();
 }
@@ -55,6 +57,8 @@ uint16_t BAT_ScanValue(void) {
     value = (value * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
     value = MovingAverage(BAT.buf, AVERAGE_SZ, value);
   }
+
+  BAT.voltage = value;
   unlock();
 
   return value;

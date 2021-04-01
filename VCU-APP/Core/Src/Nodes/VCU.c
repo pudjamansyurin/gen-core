@@ -91,6 +91,7 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_STOP);
 				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_STOP);
 				osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_TASK_STOP);
+				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_TASK_STOP);
 				osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_STOP);
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_STOP);
 
@@ -111,9 +112,9 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_START);
 				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_START);
 				osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_TASK_START);
+				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_TASK_START);
 				osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_START);
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_START);
-				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_TASK_STOP);
 
 				HBAR_Init();
 				VCU.d.override.state = VEHICLE_UNKNOWN;
@@ -130,8 +131,6 @@ void VCU_CheckState(void) {
 				if (lastState > VEHICLE_STANDBY && VCU.Is(VCU.d.override.state > VEHICLE_STANDBY))
 					VCU.d.override.state = VEHICLE_STANDBY;
 				lastState = VEHICLE_STANDBY;
-
-				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_TASK_START);
 			}
 
 			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_STANDBY))

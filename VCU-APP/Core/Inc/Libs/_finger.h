@@ -40,6 +40,7 @@ extern finger_t FGR;
 /* Public functions prototype ------------------------------------------------*/
 uint8_t FINGER_Init(void);
 void FINGER_DeInit(void);
+uint8_t FINGER_Probe(void);
 uint8_t FINGER_Verify(void);
 void FINGER_Flush(void);
 uint8_t FINGER_Fetch(void);

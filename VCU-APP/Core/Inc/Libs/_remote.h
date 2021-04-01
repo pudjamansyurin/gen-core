@@ -28,6 +28,7 @@ typedef enum { RMT_MODE_NORMAL = 0, RMT_MODE_PAIRING } RMT_MODE;
 typedef struct {
 	uint8_t active;
 	uint8_t nearby;
+	uint32_t tick;
 	uint32_t heartbeat;
 	uint32_t pairing;
 } remote_data_t;
@@ -52,7 +53,7 @@ extern remote_t RMT;
 /* Public functions prototype ------------------------------------------------*/
 uint8_t RMT_Init(void);
 void RMT_DeInit(void);
-uint8_t RMT_Verify(void);
+uint8_t RMT_Probe(void);
 void RMT_Refresh(vehicle_state_t state);
 void RMT_Flush(void);
 uint8_t RMT_Ping(void);

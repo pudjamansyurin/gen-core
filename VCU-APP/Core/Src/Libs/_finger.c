@@ -38,23 +38,26 @@ static void DebugResponse(uint8_t res, char *msg);
  * --------------------------------------------*/
 uint8_t FINGER_Init(void) {
 	uint8_t ok;
+	uint32_t tick;
 
 	lock();
-	uint32_t tick = _GetTickMS();
+	printf("FGR:Init\n");
+
+	tick = _GetTickMS();
 	do {
-		printf("FGR:Init\n");
 
 		MX_UART4_Init();
 		FINGER_DMA_Start(FGR.puart, FGR.pdma);
 		GATE_FingerReset();
 
-		ok = fz3387_verifyPassword();
+		ok = FINGER_Probe();
 		_DelayMS(500);
 	} while (!ok && _GetTickMS() - tick < FINGER_TIMEOUT);
+
+	FGR.d.verified = ok;
 	unlock();
 
 	printf("FGR:%s\n", ok ? "OK" : "Error");
-	FGR.d.verified = ok;
 	return ok;
 }
 
@@ -67,9 +70,19 @@ void FINGER_DeInit(void) {
 	unlock();
 }
 
+uint8_t FINGER_Probe(void) {
+	uint8_t ok;
+
+	lock();
+	ok = fz3387_checkPassword() == FINGERPRINT_OK;
+	unlock();
+
+	return ok;
+}
+
 uint8_t FINGER_Verify(void) {
 	lock();
-	FGR.d.verified = fz3387_verifyPassword();
+	FGR.d.verified = FINGER_Probe();
 	if (!FGR.d.verified) {
 		FINGER_DeInit();
 		_DelayMS(500);

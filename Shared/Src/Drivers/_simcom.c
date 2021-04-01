@@ -577,17 +577,18 @@ static void NetworkRegistration(char *type, SIM_RESULT *res, uint32_t tick,
 }
 
 static void SetStateDown(SIM_RESULT *res) {
-	printf("Simcom:Init\n");
+	uint8_t ok;
 
+	printf("Simcom:Init\n");
 	// power up the module
-	*res = PowerUp();
+	ok = PowerUp() == SIM_OK;
 
 	// upgrade simcom state
-	if (*res == SIM_OK) {
-		printf("Simcom:ON\n");
+	if (ok)
 		SIM.d.state = SIM_STATE_READY;
-	} else
-		printf("Simcom:Error\n");
+
+	*res = ok;
+	printf("Simcom:%s\n", ok ? "OK" : "Error");
 }
 
 static void SetStateReady(SIM_RESULT *res) {
@@ -644,8 +645,10 @@ static void SetStateReady(SIM_RESULT *res) {
 	// upgrade simcom state
 	if (*res == SIM_OK)
 		SIM.d.state = SIM_STATE_CONFIGURED;
-	else if (SIM.d.state == SIM_STATE_READY)
+	else if (SIM.d.state == SIM_STATE_READY) {
 		SIM.d.state = SIM_STATE_DOWN;
+		Reset(1);
+	}
 }
 
 static void SetStateConfigured(SIM_RESULT *res, uint32_t tick,

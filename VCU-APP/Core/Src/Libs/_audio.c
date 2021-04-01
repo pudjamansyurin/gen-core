@@ -64,7 +64,6 @@ static const uint32_t I2SPLLR[8] = {5, 4, 4, 4, 4, 6, 3, 1};
 static uint8_t I2S_Init(uint32_t AudioFreq);
 static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
 static void AUDIO_OUT_DeInit(void);
-static uint8_t AUDIO_Probe(void);
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
 static void lock(void);
 static void unlock(void);
@@ -73,37 +72,49 @@ static void unlock(void);
  * ---------------------------------------------*/
 uint8_t AUDIO_Init(void) {
 	uint8_t ok;
+	uint32_t tick;
 
+	/* Initialize Wave player (Codec, DMA, I2C) */
 	lock();
-	uint32_t tick = _GetTickMS();
-	do {
-		printf("AUDIO:Init\n");
+	printf("AUDIO:Init\n");
 
-		/* Initialize Wave player (Codec, DMA, I2C) */
+	tick = _GetTickMS();
+	do {
 		GATE_AudioReset();
 		ok = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AUDIO.d.volume, SOUND_FREQ) == AUDIO_OK;
-
 		_DelayMS(2500);
 	} while (!ok && _GetTickMS() - tick < AUDIO_TIMEOUT);
 
-	if (ok) AUDIO_Play();
+	if (ok) {
+		ok = AUDIO_Play();
+	}
 	unlock();
 
 	printf("AUDIO:%s\n", ok ? "OK" : "Error");
-	AUDIO.d.active = ok;
 	return ok;
 }
 
 void AUDIO_DeInit(void) {
 	lock();
+	AUDIO_Flush();
 	AUDIO_OUT_DeInit();
 	GATE_AudioShutdown();
 	unlock();
 }
 
+uint8_t AUDIO_Probe(void) {
+	uint8_t ok;
+
+	lock();
+	ok = (cs43l22_ReadID(AUDIO_I2C_ADDRESS) & CS43L22_ID_MASK) == CS43L22_ID;
+	unlock();
+
+	return ok;
+}
+
 void AUDIO_Refresh(void) {
 	lock();
-	AUDIO.d.active = AUDIO_Probe();
+	AUDIO.d.active = AUDIO.d.tick && (_GetTickMS() - AUDIO.d.tick) < AUDIO_TIMEOUT;
 	if (!AUDIO.d.active) {
 		AUDIO_DeInit();
 		_DelayMS(500);
@@ -112,7 +123,18 @@ void AUDIO_Refresh(void) {
 	unlock();
 }
 
-void AUDIO_Play(void) {
+void AUDIO_Flush(void) {
+	lock();
+	AUDIO.d.tick = 0;
+	AUDIO.d.active = 0;
+	AUDIO.d.size.played = 0;
+	AUDIO.d.size.remaining = 0;
+	unlock();
+}
+
+uint8_t AUDIO_Play(void) {
+	uint8_t ok;
+
 	lock();
 	/* Get data size from audio file */
 	AUDIO.d.size.remaining = SOUND_SIZE;
@@ -123,8 +145,10 @@ void AUDIO_Play(void) {
 		AUDIO.d.size.played = SOUND_SIZE;
 
 	/* Start playing Wave */
-	AUDIO_OUT_Play((uint16_t *)SOUND_SAMPLE, AUDIO.d.size.played);
+	ok = AUDIO_OUT_Play((uint16_t *)SOUND_SAMPLE, AUDIO.d.size.played) == AUDIO_OK;
 	unlock();
+
+	return ok;
 }
 
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
@@ -351,6 +375,7 @@ void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params) {
  * @param  Size: Number of data to be written
  */
 void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
+	AUDIO.d.tick = _GetTickMS();
 	HAL_I2S_Transmit_DMA(AUDIO.pi2s, pData, DMA_MAX(Size / AUDIO_DATA_SZ));
 }
 
@@ -413,11 +438,6 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
 
 /* Private functions implementation
  * ---------------------------------------------*/
-static uint8_t AUDIO_Probe(void) {
-	uint8_t ok;
-	ok = (cs43l22_ReadID(AUDIO_I2C_ADDRESS) & CS43L22_ID_MASK) == CS43L22_ID;
-	return ok;
-}
 /**
  * @brief  Configures the audio peripherals.
  * @param  OutputDevice: OUTPUT_DEVICE_SPEAKER, OUTPUT_DEVICE_HEADPHONE,
@@ -470,16 +490,16 @@ static void AUDIO_OUT_DeInit(void) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
-	uint8_t ok;
-
 	/* Call the audio Codec Play function */
 	if (cs43l22_Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0)
 		return AUDIO_ERROR;
 
 	/* Update the Media layer and enable it for play */
-	ok = HAL_I2S_Transmit_DMA(AUDIO.pi2s, pBuffer, DMA_MAX(Size / AUDIO_DATA_SZ)) == HAL_OK;
-	/* Return AUDIO_OK when all operations are correctly done */
-	return ok ? AUDIO_OK : AUDIO_ERROR;
+	if (HAL_I2S_Transmit_DMA(AUDIO.pi2s, pBuffer, DMA_MAX(Size / AUDIO_DATA_SZ)) != HAL_OK)
+		return AUDIO_ERROR;
+	else
+		/* Return AUDIO_OK when all operations are correctly done */
+		return AUDIO_OK;
 }
 
 /**

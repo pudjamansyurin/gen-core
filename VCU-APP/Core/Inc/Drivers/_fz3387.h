@@ -89,7 +89,6 @@ typedef struct {
 } fz3387_t;
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t fz3387_verifyPassword(void);
 uint8_t fz3387_checkPassword(void);
 uint8_t fz3387_getImage(void);
 uint8_t fz3387_image2Tz(uint8_t slot);
