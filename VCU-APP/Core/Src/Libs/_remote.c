@@ -78,7 +78,7 @@ uint8_t RMT_Init(void) {
 	}
 	unlock();
 
-	printf("NRF:Init = %s\n", ok ? "OK" : "ERROR");
+	printf("NRF:%s\n", ok ? "OK" : "Error");
 	RMT.d.active = ok;
 	return ok;
 }
@@ -116,7 +116,7 @@ void RMT_Refresh(vehicle_state_t state) {
 //	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
 //		if (!RMT_Ping())
 //			RMT_Verify();
-	RMT_Ping();
+	RMT.d.active = RMT_Ping();
 
 	if (RMT.d.pairing && (_GetTickMS() - RMT.d.pairing) > RMT_PAIRING_TIMEOUT) {
 		RMT.d.pairing = 0;

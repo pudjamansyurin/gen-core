@@ -42,7 +42,7 @@ uint8_t FINGER_Init(void) {
 	lock();
 	uint32_t tick = _GetTickMS();
 	do {
-		printf("Finger:Init\n");
+		printf("FGR:Init\n");
 
 		MX_UART4_Init();
 		FINGER_DMA_Start(FGR.puart, FGR.pdma);
@@ -53,6 +53,7 @@ uint8_t FINGER_Init(void) {
 	} while (!ok && _GetTickMS() - tick < FINGER_TIMEOUT);
 	unlock();
 
+	printf("FGR:%s\n", ok ? "OK" : "Error");
 	FGR.d.verified = ok;
 	return ok;
 }
@@ -108,7 +109,7 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 
 	if (*valid) {
 		GATE_LedWrite(1);
-		*valid = Scan(*id, 1, 5000);
+		*valid = Scan(*id, 1, FINGER_SCAN_TIMEOUT);
 	}
 
 	if (*valid) {
@@ -118,7 +119,7 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 		}
 
 		GATE_LedWrite(1);
-		*valid = Scan(*id, 2, 5000);
+		*valid = Scan(*id, 2, FINGER_SCAN_TIMEOUT);
 	}
 
 	GATE_LedWrite(0);
@@ -128,14 +129,14 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid) {
 			_DelayMS(50);
 		}
 
-		printf("Finger:Creating model for #%u\n", *id);
+		printf("FGR:Creating model for #%u\n", *id);
 		res = fz3387_createModel();
 		DebugResponse(res, "Prints matched!");
 		*valid = (res == FINGERPRINT_OK);
 	}
 
 	if (*valid) {
-		printf("Finger:ID #%u\n", *id);
+		printf("FGR:ID #%u\n", *id);
 		res = fz3387_storeModel(*id);
 		DebugResponse(res, "Stored!");
 		*valid = (res == FINGERPRINT_OK);
@@ -201,7 +202,7 @@ uint8_t FINGER_Auth(void) {
 	}
 
 	if (valid) {
-		printf("Finger:Found ID #%u with confidence of %u\n", id, confidence);
+		printf("FGR:Found ID #%u with confidence of %u\n", id, confidence);
 		if (confidence > FINGER_CONFIDENCE_MIN)
 			theId = id;
 	}
@@ -246,7 +247,7 @@ static uint8_t Scan(uint8_t id, uint8_t slot, uint32_t timeout) {
 	TickType_t tick;
 	uint8_t valid = 0;
 
-	printf("Finger:Waiting for valid finger to enroll as #%u\n", id);
+	printf("FGR:Waiting for valid finger to enroll as #%u\n", id);
 
 	tick = _GetTickMS();
 	do {
@@ -288,7 +289,7 @@ static uint8_t GenerateID(uint8_t *theId) {
 
 	res = fz3387_getTemplateCount(&templateCount);
 	if (res == FINGERPRINT_OK) {
-		printf("Finger:TemplateCount = %u\n", templateCount);
+		printf("FGR:TemplateCount = %u\n", templateCount);
 
 		if (templateCount <= FINGER_USER_MAX) {
 			for (uint8_t id = 1; id <= FINGER_USER_MAX; id++)
@@ -306,40 +307,40 @@ static void DebugResponse(uint8_t res, char *msg) {
 #if FINGER_DEBUG
 	switch (res) {
 	case FINGERPRINT_OK:
-		printf("Finger:%s\n", msg);
+		printf("FGR:%s\n", msg);
 		break;
 	case FINGERPRINT_NOFINGER:
-		printf("Finger:No finger detected\n");
+		printf("FGR:No finger detected\n");
 		break;
 	case FINGERPRINT_NOTFOUND:
-		printf("Finger:Did not find a match\n");
+		printf("FGR:Did not find a match\n");
 		break;
 	case FINGERPRINT_PACKETRECIEVEERR:
-		printf("Finger:Communication error\n");
+		printf("FGR:Communication error\n");
 		break;
 	case FINGERPRINT_ENROLLMISMATCH:
-		printf("Finger:Fingerprints did not match\n");
+		printf("FGR:Fingerprints did not match\n");
 		break;
 	case FINGERPRINT_IMAGEMESS:
-		printf("Finger:Image too messy\n");
+		printf("FGR:Image too messy\n");
 		break;
 	case FINGERPRINT_IMAGEFAIL:
-		printf("Finger:Imaging error\n");
+		printf("FGR:Imaging error\n");
 		break;
 	case FINGERPRINT_FEATUREFAIL:
-		printf("Finger:Could not find finger print features\n");
+		printf("FGR:Could not find finger print features fail\n");
 		break;
 	case FINGERPRINT_INVALIDIMAGE:
-		printf("Finger:Could not find finger print features\n");
+		printf("FGR:Could not find finger print features invalid\n");
 		break;
 	case FINGERPRINT_BADLOCATION:
-		printf("Finger:Could not execute in that location\n");
+		printf("FGR:Could not execute in that location\n");
 		break;
 	case FINGERPRINT_FLASHERR:
-		printf("Finger:Error writing to flash\n");
+		printf("FGR:Error writing to flash\n");
 		break;
 	default:
-		printf("Finger:Unknown error: 0x%02X\n", res);
+		printf("FGR:Unknown error: 0x%02X\n", res);
 		FINGER_Verify();
 		break;
 	}

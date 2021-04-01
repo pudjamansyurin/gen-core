@@ -415,7 +415,7 @@ static uint8_t FINGER_IO_WRITE(uint8_t *data, uint8_t len) {
 
 	FINGER_Reset_Buffer();
 	ok = FINGER_Transmit(data, len);
-	_DelayMS(200);
+	_DelayMS(1000);
 
 	return ok;
 }

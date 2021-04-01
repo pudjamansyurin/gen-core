@@ -54,6 +54,7 @@ uint8_t MEMS_Init(void) {
 	} while (!ok && _GetTickMS() - tick < MEMS_TIMEOUT);
 	unlock();
 
+	printf("MEMS:%s\n", ok ? "OK" : "Error");
 	return ok;
 }
 

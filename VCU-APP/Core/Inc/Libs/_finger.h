@@ -14,7 +14,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define FINGER_TIMEOUT (uint16_t)5000 // in ms
-#define FINGER_SCAN_TIMEOUT (uint16_t)5000 // in ms
+#define FINGER_SCAN_TIMEOUT (uint16_t)10000 // in ms
 
 #define FINGER_CONFIDENCE_MIN (uint8_t)75  // in %
 #define FINGER_USER_MAX (uint8_t)5

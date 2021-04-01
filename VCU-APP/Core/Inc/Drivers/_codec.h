@@ -19,7 +19,7 @@
  // application conditions (interrupts routines ...). */
 #define I2Cx_TIMEOUT_MAX 0x1000
 
-// #define VERIFY_WRITTENDATA
+#define VERIFY_WRITTENDATA
 
 /* Public functions prototype ------------------------------------------------*/
 void CODEC_Init(void);

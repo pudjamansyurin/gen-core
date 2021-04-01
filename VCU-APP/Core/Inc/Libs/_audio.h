@@ -89,17 +89,17 @@ void AUDIO_Refresh(void);
 void AUDIO_Play(void);
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS);
 void AUDIO_BeepStop(void);
-void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size);
 uint8_t AUDIO_OUT_Pause(void);
 uint8_t AUDIO_OUT_Resume(void);
 uint8_t AUDIO_OUT_Stop(uint32_t Option);
 uint8_t AUDIO_OUT_SetVolume(uint8_t Volume);
 void AUDIO_OUT_SetFrequency(uint32_t AudioFreq);
 uint8_t AUDIO_OUT_SetOutputMode(uint8_t Output);
-void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params);
-void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params);
 uint8_t AUDIO_OUT_SetVolume(uint8_t Volume);
 uint8_t AUDIO_OUT_SetMute(uint32_t Cmd);
+void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params);
+void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params);
+void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size);
 /* User Callbacks: user has to implement these functions in his code if they are
  * needed. */
 /* This function is called when the requested data has been completely

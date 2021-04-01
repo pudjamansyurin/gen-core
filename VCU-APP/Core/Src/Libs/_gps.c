@@ -46,6 +46,7 @@ uint8_t GPS_Init(void) {
 	nmea_init(&(GPS.d.nmea));
 	unlock();
 
+	printf("GPS:%s\n", GPS.d.tick ? "OK" : "Error");
 	return GPS.d.tick > 0;
 }
 

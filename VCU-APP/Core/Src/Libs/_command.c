@@ -77,7 +77,7 @@ void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue) {
 
 	// wait response until timeout
 	resp->data.res_code = RESPONSE_STATUS_ERROR;
-	if (_osFlagAny(&notif, FINGER_SCAN_TIMEOUT + 3000)) {
+	if (_osFlagAny(&notif, (FINGER_SCAN_TIMEOUT*2) + 5000)) {
 		if (notif & FLAG_COMMAND_OK) {
 			if (osMessageQueueGet(queue, &id, NULL, 0U) == osOK) {
 				sprintf(resp->data.message, "%u", id);

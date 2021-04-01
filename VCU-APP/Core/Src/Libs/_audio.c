@@ -64,6 +64,7 @@ static const uint32_t I2SPLLR[8] = {5, 4, 4, 4, 4, 6, 3, 1};
 static uint8_t I2S_Init(uint32_t AudioFreq);
 static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t AudioFreq);
 static void AUDIO_OUT_DeInit(void);
+static uint8_t AUDIO_Probe(void);
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
 static void lock(void);
 static void unlock(void);
@@ -76,19 +77,20 @@ uint8_t AUDIO_Init(void) {
 	lock();
 	uint32_t tick = _GetTickMS();
 	do {
-		printf("Audio:Init\n");
+		printf("AUDIO:Init\n");
 
 		/* Initialize Wave player (Codec, DMA, I2C) */
 		GATE_AudioReset();
 		ok = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AUDIO.d.volume, SOUND_FREQ) == AUDIO_OK;
 
-		_DelayMS(500);
+		_DelayMS(2500);
 	} while (!ok && _GetTickMS() - tick < AUDIO_TIMEOUT);
 
 	if (ok) AUDIO_Play();
-	AUDIO.d.active = ok;
 	unlock();
 
+	printf("AUDIO:%s\n", ok ? "OK" : "Error");
+	AUDIO.d.active = ok;
 	return ok;
 }
 
@@ -101,7 +103,7 @@ void AUDIO_DeInit(void) {
 
 void AUDIO_Refresh(void) {
 	lock();
-	AUDIO.d.active = ((cs43l22_ReadID(AUDIO_I2C_ADDRESS) & CS43L22_ID_MASK) == CS43L22_ID);
+	AUDIO.d.active = AUDIO_Probe();
 	if (!AUDIO.d.active) {
 		AUDIO_DeInit();
 		_DelayMS(500);
@@ -145,15 +147,6 @@ void AUDIO_BeepStop(void) {
 	cs43l22_Beep(AUDIO_I2C_ADDRESS, BEEP_MODE_OFF, BEEP_MIX_ON);
 
 	unlock();
-}
-
-/**
- * @brief  Sends n-Bytes on the I2S interface.
- * @param  pData: Pointer to data address
- * @param  Size: Number of data to be written
- */
-void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
-	HAL_I2S_Transmit_DMA(AUDIO.pi2s, pData, DMA_MAX(Size / AUDIO_DATA_SZ));
 }
 
 /**
@@ -232,6 +225,8 @@ uint8_t AUDIO_OUT_Stop(uint32_t Option) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_SetVolume(uint8_t Volume) {
+	if (AUDIO.d.volume == Volume)
+		return AUDIO_OK;
 
 	/* Call the codec volume control function with converted volume value */
 	if (cs43l22_SetVolume(AUDIO_I2C_ADDRESS, Volume) != 0)
@@ -349,6 +344,16 @@ void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params) {
 	HAL_I2S_MspDeInit(hi2s);
 }
 
+
+/**
+ * @brief  Sends n-Bytes on the I2S interface.
+ * @param  pData: Pointer to data address
+ * @param  Size: Number of data to be written
+ */
+void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
+	HAL_I2S_Transmit_DMA(AUDIO.pi2s, pData, DMA_MAX(Size / AUDIO_DATA_SZ));
+}
+
 /**
  * @brief  Manages the DMA Half Transfer complete event.
  */
@@ -408,6 +413,11 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
 
 /* Private functions implementation
  * ---------------------------------------------*/
+static uint8_t AUDIO_Probe(void) {
+	uint8_t ok;
+	ok = (cs43l22_ReadID(AUDIO_I2C_ADDRESS) & CS43L22_ID_MASK) == CS43L22_ID;
+	return ok;
+}
 /**
  * @brief  Configures the audio peripherals.
  * @param  OutputDevice: OUTPUT_DEVICE_SPEAKER, OUTPUT_DEVICE_HEADPHONE,
@@ -439,7 +449,7 @@ static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Au
 
 	if (ret == AUDIO_OK) {
 		/* Retrieve audio codec identifier */
-		if ((cs43l22_ReadID(AUDIO_I2C_ADDRESS) & CS43L22_ID_MASK) == CS43L22_ID)
+		if (AUDIO_Probe())
 			cs43l22_Init(AUDIO_I2C_ADDRESS, OutputDevice, Volume, AudioFreq);
 		else
 			ret = AUDIO_ERROR;
@@ -460,14 +470,16 @@ static void AUDIO_OUT_DeInit(void) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
+	uint8_t ok;
+
 	/* Call the audio Codec Play function */
 	if (cs43l22_Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0)
 		return AUDIO_ERROR;
 
 	/* Update the Media layer and enable it for play */
-	HAL_I2S_Transmit_DMA(AUDIO.pi2s, pBuffer, DMA_MAX(Size / AUDIO_DATA_SZ));
+	ok = HAL_I2S_Transmit_DMA(AUDIO.pi2s, pBuffer, DMA_MAX(Size / AUDIO_DATA_SZ)) == HAL_OK;
 	/* Return AUDIO_OK when all operations are correctly done */
-	return AUDIO_OK;
+	return ok ? AUDIO_OK : AUDIO_ERROR;
 }
 
 /**
@@ -480,7 +492,7 @@ static uint8_t I2S_Init(uint32_t AudioFreq) {
 
 	AUDIO.pi2s->Init.Mode = I2S_MODE_MASTER_TX;
 	AUDIO.pi2s->Init.Standard = I2S_STANDARD_PHILIPS;
-	AUDIO.pi2s->Init.DataFormat = I2S_DATAFORMAT_32B;
+	AUDIO.pi2s->Init.DataFormat = I2S_DATAFORMAT_16B;
 	AUDIO.pi2s->Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
 	AUDIO.pi2s->Init.AudioFreq = AudioFreq;
 	AUDIO.pi2s->Init.CPOL = I2S_CPOL_LOW;
