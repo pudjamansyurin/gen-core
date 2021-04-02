@@ -7,9 +7,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_finger.h"
+#include "Drivers/_fz3387.h"
 #include "DMA/_dma_finger.h"
 #include "usart.h"
-
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)

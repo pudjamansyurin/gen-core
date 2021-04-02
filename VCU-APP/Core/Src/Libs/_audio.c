@@ -39,7 +39,6 @@
 #include "Libs/_audio.h"
 #include "i2s.h"
 
-
 /* External variables --------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t AudioRecMutexHandle;

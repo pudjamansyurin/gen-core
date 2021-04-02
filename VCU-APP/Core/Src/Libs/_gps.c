@@ -8,7 +8,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_gps.h"
 #include "DMA/_dma_ublox.h"
-#include "Nodes/VCU.h"
 #include "usart.h"
 
 /* External variables -------------------------------------------------------*/

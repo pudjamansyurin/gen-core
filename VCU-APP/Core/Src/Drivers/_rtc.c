@@ -9,7 +9,6 @@
 #include "Drivers/_rtc.h"
 #include "rtc.h"
 
-
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t RtcMutexHandle;

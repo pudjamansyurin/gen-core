@@ -38,7 +38,6 @@
 #include "Drivers/_cs43l22.h"
 #include "Drivers/_codec.h"
 
-
 /* Private variables
  * ----------------------------------------------------------*/
 static cs43l22_t cs43l22 = {

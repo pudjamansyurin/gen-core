@@ -8,7 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_mqtt.h"
 #include "Drivers/_simcom.h"
-#include "Nodes/VCU.h"
+#include "MQTTPacket.h"
 
 /* Private variables
  * ----------------------------------------------------------*/

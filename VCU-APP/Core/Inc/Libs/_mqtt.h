@@ -11,7 +11,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_command.h"
 #include "Libs/_utils.h"
-#include "MQTTPacket.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define MQTT_USERNAME ""

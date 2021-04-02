@@ -9,7 +9,6 @@
 #define FINGER_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Drivers/_fz3387.h"
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/

@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Drivers/_nrf24l01.h"
+#include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define RMT_TIMEOUT (uint16_t)3000 // in ms

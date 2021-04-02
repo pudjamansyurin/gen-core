@@ -11,7 +11,6 @@
 #include "Libs/_command.h"
 #include "Libs/_eeprom.h"
 #include "Nodes/HMI1.h"
-#include "Nodes/VCU.h"
 
 /* Private functions prototypes
  * -----------------------------------------------*/

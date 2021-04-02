@@ -12,7 +12,6 @@
 #include "Libs/_usart_ring.h"
 #include "Libs/_utils.h"
 
-
 /* Exported constants --------------------------------------------------------*/
 #define FINGER_UART_RX_SZ (uint8_t) 128
 #define FINGER_DMA_RX_SZ  FINGER_UART_RX_SZ

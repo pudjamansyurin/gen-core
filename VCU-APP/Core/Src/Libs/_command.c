@@ -7,11 +7,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_command.h"
-#include "Drivers/_rtc.h"
-#include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
-#include "Libs/_firmware.h"
-#include "Nodes/VCU.h"
+#include "Nodes/HMI1.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)

@@ -55,7 +55,6 @@ typedef struct {
 	void (*SetEvent)(uint8_t, uint8_t);
 	uint8_t (*ReadEvent)(uint8_t);
 	uint8_t (*Is)(uint8_t);
-	void (*SetOdometer)(uint8_t);
 } vcu_t;
 
 /* Exported variables
@@ -70,7 +69,6 @@ void VCU_CheckState(void);
 void VCU_SetEvent(uint8_t bit, uint8_t value);
 uint8_t VCU_ReadEvent(uint8_t bit);
 uint8_t VCU_Is(uint8_t state);
-void VCU_SetOdometer(uint8_t meter);
 
 uint8_t VCU_TX_Heartbeat(void);
 uint8_t VCU_TX_SwitchControl(void);

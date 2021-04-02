@@ -6,9 +6,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "Libs/_eeprom.h"
 #include "Libs/_hbar.h"
-#include "Nodes/VCU.h"
-#include "_defines.h"
 
 /* Public variables
  * -----------------------------------------------------------*/
@@ -130,17 +129,37 @@ hbar_sein_t HBAR_SeinController(void) {
 
 uint32_t HBAR_AccumulateTrip(uint8_t meter) {
 	HBAR_MODE_TRIP mTrip = HBAR.d.mode[HBAR_M_TRIP];
-	uint32_t *trip = &(HBAR.d.trip[mTrip]);
-	uint32_t limit;
+	uint32_t limit, *trip = &(HBAR.d.trip[mTrip]);
 
 	limit = (mTrip == HBAR_M_TRIP_ODO) ? ODOMETER_MAX : UINT16_MAX;
 
 	if ((*trip / 1000) > limit) *trip = meter;
 	else *trip += meter;
 
-	HBAR.d.trip[HBAR_M_TRIP_ODO] += meter;
+	if ((mTrip != HBAR_M_TRIP_ODO))
+		HBAR.d.trip[HBAR_M_TRIP_ODO] += meter;
 
 	return HBAR.d.trip[HBAR_M_TRIP_ODO];
+}
+
+void HBAR_SetOdometer(uint8_t meter) {
+	static uint32_t last_km = 0;
+	uint32_t odometer, odometer_km;
+
+	odometer = HBAR_AccumulateTrip(meter);
+	odometer_km = odometer / 1000;
+
+	// init hook
+	if (last_km == 0)
+		last_km = odometer_km;
+
+	// check every 1km
+	if (odometer_km > last_km) {
+		last_km = odometer_km;
+
+		// accumulate (save permanently)
+		EEPROM_Odometer(EE_CMD_W, odometer);
+	}
 }
 
 void HBAR_RefreshSelectSet(void) {
@@ -169,10 +188,10 @@ void HBAR_TimerSelectSet(void) {
 		uint8_t key = keys[i];
 		hbar_timer_t *t = &(HBAR.timer[key]);
 
+		t->time = 0;
 		if (HBAR.state[key]) {
 			if (t->start == 0) {
 				if (key == HBAR_K_SELECT || (key == HBAR_K_SET && HBAR.ctl.listening)) {
-					t->time = 0;
 					t->start = _GetTickMS();
 				}
 			}

@@ -115,6 +115,7 @@ void HBAR_ReadStates(void);
 HBAR_STARTER HBAR_RefreshStarter(vehicle_state_t lastState);
 hbar_sein_t HBAR_SeinController(void);
 uint32_t HBAR_AccumulateTrip(uint8_t meter);
+void HBAR_SetOdometer(uint8_t meter);
 void HBAR_RefreshSelectSet(void);
 void HBAR_TimerSelectSet(void);
 

@@ -10,7 +10,6 @@
 #include "Drivers/_aes.h"
 #include "Drivers/_rng.h"
 #include "Libs/_eeprom.h"
-#include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
 #include "spi.h"
 

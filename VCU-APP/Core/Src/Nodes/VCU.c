@@ -38,7 +38,6 @@ vcu_t VCU = {
 		.SetEvent = VCU_SetEvent,
 		.ReadEvent = VCU_ReadEvent,
 		.Is = VCU_Is,
-		.SetOdometer = VCU_SetOdometer,
 };
 
 /* Private functions declaration -------------------------------------------*/
@@ -180,26 +179,6 @@ uint8_t VCU_ReadEvent(uint8_t bit) {
 
 uint8_t VCU_Is(uint8_t state) {
 	return (VCU.d.override.state != VEHICLE_UNKNOWN) && state;
-}
-
-void VCU_SetOdometer(uint8_t meter) {
-	static uint32_t last_km = 0;
-	uint32_t odometer, odometer_km;
-
-	odometer = HBAR_AccumulateTrip(meter);
-	odometer_km = odometer / 1000;
-
-	// init hook
-	if (last_km == 0)
-		last_km = odometer_km;
-
-	// check every 1km
-	if (odometer_km > last_km) {
-		last_km = odometer_km;
-
-		// accumulate (save permanently)
-		EEPROM_Odometer(EE_CMD_W, odometer);
-	}
 }
 
 
