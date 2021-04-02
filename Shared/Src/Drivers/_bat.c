@@ -16,7 +16,7 @@ extern osMutexId_t BatMutexHandle;
 
 /* Private variables --------------------------------------------------------*/
 static bat_t BAT = {
-		.voltage = {0},
+		.voltage = 0,
 		.buf = {0},
 		.padc = &hadc1,
 };

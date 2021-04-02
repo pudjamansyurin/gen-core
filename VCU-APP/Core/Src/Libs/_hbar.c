@@ -25,7 +25,6 @@ static void RunSet(void);
 void HBAR_Init(void) {
 	for (uint8_t i = 0; i < sizeof(HBAR.timer) / sizeof(HBAR.timer[0]); i++) {
 		HBAR.timer[i].start = 0;
-		HBAR.timer[i].running = 0;
 		HBAR.timer[i].time = 0;
 	}
 
@@ -56,12 +55,11 @@ void HBAR_ReadStarter(void) {
 	static uint32_t tick = 0;
 
 	HBAR.state[HBAR_K_STARTER] = GATE_ReadStarter();
-	if (!HBAR.state[HBAR_K_STARTER]) {
+	if (HBAR.state[HBAR_K_STARTER])
+		tick = _GetTickMS();
+	else {
 		HBAR.ctl.tick.starter = tick ? _GetTickMS() - tick : 0;
 		tick = 0;
-	}
-	else {
-		tick = _GetTickMS();
 	}
 }
 
@@ -79,8 +77,11 @@ void HBAR_ReadStates(void) {
 			HBAR.ctl.tick.session = _GetTickMS();
 			HBAR_TimerSelectSet();
 
-			if (HBAR.state[HBAR_K_SELECT]) RunSelect();
-			else RunSet();
+			if (HBAR.ctl.listening) {
+				if (HBAR.timer[HBAR_K_SELECT].time) RunSelect();
+				if (HBAR.timer[HBAR_K_SET].time) RunSet();
+			} else
+				if (HBAR.timer[HBAR_K_SELECT].time) HBAR.ctl.listening = 1;
 		}
 	}
 }
@@ -144,15 +145,16 @@ uint32_t HBAR_AccumulateTrip(uint8_t meter) {
 
 void HBAR_RefreshSelectSet(void) {
 	if (HBAR.ctl.listening) {
+		// blinking
+		if ((_GetTickMS() - HBAR.ctl.tick.blink) >= MODE_BLINK_MS) {
+			HBAR.ctl.tick.blink = _GetTickMS();
+			HBAR.ctl.blink = !HBAR.ctl.blink;
+		}
+
 		// stop listening
 		if ((_GetTickMS() - HBAR.ctl.tick.session) >= MODE_SESSION_MS || HBAR.state[HBAR_K_REVERSE]) {
 			HBAR.ctl.listening = 0;
 			HBAR.ctl.blink = 0;
-		}
-		// start listening, blink
-		else if ((_GetTickMS() - HBAR.ctl.tick.blink) >= MODE_BLINK_MS) {
-			HBAR.ctl.tick.blink = _GetTickMS();
-			HBAR.ctl.blink = !HBAR.ctl.blink;
 		}
 	} else {
 		HBAR.ctl.blink = 0;
@@ -162,25 +164,22 @@ void HBAR_RefreshSelectSet(void) {
 
 void HBAR_TimerSelectSet(void) {
 	uint8_t keys[] = { HBAR_K_SELECT, HBAR_K_SET };
-	hbar_timer_t *timer;
 
 	for (uint8_t i = 0; i <= sizeof(keys); i++) {
 		uint8_t key = keys[i];
-
-		timer = &(HBAR.timer[key]);
-		timer->time = 0;
+		hbar_timer_t *t = &(HBAR.timer[key]);
 
 		if (HBAR.state[key]) {
-			if (!timer->running) {
+			if (t->start == 0) {
 				if (key == HBAR_K_SELECT || (key == HBAR_K_SET && HBAR.ctl.listening)) {
-					timer->running = 1;
-					timer->start = _GetTickMS();
+					t->time = 0;
+					t->start = _GetTickMS();
 				}
 			}
 		} else {
-			if (timer->running) {
-				timer->running = 0;
-				timer->time = (_GetTickMS() - timer->start) / 1000;
+			if (t->start > 0) {
+				t->time = (_GetTickMS() - t->start) / 1000;
+				t->start = 0;
 			}
 		}
 	}
@@ -189,24 +188,18 @@ void HBAR_TimerSelectSet(void) {
 /* Private functions implementation
  * -------------------------------------------*/
 static void RunSelect(void) {
-	if (HBAR.ctl.listening) {
-		if (HBAR.d.m == (HBAR_M_MAX - 1)) HBAR.d.m = 0;
-		else HBAR.d.m++;
-	}
-
-	HBAR.ctl.listening = 1;
+	if (HBAR.d.m == (HBAR_M_MAX - 1)) HBAR.d.m = 0;
+	else HBAR.d.m++;
 }
 
 static void RunSet(void) {
-	if (HBAR.ctl.listening) {
-		if (HBAR.d.m == HBAR_M_TRIP &&
-				HBAR.d.mode[HBAR.d.m] != HBAR_M_TRIP_ODO &&
-				HBAR.timer[HBAR_K_SET].time > MODE_RESET_MS
-		)
-			HBAR.d.trip[HBAR.d.mode[HBAR.d.m]] = 0;
-		else {
-			if (HBAR.d.mode[HBAR.d.m] == HBAR.d.max[HBAR.d.m]) HBAR.d.mode[HBAR.d.m] = 0;
-			else HBAR.d.mode[HBAR.d.m]++;
-		}
+	if (HBAR.d.m == HBAR_M_TRIP &&
+			HBAR.d.mode[HBAR.d.m] != HBAR_M_TRIP_ODO &&
+			HBAR.timer[HBAR_K_SET].time > MODE_RESET_MS
+	)
+		HBAR.d.trip[HBAR.d.mode[HBAR.d.m]] = 0;
+	else {
+		if (HBAR.d.mode[HBAR.d.m] == HBAR.d.max[HBAR.d.m]) HBAR.d.mode[HBAR.d.m] = 0;
+		else HBAR.d.mode[HBAR.d.m]++;
 	}
 }
