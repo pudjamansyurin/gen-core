@@ -127,38 +127,31 @@ hbar_sein_t HBAR_SeinController(void) {
 	return sein;
 }
 
-uint32_t HBAR_AccumulateTrip(uint8_t meter) {
+uint16_t HBAR_AccumulateTrip(uint8_t km) {
 	HBAR_MODE_TRIP mTrip = HBAR.d.mode[HBAR_M_TRIP];
-	uint32_t limit, *trip = &(HBAR.d.trip[mTrip]);
+	uint16_t *trip = &(HBAR.d.trip[mTrip]);
 
-	limit = (mTrip == HBAR_M_TRIP_ODO) ? ODOMETER_MAX : UINT16_MAX;
+	*trip += km;
 
-	if ((*trip / 1000) > limit) *trip = meter;
-	else *trip += meter;
-
-	if ((mTrip != HBAR_M_TRIP_ODO))
-		HBAR.d.trip[HBAR_M_TRIP_ODO] += meter;
+	if (mTrip != HBAR_M_TRIP_ODO)
+		HBAR.d.trip[HBAR_M_TRIP_ODO] += km;
 
 	return HBAR.d.trip[HBAR_M_TRIP_ODO];
 }
 
 void HBAR_SetOdometer(uint8_t meter) {
-	static uint32_t last_km = 0;
-	uint32_t odometer, odometer_km;
+	static uint16_t last_meter = 0;
+	uint16_t odometer_km;
+	uint8_t km;
 
-	odometer = HBAR_AccumulateTrip(meter);
-	odometer_km = odometer / 1000;
+	if (last_meter < 1000)
+		last_meter += meter;
+	else {
+		km = last_meter / 1000;
+		last_meter -= km * 1000;
 
-	// init hook
-	if (last_km == 0)
-		last_km = odometer_km;
-
-	// check every 1km
-	if (odometer_km > last_km) {
-		last_km = odometer_km;
-
-		// accumulate (save permanently)
-		EEPROM_Odometer(EE_CMD_W, odometer);
+		odometer_km = HBAR_AccumulateTrip(km);
+		EEPROM_Odometer(EE_CMD_W, odometer_km);
 	}
 }
 

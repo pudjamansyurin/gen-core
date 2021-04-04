@@ -46,8 +46,7 @@ typedef struct {
 		uint8_t (*Heartbeat)(void);
 		uint8_t (*SwitchControl)(void);
 		uint8_t (*Datetime)(datetime_t);
-		uint8_t (*MixedData)(void);
-		uint8_t (*TripData)(void);
+		uint8_t (*ModeData)(void);
 	} t;
 	void (*Init)(void);
 	void (*Refresh)(void);
@@ -73,7 +72,6 @@ uint8_t VCU_Is(uint8_t state);
 uint8_t VCU_TX_Heartbeat(void);
 uint8_t VCU_TX_SwitchControl(void);
 uint8_t VCU_TX_Datetime(datetime_t dt);
-uint8_t VCU_TX_MixedData(void);
-uint8_t VCU_TX_TripData(void);
+uint8_t VCU_TX_ModeData(void);
 
 #endif /* INC_NODES_VCU_H_ */

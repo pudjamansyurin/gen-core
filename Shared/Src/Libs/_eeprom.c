@@ -92,9 +92,8 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
   return ret;
 }
 
-uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value) {
-  return Command(VADDR_ODOMETER, cmd, &value, &(HBAR.d.trip[HBAR_M_TRIP_ODO]),
-                 sizeof(value));
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint16_t value) {
+  return Command(VADDR_ODOMETER, cmd, &value, &(HBAR.d.trip[HBAR_M_TRIP_ODO]), sizeof(value));
 }
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {

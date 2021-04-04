@@ -56,7 +56,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 		hbar->mode.report = HBAR.d.mode[HBAR_M_REPORT];
 		hbar->trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
 		hbar->trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
-		hbar->trip.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
+		hbar->trip.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO];
 		hbar->report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
 		hbar->report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 

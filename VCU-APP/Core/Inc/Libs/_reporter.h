@@ -69,9 +69,9 @@ typedef struct __attribute__((packed)) {
 		uint8_t report;
 	} mode;
 	struct __attribute__((packed)) {
-		uint32_t a;
-		uint32_t b;
-		uint32_t odometer;
+		uint16_t a;
+		uint16_t b;
+		uint16_t odometer;
 	} trip;
 	struct __attribute__((packed)) {
 		uint8_t range;

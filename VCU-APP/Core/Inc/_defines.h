@@ -35,7 +35,6 @@
 #define MANAGER_WAKEUP (uint16_t) 1111 // in ms
 
 #define MCU_SPEED_MAX (uint8_t)150 // in kph
-#define ODOMETER_MAX (uint32_t)99999 // in km
 #define BMS_LOWBAT (uint8_t)20
 
 #define SIMCOM_VOLTAGE_MIN (uint16_t)3300 // in mV

@@ -1471,7 +1471,7 @@ void StartCanTxTask(void *argument)
 {
 	/* USER CODE BEGIN StartCanTxTask */
 	uint32_t notif;
-	TickType_t last500ms, last1000ms;
+	TickType_t last1000ms;
 
 	_osEventManager();
 	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
@@ -1481,7 +1481,6 @@ void StartCanTxTask(void *argument)
 	CANBUS_Init();
 
 	/* Infinite loop */
-	last500ms = _GetTickMS();
 	last1000ms = _GetTickMS();
 	for (;;) {
 		TASKS.tick.canTx = _GetTickMS();
@@ -1503,21 +1502,13 @@ void StartCanTxTask(void *argument)
 		if (HMI1.d.active)
 			VCU.t.SwitchControl();
 
-		// send every 500ms
-		if (_GetTickMS() - last500ms > 500) {
-			last500ms = _GetTickMS();
-
-			if (HMI1.d.active)
-				VCU.t.MixedData();
-		}
-
 		// send every 1000ms
 		if (_GetTickMS() - last1000ms > 1000) {
 			last1000ms = _GetTickMS();
 
 			if (HMI1.d.active) {
 				VCU.t.Datetime(RTC_Read());
-				VCU.t.TripData();
+				VCU.t.ModeData();
 			}
 
 			VCU.t.Heartbeat();

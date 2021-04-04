@@ -87,7 +87,7 @@ typedef struct {
 	uint8_t max[HBAR_M_MAX];
 	uint8_t mode[HBAR_M_MAX];
 	uint8_t report[HBAR_M_REPORT_MAX];
-	uint32_t trip[HBAR_M_TRIP_MAX];
+	uint16_t trip[HBAR_M_TRIP_MAX];
 } hbar_data_t;
 
 typedef struct {
@@ -114,7 +114,7 @@ void HBAR_ReadStarter(void);
 void HBAR_ReadStates(void);
 HBAR_STARTER HBAR_RefreshStarter(vehicle_state_t lastState);
 hbar_sein_t HBAR_SeinController(void);
-uint32_t HBAR_AccumulateTrip(uint8_t meter);
+uint16_t HBAR_AccumulateTrip(uint8_t km);
 void HBAR_SetOdometer(uint8_t meter);
 void HBAR_RefreshSelectSet(void);
 void HBAR_TimerSelectSet(void);

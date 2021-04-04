@@ -29,8 +29,7 @@ vcu_t VCU = {
 				VCU_TX_Heartbeat,
 				VCU_TX_SwitchControl,
 				VCU_TX_Datetime,
-				VCU_TX_MixedData,
-				VCU_TX_TripData
+				VCU_TX_ModeData
 		},
 		.Init = VCU_Init,
 		.Refresh = VCU_Refresh,
@@ -222,9 +221,11 @@ uint8_t VCU_TX_SwitchControl(void) {
 	// others
 	Tx.data.u8[3] = MCU.RpmToSpeed(MCU.d.rpm);
 	Tx.data.u8[4] = (uint8_t)MCU.d.dcbus.current;
+	Tx.data.u8[5] = SIM.d.signal;
+	Tx.data.u8[6] = BMS.d.soc;
 
 	// send message
-	return CANBUS_Write(&Tx, CAND_VCU_SWITCH_CTL, 5, 0);
+	return CANBUS_Write(&Tx, CAND_VCU_SWITCH_CTL, 7, 0);
 }
 
 uint8_t VCU_TX_Datetime(datetime_t dt) {
@@ -243,25 +244,16 @@ uint8_t VCU_TX_Datetime(datetime_t dt) {
 	return CANBUS_Write(&Tx, CAND_VCU_DATETIME, 8, 0);
 }
 
-uint8_t VCU_TX_MixedData(void) {
+uint8_t VCU_TX_ModeData(void) {
 	can_tx_t Tx = {0};
 
-	Tx.data.u8[0] = SIM.d.signal;
-	Tx.data.u8[1] = BMS.d.soc;
-	Tx.data.u8[2] = HBAR.d.report[HBAR_M_REPORT_RANGE];
-	Tx.data.u8[3] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
+	Tx.data.u16[0] = HBAR.d.trip[HBAR_M_TRIP_A];
+	Tx.data.u16[1] = HBAR.d.trip[HBAR_M_TRIP_B];
+	Tx.data.u16[2] = HBAR.d.trip[HBAR_M_TRIP_ODO];
+	Tx.data.u8[6] = HBAR.d.report[HBAR_M_REPORT_RANGE];
+	Tx.data.u8[7] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
-	return CANBUS_Write(&Tx, CAND_VCU_MIXED_DATA, 4, 0);
-}
-
-uint8_t VCU_TX_TripData(void) {
-	can_tx_t Tx = {0};
-
-	Tx.data.u16[0] = HBAR.d.trip[HBAR_M_TRIP_A] / 1000;
-	Tx.data.u16[1] = HBAR.d.trip[HBAR_M_TRIP_B] / 1000;
-	Tx.data.u32[1] = HBAR.d.trip[HBAR_M_TRIP_ODO] / 1000;
-
-	return CANBUS_Write(&Tx, CAND_VCU_TRIP_DATA, 8, 0);
+	return CANBUS_Write(&Tx, CAND_VCU_MODE_DATA, 8, 0);
 }
 
 

@@ -20,11 +20,9 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define VADDR_RESET                 (uint16_t) EE_AREA(0, 2)
-#define VADDR_ODOMETER              (uint16_t) EE_AREA(VADDR_RESET + 2, 4)
-#define VADDR_UNUSED_0              (uint16_t) EE_AREA(VADDR_ODOMETER + 4, 4)
-#define VADDR_UNUSED_1         	    (uint16_t) EE_AREA(VADDR_UNUSED_0 + 4, 2)
-#define VADDR_UNUSED_2       	      (uint16_t) EE_AREA(VADDR_UNUSED_1 + 2, 2)
-#define VADDR_AES_KEY               (uint16_t) EE_AREA(VADDR_UNUSED_2 + 2, 16)
+#define VADDR_ODOMETER              (uint16_t) EE_AREA(VADDR_RESET + 2, 2)
+#define VADDR_UNUSED                (uint16_t) EE_AREA(VADDR_ODOMETER + 2, 8)
+#define VADDR_AES_KEY               (uint16_t) EE_AREA(VADDR_UNUSED + 8, 16)
 #define VADDR_FOTA_FLAG             (uint16_t) EE_AREA(VADDR_AES_KEY + 16, 4)
 #define VADDR_FOTA_VERSION          (uint16_t) EE_AREA(VADDR_FOTA_FLAG + 4, 2)
 #define VADDR_FOTA_TYPE             (uint16_t) EE_AREA(VADDR_FOTA_VERSION + 2, 4)
@@ -50,7 +48,7 @@ uint8_t EEPROM_Init(void);
 #if (!BOOTLOADER)
 void EEPROM_ResetOrLoad(void);
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
-uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint32_t value);
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
 #endif
 uint8_t EEPROM_FotaFlag(EEPROM_COMMAND cmd, uint32_t value);
