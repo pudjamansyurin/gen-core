@@ -12,7 +12,7 @@
 #include "_defines.h"
 
 /* Defines -----------------------------------------------------------------*/
-#define LOG_TIMEOUT_MS (uint16_t) 0
+#define LOG_TIMEOUT_MS (uint16_t) 2
 
 /* Public functions prototype ------------------------------------------------*/
 void printf_init(void);

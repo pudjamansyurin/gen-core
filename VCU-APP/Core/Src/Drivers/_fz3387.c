@@ -297,12 +297,15 @@ static uint8_t writeStructuredPacket(void) {
 
 	uint16_t sum = ((wire_length) >> 8) + ((wire_length)&0xFF) + FZ.tx.type;
 	for (uint8_t j = 0; j < FZ.tx.length; j++) {
-		buf[i++] = (FZ.tx.data[j]);
+		buf[i++] = FZ.tx.data[j];
 		sum += FZ.tx.data[j];
 	}
 	buf[i++] = (sum >> 8);
 	buf[i++] = (sum & 0xFF);
 
+#if FINGER_DEBUG
+	printf_hex((char *)buf, i);
+#endif
 	return FINGER_IO_WRITE(buf, i);
 }
 

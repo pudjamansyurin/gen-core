@@ -73,15 +73,12 @@ static void unlock(void) {
 
 static void SendITM(char ch) {
 #ifdef DEBUG
-	//  uint32_t tick;
+	uint32_t tick;
 
 	// wait if busy
-	//  tick = _GetTickMS();
-	//  while (_GetTickMS() - tick <= LOG_TIMEOUT_MS) {
-	//    if (ITM->PORT[0].u32 != 0) {
+	tick = _GetTickMS();
+	while (_GetTickMS() - tick <= LOG_TIMEOUT_MS && ITM->PORT[0].u32 == 0);
+
 	ITM->PORT[0].u8 = (uint8_t)ch;
-	//      break;
-	//    }
-	//  }
 #endif
 }
