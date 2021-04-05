@@ -43,7 +43,7 @@ uint8_t FINGER_Probe(void);
 uint8_t FINGER_Verify(void);
 void FINGER_Flush(void);
 uint8_t FINGER_Fetch(void);
-uint8_t FINGER_Enroll(uint8_t *id, uint8_t *valid);
+uint8_t FINGER_Enroll(uint8_t *id, uint8_t *ok);
 uint8_t FINGER_DeleteID(uint8_t id);
 uint8_t FINGER_ResetDB(void);
 uint8_t FINGER_SetPassword(uint32_t password);

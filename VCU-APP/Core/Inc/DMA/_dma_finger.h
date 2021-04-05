@@ -13,8 +13,8 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define FINGER_UART_RX_SZ (uint8_t) 128
-#define FINGER_DMA_RX_SZ  FINGER_UART_RX_SZ
+#define FINGER_UART_RX_SZ (uint16_t)(256)
+#define FINGER_DMA_RX_SZ (uint16_t)(64)
 
 /* Exported variables --------------------------------------------------------*/
 extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
@@ -26,5 +26,6 @@ void FINGER_DMA_IrqHandler(void);
 void FINGER_USART_IrqHandler(void);
 void FINGER_Reset_Buffer(void);
 uint8_t FINGER_Transmit(uint8_t *data, uint8_t len);
+uint8_t FINGER_Received(void);
 
 #endif /* DMA_FINGER_H_ */

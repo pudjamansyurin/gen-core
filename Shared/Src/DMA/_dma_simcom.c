@@ -21,12 +21,20 @@ char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 static char SIMCOM_DMA_RX[SIMCOM_DMA_RX_SZ];
 static usart_ring_t SIMCOM_RING = {
     .IdleCallback = NULL,
-    .usart = {.idx = 0, .buf = SIMCOM_UART_RX, .sz = SIMCOM_UART_RX_SZ},
-    .dma = {.buf = SIMCOM_DMA_RX, .sz = SIMCOM_DMA_RX_SZ},
+    .usart = {
+    		.idx = 0,
+			.buf = SIMCOM_UART_RX,
+			.sz = SIMCOM_UART_RX_SZ
+    },
+    .dma = {
+    		.buf = SIMCOM_DMA_RX,
+			.sz = SIMCOM_DMA_RX_SZ
+    },
     .tmp = {
         .idle = 1,
         .old_pos = 0,
-    }};
+    }
+};
 
 /* Public functions implementation
  * ---------------------------------------------*/

@@ -24,7 +24,7 @@
 
 /* Private variables
  * -----------------------------------------------------------*/
-static fz3387_t FZ;
+static packet_t PKT;
 
 /* Private functions implementation
  * --------------------------------------------*/
@@ -55,7 +55,7 @@ uint8_t fz3387_checkPassword(void) {
 	if (sendCmdPacket(data, sizeof(data)) != FINGERPRINT_OK)
 		return FINGERPRINT_PACKETRECIEVEERR;
 
-	if (FZ.rx.data[0] == FINGERPRINT_OK)
+	if (PKT.data[0] == FINGERPRINT_OK)
 		return FINGERPRINT_OK;
 	else
 		return FINGERPRINT_PACKETRECIEVEERR;
@@ -221,15 +221,15 @@ uint8_t fz3387_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
 	*id = 0xFFFF;
 	*confidence = 0xFFFF;
 
-	*id = FZ.rx.data[1];
+	*id = PKT.data[1];
 	*id <<= 8;
-	*id |= FZ.rx.data[2];
+	*id |= PKT.data[2];
 
-	*confidence = FZ.rx.data[3];
+	*confidence = PKT.data[3];
 	*confidence <<= 8;
-	*confidence |= FZ.rx.data[4];
+	*confidence |= PKT.data[4];
 
-	return FZ.rx.data[0];
+	return PKT.data[0];
 }
 
 /**************************************************************************/
@@ -244,11 +244,11 @@ uint8_t fz3387_getTemplateCount(uint16_t *templateCount) {
 	uint8_t data[] = {FINGERPRINT_TEMPLATECOUNT};
 	sendCmdPacket(data, sizeof(data));
 
-	*templateCount = FZ.rx.data[1];
+	*templateCount = PKT.data[1];
 	*templateCount <<= 8;
-	*templateCount |= FZ.rx.data[2];
+	*templateCount |= PKT.data[2];
 
-	return FZ.rx.data[0];
+	return PKT.data[0];
 }
 
 /**************************************************************************/
@@ -283,28 +283,30 @@ uint8_t fz3387_setPassword(uint32_t password) {
 static uint8_t writeStructuredPacket(void) {
 	uint8_t buf[128], i=0;
 
-	buf[i++] = (FZ.tx.start_code >> 8);
-	buf[i++] = (FZ.tx.start_code & 0xFF);
-	buf[i++] = (FZ.tx.address[0]);
-	buf[i++] = (FZ.tx.address[1]);
-	buf[i++] = (FZ.tx.address[2]);
-	buf[i++] = (FZ.tx.address[3]);
-	buf[i++] = (FZ.tx.type);
+	buf[i++] = (PKT.start_code >> 8);
+	buf[i++] = (PKT.start_code & 0xFF);
+	buf[i++] = (PKT.address[0]);
+	buf[i++] = (PKT.address[1]);
+	buf[i++] = (PKT.address[2]);
+	buf[i++] = (PKT.address[3]);
+	buf[i++] = (PKT.type);
 
-	uint16_t wire_length = FZ.tx.length + 2;
+	uint16_t wire_length = PKT.length + 2;
 	buf[i++] = (wire_length >> 8);
 	buf[i++] = (wire_length & 0xFF);
 
-	uint16_t sum = ((wire_length) >> 8) + ((wire_length)&0xFF) + FZ.tx.type;
-	for (uint8_t j = 0; j < FZ.tx.length; j++) {
-		buf[i++] = FZ.tx.data[j];
-		sum += FZ.tx.data[j];
+	uint16_t sum = ((wire_length) >> 8) + ((wire_length)&0xFF) + PKT.type;
+	for (uint8_t j = 0; j < PKT.length; j++) {
+		buf[i++] = PKT.data[j];
+		sum += PKT.data[j];
 	}
 	buf[i++] = (sum >> 8);
 	buf[i++] = (sum & 0xFF);
 
 #if FINGER_DEBUG
+	printf("FGR: TX => ");
 	printf_hex((char *)buf, i);
+	printf("\n");
 #endif
 	return FINGER_IO_WRITE(buf, i);
 }
@@ -324,21 +326,19 @@ static uint8_t getStructuredPacket(void) {
 	uint8_t byte;
 	uint16_t idx = 0;
 
-	memset(&(FZ.rx), 0, sizeof(FZ.rx));
 	while (1) {
 		byte = FINGER_UART_RX[idx];
 
 		switch (idx) {
 		case 0:
 			if (byte != (FINGERPRINT_STARTCODE >> 8)) {
-				// continue;
 				return FINGERPRINT_BADPACKET;
 			}
-			FZ.rx.start_code = (uint16_t)byte << 8;
+			PKT.start_code = (uint16_t)byte << 8;
 			break;
 		case 1:
-			FZ.rx.start_code |= byte;
-			if (FZ.rx.start_code != FINGERPRINT_STARTCODE) {
+			PKT.start_code |= byte;
+			if (PKT.start_code != FINGERPRINT_STARTCODE) {
 				return FINGERPRINT_BADPACKET;
 			}
 			break;
@@ -346,20 +346,24 @@ static uint8_t getStructuredPacket(void) {
 		case 3:
 		case 4:
 		case 5:
-			FZ.rx.address[idx - 2] = byte;
+			PKT.address[idx - 2] = byte;
 			break;
 		case 6:
-			FZ.rx.type = byte;
+			PKT.type = byte;
 			break;
 		case 7:
-			FZ.rx.length = (uint16_t)byte << 8;
+			PKT.length = (uint16_t)byte << 8;
 			break;
 		case 8:
-			FZ.rx.length |= byte;
+			PKT.length |= byte;
 			break;
 		default:
-			FZ.rx.data[idx - 9] = byte;
-			if ((idx - 8) == FZ.rx.length) {
+			if ((idx - 8) > sizeof(PKT.data)) {
+				return FINGERPRINT_BADPACKET;
+			}
+
+			PKT.data[idx - 9] = byte;
+			if ((idx - 8) == PKT.length) {
 				return FINGERPRINT_OK;
 			}
 			break;
@@ -377,17 +381,22 @@ static uint8_t getStructuredPacket(void) {
  */
 /**************************************************************************/
 static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
+	memset(&PKT, 0, sizeof(PKT));
 	setPacket(FINGERPRINT_COMMANDPACKET, size, data);
+
+	FINGER_Reset_Buffer();
 	if (!writeStructuredPacket()){
 		return FINGERPRINT_PACKETRECIEVEERR;
 	}
+
+	memset(&PKT, 0, sizeof(PKT));
 	if (getStructuredPacket() != FINGERPRINT_OK) {
 		return FINGERPRINT_PACKETRECIEVEERR;
 	}
-	if (FZ.rx.type != FINGERPRINT_ACKPACKET) {
+	if (PKT.type != FINGERPRINT_ACKPACKET) {
 		return FINGERPRINT_PACKETRECIEVEERR;
 	}
-	return FZ.rx.data[0];
+	return PKT.data[0];
 }
 
 /**************************************************************************/
@@ -396,28 +405,29 @@ static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
  */
 /**************************************************************************/
 static void setPacket(uint8_t type, uint16_t length, uint8_t *data) {
-	memset(&(FZ.tx), 0, sizeof(FZ.tx));
+	PKT.start_code = FINGERPRINT_STARTCODE;
+	PKT.type = type;
+	PKT.length = length;
+	PKT.address[0] = (uint8_t)(FINGERPRINT_ADDRESS >> 24);
+	PKT.address[1] = (uint8_t)(FINGERPRINT_ADDRESS >> 16);
+	PKT.address[2] = (uint8_t)(FINGERPRINT_ADDRESS >> 8);
+	PKT.address[3] = (uint8_t)(FINGERPRINT_ADDRESS & 0xFF);
 
-	FZ.tx.start_code = FINGERPRINT_STARTCODE;
-	FZ.tx.type = type;
-	FZ.tx.length = length;
-	FZ.tx.address[0] = (uint8_t)(FINGERPRINT_ADDRESS >> 24);
-	FZ.tx.address[1] = (uint8_t)(FINGERPRINT_ADDRESS >> 16);
-	FZ.tx.address[2] = (uint8_t)(FINGERPRINT_ADDRESS >> 8);
-	FZ.tx.address[3] = (uint8_t)(FINGERPRINT_ADDRESS & 0xFF);
-
-	if (length < 64)
-		memcpy(FZ.tx.data, data, length);
-	else
-		memcpy(FZ.tx.data, data, 64);
+	memcpy(PKT.data, data, (length < 64) ? length : 64);
 }
 
 static uint8_t FINGER_IO_WRITE(uint8_t *data, uint8_t len) {
 	uint8_t ok;
+	uint32_t tick;
 
-	FINGER_Reset_Buffer();
 	ok = FINGER_Transmit(data, len);
-	_DelayMS(1000);
+
+	if (ok) {
+		tick = _GetTickMS();
+		do {
+			ok = FINGER_Received();
+		} while(!ok && _GetTickMS() - tick < 500);
+	}
 
 	return ok;
 }

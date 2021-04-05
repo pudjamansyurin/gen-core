@@ -83,11 +83,6 @@ typedef struct {
 	uint8_t data[64];    ///< The raw buffer for packet payload
 } packet_t;
 
-typedef struct {
-	packet_t tx;
-	packet_t rx;
-} fz3387_t;
-
 /* Public functions prototype ------------------------------------------------*/
 uint8_t fz3387_checkPassword(void);
 uint8_t fz3387_getImage(void);
