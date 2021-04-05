@@ -246,11 +246,11 @@ static void lock(void) {
 #if (RTOS_ENABLE)
 	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
 #endif
-	GATE_FingerDigitalPower(GPIO_PIN_SET);
+	GATE_FingerDigitalPower(1);
 }
 
 static void unlock(void) {
-	GATE_FingerDigitalPower(GPIO_PIN_RESET);
+	GATE_FingerDigitalPower(0);
 #if (RTOS_ENABLE)
 	osMutexRelease(FingerRecMutexHandle);
 #endif

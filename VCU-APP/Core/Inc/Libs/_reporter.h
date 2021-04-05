@@ -201,6 +201,7 @@ typedef struct __attribute__((packed)) {
 		uint16_t events_group;
 		int8_t vehicle;
 		uint32_t uptime;
+		uint8_t buffered;
 		uint8_t bat;
 	} req;
 	struct __attribute__((packed)) {

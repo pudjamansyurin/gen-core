@@ -11,6 +11,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines.h"
 
+/* Defines -----------------------------------------------------------------*/
+#define LOG_TIMEOUT_MS (uint16_t) 0
+
 /* Public functions prototype ------------------------------------------------*/
 void printf_init(void);
 void printf_hex(char *data, uint16_t size);

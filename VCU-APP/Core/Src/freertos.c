@@ -894,7 +894,7 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_GEN_ODOM:
-					EEPROM_Odometer(EE_CMD_W, (*(uint32_t *)cmd.data.value) * 1000);
+					EEPROM_Odometer(EE_CMD_W, *(uint16_t *)cmd.data.value);
 					break;
 
 				default:
@@ -1293,6 +1293,7 @@ void StartFingerTask(void *argument)
 
 			if (VCU.d.state >= VEHICLE_STANDBY) {
 				if (notif & FLAG_FINGER_PLACED) {
+					osDelay(500);
 					id = FINGER_Auth();
 					if (id > 0) {
 						FGR.d.id = FGR.d.id ? 0: id;
@@ -1300,6 +1301,7 @@ void StartFingerTask(void *argument)
 						GATE_LedBlink(200);
 					} else
 						GATE_LedBlink(1000);
+					osThreadFlagsClear(FLAG_FINGER_PLACED);
 				}
 
 				else {

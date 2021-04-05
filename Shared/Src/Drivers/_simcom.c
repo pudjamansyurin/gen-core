@@ -645,10 +645,8 @@ static void SetStateReady(SIM_RESULT *res) {
 	// upgrade simcom state
 	if (*res == SIM_OK)
 		SIM.d.state = SIM_STATE_CONFIGURED;
-	else if (SIM.d.state == SIM_STATE_READY) {
+	else if (SIM.d.state == SIM_STATE_READY)
 		SIM.d.state = SIM_STATE_DOWN;
-		Reset(1);
-	}
 }
 
 static void SetStateConfigured(SIM_RESULT *res, uint32_t tick,
@@ -667,8 +665,10 @@ static void SetStateConfigured(SIM_RESULT *res, uint32_t tick,
 	// upgrade simcom state
 	if (*res == SIM_OK)
 		SIM.d.state = SIM_STATE_NETWORK_ON;
-	else if (SIM.d.state == SIM_STATE_CONFIGURED)
+	else if (SIM.d.state == SIM_STATE_CONFIGURED) {
 		SIM.d.state = SIM_STATE_DOWN; // -2 state
+		Reset(1);
+	}
 }
 
 static void SetStateNetworkOn(SIM_RESULT *res, uint32_t tick,
@@ -681,8 +681,11 @@ static void SetStateNetworkOn(SIM_RESULT *res, uint32_t tick,
 	// upgrade simcom state
 	if (*res == SIM_OK)
 		SIM.d.state = SIM_STATE_GPRS_ON;
-	else if (SIM.d.state == SIM_STATE_NETWORK_ON)
-		SIM.d.state = SIM_STATE_CONFIGURED;
+	else if (SIM.d.state == SIM_STATE_NETWORK_ON) {
+		//		SIM.d.state = SIM_STATE_CONFIGURED;
+		SIM.d.state = SIM_STATE_DOWN; // -3 state
+		Reset(1);
+	}
 }
 
 static void SetStateGprsOn(SIM_RESULT *res, uint32_t tick, uint32_t timeout) {

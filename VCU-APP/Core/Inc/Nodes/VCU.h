@@ -29,6 +29,7 @@ typedef enum {
  * --------------------------------------------------------------*/
 typedef struct {
 	uint8_t error;
+	uint8_t buffered;
 	uint16_t events;
 	uint32_t uptime;
 	vehicle_state_t state;

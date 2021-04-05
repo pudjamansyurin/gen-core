@@ -43,6 +43,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 	d->req.events_group = VCU.d.events;
 	d->req.vehicle = (int8_t)VCU.d.state;
 	d->req.uptime = (VCU.d.uptime * MANAGER_WAKEUP) / 1000;
+	d->req.buffered = VCU.d.buffered;
 	d->req.bat = BAT_ScanValue() / 18;
 
 	// Optional data

@@ -39,12 +39,14 @@ vcu_t VCU = {
 		.Is = VCU_Is,
 };
 
-/* Private functions declaration -------------------------------------------*/
+/* External variables -----------------------------------------*/
+extern osMessageQueueId_t ReportQueueHandle;
 
 /* Public functions implementation
  * --------------------------------------------*/
 void VCU_Init(void) {
 	VCU.d.error = 0;
+	VCU.d.buffered = 0;
 	VCU.d.state = VEHICLE_BACKUP;
 	VCU.d.events = 0;
 
@@ -55,6 +57,7 @@ void VCU_Refresh(void) {
 	BAT_ScanValue();
 
 	VCU.d.uptime++;
+	VCU.d.buffered = osMessageQueueGetCount(ReportQueueHandle);
 	VCU.d.error = VCU.ReadEvent(EVG_BIKE_FALLEN);
 }
 
