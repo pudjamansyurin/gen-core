@@ -138,9 +138,9 @@ uint8_t RMT_Ping(void) {
 	lock();
 	RNG_Generate32((uint32_t *)RMT.t.payload, NRF_DATA_LENGTH / 4);
 	ok = (nrf_send_packet_noack(RMT.t.payload) == NRF_OK);
+	if (ok)
+		RMT.d.tick = _GetTickMS();
 	unlock();
-
-	if (ok) RMT.d.tick = _GetTickMS();
 
 	return ok;
 }
