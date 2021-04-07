@@ -680,17 +680,17 @@ void StartManagerTask(void *argument)
 	EEPROM_Init();
 
 	// Threads management:
-	osThreadSuspend(NetworkTaskHandle);
-	osThreadSuspend(ReporterTaskHandle);
-	osThreadSuspend(CommandTaskHandle);
-	osThreadSuspend(GpsTaskHandle);
-	osThreadSuspend(MemsTaskHandle);
-	osThreadSuspend(RemoteTaskHandle);
-	osThreadSuspend(FingerTaskHandle);
+//	osThreadSuspend(NetworkTaskHandle);
+//	osThreadSuspend(ReporterTaskHandle);
+//	osThreadSuspend(CommandTaskHandle);
+//	osThreadSuspend(GpsTaskHandle);
+//	osThreadSuspend(MemsTaskHandle);
+//	osThreadSuspend(RemoteTaskHandle);
+//	osThreadSuspend(FingerTaskHandle);
 //	osThreadSuspend(AudioTaskHandle);
-	osThreadSuspend(CanRxTaskHandle);
-	osThreadSuspend(CanTxTaskHandle);
-	osThreadSuspend(GateTaskHandle);
+//	osThreadSuspend(CanRxTaskHandle);
+//	osThreadSuspend(CanTxTaskHandle);
+//	osThreadSuspend(GateTaskHandle);
 	osThreadSuspend(Hmi2PowerTaskHandle);
 
 	// Check thread creation
@@ -1382,8 +1382,9 @@ void StartAudioTask(void *argument)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 		}
 
+		// TODO: audio error when gps task on, dont use dma for finger
 //		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
-		AUDIO_OUT_SetVolume(80);
+		AUDIO_OUT_SetVolume(100);
 		AUDIO_Refresh();
 	}
   /* USER CODE END StartAudioTask */

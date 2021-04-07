@@ -512,7 +512,7 @@ static uint8_t I2S_Init(uint32_t AudioFreq) {
 
 	AUDIO.pi2s->Init.Mode = I2S_MODE_MASTER_TX;
 	AUDIO.pi2s->Init.Standard = I2S_STANDARD_PHILIPS;
-	AUDIO.pi2s->Init.DataFormat = I2S_DATAFORMAT_16B;
+	AUDIO.pi2s->Init.DataFormat = I2S_DATAFORMAT_32B;
 	AUDIO.pi2s->Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
 	AUDIO.pi2s->Init.AudioFreq = AudioFreq;
 	AUDIO.pi2s->Init.CPOL = I2S_CPOL_LOW;
