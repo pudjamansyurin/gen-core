@@ -676,8 +676,8 @@ void StartManagerTask(void *argument)
 
 	// Peripheral Initiate
 	BAT_Init();
-	EEPROM_Init();
 	RTC_Init();
+	EEPROM_Init();
 
 	// Threads management:
 	//	  osThreadSuspend(NetworkTaskHandle);
