@@ -57,12 +57,16 @@ static void Debugger(RMT_CMD command);
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t RMT_Init(void) {
+	nrf_param(RMT.pspi, RMT.r.payload);
+	return RMT_ReInit();
+}
+
+uint8_t RMT_ReInit(void) {
 	uint8_t ok;
 	uint32_t tick;
 
 	lock();
 	printf("NRF:Init\n");
-	nrf_param(RMT.pspi, RMT.r.payload);
 
 	tick = _GetTickMS();
 	do {
@@ -82,6 +86,7 @@ uint8_t RMT_Init(void) {
 	printf("NRF:%s\n", ok ? "OK" : "Error");
 	return ok;
 }
+
 
 void RMT_DeInit(void) {
 	lock();
@@ -161,7 +166,7 @@ void RMT_Pairing(void) {
 	nrf_send_packet_noack(RMT.t.payload);
 
 	// back to normal
-	RMT_Init();
+	RMT_ReInit();
 	unlock();
 }
 

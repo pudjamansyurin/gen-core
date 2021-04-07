@@ -303,11 +303,11 @@ static uint8_t writeStructuredPacket(void) {
 	buf[i++] = (sum >> 8);
 	buf[i++] = (sum & 0xFF);
 
-#if FINGER_DEBUG
-	printf("FGR: TX => ");
-	printf_hex((char *)buf, i);
-	printf("\n");
-#endif
+//#if FINGER_DEBUG
+//	printf("FGR: TX => ");
+//	printf_hex((char *)buf, i);
+//	printf("\n");
+//#endif
 	return FINGER_IO_WRITE(buf, i);
 }
 

@@ -26,6 +26,7 @@
 #include "crc.h"
 #include "dma.h"
 #include "i2c.h"
+#include "i2s.h"
 #include "iwdg.h"
 #include "rng.h"
 #include "rtc.h"
@@ -108,6 +109,7 @@ int main(void)
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_I2C3_Init();
+  MX_I2S3_Init();
   MX_IWDG_Init();
   MX_RTC_Init();
   MX_SPI1_Init();

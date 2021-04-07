@@ -53,6 +53,7 @@ extern remote_t RMT;
 
 /* Public functions prototype ------------------------------------------------*/
 uint8_t RMT_Init(void);
+uint8_t RMT_ReInit(void);
 void RMT_DeInit(void);
 uint8_t RMT_Probe(void);
 void RMT_Refresh(vehicle_state_t state);

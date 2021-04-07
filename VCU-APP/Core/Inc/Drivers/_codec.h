@@ -22,11 +22,10 @@
 #define VERIFY_WRITTENDATA
 
 /* Public functions prototype ------------------------------------------------*/
-void CODEC_Init(void);
+uint8_t CODEC_Init(uint8_t Addr);
 void CODEC_DeInit(void);
 void CODEC_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 uint8_t CODEC_Read(uint8_t Addr, uint8_t Reg);
-void I2Cx_Error(uint8_t Addr);
 uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
 
 #endif /* INC_DRIVERS__CODEC_H_ */

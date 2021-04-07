@@ -680,17 +680,17 @@ void StartManagerTask(void *argument)
 	EEPROM_Init();
 
 	// Threads management:
-	//	  osThreadSuspend(NetworkTaskHandle);
-	//	  osThreadSuspend(ReporterTaskHandle);
-	//	  osThreadSuspend(CommandTaskHandle);
-	//		osThreadSuspend(GpsTaskHandle);
-	//	osThreadSuspend(MemsTaskHandle);
-	//	osThreadSuspend(RemoteTaskHandle);
-	//	osThreadSuspend(FingerTaskHandle);
-	//	osThreadSuspend(AudioTaskHandle);
-	//		osThreadSuspend(CanRxTaskHandle);
-	//		osThreadSuspend(CanTxTaskHandle);
-	//	  osThreadSuspend(GateTaskHandle);
+	osThreadSuspend(NetworkTaskHandle);
+	osThreadSuspend(ReporterTaskHandle);
+	osThreadSuspend(CommandTaskHandle);
+	osThreadSuspend(GpsTaskHandle);
+	osThreadSuspend(MemsTaskHandle);
+	osThreadSuspend(RemoteTaskHandle);
+	osThreadSuspend(FingerTaskHandle);
+//	osThreadSuspend(AudioTaskHandle);
+	osThreadSuspend(CanRxTaskHandle);
+	osThreadSuspend(CanTxTaskHandle);
+	osThreadSuspend(GateTaskHandle);
 	osThreadSuspend(Hmi2PowerTaskHandle);
 
 	// Check thread creation
@@ -1382,7 +1382,8 @@ void StartAudioTask(void *argument)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 		}
 
-		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
+//		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
+		AUDIO_OUT_SetVolume(80);
 		AUDIO_Refresh();
 	}
   /* USER CODE END StartAudioTask */
@@ -1448,10 +1449,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																																							BMS.r.Param1(&Rx);
+																																									BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																																							BMS.r.Param2(&Rx);
+																																									BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;

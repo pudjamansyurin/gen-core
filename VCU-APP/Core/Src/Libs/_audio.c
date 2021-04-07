@@ -79,7 +79,7 @@ uint8_t AUDIO_Init(void) {
 
 	tick = _GetTickMS();
 	do {
-		GATE_AudioReset();
+		AUDIO_DeInit();
 		ok = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AUDIO.d.volume, SOUND_FREQ) == AUDIO_OK;
 		_DelayMS(2500);
 	} while (!ok && _GetTickMS() - tick < AUDIO_TIMEOUT);
@@ -97,6 +97,7 @@ void AUDIO_DeInit(void) {
 	lock();
 	AUDIO_Flush();
 	AUDIO_OUT_DeInit();
+	GATE_AudioCodecStop();
 	GATE_AudioShutdown();
 	unlock();
 }
