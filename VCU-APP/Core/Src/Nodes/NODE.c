@@ -17,8 +17,8 @@
  * -----------------------------------------------------------*/
 node_t NODE = {
 		.d = {0},
-		NODE_Init,
-		NODE_Refresh,
+		.Init = NODE_Init,
+		.Refresh = NODE_Refresh,
 };
 
 /* Public functions implementation

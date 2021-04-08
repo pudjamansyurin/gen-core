@@ -1382,9 +1382,7 @@ void StartAudioTask(void *argument)
 				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 		}
 
-		// TODO: audio error when gps task on, dont use dma for finger
-//		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
-		AUDIO_OUT_SetVolume(100);
+		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
 		AUDIO_Refresh();
 	}
   /* USER CODE END StartAudioTask */

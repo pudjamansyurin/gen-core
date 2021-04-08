@@ -124,8 +124,11 @@ int16_t MCU_SpeedToRpm(uint8_t speed) {
 	return  (speed * 8.26 * 1000) / (60 * 1.58);
 }
 
-uint16_t MCU_SpeedToVolume(void) {
-	return MCU.RpmToSpeed(MCU.d.rpm) * 100 / MCU_SPEED_MAX;
+uint8_t MCU_SpeedToVolume(void) {
+//	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm) * 100 / MCU_SPEED_MAX;
+	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm);
+
+	return vol > 100 ? 100 : vol;
 }
 
 /* ====================================== CAN RX

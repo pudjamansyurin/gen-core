@@ -13,9 +13,9 @@
 hmi1_t HMI1 = {
 		.d = {0},
 		.r ={HMI1_RX_State},
-		HMI1_Init,
-		HMI1_Refresh,
-		GATE_Hmi1Power
+		.Init = HMI1_Init,
+		.Refresh = HMI1_Refresh,
+		.Power = GATE_Hmi1Power
 };
 
 /* Private functions prototypes

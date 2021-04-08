@@ -16,9 +16,9 @@ bms_t BMS = {
 		.d = {0},
 		.r = {BMS_RX_Param1, BMS_RX_Param2},
 		.t = {BMS_TX_Setting},
-		BMS_Init,
-		BMS_PowerOverCan,
-		BMS_RefreshIndex,
+		.Init = BMS_Init,
+		.PowerOverCan = BMS_PowerOverCan,
+		.RefreshIndex = BMS_RefreshIndex,
 };
 
 /* Private functions prototypes
