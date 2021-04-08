@@ -143,7 +143,7 @@ void GATE_FingerDigitalPower(GPIO_PinState state) {
 
 void GATE_AudioShutdown(void) {
 	HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
-	_DelayMS(500);
+	_DelayMS(1000);
 }
 
 void GATE_AudioReset(void) {

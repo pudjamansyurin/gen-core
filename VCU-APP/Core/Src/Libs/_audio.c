@@ -81,12 +81,8 @@ uint8_t AUDIO_Init(void) {
 	do {
 		GATE_AudioReset();
 		ok = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AUDIO.d.volume, SOUND_FREQ) == AUDIO_OK;
-		_DelayMS(2500);
+		if (!ok) _DelayMS(500);
 	} while (!ok && _GetTickMS() - tick < AUDIO_TIMEOUT);
-
-	if (ok) {
-		ok = AUDIO_Play();
-	}
 	unlock();
 
 	printf("AUDIO:%s\n", ok ? "OK" : "Error");
@@ -97,7 +93,6 @@ void AUDIO_DeInit(void) {
 	lock();
 	AUDIO_Flush();
 	AUDIO_OUT_DeInit();
-	GATE_AudioCodecStop();
 	GATE_AudioShutdown();
 	unlock();
 }
@@ -116,6 +111,7 @@ void AUDIO_Refresh(void) {
 	lock();
 	AUDIO.d.active = AUDIO.d.tick && (_GetTickMS() - AUDIO.d.tick) < AUDIO_TIMEOUT;
 	if (!AUDIO.d.active) {
+		// FIXME: Reinit wont recover
 		AUDIO_DeInit();
 		_DelayMS(500);
 		AUDIO_Init();
@@ -134,18 +130,18 @@ void AUDIO_Flush(void) {
 
 uint8_t AUDIO_Play(void) {
 	uint8_t ok;
+	audio_size_t *size = &(AUDIO.d.size);
 
 	lock();
 	/* Get data size from audio file */
-	AUDIO.d.size.remaining = SOUND_SIZE;
+	size->remaining = SOUND_SIZE;
+
 	/* Get total data to be played */
-	if (AUDIO.d.size.remaining > AUDIO_BUFFER_SIZE)
-		AUDIO.d.size.played = AUDIO_BUFFER_SIZE;
-	else
-		AUDIO.d.size.played = SOUND_SIZE;
+	if (size->remaining > AUDIO_BUFFER_SIZE) size->played = AUDIO_BUFFER_SIZE;
+	else size->played = SOUND_SIZE;
 
 	/* Start playing Wave */
-	ok = AUDIO_OUT_Play((uint16_t *)SOUND_SAMPLE, AUDIO.d.size.played) == AUDIO_OK;
+	ok = AUDIO_OUT_Play((uint16_t *)SOUND_SAMPLE, size->played) == AUDIO_OK;
 	unlock();
 
 	return ok;
@@ -319,8 +315,7 @@ void AUDIO_OUT_SetFrequency(uint32_t AudioFreq) {
  *         Being __weak it can be overwritten by the application
  * @param  Params : pointer on additional configuration parameters, can be NULL.
  */
-__weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq,
-		void *Params) {
+__weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq, void *Params) {
 	RCC_PeriphCLKInitTypeDef rccclkinit;
 	uint8_t index = 0, freqindex = 0xFF;
 
@@ -383,30 +378,29 @@ void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
  * @brief  Manages the DMA Half Transfer complete event.
  */
 __weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
+	audio_size_t *size = &(AUDIO.d.size);
+
 	// decrease remaining buffer
-	AUDIO.d.size.remaining -= AUDIO.d.size.played;
+	size->remaining -= size->played;
 
 	// done, repeat
-	if (AUDIO.d.size.remaining == 0)
-		/* Get data size from audio file */
-		AUDIO.d.size.remaining = SOUND_SIZE;
+	if (size->remaining == 0)
+		size->remaining = SOUND_SIZE;
 
 	// check remaining data
-	if (AUDIO.d.size.remaining > AUDIO_BUFFER_SIZE)
-		AUDIO.d.size.played = AUDIO_BUFFER_SIZE;
-	else
-		AUDIO.d.size.played = AUDIO.d.size.remaining;
+	if (size->remaining > AUDIO_BUFFER_SIZE) size->played = AUDIO_BUFFER_SIZE;
+	else size->played = size->remaining;
 }
 
 /**
  * @brief  Manages the DMA full Transfer complete event.
  */
 __weak void AUDIO_OUT_TransferComplete_CallBack(void) {
+	audio_size_t *size = &(AUDIO.d.size);
+	uint32_t offset = (SOUND_SIZE - size->remaining) / AUDIO_DATA_SZ;
+
 	// play it
-	AUDIO_OUT_ChangeBuffer(
-			(uint16_t *)(SOUND_SAMPLE +
-					((SOUND_SIZE - AUDIO.d.size.remaining) / AUDIO_DATA_SZ)),
-					AUDIO.d.size.played);
+	AUDIO_OUT_ChangeBuffer((uint16_t*) (SOUND_SAMPLE + offset), size->played);
 }
 
 /**
@@ -475,10 +469,18 @@ static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume, uint32_t Au
 			ret = AUDIO_ERROR;
 	}
 
+	if (ret == AUDIO_OK) {
+		if (AUDIO_Play())
+			AUDIO.d.tick = _GetTickMS();
+		else
+			ret = AUDIO_ERROR;
+	}
+
 	return ret;
 }
 
 static void AUDIO_OUT_DeInit(void) {
+	AUDIO_OUT_Stop(CODEC_PDWN_HW);
 	cs43l22_DeInit();
 	AUDIO_OUT_MspDeInit(AUDIO.pi2s, NULL);
 }

@@ -74,12 +74,13 @@ uint8_t RMT_ReInit(void) {
 		GATE_RemoteReset();
 
 		ok = RMT_Probe();
-		_DelayMS(500);
+		if (!ok) _DelayMS(500);
 	} while (!ok && _GetTickMS() - tick < RMT_TIMEOUT);
 
 	if (ok) {
 		nrf_configure();
 		ChangeMode(RMT_MODE_NORMAL);
+		RMT.d.tick = _GetTickMS();
 	}
 	unlock();
 

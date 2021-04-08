@@ -50,8 +50,10 @@ uint8_t MEMS_Init(void) {
 		GATE_MemsReset();
 
 		ok = MPU6050_Init(MEMS.pi2c, &(MEMS.dev), MPU6050_Device_0,	MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s) == MPU6050_Result_Ok;
-		_DelayMS(500);
+		if (!ok) _DelayMS(500);
 	} while (!ok && _GetTickMS() - tick < MEMS_TIMEOUT);
+
+	if (ok) MEMS.d.tick = _GetTickMS();
 	unlock();
 
 	printf("MEMS:%s\n", ok ? "OK" : "Error");

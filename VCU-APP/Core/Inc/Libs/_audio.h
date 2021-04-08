@@ -62,15 +62,18 @@
 
 /* Structs
  * --------------------------------------------------------------------*/
+
+typedef struct {
+	uint16_t played;
+	uint32_t remaining;
+} audio_size_t;
+
 typedef struct {
 	uint32_t tick;
 	uint8_t active;
 	uint8_t mute;
 	uint8_t volume;
-	struct {
-		uint16_t played;
-		uint32_t remaining;
-	} size;
+	audio_size_t size;
 } audio_data_t;
 
 typedef struct {

@@ -303,11 +303,6 @@ static uint8_t writeStructuredPacket(void) {
 	buf[i++] = (sum >> 8);
 	buf[i++] = (sum & 0xFF);
 
-//#if FINGER_DEBUG
-//	printf("FGR: TX => ");
-//	printf_hex((char *)buf, i);
-//	printf("\n");
-//#endif
 	return FINGER_IO_WRITE(buf, i);
 }
 
@@ -419,6 +414,12 @@ static void setPacket(uint8_t type, uint16_t length, uint8_t *data) {
 static uint8_t FINGER_IO_WRITE(uint8_t *data, uint8_t len) {
 	uint8_t ok;
 	uint32_t tick;
+
+	//#if FINGER_DEBUG
+	//	printf("FGR: TX => ");
+	//	printf_hex((char *)data, len);
+	//	printf("\n");
+	//#endif
 
 	ok = FINGER_Transmit(data, len);
 

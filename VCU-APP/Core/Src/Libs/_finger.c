@@ -51,7 +51,7 @@ uint8_t FINGER_Init(void) {
 		GATE_FingerReset();
 
 		ok = FINGER_Probe();
-		_DelayMS(500);
+		if (!ok) _DelayMS(500);
 	} while (!ok && _GetTickMS() - tick < FINGER_TIMEOUT);
 
 	FGR.d.verified = ok;
