@@ -1255,6 +1255,7 @@ void StartRemoteTask(void *argument)
 						else if (command == RMT_CMD_SEAT)
 							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
 
+						_DelayMS(500);
 						osThreadFlagsClear(FLAG_REMOTE_RX_IT);
 					}
 				}
@@ -1594,11 +1595,12 @@ void StartGateTask(void *argument)
 			}
 
 			if (notif & FLAG_GATE_BEEP_HORN) {
-				GATE_HornToggle(200);
+				GATE_Horn(200);
+				GATE_Horn(200);
 			}
 
 			if (notif & FLAG_GATE_OPEN_SEAT) {
-				GATE_SeatToggle();
+				GATE_Seat(100);
 			}
 		}
 

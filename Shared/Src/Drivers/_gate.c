@@ -163,16 +163,16 @@ void GATE_AudioCodecReset(void) {
 	_DelayMS(500);
 }
 
-void GATE_HornToggle(uint32_t ms) {
+void GATE_Horn(uint32_t ms) {
 	HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_SET);
 	_DelayMS(ms);
 	HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_RESET);
 	_DelayMS(ms);
 }
 
-void GATE_SeatToggle(void) {
+void GATE_Seat(uint32_t ms) {
 	HAL_GPIO_WritePin(EXT_SEAT_PWR_GPIO_Port, EXT_SEAT_PWR_Pin, GPIO_PIN_SET);
-	_DelayMS(100);
+	_DelayMS(ms);
 	HAL_GPIO_WritePin(EXT_SEAT_PWR_GPIO_Port, EXT_SEAT_PWR_Pin, GPIO_PIN_RESET);
 }
 
