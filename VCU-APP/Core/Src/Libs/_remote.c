@@ -48,7 +48,6 @@ static void unlock(void);
 static uint32_t TimeoutDecider(vehicle_state_t state);
 static void ChangeMode(RMT_MODE mode);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
-static void GenerateAesKey(uint32_t *aesSwapped);
 #if REMOTE_DEBUG
 static void RawDebugger(void);
 static void Debugger(RMT_CMD command);
@@ -156,10 +155,12 @@ void RMT_Pairing(void) {
 
 	lock();
 	RMT.d.pairing = _GetTickMS();
-	GenerateAesKey(aes);
+	RNG_Generate32(RMT.pairing_aes, 4);
 	AES_ChangeKey(RMT.pairing_aes);
 
 	// Insert to payload
+	for (uint8_t i = 0; i < 4; i++)
+		aes[i] = _ByteSwap32(RMT.pairing_aes[i]);
 	memcpy(&RMT.t.payload[0], aes, NRF_DATA_LENGTH);
 	memcpy(&RMT.t.payload[NRF_DATA_LENGTH], RMT.t.address, NRF_ADDR_LENGTH);
 
@@ -287,17 +288,6 @@ static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
 		ret = AES_Encrypt(RMT.t.payload, payload, NRF_DATA_LENGTH);
 
 	return ret;
-}
-
-static void GenerateAesKey(uint32_t *aesSwapped) {
-	const uint8_t len = sizeof(uint32_t);
-
-	RNG_Generate32(RMT.pairing_aes, len);
-	// swap byte order
-	for (uint8_t i = 0; i < len; i++) {
-		*aesSwapped = _ByteSwap32(RMT.pairing_aes[i]);
-		aesSwapped++;
-	}
 }
 
 #if REMOTE_DEBUG

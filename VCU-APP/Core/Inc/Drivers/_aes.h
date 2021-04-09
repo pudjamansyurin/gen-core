@@ -12,7 +12,7 @@
 #include "Libs/_utils.h"
 
 /* Exported variables -------------------------------------------------------*/
-extern uint32_t AesKey[4];
+extern uint32_t AES_KEY[4];
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t AES_Init(void);

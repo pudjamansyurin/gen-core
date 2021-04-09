@@ -15,7 +15,7 @@ extern osMutexId_t AesMutexHandle;
 #endif
 
 /* Public variable -----------------------------------------------------------*/
-__ALIGN_BEGIN uint32_t AesKey[4] __ALIGN_END;
+__ALIGN_BEGIN uint32_t AES_KEY[4] __ALIGN_END;
 
 /* Private variable ----------------------------------------------------------*/
 static CRYP_HandleTypeDef *pcryp = &hcryp;
@@ -43,7 +43,7 @@ uint8_t AES_ChangeKey(uint32_t *key) {
   lock();
   ret = HAL_CRYP_GetConfig(pcryp, &config);
   if (ret == HAL_OK) {
-    config.pKey = (key == NULL) ? AesKey : key;
+    config.pKey = (key == NULL) ? AES_KEY : key;
     HAL_CRYP_SetConfig(pcryp, &config);
   }
   unlock();

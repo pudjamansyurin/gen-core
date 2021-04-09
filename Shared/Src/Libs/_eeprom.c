@@ -101,7 +101,7 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
   uint32_t *ptr, tmp[4];
 
   ptr = (cmd == EE_CMD_W ? value : tmp);
-  ret = Command(VADDR_AES_KEY, cmd, ptr, AesKey, 16);
+  ret = Command(VADDR_AES_KEY, cmd, ptr, AES_KEY, 16);
 
   return ret;
 }
