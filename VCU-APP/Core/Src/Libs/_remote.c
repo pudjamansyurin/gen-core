@@ -112,6 +112,7 @@ void RMT_Refresh(vehicle_state_t state) {
 	lock();
 	timeout = TimeoutDecider(state);
 	RMT.d.nearby = RMT.d.heartbeat && (_GetTickMS() - RMT.d.heartbeat) < timeout;
+	RMT.d.nearby_real = RMT.d.heartbeat && (_GetTickMS() - RMT.d.heartbeat) < 2000;
 	VCU.SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
 
 	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))

@@ -29,6 +29,7 @@ typedef enum { RMT_MODE_NORMAL = 0, RMT_MODE_PAIRING } RMT_MODE;
 typedef struct {
 	uint8_t active;
 	uint8_t nearby;
+	uint8_t nearby_real;
 	uint32_t tick;
 	uint32_t heartbeat;
 	uint32_t pairing;
