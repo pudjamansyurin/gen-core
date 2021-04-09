@@ -27,7 +27,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
 	NRF.config.rx_buffer = rx_buffer;
 
 	NRF.config.data_rate = NRF_DATA_RATE_250KBPS;
-	NRF.config.tx_power = NRF_TX_PWR_0dBm;
+	NRF.config.tx_power = NRF_TX_PWR_M18dBm;
 	NRF.config.crc_width = NRF_CRC_WIDTH_1B;
 	NRF.config.retransmit_count = 0x0F; // maximum is 15 times
 	NRF.config.retransmit_delay = 0x0F; // 4000us, LSB:250us
