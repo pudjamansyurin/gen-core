@@ -32,7 +32,7 @@
 #define VCU_VENDOR "GEN"
 #define VCU_BUILD_YEAR (uint8_t)21
 
-#define MANAGER_WAKEUP (uint16_t) 111 // in ms
+#define MANAGER_WAKEUP (uint16_t) 1111 // in ms
 
 #define MCU_SPEED_MAX (uint8_t)150 // in kph
 #define BMS_LOWBAT (uint8_t)20

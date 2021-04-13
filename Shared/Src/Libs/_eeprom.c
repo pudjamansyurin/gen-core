@@ -35,8 +35,7 @@ static I2C_HandleTypeDef *pi2c = &hi2c2;
 
 /* Private functions prototype
  * ------------------------------------------------*/
-static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value,
-                       void *ptr, uint16_t size);
+static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
 static void lock(void);
 static void unlock(void);
 
@@ -67,21 +66,17 @@ uint8_t EEPROM_Init(void) {
 #if (!BOOTLOADER)
 void EEPROM_ResetOrLoad(void) {
   if (!EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
-    // load from EEPROM
     EEPROM_Odometer(EE_CMD_R, EE_NULL);
     EEPROM_AesKey(EE_CMD_R, EE_NULL);
   } else {
-    // save to EEPROM, first
     EEPROM_Odometer(EE_CMD_W, 0);
-
-    // re-write eeprom
     EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
   }
 }
 
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
-  uint8_t ret;
   uint16_t tmp = value, temp;
+  uint8_t ret;
 
   ret = Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
 
@@ -97,8 +92,8 @@ uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint16_t value) {
 }
 
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
-  uint8_t ret;
   uint32_t *ptr, tmp[4];
+  uint8_t ret;
 
   ptr = (cmd == EE_CMD_W ? value : tmp);
   ret = Command(VADDR_AES_KEY, cmd, ptr, AES_KEY, 16);

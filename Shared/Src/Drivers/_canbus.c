@@ -92,10 +92,12 @@ uint8_t CANBUS_Filter(void) {
  *----------------------------------------------------------------------------*/
 uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC, uint8_t ext) {
 	HAL_StatusTypeDef status;
+	uint32_t tick;
 
 	lock();
 	Header(&(Tx->header), address, DLC, ext);
-	while (HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0);
+	tick = _GetTickMS();
+	while (_GetTickMS() - tick < CAN_RX_MS && HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0);
 
 	/* Start the Transmission process */
 	status = HAL_CAN_AddTxMessage(can.pcan, &(Tx->header), Tx->data.u8, NULL);

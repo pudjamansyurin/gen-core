@@ -222,8 +222,6 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	return valid;
 }
 
-void RMT_IrqHandler(void) { nrf_irq_handler(); }
-
 void RMT_PacketReceived(uint8_t *data) {
 #if REMOTE_DEBUG
 	RawDebugger();

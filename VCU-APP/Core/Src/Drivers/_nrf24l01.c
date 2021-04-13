@@ -716,7 +716,6 @@ void nrf_irq_handler(void) {
 __weak void nrf_packet_received_callback(uint8_t *data) {
 	// default implementation (__weak) is used in favor of nrf_receive_packet
 	NRF.rx_busy = 0;
-
 	RMT_PacketReceived(data);
 }
 

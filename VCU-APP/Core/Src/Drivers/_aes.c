@@ -26,7 +26,7 @@ static void unlock(void);
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t AES_Init(void) {
-  uint8_t ok = 0;
+  uint8_t ok;
 
   do {
     ok = AES_ChangeKey(NULL);
@@ -38,39 +38,37 @@ uint8_t AES_Init(void) {
 
 uint8_t AES_ChangeKey(uint32_t *key) {
   CRYP_ConfigTypeDef config;
-  HAL_StatusTypeDef ret;
+  uint8_t ok;
 
   lock();
-  ret = HAL_CRYP_GetConfig(pcryp, &config);
-  if (ret == HAL_OK) {
+  ok = HAL_CRYP_GetConfig(pcryp, &config) == HAL_OK;
+  if (ok) {
     config.pKey = (key == NULL) ? AES_KEY : key;
     HAL_CRYP_SetConfig(pcryp, &config);
   }
   unlock();
 
-  return (ret == HAL_OK);
+  return ok;
 }
 
 uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
-  uint8_t ret;
+  uint8_t ok;
 
   lock();
-  ret = (HAL_CRYP_Encrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst,
-                          1000) == HAL_OK);
+  ok = (HAL_CRYP_Encrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst, 1000) == HAL_OK);
   unlock();
 
-  return ret;
+  return ok;
 }
 
 uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
-  uint8_t ret;
+  uint8_t ok;
 
   lock();
-  ret = (HAL_CRYP_Decrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst,
-                          1000) == HAL_OK);
+  ok = (HAL_CRYP_Decrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst, 1000) == HAL_OK);
   unlock();
 
-  return ret;
+  return ok;
 }
 
 /* Private functions implementation

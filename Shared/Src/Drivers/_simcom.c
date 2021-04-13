@@ -861,7 +861,7 @@ static void SetStateServerOn(void) {
 	if (valid)
 		SIM.d.state = SIM_STATE_MQTT_ON;
 	else if (SIM.d.state == SIM_STATE_SERVER_ON) {
-		MQTT_Disconnect();
+		// MQTT_Disconnect();
 		SIM.d.state = SIM_STATE_INTERNET_ON;
 	}
 }

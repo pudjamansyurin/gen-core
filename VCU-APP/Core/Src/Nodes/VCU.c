@@ -64,10 +64,9 @@ void VCU_Refresh(void) {
 void VCU_CheckState(void) {
 	static vehicle_state_t lastState = VEHICLE_UNKNOWN;;
 	vehicle_state_t initialState;
-	HBAR_STARTER starter;
-	uint8_t normalize, start;
+	uint8_t normalize = 0, start = 0;
 
-	starter = HBAR.ctl.starter;
+	HBAR_STARTER starter = HBAR.ctl.starter;
 	if (starter != HBAR_STARTER_UNKNOWN) {
 		HBAR.ctl.starter = HBAR_STARTER_UNKNOWN;
 		normalize = starter == HBAR_STARTER_OFF;
