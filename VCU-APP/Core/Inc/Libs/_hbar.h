@@ -15,7 +15,7 @@
 #define MODE_SESSION_MS (uint16_t)4000
 #define MODE_BLINK_MS (uint16_t) 250
 #define MODE_RESET_MS (uint16_t)3000
-#define STARTER_LONG_PRESS (uint16_t)2000 // in ms
+#define STARTER_LONG_PRESS (uint16_t)1000 // in ms
 
 /* Exported enum
  * ----------------------------------------------------------------*/
@@ -72,10 +72,10 @@ typedef struct {
 } hbar_sein_t;
 
 typedef struct {
+	HBAR_STARTER starter;
 	uint8_t listening;
 	uint8_t blink;
 	struct {
-		uint32_t starter;
 		uint32_t session;
 		uint32_t blink;
 	} tick;
@@ -112,7 +112,6 @@ extern hbar_t HBAR;
 void HBAR_Init(void);
 void HBAR_ReadStarter(void);
 void HBAR_ReadStates(void);
-HBAR_STARTER HBAR_RefreshStarter(vehicle_state_t lastState);
 hbar_sein_t HBAR_SeinController(void);
 uint16_t HBAR_AccumulateTrip(uint8_t km);
 void HBAR_SetOdometer(uint8_t meter);

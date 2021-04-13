@@ -427,7 +427,7 @@ static uint8_t FINGER_IO_WRITE(uint8_t *data, uint8_t len) {
 		tick = _GetTickMS();
 		do {
 			ok = FINGER_Received();
-		} while(!ok && _GetTickMS() - tick < 500);
+		} while(!ok && _GetTickMS() - tick < 1000);
 	}
 
 	return ok;

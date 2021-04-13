@@ -492,8 +492,7 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName);
 
 /* USER CODE BEGIN 4 */
-void vApplicationStackOverflowHook(TaskHandle_t xTask,
-		signed char *pcTaskName) {
+void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) {
 	/* Run time stack overflow checking is performed if
 configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
 called if a stack overflow is detected. */
@@ -680,17 +679,17 @@ void StartManagerTask(void *argument)
 	EEPROM_Init();
 
 	// Threads management:
-	//	osThreadSuspend(NetworkTaskHandle);
-	//	osThreadSuspend(ReporterTaskHandle);
-	//	osThreadSuspend(CommandTaskHandle);
-	//	osThreadSuspend(GpsTaskHandle);
-	//	osThreadSuspend(MemsTaskHandle);
-	//	osThreadSuspend(RemoteTaskHandle);
-	//	osThreadSuspend(FingerTaskHandle);
-	//	osThreadSuspend(AudioTaskHandle);
-	//	osThreadSuspend(CanRxTaskHandle);
-	//	osThreadSuspend(CanTxTaskHandle);
-	//	osThreadSuspend(GateTaskHandle);
+//	osThreadSuspend(NetworkTaskHandle);
+//	osThreadSuspend(ReporterTaskHandle);
+//	osThreadSuspend(CommandTaskHandle);
+//	osThreadSuspend(GpsTaskHandle);
+//	osThreadSuspend(MemsTaskHandle);
+	osThreadSuspend(RemoteTaskHandle);
+//	osThreadSuspend(FingerTaskHandle);
+//	osThreadSuspend(AudioTaskHandle);
+//	osThreadSuspend(CanRxTaskHandle);
+//	osThreadSuspend(CanTxTaskHandle);
+//	osThreadSuspend(GateTaskHandle);
 	osThreadSuspend(Hmi2PowerTaskHandle);
 
 	// Check thread creation
@@ -1188,9 +1187,9 @@ void StartMemsTask(void *argument)
 			// Drag detector
 			if (VCU.d.state < VEHICLE_STANDBY) {
 				if (MEMS_ActivateDetector()) {
-					if (MEMS_Dragged()) {
-						osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
+					if (MEMS_Dragged() || VCU.ReadEvent(EVG_BIKE_MOVED)) {
 						VCU.SetEvent(EVG_BIKE_MOVED, 1);
+						osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
 					}
 				}
 			}
@@ -1298,7 +1297,7 @@ void StartFingerTask(void *argument)
 
 			if (VCU.d.state >= VEHICLE_STANDBY) {
 				if (notif & FLAG_FINGER_PLACED) {
-					id = FINGER_AuthFast();
+					id = FINGER_Auth();
 					if (id > 0) {
 						FGR.d.id = FGR.d.id ? 0: id;
 						GATE_LedBlink(200);	_DelayMS(100);
@@ -1453,10 +1452,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																																											BMS.r.Param1(&Rx);
+																																															BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																																											BMS.r.Param2(&Rx);
+																																															BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;
@@ -1586,7 +1585,7 @@ void StartGateTask(void *argument)
 		if (_osFlagAny(&notif, 10)) {
 			if (notif & FLAG_GATE_HBAR) {
 				// handle bounce effect
-				_DelayMS(50);
+				_DelayMS(100);
 				osThreadFlagsClear(FLAG_GATE_HBAR);
 
 				HBAR_ReadStarter();

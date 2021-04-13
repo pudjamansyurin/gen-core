@@ -58,7 +58,6 @@ void GATE_SimcomSleep(GPIO_PinState state) {
 }
 
 void GATE_Hmi1Power(GPIO_PinState state) {
-	//  HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, state);
 	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, state);
 }
 
@@ -72,13 +71,13 @@ void GATE_McuPower(GPIO_PinState state) {
 }
 
 void GATE_Hmi2Stop(void) {
-	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_SET);
 }
 
 void GATE_Hmi2Reset(void) {
-	GATE_Hmi2Stop();
-	_DelayMS(100);
-	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_RESET);
+//	GATE_Hmi2Stop();
+//	_DelayMS(100);
+//	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, GPIO_PIN_RESET);
 }
 
 void GATE_MemsShutdown(void) {
@@ -124,20 +123,18 @@ void GATE_RemoteCE(GPIO_PinState state) {
 }
 
 void GATE_FingerShutdown(void) {
-	HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port,
-			EXT_FINGER_SENSING_PWR_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, GPIO_PIN_RESET);
 	_DelayMS(500);
 }
 void GATE_FingerReset(void) {
 	GATE_FingerShutdown();
-	HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port,
-			EXT_FINGER_SENSING_PWR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port, EXT_FINGER_SENSING_PWR_Pin, GPIO_PIN_SET);
 	_DelayMS(500);
 }
 
 void GATE_FingerDigitalPower(GPIO_PinState state) {
-	HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin,
-			!state);
+	//HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin, !state);
+	HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, state);
 	_DelayMS(500);
 }
 

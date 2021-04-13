@@ -146,13 +146,21 @@ uint8_t MEMS_ActivateDetector(void) {
 	lock();
 	if (init) {
 		MEMS.drag.init = 0;
-		memcpy(ref, cur, sizeof(mems_tilt_t));
 		VCU.SetEvent(EVG_BIKE_MOVED, 0);
+		memcpy(ref, cur, sizeof(mems_tilt_t));
 	}
 	unlock();
 
 	return init == 0;
 }
+
+void MEMS_ResetDetector(void) {
+	lock();
+	MEMS.drag.init = 1;
+	VCU.SetEvent(EVG_BIKE_MOVED, 0);
+	unlock();
+}
+
 
 uint8_t MEMS_Dragged(void) {
 	mems_tilt_t *cur = &(MEMS.drag.tilt_cur);
@@ -164,22 +172,15 @@ uint8_t MEMS_Dragged(void) {
 			pow(ref->roll - cur->roll, 2) +
 			pow(ref->pitch - cur->pitch, 2)
 	);
+	unlock();
 
 	dragged = euclidean > DRAGGED_LIMIT;
+#if MEMS_DEBUG
 	if (dragged)
 		printf("MEMS:Gyro dragged = %d\n", euclidean);
-	unlock();
-
+#endif
 	return dragged;
 }
-
-void MEMS_ResetDetector(void) {
-	lock();
-	MEMS.drag.init = 1;
-	VCU.SetEvent(EVG_BIKE_MOVED, 0);
-	unlock();
-}
-
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {

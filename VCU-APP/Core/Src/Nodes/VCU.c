@@ -67,12 +67,15 @@ void VCU_CheckState(void) {
 	HBAR_STARTER starter;
 	uint8_t normalize, start;
 
-	do {
-		initialState = VCU.d.state;
-
-		starter = HBAR_RefreshStarter(lastState);
+	starter = HBAR.ctl.starter;
+	if (starter != HBAR_STARTER_UNKNOWN) {
+		HBAR.ctl.starter = HBAR_STARTER_UNKNOWN;
 		normalize = starter == HBAR_STARTER_OFF;
 		start = starter == HBAR_STARTER_ON;
+	}
+
+	do {
+		initialState = VCU.d.state;
 
 		switch (VCU.d.state) {
 		case VEHICLE_LOST:

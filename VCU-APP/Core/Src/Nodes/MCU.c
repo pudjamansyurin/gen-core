@@ -56,6 +56,8 @@ static uint8_t IsOverheat(void);
 void MCU_Init(void) {
 	SetTemplateAddr();
 	Reset();
+	MCU.d.fault.post = 0;
+	MCU.d.fault.run = 0;
 }
 
 void MCU_PowerOverCan(uint8_t on) {
@@ -67,8 +69,10 @@ void MCU_PowerOverCan(uint8_t on) {
 			MCU.t.Setting(1); _DelayMS(1000);
 		} else
 			MCU.t.Setting(1);
-	} else
+	} else {
 		MCU.t.Setting(0);
+		GATE_McuPower(0);
+	}
 
 	if (MCU.d.active) {
 		MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
@@ -83,8 +87,9 @@ void MCU_Refresh(void) {
 			MCU.set.rpm_max = 0;
 		if (MCU.set.template && SyncedTemplates())
 			MCU.set.template = 0;
-	} else
+	} else {
 		Reset();
+	}
 
 	MCU.d.overheat = IsOverheat();
 	MCU.d.run = MCU.d.active && MCU.d.inv.enabled;
@@ -243,8 +248,6 @@ static void Reset(void) {
 	MCU.d.drive_mode = HBAR_M_DRIVE_STANDARD;
 	MCU.d.torque.commanded = 0;
 	MCU.d.torque.feedback = 0;
-	MCU.d.fault.post = 0;
-	MCU.d.fault.run = 0;
 	MCU.d.dcbus.current = 0;
 	MCU.d.dcbus.voltage = 0;
 

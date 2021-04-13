@@ -27,11 +27,11 @@ void HBAR_Init(void) {
 		HBAR.timer[i].time = 0;
 	}
 
+	HBAR.ctl.starter = HBAR_STARTER_UNKNOWN;
 	HBAR.ctl.blink = 0;
 	HBAR.ctl.listening = 0;
 	HBAR.ctl.tick.blink = 0;
 	HBAR.ctl.tick.session = 0;
-	HBAR.ctl.tick.starter = 0;
 
 	HBAR.d.m = HBAR_M_DRIVE;
 	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
@@ -52,13 +52,21 @@ void HBAR_Init(void) {
 
 void HBAR_ReadStarter(void) {
 	static uint32_t tick = 0;
+	HBAR_STARTER state = HBAR_STARTER_UNKNOWN;
 
 	HBAR.state[HBAR_K_STARTER] = GATE_ReadStarter();
 	if (HBAR.state[HBAR_K_STARTER])
 		tick = _GetTickMS();
 	else {
-		HBAR.ctl.tick.starter = tick ? _GetTickMS() - tick : 0;
+		uint32_t duration = tick ? _GetTickMS() - tick : 0;
 		tick = 0;
+
+		if (duration > STARTER_LONG_PRESS) {
+			state = HBAR_STARTER_OFF;
+		} else {
+			state = HBAR_STARTER_ON;
+		}
+		HBAR.ctl.starter = state;
 	}
 }
 
@@ -83,22 +91,6 @@ void HBAR_ReadStates(void) {
 				if (HBAR.timer[HBAR_K_SELECT].time) HBAR.ctl.listening = 1;
 		}
 	}
-}
-
-HBAR_STARTER HBAR_RefreshStarter(vehicle_state_t lastState) {
-	static uint32_t startTick = 0;
-	HBAR_STARTER state = 0;
-
-	if (HBAR.ctl.tick.starter && startTick != HBAR.ctl.tick.starter) {
-		startTick = HBAR.ctl.tick.starter;
-		if (HBAR.ctl.tick.starter > STARTER_LONG_PRESS && lastState > VEHICLE_NORMAL) {
-			state = HBAR_STARTER_OFF;
-		} else {
-			state = HBAR_STARTER_ON;
-		}
-	}
-
-	return state;
 }
 
 hbar_sein_t HBAR_SeinController(void) {
