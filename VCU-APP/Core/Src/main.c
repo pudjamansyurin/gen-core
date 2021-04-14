@@ -38,7 +38,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Libs/_utils.h"
-#include "Drivers/_errata.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -95,7 +94,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-	I2C_ClearBusyFlagErratum1();
+	_I2C_ClearBusyFlagErratum();
 	printf_init();
   /* USER CODE END SysInit */
 

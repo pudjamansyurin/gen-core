@@ -120,7 +120,10 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_START);
 
 				HBAR_Init();
+				RMT_Flush();
 				VCU.d.override.state = VEHICLE_UNKNOWN;
+				normalize = 0;
+				start = 0;
 			}
 
 			if (!GATE_ReadPower5v())
@@ -134,6 +137,8 @@ void VCU_CheckState(void) {
 				if (lastState > VEHICLE_STANDBY && VCU.Is(VCU.d.override.state > VEHICLE_STANDBY))
 					VCU.d.override.state = VEHICLE_STANDBY;
 				lastState = VEHICLE_STANDBY;
+				start = 0;
+				FGR.d.id = 0;
 			}
 
 			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_STANDBY))
@@ -147,6 +152,7 @@ void VCU_CheckState(void) {
 				if (lastState > VEHICLE_READY && VCU.Is(VCU.d.override.state > VEHICLE_READY))
 					VCU.d.override.state = VEHICLE_READY;
 				lastState = VEHICLE_READY;
+				start = 0;
 			}
 
 			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_READY))
@@ -158,17 +164,17 @@ void VCU_CheckState(void) {
 		case VEHICLE_RUN:
 			if (lastState != VEHICLE_RUN) {
 				lastState = VEHICLE_RUN;
+				start = 0;
 			}
 
-			if (!GATE_ReadPower5v() || normalize || NODE.d.error ||	VCU.Is(VCU.d.override.state == VEHICLE_READY))
+			if (!GATE_ReadPower5v() || (start && MCU.RpmToSpeed(MCU.d.rpm) == 0) || normalize || NODE.d.error ||	VCU.Is(VCU.d.override.state < VEHICLE_RUN))
 				VCU.d.state--;
-			else if ((start && MCU.RpmToSpeed(MCU.d.rpm) == 0) || VCU.Is(VCU.d.override.state < VEHICLE_READY))
-				VCU.d.state -= 2;
 			break;
 
 		default:
 			break;
 		}
+		_DelayMS(100);
 	} while (initialState != VCU.d.state);
 }
 
@@ -226,11 +232,12 @@ uint8_t VCU_TX_SwitchControl(void) {
 	// others
 	Tx.data.u8[3] = MCU.RpmToSpeed(MCU.d.rpm);
 	Tx.data.u8[4] = (uint8_t)MCU.d.dcbus.current;
-	Tx.data.u8[5] = SIM.d.signal;
-	Tx.data.u8[6] = BMS.d.soc;
+	Tx.data.u8[5] = BMS.d.soc;
+	Tx.data.u8[6] = SIM.d.signal;
+	Tx.data.u8[7] = VCU.d.state;
 
 	// send message
-	return CANBUS_Write(&Tx, CAND_VCU_SWITCH_CTL, 7, 0);
+	return CANBUS_Write(&Tx, CAND_VCU_SWITCH_CTL, 8, 0);
 }
 
 uint8_t VCU_TX_Datetime(datetime_t dt) {

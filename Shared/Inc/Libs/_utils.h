@@ -32,6 +32,7 @@ typedef union {
 } UNION64;
 
 /* Public functions prototype ------------------------------------------------*/
+void _I2C_ClearBusyFlagErratum(void);
 void _DelayMS(uint32_t ms);
 uint32_t _GetTickMS(void);
 void _Error(char msg[50]);

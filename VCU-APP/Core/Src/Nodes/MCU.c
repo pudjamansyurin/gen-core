@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/MCU.h"
+#include "Nodes/BMS.h"
 #include "Nodes/VCU.h"
 
 /* Public variables
@@ -56,8 +57,6 @@ static uint8_t IsOverheat(void);
 void MCU_Init(void) {
 	SetTemplateAddr();
 	Reset();
-	MCU.d.fault.post = 0;
-	MCU.d.fault.run = 0;
 }
 
 void MCU_PowerOverCan(uint8_t on) {
@@ -66,7 +65,7 @@ void MCU_PowerOverCan(uint8_t on) {
 			GATE_McuPower(0); _DelayMS(500);
 			GATE_McuPower(1); _DelayMS(500);
 			MCU.t.Setting(0); _DelayMS(50);
-			MCU.t.Setting(1); _DelayMS(1000);
+			MCU.t.Setting(1); _DelayMS(MCU_TIMEOUT);
 		} else
 			MCU.t.Setting(1);
 	} else {
@@ -93,9 +92,8 @@ void MCU_Refresh(void) {
 
 	MCU.d.overheat = IsOverheat();
 	MCU.d.run = MCU.d.active && MCU.d.inv.enabled;
-	MCU.d.error = (MCU.d.fault.post || MCU.d.fault.run) > 0;
 
-	VCU.SetEvent(EVG_MCU_ERROR, MCU.d.error);
+	VCU.SetEvent(EVG_MCU_ERROR, (MCU.d.fault.post | MCU.d.fault.run) > 0);
 }
 
 
@@ -240,12 +238,13 @@ static void Reset(void) {
 	MCU.d.run = 0;
 	MCU.d.tick = 0;
 	MCU.d.overheat = 0;
-	MCU.d.error = 0;
 
 	MCU.d.rpm = 0;
 	MCU.d.reverse = 0;
 	MCU.d.temperature = 0;
 	MCU.d.drive_mode = HBAR_M_DRIVE_STANDARD;
+	MCU.d.fault.post = 0;
+	MCU.d.fault.run = 0;
 	MCU.d.torque.commanded = 0;
 	MCU.d.torque.feedback = 0;
 	MCU.d.dcbus.current = 0;

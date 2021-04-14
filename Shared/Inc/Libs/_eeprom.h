@@ -48,10 +48,10 @@ uint8_t EEPROM_Init(void);
 #if (!BOOTLOADER)
 void EEPROM_ResetOrLoad(void);
 uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
-uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint16_t value);
 uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
+uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint16_t value);
 #endif
+uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value);
 uint8_t EEPROM_FotaFlag(EEPROM_COMMAND cmd, uint32_t value);
 uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value);
-uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value);
 #endif /* EEPROM_H_ */

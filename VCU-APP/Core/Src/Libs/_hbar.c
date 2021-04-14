@@ -22,10 +22,7 @@ static void RunSet(void);
 /* Public functions implementation
  * --------------------------------------------*/
 void HBAR_Init(void) {
-	for (uint8_t i = 0; i < sizeof(HBAR.timer) / sizeof(HBAR.timer[0]); i++) {
-		HBAR.timer[i].start = 0;
-		HBAR.timer[i].time = 0;
-	}
+	memset(&(HBAR.timer), 0, sizeof(HBAR.timer));
 
 	HBAR.ctl.starter = HBAR_STARTER_UNKNOWN;
 	HBAR.ctl.blink = 0;
@@ -57,16 +54,14 @@ void HBAR_ReadStarter(void) {
 	HBAR.state[HBAR_K_STARTER] = GATE_ReadStarter();
 	if (HBAR.state[HBAR_K_STARTER])
 		tick = _GetTickMS();
-	else {
-		uint32_t duration = tick ? _GetTickMS() - tick : 0;
-		tick = 0;
-
-		if (duration > STARTER_LONG_PRESS) {
+	else if (tick) {
+		if ((_GetTickMS() - tick) > STARTER_LONG_PRESS) {
 			state = HBAR_STARTER_OFF;
 		} else {
 			state = HBAR_STARTER_ON;
 		}
 		HBAR.ctl.starter = state;
+		tick = 0;
 	}
 }
 
@@ -79,17 +74,68 @@ void HBAR_ReadStates(void) {
 	HBAR.state[HBAR_K_LAMP] = GATE_ReadLamp();
 	HBAR.state[HBAR_K_ABS] = GATE_ReadABS();
 
-	if (!HBAR.state[HBAR_K_REVERSE]) {
-		if (HBAR.state[HBAR_K_SELECT] || HBAR.state[HBAR_K_SET]) {
-			HBAR.ctl.tick.session = _GetTickMS();
-			HBAR_TimerSelectSet();
+	if (!HBAR.state[HBAR_K_REVERSE])
+		HBAR_ReadSelectSet();
+}
 
-			if (HBAR.ctl.listening) {
-				if (HBAR.timer[HBAR_K_SELECT].time) RunSelect();
-				if (HBAR.timer[HBAR_K_SET].time) RunSet();
-			} else
-				if (HBAR.timer[HBAR_K_SELECT].time) HBAR.ctl.listening = 1;
+void HBAR_ReadSelectSet(void) {
+	HBAR_TimerSelectSet();
+
+	if (HBAR.state[HBAR_K_SELECT] || HBAR.state[HBAR_K_SET]) {
+		HBAR.ctl.tick.session = _GetTickMS();
+
+		if (HBAR.ctl.listening) {
+			if (HBAR.state[HBAR_K_SELECT])
+				RunSelect();
+			if (HBAR.state[HBAR_K_SET])
+				RunSet();
+		} else
+			if (HBAR.state[HBAR_K_SELECT])
+				HBAR.ctl.listening = 1;
+	}
+}
+
+void HBAR_TimerSelectSet(void) {
+	uint8_t keys[] = { HBAR_K_SELECT, HBAR_K_SET };
+
+	for (uint8_t i = 0; i < sizeof(keys); i++) {
+		uint8_t key = keys[i];
+		hbar_timer_t *t = &(HBAR.timer[key]);
+
+		t->time = 0;
+		if (HBAR.state[key]) {
+			if (t->start == 0) {
+				if (key == HBAR_K_SELECT || (key == HBAR_K_SET && HBAR.ctl.listening)) {
+					t->start = _GetTickMS();
+				}
+			}
+		} else {
+			if (t->start > 0) {
+				t->time = (_GetTickMS() - t->start) / 1000;
+				t->start = 0;
+			}
 		}
+	}
+}
+
+void HBAR_RefreshSelectSet(void) {
+	if (HBAR.ctl.listening) {
+		// blinking
+		if ((_GetTickMS() - HBAR.ctl.tick.blink) >= MODE_BLINK_MS) {
+			HBAR.ctl.tick.blink = _GetTickMS();
+			HBAR.ctl.blink = !HBAR.ctl.blink;
+		}
+
+		// stop listening
+		if ((_GetTickMS() - HBAR.ctl.tick.session) >= MODE_SESSION_MS || HBAR.state[HBAR_K_REVERSE]) {
+			HBAR.ctl.listening = 0;
+			HBAR.ctl.blink = 0;
+		}
+	} else {
+		HBAR.ctl.blink = 0;
+//		HBAR.timer[0].time = 0;
+//		HBAR.timer[1].time = 0;
+		memset(HBAR.timer, 0, sizeof(HBAR.timer));
 	}
 }
 
@@ -144,48 +190,6 @@ void HBAR_SetOdometer(uint8_t meter) {
 
 		odometer_km = HBAR_AccumulateTrip(km);
 		EEPROM_Odometer(EE_CMD_W, odometer_km);
-	}
-}
-
-void HBAR_RefreshSelectSet(void) {
-	if (HBAR.ctl.listening) {
-		// blinking
-		if ((_GetTickMS() - HBAR.ctl.tick.blink) >= MODE_BLINK_MS) {
-			HBAR.ctl.tick.blink = _GetTickMS();
-			HBAR.ctl.blink = !HBAR.ctl.blink;
-		}
-
-		// stop listening
-		if ((_GetTickMS() - HBAR.ctl.tick.session) >= MODE_SESSION_MS || HBAR.state[HBAR_K_REVERSE]) {
-			HBAR.ctl.listening = 0;
-			HBAR.ctl.blink = 0;
-		}
-	} else {
-		HBAR.ctl.blink = 0;
-		memset(HBAR.timer, 0, sizeof(HBAR.timer));
-	}
-}
-
-void HBAR_TimerSelectSet(void) {
-	uint8_t keys[] = { HBAR_K_SELECT, HBAR_K_SET };
-
-	for (uint8_t i = 0; i <= sizeof(keys); i++) {
-		uint8_t key = keys[i];
-		hbar_timer_t *t = &(HBAR.timer[key]);
-
-		t->time = 0;
-		if (HBAR.state[key]) {
-			if (t->start == 0) {
-				if (key == HBAR_K_SELECT || (key == HBAR_K_SET && HBAR.ctl.listening)) {
-					t->start = _GetTickMS();
-				}
-			}
-		} else {
-			if (t->start > 0) {
-				t->time = (_GetTickMS() - t->start) / 1000;
-				t->start = 0;
-			}
-		}
 	}
 }
 

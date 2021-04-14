@@ -323,14 +323,6 @@ const osMessageQueueAttr_t UssdQueue_attributes = {
   .mq_mem = &UssdQueueBuffer,
   .mq_size = sizeof(UssdQueueBuffer)
 };
-/* Definitions for EepromMutex */
-osMutexId_t EepromMutexHandle;
-osStaticMutexDef_t EepromMutexControlBlock;
-const osMutexAttr_t EepromMutex_attributes = {
-  .name = "EepromMutex",
-  .cb_mem = &EepromMutexControlBlock,
-  .cb_size = sizeof(EepromMutexControlBlock),
-};
 /* Definitions for RtcMutex */
 osMutexId_t RtcMutexHandle;
 osStaticMutexDef_t RtcMutexControlBlock;
@@ -458,6 +450,15 @@ const osMutexAttr_t AudioRecMutex_attributes = {
   .cb_mem = &AudioRecMutexControlBlock,
   .cb_size = sizeof(AudioRecMutexControlBlock),
 };
+/* Definitions for EepromRecMutex */
+osMutexId_t EepromRecMutexHandle;
+osStaticMutexDef_t EepromRecMutexControlBlock;
+const osMutexAttr_t EepromRecMutex_attributes = {
+  .name = "EepromRecMutex",
+  .attr_bits = osMutexRecursive,
+  .cb_mem = &EepromRecMutexControlBlock,
+  .cb_size = sizeof(EepromRecMutexControlBlock),
+};
 /* Definitions for GlobalEvent */
 osEventFlagsId_t GlobalEventHandle;
 osStaticEventGroupDef_t GlobalEventControlBlock;
@@ -498,9 +499,6 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE END Init */
   /* Create the mutex(es) */
-  /* creation of EepromMutex */
-  EepromMutexHandle = osMutexNew(&EepromMutex_attributes);
-
   /* creation of RtcMutex */
   RtcMutexHandle = osMutexNew(&RtcMutex_attributes);
 
@@ -546,6 +544,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of AudioRecMutex */
   AudioRecMutexHandle = osMutexNew(&AudioRecMutex_attributes);
+
+  /* creation of EepromRecMutex */
+  EepromRecMutexHandle = osMutexNew(&EepromRecMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
@@ -648,7 +649,7 @@ void MX_FREERTOS_Init(void) {
 void StartManagerTask(void *argument)
 {
   /* USER CODE BEGIN StartManagerTask */
-	TickType_t lastWake;
+	TickType_t lastWake, mpsTick;
 	float mps;
 
 	// Initiate, this task get executed first!
@@ -681,6 +682,7 @@ void StartManagerTask(void *argument)
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
 
 	/* Infinite loop */
+	mpsTick = _GetTickMS();
 	for (;;) {
 		TASKS.tick.manager = _GetTickMS();
 		lastWake = _GetTickMS();
@@ -692,7 +694,8 @@ void StartManagerTask(void *argument)
 		NODE.Refresh();
 
 		mps = (float) MCU.RpmToSpeed(MCU.d.rpm) / 3.6;
-		HBAR_SetOdometer(mps * MANAGER_WAKEUP / 1000);
+		HBAR_SetOdometer(mps * (_GetTickMS() - mpsTick) / 1000);
+		mpsTick = _GetTickMS();
 
 		IWDG_Refresh();
 		osDelayUntil(lastWake + MANAGER_WAKEUP);

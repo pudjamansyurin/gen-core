@@ -33,7 +33,6 @@
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
-#include "Drivers/_errata.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
@@ -93,7 +92,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  I2C_ClearBusyFlagErratum1();
+  _I2C_ClearBusyFlagErratum();
   printf_init();
   /* USER CODE END SysInit */
 

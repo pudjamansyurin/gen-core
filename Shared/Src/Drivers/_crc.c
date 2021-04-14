@@ -28,7 +28,6 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
   uint8_t index = 0, remaining[4] = {0};
 
   lock();
-
   /* Reset generator */
   __HAL_CRC_DR_RESET(&hcrc);
 
@@ -57,9 +56,8 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
     hcrc.Instance->DR = swapped ? _ByteSwap32(value) : value;
   }
   result = hcrc.Instance->DR;
-
   unlock();
-  /* Return data */
+
   return result;
 }
 

@@ -31,8 +31,11 @@ void NODE_Init(void) {
 }
 
 void NODE_Refresh(void) {
+	uint8_t eBMS = BMS.d.fault > 0 ;//|| (VCU.d.state == VEHICLE_RUN && !BMS.d.run);
+	uint8_t eMCU = (MCU.d.fault.post | MCU.d.fault.run) > 0 ;//|| (BMS.d.run && !MCU.d.run);
+
 	NODE.d.overheat = BMS.d.overheat || MCU.d.overheat;
-	NODE.d.error = VCU.d.error || BMS.d.error || MCU.d.error;
+	NODE.d.error = VCU.d.error || eBMS || eMCU;
 
 	BMS.RefreshIndex();
 	MCU.Refresh();

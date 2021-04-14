@@ -39,7 +39,6 @@ void BMS_Init(void) {
 	BMS.d.run = 0;
 	BMS.d.soc = 0;
 	BMS.d.fault = 0;
-	BMS.d.error = 0;
 	BMS.d.overheat = 0;
 }
 
@@ -65,9 +64,8 @@ void BMS_RefreshIndex(void) {
 	BMS.d.soc = AverageSOC();
 	BMS.d.fault = MergeFault();
 	BMS.d.overheat = IsOverheat();
-	BMS.d.error = BMS.d.fault > 0;
 
-	VCU.SetEvent(EVG_BMS_ERROR, BMS.d.error);
+	VCU.SetEvent(EVG_BMS_ERROR, BMS.d.fault > 0);
 }
 
 /* ====================================== CAN RX

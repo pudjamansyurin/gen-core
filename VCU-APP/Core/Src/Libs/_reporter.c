@@ -212,8 +212,7 @@ uint16_t RPT_IntervalDecider(void) {
 
 uint8_t RPT_PayloadPending(payload_t *payload) {
 	if (!payload->pending)
-		if (osMessageQueueGet(*(payload->pQueue), payload->pPayload, NULL, 0) ==
-				osOK)
+		if (osMessageQueueGet(*(payload->pQueue), payload->pPayload, NULL, 0) == osOK)
 			payload->pending = 1;
 
 	return payload->pending;

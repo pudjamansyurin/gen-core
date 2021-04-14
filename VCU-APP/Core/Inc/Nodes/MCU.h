@@ -133,7 +133,6 @@ typedef struct {
 
 typedef struct {
 	uint8_t overheat;
-	uint8_t error;
 	uint32_t tick;
 
 	uint8_t active;
