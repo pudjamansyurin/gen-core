@@ -153,6 +153,8 @@ void VCU_CheckState(void) {
 					VCU.d.override.state = VEHICLE_READY;
 				lastState = VEHICLE_READY;
 				start = 0;
+
+				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_MUTE_ON);
 			}
 
 			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_READY))
@@ -165,6 +167,8 @@ void VCU_CheckState(void) {
 			if (lastState != VEHICLE_RUN) {
 				lastState = VEHICLE_RUN;
 				start = 0;
+
+				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_MUTE_OFF);
 			}
 
 			if (!GATE_ReadPower5v() || (start && MCU.RpmToSpeed(MCU.d.rpm) == 0) || normalize || NODE.d.error ||	VCU.Is(VCU.d.override.state < VEHICLE_RUN))

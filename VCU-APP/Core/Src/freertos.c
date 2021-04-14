@@ -1584,7 +1584,8 @@ void StartGateTask(void *argument)
 			}
 
 			if (notif & FLAG_GATE_OPEN_SEAT) {
-				GATE_Seat(100);
+				if (VCU.d.state == VEHICLE_NORMAL)
+					GATE_Seat(100);
 			}
 		}
 

@@ -50,6 +50,7 @@ static void SetTemplateAddr(void);
 static void ResetTemplates(void);
 static uint8_t SyncedSpeedMax(void);
 static uint8_t SyncedTemplates(void);
+static uint8_t EmptyTemplates(void);
 static uint8_t IsOverheat(void);
 
 /* Public functions implementation
@@ -61,13 +62,18 @@ void MCU_Init(void) {
 
 void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
-		if (!MCU.d.run) {
+		if (!MCU.d.active) {
 			GATE_McuPower(0); _DelayMS(500);
-			GATE_McuPower(1); _DelayMS(500);
-			MCU.t.Setting(0); _DelayMS(50);
-			MCU.t.Setting(1); _DelayMS(MCU_TIMEOUT);
-		} else
-			MCU.t.Setting(1);
+			GATE_McuPower(1); _DelayMS(2000);
+			MCU.t.Setting(0); _DelayMS(500);
+		} else {
+			MCU.t.Templates(MCU.set.template && !SyncedTemplates());
+
+			if (SyncedTemplates() || EmptyTemplates()) {
+				MCU.t.Setting(1);
+				if (!MCU.d.run) _DelayMS(MCU_TIMEOUT);
+			}
+		}
 	} else {
 		MCU.t.Setting(0);
 		GATE_McuPower(0);
@@ -75,7 +81,6 @@ void MCU_PowerOverCan(uint8_t on) {
 
 	if (MCU.d.active) {
 		MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
-		MCU.t.Templates(MCU.set.template && !SyncedTemplates());
 	}
 }
 
@@ -282,6 +287,10 @@ static uint8_t SyncedTemplates(void) {
 	return memcmp(MCU.d.par.tpl, MCU.set.par.tpl, sizeof(MCU.d.par.tpl)) == 0;
 }
 
+static uint8_t EmptyTemplates(void) {
+	mcu_template_t tpl[HBAR_M_DRIVE_MAX] = {0};
+	return memcmp(MCU.set.par.tpl, tpl, sizeof(tpl)) == 0;
+}
 static uint8_t IsOverheat(void) {
 	MCU_POST_FAULT_BIT overheat_post[] = {
 			MPF_MOD_TEMP_LOW, MPF_MOD_TEMP_HIGH,  MPF_PCB_TEMP_LOW,
