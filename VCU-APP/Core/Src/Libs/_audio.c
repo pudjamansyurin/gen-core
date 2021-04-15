@@ -169,6 +169,10 @@ void AUDIO_BeepStop(void) {
 	unlock();
 }
 
+uint8_t AUDIO_Mute(uint8_t mute) {
+	return AUDIO_OUT_SetMute(mute ? AUDIO_MUTE_ON : AUDIO_MUTE_ON);
+}
+
 /**
  * @brief   Pauses the audio file stream. In case of using DMA, the DMA Pause
  *          feature is used.

@@ -46,11 +46,11 @@ static mcu_template_addr_t tplAddr[HBAR_M_DRIVE_MAX];
 /* Private functions prototypes
  * -----------------------------------------------*/
 static void Reset(void);
+static void ResetFault(void);
 static void SetTemplateAddr(void);
 static void ResetTemplates(void);
 static uint8_t SyncedSpeedMax(void);
 static uint8_t SyncedTemplates(void);
-static uint8_t EmptyTemplates(void);
 static uint8_t IsOverheat(void);
 
 /* Public functions implementation
@@ -58,18 +58,20 @@ static uint8_t IsOverheat(void);
 void MCU_Init(void) {
 	SetTemplateAddr();
 	Reset();
+	ResetFault();
 }
 
 void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
 		if (!MCU.d.active) {
+			ResetFault();
 			GATE_McuPower(0); _DelayMS(500);
 			GATE_McuPower(1); _DelayMS(2000);
 			MCU.t.Setting(0); _DelayMS(500);
 		} else {
 			MCU.t.Templates(MCU.set.template && !SyncedTemplates());
 
-			if (SyncedTemplates() || EmptyTemplates()) {
+			if (!MCU.set.template || SyncedTemplates()) {
 				MCU.t.Setting(1);
 				if (!MCU.d.run) _DelayMS(MCU_TIMEOUT);
 			}
@@ -248,8 +250,6 @@ static void Reset(void) {
 	MCU.d.reverse = 0;
 	MCU.d.temperature = 0;
 	MCU.d.drive_mode = HBAR_M_DRIVE_STANDARD;
-	MCU.d.fault.post = 0;
-	MCU.d.fault.run = 0;
 	MCU.d.torque.commanded = 0;
 	MCU.d.torque.feedback = 0;
 	MCU.d.dcbus.current = 0;
@@ -261,6 +261,11 @@ static void Reset(void) {
 
 	MCU.d.par.rpm_max = 0;
 	ResetTemplates();
+}
+
+static void ResetFault(void) {
+	MCU.d.fault.post = 0;
+	MCU.d.fault.run = 0;
 }
 
 static void SetTemplateAddr(void) {
@@ -287,10 +292,6 @@ static uint8_t SyncedTemplates(void) {
 	return memcmp(MCU.d.par.tpl, MCU.set.par.tpl, sizeof(MCU.d.par.tpl)) == 0;
 }
 
-static uint8_t EmptyTemplates(void) {
-	mcu_template_t tpl[HBAR_M_DRIVE_MAX] = {0};
-	return memcmp(MCU.set.par.tpl, tpl, sizeof(tpl)) == 0;
-}
 static uint8_t IsOverheat(void) {
 	MCU_POST_FAULT_BIT overheat_post[] = {
 			MPF_MOD_TEMP_LOW, MPF_MOD_TEMP_HIGH,  MPF_PCB_TEMP_LOW,

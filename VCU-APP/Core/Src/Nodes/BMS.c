@@ -24,28 +24,35 @@ bms_t BMS = {
 /* Private functions prototypes
  * -----------------------------------------------*/
 static void ResetIndex(uint8_t i);
+static void ResetFaults(void);
 static uint8_t GetIndex(uint32_t addr);
 static uint8_t IsOverheat(void);
 static uint16_t MergeFault(void);
 static uint8_t AverageSOC(void);
-static void ResetPacks(void);
 static uint8_t RunPacks(uint8_t on);
 
 /* Public functions implementation
  * --------------------------------------------*/
 void BMS_Init(void) {
-	ResetPacks();
+	for (uint8_t i = 0; i < BMS_COUNT; i++)
+		ResetIndex(i);
+	ResetFaults();
+
 	BMS.d.active = 0;
 	BMS.d.run = 0;
 	BMS.d.soc = 0;
-	BMS.d.fault = 0;
 	BMS.d.overheat = 0;
 }
 
 void BMS_PowerOverCan(uint8_t on) {
+	static uint8_t lastState = 0;
 	BMS_STATE state = on ? BMS_STATE_FULL : BMS_STATE_IDLE;
 	uint8_t sc = on && (BMS.d.fault & BIT(BMSF_SHORT_CIRCUIT));
 
+	if (lastState != on) {
+		lastState = on;
+		if (on) ResetFaults();
+	}
 	BMS.t.Setting(state, sc);
 }
 
@@ -128,7 +135,12 @@ static void ResetIndex(uint8_t i) {
 	BMS.d.pack[i].capacity = 0;
 	BMS.d.pack[i].soh = 0;
 	BMS.d.pack[i].cycle = 0;
-	BMS.d.pack[i].fault = 0;
+}
+
+static void ResetFaults(void) {
+	for (uint8_t i = 0; i < BMS_COUNT; i++)
+		BMS.d.pack[i].fault = 0;
+	BMS.d.fault = 0;
 }
 
 static uint8_t GetIndex(uint32_t addr) {
@@ -181,11 +193,6 @@ static uint8_t AverageSOC(void) {
 	}
 
 	return dev ? (soc / dev) : soc;
-}
-
-static void ResetPacks(void) {
-	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		ResetIndex(i);
 }
 
 static uint8_t RunPacks(uint8_t on) {

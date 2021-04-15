@@ -34,6 +34,7 @@
 #define CMD_GEN_LED (uint8_t)1
 #define CMD_GEN_RTC (uint8_t)2
 #define CMD_GEN_ODOM (uint8_t)3
+#define CMD_GEN_RST_LOG (uint8_t)4
 
 #define CMD_OVERRIDE_STATE (uint8_t)0
 #define CMD_OVERRIDE_RPT_INTERVAL (uint8_t)1
@@ -42,7 +43,6 @@
 #define CMD_OVERRIDE_RMT_ALARM (uint8_t)4
 
 #define CMD_AUDIO_BEEP (uint8_t)0
-#define CMD_AUDIO_MUTE (uint8_t)1
 
 #define CMD_FINGER_FETCH (uint8_t)0
 #define CMD_FINGER_ADD (uint8_t)1
