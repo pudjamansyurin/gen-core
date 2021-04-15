@@ -92,7 +92,7 @@ typedef struct {
 
 typedef struct {
 	uint32_t start;
-	uint8_t time;
+	uint32_t time;
 } hbar_timer_t;
 
 typedef struct {
