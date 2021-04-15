@@ -81,20 +81,20 @@ void HBAR_ReadStates(void) {
 void HBAR_ReadSelectSet(void) {
 	HBAR_TimerSelectSet();
 
-	if (HBAR.state[HBAR_K_SELECT] || HBAR.state[HBAR_K_SET])
-		HBAR.ctl.tick.session = _GetTickMS();
+//	if (HBAR.state[HBAR_K_SELECT] || HBAR.state[HBAR_K_SET])
+
+	if (HBAR.timer[HBAR_K_SELECT].time)
+		HBAR.ctl.listening = 1;
 
 	if (HBAR.ctl.listening) {
 		if (HBAR.timer[HBAR_K_SELECT].time || HBAR.timer[HBAR_K_SET].time) {
+			HBAR.ctl.tick.session = _GetTickMS();
 			if (HBAR.timer[HBAR_K_SELECT].time)
 				RunSelect();
 			if (HBAR.timer[HBAR_K_SET].time)
 				RunSet();
 		}
 	}
-
-	if (HBAR.state[HBAR_K_SELECT])
-		HBAR.ctl.listening = 1;
 }
 
 void HBAR_TimerSelectSet(void) {
@@ -132,10 +132,8 @@ void HBAR_RefreshSelectSet(void) {
 		if ((_GetTickMS() - HBAR.ctl.tick.session) >= MODE_SESSION_MS || HBAR.state[HBAR_K_REVERSE]) {
 			HBAR.ctl.listening = 0;
 			HBAR.ctl.blink = 0;
+			memset(HBAR.timer, 0, sizeof(HBAR.timer));
 		}
-	} else {
-		HBAR.ctl.blink = 0;
-		memset(HBAR.timer, 0, sizeof(HBAR.timer));
 	}
 }
 

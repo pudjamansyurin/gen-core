@@ -1339,7 +1339,7 @@ void StartAudioTask(void *argument)
 
 	/* Initiate Wave player (Codec, DMA, I2C) */
 	if (AUDIO_Init())
-		AUDIO_OUT_SetMute(VCU.d.state == VEHICLE_RUN);
+		AUDIO_OUT_SetMute(VCU.d.state != VEHICLE_RUN);
 
 	/* Infinite loop */
 	for (;;) {
@@ -1350,7 +1350,7 @@ void StartAudioTask(void *argument)
 				AUDIO_DeInit();
 				_osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
 				if (AUDIO_Init())
-					AUDIO_OUT_SetMute(VCU.d.state == VEHICLE_RUN);
+					AUDIO_OUT_SetMute(VCU.d.state != VEHICLE_RUN);
 			}
 
 			// Beep command
@@ -1367,7 +1367,7 @@ void StartAudioTask(void *argument)
 				AUDIO_BeepStop();
 		}
 
-		AUDIO_OUT_SetMute(VCU.d.state == VEHICLE_RUN);
+		AUDIO_OUT_SetMute(VCU.d.state != VEHICLE_RUN);
 		AUDIO_OUT_SetVolume(MCU.SpeedToVolume());
 		AUDIO_Refresh();
 	}

@@ -13,8 +13,8 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define MODE_SESSION_MS (uint16_t)4000
-#define MODE_BLINK_MS (uint16_t) 250
-#define MODE_RESET_MS (uint16_t)3000
+#define MODE_BLINK_MS (uint16_t)250
+#define MODE_RESET_MS (uint16_t)1500
 #define STARTER_LONG_PRESS (uint16_t)1000 // in ms
 
 /* Exported enum
