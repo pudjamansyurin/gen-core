@@ -71,6 +71,9 @@ BO_ 42 VCUSwitchControl: 8 VCU
  SG_ NetSignalVal : 48|8@1+ (1,0) [0|100] "%"  HMI1
  SG_ BMSSocVal : 40|8@1+ (1,0) [0|100] "%"  HMI1
  SG_ VehicleState : 56|8@1- (1,0) [0|0] "" Vector__XXX
+ SG_ BMSRun : 11|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ MCURun : 12|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ FGRRegistering : 13|1@1+ (1,0) [0|0] "" Vector__XXX
 
 BO_ 44 VCUDatetime: 8 VCU
  SG_ Seconds : 0|8@1+ (1,0) [0|60] ""  HMI2
