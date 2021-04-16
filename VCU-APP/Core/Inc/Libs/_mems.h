@@ -47,10 +47,12 @@ typedef struct {
 } mems_total_t;
 
 typedef struct {
-	uint8_t init;
-	mems_tilt_t tilt_cur;
-	mems_tilt_t tilt_ref;
-} drag_t;
+	uint8_t active;
+	struct {
+		mems_tilt_t cur;
+		mems_tilt_t ref;
+	} tilt;
+} mems_detector_t;
 
 typedef struct {
 	uint8_t active;
@@ -63,7 +65,7 @@ typedef struct {
 
 typedef struct {
 	mems_data_t d;
-	drag_t drag;
+	mems_detector_t detector;
 	MPU6050 dev;
 	I2C_HandleTypeDef *pi2c;
 } mems_t;
@@ -79,7 +81,7 @@ void MEMS_Refresh(void);
 void MEMS_Flush(void);
 uint8_t MEMS_Capture(void);
 uint8_t MEMS_Process(void);
-uint8_t MEMS_ActivateDetector(void);
+void MEMS_ActivateDetector(void);
 uint8_t MEMS_Dragged(void);
 void MEMS_ResetDetector(void);
 

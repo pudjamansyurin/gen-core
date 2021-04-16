@@ -1068,24 +1068,23 @@ void StartCommandTask(void *argument)
 			}
 
 			else if (code == CMD_CODE_MCU) {
-				if (!MCU.d.active) {
-					sprintf(resp.data.message, "MCU not active!");
-					*res_code = RESPONSE_STATUS_ERROR;
-				} else
-					switch (sub_code) {
+				//				if (!MCU.d.active) {
+				//					sprintf(resp.data.message, "MCU not active!");
+				//					*res_code = RESPONSE_STATUS_ERROR;
+				//				} else
+				switch (sub_code) {
+				case CMD_MCU_SPEED_MAX:
+					MCU.SetSpeedMax(val);
+					break;
 
-					case CMD_MCU_SPEED_MAX:
-						MCU.SetSpeedMax(val);
-						break;
+				case CMD_MCU_TEMPLATES:
+					MCU.SetTemplates(*(mcu_templates_t*)cmd.data.value);
+					break;
 
-					case CMD_MCU_TEMPLATES:
-						MCU.SetTemplates(*(mcu_templates_t*)cmd.data.value);
-						break;
-
-					default:
-						*res_code = RESPONSE_STATUS_INVALID;
-						break;
-					}
+				default:
+					*res_code = RESPONSE_STATUS_INVALID;
+					break;
+				}
 			}
 
 			else
@@ -1175,11 +1174,12 @@ void StartMemsTask(void *argument)
 		if (MEMS_Capture()) {
 			fallen = MEMS_Process();
 			VCU.SetEvent(EVG_BIKE_FALLEN, fallen);
-			osThreadFlagsSet(AudioTaskHandle, fallen ? FLAG_AUDIO_BEEP_START : FLAG_AUDIO_BEEP_STOP);
 
 			// Drag detector
 			if (VCU.d.state < VEHICLE_STANDBY) {
-				if (MEMS_ActivateDetector()) {
+				if (!MEMS.detector.active)
+					MEMS_ActivateDetector();
+				else {
 					if (MEMS_Dragged() || VCU.ReadEvent(EVG_BIKE_MOVED)) {
 						VCU.SetEvent(EVG_BIKE_MOVED, 1);
 						osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
@@ -1365,16 +1365,11 @@ void StartAudioTask(void *argument)
 
 			// Beep command
 			if (notif & FLAG_AUDIO_BEEP) {
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
-				_DelayMS(250);
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250);
+				AUDIO_OUT_SetMute(0);
+				AUDIO_OUT_SetVolume(100);
+				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250); _DelayMS(250);
+				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250); _DelayMS(250);
 			}
-
-			// Long-Beep Command
-			if (notif & FLAG_AUDIO_BEEP_START)
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 0);
-			if (notif & FLAG_AUDIO_BEEP_STOP)
-				AUDIO_BeepStop();
 		}
 
 		AUDIO_OUT_SetMute(VCU.d.state != VEHICLE_RUN);
@@ -1444,10 +1439,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																																																	BMS.r.Param1(&Rx);
+																																																							BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																																																	BMS.r.Param2(&Rx);
+																																																							BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;
@@ -1612,17 +1607,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY)
 		return;
 
-	if (GPIO_Pin == INT_REMOTE_IRQ_Pin)
+	if (GPIO_Pin & INT_REMOTE_IRQ_Pin) {
 		if (VCU.d.state >= VEHICLE_NORMAL)
 			nrf_irq_handler();
+	}
 
-	if (GPIO_Pin == EXT_FINGER_IRQ_Pin)
+	if (GPIO_Pin & EXT_FINGER_IRQ_Pin) {
 		if (VCU.d.state >= VEHICLE_STANDBY)
 			osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_PLACED);
+	}
 
-	if (GPIO_Pin != INT_REMOTE_IRQ_Pin && GPIO_Pin != EXT_FINGER_IRQ_Pin)
+	if (!((GPIO_Pin & INT_REMOTE_IRQ_Pin) || (GPIO_Pin & EXT_FINGER_IRQ_Pin))) {
 		if (VCU.d.state >= VEHICLE_NORMAL)
 			osThreadFlagsSet(GateTaskHandle, FLAG_GATE_HBAR);
+	}
 }
 
 /* USER CODE END Application */

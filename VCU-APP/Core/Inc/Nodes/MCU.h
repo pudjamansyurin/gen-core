@@ -190,6 +190,8 @@ typedef struct {
 	uint8_t (*RpmToSpeed)(int16_t);
 	int16_t (*SpeedToRpm)(uint8_t);
 	uint8_t (*SpeedToVolume)(void);
+	uint8_t (*Reversed)(void);
+	uint8_t (*Running)(void);
 } mcu_t;
 
 /* Exported variables
@@ -208,6 +210,8 @@ void MCU_Templates(uint8_t write);
 uint8_t MCU_RpmToSpeed(int16_t rpm);
 int16_t MCU_SpeedToRpm(uint8_t speed);
 uint8_t MCU_SpeedToVolume(void);
+uint8_t MCU_Reversed(void);
+uint8_t MCU_Running(void);
 void MCU_RX_CurrentDC(can_rx_t *Rx);
 void MCU_RX_VoltageDC(can_rx_t *Rx);
 void MCU_RX_TorqueSpeed(can_rx_t *Rx);

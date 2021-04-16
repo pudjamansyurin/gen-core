@@ -99,6 +99,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
+	uint8_t detector;
 	struct __attribute__((packed)) {
 		int16_t x;
 		int16_t y;

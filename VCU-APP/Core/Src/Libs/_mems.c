@@ -18,10 +18,12 @@ extern osMutexId_t MemsRecMutexHandle;
  * ----------------------------------------------------------*/
 mems_t MEMS = {
 		.d = {0},
-		.drag = {
-				.init = 1,
-				.tilt_cur = {0},
-				.tilt_ref = {0},
+		.detector = {
+				.active = 0,
+				.tilt = {
+						.cur = {0},
+						.ref = {0},
+				}
 		},
 		.pi2c = &hi2c3,
 };
@@ -83,7 +85,7 @@ void MEMS_Refresh(void) {
 void MEMS_Flush(void) {
 	lock();
 	memset(&(MEMS.d), 0, sizeof(mems_data_t));
-	memset(&(MEMS.drag), 0, sizeof(drag_t));
+	memset(&(MEMS.detector), 0, sizeof(mems_detector_t));
 	unlock();
 }
 
@@ -108,7 +110,7 @@ uint8_t MEMS_Capture(void) {
 
 uint8_t MEMS_Process(void) {
 	mems_raw_t *raw = &(MEMS.d.raw);
-	mems_tilt_t *tilt = &(MEMS.drag.tilt_cur);
+	mems_tilt_t *tilt = &(MEMS.detector.tilt.cur);
 
 	lock();
 	ConvertAccel(tilt, &(raw->accelerometer));
@@ -138,33 +140,27 @@ uint8_t MEMS_Process(void) {
 	return (MEMS.d.crash || MEMS.d.fall);
 }
 
-uint8_t MEMS_ActivateDetector(void) {
-	mems_tilt_t *cur = &(MEMS.drag.tilt_cur);
-	mems_tilt_t *ref = &(MEMS.drag.tilt_ref);
-	uint8_t init = MEMS.drag.init;
+void MEMS_ActivateDetector(void) {
+	mems_tilt_t *cur = &(MEMS.detector.tilt.cur);
+	mems_tilt_t *ref = &(MEMS.detector.tilt.ref);
 
 	lock();
-	if (init) {
-		MEMS.drag.init = 0;
-		VCU.SetEvent(EVG_BIKE_MOVED, 0);
-		memcpy(ref, cur, sizeof(mems_tilt_t));
-	}
+	MEMS.detector.active = 1;
+	VCU.SetEvent(EVG_BIKE_MOVED, 0);
+	memcpy(ref, cur, sizeof(mems_tilt_t));
 	unlock();
-
-	return init == 0;
 }
 
 void MEMS_ResetDetector(void) {
 	lock();
-	MEMS.drag.init = 1;
+	MEMS.detector.active = 0;
 	VCU.SetEvent(EVG_BIKE_MOVED, 0);
 	unlock();
 }
 
-
 uint8_t MEMS_Dragged(void) {
-	mems_tilt_t *cur = &(MEMS.drag.tilt_cur);
-	mems_tilt_t *ref = &(MEMS.drag.tilt_ref);
+	mems_tilt_t *cur = &(MEMS.detector.tilt.cur);
+	mems_tilt_t *ref = &(MEMS.detector.tilt.ref);
 	uint8_t euclidean, dragged;
 
 	lock();

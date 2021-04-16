@@ -79,6 +79,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 
 		mems_report_t *mems = &(d->opt.mems);
 		mems->active = MEMS.d.active;
+		mems->detector = MEMS.detector.active;
 		mems->accel.x = MEMS.d.raw.accelerometer.x * 100;
 		mems->accel.y = MEMS.d.raw.accelerometer.y * 100;
 		mems->accel.z = MEMS.d.raw.accelerometer.z * 100;
@@ -87,8 +88,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 		mems->gyro.y = MEMS.d.raw.gyroscope.y * 10;
 		mems->gyro.z = MEMS.d.raw.gyroscope.z * 10;
 
-		mems->ypr.pitch = MEMS.drag.tilt_cur.pitch * 10;
-		mems->ypr.roll = MEMS.drag.tilt_cur.roll * 10;
+		mems->ypr.pitch = MEMS.detector.tilt.cur.pitch * 10;
+		mems->ypr.roll = MEMS.detector.tilt.cur.roll * 10;
 
 		mems->total.accelerometer = MEMS.d.tot.accelerometer * 100;
 		mems->total.gyroscope = MEMS.d.tot.gyroscope * 10;

@@ -37,6 +37,8 @@ mcu_t MCU = {
 		.RpmToSpeed = MCU_RpmToSpeed,
 		.SpeedToRpm = MCU_SpeedToRpm,
 		.SpeedToVolume = MCU_SpeedToVolume,
+		.Reversed = MCU_Reversed,
+		.Running = MCU_Running
 };
 
 /* Private variables
@@ -71,18 +73,19 @@ void MCU_PowerOverCan(uint8_t on) {
 			if (MCU.d.inv.lockout) {
 				MCU.t.Setting(0); _DelayMS(5);
 			} else {
-				MCU.t.Templates(MCU.set.template && !SyncedTemplates());
-				MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
-
 				if (SyncedTemplates() && SyncedSpeedMax()) {
 					MCU.t.Setting(1);
-					//if (!MCU.d.run) _DelayMS(1000);
 				}
 			}
 		}
 	} else {
 		MCU.t.Setting(0);
 		GATE_McuPower(0);
+	}
+
+	if (MCU.d.active) {
+		MCU.t.Templates(MCU.set.template && !SyncedTemplates());
+		MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
 	}
 }
 
@@ -139,6 +142,14 @@ uint8_t MCU_SpeedToVolume(void) {
 	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm);
 
 	return vol > 100 ? 100 : vol;
+}
+
+uint8_t MCU_Reversed(void) {
+	return MCU.d.reverse && !MCU.d.inv.lockout;
+}
+
+uint8_t MCU_Running(void) {
+	return MCU.RpmToSpeed(MCU.d.rpm) > 0;
 }
 
 /* ====================================== CAN RX

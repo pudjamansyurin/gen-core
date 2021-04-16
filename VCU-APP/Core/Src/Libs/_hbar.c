@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_eeprom.h"
 #include "Libs/_hbar.h"
+#include "Nodes/MCU.h"
 
 /* Public variables
  * -----------------------------------------------------------*/
@@ -16,6 +17,7 @@ hbar_t HBAR = {
 };
 
 /* Private functions prototype -----------------------------------------------*/
+static uint8_t Reversed(void);
 static void RunSelect(void);
 static void RunSet(void);
 
@@ -74,7 +76,7 @@ void HBAR_ReadStates(void) {
 	HBAR.state[HBAR_K_LAMP] = GATE_ReadLamp();
 	HBAR.state[HBAR_K_ABS] = GATE_ReadABS();
 
-	if (!HBAR.state[HBAR_K_REVERSE])
+	if (!Reversed())
 		HBAR_ReadSelectSet();
 }
 
@@ -127,7 +129,7 @@ void HBAR_RefreshSelectSet(void) {
 		}
 
 		// stop listening
-		if ((_GetTickMS() - HBAR.ctl.tick.session) >= MODE_SESSION_MS || HBAR.state[HBAR_K_REVERSE]) {
+		if ((_GetTickMS() - HBAR.ctl.tick.session) >= MODE_SESSION_MS || Reversed()) {
 			HBAR.ctl.listening = 0;
 			HBAR.ctl.blink = 0;
 			memset(HBAR.timer, 0, sizeof(HBAR.timer));
@@ -191,6 +193,11 @@ void HBAR_SetOdometer(uint8_t meter) {
 
 /* Private functions implementation
  * -------------------------------------------*/
+static uint8_t Reversed(void) {
+//	return HBAR.state[HBAR_K_REVERSE];
+	return MCU.Reversed();
+}
+
 static void RunSelect(void) {
 	if (HBAR.d.m == (HBAR_M_MAX - 1)) HBAR.d.m = 0;
 	else HBAR.d.m++;

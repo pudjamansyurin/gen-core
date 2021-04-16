@@ -169,7 +169,7 @@ void VCU_CheckState(void) {
 				start = 0;
 			}
 
-			if (!GATE_ReadPower5v() || (start && MCU.RpmToSpeed(MCU.d.rpm) == 0) || normalize || NODE.d.error ||	VCU.Is(VCU.d.override.state < VEHICLE_RUN))
+			if (!GATE_ReadPower5v() || (start && !MCU.Running()) || normalize || NODE.d.error ||	VCU.Is(VCU.d.override.state < VEHICLE_RUN))
 				VCU.d.state--;
 			break;
 
@@ -220,15 +220,15 @@ uint8_t VCU_TX_SwitchControl(void) {
 	hbar_sein_t sein = HBAR_SeinController();
 	Tx.data.u8[1] = sein.left;
 	Tx.data.u8[1] |= sein.right << 1;
-	// TODO: validate MCU reverse state
-	Tx.data.u8[1] |= HBAR.state[HBAR_K_REVERSE] << 2;
+//	Tx.data.u8[1] |= HBAR.state[HBAR_K_REVERSE] << 2;
+	Tx.data.u8[1] |= MCU.Reversed() << 2;
 	Tx.data.u8[1] |= BMS.d.run << 3;
 	Tx.data.u8[1] |= MCU.d.run << 4;
 	Tx.data.u8[1] |= FGR.d.registering << 5;
 
 	// mode
-	// TODO: validate MCU drive mode
 	Tx.data.u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
+//	Tx.data.u8[2] = MCU.d.drive_mode;
 	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
 	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
 	Tx.data.u8[2] |= HBAR.d.m << 5;
