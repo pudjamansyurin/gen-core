@@ -804,15 +804,25 @@ void StartReporterTask(void *argument)
 	_osEventManager();
 
 	/* Infinite loop */
+	interval = RPT_IntervalDecider();
 	for (;;) {
 		TASKS.tick.reporter = _GetTickMS();
 
-		frame = RPT_FrameDecider();
-		interval = RPT_IntervalDecider();
+		if (_osFlagAny(&notif, interval * 1000)) {
+			if (notif & FLAG_REPORTER_YIELD) {
+				// nothing, just wakeup
+			}
 
-		RPT_ReportCapture(frame, &report);
+			if (notif & FLAG_REPORTER_RST_LOG) {
+				osMessageQueueReset(ReportQueueHandle);
+			}
+		}
+
+		interval = RPT_IntervalDecider();
+		frame = RPT_FrameDecider();
 
 		// Put report to log
+		RPT_ReportCapture(frame, &report);
 		while(_osQueuePut(ReportQueueHandle, &report) == 0) {
 			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
 			_DelayMS(1);
@@ -821,8 +831,6 @@ void StartReporterTask(void *argument)
 		// reset some events group
 		VCU.SetEvent(EVG_NET_SOFT_RESET, 0);
 		VCU.SetEvent(EVG_NET_HARD_RESET, 0);
-
-		_osFlagOne(&notif, FLAG_REPORTER_YIELD, interval * 1000);
 	}
 	/* USER CODE END StartReporterTask */
 }
@@ -882,7 +890,7 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_GEN_RST_LOG:
-					osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
+					osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_RST_LOG);
 					break;
 
 				default:
@@ -1267,7 +1275,7 @@ void StartFingerTask(void *argument)
 	_osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
 	osThreadFlagsClear(FLAG_MASK);
 
-	FINGER_Init();
+	FGR_Init();
 
 	/* Infinite loop */
 	for (;;) {
@@ -1275,20 +1283,24 @@ void StartFingerTask(void *argument)
 
 		if (_osFlagAny(&notif, 1000)) {
 			if (notif & FLAG_FINGER_TASK_STOP) {
-				FINGER_DeInit();
+				FGR_DeInit();
 				_osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
-				FINGER_Init();
+				FGR_Init();
 			}
 
 			if (VCU.d.state >= VEHICLE_STANDBY) {
 				if (notif & FLAG_FINGER_PLACED) {
-					id = FINGER_Auth();
+					id = FGR_AuthFast();
 					if (id > 0) {
 						FGR.d.id = FGR.d.id ? 0: id;
-						GATE_LedBlink(200);	_DelayMS(100);
-						GATE_LedBlink(200);
-					} else
-						GATE_LedBlink(1000);
+						FGR_Registering(1);	_DelayMS(100);
+						FGR_Registering(0);	_DelayMS(100);
+						FGR_Registering(1);	_DelayMS(100);
+						FGR_Registering(0);
+					} else {
+						FGR_Registering(1);	_DelayMS(500);
+						FGR_Registering(0);
+					}
 					osDelay(500);
 					osThreadFlagsClear(FLAG_FINGER_PLACED);
 				}
@@ -1297,26 +1309,26 @@ void StartFingerTask(void *argument)
 					uint8_t ok = 0;
 
 					if (notif & FLAG_FINGER_ADD) {
-						if (FINGER_Enroll(&id, &ok))
+						if (FGR_Enroll(&id, &ok))
 							_osQueuePutRst(DriverQueueHandle, &id);
 						osThreadFlagsClear(FLAG_FINGER_PLACED);
 					}
 					if (notif & FLAG_FINGER_DEL) {
 						if (osMessageQueueGet(DriverQueueHandle, &id, NULL, 0U) == osOK)
-							ok = FINGER_DeleteID(id);
+							ok = FGR_DeleteID(id);
 					}
 					if (notif & FLAG_FINGER_FETCH) {
-						ok = FINGER_Fetch();
+						ok = FGR_Fetch();
 					}
 					if (notif & FLAG_FINGER_RST)
-						ok = FINGER_ResetDB();
+						ok = FGR_ResetDB();
 
 					osThreadFlagsSet(CommandTaskHandle, ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
 				}
 			}
 		}
 
-		if (!FGR.d.verified) FINGER_Verify();
+		if (!FGR.d.verified) FGR_Verify();
 	}
 	/* USER CODE END StartFingerTask */
 }
@@ -1338,8 +1350,7 @@ void StartAudioTask(void *argument)
 	osThreadFlagsClear(FLAG_MASK);
 
 	/* Initiate Wave player (Codec, DMA, I2C) */
-	if (AUDIO_Init())
-		AUDIO_OUT_SetMute(VCU.d.state != VEHICLE_RUN);
+	AUDIO_Init();
 
 	/* Infinite loop */
 	for (;;) {
@@ -1349,8 +1360,7 @@ void StartAudioTask(void *argument)
 			if (notif & FLAG_AUDIO_TASK_STOP) {
 				AUDIO_DeInit();
 				_osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
-				if (AUDIO_Init())
-					AUDIO_OUT_SetMute(VCU.d.state != VEHICLE_RUN);
+				AUDIO_Init();
 			}
 
 			// Beep command

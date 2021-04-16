@@ -36,7 +36,7 @@ static void DebugResponse(uint8_t res, char *msg);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t FINGER_Init(void) {
+uint8_t FGR_Init(void) {
 	uint8_t ok;
 	uint32_t tick;
 
@@ -50,7 +50,7 @@ uint8_t FINGER_Init(void) {
 		FINGER_DMA_Start(FGR.puart, FGR.pdma);
 		GATE_FingerReset();
 
-		ok = FINGER_Probe();
+		ok = FGR_Probe();
 		if (!ok) _DelayMS(500);
 	} while (!ok && _GetTickMS() - tick < FINGER_TIMEOUT);
 
@@ -61,16 +61,16 @@ uint8_t FINGER_Init(void) {
 	return ok;
 }
 
-void FINGER_DeInit(void) {
+void FGR_DeInit(void) {
 	lock();
-	FINGER_Flush();
+	FGR_Flush();
 	GATE_FingerShutdown();
 	FINGER_DMA_Stop();
 	HAL_UART_DeInit(FGR.puart);
 	unlock();
 }
 
-uint8_t FINGER_Probe(void) {
+uint8_t FGR_Probe(void) {
 	uint8_t ok;
 
 	lock();
@@ -80,26 +80,26 @@ uint8_t FINGER_Probe(void) {
 	return ok;
 }
 
-uint8_t FINGER_Verify(void) {
+uint8_t FGR_Verify(void) {
 	lock();
-	FGR.d.verified = FINGER_Probe();
+	FGR.d.verified = FGR_Probe();
 	if (!FGR.d.verified) {
-		FINGER_DeInit();
+		FGR_DeInit();
 		_DelayMS(500);
-		FINGER_Init();
+		FGR_Init();
 	}
 	unlock();
 
 	return FGR.d.verified;
 }
 
-void FINGER_Flush(void) {
+void FGR_Flush(void) {
 	lock();
 	memset(&(FGR.d), 0, sizeof(finger_data_t));
 	unlock();
 }
 
-uint8_t FINGER_Fetch(void) {
+uint8_t FGR_Fetch(void) {
 	uint16_t templateCount;
 	uint8_t res;
 
@@ -112,7 +112,7 @@ uint8_t FINGER_Fetch(void) {
 	return res == FINGERPRINT_OK;
 }
 
-uint8_t FINGER_Enroll(uint8_t *id, uint8_t *ok) {
+uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
 	uint8_t res;
 
 	lock();
@@ -121,23 +121,23 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *ok) {
 	*ok = (res == FINGERPRINT_OK && *id > 0);
 
 	if (*ok) {
-		GATE_LedWrite(1);
+		FGR_Registering(1);
 		printf("FGR:Waiting for valid finger to enroll as #%u\n", *id);
 		*ok = Scan(1, FINGER_SCAN_TIMEOUT);
 	}
 
 	if (*ok) {
-		GATE_LedWrite(0);
+		FGR_Registering(0);
 		while (fz3387_getImage() != FINGERPRINT_NOFINGER) {
 			_DelayMS(50);
 		}
 
-		GATE_LedWrite(1);
+		FGR_Registering(1);
 		printf("FGR:Waiting for valid finger to enroll as #%u\n", *id);
 		*ok = Scan(2, FINGER_SCAN_TIMEOUT);
 	}
 
-	GATE_LedWrite(0);
+	FGR_Registering(0);
 
 	if (*ok) {
 		while (fz3387_getImage() != FINGERPRINT_NOFINGER) {
@@ -167,7 +167,7 @@ uint8_t FINGER_Enroll(uint8_t *id, uint8_t *ok) {
 	return (res == FINGERPRINT_OK);
 }
 
-uint8_t FINGER_DeleteID(uint8_t id) {
+uint8_t FGR_DeleteID(uint8_t id) {
 	uint8_t res;
 
 	lock();
@@ -178,7 +178,7 @@ uint8_t FINGER_DeleteID(uint8_t id) {
 	return (res == FINGERPRINT_OK);
 }
 
-uint8_t FINGER_ResetDB(void) {
+uint8_t FGR_ResetDB(void) {
 	uint8_t res;
 
 	lock();
@@ -189,7 +189,7 @@ uint8_t FINGER_ResetDB(void) {
 	return (res == FINGERPRINT_OK);
 }
 
-uint8_t FINGER_SetPassword(uint32_t password) {
+uint8_t FGR_SetPassword(uint32_t password) {
 	uint8_t res;
 
 	lock();
@@ -200,7 +200,7 @@ uint8_t FINGER_SetPassword(uint32_t password) {
 	return (res == FINGERPRINT_OK);
 }
 
-uint8_t FINGER_Auth(void) {
+uint8_t FGR_Auth(void) {
 	uint16_t id, confidence;
 	uint8_t ok, res, theId = 0;
 
@@ -227,7 +227,7 @@ uint8_t FINGER_Auth(void) {
 	return theId;
 }
 
-uint8_t FINGER_AuthFast(void) {
+uint8_t FGR_AuthFast(void) {
 	uint16_t id, confidence;
 	uint8_t theId = 0;
 
@@ -240,6 +240,11 @@ uint8_t FINGER_AuthFast(void) {
 	unlock();
 
 	return theId;
+}
+
+void FGR_Registering(uint8_t state) {
+	GATE_LedWrite(state);
+	FGR.d.registering = state;
 }
 
 /* Private functions implementation
@@ -356,7 +361,7 @@ static void DebugResponse(uint8_t res, char *msg) {
 		break;
 	default:
 		printf("FGR:Unknown error: 0x%02X\n", res);
-		FINGER_Verify();
+		FGR_Verify();
 		break;
 	}
 #endif

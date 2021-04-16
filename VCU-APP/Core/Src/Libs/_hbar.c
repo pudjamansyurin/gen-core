@@ -81,15 +81,13 @@ void HBAR_ReadStates(void) {
 void HBAR_ReadSelectSet(void) {
 	HBAR_TimerSelectSet();
 
-//	if (HBAR.state[HBAR_K_SELECT] || HBAR.state[HBAR_K_SET])
-
 	if (HBAR.timer[HBAR_K_SELECT].time)
-		HBAR.ctl.listening = 1;
+		HBAR.ctl.listening++;
 
 	if (HBAR.ctl.listening) {
 		if (HBAR.timer[HBAR_K_SELECT].time || HBAR.timer[HBAR_K_SET].time) {
 			HBAR.ctl.tick.session = _GetTickMS();
-			if (HBAR.timer[HBAR_K_SELECT].time)
+			if (HBAR.timer[HBAR_K_SELECT].time && HBAR.ctl.listening > 1)
 				RunSelect();
 			if (HBAR.timer[HBAR_K_SET].time)
 				RunSet();

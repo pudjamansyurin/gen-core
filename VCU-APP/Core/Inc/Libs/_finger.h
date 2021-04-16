@@ -23,6 +23,7 @@
 typedef struct {
 	uint8_t id;
 	uint8_t verified;
+	uint8_t registering;
 	uint8_t db[FINGER_USER_MAX];
 } finger_data_t;
 
@@ -37,17 +38,18 @@ typedef struct {
 extern finger_t FGR;
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t FINGER_Init(void);
-void FINGER_DeInit(void);
-uint8_t FINGER_Probe(void);
-uint8_t FINGER_Verify(void);
-void FINGER_Flush(void);
-uint8_t FINGER_Fetch(void);
-uint8_t FINGER_Enroll(uint8_t *id, uint8_t *ok);
-uint8_t FINGER_DeleteID(uint8_t id);
-uint8_t FINGER_ResetDB(void);
-uint8_t FINGER_SetPassword(uint32_t password);
-uint8_t FINGER_Auth(void);
-uint8_t FINGER_AuthFast(void);
+uint8_t FGR_Init(void);
+void FGR_DeInit(void);
+uint8_t FGR_Probe(void);
+uint8_t FGR_Verify(void);
+void FGR_Flush(void);
+uint8_t FGR_Fetch(void);
+uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok);
+uint8_t FGR_DeleteID(uint8_t id);
+uint8_t FGR_ResetDB(void);
+uint8_t FGR_SetPassword(uint32_t password);
+uint8_t FGR_Auth(void);
+uint8_t FGR_AuthFast(void);
+void FGR_Registering(uint8_t state);
 
 #endif /* FINGER_H_ */

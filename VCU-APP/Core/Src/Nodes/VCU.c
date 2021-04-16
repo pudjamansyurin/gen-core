@@ -120,6 +120,8 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_START);
 
 				HBAR_Init();
+				BMS_Init();
+				MCU_Init();
 				RMT_Flush();
 				VCU.d.override.state = VEHICLE_UNKNOWN;
 				normalize = 0;
@@ -220,6 +222,9 @@ uint8_t VCU_TX_SwitchControl(void) {
 	Tx.data.u8[1] |= sein.right << 1;
 	// TODO: validate MCU reverse state
 	Tx.data.u8[1] |= HBAR.state[HBAR_K_REVERSE] << 2;
+	Tx.data.u8[1] |= BMS.d.run << 3;
+	Tx.data.u8[1] |= MCU.d.run << 4;
+	Tx.data.u8[1] |= FGR.d.registering << 5;
 
 	// mode
 	// TODO: validate MCU drive mode

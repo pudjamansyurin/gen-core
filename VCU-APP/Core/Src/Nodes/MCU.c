@@ -65,24 +65,24 @@ void MCU_PowerOverCan(uint8_t on) {
 	if (on) {
 		if (!MCU.d.active) {
 			ResetFault();
-			GATE_McuPower(0); _DelayMS(500);
-			GATE_McuPower(1); _DelayMS(2000);
-			MCU.t.Setting(0); _DelayMS(500);
+			GATE_McuPower(0); _DelayMS(100);
+			GATE_McuPower(1); _DelayMS(500);
 		} else {
-			MCU.t.Templates(MCU.set.template && !SyncedTemplates());
+			if (MCU.d.inv.lockout) {
+				MCU.t.Setting(0); _DelayMS(5);
+			} else {
+				MCU.t.Templates(MCU.set.template && !SyncedTemplates());
+				MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
 
-			if (!MCU.set.template || SyncedTemplates()) {
-				MCU.t.Setting(1);
-				if (!MCU.d.run) _DelayMS(MCU_TIMEOUT);
+				if (SyncedTemplates() && SyncedSpeedMax()) {
+					MCU.t.Setting(1);
+					//if (!MCU.d.run) _DelayMS(1000);
+				}
 			}
 		}
 	} else {
 		MCU.t.Setting(0);
 		GATE_McuPower(0);
-	}
-
-	if (MCU.d.active) {
-		MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
 	}
 }
 
@@ -135,7 +135,7 @@ int16_t MCU_SpeedToRpm(uint8_t speed) {
 }
 
 uint8_t MCU_SpeedToVolume(void) {
-//	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm) * 100 / MCU_SPEED_MAX;
+	//	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm) * 100 / MCU_SPEED_MAX;
 	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm);
 
 	return vol > 100 ? 100 : vol;
@@ -285,10 +285,14 @@ static void ResetTemplates(void) {
 }
 
 static uint8_t SyncedSpeedMax(void) {
+	if (!MCU.set.rpm_max)
+		return 1;
 	return MCU.d.par.rpm_max == MCU.set.par.rpm_max;
 }
 
 static uint8_t SyncedTemplates(void) {
+	if (!MCU.set.template)
+		return 1;
 	return memcmp(MCU.d.par.tpl, MCU.set.par.tpl, sizeof(MCU.d.par.tpl)) == 0;
 }
 
