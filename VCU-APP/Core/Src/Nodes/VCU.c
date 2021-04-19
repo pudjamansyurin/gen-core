@@ -169,7 +169,7 @@ void VCU_CheckState(void) {
 				start = 0;
 			}
 
-			if (!GATE_ReadPower5v() || (start && !MCU.Running()) || normalize || NODE.d.error ||	VCU.Is(VCU.d.override.state < VEHICLE_RUN))
+			if (!GATE_ReadPower5v() || (start && !MCU.Running()) || normalize || NODE.d.error || VCU.Is(VCU.d.override.state < VEHICLE_RUN))
 				VCU.d.state--;
 			break;
 

@@ -30,7 +30,9 @@ mcu_t MCU = {
 				MCU_Templates,
 		},
 		.Init = MCU_Init,
+		.Power12v = MCU_Power12v,
 		.PowerOverCan = MCU_PowerOverCan,
+		.Ready = MCU_Ready,
 		.Refresh = MCU_Refresh,
 		.SetSpeedMax = MCU_SetSpeedMax,
 		.SetTemplates = MCU_SetTemplates,
@@ -38,7 +40,8 @@ mcu_t MCU = {
 		.SpeedToRpm = MCU_SpeedToRpm,
 		.SpeedToVolume = MCU_SpeedToVolume,
 		.Reversed = MCU_Reversed,
-		.Running = MCU_Running
+		.Running = MCU_Running,
+		.Sync = MCU_Sync
 };
 
 /* Private variables
@@ -63,30 +66,36 @@ void MCU_Init(void) {
 	ResetFault();
 }
 
-void MCU_PowerOverCan(uint8_t on) {
+void MCU_Power12v(uint8_t on) {
+	if (MCU.d.run) return;
+
 	if (on) {
 		if (!MCU.d.active) {
 			ResetFault();
 			GATE_McuPower(0); _DelayMS(100);
 			GATE_McuPower(1); _DelayMS(500);
+		}
+	} else {
+		if (MCU.d.active) {
+			GATE_McuPower(0);
+		}
+	}
+}
+
+void MCU_PowerOverCan(uint8_t on) {
+	if (on) {
+		if (MCU.d.inv.lockout) {
+			MCU.t.Setting(0); _DelayMS(5);
 		} else {
-			if (MCU.d.inv.lockout) {
-				MCU.t.Setting(0); _DelayMS(5);
-			} else {
-				if (SyncedTemplates() && SyncedSpeedMax()) {
-					MCU.t.Setting(1);
-				}
-			}
+			MCU.t.Setting(1);
 		}
 	} else {
 		MCU.t.Setting(0);
-		GATE_McuPower(0);
 	}
+}
 
-	if (MCU.d.active) {
-		MCU.t.Templates(MCU.set.template && !SyncedTemplates());
-		MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
-	}
+uint8_t MCU_Ready(void) {
+	return MCU.d.active && SyncedTemplates() && SyncedSpeedMax();
 }
 
 void MCU_Refresh(void) {
@@ -150,6 +159,11 @@ uint8_t MCU_Reversed(void) {
 
 uint8_t MCU_Running(void) {
 	return MCU.RpmToSpeed(MCU.d.rpm) > 0;
+}
+
+void MCU_Sync(void) {
+	MCU.t.Templates(MCU.set.template && !SyncedTemplates());
+	MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
 }
 
 /* ====================================== CAN RX

@@ -1504,6 +1504,10 @@ void StartCanTxTask(void *argument)
 				VCU.t.ModeData();
 			}
 
+			if (MCU.d.active) {
+				MCU.Sync();
+			}
+
 			VCU.t.Heartbeat();
 
 			HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
@@ -1594,6 +1598,7 @@ void StartGateTask(void *argument)
 		HBAR_RefreshSelectSet();
 		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
 		HMI1.Power(VCU.d.state >= VEHICLE_STANDBY);
+		MCU.Power12v(VCU.d.state >= VEHICLE_READY);
 	}
 	/* USER CODE END StartGateTask */
 }
