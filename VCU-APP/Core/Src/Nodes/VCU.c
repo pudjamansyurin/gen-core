@@ -224,7 +224,7 @@ uint8_t VCU_TX_SwitchControl(void) {
 	Tx.data.u8[1] |= MCU.Reversed() << 2;
 	Tx.data.u8[1] |= BMS.d.run << 3;
 	Tx.data.u8[1] |= MCU.d.run << 4;
-	Tx.data.u8[1] |= FGR.d.registering << 5;
+	Tx.data.u8[1] |= (FGR.d.registering & 0x03) << 5;
 
 	// mode
 	Tx.data.u8[2] = HBAR.d.mode[HBAR_M_DRIVE];

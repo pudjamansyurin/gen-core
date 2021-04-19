@@ -101,8 +101,10 @@ uint8_t MCU_Ready(void) {
 void MCU_Refresh(void) {
 	MCU.d.active = MCU.d.tick && (_GetTickMS() - MCU.d.tick) < MCU_TIMEOUT;
 	if (MCU.d.active) {
-		if (MCU.set.rpm_max && SyncedSpeedMax())
+		if (MCU.set.rpm_max && SyncedSpeedMax()) {
 			MCU.set.rpm_max = 0;
+			MCU.Power12v(0); _DelayMS(50);
+		}
 		if (MCU.set.template && SyncedTemplates())
 			MCU.set.template = 0;
 	} else {

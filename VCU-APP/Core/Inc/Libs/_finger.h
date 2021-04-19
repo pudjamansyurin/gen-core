@@ -48,8 +48,6 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok);
 uint8_t FGR_DeleteID(uint8_t id);
 uint8_t FGR_ResetDB(void);
 uint8_t FGR_SetPassword(uint32_t password);
-uint8_t FGR_Auth(void);
-uint8_t FGR_AuthFast(void);
-void FGR_Registering(uint8_t state);
+void FGR_Authentication(void);
 
 #endif /* FINGER_H_ */

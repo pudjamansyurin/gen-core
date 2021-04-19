@@ -1068,23 +1068,23 @@ void StartCommandTask(void *argument)
 			}
 
 			else if (code == CMD_CODE_MCU) {
-				//				if (!MCU.d.active) {
-				//					sprintf(resp.data.message, "MCU not active!");
-				//					*res_code = RESPONSE_STATUS_ERROR;
-				//				} else
-				switch (sub_code) {
-				case CMD_MCU_SPEED_MAX:
-					MCU.SetSpeedMax(val);
-					break;
+				if (!MCU.d.active || MCU.d.run) {
+					sprintf(resp.data.message, "MCU not ready!");
+					*res_code = RESPONSE_STATUS_ERROR;
+				} else
+					switch (sub_code) {
+					case CMD_MCU_SPEED_MAX:
+						MCU.SetSpeedMax(val);
+						break;
 
-				case CMD_MCU_TEMPLATES:
-					MCU.SetTemplates(*(mcu_templates_t*)cmd.data.value);
-					break;
+					case CMD_MCU_TEMPLATES:
+						MCU.SetTemplates(*(mcu_templates_t*)cmd.data.value);
+						break;
 
-				default:
-					*res_code = RESPONSE_STATUS_INVALID;
-					break;
-				}
+					default:
+						*res_code = RESPONSE_STATUS_INVALID;
+						break;
+					}
 			}
 
 			else
@@ -1290,17 +1290,7 @@ void StartFingerTask(void *argument)
 
 			if (VCU.d.state >= VEHICLE_STANDBY) {
 				if (notif & FLAG_FINGER_PLACED) {
-					id = FGR_AuthFast();
-					if (id > 0) {
-						FGR.d.id = FGR.d.id ? 0: id;
-						FGR_Registering(1);	_DelayMS(100);
-						FGR_Registering(0);	_DelayMS(100);
-						FGR_Registering(1);	_DelayMS(100);
-						FGR_Registering(0);
-					} else {
-						FGR_Registering(1);	_DelayMS(500);
-						FGR_Registering(0);
-					}
+					FGR_Authentication();
 					osDelay(500);
 					osThreadFlagsClear(FLAG_FINGER_PLACED);
 				}
@@ -1439,10 +1429,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																																																							BMS.r.Param1(&Rx);
+																																																									BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																																																							BMS.r.Param2(&Rx);
+																																																									BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;
