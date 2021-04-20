@@ -143,7 +143,7 @@ void nrf_packet_received_callback(uint8_t *data);
  * Blocks until the data has arrived, then returns a pointer to received data.
  * Please note, once nrf_packet_received_callback routine is overridden, this
  * one will stop working. */
-NRF_RESULT nrf_receive_packet(uint8_t *data, uint16_t ms);
+//NRF_RESULT nrf_receive_packet(uint8_t *data, uint16_t ms);
 /* Blocking Data Sending
  *
  * If the AA is enabled (default), this method will return:
@@ -151,13 +151,13 @@ NRF_RESULT nrf_receive_packet(uint8_t *data, uint16_t ms);
  *   NRF_ERROR - the data has not been received (maximum retransmissions has
  * occurred) If the AA is disabled, returns NRF_OK once the data has been
  * transmitted (with no guarantee the data was actually received). */
-NRF_RESULT nrf_send_packet(const uint8_t *data);
+//NRF_RESULT nrf_send_packet(const uint8_t *data);
 /* Blocking Data Sending, with NO_ACK flag
  *
  * Disables the AA for this packet, thus this method always returns NRF_OK */
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data);
 /* Non-Blocking Data Sending */
-NRF_RESULT nrf_push_packet(const uint8_t *data);
+//NRF_RESULT nrf_push_packet(const uint8_t *data);
 /* LOW LEVEL STUFF (you don't have to look in here...)*/
 NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *rx,
                             uint8_t len);

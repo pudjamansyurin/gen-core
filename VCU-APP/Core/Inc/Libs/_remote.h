@@ -30,9 +30,13 @@ typedef struct {
 	uint8_t active;
 	uint8_t nearby;
 	uint8_t nearby_real;
-	uint32_t tick;
-	uint32_t heartbeat;
-	uint32_t pairing;
+	struct {
+		uint32_t ping;
+		uint32_t heartbeat;
+		uint32_t pairing;
+		uint32_t test_tx;
+		uint32_t test_full;
+	} tick;
 } remote_data_t;
 
 typedef struct {

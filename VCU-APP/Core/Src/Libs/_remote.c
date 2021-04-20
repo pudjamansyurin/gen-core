@@ -79,7 +79,7 @@ uint8_t RMT_ReInit(void) {
 	if (ok) {
 		nrf_configure();
 		ChangeMode(RMT_MODE_NORMAL);
-		RMT.d.tick = _GetTickMS();
+		RMT.d.tick.ping = _GetTickMS();
 	}
 	unlock();
 
@@ -108,25 +108,27 @@ uint8_t RMT_Probe(void) {
 
 void RMT_Refresh(vehicle_state_t state) {
 	uint32_t timeout;
+	uint8_t paired;
 
 	lock();
 	timeout = TimeoutDecider(state);
-	RMT.d.nearby = RMT.d.heartbeat && (_GetTickMS() - RMT.d.heartbeat) < timeout;
-	RMT.d.nearby_real = RMT.d.heartbeat && (_GetTickMS() - RMT.d.heartbeat) < 2000;
+	RMT.d.nearby = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < timeout;
+	RMT.d.nearby_real = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < 2000;
 	VCU.SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
 
-	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
-		RMT_Ping();
+	//if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
+	// RMT_Ping();
 
-	RMT.d.active = (RMT.d.tick && (_GetTickMS() - RMT.d.tick) < RMT_TIMEOUT) || RMT.d.nearby;
+	RMT.d.active = (RMT.d.tick.ping && (_GetTickMS() - RMT.d.tick.ping) < RMT_TIMEOUT) || RMT.d.nearby;
 	if (!RMT.d.active) {
 		RMT_DeInit();
 		_DelayMS(500);
 		RMT_Init();
 	}
 
-	if (RMT.d.pairing && (_GetTickMS() - RMT.d.pairing) > RMT_PAIRING_TIMEOUT) {
-		RMT.d.pairing = 0;
+	paired = RMT.d.tick.pairing && (_GetTickMS() - RMT.d.tick.pairing) > RMT_PAIRING_TIMEOUT;
+	if (paired) {
+		RMT.d.tick.pairing = 0;
 		AES_ChangeKey(NULL);
 	}
 	unlock();
@@ -140,12 +142,17 @@ void RMT_Flush(void) {
 
 uint8_t RMT_Ping(void) {
 	uint8_t ok;
+	uint32_t tick;
 
 	lock();
 	RNG_Generate32((uint32_t *)RMT.t.payload, NRF_DATA_LENGTH / 4);
+
+	tick = _GetTickMS();
 	ok = (nrf_send_packet_noack(RMT.t.payload) == NRF_OK);
+	RMT.d.tick.test_tx = _GetTickMS() - tick;
+
 	if (ok)
-		RMT.d.tick = _GetTickMS();
+		RMT.d.tick.ping = _GetTickMS();
 	unlock();
 
 	return ok;
@@ -155,7 +162,7 @@ void RMT_Pairing(void) {
 	uint32_t aes[4];
 
 	lock();
-	RMT.d.pairing = _GetTickMS();
+	RMT.d.tick.pairing = _GetTickMS();
 	RNG_Generate32(RMT.pairing_aes, 4);
 	AES_ChangeKey(RMT.pairing_aes);
 
@@ -177,8 +184,8 @@ uint8_t RMT_GotPairedResponse(void) {
 	uint8_t paired = 0;
 
 	lock();
-	if (RMT.d.pairing > 0) {
-		RMT.d.pairing = 0;
+	if (RMT.d.tick.pairing > 0) {
+		RMT.d.tick.pairing = 0;
 		paired = 1;
 
 		EEPROM_AesKey(EE_CMD_W, RMT.pairing_aes);
@@ -208,7 +215,7 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	// Is ping response
 	if (valid) {
 		if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT) {
-			RMT.d.heartbeat = _GetTickMS();
+			RMT.d.tick.heartbeat = _GetTickMS();
 			valid = (memcmp(&plain[rng], &payload[rng], rng) == 0);
 		}
 	}

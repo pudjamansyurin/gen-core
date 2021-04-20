@@ -588,75 +588,73 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width) {
 	return NRF_OK;
 }
 
-NRF_RESULT nrf_send_packet(const uint8_t *data) {
-	NRF.tx_busy = 1;
-
-	ce_reset();
-	nrf_rx_tx_control(NRF_STATE_TX);
-	nrf_write_tx_payload(data);
-	ce_set();
-
-	// wait for end of transmition
-	while (NRF.tx_busy) {
-		_DelayMS(1);
-	};
-
-	ce_reset();
-	nrf_rx_tx_control(NRF_STATE_RX);
-	ce_set();
-
-	return NRF.tx_result;
-}
+//NRF_RESULT nrf_send_packet(const uint8_t *data) {
+//	NRF.tx_busy = 1;
+//
+//	ce_reset();
+//	nrf_rx_tx_control(NRF_STATE_TX);
+//	nrf_write_tx_payload(data);
+//	ce_set();
+//
+//	// wait for end of transmition
+//	while (NRF.tx_busy) {
+//		_DelayMS(1);
+//	};
+//
+//	ce_reset();
+//	nrf_rx_tx_control(NRF_STATE_RX);
+//	ce_set();
+//
+//	return NRF.tx_result;
+//}
 
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data) {
 	NRF_RESULT res;
 
 	ce_reset();
-	nrf_flush_tx();
 	nrf_rx_tx_control(NRF_STATE_TX);
 	res = nrf_write_tx_payload_noack(data);
 	ce_set();
-
-	_DelayMS(3);
-
+	_DelayMS(2);
 	ce_reset();
+	nrf_flush_tx();
 	nrf_rx_tx_control(NRF_STATE_RX);
 	ce_set();
 
 	return res;
 }
 
-NRF_RESULT nrf_push_packet(const uint8_t *data) {
-	NRF_RESULT res;
+//NRF_RESULT nrf_push_packet(const uint8_t *data) {
+//	NRF_RESULT res;
+//
+//	if (NRF.tx_busy == 1) {
+//		nrf_flush_tx();
+//	} else {
+//		NRF.tx_busy = 1;
+//	}
+//
+//	ce_reset();
+//	nrf_rx_tx_control(NRF_STATE_TX);
+//	res = nrf_write_tx_payload(data);
+//	ce_set();
+//
+//	return res;
+//}
 
-	if (NRF.tx_busy == 1) {
-		nrf_flush_tx();
-	} else {
-		NRF.tx_busy = 1;
-	}
-
-	ce_reset();
-	nrf_rx_tx_control(NRF_STATE_TX);
-	res = nrf_write_tx_payload(data);
-	ce_set();
-
-	return res;
-}
-
-NRF_RESULT nrf_receive_packet(uint8_t *data, uint16_t ms) {
-	NRF.rx_busy = 1;
-
-	ce_reset();
-	nrf_rx_tx_control(NRF_STATE_RX);
-	ce_set();
-
-	// wait for reception
-	uint32_t tick = _GetTickMS();
-	while (_GetTickMS() - tick < ms && NRF.rx_busy)
-		_DelayMS(1);
-
-	return !NRF.rx_busy;
-}
+//NRF_RESULT nrf_receive_packet(uint8_t *data, uint16_t ms) {
+//	NRF.rx_busy = 1;
+//
+//	ce_reset();
+//	nrf_rx_tx_control(NRF_STATE_RX);
+//	ce_set();
+//
+//	// wait for reception
+//	uint32_t tick = _GetTickMS();
+//	while (_GetTickMS() - tick < ms && NRF.rx_busy)
+//		_DelayMS(1);
+//
+//	return !NRF.rx_busy;
+//}
 
 void nrf_irq_handler(void) {
 	uint8_t status = 0;

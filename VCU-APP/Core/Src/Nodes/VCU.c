@@ -119,7 +119,7 @@ void VCU_CheckState(void) {
 				HBAR_Init();
 				BMS_Init();
 				MCU_Init();
-				RMT_Flush();
+				_DelayMS(500);
 				normalize = 0;
 				start = 0;
 			}
