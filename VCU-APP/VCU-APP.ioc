@@ -2,7 +2,7 @@
 Dma.USART2_RX.3.Mode=DMA_CIRCULAR
 Dma.SPI3_TX.0.FIFOMode=DMA_FIFOMODE_ENABLE
 Dma.SPI3_TX.0.Priority=DMA_PRIORITY_HIGH
-FREERTOS.Queues01=CommandQueue,1,command_t,0,Static,CommandQueueBuffer,CommandQueueControlBlock;ResponseQueue,1,response_t,0,Static,ResponseQueueBuffer,ResponseQueueControlBlock;ReportQueue,10,report_t,0,Static,ReportQueueBuffer,ReportQueueControlBlock;DriverQueue,1,uint8_t,0,Static,DriverQueueBuffer,DriverQueueControlBlock;CanRxQueue,10,can_rx_t,0,Static,CanRxQueueBuffer,CanRxQueueControlBlock;QuotaQueue,1,200,1,Static,QuotaQueueBuffer,QuotaQueueControlBlock;UssdQueue,1,20,1,Static,UssdQueueBuffer,UssdQueueControlBlock
+FREERTOS.Queues01=CommandQueue,1,command_t,0,Static,CommandQueueBuffer,CommandQueueControlBlock;ResponseQueue,1,response_t,0,Static,ResponseQueueBuffer,ResponseQueueControlBlock;ReportQueue,10,report_t,0,Static,ReportQueueBuffer,ReportQueueControlBlock;DriverQueue,1,uint8_t,0,Static,DriverQueueBuffer,DriverQueueControlBlock;CanRxQueue,10,can_rx_t,0,Static,CanRxQueueBuffer,CanRxQueueControlBlock;QuotaQueue,1,200,1,Static,QuotaQueueBuffer,QuotaQueueControlBlock;UssdQueue,1,20,1,Static,UssdQueueBuffer,UssdQueueControlBlock;OverrideStateQueue,1,uint8_t,0,Static,OverrideStateQueueBuffer,OverrideStateQueueControlBlock
 Dma.UART4_RX.1.Mode=DMA_CIRCULAR
 PC7.GPIOParameters=GPIO_Label
 Dma.UART9_RX.4.MemDataAlignment=DMA_MDATAALIGN_BYTE

@@ -14,14 +14,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION (uint16_t)636
+#define VCU_VERSION (uint16_t)637
 #define EEPROM_RESET (uint16_t)53
 
 #define CAN_DEBUG		0
 #define GPS_DEBUG		0
 #define MEMS_DEBUG		0
 #define REMOTE_DEBUG 	0
-#define FINGER_DEBUG    1
+#define FINGER_DEBUG    0
 
 #define AT_USE_CLK		1
 #define AT_USE_SMS   	1

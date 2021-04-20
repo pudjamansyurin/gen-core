@@ -36,7 +36,6 @@ vcu_t VCU = {
 		.CheckState = VCU_CheckState,
 		.SetEvent = VCU_SetEvent,
 		.ReadEvent = VCU_ReadEvent,
-		.Is = VCU_Is,
 };
 
 /* External variables -----------------------------------------*/
@@ -49,8 +48,6 @@ void VCU_Init(void) {
 	VCU.d.buffered = 0;
 	VCU.d.state = VEHICLE_BACKUP;
 	VCU.d.events = 0;
-
-	VCU.d.override.state = VEHICLE_UNKNOWN;
 }
 
 void VCU_Refresh(void) {
@@ -123,43 +120,38 @@ void VCU_CheckState(void) {
 				BMS_Init();
 				MCU_Init();
 				RMT_Flush();
-				VCU.d.override.state = VEHICLE_UNKNOWN;
 				normalize = 0;
 				start = 0;
 			}
 
 			if (!GATE_ReadPower5v())
 				VCU.d.state--;
-			else if ((start && RMT.d.nearby) || VCU.Is(VCU.d.override.state > VEHICLE_NORMAL))
+			else if (start && RMT.d.nearby)
 				VCU.d.state++;
 			break;
 
 		case VEHICLE_STANDBY:
 			if (lastState != VEHICLE_STANDBY) {
-				if (lastState > VEHICLE_STANDBY && VCU.Is(VCU.d.override.state > VEHICLE_STANDBY))
-					VCU.d.override.state = VEHICLE_STANDBY;
 				lastState = VEHICLE_STANDBY;
 				start = 0;
 				FGR.d.id = 0;
 			}
 
-			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_STANDBY))
+			if (!GATE_ReadPower5v() || normalize)
 				VCU.d.state--;
-			else if (FGR.d.id || VCU.Is(VCU.d.override.state > VEHICLE_STANDBY))
+			else if (FGR.d.id)
 				VCU.d.state++;
 			break;
 
 		case VEHICLE_READY:
 			if (lastState != VEHICLE_READY) {
-				if (lastState > VEHICLE_READY && VCU.Is(VCU.d.override.state > VEHICLE_READY))
-					VCU.d.override.state = VEHICLE_READY;
 				lastState = VEHICLE_READY;
 				start = 0;
 			}
 
-			if (!GATE_ReadPower5v() || normalize || VCU.Is(VCU.d.override.state < VEHICLE_READY))
+			if (!GATE_ReadPower5v() || normalize)
 				VCU.d.state--;
-			else if (!NODE.d.error && (start || VCU.Is(VCU.d.override.state > VEHICLE_READY)))
+			else if (!NODE.d.error && (start))
 				VCU.d.state++;
 			break;
 
@@ -169,7 +161,7 @@ void VCU_CheckState(void) {
 				start = 0;
 			}
 
-			if (!GATE_ReadPower5v() || (start && !MCU.Running()) || normalize || NODE.d.error || VCU.Is(VCU.d.override.state < VEHICLE_RUN))
+			if (!GATE_ReadPower5v() || (start && !MCU.Running()) || normalize || NODE.d.error)
 				VCU.d.state--;
 			break;
 
@@ -188,11 +180,6 @@ void VCU_SetEvent(uint8_t bit, uint8_t value) {
 uint8_t VCU_ReadEvent(uint8_t bit) {
 	return (VCU.d.events & BIT(bit)) == BIT(bit);
 }
-
-uint8_t VCU_Is(uint8_t state) {
-	return (VCU.d.override.state != VEHICLE_UNKNOWN) && state;
-}
-
 
 /* ====================================== CAN TX
  * =================================== */

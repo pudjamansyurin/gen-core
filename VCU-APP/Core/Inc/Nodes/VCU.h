@@ -34,9 +34,6 @@ typedef struct {
 	uint32_t uptime;
 	vehicle_state_t state;
 	struct {
-		int8_t state;
-	} override;
-	struct {
 		uint32_t independent;
 	} tick;
 } vcu_data_t;
@@ -54,7 +51,6 @@ typedef struct {
 	void (*CheckState)(void);
 	void (*SetEvent)(uint8_t, uint8_t);
 	uint8_t (*ReadEvent)(uint8_t);
-	uint8_t (*Is)(uint8_t);
 } vcu_t;
 
 /* Exported variables
@@ -68,8 +64,6 @@ void VCU_Refresh(void);
 void VCU_CheckState(void);
 void VCU_SetEvent(uint8_t bit, uint8_t value);
 uint8_t VCU_ReadEvent(uint8_t bit);
-uint8_t VCU_Is(uint8_t state);
-
 uint8_t VCU_TX_Heartbeat(void);
 uint8_t VCU_TX_SwitchControl(void);
 uint8_t VCU_TX_Datetime(datetime_t dt);

@@ -177,6 +177,36 @@ BO_ 30 DFURun: 8 VCU
 BO_ 31 DFUPasca: 4 VCU
  SG_ CrcNewVal : 0|32@1+ (1,0) [0|0] ""  HMI1
 
+BO_ 2332033025 Bms1Param1: 8 BMS
+ SG_ Bat1Voltage : 0|16@1+ (0.01,0) [0|0] "V" Vector__XXX
+ SG_ Bat1Current : 16|16@1+ (0.1,0) [0|0] "A" Vector__XXX
+ SG_ Bat1SOC : 32|16@1+ (1,0) [0|0] "%" Vector__XXX
+ SG_ Bat1Temp : 48|16@1+ (1,-40) [0|0] "C" Vector__XXX
+
+BO_ 2333081601 Bms1Param2: 8 BMS
+ SG_ Bat1Capacity : 0|16@1+ (0.1,0) [0|0] "Ah" Vector__XXX
+ SG_ Bat1SOH : 16|16@1+ (1,0) [0|0] "%" Vector__XXX
+ SG_ Bat1Cycle : 32|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Bat1Fault : 48|12@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Bat1Charge : 60|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Bat1Discharge : 61|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Bat1Sleep : 62|1@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 2332033027 Bms2Param1: 8 BMS
+ SG_ Bat2Voltage : 0|16@1+ (0.01,0) [0|0] "V" Vector__XXX
+ SG_ Bat2Current : 16|16@1+ (0.1,0) [0|0] "A" Vector__XXX
+ SG_ Bat2SOC : 32|16@1+ (1,0) [0|0] "%" Vector__XXX
+ SG_ Bat2Temp : 48|16@1+ (1,-40) [0|0] "C" Vector__XXX
+
+BO_ 2333081603 Bms2Param2: 8 BMS
+ SG_ Bat2Capacity : 0|16@1+ (0.1,0) [0|0] "Ah" Vector__XXX
+ SG_ Bat2SOH : 16|16@1+ (1,0) [0|0] "%" Vector__XXX
+ SG_ Bat2Cycle : 32|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Bat2Fault : 48|12@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Bat2Charge : 60|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Bat2Discharge : 61|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ Bat2Sleep : 62|1@1+ (1,0) [0|0] "" Vector__XXX
+
 
 
 BA_DEF_ BO_  "GenMsgBackgroundColor" STRING ;

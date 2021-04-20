@@ -612,12 +612,12 @@ NRF_RESULT nrf_send_packet_noack(const uint8_t *data) {
 	NRF_RESULT res;
 
 	ce_reset();
+	nrf_flush_tx();
 	nrf_rx_tx_control(NRF_STATE_TX);
 	res = nrf_write_tx_payload_noack(data);
 	ce_set();
 
-	_DelayMS(2);
-	nrf_flush_tx();
+	_DelayMS(3);
 
 	ce_reset();
 	nrf_rx_tx_control(NRF_STATE_RX);

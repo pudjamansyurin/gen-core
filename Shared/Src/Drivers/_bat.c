@@ -47,10 +47,9 @@ uint16_t BAT_ScanValue(void) {
 
   lock();
   HAL_ADC_Start(BAT.padc);
-  res = HAL_ADC_PollForConversion(BAT.padc, 100) == HAL_OK;
+  res = HAL_ADC_PollForConversion(BAT.padc, 5) == HAL_OK;
 
-  if (res)
-    value = HAL_ADC_GetValue(BAT.padc);
+  if (res) value = HAL_ADC_GetValue(BAT.padc);
   HAL_ADC_Stop(BAT.padc);
 
   if (res) {
