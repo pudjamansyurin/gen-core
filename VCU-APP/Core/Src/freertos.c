@@ -1242,7 +1242,7 @@ void StartRemoteTask(void *argument)
 		RMT_Refresh(VCU.d.state);
 		RMT_Ping();
 
-		if (_osFlagAny(&notif, 3)) {
+		if (_osFlagAny(&notif, 2)) {
 			if (notif & FLAG_REMOTE_TASK_STOP) {
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 
