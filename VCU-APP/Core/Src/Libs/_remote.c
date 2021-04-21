@@ -108,6 +108,7 @@ uint8_t RMT_Probe(void) {
 
 void RMT_RefreshAndPing(vehicle_state_t state) {
 	const uint16_t guard = 3000;
+	static uint32_t tick = 0;
 	uint32_t timeout;
 	uint8_t paired;
 
@@ -115,7 +116,10 @@ void RMT_RefreshAndPing(vehicle_state_t state) {
 	timeout = TimeoutDecider(state, guard);
 	RMT.d.nearby = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < timeout;
 	RMT.d.nearby_real = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < guard;
+
 	VCU.SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
+	RMT.d.duration.full = _GetTickMS() - tick;
+	tick = _GetTickMS();
 
 	RMT.d.active = (RMT.d.tick.ping && (_GetTickMS() - RMT.d.tick.ping) < RMT_TIMEOUT) || RMT.d.nearby;
 	if (!RMT.d.active) {
@@ -132,6 +136,7 @@ void RMT_RefreshAndPing(vehicle_state_t state) {
 
 	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
 		RMT_Ping();
+
 	unlock();
 }
 
@@ -150,7 +155,7 @@ uint8_t RMT_Ping(void) {
 
 	tick = _GetTickMS();
 	ok = (nrf_send_packet_noack(RMT.t.payload) == NRF_OK);
-	RMT.d.tick.test_tx = _GetTickMS() - tick;
+	RMT.d.duration.tx = _GetTickMS() - tick;
 
 	if (ok)
 		RMT.d.tick.ping = _GetTickMS();

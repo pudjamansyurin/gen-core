@@ -34,9 +34,11 @@ typedef struct {
 		uint32_t ping;
 		uint32_t heartbeat;
 		uint32_t pairing;
-		uint32_t test_tx;
-		uint32_t test_full;
 	} tick;
+	struct {
+		uint32_t tx;
+		uint32_t full;
+	} duration;
 } remote_data_t;
 
 typedef struct {
