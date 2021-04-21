@@ -109,14 +109,15 @@ NRF_RESULT nrf_configure(void)
 	// nrf_set_retransmittion_delay(c->retransmit_delay);
 
 	// auto ack (Enhanced ShockBurst) on pipe0
-	// nrf_enable_auto_ack(0x00);
+	//nrf_enable_auto_ack(0x00);
+	nrf_disable_auto_ack();
 
 	// clear interrupt
 	nrf_clear_interrupts();
 	// set interrupt
 	nrf_enable_rx_data_ready_irq(1);
-	nrf_enable_tx_data_sent_irq(1);
-	// nrf_enable_max_retransmit_irq(1);
+	nrf_enable_tx_data_sent_irq(0);
+	nrf_enable_max_retransmit_irq(0);
 
 	// set as PRX
 	nrf_rx_tx_control(NRF_STATE_RX);
@@ -703,29 +704,30 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width)
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
 {
 	NRF_RESULT res;
-//	uint8_t status = 0;
+	//uint8_t status = 0;
 
 	ce_reset();
 	// read interrupt register
-//	if (nrf_read_register(NRF_STATUS, &status) == NRF_OK) {
-//		if (status & NRF_RX_DR)
-//			nrf_flush_rx();
-//		if (status & NRF_MAX_RT)
-//			nrf_flush_tx();
-//		nrf_clear_interrupts();
-//	}
-	nrf_power_up(0);	// power down
+	//if (nrf_read_register(NRF_STATUS, &status) == NRF_OK) {
+	//	if (status & NRF_RX_DR)
+	//		nrf_flush_rx();
+	//	if (status & NRF_MAX_RT)
+	//		nrf_flush_tx();
+	//	nrf_clear_interrupts();
+	//}
+	//nrf_power_up(0);
+	//nrf_power_up(1);
 	nrf_rx_tx_control(NRF_STATE_TX);
-	nrf_power_up(1);	// power up
 	res = nrf_write_tx_payload_noack(data);
 	ce_set();
 
 	_DelayMS(2);
+	nrf_flush_tx();
 
 	ce_reset();
-	nrf_power_up(0);	// power down
+	//nrf_power_up(0);
+	//nrf_power_up(1);
 	nrf_rx_tx_control(NRF_STATE_RX);
-	nrf_power_up(1);	// power up
 	ce_set();
 
 	return res;
@@ -800,7 +802,7 @@ void nrf_irq_handler(void)
 		status |= NRF_TX_DS;	// clear the interrupt flag
 
 		ce_reset();
-		nrf_rx_tx_control(NRF_STATE_RX);
+		//		nrf_rx_tx_control(NRF_STATE_RX);
 		nrf_write_register(NRF_STATUS, &status);
 		ce_set();
 
@@ -818,7 +820,7 @@ void nrf_irq_handler(void)
 		nrf_power_up(0);	// power down
 		nrf_power_up(1);	// power up
 
-		nrf_rx_tx_control(NRF_STATE_RX);
+		//		nrf_rx_tx_control(NRF_STATE_RX);
 		nrf_write_register(NRF_STATUS, &status);
 		ce_set();
 
@@ -894,6 +896,7 @@ static NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *
 static NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data)
 {
 	uint8_t tx = 0;
+
 	if (nrf_send_command(NRF_CMD_R_REGISTER | reg, &tx, data, 1) != NRF_OK)
 	{
 		return NRF_ERROR;
@@ -922,6 +925,7 @@ static NRF_RESULT nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len)
 static NRF_RESULT nrf_write_register(uint8_t reg, uint8_t *data)
 {
 	uint8_t rx = 0;
+
 	if (nrf_send_command(NRF_CMD_W_REGISTER | reg, data, &rx, 1) != NRF_OK)
 	{
 		return NRF_ERROR;

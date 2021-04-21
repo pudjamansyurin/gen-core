@@ -1238,7 +1238,8 @@ void StartRemoteTask(void *argument)
 	for (;;) {
 		TASKS.tick.remote = _GetTickMS();
 
-		RMT_RefreshAndPing(VCU.d.state);
+		RMT_Refresh(VCU.d.state);
+		RMT_Ping(VCU.d.state);
 
 		if (_osFlagAny(&notif, 3)) {
 			if (notif & FLAG_REMOTE_TASK_STOP) {
@@ -1270,6 +1271,8 @@ void StartRemoteTask(void *argument)
 						_DelayMS(500);
 						osThreadFlagsClear(FLAG_REMOTE_RX_IT);
 					}
+				} else {
+
 				}
 			}
 		}

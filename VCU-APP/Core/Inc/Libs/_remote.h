@@ -17,6 +17,7 @@
 #define RMT_BEAT_TIMEOUT (uint32_t)10000         // in ms
 #define RMT_BEAT_TIMEOUT_RUN (uint32_t)30000    // in ms
 #define RMT_PAIRING_TIMEOUT (uint32_t)5000 // in ms
+#define RMT_GUARD_MS (uint16_t)3000
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum { RMT_CMD_PING = 0, RMT_CMD_ALARM, RMT_CMD_SEAT } RMT_CMD;
@@ -63,9 +64,9 @@ uint8_t RMT_Init(void);
 uint8_t RMT_ReInit(void);
 void RMT_DeInit(void);
 uint8_t RMT_Probe(void);
-void RMT_RefreshAndPing(vehicle_state_t state);
 void RMT_Flush(void);
-uint8_t RMT_Ping(void);
+void RMT_Refresh(vehicle_state_t state);
+void RMT_Ping(vehicle_state_t state);
 void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
