@@ -1239,8 +1239,7 @@ void StartRemoteTask(void *argument)
 		RMT.d.tick.test_full = _GetTickMS() - TASKS.tick.remote;
 		TASKS.tick.remote = _GetTickMS();
 
-		RMT_Refresh(VCU.d.state);
-		RMT_Ping();
+		RMT_RefreshAndPing(VCU.d.state);
 
 		if (_osFlagAny(&notif, 2)) {
 			if (notif & FLAG_REMOTE_TASK_STOP) {

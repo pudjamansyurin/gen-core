@@ -45,7 +45,7 @@ static const uint8_t COMMAND[3][8] = {
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint32_t TimeoutDecider(vehicle_state_t state);
+static uint32_t TimeoutDecider(vehicle_state_t state, uint16_t guard);
 static void ChangeMode(RMT_MODE mode);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
 #if REMOTE_DEBUG
@@ -106,18 +106,16 @@ uint8_t RMT_Probe(void) {
 	return ok;
 }
 
-void RMT_Refresh(vehicle_state_t state) {
+void RMT_RefreshAndPing(vehicle_state_t state) {
+	const uint16_t guard = 3000;
 	uint32_t timeout;
 	uint8_t paired;
 
 	lock();
-	timeout = TimeoutDecider(state);
+	timeout = TimeoutDecider(state, guard);
 	RMT.d.nearby = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < timeout;
-	RMT.d.nearby_real = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < 2000;
+	RMT.d.nearby_real = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < guard;
 	VCU.SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
-
-	//if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
-	// RMT_Ping();
 
 	RMT.d.active = (RMT.d.tick.ping && (_GetTickMS() - RMT.d.tick.ping) < RMT_TIMEOUT) || RMT.d.nearby;
 	if (!RMT.d.active) {
@@ -131,6 +129,9 @@ void RMT_Refresh(vehicle_state_t state) {
 		RMT.d.tick.pairing = 0;
 		AES_ChangeKey(NULL);
 	}
+
+	if (state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby))
+		RMT_Ping();
 	unlock();
 }
 
@@ -251,9 +252,8 @@ static void unlock(void) {
 #endif
 }
 
-static uint32_t TimeoutDecider(vehicle_state_t state) {
+static uint32_t TimeoutDecider(vehicle_state_t state, uint16_t guard) {
 	uint32_t timeout = RMT_BEAT_TIMEOUT;
-	uint16_t guard = 3000;
 
 	if (state >= VEHICLE_RUN) {
 		timeout = RMT_BEAT_TIMEOUT_RUN;

@@ -61,7 +61,7 @@ uint8_t RMT_Init(void);
 uint8_t RMT_ReInit(void);
 void RMT_DeInit(void);
 uint8_t RMT_Probe(void);
-void RMT_Refresh(vehicle_state_t state);
+void RMT_RefreshAndPing(vehicle_state_t state);
 void RMT_Flush(void);
 uint8_t RMT_Ping(void);
 void RMT_Pairing(void);
