@@ -16,6 +16,12 @@
 #define NRF_ADDR_LENGTH (uint8_t)5  // Range 3:5
 #define NRF_DATA_PAIR_LENGTH (uint8_t)(NRF_DATA_LENGTH + NRF_ADDR_LENGTH)
 
+#define NRF_RX_DR                                     (1 << 6)
+#define NRF_TX_DS                                     (1 << 5)
+#define NRF_MAX_RT                                    (1 << 4)
+//#define NRF_RX_P_NO                                   0x0e
+//#define NRF_STATUS_TX_FULL                            0x01
+
 /* Exported enum
  * ---------------------------------------------------------------*/
 /* Registers */
@@ -123,8 +129,7 @@ typedef struct {
 
 /* Initialization routine */
 void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer);
-NRF_RESULT nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address,
-                           uint8_t payload_width);
+NRF_RESULT nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address, uint8_t payload_width);
 NRF_RESULT nrf_configure(void);
 NRF_RESULT nrf_check(void);
 /* EXTI Interrupt Handler
@@ -158,15 +163,8 @@ void nrf_packet_received_callback(uint8_t *data);
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data);
 /* Non-Blocking Data Sending */
 //NRF_RESULT nrf_push_packet(const uint8_t *data);
-/* LOW LEVEL STUFF (you don't have to look in here...)*/
-NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *rx,
-                            uint8_t len);
-uint8_t nrf_send_command_single(uint8_t data);
+
 /* CMD */
-NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data);
-NRF_RESULT nrf_read_register_mb(uint8_t reg, uint8_t *data, uint8_t count);
-NRF_RESULT nrf_write_register(uint8_t reg, uint8_t *data);
-NRF_RESULT nrf_write_register_mb(uint8_t reg, uint8_t *data, uint8_t count);
 NRF_RESULT nrf_read_rx_payload(uint8_t *data);
 NRF_RESULT nrf_write_tx_payload(const uint8_t *data);
 NRF_RESULT nrf_write_tx_payload_noack(const uint8_t *data);
