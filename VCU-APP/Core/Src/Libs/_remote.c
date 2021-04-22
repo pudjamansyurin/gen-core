@@ -45,7 +45,6 @@ static const uint8_t COMMAND[3][8] = {
 /* Private functions declaration ---------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint32_t TimeoutDecider(vehicle_state_t state);
 static void ChangeMode(RMT_MODE mode);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
 #if REMOTE_DEBUG
@@ -117,9 +116,8 @@ void RMT_Refresh(vehicle_state_t state) {
 	uint8_t pairing;
 
 	lock();
-	timeout = TimeoutDecider(state);
+	timeout = state == VEHICLE_RUN ? RMT_BEAT_TIMEOUT_RUN : RMT_BEAT_TIMEOUT;
 	RMT.d.nearby = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < timeout;
-	RMT.d.nearby_real = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < RMT_GUARD_MS;
 	VCU.SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
 	
 	RMT.d.duration.full = _GetTickMS() - tick;
@@ -144,8 +142,9 @@ void RMT_Refresh(vehicle_state_t state) {
 void RMT_Ping(vehicle_state_t state) {
 	uint32_t tick;
 
-	if (!(state < VEHICLE_RUN || (state >= VEHICLE_RUN && !RMT.d.nearby)))
-		return;
+	if (state == VEHICLE_RUN && RMT.d.nearby)
+		if ((_GetTickMS() - RMT.d.tick.heartbeat) < (RMT_BEAT_TIMEOUT_RUN - RMT_TIMEOUT))
+			return;
 
 	lock();
 	RNG_Generate32((uint32_t *)RMT.t.payload, NRF_DATA_LENGTH / 4);
@@ -250,18 +249,6 @@ static void unlock(void) {
 #if (RTOS_ENABLE)
 	osMutexRelease(RemoteRecMutexHandle);
 #endif
-}
-
-static uint32_t TimeoutDecider(vehicle_state_t state) {
-	uint32_t timeout = RMT_BEAT_TIMEOUT;
-
-	if (state >= VEHICLE_RUN) {
-		timeout = RMT_BEAT_TIMEOUT_RUN;
-		if (timeout > RMT_GUARD_MS)
-			timeout -= RMT_GUARD_MS;
-	}
-
-	return timeout;
 }
 
 static void ChangeMode(RMT_MODE mode) {

@@ -68,6 +68,7 @@ void BMS_RefreshIndex(void) {
 
 	BMS.d.active = active;
 	BMS.d.run = BMS.d.active && RunPacks(1);
+
 	BMS.d.soc = AverageSOC();
 	BMS.d.fault = MergeFault();
 	BMS.d.overheat = IsOverheat();

@@ -14,10 +14,9 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define RMT_TIMEOUT (uint16_t)3000 // in ms
-#define RMT_BEAT_TIMEOUT (uint32_t)10000         // in ms
-#define RMT_BEAT_TIMEOUT_RUN (uint32_t)30000    // in ms
+#define RMT_BEAT_TIMEOUT (uint32_t)5000         // in ms
+#define RMT_BEAT_TIMEOUT_RUN (uint32_t)10000    // in ms
 #define RMT_PAIRING_TIMEOUT (uint32_t)5000 // in ms
-#define RMT_GUARD_MS (uint16_t)3000
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum { RMT_CMD_PING = 0, RMT_CMD_ALARM, RMT_CMD_SEAT } RMT_CMD;
@@ -30,7 +29,6 @@ typedef enum { RMT_MODE_NORMAL = 0, RMT_MODE_PAIRING } RMT_MODE;
 typedef struct {
 	uint8_t active;
 	uint8_t nearby;
-	uint8_t nearby_real;
 	struct {
 		uint32_t ping;
 		uint32_t heartbeat;
