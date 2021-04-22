@@ -79,7 +79,6 @@ uint8_t RMT_ReInit(void) {
 	if (ok) {
 		nrf_configure();
 		ChangeMode(RMT_MODE_NORMAL);
-		RMT.d.tick.ping = _GetTickMS();
 	}
 	unlock();
 
@@ -115,7 +114,7 @@ void RMT_Flush(void) {
 void RMT_Refresh(vehicle_state_t state) {
 	static uint32_t tick = 0;
 	uint32_t timeout;
-	uint8_t paired;
+	uint8_t pairing;
 
 	lock();
 	timeout = TimeoutDecider(state);
@@ -133,8 +132,8 @@ void RMT_Refresh(vehicle_state_t state) {
 		RMT_Init();
 	}
 
-	paired = RMT.d.tick.pairing && (_GetTickMS() - RMT.d.tick.pairing) > RMT_PAIRING_TIMEOUT;
-	if (paired) {
+	pairing = RMT.d.tick.pairing && (_GetTickMS() - RMT.d.tick.pairing) > RMT_PAIRING_TIMEOUT;
+	if (pairing) {
 		RMT.d.tick.pairing = 0;
 		AES_ChangeKey(NULL);
 	}
@@ -176,7 +175,8 @@ void RMT_Pairing(void) {
 	nrf_send_packet_noack(RMT.t.payload);
 
 	// back to normal
-	RMT_ReInit();
+	//nrf_configure();
+	ChangeMode(RMT_MODE_NORMAL);
 	unlock();
 }
 

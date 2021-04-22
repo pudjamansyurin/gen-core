@@ -30,14 +30,14 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer)
 {
 	nrf24l01_config *c = &(NRF.config);
 
-	c->addr_width = NRF_ADDR_LENGTH - 2;
+	c->addr_width = NRF_ADDR_WIDTH_5;
 	c->payload_length = NRF_DATA_LENGTH;
 	c->rx_buffer = rx_buffer;
 	c->data_rate = NRF_DATA_RATE_250KBPS;
 	c->tx_power = NRF_TX_PWR_M18dBm;
 	c->crc_width = NRF_CRC_WIDTH_1B;
-	c->retransmit_count = 0x0F;	// maximum is 15 times
-	c->retransmit_delay = 0x0F;	// 4000us, LSB:250us
+	c->retransmit_count = 0x00;	// maximum is 15 (0F) times
+	c->retransmit_delay = 0x00;	// 4000us, LSB:250us (0F)
 	c->rf_channel = 110;
 	c->spi = hspi;
 	c->spi_timeout = 10;	// milliseconds
@@ -86,11 +86,11 @@ NRF_RESULT nrf_configure(void)
 
 	// address width
 	nrf_set_address_width(c->addr_width);
-	// openWritingPipe
-	//  nrf_set_tx_address(c->tx_address);
-	// openReadingPipe
-	//  nrf_set_rx_address_p0(c->rx_address);
-	//  nrf_set_rx_payload_width_p0(c->payload_length);
+	//	// openWritingPipe
+	//	nrf_set_tx_address(c->tx_address);
+	//	// openReadingPipe
+	//	nrf_set_rx_address_p0(c->rx_address);
+	//	nrf_set_rx_payload_width_p0(c->payload_length);
 	// enable data pipe0
 	nrf_set_rx_pipes(0x01);
 
@@ -105,19 +105,19 @@ NRF_RESULT nrf_configure(void)
 	nrf_set_tx_power(c->tx_power);
 
 	// retransmission (auto-ack ON)
-	// nrf_set_retransmittion_count(c->retransmit_count);
-	// nrf_set_retransmittion_delay(c->retransmit_delay);
+	nrf_set_retransmittion_count(c->retransmit_count);
+	nrf_set_retransmittion_delay(c->retransmit_delay);
 
 	// auto ack (Enhanced ShockBurst) on pipe0
-	//nrf_enable_auto_ack(0x00);
-	nrf_disable_auto_ack();
+	nrf_enable_auto_ack(0x00);
+	//nrf_disable_auto_ack();
 
 	// clear interrupt
 	nrf_clear_interrupts();
 	// set interrupt
 	nrf_enable_rx_data_ready_irq(1);
-	nrf_enable_tx_data_sent_irq(0);
-	nrf_enable_max_retransmit_irq(0);
+	nrf_enable_tx_data_sent_irq(1);
+	nrf_enable_max_retransmit_irq(1);
 
 	// set as PRX
 	nrf_rx_tx_control(NRF_STATE_RX);
@@ -704,33 +704,36 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width)
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
 {
 	NRF_RESULT res;
-	//uint8_t status = 0;
+	uint8_t status = 0;
 
+	NRF.tx_busy = 1;
 	ce_reset();
 	// read interrupt register
-	//if (nrf_read_register(NRF_STATUS, &status) == NRF_OK) {
-	//	if (status & NRF_RX_DR)
-	//		nrf_flush_rx();
-	//	if (status & NRF_MAX_RT)
-	//		nrf_flush_tx();
-	//	nrf_clear_interrupts();
-	//}
-	//nrf_power_up(0);
-	//nrf_power_up(1);
+	//	if (nrf_read_register(NRF_STATUS, &status) == NRF_OK) {
+	//		if (status & NRF_RX_DR)
+	//			nrf_flush_rx();
+	//		if (status & NRF_MAX_RT)
+	//			nrf_flush_tx();
+	//		nrf_clear_interrupts();
+	//	}
+	//	nrf_power_up(0);
 	nrf_rx_tx_control(NRF_STATE_TX);
+	//	nrf_power_up(1);
 	res = nrf_write_tx_payload_noack(data);
 	ce_set();
 
-	_DelayMS(2);
-	nrf_flush_tx();
+	uint32_t tick = _GetTickMS();
+	while(NRF.tx_busy && (_GetTickMS() - tick) <= 3){};
 
-	ce_reset();
-	//nrf_power_up(0);
-	//nrf_power_up(1);
-	nrf_rx_tx_control(NRF_STATE_RX);
-	ce_set();
+	//	_DelayMS(2);
+	//
+	//	ce_reset();
+	//	nrf_power_up(0);
+	//	nrf_rx_tx_control(NRF_STATE_RX);
+	//	nrf_power_up(1);
+	//	ce_set();
 
-	return res;
+	return res; //NRF.tx_result;
 }
 
 //NRF_RESULT nrf_push_packet(const uint8_t *data) {
@@ -769,6 +772,7 @@ NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
 void nrf_irq_handler(void)
 {
 	uint8_t status = 0;
+	uint8_t fifo_status = 0;
 
 	// read interrupt register
 	if (nrf_read_register(NRF_STATUS, &status) != NRF_OK)
@@ -777,21 +781,20 @@ void nrf_irq_handler(void)
 	if (status & NRF_RX_DR)
 	{
 		// RX FIFO Interrupt
-		uint8_t fifo_status = 0;
-
 		ce_reset();
 		nrf_write_register(NRF_STATUS, &status);
 		nrf_read_register(NRF_FIFO_STATUS, &fifo_status);
 
 		if ((fifo_status & 1) == 0)
 		{
-			uint8_t *rx_buffer = NRF.config.rx_buffer;
-			nrf_read_rx_payload(rx_buffer);
+			nrf_read_rx_payload(NRF.config.rx_buffer);
 
 			status |= NRF_RX_DR;
 			nrf_write_register(NRF_STATUS, &status);
 			nrf_flush_rx();
-			nrf_packet_received_callback(rx_buffer);
+
+			NRF.rx_busy = 0;
+			RMT_PacketReceived(NRF.config.rx_buffer);
 		}
 		ce_set();
 	}
@@ -802,8 +805,8 @@ void nrf_irq_handler(void)
 		status |= NRF_TX_DS;	// clear the interrupt flag
 
 		ce_reset();
-		//		nrf_rx_tx_control(NRF_STATE_RX);
 		nrf_write_register(NRF_STATUS, &status);
+		nrf_rx_tx_control(NRF_STATE_RX);
 		ce_set();
 
 		NRF.tx_result = NRF_OK;
@@ -820,20 +823,13 @@ void nrf_irq_handler(void)
 		nrf_power_up(0);	// power down
 		nrf_power_up(1);	// power up
 
-		//		nrf_rx_tx_control(NRF_STATE_RX);
 		nrf_write_register(NRF_STATUS, &status);
+		nrf_rx_tx_control(NRF_STATE_RX);
 		ce_set();
 
 		NRF.tx_result = NRF_ERROR;
 		NRF.tx_busy = 0;
 	}
-}
-
-__weak void nrf_packet_received_callback(uint8_t *data)
-{
-	// default implementation (__weak) is used in favor of nrf_receive_packet
-	NRF.rx_busy = 0;
-	RMT_PacketReceived(data);
 }
 
 /*Private functions implementation

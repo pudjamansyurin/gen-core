@@ -137,12 +137,6 @@ NRF_RESULT nrf_check(void);
  * You must call this function on Falling edge trigger detection interrupt
  * handler, typically, from HAL_GPIO_EXTI_Callback  */
 void nrf_irq_handler(void);
-/* Asynchronous Data Receiving (__weak)
- *
- * Override this function to handle received data asynchronously,
- * default implementation is used in favor of nrf_receive_packet for blocking
- * data receiving */
-void nrf_packet_received_callback(uint8_t *data);
 /* Blocking Data Receiving
  *
  * Blocks until the data has arrived, then returns a pointer to received data.
