@@ -706,19 +706,19 @@ NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
 	NRF_RESULT res;
 	uint8_t status = 0;
 
-	NRF.tx_busy = 1;
 	ce_reset();
 	// read interrupt register
-	//	if (nrf_read_register(NRF_STATUS, &status) == NRF_OK) {
-	//		if (status & NRF_RX_DR)
-	//			nrf_flush_rx();
-	//		if (status & NRF_MAX_RT)
-	//			nrf_flush_tx();
-	//		nrf_clear_interrupts();
-	//	}
-	//	nrf_power_up(0);
+	if (nrf_read_register(NRF_STATUS, &status) == NRF_OK) {
+		if (status & NRF_RX_DR)
+			nrf_flush_rx();
+		if (status & NRF_MAX_RT)
+			nrf_flush_tx();
+		nrf_clear_interrupts();
+	}
+	nrf_power_up(0);
+	NRF.tx_busy = 1;
 	nrf_rx_tx_control(NRF_STATE_TX);
-	//	nrf_power_up(1);
+	nrf_power_up(1);
 	res = nrf_write_tx_payload_noack(data);
 	ce_set();
 
