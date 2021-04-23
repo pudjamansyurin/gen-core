@@ -31,6 +31,7 @@ void HBAR_Init(void) {
 	HBAR.ctl.listening = 0;
 	HBAR.ctl.tick.blink = 0;
 	HBAR.ctl.tick.session = 0;
+	HBAR.ctl.tick.starter = 0;
 
 	HBAR.d.m = HBAR_M_DRIVE;
 	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
@@ -50,20 +51,18 @@ void HBAR_Init(void) {
 }
 
 void HBAR_ReadStarter(void) {
-	static uint32_t tick = 0;
 	HBAR_STARTER state = HBAR_STARTER_UNKNOWN;
 
 	HBAR.state[HBAR_K_STARTER] = GATE_ReadStarter();
 	if (HBAR.state[HBAR_K_STARTER])
-		tick = _GetTickMS();
-	else if (tick) {
-		if ((_GetTickMS() - tick) > STARTER_LONG_PRESS) {
+		HBAR.ctl.tick.starter = _GetTickMS();
+	else if (HBAR.ctl.tick.starter) {
+		if ((_GetTickMS() - HBAR.ctl.tick.starter) > STARTER_LONG_PRESS)
 			state = HBAR_STARTER_OFF;
-		} else {
+		else
 			state = HBAR_STARTER_ON;
-		}
 		HBAR.ctl.starter = state;
-		tick = 0;
+		HBAR.ctl.tick.starter = 0;
 	}
 }
 
@@ -141,7 +140,7 @@ hbar_sein_t HBAR_SeinController(void) {
 	static hbar_sein_t sein = {0, 0};
 	static TickType_t tickSein;
 
-	if ((_GetTickMS() - tickSein) >= 500) {
+	if ((_GetTickMS() - tickSein) >= 250) {
 		if (HBAR.state[HBAR_K_SEIN_L] && HBAR.state[HBAR_K_SEIN_R]) {
 			tickSein = _GetTickMS();
 			sein.left = !sein.left;

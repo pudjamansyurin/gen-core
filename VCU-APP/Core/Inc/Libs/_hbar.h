@@ -78,6 +78,7 @@ typedef struct {
 	struct {
 		uint32_t session;
 		uint32_t blink;
+		uint32_t starter;
 	} tick;
 } hbar_control_t;
 
