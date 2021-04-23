@@ -12,6 +12,10 @@
 #include "Drivers/_canbus.h"
 #include "Libs/_utils.h"
 
+/* Exported defines
+ * ---------------------------------------------------------*/
+#define NODE_RISE_TIME	(uint16_t) 5000
+
 /* Exported struct
  * ------------------------------------------------------------*/
 typedef struct {

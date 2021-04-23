@@ -703,7 +703,6 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width)
 
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
 {
-	NRF_RESULT res;
 	uint8_t status = 0;
 
 	ce_reset();
@@ -719,21 +718,13 @@ NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
 	NRF.tx_busy = 1;
 	nrf_rx_tx_control(NRF_STATE_TX);
 	nrf_power_up(1);
-	res = nrf_write_tx_payload_noack(data);
+	nrf_write_tx_payload_noack(data);
 	ce_set();
 
 	uint32_t tick = _GetTickMS();
 	while(NRF.tx_busy && (_GetTickMS() - tick) <= 3){};
 
-	//	_DelayMS(2);
-	//
-	//	ce_reset();
-	//	nrf_power_up(0);
-	//	nrf_rx_tx_control(NRF_STATE_RX);
-	//	nrf_power_up(1);
-	//	ce_set();
-
-	return res; //NRF.tx_result;
+	return (NRF.tx_busy ? NRF_ERROR : NRF_OK); // res; //NRF.tx_result;
 }
 
 //NRF_RESULT nrf_push_packet(const uint8_t *data) {

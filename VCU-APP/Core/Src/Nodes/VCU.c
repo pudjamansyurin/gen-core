@@ -147,6 +147,7 @@ void VCU_CheckState(void) {
 			if (lastState != VEHICLE_READY) {
 				lastState = VEHICLE_READY;
 				start = 0;
+				VCU.d.tick.ready = _GetTickMS();
 			}
 
 			if (!GATE_ReadPower5v() || normalize)

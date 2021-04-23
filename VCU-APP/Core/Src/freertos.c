@@ -1141,12 +1141,8 @@ void StartGpsTask(void *argument)
 		// Check notifications
 		if (_osFlagOne(&notif, FLAG_GPS_RECEIVED, 1000)) {
 			// nmea ready, do something
-
-			//		if ((meter = GPS_CalculateOdometer()))
-			//			VCU.SetOdometer(meter);
 		}
 
-		// HBAR_AccumulateTrip(255);
 		GPS_Refresh();
 	}
 	/* USER CODE END StartGpsTask */
@@ -1524,8 +1520,8 @@ void StartCanTxTask(void *argument)
 			VCU.t.Heartbeat();
 
 			HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
-			MCU.PowerOverCan(BMS.d.run && VCU.d.state == VEHICLE_RUN);
 			BMS.PowerOverCan(VCU.d.state == VEHICLE_RUN);
+			MCU.PowerOverCan(BMS.d.run && VCU.d.state == VEHICLE_RUN);
 		}
 	}
 	/* USER CODE END StartCanTxTask */

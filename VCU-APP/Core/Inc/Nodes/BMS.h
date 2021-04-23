@@ -13,7 +13,7 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define BMS_TIMEOUT (uint32_t)2000 // ms
+#define BMS_TIMEOUT (uint32_t)3000 // ms
 #define BMS_COUNT (uint8_t)2
 #define BMS_ID_NONE (uint32_t)0xFFFFFFFF
 

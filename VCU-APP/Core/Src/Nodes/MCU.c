@@ -83,6 +83,14 @@ void MCU_Power12v(uint8_t on) {
 }
 
 void MCU_PowerOverCan(uint8_t on) {
+	static uint8_t lastOn = 0;
+
+	// make sure BMS is power on
+	if (lastOn != on) {
+		lastOn = on;
+		if (on) _DelayMS(500);
+	}
+
 	if (on) {
 		if (MCU.d.inv.lockout) {
 			MCU.t.Setting(0); _DelayMS(5);

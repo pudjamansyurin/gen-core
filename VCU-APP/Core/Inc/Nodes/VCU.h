@@ -35,6 +35,7 @@ typedef struct {
 	vehicle_state_t state;
 	struct {
 		uint32_t independent;
+		uint32_t ready;
 	} tick;
 } vcu_data_t;
 
