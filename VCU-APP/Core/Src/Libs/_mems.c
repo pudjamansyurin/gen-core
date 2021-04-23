@@ -74,6 +74,19 @@ void MEMS_DeInit(void) {
 void MEMS_Refresh(void) {
 	lock();
 	MEMS.d.active = MEMS.d.tick && (_GetTickMS() - MEMS.d.tick) < MEMS_TIMEOUT;
+
+	// handle bug, when only got temperature
+	if (MEMS.d.active) {
+		mems_raw_t *raw = &(MEMS.d.raw);
+		mems_axis_t axis = {0};
+		uint8_t err = 0;
+
+		err |= memcmp(&(raw->accelerometer), &axis, sizeof(mems_axis_t)) == 0;
+		err |= memcmp(&(raw->gyroscope), &axis, sizeof(mems_axis_t)) == 0;
+
+		MEMS.d.active = !err;
+	}
+
 	if (!MEMS.d.active) {
 		MEMS_DeInit();
 		_DelayMS(500);
