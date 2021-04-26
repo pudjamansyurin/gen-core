@@ -13,8 +13,8 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define GPS_TIMEOUT (uint16_t)5000 // in ms
-#define GPS_LENGTH_MIN (uint8_t)100
+#define GPS_TIMEOUT_MS ((uint16_t)5000)
+#define GPS_LENGTH_MIN ((uint8_t)100)
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {

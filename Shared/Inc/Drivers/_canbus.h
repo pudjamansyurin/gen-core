@@ -13,7 +13,7 @@
 
 /* Defines -----------------------------------------------------------------*/
 #define CAN_DATA 	UNION64
-#define CAN_RX_MS (uint16_t) 1000
+#define CAN_RX_MS ((uint16_t)1000)
 
 /* Exported defines ----------------------------------------------------------*/
 typedef enum {

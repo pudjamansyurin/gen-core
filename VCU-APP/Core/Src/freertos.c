@@ -717,7 +717,7 @@ void StartManagerTask(void *argument)
 		mpsTick = _GetTickMS();
 
 		IWDG_Refresh();
-		osDelayUntil(lastWake + MANAGER_WAKEUP);
+		osDelayUntil(lastWake + MANAGER_WAKEUP_MS);
 	}
 	/* USER CODE END StartManagerTask */
 }
@@ -1236,7 +1236,7 @@ void StartRemoteTask(void *argument)
 
 		RMT_Ping(VCU.d.state);
 
-		if (_osFlagAny(&notif, 5)) {
+		if (_osFlagAny(&notif, 4)) {
 			if (notif & FLAG_REMOTE_TASK_STOP) {
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 
@@ -1594,13 +1594,13 @@ void StartGateTask(void *argument)
 			}
 
 			if (notif & FLAG_GATE_BEEP_HORN) {
-				GATE_Horn(200);
-				GATE_Horn(200);
+				GATE_Horn(250);
+				GATE_Horn(250);
 			}
 
 			if (notif & FLAG_GATE_OPEN_SEAT) {
 				if (VCU.d.state == VEHICLE_NORMAL)
-					GATE_Seat(100);
+					GATE_Seat(1000);
 			}
 		}
 

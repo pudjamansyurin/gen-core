@@ -14,13 +14,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define CAN_DEBUG		  0
+#define SIMCOM_DEBUG    1
+#define CAN_DEBUG		0
 
 #define AT_USE_CLK		0
 #define AT_USE_SMS   	0
 #define AT_USE_TCP	 	0
 #define AT_USE_FTP		1
 
-#define SIMCOM_VOLTAGE_MIN (uint16_t)3400 // in mV
+#define SIMCOM_MIN_MV ((uint16_t)3400)
 
 #endif /* DEFINES_H_ */

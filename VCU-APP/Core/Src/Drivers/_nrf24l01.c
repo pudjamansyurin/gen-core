@@ -845,9 +845,9 @@ static void ce_reset(void)
 	GATE_RemoteCE(GPIO_PIN_RESET);
 }
 
-static NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *rx,
-		uint8_t len)
+static NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *rx, uint8_t len)
 {
+	uint8_t ok;
 	uint8_t myTX[len + 1];
 	uint8_t myRX[len + 1];
 	myTX[0] = cmd;
@@ -862,22 +862,18 @@ static NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *
 	csn_reset();
 
 	/*Wait for SPIx Busy flag */
-	while (__HAL_SPI_GET_FLAG(NRF.config.spi, SPI_FLAG_BSY))
-		;
+	while (__HAL_SPI_GET_FLAG(NRF.config.spi, SPI_FLAG_BSY)) {};
 
-	if (HAL_SPI_TransmitReceive(NRF.config.spi, myTX, myRX, 1 + len, NRF.config.spi_timeout) != HAL_OK)
-	{
-		return NRF_ERROR;
-	}
+	ok = (HAL_SPI_TransmitReceive(NRF.config.spi, myTX, myRX, 1 + len, NRF.config.spi_timeout) == HAL_OK);
 
-	for (i = 0; i < len; i++)
-	{
-		rx[i] = myRX[1 + i];
+	if (ok) {
+		for (i = 0; i < len; i++)
+			rx[i] = myRX[1 + i];
 	}
 
 	csn_set();
 
-	return NRF_OK;
+	return ok ? NRF_OK : NRF_ERROR;
 }
 
 static NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data)

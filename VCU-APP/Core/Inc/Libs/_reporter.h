@@ -18,10 +18,10 @@
 
 /* Exported define
  * -------------------------------------------------------------*/
-#define RPT_FRAME_FULL (uint8_t)20      // in second
-#define RPT_INTERVAL_NORMAL (uint8_t)5  // in second
-#define RPT_INTERVAL_BACKUP (uint8_t)20 // in second
-#define RPT_INTERVAL_LOST (uint8_t)60   // in second
+#define RPT_FRAME_FULL_S ((uint8_t)20)      
+#define RPT_INTERVAL_NORMAL_S ((uint8_t)5) 
+#define RPT_INTERVAL_BACKUP_S ((uint8_t)20)
+#define RPT_INTERVAL_LOST_S ((uint8_t)60)
 
 #define PREFIX_ACK "A@"
 #define PREFIX_REPORT "T@"

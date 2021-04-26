@@ -14,7 +14,7 @@
 
 /* Exported defines
  * ---------------------------------------------------------*/
-#define NODE_RISE_TIME	(uint16_t) 5000
+#define NODE_RISE_TIME	((uint16_t)5000)
 
 /* Exported struct
  * ------------------------------------------------------------*/

@@ -44,7 +44,7 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define AUDIO_TIMEOUT (uint16_t) 5000 // in ms
+#define AUDIO_TIMEOUT_MS ((uint16_t)5000)
 #define AUDIO_BUFFER_SIZE 4096
 #define AUDIO_I2C_ADDRESS 0x94
 

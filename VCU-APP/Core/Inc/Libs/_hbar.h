@@ -12,19 +12,19 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MODE_SESSION_MS (uint16_t)4000
-#define MODE_BLINK_MS (uint16_t)250
-#define MODE_RESET_MS (uint16_t)1500
-#define STARTER_LONG_PRESS (uint16_t)1000 // in ms
+#define MODE_SESSION_MS ((uint16_t)4000)
+#define MODE_BLINK_MS ((uint16_t)250)
+#define MODE_RESET_MS ((uint16_t)1500)
+#define STARTER_LONG_PRESS_MS ((uint16_t)1000)
 
 /* Exported enum
  * ----------------------------------------------------------------*/
 typedef enum {
 	HBAR_K_SELECT = 0,
 	HBAR_K_SET,
+	HBAR_K_STARTER,
 	HBAR_K_SEIN_L,
 	HBAR_K_SEIN_R,
-	HBAR_K_STARTER,
 	HBAR_K_REVERSE,
 	HBAR_K_LAMP,
 	HBAR_K_ABS,
@@ -113,7 +113,7 @@ extern hbar_t HBAR;
 void HBAR_Init(void);
 void HBAR_ReadStarter(void);
 void HBAR_ReadStates(void);
-void HBAR_ReadSelectSet(void);
+void HBAR_HandleSelectSet(void);
 void HBAR_RefreshSelectSet(void);
 void HBAR_TimerSelectSet(void);
 hbar_sein_t HBAR_SeinController(void);

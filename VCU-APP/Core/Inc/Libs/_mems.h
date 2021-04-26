@@ -13,11 +13,11 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MEMS_TIMEOUT (uint16_t) 5000 // in ms
+#define MEMS_TIMEOUT_MS ((uint16_t)5000)
 
-#define DRAGGED_LIMIT (uint8_t)(10)
-#define FALL_LIMIT (uint8_t)(45)
-#define CRASH_LIMIT (uint8_t)(16)
+#define DRAGGED_LIMIT ((uint8_t)10)
+#define FALL_LIMIT ((uint8_t)45)
+#define CRASH_LIMIT ((uint8_t)16)
 
 #define RAD2DEG(rad) ((rad)*180.0 / M_PI)
 
@@ -48,6 +48,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t active;
+	uint8_t offset;
 	struct {
 		mems_tilt_t cur;
 		mems_tilt_t ref;

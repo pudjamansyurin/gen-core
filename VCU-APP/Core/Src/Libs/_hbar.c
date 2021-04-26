@@ -54,10 +54,11 @@ void HBAR_ReadStarter(void) {
 	HBAR_STARTER state = HBAR_STARTER_UNKNOWN;
 
 	HBAR.state[HBAR_K_STARTER] = GATE_ReadStarter();
-	if (HBAR.state[HBAR_K_STARTER])
+
+	if (HBAR.state[HBAR_K_STARTER] && !HBAR.ctl.tick.starter)
 		HBAR.ctl.tick.starter = _GetTickMS();
-	else if (HBAR.ctl.tick.starter) {
-		if ((_GetTickMS() - HBAR.ctl.tick.starter) > STARTER_LONG_PRESS)
+	else if (!HBAR.state[HBAR_K_STARTER] && HBAR.ctl.tick.starter) {
+		if ((_GetTickMS() - HBAR.ctl.tick.starter) > STARTER_LONG_PRESS_MS)
 			state = HBAR_STARTER_OFF;
 		else
 			state = HBAR_STARTER_ON;
@@ -75,13 +76,13 @@ void HBAR_ReadStates(void) {
 	HBAR.state[HBAR_K_LAMP] = GATE_ReadLamp();
 	HBAR.state[HBAR_K_ABS] = GATE_ReadABS();
 
-	if (!Reversed())
-		HBAR_ReadSelectSet();
+	if (!Reversed()) {
+		HBAR_TimerSelectSet();
+		HBAR_HandleSelectSet();
+	}
 }
 
-void HBAR_ReadSelectSet(void) {
-	HBAR_TimerSelectSet();
-
+void HBAR_HandleSelectSet(void) {
 	if (HBAR.timer[HBAR_K_SELECT].time)
 		HBAR.ctl.listening++;
 

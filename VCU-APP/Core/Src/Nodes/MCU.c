@@ -157,7 +157,7 @@ int16_t MCU_SpeedToRpm(uint8_t speed) {
 }
 
 uint8_t MCU_SpeedToVolume(void) {
-	//	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm) * 100 / MCU_SPEED_MAX;
+	//	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm) * 100 / MCU_SPEED_MAX_KPH;
 	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm);
 
 	return vol > 100 ? 100 : vol;

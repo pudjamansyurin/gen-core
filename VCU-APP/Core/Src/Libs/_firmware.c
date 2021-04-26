@@ -20,16 +20,6 @@ static uint8_t FW_ValidResponseIAP(void);
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
-  //	if (VCU.d.bat < SIMCOM_VOLTAGE_MIN) {
-  //		sprintf(message, "Battery %u mV (-%u mV)", VCU.d.bat,
-  //SIMCOM_VOLTAGE_MIN - VCU.d.bat); 		return 0;
-  //	}
-
-  //  if (type == IAP_HMI &&  HMI1.d.version == 0) {
-  //    sprintf(message, "HMI not connected");
-  //    return 0;
-  //  }
-
   /* Retain FOTA */
   EEPROM_FotaType(EE_CMD_W, type);
   EEPROM_FotaVersion(EE_CMD_W,
@@ -63,7 +53,7 @@ uint8_t FW_PostFota(response_t *response) {
     switch (*(uint32_t *)IAP_RESPONSE_ADDR) {
     case IAP_BATTERY_LOW:
       sprintf(response->data.message, "%s Battery Low (-%u mV)", node,
-              SIMCOM_VOLTAGE_MIN - BAT_ScanValue());
+              SIMCOM_MIN_MV - BAT_ScanValue());
       break;
     case IAP_SIMCOM_TIMEOUT:
       sprintf(response->data.message, "%s Internet Timeout", node);
@@ -117,7 +107,7 @@ static void FW_MakeResponseIAP(char *message, char *node) {
     do {
       vNew = HMI1.d.version;
       _DelayMS(100);
-    } while (!vNew && (_GetTickMS() - tick < HMI_FOTA_TIMEOUT));
+    } while (!vNew && (_GetTickMS() - tick < HMI_FOTA_MS));
 
     /* Handle empty firmware */
     if (vOld == 0xFFFF)

@@ -12,20 +12,18 @@
 #include "Libs/_utils.h"
 
 /* Exported macro function ---------------------------------------------------*/
-#define EEPROM_ADDR  			   (uint16_t) 0xA0
-#define EE_NULL                     (uint8_t) 0
+#define EEPROM_ADDR  			   ((uint16_t)0xA0)
+#define EE_NULL                     ((uint8_t)0)
 
-/* NOTE: EEPROM is 32 bytes aligned, do not store variable in intersection */
-//#define EE_AREA(ad, sz)             (((ad + sz) % 32) >= sz ? (ad) : (ad + (sz - ((ad + sz) % 32))))
-#define EE_AREA(ad, sz)             ((ad*32) + sz)
+#define EE_AREA(ad, sz)             ((uint16_t)((ad*32) + sz))
 
 /* Exported constants --------------------------------------------------------*/
-#define VADDR_RESET                 (uint16_t) EE_AREA(0, 2)
-#define VADDR_ODOMETER              (uint16_t) EE_AREA(1, 2)
-#define VADDR_AES_KEY               (uint16_t) EE_AREA(2, 16)
-#define VADDR_FOTA_VERSION          (uint16_t) EE_AREA(3, 2)
-#define VADDR_FOTA_FLAG             (uint16_t) EE_AREA(4, 4)
-#define VADDR_FOTA_TYPE             (uint16_t) EE_AREA(5, 4)
+#define VADDR_RESET                 EE_AREA(0, 2)
+#define VADDR_ODOMETER              EE_AREA(1, 2)
+#define VADDR_AES_KEY               EE_AREA(2, 16)
+#define VADDR_FOTA_VERSION          EE_AREA(3, 2)
+#define VADDR_FOTA_FLAG             EE_AREA(4, 4)
+#define VADDR_FOTA_TYPE             EE_AREA(5, 4)
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {

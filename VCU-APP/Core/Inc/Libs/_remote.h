@@ -13,10 +13,10 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define RMT_TIMEOUT (uint16_t)3000 				// in ms
-#define RMT_BEAT_TIMEOUT (uint16_t)5000         // in ms
-#define RMT_BEAT_TIMEOUT_RUN (uint16_t)15000    // in ms
-#define RMT_PAIRING_TIMEOUT (uint16_t)5000 		// in ms
+#define RMT_TIMEOUT_MS ((uint16_t)3000)
+#define RMT_BEAT_MS ((uint16_t)5000)
+#define RMT_BEAT_RUN_MS ((uint16_t)15000)
+#define RMT_PAIRING_MS ((uint16_t)5000)
 
 /* Exported enum -------------------------------------------------------------*/
 typedef enum { RMT_CMD_PING = 0, RMT_CMD_ALARM, RMT_CMD_SEAT } RMT_CMD;

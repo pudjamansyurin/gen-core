@@ -24,7 +24,7 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define FINGERPRINT_RECEIVING_MS (uint16_t) 1000
+#define FINGERPRINT_RECEIVING_MS ((uint16_t)1000)
 
 #define FINGERPRINT_OK 0x00
 #define FINGERPRINT_PACKETRECIEVEERR 0x01

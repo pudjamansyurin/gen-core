@@ -73,7 +73,7 @@ uint8_t RMT_ReInit(void) {
 
 		ok = RMT_Probe();
 		if (!ok) _DelayMS(500);
-	} while (!ok && _GetTickMS() - tick < RMT_TIMEOUT);
+	} while (!ok && _GetTickMS() - tick < RMT_TIMEOUT_MS);
 
 	if (ok) {
 		nrf_configure();
@@ -116,21 +116,21 @@ void RMT_Refresh(vehicle_state_t state) {
 	uint8_t pairing;
 
 	lock();
-	timeout = state == VEHICLE_RUN ? RMT_BEAT_TIMEOUT_RUN : RMT_BEAT_TIMEOUT;
+	timeout = state == VEHICLE_RUN ? RMT_BEAT_RUN_MS : RMT_BEAT_MS;
 	RMT.d.nearby = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < timeout;
 	VCU.SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
 	
 	RMT.d.duration.full = _GetTickMS() - tick;
 	tick = _GetTickMS();
 
-	RMT.d.active = (RMT.d.tick.ping && (_GetTickMS() - RMT.d.tick.ping) < RMT_TIMEOUT) || RMT.d.nearby;
+	RMT.d.active = (RMT.d.tick.ping && (_GetTickMS() - RMT.d.tick.ping) < RMT_TIMEOUT_MS) || RMT.d.nearby;
 	if (!RMT.d.active) {
 		RMT_DeInit();
 		_DelayMS(500);
 		RMT_Init();
 	}
 
-	pairing = RMT.d.tick.pairing && (_GetTickMS() - RMT.d.tick.pairing) > RMT_PAIRING_TIMEOUT;
+	pairing = RMT.d.tick.pairing && (_GetTickMS() - RMT.d.tick.pairing) > RMT_PAIRING_MS;
 	if (pairing) {
 		RMT.d.tick.pairing = 0;
 		AES_ChangeKey(NULL);
@@ -143,7 +143,7 @@ void RMT_Ping(vehicle_state_t state) {
 	uint32_t tick;
 
 	if (state == VEHICLE_RUN && RMT.d.nearby)
-		if ((_GetTickMS() - RMT.d.tick.heartbeat) < (RMT_BEAT_TIMEOUT_RUN - RMT_TIMEOUT))
+		if ((_GetTickMS() - RMT.d.tick.heartbeat) < (RMT_BEAT_RUN_MS - RMT_TIMEOUT_MS))
 			return;
 
 	lock();

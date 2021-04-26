@@ -14,14 +14,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "_defines_shared.h"
 
-#define VCU_VERSION (uint16_t)637
-#define EEPROM_RESET (uint16_t)53
+#define VCU_VERSION ((uint16_t)637)
+#define EEPROM_RESET ((uint16_t)53)
 
+#define SIMCOM_DEBUG  	1
 #define CAN_DEBUG		0
 #define GPS_DEBUG		0
 #define MEMS_DEBUG		0
 #define REMOTE_DEBUG 	0
-#define FINGER_DEBUG    0
+#define FINGER_DEBUG  	0
 
 #define AT_USE_CLK		1
 #define AT_USE_SMS   	1
@@ -30,17 +31,12 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define VCU_VENDOR "GEN"
-#define VCU_BUILD_YEAR (uint8_t)21
-
-#define MANAGER_WAKEUP (uint16_t) 1111 // in ms
-
-#define MCU_SPEED_MAX (uint8_t)150 // in kph
-#define BMS_LOWBAT (uint8_t)20
-
-#define SIMCOM_VOLTAGE_MIN (uint16_t)3300 // in mV
-#define HMI_FOTA_TIMEOUT (uint32_t)20000  // in ms
-
-#define VCU_ACTIVATE_LOST (uint16_t)(5 * 60) // in second
+#define VCU_BUILD_YEAR ((uint8_t)21)
+#define MANAGER_WAKEUP_MS ((uint16_t)1111)
+#define MCU_SPEED_MAX_KPH ((uint8_t)150)
+#define SIMCOM_MIN_MV ((uint16_t)3300)
+#define HMI_FOTA_MS ((uint32_t)20000)
+#define VCU_LOST_MODE_MS ((uint16_t)(5 * 60 * 1000))
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {

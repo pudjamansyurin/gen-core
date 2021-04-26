@@ -42,7 +42,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 	d->req.log_time = RTC_Read();
 	d->req.events_group = VCU.d.events;
 	d->req.vehicle = (int8_t)VCU.d.state;
-	d->req.uptime = (VCU.d.uptime * MANAGER_WAKEUP) / 1000;
+	d->req.uptime = (VCU.d.uptime * MANAGER_WAKEUP_MS) / 1000;
 	d->req.buffered = VCU.d.buffered;
 	d->req.bat = BAT_ScanValue() / 18;
 
@@ -179,7 +179,7 @@ FRAME_TYPE RPT_FrameDecider(void) {
 		frame = FR_FULL;
 		frameDecider = 0;
 	} else {
-		if (++frameDecider < (RPT_FRAME_FULL / RPT_INTERVAL_NORMAL))
+		if (++frameDecider < (RPT_FRAME_FULL_S / RPT_INTERVAL_NORMAL_S))
 			frame = FR_SIMPLE;
 		else {
 			frame = FR_FULL;
@@ -196,14 +196,14 @@ FRAME_TYPE RPT_FrameDecider(void) {
 uint16_t RPT_IntervalDecider(void) {
 	vehicle_state_t state = VCU.d.state;
 	uint8_t override = RPT.override.interval;
-	uint16_t interval = RPT_INTERVAL_NORMAL;
+	uint16_t interval = RPT_INTERVAL_NORMAL_S;
 
 	if (state >= VEHICLE_NORMAL)
-		interval = RPT_INTERVAL_NORMAL;
+		interval = RPT_INTERVAL_NORMAL_S;
 	else if (state >= VEHICLE_BACKUP)
-		interval = RPT_INTERVAL_BACKUP;
+		interval = RPT_INTERVAL_BACKUP_S;
 	else if (state >= VEHICLE_LOST)
-		interval = RPT_INTERVAL_LOST;
+		interval = RPT_INTERVAL_LOST_S;
 
 	if (override)
 		interval = override;

@@ -82,7 +82,7 @@ uint8_t AUDIO_Init(void) {
 		GATE_AudioReset();
 		ok = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AUDIO.d.volume, SOUND_FREQ) == AUDIO_OK;
 		if (!ok) _DelayMS(500);
-	} while (!ok && _GetTickMS() - tick < AUDIO_TIMEOUT);
+	} while (!ok && _GetTickMS() - tick < AUDIO_TIMEOUT_MS);
 	unlock();
 
 	printf("AUDIO:%s\n", ok ? "OK" : "Error");
@@ -109,7 +109,7 @@ uint8_t AUDIO_Probe(void) {
 
 void AUDIO_Refresh(void) {
 	lock();
-	AUDIO.d.active = AUDIO.d.tick && (_GetTickMS() - AUDIO.d.tick) < AUDIO_TIMEOUT;
+	AUDIO.d.active = AUDIO.d.tick && (_GetTickMS() - AUDIO.d.tick) < AUDIO_TIMEOUT_MS;
 	if (!AUDIO.d.active) {
 		// FIXME: Reinit wont recover
 		AUDIO_DeInit();

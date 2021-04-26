@@ -12,11 +12,11 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define FINGER_TIMEOUT (uint16_t)5000 // in ms
-#define FINGER_SCAN_TIMEOUT (uint16_t)10000 // in ms
+#define FINGER_TIMEOUT_MS ((uint16_t)5000)
+#define FINGER_SCAN_MS ((uint16_t)10000)
 
-#define FINGER_CONFIDENCE_MIN (uint8_t)75  // in %
-#define FINGER_USER_MAX (uint8_t)5
+#define FINGER_CONFIDENCE_MIN_PERCENT ((uint8_t)75)
+#define FINGER_USER_MAX ((uint8_t)5)
 
 /* Structs
  * --------------------------------------------------------------------*/

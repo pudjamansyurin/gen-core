@@ -334,7 +334,7 @@ static SIM_RESULT PowerUp(void) {
 
 	res = Reset(0);
 	if (res != SIM_OK)
-		if (BAT_ScanValue() > SIMCOM_VOLTAGE_MIN)
+		if (BAT_ScanValue() > SIMCOM_MIN_MV)
 			return Reset(1);
 
 	return res;
@@ -367,7 +367,7 @@ static SIM_RESULT Reset(uint8_t hard) {
 
 		_DelayMS(100);
 	} while (SIM.d.state == SIM_STATE_DOWN &&
-			(_GetTickMS() - tick) < NET_BOOT_TIMEOUT);
+			(_GetTickMS() - tick) < NET_BOOT_MS);
 
 	return Simcom_Cmd(SIM_CMD_BOOT, SIM_RSP_READY, 1000);
 }
@@ -429,7 +429,7 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms,
 	SIMCOM_Transmit(data, size);
 
 	// wait response from SIMCOM
-	ms += NET_EXTRA_TIME;
+	ms += NET_GUARD_MS;
 	tick = _GetTickMS();
 	while (1) {
 		if (Simcom_Resp(reply, NULL) || Simcom_Resp(SIM_RSP_ERROR, NULL) ||

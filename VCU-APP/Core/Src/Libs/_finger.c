@@ -55,7 +55,7 @@ uint8_t FGR_Init(void) {
 
 		ok = FGR_Probe();
 		if (!ok) _DelayMS(500);
-	} while (!ok && _GetTickMS() - tick < FINGER_TIMEOUT);
+	} while (!ok && _GetTickMS() - tick < FINGER_TIMEOUT_MS);
 
 	FGR.d.verified = ok;
 	unlock();
@@ -126,7 +126,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
 	if (*ok) {
 		RegisterState(1,0);
 		printf("FGR:Waiting for valid finger to enroll as #%u\n", *id);
-		*ok = Scan(1, FINGER_SCAN_TIMEOUT);
+		*ok = Scan(1, FINGER_SCAN_MS);
 	}
 
 	if (*ok) {
@@ -137,7 +137,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
 
 		RegisterState(1,0);
 		printf("FGR:Waiting for valid finger to enroll as #%u\n", *id);
-		*ok = Scan(2, FINGER_SCAN_TIMEOUT);
+		*ok = Scan(2, FINGER_SCAN_MS);
 	}
 
 	RegisterState(0,0);
@@ -249,7 +249,7 @@ static void unlock(void) {
 //
 //	if (ok) {
 //		printf("FGR:Found ID #%u with confidence of %u\n", id, confidence);
-//		if (confidence > FINGER_CONFIDENCE_MIN)
+//		if (confidence > FINGER_CONFIDENCE_MIN_PERCENT)
 //			theId = id;
 //	}
 //
@@ -266,7 +266,7 @@ static uint8_t AuthFast(void) {
 	if (GetImage(2000))
 		if (fz3387_image2Tz(1) == FINGERPRINT_OK)
 			if (fz3387_fingerFastSearch(&id, &confidence) == FINGERPRINT_OK)
-				if (confidence > FINGER_CONFIDENCE_MIN)
+				if (confidence > FINGER_CONFIDENCE_MIN_PERCENT)
 					theId = id;
 	unlock();
 

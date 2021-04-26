@@ -15,9 +15,9 @@
 /* Exported constants --------------------------------------------------------*/
 #define MQTT_USERNAME ""
 #define MQTT_PASSWORD ""
-#define MQTT_KEEPALIVE (uint8_t)30 // in second
-#define MQTT_PERSIST_SESSION (uint8_t)0
-#define MQTT_UPLOAD_TIME (uint16_t) 10000 // in ms
+#define MQTT_PERSIST_SESSION 0
+#define MQTT_KEEPALIVE_S ((uint8_t)30)
+#define MQTT_UPLOAD_MS ((uint16_t)10000)
 
 /* Exported structs --------------------------------------------------------*/
 typedef struct {

@@ -46,7 +46,7 @@ uint8_t GPS_Init(void) {
 	GATE_GpsReset();
 
 	tick = _GetTickMS();
-	while(_GetTickMS() - tick < GPS_TIMEOUT)
+	while(_GetTickMS() - tick < GPS_TIMEOUT_MS)
 		if (GPS.d.tick)
 			break;
 
@@ -68,7 +68,7 @@ void GPS_DeInit(void) {
 
 void GPS_Refresh(void) {
 	lock();
-	GPS.d.active = GPS.d.tick && (_GetTickMS() - GPS.d.tick) < GPS_TIMEOUT;
+	GPS.d.active = GPS.d.tick && (_GetTickMS() - GPS.d.tick) < GPS_TIMEOUT_MS;
 	if (!GPS.d.active) {
 		GPS_DeInit();
 		_DelayMS(500);

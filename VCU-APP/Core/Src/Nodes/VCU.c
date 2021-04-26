@@ -99,7 +99,7 @@ void VCU_CheckState(void) {
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 			}
 
-			if (_GetTickMS() - VCU.d.tick.independent > (VCU_ACTIVATE_LOST)*1000)
+			if ((_GetTickMS() - VCU.d.tick.independent) > VCU_LOST_MODE_MS)
 				VCU.d.state--;
 			else if (GATE_ReadPower5v())
 				VCU.d.state++;

@@ -20,6 +20,7 @@ mems_t MEMS = {
 		.d = {0},
 		.detector = {
 				.active = 0,
+				.offset = 0,
 				.tilt = {
 						.cur = {0},
 						.ref = {0},
@@ -33,6 +34,7 @@ static void lock(void);
 static void unlock(void);
 static uint8_t Capture(mems_raw_t *raw);
 static void ConvertAccel(mems_tilt_t *tilt, mems_axis_t *axis);
+static uint8_t OnlyGotTemperature(void);
 #if MEMS_DEBUG
 static void Debugger(move_t *move);
 static void RawDebugger(mems_raw_t *raw);
@@ -53,7 +55,7 @@ uint8_t MEMS_Init(void) {
 
 		ok = MPU6050_Init(MEMS.pi2c, &(MEMS.dev), MPU6050_Device_0,	MPU6050_Accelerometer_16G, MPU6050_Gyroscope_2000s) == MPU6050_Result_Ok;
 		if (!ok) _DelayMS(500);
-	} while (!ok && _GetTickMS() - tick < MEMS_TIMEOUT);
+	} while (!ok && _GetTickMS() - tick < MEMS_TIMEOUT_MS);
 
 	if (ok) MEMS.d.tick = _GetTickMS();
 	unlock();
@@ -73,19 +75,11 @@ void MEMS_DeInit(void) {
 
 void MEMS_Refresh(void) {
 	lock();
-	MEMS.d.active = MEMS.d.tick && (_GetTickMS() - MEMS.d.tick) < MEMS_TIMEOUT;
+	MEMS.d.active = MEMS.d.tick && (_GetTickMS() - MEMS.d.tick) < MEMS_TIMEOUT_MS;
 
 	// handle bug, when only got temperature
-	if (MEMS.d.active) {
-		mems_raw_t *raw = &(MEMS.d.raw);
-		mems_axis_t axis = {0};
-		uint8_t err = 0;
-
-		err |= memcmp(&(raw->accelerometer), &axis, sizeof(mems_axis_t)) == 0;
-		err |= memcmp(&(raw->gyroscope), &axis, sizeof(mems_axis_t)) == 0;
-
-		MEMS.d.active = !err;
-	}
+	if (MEMS.d.active)
+		MEMS.d.active = !OnlyGotTemperature();
 
 	if (!MEMS.d.active) {
 		MEMS_DeInit();
@@ -181,6 +175,7 @@ uint8_t MEMS_Dragged(void) {
 			pow(ref->roll - cur->roll, 2) +
 			pow(ref->pitch - cur->pitch, 2)
 	);
+	MEMS.detector.offset = euclidean;
 	unlock();
 
 	dragged = euclidean > DRAGGED_LIMIT;
@@ -235,6 +230,17 @@ static void ConvertAccel(mems_tilt_t *tilt, mems_axis_t *axis) {
 
 	tilt->roll = roll == 0 ? 0 : RAD2DEG(atan(axis->y / roll));
 	tilt->pitch = pitch == 0 ? 0 : RAD2DEG(atan(axis->x / pitch));
+}
+
+static uint8_t OnlyGotTemperature(void) {
+	mems_raw_t *raw = &(MEMS.d.raw);
+	mems_axis_t axis = {0};
+	uint8_t empty;
+
+	empty = memcmp(&(raw->accelerometer), &axis, sizeof(mems_axis_t)) == 0;
+	empty &= memcmp(&(raw->gyroscope), &axis, sizeof(mems_axis_t)) == 0;
+
+	return empty;
 }
 
 #if MEMS_DEBUG

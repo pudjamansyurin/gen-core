@@ -26,10 +26,11 @@ bms_t BMS = {
 static void ResetIndex(uint8_t i);
 static void ResetFaults(void);
 static uint8_t GetIndex(uint32_t addr);
-static uint8_t IsOverheat(void);
 static uint16_t MergeFault(void);
-static uint8_t AverageSOC(void);
-static uint8_t RunPacks(uint8_t on);
+static uint8_t MergeSOC(void);
+static uint8_t AreActive(void);
+static uint8_t AreOverheat(void);
+static uint8_t AreRunning(uint8_t on);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -57,21 +58,12 @@ void BMS_PowerOverCan(uint8_t on) {
 }
 
 void BMS_RefreshIndex(void) {
-	uint8_t active = 1;
-	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		BMS.d.pack[i].active = BMS.d.pack[i].tick && (_GetTickMS() - BMS.d.pack[i].tick) < BMS_TIMEOUT;
-		if (!BMS.d.pack[i].active) {
-			ResetIndex(i);
-			active = 0;
-		}
-	}
+	BMS.d.active = AreActive();
+	BMS.d.run = BMS.d.active && AreRunning(1);
 
-	BMS.d.active = active;
-	BMS.d.run = BMS.d.active && RunPacks(1);
-
-	BMS.d.soc = AverageSOC();
+	BMS.d.soc = MergeSOC();
 	BMS.d.fault = MergeFault();
-	BMS.d.overheat = IsOverheat();
+	BMS.d.overheat = AreOverheat();
 
 	VCU.SetEvent(EVG_BMS_ERROR, BMS.d.fault > 0);
 }
@@ -159,7 +151,38 @@ static uint8_t GetIndex(uint32_t addr) {
 	return 0;
 }
 
-static uint8_t IsOverheat(void) {
+static uint16_t MergeFault(void) {
+	uint16_t fault = 0;
+
+	for (uint8_t i = 0; i < BMS_COUNT; i++)
+		fault |= BMS.d.pack[i].fault;
+
+	return fault;
+}
+
+static uint8_t MergeSOC(void) {
+	uint8_t soc = 100;
+
+	for (uint8_t i = 0; i < BMS_COUNT; i++)
+		if (BMS.d.pack[i].soc < soc)
+			soc = BMS.d.pack[i].soc;
+
+	return soc;
+}
+
+static uint8_t AreActive(void) {
+	uint8_t active = 1;
+	for (uint8_t i = 0; i < BMS_COUNT; i++) {
+		BMS.d.pack[i].active = BMS.d.pack[i].tick && (_GetTickMS() - BMS.d.pack[i].tick) < BMS_TIMEOUT;
+		if (!BMS.d.pack[i].active) {
+			ResetIndex(i);
+			active = 0;
+		}
+	}
+	return active;
+}
+
+static uint8_t AreOverheat(void) {
 	BMS_FAULT_BIT overheat[] = {
 			BMSF_DISCHARGE_OVER_TEMPERATURE,
 			BMSF_DISCHARGE_UNDER_TEMPERATURE,
@@ -174,29 +197,7 @@ static uint8_t IsOverheat(void) {
 	return temp;
 }
 
-static uint16_t MergeFault(void) {
-	uint16_t fault = 0;
-
-	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		fault |= BMS.d.pack[i].fault;
-
-	return fault;
-}
-
-static uint8_t AverageSOC(void) {
-	uint8_t soc = 0, dev = 0;
-
-	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		if (BMS.d.pack[i].state != BMS_STATE_OFF) {
-			soc += BMS.d.pack[i].soc;
-			dev++;
-		}
-	}
-
-	return dev ? (soc / dev) : soc;
-}
-
-static uint8_t RunPacks(uint8_t on) {
+static uint8_t AreRunning(uint8_t on) {
 	BMS_STATE state = on ? BMS_STATE_FULL : BMS_STATE_IDLE;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
