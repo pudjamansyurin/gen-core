@@ -16,17 +16,12 @@ tasks_t TASKS = {0};
  * -----------------------------------------------------------*/
 extern osEventFlagsId_t GlobalEventHandle;
 
+/* Private functions declarations
+ * --------------------------------------------*/
+static uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout);
+
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout) {
-	*notif = osThreadFlagsWait(flags, options, timeout);
-
-	if (*notif > FLAG_MASK)
-		return 0;
-
-	return (*notif & flags) > 0;
-}
-
 uint32_t _osEventManager(void) {
 	return osEventFlagsWait(GlobalEventHandle, EVENT_READY, osFlagsNoClear, osWaitForever);
 }
@@ -45,12 +40,13 @@ uint8_t _osQueuePut(osMessageQueueId_t mq_id, const void *msg_ptr) {
 
 uint8_t _osQueuePutRst(osMessageQueueId_t mq_id, const void *msg_ptr) {
 	osMessageQueueReset(mq_id);
-	return osMessageQueuePut(mq_id, msg_ptr, 0U, 0U) == osOK;
+	return _osQueuePut(mq_id, msg_ptr);
 }
 
 uint8_t _osCheckRTOS(void) {
 	uint8_t expectedThread = sizeof(tasks_wakeup_t);
 	uint8_t activeThread = (uint8_t)(osThreadGetCount() - 2);
+
 	if (activeThread < expectedThread) {
 		printf("RTOS:Failed, active thread %d < %d\n", activeThread, expectedThread);
 		return 0;
@@ -89,4 +85,16 @@ void _osCheckTasks(void) {
 	t->stack.canRx = osThreadGetStackSpace(CanRxTaskHandle);
 	t->stack.canTx = osThreadGetStackSpace(CanTxTaskHandle);
 	t->stack.hmi2Power = osThreadGetStackSpace(Hmi2PowerTaskHandle);
+}
+
+
+/* Private functions implementation
+ * --------------------------------------------*/
+static uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout) {
+	*notif = osThreadFlagsWait(flags, options, timeout);
+
+	if (*notif > FLAG_MASK)
+		return 0;
+
+	return (*notif & flags) > 0;
 }

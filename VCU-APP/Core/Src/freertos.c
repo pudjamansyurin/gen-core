@@ -1234,9 +1234,12 @@ void StartRemoteTask(void *argument)
 	for (;;) {
 		TASKS.tick.remote = _GetTickMS();
 
-		RMT_Ping(VCU.d.state);
+		if (RMT_Ping(VCU.d.state)) {
+			RMT.d.tick.ping = _GetTickMS();
+			RMT.d.duration.tx = RMT.d.tick.ping - TASKS.tick.remote;
+		}
 
-		if (_osFlagAny(&notif, 4)) {
+		if (_osFlagAny(&notif, 6)) {
 			if (notif & FLAG_REMOTE_TASK_STOP) {
 				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
 
@@ -1250,6 +1253,9 @@ void StartRemoteTask(void *argument)
 
 			if (notif & FLAG_REMOTE_RX_IT) {
 				if (RMT_ValidateCommand(&command)) {
+					RMT.d.tick.receive = _GetTickMS();
+					RMT.d.duration.rx = RMT.d.tick.receive - TASKS.tick.remote;
+
 					if (command == RMT_CMD_PING) {
 						if (RMT_GotPairedResponse())
 							osThreadFlagsSet(CommandTaskHandle, FLAG_COMMAND_OK);
@@ -1266,8 +1272,6 @@ void StartRemoteTask(void *argument)
 						_DelayMS(500);
 						osThreadFlagsClear(FLAG_REMOTE_RX_IT);
 					}
-				} else {
-
 				}
 			}
 		}
@@ -1310,7 +1314,7 @@ void StartFingerTask(void *argument)
 			if (VCU.d.state >= VEHICLE_STANDBY) {
 				if (notif & FLAG_FINGER_PLACED) {
 					FGR_Authentication();
-					osDelay(500);
+					osDelay(200);
 					osThreadFlagsClear(FLAG_FINGER_PLACED);
 				}
 
@@ -1448,10 +1452,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																																																											BMS.r.Param1(&Rx);
+																																																													BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																																																											BMS.r.Param2(&Rx);
+																																																													BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;

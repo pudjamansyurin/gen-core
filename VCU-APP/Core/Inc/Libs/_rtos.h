@@ -139,7 +139,6 @@ extern osThreadId_t Hmi2PowerTaskHandle;
 extern tasks_t TASKS;
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options, uint32_t timeout);
 uint32_t _osEventManager(void);
 uint32_t _osFlagOne(uint32_t *notif, uint32_t flag, uint32_t timeout);
 uint32_t _osFlagAny(uint32_t *notif, uint32_t timeout);

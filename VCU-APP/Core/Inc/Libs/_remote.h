@@ -33,10 +33,11 @@ typedef struct {
 		uint32_t ping;
 		uint32_t heartbeat;
 		uint32_t pairing;
+		uint32_t receive;
 	} tick;
 	struct {
 		uint32_t tx;
-		uint32_t full;
+		uint32_t rx;
 	} duration;
 } remote_data_t;
 
@@ -64,7 +65,7 @@ void RMT_DeInit(void);
 uint8_t RMT_Probe(void);
 void RMT_Flush(void);
 void RMT_Refresh(vehicle_state_t state);
-void RMT_Ping(vehicle_state_t state);
+uint8_t RMT_Ping(vehicle_state_t state);
 void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
