@@ -33,12 +33,13 @@ typedef struct {
 		uint32_t ping;
 		uint32_t heartbeat;
 		uint32_t pairing;
-		uint32_t receive;
+		uint32_t rx;
 	} tick;
 	struct {
-		uint32_t tx;
-		uint32_t rx;
+		uint8_t tx;
+		uint8_t rx;
 	} duration;
+	uint32_t pairing_aes[4];
 } remote_data_t;
 
 typedef struct {
@@ -50,7 +51,6 @@ typedef struct {
 	remote_data_t d;
 	remote_packet_t t;
 	remote_packet_t r;
-	uint32_t pairing_aes[4];
 	SPI_HandleTypeDef *pspi;
 } remote_t;
 

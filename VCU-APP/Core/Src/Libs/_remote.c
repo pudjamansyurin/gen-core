@@ -156,12 +156,12 @@ void RMT_Pairing(void) {
 
 	lock();
 	RMT.d.tick.pairing = _GetTickMS();
-	RNG_Generate32(RMT.pairing_aes, 4);
-	AES_ChangeKey(RMT.pairing_aes);
+	RNG_Generate32(RMT.d.pairing_aes, 4);
+	AES_ChangeKey(RMT.d.pairing_aes);
 
 	// Insert to payload
 	for (uint8_t i = 0; i < 4; i++)
-		aes[i] = _ByteSwap32(RMT.pairing_aes[i]);
+		aes[i] = _ByteSwap32(RMT.d.pairing_aes[i]);
 	memcpy(&RMT.t.payload[0], aes, NRF_DATA_LENGTH);
 	memcpy(&RMT.t.payload[NRF_DATA_LENGTH], RMT.t.address, NRF_ADDR_LENGTH);
 
@@ -182,7 +182,7 @@ uint8_t RMT_GotPairedResponse(void) {
 		RMT.d.tick.pairing = 0;
 		paired = 1;
 
-		EEPROM_AesKey(EE_CMD_W, RMT.pairing_aes);
+		EEPROM_AesKey(EE_CMD_W, RMT.d.pairing_aes);
 		AES_ChangeKey(NULL);
 	}
 	unlock();

@@ -9,13 +9,13 @@
 #define INC_NODES_HMI2_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Drivers/_canbus.h"
 #include "Libs/_utils.h"
+#include "Drivers/_canbus.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define HMI2_TIMEOUT (uint32_t)10000           // ms
-#define HMI2_POWER_ON_TIMEOUT (uint32_t)90000  // ms
-#define HMI2_POWER_OFF_TIMEOUT (uint32_t)30000 // ms
+#define HMI2_TIMEOUT_MS ((uint32_t)10000)
+#define HMI2_POWER_ON_MS ((uint32_t)90000)
+#define HMI2_POWER_OFF_MS ((uint32_t)30000)
 
 /* Exported struct
  * ------------------------------------------------------------*/

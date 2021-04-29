@@ -9,11 +9,11 @@
 #define INC_NODES_HMI1_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Drivers/_canbus.h"
 #include "Libs/_utils.h"
+#include "Drivers/_canbus.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define HMI1_TIMEOUT (uint32_t)10000 // ms
+#define HMI1_TIMEOUT_MS ((uint32_t)10000)
 
 /* Exported struct
  * ------------------------------------------------------------*/

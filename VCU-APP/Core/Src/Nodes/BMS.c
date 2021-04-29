@@ -72,43 +72,47 @@ void BMS_RefreshIndex(void) {
  * =================================== */
 void BMS_RX_Param1(can_rx_t *Rx) {
 	uint8_t i = GetIndex(Rx->header.ExtId);
+	UNION64 *d = &(Rx->data);
+	pack_t *pack = &(BMS.d.packs[i]);
 
 	// read the content
-	BMS.d.pack[i].voltage = Rx->data.u16[0] * 0.01;
-	BMS.d.pack[i].current = Rx->data.u16[1] * 0.1;
-	BMS.d.pack[i].soc = Rx->data.u16[2];
-	BMS.d.pack[i].temperature = Rx->data.u16[3] - 40;
+	pack->voltage = d->u16[0] * 0.01;
+	pack->current = d->u16[1] * 0.1;
+	pack->soc = d->u16[2];
+	pack->temperature = d->u16[3] - 40;
 
 	// update index
-	BMS.d.pack[i].id = BMS_ID(Rx->header.ExtId);
-	BMS.d.pack[i].tick = _GetTickMS();
+	pack->id = BMS_ID(Rx->header.ExtId);
+	pack->tick = _GetTickMS();
 }
 
 void BMS_RX_Param2(can_rx_t *Rx) {
 	uint8_t i = GetIndex(Rx->header.ExtId);
+	UNION64 *d = &(Rx->data);
+	pack_t *pack = &(BMS.d.packs[i]);
 
 	// read content
-	BMS.d.pack[i].capacity = Rx->data.u16[0] * 0.1;
-	BMS.d.pack[i].soh = Rx->data.u16[1];
-	BMS.d.pack[i].cycle = Rx->data.u16[2];
-	BMS.d.pack[i].fault = Rx->data.u16[3] & 0x0FFF;
-	BMS.d.pack[i].state =
-			(((Rx->data.u8[7] >> 4) & 0x01) << 1) | ((Rx->data.u8[7] >> 5) & 0x01);
+	pack->capacity = d->u16[0] * 0.1;
+	pack->soh = d->u16[1];
+	pack->cycle = d->u16[2];
+	pack->fault = d->u16[3] & 0x0FFF;
+	pack->state = (((d->u8[7] >> 4) & 0x01) << 1) | ((d->u8[7] >> 5) & 0x01);
 
 	// update index
-	BMS.d.pack[i].id = BMS_ID(Rx->header.ExtId);
-	BMS.d.pack[i].tick = _GetTickMS();
+	pack->id = BMS_ID(Rx->header.ExtId);
+	pack->tick = _GetTickMS();
 }
 
 /* ====================================== CAN TX
  * =================================== */
 uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t sc) {
 	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
 
 	// set message
-	Tx.data.u8[0] = state << 1;
-	Tx.data.u8[1] = sc;
-	Tx.data.u8[2] = BMS_SCALE_15_85 & 0x03;
+	d->u8[0] = state << 1;
+	d->u8[1] = sc;
+	d->u8[2] = BMS_SCALE_15_85 & 0x03;
 
 	// send message
 	return CANBUS_Write(&Tx, CAND_BMS_SETTING, 8, 1);
@@ -117,34 +121,36 @@ uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t sc) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void ResetIndex(uint8_t i) {
-	BMS.d.pack[i].run = 0;
-	BMS.d.pack[i].tick = 0;
-	BMS.d.pack[i].state = BMS_STATE_OFF;
-	BMS.d.pack[i].id = BMS_ID_NONE;
-	BMS.d.pack[i].voltage = 0;
-	BMS.d.pack[i].current = 0;
-	BMS.d.pack[i].soc = 0;
-	BMS.d.pack[i].temperature = 0;
-	BMS.d.pack[i].capacity = 0;
-	BMS.d.pack[i].soh = 0;
-	BMS.d.pack[i].cycle = 0;
+	pack_t *pack = &(BMS.d.packs[i]);
+
+	pack->run = 0;
+	pack->tick = 0;
+	pack->state = BMS_STATE_OFF;
+	pack->id = BMS_ID_NONE;
+	pack->voltage = 0;
+	pack->current = 0;
+	pack->soc = 0;
+	pack->temperature = 0;
+	pack->capacity = 0;
+	pack->soh = 0;
+	pack->cycle = 0;
 }
 
 static void ResetFaults(void) {
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		BMS.d.pack[i].fault = 0;
+		BMS.d.packs[i].fault = 0;
 	BMS.d.fault = 0;
 }
 
 static uint8_t GetIndex(uint32_t addr) {
 	// find index (if already exist)
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		if (BMS.d.pack[i].id == BMS_ID(addr))
+		if (BMS.d.packs[i].id == BMS_ID(addr))
 			return i;
 
 	// find index (if not exist)
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		if (BMS.d.pack[i].id == BMS_ID_NONE)
+		if (BMS.d.packs[i].id == BMS_ID_NONE)
 			return i;
 
 	// force replace first index (if already full)
@@ -155,7 +161,7 @@ static uint16_t MergeFault(void) {
 	uint16_t fault = 0;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		fault |= BMS.d.pack[i].fault;
+		fault |= BMS.d.packs[i].fault;
 
 	return fault;
 }
@@ -164,8 +170,8 @@ static uint8_t MergeSOC(void) {
 	uint8_t soc = 100;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		if (BMS.d.pack[i].soc < soc)
-			soc = BMS.d.pack[i].soc;
+		if (BMS.d.packs[i].soc < soc)
+			soc = BMS.d.packs[i].soc;
 
 	return soc;
 }
@@ -173,8 +179,10 @@ static uint8_t MergeSOC(void) {
 static uint8_t AreActive(void) {
 	uint8_t active = 1;
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		BMS.d.pack[i].active = BMS.d.pack[i].tick && (_GetTickMS() - BMS.d.pack[i].tick) < BMS_TIMEOUT;
-		if (!BMS.d.pack[i].active) {
+		pack_t *pack = &(BMS.d.packs[i]);
+
+		pack->active = pack->tick && (_GetTickMS() - pack->tick) < BMS_TIMEOUT_MS;
+		if (!pack->active) {
 			ResetIndex(i);
 			active = 0;
 		}
@@ -201,9 +209,11 @@ static uint8_t AreRunning(uint8_t on) {
 	BMS_STATE state = on ? BMS_STATE_FULL : BMS_STATE_IDLE;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		if (BMS.d.pack[i].state != state)
+		pack_t *pack = &(BMS.d.packs[i]);
+
+		if (pack->state != state)
 			return 0;
-		if (on && BMS.d.pack[i].fault)
+		if (on && pack->fault)
 			return 0;
 	}
 	return 1;

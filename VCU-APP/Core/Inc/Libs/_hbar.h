@@ -13,7 +13,6 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define MODE_SESSION_MS ((uint16_t)4000)
-#define MODE_BLINK_MS ((uint16_t)250)
 #define MODE_RESET_MS ((uint16_t)1500)
 #define STARTER_LONG_PRESS_MS ((uint16_t)1000)
 
@@ -73,12 +72,10 @@ typedef struct {
 
 typedef struct {
 	HBAR_STARTER starter;
-	uint8_t listening;
-	uint8_t blink;
+	uint8_t session;
 	struct {
-		uint32_t session;
-		uint32_t blink;
 		uint32_t starter;
+		uint32_t session;
 	} tick;
 } hbar_control_t;
 
@@ -103,15 +100,13 @@ typedef struct {
 	hbar_timer_t timer[2];
 } hbar_t;
 
-
-
 /* Exported variables
  * ---------------------------------------------------------*/
 extern hbar_t HBAR;
 
 /* Public functions prototype ------------------------------------------------*/
 void HBAR_Init(void);
-void HBAR_ReadStarter(void);
+void HBAR_ReadStarter(uint8_t normalState);
 void HBAR_ReadStates(void);
 void HBAR_HandleSelectSet(void);
 void HBAR_RefreshSelectSet(void);

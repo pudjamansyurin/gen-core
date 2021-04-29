@@ -14,7 +14,7 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define MCU_TIMEOUT (uint32_t)2000 // ms
+#define MCU_TIMEOUT_MS ((uint32_t)4000)
 
 /* Exported enum ------------------------------------------------------------*/
 typedef enum {
@@ -169,6 +169,10 @@ typedef struct {
 		mcu_param_t par;
 	} set;
 	struct {
+		uint8_t rpm_max;
+		uint8_t template;
+	} synced;
+	struct {
 		void (*CurrentDC)(can_rx_t *);
 		void (*VoltageDC)(can_rx_t *);
 		void (*TorqueSpeed)(can_rx_t *);
@@ -185,7 +189,6 @@ typedef struct {
 	void (*Init)(void);
 	void (*Power12v)(uint8_t);
 	void (*PowerOverCan)(uint8_t);
-	uint8_t (*Ready)(void);
 	void (*Refresh)(void);
 	void (*SetSpeedMax)(uint8_t);
 	void (*SetTemplates)(mcu_templates_t t);
@@ -207,7 +210,6 @@ void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_Power12v(uint8_t on);
 void MCU_PowerOverCan(uint8_t on);
-uint8_t MCU_Ready(void);
 void MCU_SetSpeedMax(uint8_t speed_max);
 void MCU_SetTemplates(mcu_templates_t t);
 void MCU_RpmMax(uint8_t write);

@@ -35,14 +35,14 @@ typedef struct __attribute__((packed)) {
 } mems_tilt_t;
 
 typedef struct {
-	mems_axis_t accelerometer;
-	mems_axis_t gyroscope;
-	float temperature;
+	mems_axis_t accel;
+	mems_axis_t gyro;
+	float temp;
 } mems_raw_t;
 
 typedef struct {
-	float accelerometer;
-	float gyroscope;
+	float accel;
+	float gyro;
 	float tilt;
 } mems_total_t;
 
@@ -66,7 +66,7 @@ typedef struct {
 
 typedef struct {
 	mems_data_t d;
-	mems_detector_t detector;
+	mems_detector_t det;
 	MPU6050 dev;
 	I2C_HandleTypeDef *pi2c;
 } mems_t;
@@ -82,8 +82,7 @@ void MEMS_Refresh(void);
 void MEMS_Flush(void);
 uint8_t MEMS_Capture(void);
 uint8_t MEMS_Process(void);
-void MEMS_ActivateDetector(void);
+void MEMS_GetRefDetector(void);
 uint8_t MEMS_Dragged(void);
-void MEMS_ResetDetector(void);
 
 #endif /* MEMS_H_ */

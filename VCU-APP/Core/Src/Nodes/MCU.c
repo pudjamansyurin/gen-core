@@ -15,6 +15,7 @@
 mcu_t MCU = {
 		.d = {0},
 		.set = {0},
+		.synced = {0},
 		.r = {
 				MCU_RX_CurrentDC,
 				MCU_RX_VoltageDC,
@@ -32,7 +33,6 @@ mcu_t MCU = {
 		.Init = MCU_Init,
 		.Power12v = MCU_Power12v,
 		.PowerOverCan = MCU_PowerOverCan,
-		.Ready = MCU_Ready,
 		.Refresh = MCU_Refresh,
 		.SetSpeedMax = MCU_SetSpeedMax,
 		.SetTemplates = MCU_SetTemplates,
@@ -57,6 +57,7 @@ static void ResetTemplates(void);
 static uint8_t SyncedSpeedMax(void);
 static uint8_t SyncedTemplates(void);
 static uint8_t IsOverheat(void);
+//static uint8_t HandleReverse(uint8_t *on);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -83,13 +84,13 @@ void MCU_Power12v(uint8_t on) {
 }
 
 void MCU_PowerOverCan(uint8_t on) {
-	static uint8_t lastOn = 0;
-
-	// make sure BMS is power on
-	if (lastOn != on) {
-		lastOn = on;
-		if (on) _DelayMS(500);
-	}
+//	static uint8_t lastOn = 0;
+//
+//	// make sure BMS is power on
+//	if (lastOn != on) {
+//		lastOn = on;
+//		if (on) _DelayMS(500);
+//	}
 
 	if (on) {
 		if (MCU.d.inv.lockout) {
@@ -102,19 +103,17 @@ void MCU_PowerOverCan(uint8_t on) {
 	}
 }
 
-uint8_t MCU_Ready(void) {
-	return MCU.d.active && SyncedTemplates() && SyncedSpeedMax();
-}
-
 void MCU_Refresh(void) {
-	MCU.d.active = MCU.d.tick && (_GetTickMS() - MCU.d.tick) < MCU_TIMEOUT;
+	MCU.d.active = MCU.d.tick && (_GetTickMS() - MCU.d.tick) < MCU_TIMEOUT_MS;
 	if (MCU.d.active) {
 		if (MCU.set.rpm_max && SyncedSpeedMax()) {
 			MCU.set.rpm_max = 0;
 			MCU.Power12v(0); _DelayMS(50);
 		}
-		if (MCU.set.template && SyncedTemplates())
+		if (MCU.set.template && SyncedTemplates()) {
 			MCU.set.template = 0;
+			MCU.Power12v(0); _DelayMS(50);
+		}
 	} else {
 		Reset();
 	}
@@ -179,48 +178,60 @@ void MCU_Sync(void) {
 /* ====================================== CAN RX
  * =================================== */
 void MCU_RX_CurrentDC(can_rx_t *Rx) {
-	MCU.d.dcbus.current = Rx->data.s16[3] * 0.1;
+	UNION64 *d = &(Rx->data);
+
+	MCU.d.dcbus.current = d->s16[3] * 0.1;
 
 	MCU.d.tick = _GetTickMS();
 }
 
 void MCU_RX_VoltageDC(can_rx_t *Rx) {
-	MCU.d.dcbus.voltage = Rx->data.s16[1] * 0.1;
+	UNION64 *d = &(Rx->data);
+
+	MCU.d.dcbus.voltage = d->s16[1] * 0.1;
 
 	MCU.d.tick = _GetTickMS();
 }
 
 void MCU_RX_TorqueSpeed(can_rx_t *Rx) {
-	MCU.d.temperature = Rx->data.s16[0] * 0.1;
-	MCU.d.rpm = Rx->data.s16[1];
-	MCU.d.torque.commanded = Rx->data.s16[2] * 0.1;
-	MCU.d.torque.feedback = Rx->data.s16[3] * 0.1;
+	UNION64 *d = &(Rx->data);
+
+	MCU.d.temperature = d->s16[0] * 0.1;
+	MCU.d.rpm = d->s16[1];
+	MCU.d.torque.commanded = d->s16[2] * 0.1;
+	MCU.d.torque.feedback = d->s16[3] * 0.1;
 
 	MCU.d.tick = _GetTickMS();
 }
 
 void MCU_RX_FaultCode(can_rx_t *Rx) {
-	MCU.d.fault.post = Rx->data.u32[0];
-	MCU.d.fault.run = Rx->data.u32[1];
+	UNION64 *d = &(Rx->data);
+
+	MCU.d.fault.post = d->u32[0];
+	MCU.d.fault.run = d->u32[1];
 
 	MCU.d.tick = _GetTickMS();
 }
 
 void MCU_RX_State(can_rx_t *Rx) {
-	MCU.d.drive_mode = Rx->data.u8[4] & 0x03;
-	MCU.d.inv.discharge = (Rx->data.u8[4] >> 5) & 0x07;
-	//	MCU.d.inv.can_mode = Rx->data.u8[5] & 0x01;
-	MCU.d.inv.enabled = Rx->data.u8[6] & 0x01;
-	MCU.d.inv.lockout = (Rx->data.u8[6] >> 7) & 0x01;
-	MCU.d.reverse = Rx->data.u8[7] & 0x01;
+	UNION64 *d = &(Rx->data);
+
+	MCU.d.drive_mode = d->u8[4] & 0x03;
+	MCU.d.inv.discharge = (d->u8[4] >> 5) & 0x07;
+	//	MCU.d.inv.can_mode = d->u8[5] & 0x01;
+	MCU.d.inv.enabled = d->u8[6] & 0x01;
+	MCU.d.inv.lockout = (d->u8[6] >> 7) & 0x01;
+	MCU.d.reverse = d->u8[7] & 0x01;
 
 	MCU.d.tick = _GetTickMS();
 }
 
 void MCU_RX_Template(can_rx_t *Rx) {
-	uint16_t param = Rx->data.u16[0];
-	//	uint8_t write = Rx->data.u8[2];
-	int16_t data = Rx->data.s16[2];
+	UNION64 *d = &(Rx->data);
+
+	uint16_t param = d->u16[0];
+	//	uint8_t write = d->u8[2];
+	int16_t data = d->s16[2];
 
 	if (param == MTP_RPM_MAX) {
 		MCU.d.par.rpm_max = data;
@@ -247,12 +258,14 @@ void MCU_RX_Template(can_rx_t *Rx) {
  * =================================== */
 uint8_t MCU_TX_Setting(uint8_t on) {
 	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
 
 	// set message
-	Tx.data.u8[4] = HBAR.state[HBAR_K_REVERSE];
-	Tx.data.u8[5] = on & 0x01;
-	Tx.data.u8[5] |= (0 & 0x01) << 1;
-	Tx.data.u8[5] |= (HBAR.d.mode[HBAR_M_DRIVE] & 0x03) << 2;
+//	d->u8[4] = HandleReverse();
+	d->u8[4] = HBAR.state[HBAR_K_REVERSE];
+	d->u8[5] = on & 0x01;
+	d->u8[5] |= (0 & 0x01) << 1;
+	d->u8[5] |= (HBAR.d.mode[HBAR_M_DRIVE] & 0x03) << 2;
 
 	// send message
 	return CANBUS_Write(&Tx, CAND_MCU_SETTING, 6, 0);
@@ -260,12 +273,13 @@ uint8_t MCU_TX_Setting(uint8_t on) {
 
 uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
 	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
 	uint8_t ok;
 
 	// set message
-	Tx.data.u16[0] = param;
-	Tx.data.u8[2] = write;
-	Tx.data.s16[2] = data;
+	d->u16[0] = param;
+	d->u8[2] = write;
+	d->s16[2] = data;
 
 	// send message
 	ok = CANBUS_Write(&Tx, CAND_MCU_TEMPLATE_W, 6, 0);
@@ -320,15 +334,13 @@ static void ResetTemplates(void) {
 }
 
 static uint8_t SyncedSpeedMax(void) {
-	if (!MCU.set.rpm_max)
-		return 1;
-	return MCU.d.par.rpm_max == MCU.set.par.rpm_max;
+	MCU.synced.rpm_max = !MCU.set.rpm_max || (MCU.d.par.rpm_max == MCU.set.par.rpm_max);
+	return MCU.synced.rpm_max;
 }
 
 static uint8_t SyncedTemplates(void) {
-	if (!MCU.set.template)
-		return 1;
-	return memcmp(MCU.d.par.tpl, MCU.set.par.tpl, sizeof(MCU.d.par.tpl)) == 0;
+	MCU.synced.template = !MCU.set.template || (memcmp(MCU.d.par.tpl, MCU.set.par.tpl, sizeof(MCU.d.par.tpl)) == 0);
+	return MCU.synced.template;
 }
 
 static uint8_t IsOverheat(void) {
@@ -350,3 +362,21 @@ static uint8_t IsOverheat(void) {
 
 	return temp;
 }
+
+//static uint8_t HandleReverse(uint8_t *on) {
+//	static uint8_t reverse = 0;
+//
+//	if (HBAR.state[HBAR_K_REVERSE] && !MCU.d.reverse) {
+//		on = 0;
+//		if (!MCU.d.inv.enabled)
+//			reverse = 1;
+//	} else if (!HBAR.state[HBAR_K_REVERSE] && MCU.d.reverse) {
+//		on = 0;
+//		if (!MCU.d.inv.enabled)
+//			reverse = 0;
+//	} else {
+//		reverse = HBAR.state[HBAR_K_REVERSE];
+//	}
+//
+//	return reverse;
+//}

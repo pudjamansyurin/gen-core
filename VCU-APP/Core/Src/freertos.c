@@ -823,7 +823,7 @@ void StartReporterTask(void *argument)
 	_osEventManager();
 
 	/* Infinite loop */
-	interval = RPT_IntervalDecider();
+	interval = RPT_IntervalDecider(VCU.d.state);
 	for (;;) {
 		TASKS.tick.reporter = _GetTickMS();
 
@@ -832,12 +832,12 @@ void StartReporterTask(void *argument)
 				// nothing, just wakeup
 			}
 
-			if (notif & FLAG_REPORTER_RST_LOG) {
+			if (notif & FLAG_REPORTER_FLUSH) {
 				osMessageQueueReset(ReportQueueHandle);
 			}
 		}
 
-		interval = RPT_IntervalDecider();
+		interval = RPT_IntervalDecider(VCU.d.state);
 		frame = RPT_FrameDecider();
 
 		// Put report to log
@@ -908,8 +908,12 @@ void StartCommandTask(void *argument)
 					EEPROM_Odometer(EE_CMD_W, *(uint16_t *)cmd.data.value);
 					break;
 
-				case CMD_GEN_RST_LOG:
-					osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_RST_LOG);
+				case CMD_GEN_FLUSH:
+					osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_FLUSH);
+					break;
+
+				case CMD_GEN_DETECTOR:
+					MEMS.det.active = val;
 					break;
 
 				default:
@@ -1182,8 +1186,9 @@ void StartMemsTask(void *argument)
 				MEMS_Init();
 			}
 
-			if (notif & FLAG_MEMS_DETECTOR_RESET)
-				MEMS_ResetDetector();
+			if (notif & FLAG_MEMS_DETECTOR_RESET) {
+				MEMS_GetRefDetector();
+			}
 		}
 
 		// Read all data
@@ -1192,17 +1197,14 @@ void StartMemsTask(void *argument)
 			VCU.SetEvent(EVG_BIKE_FALLEN, fallen);
 
 			// Drag detector
-			if (VCU.d.state < VEHICLE_STANDBY) {
-				if (!MEMS.detector.active)
-					MEMS_ActivateDetector();
-				else {
-					if (MEMS_Dragged() || VCU.ReadEvent(EVG_BIKE_MOVED)) {
-						VCU.SetEvent(EVG_BIKE_MOVED, 1);
-						osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
-					}
-				}
+			if (VCU.d.state == VEHICLE_NORMAL && MEMS.det.active) {
+				if (MEMS_Dragged())
+					VCU.SetEvent(EVG_BIKE_MOVED, 1);
+				if (VCU.ReadEvent(EVG_BIKE_MOVED))
+					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
+			} else {
+				MEMS_GetRefDetector();
 			}
-			else MEMS_ResetDetector();
 		}
 
 		MEMS_Refresh();
@@ -1253,8 +1255,8 @@ void StartRemoteTask(void *argument)
 
 			if (notif & FLAG_REMOTE_RX_IT) {
 				if (RMT_ValidateCommand(&command)) {
-					RMT.d.tick.receive = _GetTickMS();
-					RMT.d.duration.rx = RMT.d.tick.receive - TASKS.tick.remote;
+					RMT.d.tick.rx = _GetTickMS();
+					RMT.d.duration.rx = RMT.d.tick.rx - TASKS.tick.remote;
 
 					if (command == RMT_CMD_PING) {
 						if (RMT_GotPairedResponse())
@@ -1452,10 +1454,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-																																																													BMS.r.Param1(&Rx);
+																																																															BMS.r.Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-																																																													BMS.r.Param2(&Rx);
+																																																															BMS.r.Param2(&Rx);
 				break;
 				default:
 					break;
@@ -1477,7 +1479,7 @@ void StartCanTxTask(void *argument)
 {
 	/* USER CODE BEGIN StartCanTxTask */
 	uint32_t notif;
-	TickType_t last1000ms;
+	TickType_t last500ms, last1000ms;
 
 	_osEventManager();
 	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
@@ -1487,6 +1489,7 @@ void StartCanTxTask(void *argument)
 	CANBUS_Init();
 
 	/* Infinite loop */
+	last500ms = _GetTickMS();
 	last1000ms = _GetTickMS();
 	for (;;) {
 		TASKS.tick.canTx = _GetTickMS();
@@ -1508,6 +1511,15 @@ void StartCanTxTask(void *argument)
 		if (HMI1.d.active)
 			VCU.t.SwitchControl();
 
+		// send every 500ms
+		if (_GetTickMS() - last500ms > 500) {
+			last500ms = _GetTickMS();
+
+			HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
+			BMS.PowerOverCan(VCU.d.state >= VEHICLE_READY);
+			MCU.PowerOverCan(BMS.d.run && VCU.d.state == VEHICLE_RUN);
+		}
+
 		// send every 1000ms
 		if (_GetTickMS() - last1000ms > 1000) {
 			last1000ms = _GetTickMS();
@@ -1521,11 +1533,17 @@ void StartCanTxTask(void *argument)
 				MCU.Sync();
 			}
 
-			VCU.t.Heartbeat();
+			if (VCU.d.debugging) {
+				NODE.t.DebugGroup1();
+				NODE.t.DebugGroup2();
+				NODE.t.DebugVCU();
+				NODE.t.DebugGPS();
+				NODE.t.DebugMEMS();
+				NODE.t.DebugRMT();
+				NODE.t.DebugTASK();
+			}
 
-			HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
-			BMS.PowerOverCan(VCU.d.state == VEHICLE_RUN);
-			MCU.PowerOverCan(BMS.d.run && VCU.d.state == VEHICLE_RUN);
+			VCU.t.Heartbeat();
 		}
 	}
 	/* USER CODE END StartCanTxTask */
@@ -1592,7 +1610,7 @@ void StartGateTask(void *argument)
 				_DelayMS(100);
 				osThreadFlagsClear(FLAG_GATE_HBAR);
 
-				HBAR_ReadStarter();
+				HBAR_ReadStarter(VCU.d.state == VEHICLE_NORMAL);
 				if (VCU.d.state >= VEHICLE_STANDBY)
 					HBAR_ReadStates();
 			}

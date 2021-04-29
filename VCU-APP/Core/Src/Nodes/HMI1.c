@@ -29,7 +29,7 @@ void HMI1_Init(void) {
 }
 
 void HMI1_Refresh(void) {
-	HMI1.d.active = HMI1.d.tick && (_GetTickMS() - HMI1.d.tick) < HMI1_TIMEOUT;
+	HMI1.d.active = HMI1.d.tick && (_GetTickMS() - HMI1.d.tick) < HMI1_TIMEOUT_MS;
 
 	if (!HMI1.d.active)
 		Reset();
@@ -38,7 +38,9 @@ void HMI1_Refresh(void) {
 /* ====================================== CAN RX
  * =================================== */
 void HMI1_RX_State(can_rx_t *Rx) {
-	HMI1.d.version = Rx->data.u16[0];
+	UNION64 *d = &(Rx->data);
+
+	HMI1.d.version = d->u16[0];
 
 	HMI1.d.tick = _GetTickMS();
 }

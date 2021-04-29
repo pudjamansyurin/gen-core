@@ -18,7 +18,7 @@ extern osMutexId_t MemsRecMutexHandle;
  * ----------------------------------------------------------*/
 mems_t MEMS = {
 		.d = {0},
-		.detector = {
+		.det = {
 				.active = 0,
 				.offset = 0,
 				.tilt = {
@@ -92,7 +92,7 @@ void MEMS_Refresh(void) {
 void MEMS_Flush(void) {
 	lock();
 	memset(&(MEMS.d), 0, sizeof(mems_data_t));
-	memset(&(MEMS.detector), 0, sizeof(mems_detector_t));
+	memset(&(MEMS.det), 0, sizeof(mems_detector_t));
 	unlock();
 }
 
@@ -117,26 +117,26 @@ uint8_t MEMS_Capture(void) {
 
 uint8_t MEMS_Process(void) {
 	mems_raw_t *raw = &(MEMS.d.raw);
-	mems_tilt_t *tilt = &(MEMS.detector.tilt.cur);
+	mems_tilt_t *tilt = &(MEMS.det.tilt.cur);
 
 	lock();
-	ConvertAccel(tilt, &(raw->accelerometer));
-	MEMS.d.tot.accelerometer = sqrt(
-			pow(raw->accelerometer.x, 2) +
-			pow(raw->accelerometer.y, 2) +
-			pow(raw->accelerometer.z, 2)
+	ConvertAccel(tilt, &(raw->accel));
+	MEMS.d.tot.accel = sqrt(
+			pow(raw->accel.x, 2) +
+			pow(raw->accel.y, 2) +
+			pow(raw->accel.z, 2)
 	);
-	MEMS.d.tot.gyroscope = sqrt(
-			pow(raw->gyroscope.x, 2) +
-			pow(raw->gyroscope.y, 2) +
-			pow(raw->gyroscope.z, 2)
+	MEMS.d.tot.gyro = sqrt(
+			pow(raw->gyro.x, 2) +
+			pow(raw->gyro.y, 2) +
+			pow(raw->gyro.z, 2)
 	);
 	MEMS.d.tot.tilt = sqrt(
 			pow(tilt->roll, 2) +
 			pow(tilt->pitch, 2)
 	);
 
-	MEMS.d.crash = MEMS.d.tot.accelerometer > CRASH_LIMIT;
+	MEMS.d.crash = MEMS.d.tot.accel > CRASH_LIMIT;
 	MEMS.d.fall = MEMS.d.tot.tilt > FALL_LIMIT;
 
 #if MEMS_DEBUG
@@ -147,27 +147,19 @@ uint8_t MEMS_Process(void) {
 	return (MEMS.d.crash || MEMS.d.fall);
 }
 
-void MEMS_ActivateDetector(void) {
-	mems_tilt_t *cur = &(MEMS.detector.tilt.cur);
-	mems_tilt_t *ref = &(MEMS.detector.tilt.ref);
+void MEMS_GetRefDetector(void) {
+	mems_tilt_t *cur = &(MEMS.det.tilt.cur);
+	mems_tilt_t *ref = &(MEMS.det.tilt.ref);
 
 	lock();
-	MEMS.detector.active = 1;
 	VCU.SetEvent(EVG_BIKE_MOVED, 0);
 	memcpy(ref, cur, sizeof(mems_tilt_t));
 	unlock();
 }
 
-void MEMS_ResetDetector(void) {
-	lock();
-	MEMS.detector.active = 0;
-	VCU.SetEvent(EVG_BIKE_MOVED, 0);
-	unlock();
-}
-
 uint8_t MEMS_Dragged(void) {
-	mems_tilt_t *cur = &(MEMS.detector.tilt.cur);
-	mems_tilt_t *ref = &(MEMS.detector.tilt.ref);
+	mems_tilt_t *cur = &(MEMS.det.tilt.cur);
+	mems_tilt_t *ref = &(MEMS.det.tilt.ref);
 	uint8_t euclidean, dragged;
 
 	lock();
@@ -175,7 +167,7 @@ uint8_t MEMS_Dragged(void) {
 			pow(ref->roll - cur->roll, 2) +
 			pow(ref->pitch - cur->pitch, 2)
 	);
-	MEMS.detector.offset = euclidean;
+	MEMS.det.offset = euclidean;
 	unlock();
 
 	dragged = euclidean > DRAGGED_LIMIT;
@@ -208,15 +200,15 @@ static uint8_t Capture(mems_raw_t *raw) {
 
 	if (ok) {
 		// convert the RAW values into acceleration in 'g'
-		raw->accelerometer.x = dev->Accelerometer_X * dev->Acce_Mult;
-		raw->accelerometer.y = dev->Accelerometer_Y * dev->Acce_Mult;
-		raw->accelerometer.z = dev->Accelerometer_Z * dev->Acce_Mult;
+		raw->accel.x = dev->Accelerometer_X * dev->Acce_Mult;
+		raw->accel.y = dev->Accelerometer_Y * dev->Acce_Mult;
+		raw->accel.z = dev->Accelerometer_Z * dev->Acce_Mult;
 		// convert the RAW values into dps (deg/s)
-		raw->gyroscope.x = dev->Gyroscope_X * dev->Gyro_Mult;
-		raw->gyroscope.y = dev->Gyroscope_Y * dev->Gyro_Mult; // reverse Yaw & Roll
-		raw->gyroscope.z = dev->Gyroscope_Z * dev->Gyro_Mult; // reverse Yaw & Roll
+		raw->gyro.x = dev->Gyroscope_X * dev->Gyro_Mult;
+		raw->gyro.y = dev->Gyroscope_Y * dev->Gyro_Mult; // reverse Yaw & Roll
+		raw->gyro.z = dev->Gyroscope_Z * dev->Gyro_Mult; // reverse Yaw & Roll
 		// temperature
-		raw->temperature = dev->Temperature;
+		raw->temp = dev->Temperature;
 	}
 
 	return ok;
@@ -237,8 +229,8 @@ static uint8_t OnlyGotTemperature(void) {
 	mems_axis_t axis = {0};
 	uint8_t empty;
 
-	empty = memcmp(&(raw->accelerometer), &axis, sizeof(mems_axis_t)) == 0;
-	empty &= memcmp(&(raw->gyroscope), &axis, sizeof(mems_axis_t)) == 0;
+	empty = memcmp(&(raw->accel), &axis, sizeof(mems_axis_t)) == 0;
+	empty &= memcmp(&(raw->gyro), &axis, sizeof(mems_axis_t)) == 0;
 
 	return empty;
 }
@@ -257,8 +249,8 @@ static void RawDebugger(mems_raw_t *raw) {
 	printf("Acce:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
 			"Gyro:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
 			"Temp: %d\n\n",
-			raw->accelerometer.x,raw->accelerometer.y,raw->accelerometer.z,
-			raw->gyroscope.x,raw->gyroscope.y,raw->gyroscope.z,
-			(int8_t)raw->temperature);
+			raw->accel.x,raw->accel.y,raw->accel.z,
+			raw->gyro.x,raw->gyro.y,raw->gyro.z,
+			(int8_t)raw->temp);
 }
 #endif

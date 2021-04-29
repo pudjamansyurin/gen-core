@@ -13,9 +13,9 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
-#define BMS_TIMEOUT (uint32_t)3000 // ms
-#define BMS_COUNT (uint8_t)2
-#define BMS_ID_NONE (uint32_t)0xFFFFFFFF
+#define BMS_COUNT 2
+#define BMS_TIMEOUT_MS ((uint32_t)4000)
+#define BMS_ID_NONE ((uint32_t)0xFFFFFFFF)
 
 #define BMS_CAND(_X_) ((_X_) >> 20)
 #define BMS_ID(_X_) ((_X_)&0xFFFFF)
@@ -57,24 +57,26 @@ typedef enum {
 typedef struct {
 	uint8_t run;
 	uint8_t active;
+	uint32_t id;
+	float voltage;
+	float current;
+	float soc;
+	float temperature;
+	float capacity;
+	float soh;
+	uint16_t cycle;
+	uint16_t fault;
+	BMS_STATE state;
+	uint32_t tick;
+} pack_t;
+
+typedef struct {
+	uint8_t run;
+	uint8_t active;
 	uint8_t overheat;
 	uint16_t fault;
 	uint8_t soc;
-	struct {
-		uint8_t run;
-		uint8_t active;
-		uint32_t id;
-		float voltage;
-		float current;
-		float soc;
-		float temperature;
-		float capacity;
-		float soh;
-		uint16_t cycle;
-		uint16_t fault;
-		BMS_STATE state;
-		uint32_t tick;
-	} pack[BMS_COUNT];
+	pack_t packs[BMS_COUNT];
 } bms_data_t;
 
 typedef struct {

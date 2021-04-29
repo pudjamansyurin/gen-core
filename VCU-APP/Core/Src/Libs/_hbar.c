@@ -27,11 +27,9 @@ void HBAR_Init(void) {
 	memset(&(HBAR.timer), 0, sizeof(HBAR.timer));
 
 	HBAR.ctl.starter = HBAR_STARTER_UNKNOWN;
-	HBAR.ctl.blink = 0;
-	HBAR.ctl.listening = 0;
-	HBAR.ctl.tick.blink = 0;
-	HBAR.ctl.tick.session = 0;
+	HBAR.ctl.session = 0;
 	HBAR.ctl.tick.starter = 0;
+	HBAR.ctl.tick.session = 0;
 
 	HBAR.d.m = HBAR_M_DRIVE;
 	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
@@ -50,19 +48,22 @@ void HBAR_Init(void) {
 	//	HBAR.d.trip[HBAR_M_TRIP_ODO] = 0;
 }
 
-void HBAR_ReadStarter(void) {
-	HBAR_STARTER state = HBAR_STARTER_UNKNOWN;
-
+void HBAR_ReadStarter(uint8_t normalState) {
 	HBAR.state[HBAR_K_STARTER] = GATE_ReadStarter();
 
 	if (HBAR.state[HBAR_K_STARTER] && !HBAR.ctl.tick.starter)
 		HBAR.ctl.tick.starter = _GetTickMS();
 	else if (!HBAR.state[HBAR_K_STARTER] && HBAR.ctl.tick.starter) {
-		if ((_GetTickMS() - HBAR.ctl.tick.starter) > STARTER_LONG_PRESS_MS)
-			state = HBAR_STARTER_OFF;
+		HBAR_STARTER starterState;
+		uint8_t short_press;
+
+		short_press = (_GetTickMS() - HBAR.ctl.tick.starter) < STARTER_LONG_PRESS_MS;
+		if (short_press || normalState)
+			starterState = HBAR_STARTER_ON;
 		else
-			state = HBAR_STARTER_ON;
-		HBAR.ctl.starter = state;
+			starterState = HBAR_STARTER_OFF;
+
+		HBAR.ctl.starter = starterState;
 		HBAR.ctl.tick.starter = 0;
 	}
 }
@@ -84,12 +85,12 @@ void HBAR_ReadStates(void) {
 
 void HBAR_HandleSelectSet(void) {
 	if (HBAR.timer[HBAR_K_SELECT].time)
-		HBAR.ctl.listening++;
+		HBAR.ctl.session++;
 
-	if (HBAR.ctl.listening) {
+	if (HBAR.ctl.session) {
 		if (HBAR.timer[HBAR_K_SELECT].time || HBAR.timer[HBAR_K_SET].time) {
 			HBAR.ctl.tick.session = _GetTickMS();
-			if (HBAR.timer[HBAR_K_SELECT].time && HBAR.ctl.listening > 1)
+			if (HBAR.timer[HBAR_K_SELECT].time && HBAR.ctl.session > 1)
 				RunSelect();
 			if (HBAR.timer[HBAR_K_SET].time)
 				RunSet();
@@ -105,33 +106,23 @@ void HBAR_TimerSelectSet(void) {
 		hbar_timer_t *t = &(HBAR.timer[key]);
 
 		t->time = 0;
-		if (HBAR.state[key]) {
-			if (t->start == 0) {
-				if (key == HBAR_K_SELECT || (key == HBAR_K_SET && HBAR.ctl.listening)) {
-					t->start = _GetTickMS();
-				}
+		if (HBAR.state[key] && !t->start) {
+			if (key == HBAR_K_SELECT || (key == HBAR_K_SET && HBAR.ctl.session)) {
+				t->start = _GetTickMS();
 			}
-		} else {
-			if (t->start > 0) {
-				t->time = _GetTickMS() - t->start;
-				t->start = 0;
-			}
+		}
+		else if (!HBAR.state[key] && t->start) {
+			t->time = _GetTickMS() - t->start;
+			t->start = 0;
 		}
 	}
 }
 
 void HBAR_RefreshSelectSet(void) {
-	if (HBAR.ctl.listening) {
-		// blinking
-		if ((_GetTickMS() - HBAR.ctl.tick.blink) >= MODE_BLINK_MS) {
-			HBAR.ctl.tick.blink = _GetTickMS();
-			HBAR.ctl.blink = !HBAR.ctl.blink;
-		}
-
-		// stop listening
+	if (HBAR.ctl.session) {
+		// stop session
 		if ((_GetTickMS() - HBAR.ctl.tick.session) >= MODE_SESSION_MS || Reversed()) {
-			HBAR.ctl.listening = 0;
-			HBAR.ctl.blink = 0;
+			HBAR.ctl.session = 0;
 			memset(HBAR.timer, 0, sizeof(HBAR.timer));
 		}
 	}
@@ -194,7 +185,7 @@ void HBAR_SetOdometer(uint8_t meter) {
 /* Private functions implementation
  * -------------------------------------------*/
 static uint8_t Reversed(void) {
-//	return HBAR.state[HBAR_K_REVERSE];
+	//	return HBAR.state[HBAR_K_REVERSE];
 	return MCU.Reversed();
 }
 

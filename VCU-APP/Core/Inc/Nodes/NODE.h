@@ -9,12 +9,11 @@
 #define INC_NODES_NODE_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Drivers/_canbus.h"
 #include "Libs/_utils.h"
 
 /* Exported defines
  * ---------------------------------------------------------*/
-#define NODE_RISE_TIME	((uint16_t)5000)
+#define NODE_TIMEOUT_MS	((uint16_t)5000)
 
 /* Exported struct
  * ------------------------------------------------------------*/
@@ -25,6 +24,15 @@ typedef struct {
 
 typedef struct {
 	node_data_t d;
+	struct {
+		void (*DebugGroup1)(void);
+		void (*DebugGroup2)(void);
+		void (*DebugVCU)(void);
+		void (*DebugGPS)(void);
+		void (*DebugMEMS)(void);
+		void (*DebugRMT)(void);
+		void (*DebugTASK)(void);
+	} t;
 	void (*Init)(void);
 	void (*Refresh)(void);
 } node_t;
@@ -38,5 +46,12 @@ extern node_t NODE;
 void NODE_Init(void);
 void NODE_Refresh(void);
 
+void NODE_TX_DebugGroup1(void);
+void NODE_TX_DebugGroup2(void);
+void NODE_TX_DebugVCU(void);
+void NODE_TX_DebugGPS(void);
+void NODE_TX_DebugMEMS(void);
+void NODE_TX_DebugRMT(void);
+void NODE_TX_DebugTASK(void);
 
 #endif /* INC_NODES_NODE_H_ */

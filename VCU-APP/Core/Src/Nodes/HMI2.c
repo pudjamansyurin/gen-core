@@ -40,7 +40,7 @@ void HMI2_Init(void) {
 }
 
 void HMI2_Refresh(void) {
-	HMI2.d.run = HMI2.d.tick && (_GetTickMS() - HMI2.d.tick) < HMI2_TIMEOUT;
+	HMI2.d.run = HMI2.d.tick && (_GetTickMS() - HMI2.d.tick) < HMI2_TIMEOUT_MS;
 
 	if (!HMI2.d.run) HMI2.d.mirroring = 0;
 }
@@ -59,7 +59,7 @@ void HMI2_PowerOn(void) {
 
 	// wait until turned ON by CAN
 	tick = _GetTickMS();
-	while (!HMI2.d.run && _GetTickMS() - tick < HMI2_POWER_ON_TIMEOUT)
+	while (!HMI2.d.run && _GetTickMS() - tick < HMI2_POWER_ON_MS)
 		;
 }
 
@@ -68,7 +68,7 @@ void HMI2_PowerOff(void) {
 
 	// wait until turned OFF by CAN
 	tick = _GetTickMS();
-	while (HMI2.d.run && _GetTickMS() - tick < HMI2_POWER_OFF_TIMEOUT)
+	while (HMI2.d.run && _GetTickMS() - tick < HMI2_POWER_OFF_MS)
 		;
 
 	GATE_Hmi2Stop();
@@ -77,7 +77,9 @@ void HMI2_PowerOff(void) {
 /* ====================================== CAN RX
  * =================================== */
 void HMI2_RX_State(can_rx_t *Rx) {
-	HMI2.d.mirroring = (Rx->data.u8[0] >> 0) & 0x01;
+	UNION64 *d = &(Rx->data);
+
+	HMI2.d.mirroring = (d->u8[0] >> 0) & 0x01;
 
 	// save state
 	HMI2.d.tick = _GetTickMS();

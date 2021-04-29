@@ -7,19 +7,15 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/VCU.h"
-#include "Drivers/_canbus.h"
-#include "Drivers/_simcom.h"
 #include "Drivers/_bat.h"
-#include "Libs/_reporter.h"
-#include "Libs/_eeprom.h"
+#include "Drivers/_simcom.h"
 #include "Libs/_hbar.h"
 #include "Libs/_remote.h"
 #include "Libs/_finger.h"
-#include "Nodes/BMS.h"
-#include "Nodes/HMI1.h"
-#include "Nodes/HMI2.h"
-#include "Nodes/MCU.h"
 #include "Nodes/NODE.h"
+#include "Nodes/MCU.h"
+#include "Nodes/BMS.h"
+#include "Nodes/HMI2.h"
 
 /* Public variables
  * -----------------------------------------------------------*/
@@ -45,9 +41,9 @@ extern osMessageQueueId_t ReportQueueHandle;
  * --------------------------------------------*/
 void VCU_Init(void) {
 	VCU.d.error = 0;
+	VCU.d.events = 0;
 	VCU.d.buffered = 0;
 	VCU.d.state = VEHICLE_BACKUP;
-	VCU.d.events = 0;
 }
 
 void VCU_Refresh(void) {
@@ -186,48 +182,50 @@ uint8_t VCU_ReadEvent(uint8_t bit) {
  * =================================== */
 uint8_t VCU_TX_Heartbeat(void) {
 	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
 
-	Tx.data.u16[0] = VCU_VERSION;
+	d->u16[0] = VCU_VERSION;
 
 	return CANBUS_Write(&Tx, CAND_VCU, 2, 0);
 }
 
 uint8_t VCU_TX_SwitchControl(void) {
 	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
 
-	Tx.data.u8[0] = HBAR.state[HBAR_K_ABS];
-	Tx.data.u8[0] |= HMI2.d.mirroring << 1;
-	Tx.data.u8[0] |= HBAR.state[HBAR_K_LAMP] << 2;
-	Tx.data.u8[0] |= NODE.d.error << 3;
-	Tx.data.u8[0] |= NODE.d.overheat << 4;
-	Tx.data.u8[0] |= !FGR.d.id << 5;
-	Tx.data.u8[0] |= !RMT.d.nearby << 6;
-	Tx.data.u8[0] |= RTC_Daylight() << 7;
+	d->u8[0] = HBAR.state[HBAR_K_ABS];
+	d->u8[0] |= HMI2.d.mirroring << 1;
+	d->u8[0] |= HBAR.state[HBAR_K_LAMP] << 2;
+	d->u8[0] |= NODE.d.error << 3;
+	d->u8[0] |= NODE.d.overheat << 4;
+	d->u8[0] |= !FGR.d.id << 5;
+	d->u8[0] |= !RMT.d.nearby << 6;
+	d->u8[0] |= RTC_Daylight() << 7;
 
 	// sein value
 	hbar_sein_t sein = HBAR_SeinController();
-	Tx.data.u8[1] = sein.left;
-	Tx.data.u8[1] |= sein.right << 1;
-//	Tx.data.u8[1] |= HBAR.state[HBAR_K_REVERSE] << 2;
-	Tx.data.u8[1] |= MCU.Reversed() << 2;
-	Tx.data.u8[1] |= BMS.d.run << 3;
-	Tx.data.u8[1] |= MCU.d.run << 4;
-	Tx.data.u8[1] |= (FGR.d.registering & 0x03) << 5;
+	d->u8[1] = sein.left;
+	d->u8[1] |= sein.right << 1;
+	//	d->u8[1] |= HBAR.state[HBAR_K_REVERSE] << 2;
+	d->u8[1] |= MCU.Reversed() << 2;
+	d->u8[1] |= BMS.d.run << 3;
+	d->u8[1] |= MCU.d.run << 4;
+	d->u8[1] |= (FGR.d.registering & 0x03) << 5;
 
 	// mode
-	Tx.data.u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
-//	Tx.data.u8[2] = MCU.d.drive_mode;
-	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
-	Tx.data.u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
-	Tx.data.u8[2] |= HBAR.d.m << 5;
-	Tx.data.u8[2] |= HBAR.ctl.blink << 7;
+	d->u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
+	//	d->u8[2] = MCU.d.drive_mode;
+	d->u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
+	d->u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
+	d->u8[2] |= HBAR.d.m << 5;
+	d->u8[2] |= (HBAR.ctl.session > 0) << 7;
 
 	// others
-	Tx.data.u8[3] = MCU.RpmToSpeed(MCU.d.rpm);
-	Tx.data.u8[4] = (uint8_t)MCU.d.dcbus.current;
-	Tx.data.u8[5] = BMS.d.soc;
-	Tx.data.u8[6] = SIM.d.signal;
-	Tx.data.u8[7] = VCU.d.state;
+	d->u8[3] = MCU.RpmToSpeed(MCU.d.rpm);
+	d->u8[4] = (uint8_t)MCU.d.dcbus.current;
+	d->u8[5] = BMS.d.soc;
+	d->u8[6] = SIM.d.signal;
+	d->u8[7] = VCU.d.state;
 
 	// send message
 	return CANBUS_Write(&Tx, CAND_VCU_SWITCH_CTL, 8, 0);
@@ -235,31 +233,32 @@ uint8_t VCU_TX_SwitchControl(void) {
 
 uint8_t VCU_TX_Datetime(datetime_t dt) {
 	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
+
 	uint8_t hmi2shutdown = VCU.d.state < VEHICLE_STANDBY;
 
-	Tx.data.u8[0] = dt.Seconds;
-	Tx.data.u8[1] = dt.Minutes;
-	Tx.data.u8[2] = dt.Hours;
-	Tx.data.u8[3] = dt.Date;
-	Tx.data.u8[4] = dt.Month;
-	Tx.data.u8[5] = dt.Year;
-	Tx.data.u8[6] = dt.WeekDay;
-	Tx.data.u8[7] = hmi2shutdown;
+	d->u8[0] = dt.Seconds;
+	d->u8[1] = dt.Minutes;
+	d->u8[2] = dt.Hours;
+	d->u8[3] = dt.Date;
+	d->u8[4] = dt.Month;
+	d->u8[5] = dt.Year;
+	d->u8[6] = dt.WeekDay;
+	d->u8[7] = hmi2shutdown;
 
 	return CANBUS_Write(&Tx, CAND_VCU_DATETIME, 8, 0);
 }
 
 uint8_t VCU_TX_ModeData(void) {
 	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
 
-	Tx.data.u16[0] = HBAR.d.trip[HBAR_M_TRIP_A];
-	Tx.data.u16[1] = HBAR.d.trip[HBAR_M_TRIP_B];
-	Tx.data.u16[2] = HBAR.d.trip[HBAR_M_TRIP_ODO];
-	Tx.data.u8[6] = HBAR.d.report[HBAR_M_REPORT_RANGE];
-	Tx.data.u8[7] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
+	d->u16[0] = HBAR.d.trip[HBAR_M_TRIP_A];
+	d->u16[1] = HBAR.d.trip[HBAR_M_TRIP_B];
+	d->u16[2] = HBAR.d.trip[HBAR_M_TRIP_ODO];
+	d->u8[6] = HBAR.d.report[HBAR_M_REPORT_RANGE];
+	d->u8[7] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
 
 	return CANBUS_Write(&Tx, CAND_VCU_MODE_DATA, 8, 0);
 }
-
-
 /* Private functions implementation -------------------------------------------*/
