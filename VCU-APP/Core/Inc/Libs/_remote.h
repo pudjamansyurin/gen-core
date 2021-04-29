@@ -29,6 +29,7 @@ typedef enum { RMT_MODE_NORMAL = 0, RMT_MODE_PAIRING } RMT_MODE;
 typedef struct {
 	uint8_t active;
 	uint8_t nearby;
+	uint32_t pairing_aes[4];
 	struct {
 		uint32_t ping;
 		uint32_t heartbeat;
@@ -39,7 +40,6 @@ typedef struct {
 		uint8_t tx;
 		uint8_t rx;
 	} duration;
-	uint32_t pairing_aes[4];
 } remote_data_t;
 
 typedef struct {

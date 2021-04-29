@@ -36,7 +36,7 @@
 #define MCU_SPEED_MAX_KPH ((uint8_t)150)
 #define SIMCOM_MIN_MV ((uint16_t)3300)
 #define HMI_FOTA_MS ((uint32_t)20000)
-#define VCU_LOST_MODE_MS ((uint16_t)(5 * 60 * 1000))
+#define VCU_LOST_MODE_S ((uint16_t)(5 * 60))
 
 /* Exported typedef ----------------------------------------------------------*/
 typedef enum {

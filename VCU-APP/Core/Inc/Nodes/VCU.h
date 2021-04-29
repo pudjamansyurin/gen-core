@@ -28,7 +28,6 @@ typedef enum {
 /* Exported struct
  * --------------------------------------------------------------*/
 typedef struct {
-	uint8_t debugging;
 	uint8_t error;
 	uint8_t buffered;
 	uint16_t events;

@@ -61,7 +61,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	uint8_t active;
-	uint8_t detector;
+	uint8_t det_active;
 	struct __attribute__((packed)) {
 		int16_t x;
 		int16_t y;
@@ -75,7 +75,7 @@ typedef struct __attribute__((packed)) {
 	struct __attribute__((packed)) {
 		int16_t pitch;
 		int16_t roll;
-	} ypr;
+	} tilt;
 	struct __attribute__((packed)) {
 		uint16_t accel;
 		uint16_t gyro;

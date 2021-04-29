@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Nodes/NODE.h"
+#include "Drivers/_aes.h"
 #include "Libs/_remote.h"
 #include "Libs/_finger.h"
 #include "Libs/_debugger.h"
@@ -21,13 +22,13 @@
 node_t NODE = {
 		.d = {0},
 		.t = {
-				NODE_TX_DebugGroup1,
-				NODE_TX_DebugGroup2,
+				NODE_TX_DebugGroup,
 				NODE_TX_DebugVCU,
 				NODE_TX_DebugGPS,
 				NODE_TX_DebugMEMS,
 				NODE_TX_DebugRMT,
 				NODE_TX_DebugTASK,
+				NODE_TX_DebugMCU,
 		},
 		.Init = NODE_Init,
 		.Refresh = NODE_Refresh,
@@ -55,6 +56,9 @@ void NODE_Refresh(void) {
 
 	NODE.d.overheat = BMS.d.overheat || MCU.d.overheat;
 	NODE.d.error = VCU.d.error || eBMS || eMCU;
+	NODE.d.debugging = NODE.d.tick.dbg && (_GetTickMS() - NODE.d.tick.dbg) < NODE_DEBUG_MS;
+	if (!NODE.d.debugging)
+		memset(&(NODE.d.dbg), 0, sizeof(NODE.d.dbg));
 
 	BMS.RefreshIndex();
 	MCU.Refresh();
@@ -62,9 +66,28 @@ void NODE_Refresh(void) {
 	HMI2.Refresh();
 }
 
+/* ====================================== CAN RX
+ * =================================== */
+void NODE_RX_Debug(can_rx_t *Rx) {
+	UNION64 *d = &(Rx->data);
+
+	// read the content
+	NODE.d.dbg.group = (d->u8[0] >> 0) & 0x01;
+	NODE.d.dbg.vcu = (d->u8[0] >> 1) & 0x01;
+	NODE.d.dbg.gps = (d->u8[0] >> 2) & 0x01;
+	NODE.d.dbg.mems = (d->u8[0] >> 3) & 0x01;
+	NODE.d.dbg.rmt = (d->u8[0] >> 4) & 0x01;
+	NODE.d.dbg.task = (d->u8[0] >> 5) & 0x01;
+	NODE.d.dbg.mcu = (d->u8[0] >> 6) & 0x01;
+
+	NODE.d.tick.dbg = _GetTickMS();
+}
+
 /* ====================================== CAN TX
  * =================================== */
-void NODE_TX_DebugGroup1(void) {
+void NODE_TX_DebugGroup(void) {
+	if (!NODE.d.dbg.group) return;
+
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -85,57 +108,27 @@ void NODE_TX_DebugGroup1(void) {
 	d->u8[3] |= (audio.mute & 0x01) << 1;
 	d->u8[4] = audio.volume;
 
-	mcu_dbg_t mcu;
-	DBG_GetMCU(&mcu);
-	d->u8[5] = (mcu.active & 0x01);
-	d->u8[5] |= (mcu.run & 0x01) << 1;
-	d->u8[5] |= (MCU.set.rpm_max & 0x01) << 2;
-	d->u8[5] |= (MCU.set.template & 0x01) << 3;
-	d->u8[5] |= (MCU.synced.rpm_max & 0x01) << 4;
-	d->u8[5] |= (MCU.synced.template & 0x01) << 5;
-
 	bms_dbg_t bms;
 	DBG_GetBMS(&bms);
-	d->u8[6] = (bms.active & 0x01);
-	d->u8[6] |= (bms.run & 0x01) << 1;
-	d->u8[7] = bms.soc;
+	d->u8[5] = (bms.active & 0x01);
+	d->u8[5] |= (bms.run & 0x01) << 1;
+	d->u8[6] = bms.soc;
 
-	CANBUS_Write(&Tx, CAND_DBG_GROUP_1, 8, 0);
-}
+	d->u8[7] = (HBAR.state[HBAR_K_SELECT] & 0x01);
+	d->u8[7] |= (HBAR.state[HBAR_K_SET] & 0x01) << 1;
+	d->u8[7] |= (HBAR.state[HBAR_K_STARTER] & 0x01) << 2;
+	d->u8[7] |= (HBAR.state[HBAR_K_SEIN_L] & 0x01) << 3;
+	d->u8[7] |= (HBAR.state[HBAR_K_SEIN_R] & 0x01) << 4;
+	d->u8[7] |= (HBAR.state[HBAR_K_REVERSE] & 0x01) << 5;
+	d->u8[7] |= (HBAR.state[HBAR_K_LAMP] & 0x01) << 6;
+	d->u8[7] |= (HBAR.state[HBAR_K_ABS] & 0x01) << 7;
 
-void NODE_TX_DebugGroup2(void) {
-	can_tx_t Tx = {0};
-	UNION64 *d = &(Tx.data);
-
-	mems_dbg_t mems;
-	DBG_GetMEMS(&mems);
-	d->u8[0] = (mems.active & 0x01);
-	d->u8[0] |= (mems.detector & 0x01) << 1;
-	d->u8[0] |= (MEMS.d.fall & 0x01) << 2;
-	d->u8[0] |= (MEMS.d.crash & 0x01) << 3;
-	d->u8[1] = MEMS.det.offset;
-
-	remote_dbg_t rmt;
-	DBG_GetRMT(&rmt);
-	d->u8[2] = (rmt.active & 0x01);
-	d->u8[2] |= (rmt.nearby & 0x01) << 1;
-	d->u8[3] = RMT.d.duration.tx;
-	d->u8[4] = RMT.d.duration.rx;
-
-	d->u8[5] = HBAR.ctl.starter;
-	d->u8[6] = (HBAR.state[HBAR_K_SELECT] & 0x01);
-	d->u8[6] |= (HBAR.state[HBAR_K_SET] & 0x01) << 1;
-	d->u8[6] |= (HBAR.state[HBAR_K_STARTER] & 0x01) << 2;
-	d->u8[6] |= (HBAR.state[HBAR_K_SEIN_L] & 0x01) << 3;
-	d->u8[6] |= (HBAR.state[HBAR_K_SEIN_R] & 0x01) << 4;
-	d->u8[6] |= (HBAR.state[HBAR_K_REVERSE] & 0x01) << 5;
-	d->u8[6] |= (HBAR.state[HBAR_K_LAMP] & 0x01) << 6;
-	d->u8[6] |= (HBAR.state[HBAR_K_ABS] & 0x01) << 7;
-
-	CANBUS_Write(&Tx, CAND_DBG_GROUP_2, 7, 0);
+	CANBUS_Write(&Tx, CAND_DBG_GROUP, 8, 0);
 }
 
 void NODE_TX_DebugVCU(void) {
+	if (!NODE.d.dbg.vcu) return;
+
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -150,6 +143,8 @@ void NODE_TX_DebugVCU(void) {
 }
 
 void NODE_TX_DebugGPS(void) {
+	if (!NODE.d.dbg.gps) return;
+
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -171,44 +166,64 @@ void NODE_TX_DebugGPS(void) {
 }
 
 void NODE_TX_DebugMEMS(void) {
+	if (!NODE.d.dbg.mems) return;
+
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
 	mems_dbg_t mems;
 	DBG_GetMEMS(&mems);
 
+	d->u8[0] = (mems.active & 0x01);
+	d->u8[0] |= (mems.det_active & 0x01) << 1;
+	d->u8[0] |= (MEMS.d.fall & 0x01) << 2;
+	d->u8[0] |= (MEMS.d.crash & 0x01) << 3;
+	d->u8[1] = MEMS.det.offset;
+	CANBUS_Write(&Tx, CAND_DBG_MEMS_1, 2, 0);
+
 	d->s16[0] = mems.accel.x;
 	d->s16[1] = mems.accel.y;
 	d->s16[2] = mems.accel.z;
 	d->u16[3] = mems.total.accel;
-	CANBUS_Write(&Tx, CAND_DBG_MEMS_1, 8, 0);
+	CANBUS_Write(&Tx, CAND_DBG_MEMS_2, 8, 0);
 
 	d->s16[0] = mems.gyro.x;
 	d->s16[1] = mems.gyro.y;
 	d->s16[2] = mems.gyro.z;
 	d->u16[3] = mems.total.gyro;
-	CANBUS_Write(&Tx, CAND_DBG_MEMS_2, 8, 0);
+	CANBUS_Write(&Tx, CAND_DBG_MEMS_3, 8, 0);
 
-	d->s16[0] = mems.ypr.pitch;
-	d->s16[1] = mems.ypr.roll;
+	d->s16[0] = mems.tilt.pitch;
+	d->s16[1] = mems.tilt.roll;
 	d->u16[2] = mems.total.tilt;
 	d->u16[3] = mems.total.temp;
-	CANBUS_Write(&Tx, CAND_DBG_MEMS_3, 8, 0);
+	CANBUS_Write(&Tx, CAND_DBG_MEMS_4, 8, 0);
 }
 
 void NODE_TX_DebugRMT(void) {
+	if (!NODE.d.dbg.rmt) return;
+
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
 	remote_dbg_t rmt;
 	DBG_GetRMT(&rmt);
 
+	d->u8[0] = (rmt.active & 0x01);
+	d->u8[0] |= (rmt.nearby & 0x01) << 1;
+	d->u8[1] = RMT.d.duration.tx;
+	d->u8[2] = RMT.d.duration.rx;
+	d->u32[1] = AES_KEY[0];
+	CANBUS_Write(&Tx, CAND_DBG_RMT_1, 8, 0);
+
 	d->u32[0] = RMT.d.tick.ping;
 	d->u32[1] = RMT.d.tick.heartbeat;
-	CANBUS_Write(&Tx, CAND_DBG_RMT, 8, 0);
+	CANBUS_Write(&Tx, CAND_DBG_RMT_2, 8, 0);
 }
 
 void NODE_TX_DebugTASK(void) {
+	if (!NODE.d.dbg.task) return;
+
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -252,4 +267,33 @@ void NODE_TX_DebugTASK(void) {
 	DBG_GetVCU(&vcu);
 	d->u32[1] = vcu.uptime;
 	CANBUS_Write(&Tx, CAND_DBG_TASK_5, 8, 0);
+}
+
+
+void NODE_TX_DebugMCU(void) {
+	if (!NODE.d.dbg.mcu) return;
+
+	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
+
+	mcu_dbg_t mcu;
+	DBG_GetMCU(&mcu);
+
+	d->u8[0] = (mcu.active & 0x01);
+	d->u8[0] |= (mcu.run & 0x01) << 1;
+	d->u8[0] |= (MCU.set.rpm_max & 0x01) << 2;
+	d->u8[0] |= (MCU.set.template & 0x01) << 3;
+	d->u8[0] |= (MCU.synced.rpm_max & 0x01) << 4;
+	d->u8[0] |= (MCU.synced.template & 0x01) << 5;
+	d->u8[1] = mcu.par.speed_max;
+	d->s16[1] = mcu.par.tpl[0].discur_max;
+	d->s16[2] = mcu.par.tpl[1].discur_max;
+	d->s16[3] = mcu.par.tpl[2].discur_max;
+	CANBUS_Write(&Tx, CAND_DBG_MCU_1, 8, 0);
+
+	d->s16[0] = mcu.par.rpm_max;
+	d->s16[1] = mcu.par.tpl[0].torque_max;
+	d->s16[2] = mcu.par.tpl[1].torque_max;
+	d->s16[3] = mcu.par.tpl[2].torque_max;
+	CANBUS_Write(&Tx, CAND_DBG_MCU_2, 8, 0);
 }

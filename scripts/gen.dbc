@@ -36,176 +36,310 @@ BS_:
 BU_: HMI1 HMI2 VCU BMS MCU
 
 
-BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
- SG_ RangeReportVal : 16|8@1+ (1,0) [0|0] "km"  HMI1
- SG_ AverageReportVal : 24|8@1+ (1,0) [0|0] "km/kwh"  HMI1
+BO_ 1984 HMI1_Heartbeat: 2 HMI1
+ SG_ HMI1__Version : 0|16@1+ (1,0) [0|0] ""  VCU
 
-BO_ 1984 HMI1Heartbeat: 2 HMI1
- SG_ HMI1Version : 0|16@1+ (1,0) [0|65535] ""  VCU
+BO_ 1968 VCU_Heartbeat: 2 VCU
+ SG_ VCU__Version : 0|16@1+ (1,0) [0|0] "" Vector__XXX
 
-BO_ 1968 VCUHeartbeat: 2 VCU
- SG_ VCUVersion : 0|16@1+ (1,0) [0|65535] "" Vector__XXX
+BO_ 2000 HMI2_Heartbeat: 2 HMI2
+ SG_ HMI2__Version : 0|16@1+ (1,0) [0|0] ""  VCU
 
-BO_ 2000 HMI2Heartbeat: 2 HMI2
- SG_ HMI2Version : 0|16@1+ (1,0) [0|65535] ""  VCU
+BO_ 42 VCU_SwitchControl: 8 VCU
+ SG_ VCU__ABS_State : 0|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__MirroringState : 1|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__LampState : 2|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__ErrorState : 3|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__OverheatState : 4|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__FingerState : 5|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__RemoteState : 6|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__DaylightState : 7|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__SeinLeftState : 8|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__SeinRightState : 9|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__HbarReverseState : 10|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__DriveMode : 16|2@1+ (1,0) [0|2] ""  HMI1
+ SG_ VCU__TripMode : 18|2@1+ (1,0) [0|2] ""  HMI1
+ SG_ VCU__ReportMode : 20|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__ModeState : 21|2@1+ (1,0) [0|2] ""  HMI1
+ SG_ VCU__ModeSession : 23|1@1+ (1,0) [0|1] ""  HMI1
+ SG_ VCU__Speed : 24|8@1+ (1,0) [0|0] "kph"  HMI1
+ SG_ VCU__MCUDisCur : 32|8@1+ (1,0) [0|0] "A"  HMI1
+ SG_ VCU__NetSignal : 48|8@1+ (1,0) [0|100] "%"  HMI1
+ SG_ VCU__BMSSoc : 40|8@1+ (1,0) [0|100] "%"  HMI1
+ SG_ VCU__VehicleState : 56|8@1- (1,0) [0|0] ""  HMI1
+ SG_ VCU__BMSRun : 11|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__MCURun : 12|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__FingerBlink : 13|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__FingerError : 14|1@1+ (1,0) [0|0] ""  HMI1
 
-BO_ 42 VCUSwitchControl: 8 VCU
- SG_ ABSState : 0|1@1+ (1,0) [0|1] ""  HMI1
- SG_ MirroringState : 1|1@1+ (1,0) [0|1] ""  HMI1
- SG_ LampState : 2|1@1+ (1,0) [0|1] ""  HMI1
- SG_ ErrorState : 3|1@1+ (1,0) [0|1] ""  HMI1
- SG_ OverheatState : 4|1@1+ (1,0) [0|1] ""  HMI1
- SG_ FingerState : 5|1@1+ (1,0) [0|1] ""  HMI1
- SG_ RemoteState : 6|1@1+ (1,0) [0|1] ""  HMI1
- SG_ DaylightState : 7|1@1+ (1,0) [0|1] ""  HMI1
- SG_ SeinLeftState : 8|1@1+ (1,0) [0|1] ""  HMI1
- SG_ SeinRightState : 9|1@1+ (1,0) [0|1] ""  HMI1
- SG_ HbarReverseState : 10|1@1+ (1,0) [0|1] ""  HMI1
- SG_ DriveMode : 16|2@1+ (1,0) [0|2] ""  HMI1
- SG_ TripMode : 18|2@1+ (1,0) [0|2] ""  HMI1
- SG_ ReportMode : 20|1@1+ (1,0) [0|1] ""  HMI1
- SG_ ModeState : 21|2@1+ (1,0) [0|2] ""  HMI1
- SG_ ModeHide : 23|1@1+ (1,0) [0|1] ""  HMI1
- SG_ SpeedVal : 24|8@1+ (1,0) [0|0] "km/h"  HMI1
- SG_ DiscurVal : 32|8@1+ (1,0) [0|0] "A"  HMI1
- SG_ NetSignalVal : 48|8@1+ (1,0) [0|100] "%"  HMI1
- SG_ BMSSocVal : 40|8@1+ (1,0) [0|100] "%"  HMI1
- SG_ VehicleState : 56|8@1- (1,0) [0|0] "" Vector__XXX
- SG_ BMSRun : 11|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ MCURun : 12|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ FGRRegisterBlink : 13|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ FGRRegisterError : 14|1@1+ (1,0) [0|0] "" Vector__XXX
+BO_ 44 VCU_Datetime: 8 VCU
+ SG_ VCU__TimeSecond : 0|8@1+ (1,0) [0|60] ""  HMI2
+ SG_ VCU__TimeMinute : 8|8@1+ (1,0) [0|60] ""  HMI2
+ SG_ VCU__TimeHour : 16|8@1+ (1,0) [0|24] ""  HMI2
+ SG_ VCU__TimeDate : 24|8@1+ (1,0) [0|31] ""  HMI2
+ SG_ VCU__TimeMonth : 32|8@1+ (1,0) [0|12] ""  HMI2
+ SG_ VCU__TimeYear : 40|8@1+ (1,0) [0|0] ""  HMI2
+ SG_ VCU__HMI2ShutdownReq : 48|8@1+ (1,0) [0|1] ""  HMI2
 
-BO_ 44 VCUDatetime: 8 VCU
- SG_ Seconds : 0|8@1+ (1,0) [0|60] ""  HMI2
- SG_ Minutes : 8|8@1+ (1,0) [0|60] ""  HMI2
- SG_ Hours : 16|8@1+ (1,0) [0|24] ""  HMI2
- SG_ Date : 24|8@1+ (1,0) [0|31] ""  HMI2
- SG_ Month : 32|8@1+ (1,0) [0|12] ""  HMI2
- SG_ Year : 40|8@1+ (1,0) [0|0] ""  HMI2
- SG_ HMI2ShutdownReq : 48|8@1+ (1,0) [0|1] ""  HMI2
+BO_ 43 VCU_ModeData: 8 VCU
+ SG_ VCU__TripA : 0|16@1+ (1,0) [0|0] "km"  HMI1
+ SG_ VCU__TripB : 16|16@1+ (1,0) [0|0] "km"  HMI1
+ SG_ VCU__TripOdom : 32|16@1+ (1,0) [0|0] "km"  HMI1
+ SG_ VCU__ReportRange : 48|8@1+ (1,0) [0|0] "km"  HMI1
+ SG_ VCU__ReportAverage : 56|8@1+ (1,0) [0|0] "km/kwh"  HMI1
 
-BO_ 43 VCUModeData: 8 VCU
- SG_ TripAVal : 0|16@1+ (1,0) [0|0] "km"  HMI1
- SG_ TripBVal : 16|16@1+ (1,0) [0|0] "km"  HMI1
- SG_ TripOdomVal : 32|16@1+ (1,0) [0|0] "km"  HMI1
- SG_ ReportRangeVal : 48|8@1+ (1,0) [0|0] "km" Vector__XXX
- SG_ ReportAverageVal : 56|8@1+ (1,0) [0|0] "km/kwh" Vector__XXX
+BO_ 434 BMS_Setting: 8 VCU
+ SG_ BMS__SetState : 1|2@1+ (1,0) [0|3] ""  BMS
+ SG_ BMS__SetRecoverSC : 8|1@1+ (1,0) [0|1] ""  BMS
+ SG_ BMS__SetSocScalling : 16|2@1+ (1,0) [0|3] ""  BMS
 
-BO_ 434 BMSSetting: 8 VCU
- SG_ BMSState : 1|2@1+ (1,0) [0|3] ""  BMS
- SG_ RecoverShortCircuit : 8|1@1+ (1,0) [0|1] ""  BMS
- SG_ SocScalling : 16|2@1+ (1,0) [0|3] ""  BMS
+BO_ 192 MCU_Setting: 7 VCU
+ SG_ MCU__SetDirectionForward : 32|1@1+ (1,0) [0|0] ""  MCU
+ SG_ MCU__SetInvEnable : 40|1@1+ (1,0) [0|0] ""  MCU
+ SG_ MCU__SetInvDischargeEnable : 41|1@1+ (1,0) [0|0] ""  MCU
+ SG_ MCU__SetDrivingMode : 42|2@1+ (1,0) [0|0] ""  MCU
 
-BO_ 192 MCUSetting: 7 VCU
- SG_ DirectionCommand : 32|1@1+ (1,0) [0|0] ""  MCU
- SG_ InverterEnable : 40|1@1+ (1,0) [0|0] ""  MCU
- SG_ InverterDischargeEnable : 41|1@1+ (1,0) [0|0] ""  MCU
- SG_ DrivingMode : 42|2@1+ (1,0) [0|0] ""  MCU
+BO_ 193 MCU_ParamTX: 6 VCU
+ SG_ MCU__ParamTX : 0|16@1+ (1,0) [0|0] ""  MCU
+ SG_ MCU__CommandTX : 16|8@1+ (1,0) [0|0] ""  MCU
+ SG_ MCU__DataTX : 32|16@1+ (1,0) [0|0] ""  MCU
 
-BO_ 193 MCUParamTX: 6 VCU
- SG_ ParamTX : 0|16@1+ (1,0) [0|0] ""  MCU
- SG_ CommandTX : 16|8@1+ (1,0) [0|0] ""  MCU
- SG_ DataTX : 32|16@1+ (1,0) [0|0] ""  MCU
+BO_ 194 MCU_ParamRX: 6 MCU
+ SG_ MCU__ParamRX : 0|16@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__CommandRX : 16|8@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__DataRX : 32|16@1+ (1,0) [0|0] ""  VCU
 
-BO_ 194 MCUParamRX: 6 MCU
- SG_ ParamRX : 0|16@1+ (1,0) [0|0] ""  VCU
- SG_ CommandRX : 16|8@1+ (1,0) [0|0] ""  VCU
- SG_ DataRX : 32|16@1+ (1,0) [0|0] ""  VCU
+BO_ 160 MCU_Temperatures: 8 MCU
+ SG_ MCU__ModuleTempA : 0|16@1- (0.1,0) [0|0] "C"  VCU
+ SG_ MCU__ModuleTempB : 16|16@1- (0.1,0) [0|0] "C"  VCU
+ SG_ MCU__ModuleTempC : 32|16@1- (0.1,0) [0|0] "C"  VCU
+ SG_ MCU__ControlBoardTemp : 48|16@1- (0.1,0) [0|0] "C"  VCU
 
-BO_ 160 MCUTemperatures: 8 MCU
- SG_ ModuleTempA : 0|16@1- (0.1,0) [0|0] "Celcius"  VCU
- SG_ ModuleTempB : 16|16@1- (0.1,0) [0|0] "Celcius"  VCU
- SG_ ModuleTempC : 32|16@1- (0.1,0) [0|0] "Celcius"  VCU
- SG_ ControlBoardTemp : 48|16@1- (0.1,0) [0|0] "Celcius"  VCU
+BO_ 161 MCU_Torque: 8 MCU
+ SG_ MCU__MotorTemp : 0|16@1- (0.1,0) [0|0] "C"  VCU
+ SG_ MCU__MotorRPM : 16|16@1- (1,0) [0|0] "rpm"  VCU
+ SG_ MCU__TorqueCommanded : 32|16@1- (0.1,0) [0|0] "Nm"  VCU
+ SG_ MCU__TorqueFeedback : 48|16@1- (0.1,0) [0|0] "Nm"  VCU
 
-BO_ 161 MCUTorque: 8 MCU
- SG_ MotorTemp : 0|16@1- (0.1,0) [0|0] "Celcius"  VCU
- SG_ MotorRPM : 16|16@1- (1,0) [0|0] "rpm"  VCU
- SG_ TorqueCommanded : 32|16@1- (0.1,0) [0|0] "Nm"  VCU
- SG_ TorqueFeedback : 48|16@1- (0.1,0) [0|0] "Nm"  VCU
+BO_ 162 MCU_Current: 8 MCU
+ SG_ MCU__PhaseCurrentA : 0|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ MCU__PhaseCurrentB : 16|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ MCU__PhaseCurrentC : 32|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ MCU__DCBusCurrent : 48|16@1- (0.1,0) [0|0] "A"  VCU
 
-BO_ 162 MCUCurrent: 8 MCU
- SG_ PhaseCurrentA : 0|16@1- (0.1,0) [0|0] "A"  VCU
- SG_ PhaseCurrentB : 16|16@1- (0.1,0) [0|0] "A"  VCU
- SG_ PhaseCurrentC : 32|16@1- (0.1,0) [0|0] "A"  VCU
- SG_ DCBusCurrent : 48|16@1- (0.1,0) [0|0] "A"  VCU
+BO_ 163 MCU_CurrentDQ: 8 MCU
+ SG_ MCU__CommandedD : 0|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ MCU__CommandedQ : 16|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ MCU__FeedbackD : 32|16@1- (0.1,0) [0|0] "A"  VCU
+ SG_ MCU__FeedbackQ : 48|16@1- (0.1,0) [0|0] "A"  VCU
 
-BO_ 163 MCUCurrentDQ: 8 MCU
- SG_ Commanded_D : 0|16@1- (0.1,0) [0|0] "A"  VCU
- SG_ Commanded_Q : 16|16@1- (0.1,0) [0|0] "A"  VCU
- SG_ Feedback_D : 32|16@1- (0.1,0) [0|0] "A"  VCU
- SG_ Feedback_Q : 48|16@1- (0.1,0) [0|0] "A"  VCU
+BO_ 164 MCU_FaultCodes: 8 MCU
+ SG_ MCU__FaultPOST : 0|32@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__FaultRUN : 32|32@1+ (1,0) [0|0] ""  VCU
 
-BO_ 164 MCUFaultCodes: 8 MCU
- SG_ FaultPOST : 0|32@1+ (1,0) [0|0] ""  VCU
- SG_ FaultRUN : 32|32@1+ (1,0) [0|0] ""  VCU
+BO_ 165 MCU_Modulation: 8 MCU
+ SG_ MCU__ModulationIndex : 0|16@1- (0.001,0) [0|0] ""  VCU
+ SG_ MCU__DCBusVoltage : 16|16@1- (0.1,0) [0|0] "V"  VCU
+ SG_ MCU__Uptime : 32|32@1+ (0.003,0) [0|0] "s"  VCU
 
-BO_ 165 MCUModulation: 8 MCU
- SG_ ModulationIndex : 0|16@1- (0.001,0) [0|0] ""  VCU
- SG_ DCBusVoltage : 16|16@1- (0.1,0) [0|0] "Volt"  VCU
- SG_ Uptime : 32|32@1+ (0.003,0) [0|0] "Second"  VCU
+BO_ 166 MCU_InternalStates: 8 MCU
+ SG_ MCU__VSMState : 0|16@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__InvState : 16|8@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__DrivingMode : 32|2@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__InvActiveDischarge : 37|3@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__InvCommandMode : 40|8@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__InvEnabled : 48|1@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__InvLockout : 55|1@1+ (1,0) [0|0] ""  VCU
+ SG_ MCU__DirectionForward : 56|8@1+ (1,0) [0|0] ""  VCU
 
-BO_ 166 MCUInternalStates: 8 MCU
- SG_ VSMState : 0|16@1+ (1,0) [0|0] ""  VCU
- SG_ InverterState : 16|8@1+ (1,0) [0|0] ""  VCU
- SG_ DrivingModeStatus : 32|2@1+ (1,0) [0|0] ""  VCU
- SG_ InverterActiveDischarge : 37|3@1+ (1,0) [0|0] ""  VCU
- SG_ InverterCommandMode : 40|8@1+ (1,0) [0|0] ""  VCU
- SG_ InverterEnabled : 48|1@1+ (1,0) [0|0] ""  VCU
- SG_ InverterLockout : 55|1@1+ (1,0) [0|0] ""  VCU
- SG_ DirectionForward : 56|8@1+ (1,0) [0|0] ""  VCU
+BO_ 26 DFU_Progress: 8 VCU
+ SG_ DFU__DeviceType : 0|32@1+ (1,0) [0|0] ""  HMI1
+ SG_ DFU__Progress : 32|32@1- (1,0) [0|0] "%"  HMI1
 
-BO_ 26 DFUProgress: 8 VCU
- SG_ DeviceType : 0|32@1+ (1,0) [0|0] ""  HMI1
- SG_ Progress : 32|32@1- (1,0) [0|0] "%"  HMI1
+BO_ 27 DFU_CRC: 4 HMI1
+ SG_ DFU__CurrentCRC : 0|32@1+ (1,0) [0|0] ""  VCU
 
-BO_ 27 DFUCrc: 4 HMI1
- SG_ CrcOldVal : 0|32@1+ (1,0) [0|0] ""  VCU
+BO_ 28 DFU_Pra: 4 VCU
+ SG_ DFU__FirmwareSize : 0|32@1+ (1,0) [0|0] ""  HMI1
 
-BO_ 28 DFUPra: 4 VCU
- SG_ FirmwareSize : 0|32@1+ (1,0) [0|0] ""  HMI1
+BO_ 29 DFU_Init: 6 VCU
+ SG_ DFU__FirmwareOffset : 0|32@1+ (1,0) [0|0] ""  HMI1
+ SG_ DFU__BlockOffset : 32|16@1+ (1,0) [0|0] ""  HMI1
 
-BO_ 29 DFUInit: 6 VCU
- SG_ FirmwareOffset : 0|32@1+ (1,0) [0|0] ""  HMI1
- SG_ BlockOffset : 32|16@1+ (1,0) [0|0] ""  HMI1
+BO_ 30 DFU_Run: 8 VCU
+ SG_ DFU__SubBlockOffset : 0|16@1+ (1,0) [0|0] ""  HMI1
+ SG_ DFU__FirmwareData : 32|32@1+ (1,0) [0|0] ""  HMI1
 
-BO_ 30 DFURun: 8 VCU
- SG_ SubBlockOffset : 0|16@1+ (1,0) [0|0] ""  HMI1
- SG_ FirmwareData : 32|32@1+ (1,0) [0|0] ""  HMI1
+BO_ 31 DFU_Pasca: 4 VCU
+ SG_ DFU__NewestCRC : 0|32@1+ (1,0) [0|0] ""  HMI1
 
-BO_ 31 DFUPasca: 4 VCU
- SG_ CrcNewVal : 0|32@1+ (1,0) [0|0] ""  HMI1
+BO_ 2332033025 BMS1_Param1: 8 BMS
+ SG_ BMS1__Voltage : 0|16@1+ (0.01,0) [0|0] "V"  VCU
+ SG_ BMS1__Current : 16|16@1+ (0.1,0) [0|0] "A"  VCU
+ SG_ BMS1__SOC : 32|16@1+ (1,0) [0|0] "%"  VCU
+ SG_ BMS1__Temp : 48|16@1+ (1,-40) [0|0] "C"  VCU
 
-BO_ 2332033025 Bms1Param1: 8 BMS
- SG_ Bat1Voltage : 0|16@1+ (0.01,0) [0|0] "V" Vector__XXX
- SG_ Bat1Current : 16|16@1+ (0.1,0) [0|0] "A" Vector__XXX
- SG_ Bat1SOC : 32|16@1+ (1,0) [0|0] "%" Vector__XXX
- SG_ Bat1Temp : 48|16@1+ (1,-40) [0|0] "C" Vector__XXX
+BO_ 2333081601 BMS1_Param2: 8 BMS
+ SG_ BMS1__Capacity : 0|16@1+ (0.1,0) [0|0] "Ah"  VCU
+ SG_ BMS1__SOH : 16|16@1+ (1,0) [0|0] "%"  VCU
+ SG_ BMS1__Cycle : 32|16@1+ (1,0) [0|0] ""  VCU
+ SG_ BMS1__Fault : 48|12@1+ (1,0) [0|0] ""  VCU
+ SG_ BMS1__Charge : 60|1@1+ (1,0) [0|0] ""  VCU
+ SG_ BMS1__Discharge : 61|1@1+ (1,0) [0|0] ""  VCU
+ SG_ BMS1__Sleep : 62|1@1+ (1,0) [0|0] ""  VCU
 
-BO_ 2333081601 Bms1Param2: 8 BMS
- SG_ Bat1Capacity : 0|16@1+ (0.1,0) [0|0] "Ah" Vector__XXX
- SG_ Bat1SOH : 16|16@1+ (1,0) [0|0] "%" Vector__XXX
- SG_ Bat1Cycle : 32|16@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Bat1Fault : 48|12@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Bat1Charge : 60|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Bat1Discharge : 61|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Bat1Sleep : 62|1@1+ (1,0) [0|0] "" Vector__XXX
+BO_ 2332033027 BMS2_Param1: 8 BMS
+ SG_ BMS2__Voltage : 0|16@1+ (0.01,0) [0|0] "V"  VCU
+ SG_ BMS2__Current : 16|16@1+ (0.1,0) [0|0] "A"  VCU
+ SG_ BMS2__SOC : 32|16@1+ (1,0) [0|0] "%"  VCU
+ SG_ BMS2__Temp : 48|16@1+ (1,-40) [0|0] "C"  VCU
 
-BO_ 2332033027 Bms2Param1: 8 BMS
- SG_ Bat2Voltage : 0|16@1+ (0.01,0) [0|0] "V" Vector__XXX
- SG_ Bat2Current : 16|16@1+ (0.1,0) [0|0] "A" Vector__XXX
- SG_ Bat2SOC : 32|16@1+ (1,0) [0|0] "%" Vector__XXX
- SG_ Bat2Temp : 48|16@1+ (1,-40) [0|0] "C" Vector__XXX
+BO_ 2333081603 BMS2_Param2: 8 BMS
+ SG_ BMS2__Capacity : 0|16@1+ (0.1,0) [0|0] "Ah"  VCU
+ SG_ BMS2__SOH : 16|16@1+ (1,0) [0|0] "%"  VCU
+ SG_ BMS2__Cycle : 32|16@1+ (1,0) [0|0] ""  VCU
+ SG_ BMS2__Fault : 48|12@1+ (1,0) [0|0] ""  VCU
+ SG_ BMS2__Charge : 60|1@1+ (1,0) [0|0] ""  VCU
+ SG_ BMS2__Discharge : 61|1@1+ (1,0) [0|0] ""  VCU
+ SG_ BMS2__Sleep : 62|1@1+ (1,0) [0|0] ""  VCU
 
-BO_ 2333081603 Bms2Param2: 8 BMS
- SG_ Bat2Capacity : 0|16@1+ (0.1,0) [0|0] "Ah" Vector__XXX
- SG_ Bat2SOH : 16|16@1+ (1,0) [0|0] "%" Vector__XXX
- SG_ Bat2Cycle : 32|16@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Bat2Fault : 48|12@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Bat2Charge : 60|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Bat2Discharge : 61|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Bat2Sleep : 62|1@1+ (1,0) [0|0] "" Vector__XXX
+BO_ 2030 DBG_MCU1: 8 VCU
+ SG_ DBG_MCU__Active : 0|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MCU__Run : 1|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MCU__SetRpmMax : 2|1@1+ (1,0) [0|0] "rpm" Vector__XXX
+ SG_ DBG_MCU__SetTemplates : 3|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MCU__SyncedRpmMax : 4|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MCU__SyncedTemplates : 5|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MCU__SpeedMax : 8|8@1+ (1,0) [0|0] "kph" Vector__XXX
+ SG_ DBG_MCU__DiscurMax1 : 16|16@1- (1,0) [0|0] "A" Vector__XXX
+ SG_ DBG_MCU__DiscurMax2 : 32|16@1- (1,0) [0|0] "A" Vector__XXX
+ SG_ DBG_MCU__DiscurMax3 : 48|16@1- (1,0) [0|0] "A" Vector__XXX
+
+BO_ 2031 DBG_MCU2: 8 VCU
+ SG_ DBG_MCU__RpmMax : 0|16@1- (1,0) [0|0] "rpm" Vector__XXX
+ SG_ DBG_MCU__TorqueMax1 : 16|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
+ SG_ DBG_MCU__TorqueMax2 : 32|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
+ SG_ DBG_MCU__TorqueMax3 : 48|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
+
+BO_ 2032 DBG_Group: 8 VCU
+ SG_ DBG_NET__State : 0|8@1- (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_NET__IpStatus : 8|8@1- (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_FGR__Verified : 16|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_FGR__DriverID : 17|3@1+ (1,0) [0|5] "" Vector__XXX
+ SG_ DBG_FGR__Registering : 20|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_Audio__Active : 24|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_Audio__Mute : 25|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_Audio__Volume : 32|8@1+ (1,0) [0|0] "%" Vector__XXX
+ SG_ DBG_BMS__Active : 40|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_BMS__Run : 41|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_BMS__SoC : 48|8@1+ (1,0) [0|0] "%" Vector__XXX
+ SG_ DBG_HBAR__StateSelect : 56|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateSet : 57|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateStarter : 58|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateSeinL : 59|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateSeinR : 60|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateReverse : 61|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateLamp : 62|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateABS : 63|1@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 2033 DBG_VCU: 5 VCU
+ SG_ DBG_VCU__Events : 0|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_VCU__State : 16|8@1- (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_VCU__Buffered : 24|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_VCU__Battery : 32|8@1+ (18,0) [0|0] "mV" Vector__XXX
+
+BO_ 2034 DBG_GPS1: 8 VCU
+ SG_ DBG_GPS__Active : 0|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_GPS__SatInUse : 8|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_GPS__Hdop : 16|8@1+ (0.1,0) [0|0] "" Vector__XXX
+ SG_ DBG_GPS__Vdop : 24|8@1+ (0.1,0) [0|0] "" Vector__XXX
+ SG_ DBG_GPS__Speed : 32|8@1+ (1,0) [0|0] "kph" Vector__XXX
+ SG_ DBG_GPS__Heading : 40|8@1+ (2,0) [0|0] "deg" Vector__XXX
+ SG_ DBG_GPS__Altitude : 48|16@1+ (1,0) [0|0] "m" Vector__XXX
+
+BO_ 2035 DBG_GPS2: 8 VCU
+ SG_ DBG_GPS__Longitude : 0|32@1- (1e-07,0) [0|0] "" Vector__XXX
+ SG_ DBG_GPS__Latitude : 32|32@1- (1e-07,0) [0|0] "" Vector__XXX
+
+BO_ 2036 DBG_MEMS1: 2 VCU
+ SG_ DBG_MEMS__Active : 0|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MEMS__DetActive : 1|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MEMS__Fall : 2|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MEMS__Crash : 3|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_MEMS__DetOffset : 8|8@1+ (1,0) [0|0] "deg" Vector__XXX
+
+BO_ 2037 DBG_MEMS2: 8 VCU
+ SG_ DBG_MEMS__AccelX : 0|16@1- (0.01,0) [0|0] "g" Vector__XXX
+ SG_ DBG_MEMS__AccelY : 16|16@1- (0.01,0) [0|0] "g" Vector__XXX
+ SG_ DBG_MEMS__AccelZ : 32|16@1- (0.01,0) [0|0] "g" Vector__XXX
+ SG_ DBG_MEMS__AccelTot : 48|16@1+ (0.01,0) [0|0] "g" Vector__XXX
+
+BO_ 2038 DBG_MEMS3: 8 VCU
+ SG_ DBG_MEMS__GyroX : 0|16@1- (0.1,0) [0|0] "rad/s" Vector__XXX
+ SG_ DBG_MEMS__GyroY : 16|16@1- (0.1,0) [0|0] "rad/s" Vector__XXX
+ SG_ DBG_MEMS__GyroZ : 32|16@1- (0.1,0) [0|0] "rad/s" Vector__XXX
+ SG_ DBG_MEMS__GyroTot : 48|16@1+ (0.1,0) [0|0] "rad/s" Vector__XXX
+
+BO_ 2039 DBG_MEMS4: 8 VCU
+ SG_ DBG_MEMS__TiltPitch : 0|16@1- (0.1,0) [0|0] "deg" Vector__XXX
+ SG_ DBG_MEMS__TiltRoll : 16|16@1- (0.1,0) [0|0] "deg" Vector__XXX
+ SG_ DBG_MEMS__TiltTot : 32|16@1+ (0.1,0) [0|0] "deg" Vector__XXX
+ SG_ DBG_MEMS__TempTot : 48|16@1+ (0.1,0) [0|0] "C" Vector__XXX
+
+BO_ 2040 DBG_RMT1: 8 VCU
+ SG_ DBG_RMT__Active : 0|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_RMT__Nearby : 1|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_RMT__DurationTX : 8|8@1+ (1,0) [0|0] "ms" Vector__XXX
+ SG_ DBG_RMT__DurationRX : 16|8@1+ (1,0) [0|0] "ms" Vector__XXX
+ SG_ DBG_RMT__AesKeyLSB : 32|32@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 2041 DBG_RMT2: 8 VCU
+ SG_ DBG_RMT__TickPing : 0|32@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_RMT__TickHeartbeat : 32|32@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 2042 DBG_TASK1: 8 VCU
+ SG_ DBG_TASK__StackManager : 0|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackNetwork : 16|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackReporter : 32|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackCommand : 40|16@1+ (1,0) [0|0] "B" Vector__XXX
+
+BO_ 2043 DBG_TASK2: 8 VCU
+ SG_ DBG_TASK__StackGPS : 0|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackMEMS : 16|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackRemote : 32|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackFinger : 48|16@1+ (1,0) [0|0] "B" Vector__XXX
+
+BO_ 2044 DBG_TASK3: 8 VCU
+ SG_ DBG_TASK__StackAudio : 0|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackGate : 16|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackCanRx : 32|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackCanTx : 48|16@1+ (1,0) [0|0] "B" Vector__XXX
+
+BO_ 2045 DBG_TASK4: 8 VCU
+ SG_ DBG_TASK__WakeupManager : 0|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupNetwork : 8|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupReporter : 16|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupCommand : 24|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupGPS : 32|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupMEMS : 40|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupRemote : 48|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupFinger : 56|8@1+ (1,0) [0|0] "s" Vector__XXX
+
+BO_ 2046 DBG_TASK5: 8 VCU
+ SG_ DBG_TASK__WakeupAudio : 0|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupGate : 8|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupCanRx : 16|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__WakeupCanTx : 24|8@1+ (1,0) [0|0] "s" Vector__XXX
+ SG_ DBG_TASK__VCUUptime : 32|32@1+ (1,0) [0|0] "s" Vector__XXX
+
+BO_ 2047 NODE_DBG: 1 Vector__XXX
+ SG_ NODE_DBG__Group : 0|1@1+ (1,0) [0|0] ""  VCU
+ SG_ NODE_DBG__VCU : 1|1@1+ (1,0) [0|0] ""  VCU
+ SG_ NODE_DBG__GPS : 2|1@1+ (1,0) [0|0] ""  VCU
+ SG_ NODE_DBG__MEMS : 3|1@1+ (1,0) [0|0] ""  VCU
+ SG_ NODE_DBG__RMT : 4|1@1+ (1,0) [0|0] ""  VCU
+ SG_ NODE_DBG__TASK : 5|1@1+ (1,0) [0|0] ""  VCU
+ SG_ NODE_DBG__MCU : 6|1@1+ (1,0) [0|0] ""  VCU
 
 
 

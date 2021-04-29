@@ -58,7 +58,7 @@ void DBG_GetGPS(gps_dbg_t *gps) {
 
 void DBG_GetMEMS(mems_dbg_t *mems) {
 	mems->active = MEMS.d.active;
-	mems->detector = MEMS.det.active;
+	mems->det_active = MEMS.det.active;
 	mems->accel.x = MEMS.d.raw.accel.x * 100;
 	mems->accel.y = MEMS.d.raw.accel.y * 100;
 	mems->accel.z = MEMS.d.raw.accel.z * 100;
@@ -67,8 +67,8 @@ void DBG_GetMEMS(mems_dbg_t *mems) {
 	mems->gyro.y = MEMS.d.raw.gyro.y * 10;
 	mems->gyro.z = MEMS.d.raw.gyro.z * 10;
 
-	mems->ypr.pitch = MEMS.det.tilt.cur.pitch * 10;
-	mems->ypr.roll = MEMS.det.tilt.cur.roll * 10;
+	mems->tilt.pitch = MEMS.det.tilt.cur.pitch * 10;
+	mems->tilt.roll = MEMS.det.tilt.cur.roll * 10;
 
 	mems->total.accel = MEMS.d.tot.accel * 100;
 	mems->total.gyro = MEMS.d.tot.gyro * 10;
@@ -130,9 +130,9 @@ void DBG_GetMCU(mcu_dbg_t *mcu) {
 	mcu->inv.enabled = MCU.d.inv.enabled;
 	mcu->inv.lockout = MCU.d.inv.lockout;
 	mcu->inv.discharge = MCU.d.inv.discharge;
+
 	mcu->par.rpm_max = MCU.d.par.rpm_max;
 	mcu->par.speed_max = MCU.RpmToSpeed(MCU.d.par.rpm_max);
-
 	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
 		mcu->par.tpl[m].discur_max = MCU.d.par.tpl[m].discur_max;
 		mcu->par.tpl[m].torque_max = MCU.d.par.tpl[m].torque_max * 10;
