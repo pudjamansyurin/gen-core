@@ -39,6 +39,7 @@ typedef struct {
 	struct {
 		uint8_t tx;
 		uint8_t rx;
+		uint8_t full;
 	} duration;
 } remote_data_t;
 

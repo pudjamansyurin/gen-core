@@ -21,6 +21,9 @@
  * -----------------------------------------------------------*/
 node_t NODE = {
 		.d = {0},
+		.r = {
+				NODE_RX_Debug,
+		},
 		.t = {
 				NODE_TX_DebugGroup,
 				NODE_TX_DebugVCU,
@@ -56,9 +59,8 @@ void NODE_Refresh(void) {
 
 	NODE.d.overheat = BMS.d.overheat || MCU.d.overheat;
 	NODE.d.error = VCU.d.error || eBMS || eMCU;
-	NODE.d.debugging = NODE.d.tick.dbg && (_GetTickMS() - NODE.d.tick.dbg) < NODE_DEBUG_MS;
-	if (!NODE.d.debugging)
-		memset(&(NODE.d.dbg), 0, sizeof(NODE.d.dbg));
+	if (!(NODE.d.tick.dbg && (_GetTickMS() - NODE.d.tick.dbg) < NODE_DEBUG_MS))
+		NODE.d.debug = 0;
 
 	BMS.RefreshIndex();
 	MCU.Refresh();
@@ -72,13 +74,7 @@ void NODE_RX_Debug(can_rx_t *Rx) {
 	UNION64 *d = &(Rx->data);
 
 	// read the content
-	NODE.d.dbg.group = (d->u8[0] >> 0) & 0x01;
-	NODE.d.dbg.vcu = (d->u8[0] >> 1) & 0x01;
-	NODE.d.dbg.gps = (d->u8[0] >> 2) & 0x01;
-	NODE.d.dbg.mems = (d->u8[0] >> 3) & 0x01;
-	NODE.d.dbg.rmt = (d->u8[0] >> 4) & 0x01;
-	NODE.d.dbg.task = (d->u8[0] >> 5) & 0x01;
-	NODE.d.dbg.mcu = (d->u8[0] >> 6) & 0x01;
+	NODE.d.debug = d->u8[0];
 
 	NODE.d.tick.dbg = _GetTickMS();
 }
@@ -86,7 +82,8 @@ void NODE_RX_Debug(can_rx_t *Rx) {
 /* ====================================== CAN TX
  * =================================== */
 void NODE_TX_DebugGroup(void) {
-	if (!NODE.d.dbg.group) return;
+	if (!CDBG_ID(NODE.d.debug, CDBG_GROUP))
+		return;
 
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
@@ -127,7 +124,8 @@ void NODE_TX_DebugGroup(void) {
 }
 
 void NODE_TX_DebugVCU(void) {
-	if (!NODE.d.dbg.vcu) return;
+	if (!CDBG_ID(NODE.d.debug, CDBG_VCU))
+		return;
 
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
@@ -143,7 +141,8 @@ void NODE_TX_DebugVCU(void) {
 }
 
 void NODE_TX_DebugGPS(void) {
-	if (!NODE.d.dbg.gps) return;
+	if (!CDBG_ID(NODE.d.debug, CDBG_GPS))
+		return;
 
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
@@ -166,7 +165,8 @@ void NODE_TX_DebugGPS(void) {
 }
 
 void NODE_TX_DebugMEMS(void) {
-	if (!NODE.d.dbg.mems) return;
+	if (!CDBG_ID(NODE.d.debug, CDBG_MEMS))
+		return;
 
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
@@ -201,7 +201,8 @@ void NODE_TX_DebugMEMS(void) {
 }
 
 void NODE_TX_DebugRMT(void) {
-	if (!NODE.d.dbg.rmt) return;
+	if (!CDBG_ID(NODE.d.debug, CDBG_RMT))
+		return;
 
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
@@ -213,6 +214,7 @@ void NODE_TX_DebugRMT(void) {
 	d->u8[0] |= (rmt.nearby & 0x01) << 1;
 	d->u8[1] = RMT.d.duration.tx;
 	d->u8[2] = RMT.d.duration.rx;
+	d->u8[3] = RMT.d.duration.full;
 	d->u32[1] = AES_KEY[0];
 	CANBUS_Write(&Tx, CAND_DBG_RMT_1, 8, 0);
 
@@ -222,7 +224,8 @@ void NODE_TX_DebugRMT(void) {
 }
 
 void NODE_TX_DebugTASK(void) {
-	if (!NODE.d.dbg.task) return;
+	if (!CDBG_ID(NODE.d.debug, CDBG_TASK))
+		return;
 
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
@@ -269,9 +272,9 @@ void NODE_TX_DebugTASK(void) {
 	CANBUS_Write(&Tx, CAND_DBG_TASK_5, 8, 0);
 }
 
-
 void NODE_TX_DebugMCU(void) {
-	if (!NODE.d.dbg.mcu) return;
+	if (!CDBG_ID(NODE.d.debug, CDBG_MCU))
+		return;
 
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);

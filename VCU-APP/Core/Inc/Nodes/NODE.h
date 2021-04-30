@@ -10,34 +10,43 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Drivers/_canbus.h"
 
 /* Exported defines
  * ---------------------------------------------------------*/
 #define NODE_TIMEOUT_MS	((uint16_t)5000)
-#define NODE_DEBUG_MS	((uint16_t)10000)
+#define NODE_DEBUG_MS	((uint16_t)1000)
+
+#define CDBG_ID(c, dbg) ((c >> dbg) & 0x01)
+
+/* Exported enum
+ * ------------------------------------------------------------*/
+typedef enum {
+	CDBG_GROUP = 0,
+	CDBG_VCU,
+	CDBG_GPS,
+	CDBG_MEMS,
+	CDBG_RMT,
+	CDBG_TASK,
+	CDBG_MCU
+} CDBG;
 
 /* Exported struct
  * ------------------------------------------------------------*/
 typedef struct {
 	uint8_t error;
 	uint8_t overheat;
-	uint8_t debugging;
+	uint8_t debug;
 	struct {
 		uint32_t dbg;
 	} tick;
-	struct {
-		uint8_t group;
-		uint8_t vcu;
-		uint8_t gps;
-		uint8_t mems;
-		uint8_t rmt;
-		uint8_t task;
-		uint8_t mcu;
-	} dbg;
 } node_data_t;
 
 typedef struct {
 	node_data_t d;
+	struct {
+		void (*Debug)(can_rx_t *);
+	} r;
 	struct {
 		void (*DebugGroup)(void);
 		void (*DebugVCU)(void);
@@ -60,6 +69,7 @@ extern node_t NODE;
 void NODE_Init(void);
 void NODE_Refresh(void);
 
+void NODE_RX_Debug(can_rx_t *Rx);
 void NODE_TX_DebugGroup(void);
 void NODE_TX_DebugVCU(void);
 void NODE_TX_DebugGPS(void);

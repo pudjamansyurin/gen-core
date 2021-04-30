@@ -181,7 +181,7 @@ typedef struct {
 		void (*Template)(can_rx_t *);
 	} r;
 	struct {
-		uint8_t (*Setting)(uint8_t);
+		uint8_t (*Setting)(uint8_t, uint8_t);
 		uint8_t (*Template)(uint16_t, uint8_t, int16_t);
 		void (*RpmMax)(uint8_t);
 		void (*Templates)(uint8_t);
@@ -226,7 +226,7 @@ void MCU_RX_TorqueSpeed(can_rx_t *Rx);
 void MCU_RX_FaultCode(can_rx_t *Rx);
 void MCU_RX_State(can_rx_t *Rx);
 void MCU_RX_Template(can_rx_t *Rx);
-uint8_t MCU_TX_Setting(uint8_t on);
+uint8_t MCU_TX_Setting(uint8_t on, uint8_t reverse);
 uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data);
 
 #endif /* INC_NODES_MCU_H_ */

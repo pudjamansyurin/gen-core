@@ -182,6 +182,34 @@ void HBAR_SetOdometer(uint8_t meter) {
 	}
 }
 
+//uint8_t HBAR_CalcEfficiency(void) {
+//	static uint8_t lastSOC = 0xFF;
+//	static uint8_t lastON = 0;
+//	static uint8_t lastKM = 0;
+//	uint8_t kmp = 0;
+//
+//	if (BMS.d.active != lastON) {
+//		lastON = BMS.d.active;
+//		lastKM = HBAR.d.trip[HBAR_M_TRIP_ODO];
+//		lastSOC = BMS.d.soc;
+//	}
+//
+//	if (BMS.d.active) {
+//		if (BMS.d.soc < lastSOC) {
+//			kmp = (HBAR.d.trip[HBAR_M_TRIP_ODO] - lastKM) / (BMS.d.soc - lastSOC);
+//
+//			lastKM = HBAR.d.trip[HBAR_M_TRIP_ODO];
+//			lastSOC = BMS.d.soc;
+//		}
+//	}
+//
+//	if (kmp > 0) {
+//
+//	}
+//
+//	return kmp;
+//}
+
 /* Private functions implementation
  * -------------------------------------------*/
 static uint8_t Reversed(void) {

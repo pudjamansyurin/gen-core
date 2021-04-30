@@ -51,20 +51,20 @@ static mcu_template_addr_t tplAddr[HBAR_M_DRIVE_MAX];
 /* Private functions prototypes
  * -----------------------------------------------*/
 static void Reset(void);
+static void ResetPower(void);
 static void ResetFault(void);
 static void SetTemplateAddr(void);
 static void ResetTemplates(void);
 static uint8_t SyncedSpeedMax(void);
 static uint8_t SyncedTemplates(void);
 static uint8_t IsOverheat(void);
-//static uint8_t HandleReverse(uint8_t *on);
 
 /* Public functions implementation
  * --------------------------------------------*/
 void MCU_Init(void) {
-	SetTemplateAddr();
 	Reset();
 	ResetFault();
+	SetTemplateAddr();
 }
 
 void MCU_Power12v(uint8_t on) {
@@ -73,8 +73,7 @@ void MCU_Power12v(uint8_t on) {
 	if (on) {
 		if (!MCU.d.active) {
 			ResetFault();
-			GATE_McuPower(0); _DelayMS(100);
-			GATE_McuPower(1); _DelayMS(500);
+			ResetPower();
 		}
 	} else {
 		if (MCU.d.active) {
@@ -84,22 +83,20 @@ void MCU_Power12v(uint8_t on) {
 }
 
 void MCU_PowerOverCan(uint8_t on) {
-//	static uint8_t lastOn = 0;
-//
-//	// make sure BMS is power on
-//	if (lastOn != on) {
-//		lastOn = on;
-//		if (on) _DelayMS(500);
-//	}
+	uint8_t R = HBAR.state[HBAR_K_REVERSE];
 
 	if (on) {
 		if (MCU.d.inv.lockout) {
-			MCU.t.Setting(0); _DelayMS(5);
+			MCU.t.Setting(0, R); _DelayMS(100);
 		} else {
-			MCU.t.Setting(1);
+			if (R != MCU.d.reverse) {
+				MCU.t.Setting(0, !R); _DelayMS(100);
+				MCU.t.Setting(0, R); _DelayMS(100);
+			}
+			MCU.t.Setting(1, R);
 		}
 	} else {
-		MCU.t.Setting(0);
+		MCU.t.Setting(0, R);
 	}
 }
 
@@ -108,11 +105,11 @@ void MCU_Refresh(void) {
 	if (MCU.d.active) {
 		if (MCU.set.rpm_max && SyncedSpeedMax()) {
 			MCU.set.rpm_max = 0;
-			MCU.Power12v(0); _DelayMS(50);
+			ResetPower();
 		}
 		if (MCU.set.template && SyncedTemplates()) {
 			MCU.set.template = 0;
-			MCU.Power12v(0); _DelayMS(50);
+			ResetPower();
 		}
 	} else {
 		Reset();
@@ -256,13 +253,12 @@ void MCU_RX_Template(can_rx_t *Rx) {
 
 /* ====================================== CAN TX
  * =================================== */
-uint8_t MCU_TX_Setting(uint8_t on) {
+uint8_t MCU_TX_Setting(uint8_t on, uint8_t reverse) {
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
 	// set message
-//	d->u8[4] = HandleReverse();
-	d->u8[4] = HBAR.state[HBAR_K_REVERSE];
+	d->u8[4] = reverse;
 	d->u8[5] = on & 0x01;
 	d->u8[5] |= (0 & 0x01) << 1;
 	d->u8[5] |= (HBAR.d.mode[HBAR_M_DRIVE] & 0x03) << 2;
@@ -310,6 +306,11 @@ static void Reset(void) {
 
 	MCU.d.par.rpm_max = 0;
 	ResetTemplates();
+}
+
+static void ResetPower(void) {
+	GATE_McuPower(0); _DelayMS(100);
+	GATE_McuPower(1); _DelayMS(500);
 }
 
 static void ResetFault(void) {
@@ -362,21 +363,3 @@ static uint8_t IsOverheat(void) {
 
 	return temp;
 }
-
-//static uint8_t HandleReverse(uint8_t *on) {
-//	static uint8_t reverse = 0;
-//
-//	if (HBAR.state[HBAR_K_REVERSE] && !MCU.d.reverse) {
-//		on = 0;
-//		if (!MCU.d.inv.enabled)
-//			reverse = 1;
-//	} else if (!HBAR.state[HBAR_K_REVERSE] && MCU.d.reverse) {
-//		on = 0;
-//		if (!MCU.d.inv.enabled)
-//			reverse = 0;
-//	} else {
-//		reverse = HBAR.state[HBAR_K_REVERSE];
-//	}
-//
-//	return reverse;
-//}

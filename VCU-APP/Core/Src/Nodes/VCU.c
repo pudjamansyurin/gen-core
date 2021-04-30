@@ -32,6 +32,7 @@ vcu_t VCU = {
 		.CheckState = VCU_CheckState,
 		.SetEvent = VCU_SetEvent,
 		.ReadEvent = VCU_ReadEvent,
+		.CalcOdommeter = VCU_CalcOdometer,
 };
 
 /* External variables -----------------------------------------*/
@@ -178,6 +179,20 @@ uint8_t VCU_ReadEvent(uint8_t bit) {
 	return (VCU.d.events & BIT(bit)) == BIT(bit);
 }
 
+uint8_t VCU_CalcOdometer(void) {
+	static uint32_t tick = 0;
+	uint8_t meter = 0;
+	float mps;
+
+	if (tick > 0) {
+		mps = (float) MCU.RpmToSpeed(MCU.d.rpm) / 3.6;
+		meter = ((_GetTickMS() - tick) * mps) / 1000;
+	}
+	tick = _GetTickMS();
+
+	return meter;
+}
+
 /* ====================================== CAN TX
  * =================================== */
 uint8_t VCU_TX_Heartbeat(void) {
@@ -222,10 +237,10 @@ uint8_t VCU_TX_SwitchControl(void) {
 
 	// others
 	d->u8[3] = MCU.RpmToSpeed(MCU.d.rpm);
-	d->u8[4] = (uint8_t)MCU.d.dcbus.current;
+	d->u8[4] = (uint8_t) MCU.d.dcbus.current;
 	d->u8[5] = BMS.d.soc;
 	d->u8[6] = SIM.d.signal;
-	d->u8[7] = VCU.d.state;
+	d->u8[7] = (int8_t) VCU.d.state;
 
 	// send message
 	return CANBUS_Write(&Tx, CAND_VCU_SWITCH_CTL, 8, 0);

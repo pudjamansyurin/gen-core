@@ -36,50 +36,71 @@ BS_:
 BU_: HMI1 HMI2 VCU BMS MCU
 
 
-BO_ 1984 HMI1_Heartbeat: 2 HMI1
- SG_ HMI1__Version : 0|16@1+ (1,0) [0|0] ""  VCU
-
-BO_ 1968 VCU_Heartbeat: 2 VCU
+BO_ 1952 VCU_Heartbeat: 2 VCU
  SG_ VCU__Version : 0|16@1+ (1,0) [0|0] "" Vector__XXX
 
-BO_ 2000 HMI2_Heartbeat: 2 HMI2
+BO_ 1953 HMI1_Heartbeat: 2 HMI1
+ SG_ HMI1__Version : 0|16@1+ (1,0) [0|0] ""  VCU
+
+BO_ 1954 HMI2_Heartbeat: 2 HMI2
  SG_ HMI2__Version : 0|16@1+ (1,0) [0|0] ""  VCU
 
+BO_ 26 DFU_Progress: 8 VCU
+ SG_ DFU__DeviceType : 0|32@1+ (1,0) [0|0] ""  HMI1
+ SG_ DFU__Progress : 32|32@1- (1,0) [0|0] "%"  HMI1
+
+BO_ 27 DFU_CRC: 4 HMI1
+ SG_ DFU__CurrentCRC : 0|32@1+ (1,0) [0|0] ""  VCU
+
+BO_ 28 DFU_Pra: 4 VCU
+ SG_ DFU__FirmwareSize : 0|32@1+ (1,0) [0|0] ""  HMI1
+
+BO_ 29 DFU_Init: 6 VCU
+ SG_ DFU__FirmwareOffset : 0|32@1+ (1,0) [0|0] ""  HMI1
+ SG_ DFU__BlockOffset : 32|16@1+ (1,0) [0|0] ""  HMI1
+
+BO_ 30 DFU_Run: 8 VCU
+ SG_ DFU__SubBlockOffset : 0|16@1+ (1,0) [0|0] ""  HMI1
+ SG_ DFU__FirmwareData : 32|32@1+ (1,0) [0|0] ""  HMI1
+
+BO_ 31 DFU_Pasca: 4 VCU
+ SG_ DFU__NewestCRC : 0|32@1+ (1,0) [0|0] ""  HMI1
+
 BO_ 42 VCU_SwitchControl: 8 VCU
- SG_ VCU__ABS_State : 0|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__MirroringState : 1|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__LampState : 2|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__ErrorState : 3|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__OverheatState : 4|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__FingerState : 5|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__RemoteState : 6|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__DaylightState : 7|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__SeinLeftState : 8|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__SeinRightState : 9|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__HbarReverseState : 10|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__DriveMode : 16|2@1+ (1,0) [0|2] ""  HMI1
- SG_ VCU__TripMode : 18|2@1+ (1,0) [0|2] ""  HMI1
- SG_ VCU__ReportMode : 20|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__ModeState : 21|2@1+ (1,0) [0|2] ""  HMI1
- SG_ VCU__ModeSession : 23|1@1+ (1,0) [0|1] ""  HMI1
- SG_ VCU__Speed : 24|8@1+ (1,0) [0|0] "kph"  HMI1
- SG_ VCU__MCUDisCur : 32|8@1+ (1,0) [0|0] "A"  HMI1
- SG_ VCU__NetSignal : 48|8@1+ (1,0) [0|100] "%"  HMI1
- SG_ VCU__BMSSoc : 40|8@1+ (1,0) [0|100] "%"  HMI1
- SG_ VCU__VehicleState : 56|8@1- (1,0) [0|0] ""  HMI1
+ SG_ VCU__ABS_State : 0|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__MirroringState : 1|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__LampState : 2|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__ErrorState : 3|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__OverheatState : 4|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__FingerState : 5|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__RemoteState : 6|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__DaylightState : 7|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__SeinLeftState : 8|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__SeinRightState : 9|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__HbarReverseState : 10|1@1+ (1,0) [0|0] ""  HMI1
  SG_ VCU__BMSRun : 11|1@1+ (1,0) [0|0] ""  HMI1
  SG_ VCU__MCURun : 12|1@1+ (1,0) [0|0] ""  HMI1
  SG_ VCU__FingerBlink : 13|1@1+ (1,0) [0|0] ""  HMI1
  SG_ VCU__FingerError : 14|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__DriveMode : 16|2@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__TripMode : 18|2@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__ReportMode : 20|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__ModeState : 21|2@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__ModeSession : 23|1@1+ (1,0) [0|0] ""  HMI1
+ SG_ VCU__Speed : 24|8@1+ (1,0) [0|0] "kph"  HMI1
+ SG_ VCU__MCUDisCur : 32|8@1+ (1,0) [0|0] "A"  HMI1
+ SG_ VCU__BMSSoc : 40|8@1+ (1,0) [0|0] "%"  HMI1
+ SG_ VCU__NetSignal : 48|8@1+ (1,0) [0|0] "%"  HMI1
+ SG_ VCU__VehicleState : 56|8@1- (1,0) [0|0] ""  HMI1
 
 BO_ 44 VCU_Datetime: 8 VCU
- SG_ VCU__TimeSecond : 0|8@1+ (1,0) [0|60] ""  HMI2
- SG_ VCU__TimeMinute : 8|8@1+ (1,0) [0|60] ""  HMI2
- SG_ VCU__TimeHour : 16|8@1+ (1,0) [0|24] ""  HMI2
- SG_ VCU__TimeDate : 24|8@1+ (1,0) [0|31] ""  HMI2
- SG_ VCU__TimeMonth : 32|8@1+ (1,0) [0|12] ""  HMI2
+ SG_ VCU__TimeSecond : 0|8@1+ (1,0) [0|0] ""  HMI2
+ SG_ VCU__TimeMinute : 8|8@1+ (1,0) [0|0] ""  HMI2
+ SG_ VCU__TimeHour : 16|8@1+ (1,0) [0|0] ""  HMI2
+ SG_ VCU__TimeDate : 24|8@1+ (1,0) [0|0] ""  HMI2
+ SG_ VCU__TimeMonth : 32|8@1+ (1,0) [0|0] ""  HMI2
  SG_ VCU__TimeYear : 40|8@1+ (1,0) [0|0] ""  HMI2
- SG_ VCU__HMI2ShutdownReq : 48|8@1+ (1,0) [0|1] ""  HMI2
+ SG_ VCU__HMI2ShutdownReq : 48|8@1+ (1,0) [0|0] ""  HMI2
 
 BO_ 43 VCU_ModeData: 8 VCU
  SG_ VCU__TripA : 0|16@1+ (1,0) [0|0] "km"  HMI1
@@ -87,11 +108,6 @@ BO_ 43 VCU_ModeData: 8 VCU
  SG_ VCU__TripOdom : 32|16@1+ (1,0) [0|0] "km"  HMI1
  SG_ VCU__ReportRange : 48|8@1+ (1,0) [0|0] "km"  HMI1
  SG_ VCU__ReportAverage : 56|8@1+ (1,0) [0|0] "km/kwh"  HMI1
-
-BO_ 434 BMS_Setting: 8 VCU
- SG_ BMS__SetState : 1|2@1+ (1,0) [0|3] ""  BMS
- SG_ BMS__SetRecoverSC : 8|1@1+ (1,0) [0|1] ""  BMS
- SG_ BMS__SetSocScalling : 16|2@1+ (1,0) [0|3] ""  BMS
 
 BO_ 192 MCU_Setting: 7 VCU
  SG_ MCU__SetDirectionForward : 32|1@1+ (1,0) [0|0] ""  MCU
@@ -152,26 +168,10 @@ BO_ 166 MCU_InternalStates: 8 MCU
  SG_ MCU__InvLockout : 55|1@1+ (1,0) [0|0] ""  VCU
  SG_ MCU__DirectionForward : 56|8@1+ (1,0) [0|0] ""  VCU
 
-BO_ 26 DFU_Progress: 8 VCU
- SG_ DFU__DeviceType : 0|32@1+ (1,0) [0|0] ""  HMI1
- SG_ DFU__Progress : 32|32@1- (1,0) [0|0] "%"  HMI1
-
-BO_ 27 DFU_CRC: 4 HMI1
- SG_ DFU__CurrentCRC : 0|32@1+ (1,0) [0|0] ""  VCU
-
-BO_ 28 DFU_Pra: 4 VCU
- SG_ DFU__FirmwareSize : 0|32@1+ (1,0) [0|0] ""  HMI1
-
-BO_ 29 DFU_Init: 6 VCU
- SG_ DFU__FirmwareOffset : 0|32@1+ (1,0) [0|0] ""  HMI1
- SG_ DFU__BlockOffset : 32|16@1+ (1,0) [0|0] ""  HMI1
-
-BO_ 30 DFU_Run: 8 VCU
- SG_ DFU__SubBlockOffset : 0|16@1+ (1,0) [0|0] ""  HMI1
- SG_ DFU__FirmwareData : 32|32@1+ (1,0) [0|0] ""  HMI1
-
-BO_ 31 DFU_Pasca: 4 VCU
- SG_ DFU__NewestCRC : 0|32@1+ (1,0) [0|0] ""  HMI1
+BO_ 434 BMS_Setting: 8 VCU
+ SG_ BMS__SetState : 1|2@1+ (1,0) [0|0] ""  BMS
+ SG_ BMS__SetRecoverSC : 8|1@1+ (1,0) [0|0] ""  BMS
+ SG_ BMS__SetSocScalling : 16|2@1+ (1,0) [0|0] ""  BMS
 
 BO_ 2332033025 BMS1_Param1: 8 BMS
  SG_ BMS1__Voltage : 0|16@1+ (0.01,0) [0|0] "V"  VCU
@@ -225,7 +225,7 @@ BO_ 2032 DBG_Group: 8 VCU
  SG_ DBG_NET__State : 0|8@1- (1,0) [0|0] "" Vector__XXX
  SG_ DBG_NET__IpStatus : 8|8@1- (1,0) [0|0] "" Vector__XXX
  SG_ DBG_FGR__Verified : 16|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_FGR__DriverID : 17|3@1+ (1,0) [0|5] "" Vector__XXX
+ SG_ DBG_FGR__DriverID : 17|3@1+ (1,0) [0|0] "" Vector__XXX
  SG_ DBG_FGR__Registering : 20|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ DBG_Audio__Active : 24|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ DBG_Audio__Mute : 25|1@1+ (1,0) [0|0] "" Vector__XXX
@@ -255,7 +255,7 @@ BO_ 2034 DBG_GPS1: 8 VCU
  SG_ DBG_GPS__Vdop : 24|8@1+ (0.1,0) [0|0] "" Vector__XXX
  SG_ DBG_GPS__Speed : 32|8@1+ (1,0) [0|0] "kph" Vector__XXX
  SG_ DBG_GPS__Heading : 40|8@1+ (2,0) [0|0] "deg" Vector__XXX
- SG_ DBG_GPS__Altitude : 48|16@1+ (1,0) [0|0] "m" Vector__XXX
+ SG_ DBG_GPS__Altitude : 48|16@1+ (0.1,0) [0|0] "m" Vector__XXX
 
 BO_ 2035 DBG_GPS2: 8 VCU
  SG_ DBG_GPS__Longitude : 0|32@1- (1e-07,0) [0|0] "" Vector__XXX
@@ -291,6 +291,7 @@ BO_ 2040 DBG_RMT1: 8 VCU
  SG_ DBG_RMT__Nearby : 1|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ DBG_RMT__DurationTX : 8|8@1+ (1,0) [0|0] "ms" Vector__XXX
  SG_ DBG_RMT__DurationRX : 16|8@1+ (1,0) [0|0] "ms" Vector__XXX
+ SG_ DBG_RMT__DurationFull : 24|8@1+ (1,0) [0|0] "ms" Vector__XXX
  SG_ DBG_RMT__AesKeyLSB : 32|32@1+ (1,0) [0|0] "" Vector__XXX
 
 BO_ 2041 DBG_RMT2: 8 VCU
@@ -306,8 +307,8 @@ BO_ 2042 DBG_TASK1: 8 VCU
 BO_ 2043 DBG_TASK2: 8 VCU
  SG_ DBG_TASK__StackGPS : 0|16@1+ (1,0) [0|0] "B" Vector__XXX
  SG_ DBG_TASK__StackMEMS : 16|16@1+ (1,0) [0|0] "B" Vector__XXX
- SG_ DBG_TASK__StackRemote : 32|16@1+ (1,0) [0|0] "B" Vector__XXX
- SG_ DBG_TASK__StackFinger : 48|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackRMT : 32|16@1+ (1,0) [0|0] "B" Vector__XXX
+ SG_ DBG_TASK__StackFGR : 48|16@1+ (1,0) [0|0] "B" Vector__XXX
 
 BO_ 2044 DBG_TASK3: 8 VCU
  SG_ DBG_TASK__StackAudio : 0|16@1+ (1,0) [0|0] "B" Vector__XXX
@@ -359,4 +360,15 @@ BA_DEF_DEF_  "matchingcriteria" 0;
 BA_DEF_DEF_  "filterlabeling" 0;
 BA_DEF_DEF_  "matchingcriteria" 0;
 BA_DEF_DEF_  "filterlabeling" 0;
+VAL_ 42 VCU__DriveMode 0 "HBAR_M_DRIVE_ECONOMY" 1 "HBAR_M_DRIVE_STANDARD" 2 "HBAR_M_DRIVE_SPORT" ;
+VAL_ 42 VCU__TripMode 0 "HBAR_M_TRIP_A" 1 "HBAR_M_TRIP_B" 2 "HBAR_M_TRIP_ODO" ;
+VAL_ 42 VCU__ReportMode 0 "HBAR_M_REPORT_RANGE" 1 "HBAR_M_REPORT_AVERAGE" ;
+VAL_ 42 VCU__ModeState 0 "HBAR_M_DRIVE" 1 "HBAR_M_TRIP" 2 "HBAR_M_REPORT" ;
+VAL_ 42 VCU__VehicleState 0 "VEHICLE_NORMAL" 1 "VEHICLE_STANDBY" 2 "VEHICLE_READY" 3 "VEHICLE_RUN" ;
+VAL_ 192 MCU__SetDrivingMode 0 "MCU_DRIVE_ECONOMIC" 1 "MCU_DRIVE_STANDARD" 2 "MCU_DRIVE_SPORT" ;
+VAL_ 166 MCU__DrivingMode 0 "MCU_DRIVE_ECONOMIC" 1 "MCU_DRIVE_STANDARD" 2 "MCU_DRIVE_SPORT" ;
+VAL_ 434 BMS__SetState 0 "BMS_IDLE" 1 "BMS_DISCHARGE" 2 "BMS_CHARGE" 3 "BMS_FULL" ;
+VAL_ 434 BMS__SetSocScalling 0 "SCALE_15_85" 1 "SCALE_20_80" 2 "SCALE_10_90" 3 "SCALE_0_100" ;
+VAL_ 2032 DBG_NET__State -1 "SIM_STATE_DOWN" 0 "SIM_STATE_READY" 1 "SIM_STATE_CONFIGURED" 2 "SIM_STATE_NETWORK_ON" 3 "SIM_STATE_GPRS_ON" 4 "SIM_STATE_PDP_ON" 5 "SIM_STATE_INTERNET_ON" 6 "SIM_STATE_SERVER_ON" 7 "SIM_STATE_MQTT_ON" ;
+VAL_ 2032 DBG_NET__IpStatus -1 "CIPSTAT_UNKNOWN" 0 "CIPSTAT_IP_INITIAL" 1 "CIPSTAT_IP_START" 2 "CIPSTAT_IP_CONFIG" 3 "CIPSTAT_IP_GPRSACT" 4 "CIPSTAT_IP_STATUS" 5 "CIPSTAT_CONNECTING" 6 "CIPSTAT_CONNECT_OK" 7 "CIPSTAT_CLOSING" 8 "CIPSTAT_CLOSED" 9 "CIPSTAT_PDP_DEACT" ;
 
