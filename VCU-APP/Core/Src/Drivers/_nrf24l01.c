@@ -704,6 +704,7 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width)
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
 {
 	uint8_t status = 0;
+	uint32_t tick;
 
 	ce_reset();
 	// read interrupt register
@@ -721,10 +722,10 @@ NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
 	nrf_write_tx_payload_noack(data);
 	ce_set();
 
-	uint32_t tick = _GetTickMS();
+	tick = _GetTickMS();
 	while(NRF.tx_busy && (_GetTickMS() - tick) <= 3){};
 
-	return (NRF.tx_busy ? NRF_ERROR : NRF_OK); // res; //NRF.tx_result;
+	return (NRF.tx_busy ? NRF_ERROR : NRF_OK);
 }
 
 //NRF_RESULT nrf_push_packet(const uint8_t *data) {

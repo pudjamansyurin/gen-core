@@ -91,6 +91,9 @@ typedef struct {
 	void (*Init)(void);
 	void (*PowerOverCan)(uint8_t);
 	void (*RefreshIndex)(void);
+	uint8_t (*MinIndex)(void);
+	float (*GetMinKWH)(void);
+	float (*CalcKmPerKwh)(uint8_t m);
 } bms_t;
 
 /* Exported variables
@@ -102,6 +105,9 @@ extern bms_t BMS;
 void BMS_Init(void);
 void BMS_PowerOverCan(uint8_t on);
 void BMS_RefreshIndex(void);
+uint8_t BMS_MinIndex(void);
+float BMS_GetMinKWH(void);
+float BMS_CalcKmPerKwh(uint8_t m);
 
 void BMS_RX_Param1(can_rx_t *Rx);
 void BMS_RX_Param2(can_rx_t *Rx);

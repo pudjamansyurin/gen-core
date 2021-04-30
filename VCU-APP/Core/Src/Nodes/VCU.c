@@ -32,7 +32,7 @@ vcu_t VCU = {
 		.CheckState = VCU_CheckState,
 		.SetEvent = VCU_SetEvent,
 		.ReadEvent = VCU_ReadEvent,
-		.CalcOdommeter = VCU_CalcOdometer,
+		.CalcDistance = VCU_CalcDistance,
 };
 
 /* External variables -----------------------------------------*/
@@ -179,7 +179,7 @@ uint8_t VCU_ReadEvent(uint8_t bit) {
 	return (VCU.d.events & BIT(bit)) == BIT(bit);
 }
 
-uint8_t VCU_CalcOdometer(void) {
+uint8_t VCU_CalcDistance(void) {
 	static uint32_t tick = 0;
 	uint8_t meter = 0;
 	float mps;

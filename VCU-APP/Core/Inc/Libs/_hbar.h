@@ -113,6 +113,6 @@ void HBAR_RefreshSelectSet(void);
 void HBAR_TimerSelectSet(void);
 hbar_sein_t HBAR_SeinController(void);
 uint16_t HBAR_AccumulateTrip(uint8_t km);
-void HBAR_SetOdometer(uint8_t meter);
+void HBAR_SetOdometer(uint8_t m);
 
 #endif /* LIBS__HBAR_H_ */

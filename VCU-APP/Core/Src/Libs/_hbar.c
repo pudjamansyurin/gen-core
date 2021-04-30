@@ -9,6 +9,7 @@
 #include "Libs/_eeprom.h"
 #include "Libs/_hbar.h"
 #include "Nodes/MCU.h"
+#include "Nodes/BMS.h"
 
 /* Public variables
  * -----------------------------------------------------------*/
@@ -166,49 +167,30 @@ uint16_t HBAR_AccumulateTrip(uint8_t km) {
 	return HBAR.d.trip[HBAR_M_TRIP_ODO];
 }
 
-void HBAR_SetOdometer(uint8_t meter) {
-	static uint16_t last_meter = 0;
-	uint16_t odometer_km;
-	uint8_t km;
+void HBAR_SetOdometer(uint8_t m) {
+	static uint8_t init = 1;
+	static uint32_t odo_m = 0;
+	uint16_t *odo_km = &(HBAR.d.trip[HBAR_M_TRIP_ODO]);
 
-	if (last_meter < 1000)
-		last_meter += meter;
-	else {
-		km = last_meter / 1000;
-		last_meter -= km * 1000;
+	if (init) {
+		init = 0;
+		odo_m = ((*odo_km) * 1000);
+	} else {
+		odo_m += m;
 
-		odometer_km = HBAR_AccumulateTrip(km);
-		EEPROM_Odometer(EE_CMD_W, odometer_km);
+		uint8_t km = odo_m / 1000;
+		if (km > (*odo_km)) {
+			uint8_t odom = HBAR_AccumulateTrip(km - (*odo_km));
+			EEPROM_Odometer(EE_CMD_W, odom);
+		}
+
+		{
+			float km_kwh = BMS.CalcKmPerKwh(odo_m);
+			HBAR.d.report[HBAR_M_REPORT_AVERAGE] = km_kwh;
+			HBAR.d.report[HBAR_M_REPORT_RANGE] = BMS.GetMinKWH() * km_kwh;
+		}
 	}
 }
-
-//uint8_t HBAR_CalcEfficiency(void) {
-//	static uint8_t lastSOC = 0xFF;
-//	static uint8_t lastON = 0;
-//	static uint8_t lastKM = 0;
-//	uint8_t kmp = 0;
-//
-//	if (BMS.d.active != lastON) {
-//		lastON = BMS.d.active;
-//		lastKM = HBAR.d.trip[HBAR_M_TRIP_ODO];
-//		lastSOC = BMS.d.soc;
-//	}
-//
-//	if (BMS.d.active) {
-//		if (BMS.d.soc < lastSOC) {
-//			kmp = (HBAR.d.trip[HBAR_M_TRIP_ODO] - lastKM) / (BMS.d.soc - lastSOC);
-//
-//			lastKM = HBAR.d.trip[HBAR_M_TRIP_ODO];
-//			lastSOC = BMS.d.soc;
-//		}
-//	}
-//
-//	if (kmp > 0) {
-//
-//	}
-//
-//	return kmp;
-//}
 
 /* Private functions implementation
  * -------------------------------------------*/

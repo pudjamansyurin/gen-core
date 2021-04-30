@@ -14,11 +14,19 @@
  * -----------------------------------------------------------*/
 bms_t BMS = {
 		.d = {0},
-		.r = {BMS_RX_Param1, BMS_RX_Param2},
-		.t = {BMS_TX_Setting},
+		.r = {
+				BMS_RX_Param1,
+				BMS_RX_Param2
+		},
+		.t = {
+				BMS_TX_Setting
+		},
 		.Init = BMS_Init,
 		.PowerOverCan = BMS_PowerOverCan,
 		.RefreshIndex = BMS_RefreshIndex,
+		.MinIndex = BMS_MinIndex,
+		.GetMinKWH = BMS_GetMinKWH,
+		.CalcKmPerKwh = BMS_CalcKmPerKwh,
 };
 
 /* Private functions prototypes
@@ -27,7 +35,6 @@ static void ResetIndex(uint8_t i);
 static void ResetFaults(void);
 static uint8_t GetIndex(uint32_t addr);
 static uint16_t MergeFault(void);
-static uint8_t MergeSOC(void);
 static uint8_t AreActive(void);
 static uint8_t AreOverheat(void);
 static uint8_t AreRunning(uint8_t on);
@@ -61,11 +68,58 @@ void BMS_RefreshIndex(void) {
 	BMS.d.active = AreActive();
 	BMS.d.run = BMS.d.active && AreRunning(1);
 
-	BMS.d.soc = MergeSOC();
+	BMS.d.soc = BMS.d.packs[BMS.MinIndex()].soc;
 	BMS.d.fault = MergeFault();
 	BMS.d.overheat = AreOverheat();
 
 	VCU.SetEvent(EVG_BMS_ERROR, BMS.d.fault > 0);
+}
+
+uint8_t BMS_MinIndex(void) {
+	uint8_t soc = 100;
+	uint8_t index = 0;
+
+	for (uint8_t i = 0; i < BMS_COUNT; i++) {
+		if (BMS.d.packs[i].soc < soc) {
+			soc = BMS.d.packs[i].soc;
+			index = i;
+		}
+	}
+
+	return index;
+}
+
+float BMS_GetMinKWH(void) {
+	pack_t *p = &(BMS.d.packs[BMS.MinIndex()]);
+
+	return (float) (p->soc * p->capacity * p->voltage) / 100;
+}
+
+float BMS_CalcKmPerKwh(uint8_t m) {
+	static uint8_t lastON = 0;
+	static uint8_t lastM = 0;
+	static float lastKWH = 0;
+	float km_kwh = 0;
+
+	if (BMS.d.active != lastON) {
+		lastON = BMS.d.active;
+		lastKWH = BMS.GetMinKWH();
+		lastM = m;
+	}
+
+	if (BMS.d.active) {
+		float kwh = BMS.GetMinKWH();
+
+		if (kwh < lastKWH) {
+			float m_kwh = (m - lastM) / (kwh - lastKWH);
+
+			km_kwh = m_kwh / 1000.0;
+			lastKWH = kwh;
+			lastM = m;
+		}
+	}
+
+	return km_kwh;
 }
 
 /* ====================================== CAN RX
@@ -164,16 +218,6 @@ static uint16_t MergeFault(void) {
 		fault |= BMS.d.packs[i].fault;
 
 	return fault;
-}
-
-static uint8_t MergeSOC(void) {
-	uint8_t soc = 100;
-
-	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		if (BMS.d.packs[i].soc < soc)
-			soc = BMS.d.packs[i].soc;
-
-	return soc;
 }
 
 static uint8_t AreActive(void) {

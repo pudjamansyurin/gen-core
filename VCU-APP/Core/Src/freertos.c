@@ -709,7 +709,7 @@ void StartManagerTask(void *argument)
 			VCU.d.state = (int8_t) overrideState;
 		VCU.CheckState();
 
-		HBAR_SetOdometer(VCU.CalcOdommeter());
+		HBAR_SetOdometer(VCU.CalcDistance());
 
 		IWDG_Refresh();
 		osDelayUntil(lastWake + MANAGER_WAKEUP_MS);
