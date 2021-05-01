@@ -102,7 +102,7 @@ void DBG_GetBMS(bms_dbg_t *bms) {
 	bms->fault = BMS.d.fault;
 	bms->soc= BMS.d.soc;
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		pack_t *pack = &(BMS.d.packs[i]);
+		pack_t *pack = &(BMS.packs[i]);
 
 		bms->packs[i].id = pack->id;
 		bms->packs[i].fault = pack->fault;

@@ -41,9 +41,7 @@ extern osMessageQueueId_t ReportQueueHandle;
 /* Public functions implementation
  * --------------------------------------------*/
 void VCU_Init(void) {
-	VCU.d.error = 0;
-	VCU.d.events = 0;
-	VCU.d.buffered = 0;
+	memset(&(VCU.d), 0, sizeof(vcu_data_t));
 	VCU.d.state = VEHICLE_BACKUP;
 }
 

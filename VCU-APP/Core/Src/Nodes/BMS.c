@@ -26,7 +26,7 @@ bms_t BMS = {
 		.RefreshIndex = BMS_RefreshIndex,
 		.MinIndex = BMS_MinIndex,
 		.GetMinKWH = BMS_GetMinKWH,
-		.CalcKmPerKwh = BMS_CalcKmPerKwh,
+		.GetKmPerKwh = BMS_GetKmPerKwh,
 };
 
 /* Private functions prototypes
@@ -42,14 +42,10 @@ static uint8_t AreRunning(uint8_t on);
 /* Public functions implementation
  * --------------------------------------------*/
 void BMS_Init(void) {
+	memset(&(BMS.d), 0, sizeof(bms_data_t));
+
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
 		ResetIndex(i);
-	ResetFaults();
-
-	BMS.d.active = 0;
-	BMS.d.run = 0;
-	BMS.d.soc = 0;
-	BMS.d.overheat = 0;
 }
 
 void BMS_PowerOverCan(uint8_t on) {
@@ -68,7 +64,7 @@ void BMS_RefreshIndex(void) {
 	BMS.d.active = AreActive();
 	BMS.d.run = BMS.d.active && AreRunning(1);
 
-	BMS.d.soc = BMS.d.packs[BMS.MinIndex()].soc;
+	BMS.d.soc = BMS.packs[BMS.MinIndex()].soc;
 	BMS.d.fault = MergeFault();
 	BMS.d.overheat = AreOverheat();
 
@@ -80,8 +76,8 @@ uint8_t BMS_MinIndex(void) {
 	uint8_t index = 0;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		if (BMS.d.packs[i].soc < soc) {
-			soc = BMS.d.packs[i].soc;
+		if (BMS.packs[i].soc < soc) {
+			soc = BMS.packs[i].soc;
 			index = i;
 		}
 	}
@@ -90,12 +86,16 @@ uint8_t BMS_MinIndex(void) {
 }
 
 float BMS_GetMinKWH(void) {
-	pack_t *p = &(BMS.d.packs[BMS.MinIndex()]);
+	pack_t *p = &(BMS.packs[BMS.MinIndex()]);
+	float kwh;
 
-	return (float) (p->soc * p->capacity * p->voltage) / 100;
+	kwh = (float) (p->soc * p->capacity * p->voltage) / 100.0;
+
+	BMS.d.kwh = kwh;
+	return kwh;
 }
 
-float BMS_CalcKmPerKwh(uint8_t m) {
+float BMS_GetKmPerKwh(uint8_t m) {
 	static uint8_t lastON = 0;
 	static uint8_t lastM = 0;
 	static float lastKWH = 0;
@@ -111,14 +111,13 @@ float BMS_CalcKmPerKwh(uint8_t m) {
 		float kwh = BMS.GetMinKWH();
 
 		if (kwh < lastKWH) {
-			float m_kwh = (m - lastM) / (kwh - lastKWH);
-
-			km_kwh = m_kwh / 1000.0;
+			km_kwh = ((m - lastM) / (kwh - lastKWH)) / 1000.0;
 			lastKWH = kwh;
 			lastM = m;
 		}
 	}
 
+	BMS.d.km_kwh = km_kwh;
 	return km_kwh;
 }
 
@@ -126,8 +125,8 @@ float BMS_CalcKmPerKwh(uint8_t m) {
  * =================================== */
 void BMS_RX_Param1(can_rx_t *Rx) {
 	uint8_t i = GetIndex(Rx->header.ExtId);
+	pack_t *pack = &(BMS.packs[i]);
 	UNION64 *d = &(Rx->data);
-	pack_t *pack = &(BMS.d.packs[i]);
 
 	// read the content
 	pack->voltage = d->u16[0] * 0.01;
@@ -142,8 +141,8 @@ void BMS_RX_Param1(can_rx_t *Rx) {
 
 void BMS_RX_Param2(can_rx_t *Rx) {
 	uint8_t i = GetIndex(Rx->header.ExtId);
+	pack_t *pack = &(BMS.packs[i]);
 	UNION64 *d = &(Rx->data);
-	pack_t *pack = &(BMS.d.packs[i]);
 
 	// read content
 	pack->capacity = d->u16[0] * 0.1;
@@ -175,36 +174,28 @@ uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t sc) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void ResetIndex(uint8_t i) {
-	pack_t *pack = &(BMS.d.packs[i]);
+	pack_t *pack = &(BMS.packs[i]);
 
-	pack->run = 0;
-	pack->tick = 0;
+	memset(pack, 0, sizeof(pack_t));
 	pack->state = BMS_STATE_OFF;
 	pack->id = BMS_ID_NONE;
-	pack->voltage = 0;
-	pack->current = 0;
-	pack->soc = 0;
-	pack->temperature = 0;
-	pack->capacity = 0;
-	pack->soh = 0;
-	pack->cycle = 0;
 }
 
 static void ResetFaults(void) {
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		BMS.d.packs[i].fault = 0;
+		BMS.packs[i].fault = 0;
 	BMS.d.fault = 0;
 }
 
 static uint8_t GetIndex(uint32_t addr) {
 	// find index (if already exist)
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		if (BMS.d.packs[i].id == BMS_ID(addr))
+		if (BMS.packs[i].id == BMS_ID(addr))
 			return i;
 
 	// find index (if not exist)
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		if (BMS.d.packs[i].id == BMS_ID_NONE)
+		if (BMS.packs[i].id == BMS_ID_NONE)
 			return i;
 
 	// force replace first index (if already full)
@@ -215,15 +206,16 @@ static uint16_t MergeFault(void) {
 	uint16_t fault = 0;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
-		fault |= BMS.d.packs[i].fault;
+		fault |= BMS.packs[i].fault;
 
 	return fault;
 }
 
 static uint8_t AreActive(void) {
 	uint8_t active = 1;
+
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		pack_t *pack = &(BMS.d.packs[i]);
+		pack_t *pack = &(BMS.packs[i]);
 
 		pack->active = pack->tick && (_GetTickMS() - pack->tick) < BMS_TIMEOUT_MS;
 		if (!pack->active) {
@@ -241,8 +233,8 @@ static uint8_t AreOverheat(void) {
 			BMSF_CHARGE_OVER_TEMPERATURE,
 			BMSF_CHARGE_UNDER_TEMPERATURE,
 	};
-
 	uint8_t temp = 0;
+
 	for (uint8_t i = 0; i < sizeof(overheat); i++)
 		temp |= BMS.d.fault & BIT(overheat[i]);
 
@@ -253,7 +245,7 @@ static uint8_t AreRunning(uint8_t on) {
 	BMS_STATE state = on ? BMS_STATE_FULL : BMS_STATE_IDLE;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		pack_t *pack = &(BMS.d.packs[i]);
+		pack_t *pack = &(BMS.packs[i]);
 
 		if (pack->state != state)
 			return 0;

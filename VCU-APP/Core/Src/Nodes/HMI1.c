@@ -12,7 +12,9 @@
  * -----------------------------------------------------------*/
 hmi1_t HMI1 = {
 		.d = {0},
-		.r ={HMI1_RX_State},
+		.r ={
+				HMI1_RX_State
+		},
 		.Init = HMI1_Init,
 		.Refresh = HMI1_Refresh,
 		.Power = GATE_Hmi1Power
@@ -48,7 +50,5 @@ void HMI1_RX_State(can_rx_t *Rx) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void Reset(void) {
-	HMI1.d.active = 0;
-	HMI1.d.tick = 0;
-	HMI1.d.version = 0;
+	memset(&(HMI1.d), 0, sizeof(hmi1_data_t));
 }

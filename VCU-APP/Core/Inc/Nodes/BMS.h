@@ -76,11 +76,13 @@ typedef struct {
 	uint8_t overheat;
 	uint16_t fault;
 	uint8_t soc;
-	pack_t packs[BMS_COUNT];
+	float kwh;
+	float km_kwh;
 } bms_data_t;
 
 typedef struct {
 	bms_data_t d;
+	pack_t packs[BMS_COUNT];
 	struct {
 		void (*Param1)(can_rx_t *);
 		void (*Param2)(can_rx_t *);
@@ -93,7 +95,7 @@ typedef struct {
 	void (*RefreshIndex)(void);
 	uint8_t (*MinIndex)(void);
 	float (*GetMinKWH)(void);
-	float (*CalcKmPerKwh)(uint8_t m);
+	float (*GetKmPerKwh)(uint8_t m);
 } bms_t;
 
 /* Exported variables
@@ -107,7 +109,7 @@ void BMS_PowerOverCan(uint8_t on);
 void BMS_RefreshIndex(void);
 uint8_t BMS_MinIndex(void);
 float BMS_GetMinKWH(void);
-float BMS_CalcKmPerKwh(uint8_t m);
+float BMS_GetKmPerKwh(uint8_t m);
 
 void BMS_RX_Param1(can_rx_t *Rx);
 void BMS_RX_Param2(can_rx_t *Rx);

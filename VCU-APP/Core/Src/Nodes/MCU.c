@@ -54,7 +54,6 @@ static void Reset(void);
 static void ResetPower(void);
 static void ResetFault(void);
 static void SetTemplateAddr(void);
-static void ResetTemplates(void);
 static uint8_t SyncedSpeedMax(void);
 static uint8_t SyncedTemplates(void);
 static uint8_t IsOverheat(void);
@@ -63,7 +62,6 @@ static uint8_t IsOverheat(void);
  * --------------------------------------------*/
 void MCU_Init(void) {
 	Reset();
-	ResetFault();
 	SetTemplateAddr();
 }
 
@@ -287,25 +285,9 @@ uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void Reset(void) {
-	MCU.d.run = 0;
-	MCU.d.tick = 0;
-	MCU.d.overheat = 0;
-
-	MCU.d.rpm = 0;
-	MCU.d.reverse = 0;
-	MCU.d.temperature = 0;
+	memset(&(MCU.d), 0, sizeof(mcu_data_t));
 	MCU.d.drive_mode = HBAR_M_DRIVE_STANDARD;
-	MCU.d.torque.commanded = 0;
-	MCU.d.torque.feedback = 0;
-	MCU.d.dcbus.current = 0;
-	MCU.d.dcbus.voltage = 0;
-
-	MCU.d.inv.enabled = 0;
-	MCU.d.inv.lockout = 0;
 	MCU.d.inv.discharge = INV_DISCHARGE_DISABLED;
-
-	MCU.d.par.rpm_max = 0;
-	ResetTemplates();
 }
 
 static void ResetPower(void) {
@@ -323,14 +305,6 @@ static void SetTemplateAddr(void) {
 		tplAddr[m].discur_max = (m*3) + MTP_1_DISCUR_MAX;
 		tplAddr[m].torque_max = (m*3) + MTP_1_TORQUE_MAX;
 		//		tplAddr[m].rbs_switch = (m*3) + MTP_1_RBS_SWITCH;
-	}
-}
-
-static void ResetTemplates(void) {
-	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
-		MCU.d.par.tpl[m].discur_max = 0;
-		MCU.d.par.tpl[m].torque_max = 0;
-		//		MCU.d.par.tpl[m].rbs_switch = 0;
 	}
 }
 

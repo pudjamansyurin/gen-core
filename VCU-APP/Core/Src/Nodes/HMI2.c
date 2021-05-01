@@ -24,7 +24,9 @@ extern osThreadId_t Hmi2PowerTaskHandle;
  * -----------------------------------------------------------*/
 hmi2_t HMI2 = {
 		.d = {0},
-		.r = {HMI2_RX_State},
+		.r = {
+				HMI2_RX_State
+		},
 		.Init = HMI2_Init,
 		.Refresh = HMI2_Refresh,
 		.PowerByCan = HMI2_PowerByCan,
@@ -35,8 +37,7 @@ hmi2_t HMI2 = {
 /* Public functions implementation
  * --------------------------------------------*/
 void HMI2_Init(void) {
-	HMI2.d.run = 0;
-	HMI2.d.tick = 0;
+	memset(&(HMI2.d), 0, sizeof(hmi2_data_t));
 }
 
 void HMI2_Refresh(void) {
@@ -59,8 +60,7 @@ void HMI2_PowerOn(void) {
 
 	// wait until turned ON by CAN
 	tick = _GetTickMS();
-	while (!HMI2.d.run && _GetTickMS() - tick < HMI2_POWER_ON_MS)
-		;
+	while (!HMI2.d.run && _GetTickMS() - tick < HMI2_POWER_ON_MS) {};
 }
 
 void HMI2_PowerOff(void) {
@@ -68,8 +68,7 @@ void HMI2_PowerOff(void) {
 
 	// wait until turned OFF by CAN
 	tick = _GetTickMS();
-	while (HMI2.d.run && _GetTickMS() - tick < HMI2_POWER_OFF_MS)
-		;
+	while (HMI2.d.run && _GetTickMS() - tick < HMI2_POWER_OFF_MS) {};
 
 	GATE_Hmi2Stop();
 }

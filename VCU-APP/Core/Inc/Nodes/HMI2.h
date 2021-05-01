@@ -20,10 +20,10 @@
 /* Exported struct
  * ------------------------------------------------------------*/
 typedef struct {
-  uint8_t powerRequest;
   uint8_t run;
   uint32_t tick;
   uint8_t mirroring;
+  uint8_t powerRequest;
 } hmi2_data_t;
 
 typedef struct {

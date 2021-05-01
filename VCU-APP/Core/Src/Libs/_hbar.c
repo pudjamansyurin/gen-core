@@ -185,7 +185,7 @@ void HBAR_SetOdometer(uint8_t m) {
 		}
 
 		{
-			float km_kwh = BMS.CalcKmPerKwh(odo_m);
+			float km_kwh = BMS.GetKmPerKwh(odo_m);
 			HBAR.d.report[HBAR_M_REPORT_AVERAGE] = km_kwh;
 			HBAR.d.report[HBAR_M_REPORT_RANGE] = BMS.GetMinKWH() * km_kwh;
 		}
