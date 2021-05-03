@@ -12,9 +12,9 @@
 #include "Libs/_utils.h"
 
 /* Exported define -----------------------------------------------------------*/
-#define NRF_DATA_LENGTH (uint8_t)16 // Max: 32 bytes
-#define NRF_ADDR_LENGTH (uint8_t)5  // Range 3:5
-#define NRF_DATA_PAIR_LENGTH (uint8_t)(NRF_DATA_LENGTH + NRF_ADDR_LENGTH)
+#define NRF_DATA_LENGTH ((uint8_t)16) // Max: 32 bytes
+#define NRF_ADDR_LENGTH ((uint8_t)5)  // Range 3:5
+#define NRF_DATA_PAIR_LENGTH ((uint8_t)(NRF_DATA_LENGTH + NRF_ADDR_LENGTH))
 
 #define NRF_RX_DR                                     (1 << 6)
 #define NRF_TX_DS                                     (1 << 5)
@@ -136,7 +136,7 @@ NRF_RESULT nrf_check(void);
  *
  * You must call this function on Falling edge trigger detection interrupt
  * handler, typically, from HAL_GPIO_EXTI_Callback  */
-void nrf_irq_handler(void);
+uint8_t nrf_irq_handler(void);
 /* Blocking Data Receiving
  *
  * Blocks until the data has arrived, then returns a pointer to received data.

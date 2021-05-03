@@ -70,7 +70,6 @@ uint8_t RMT_Ping(vehicle_state_t state);
 void RMT_Pairing(void);
 uint8_t RMT_GotPairedResponse(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
-void RMT_PacketReceived(uint8_t *data);
 void RMT_IrqHandler(void);
 
 #endif /* REMOTE_H_ */

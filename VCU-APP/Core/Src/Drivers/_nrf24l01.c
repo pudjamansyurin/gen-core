@@ -6,7 +6,6 @@
  */
 /*Includes ------------------------------------------------------------------*/
 #include "Drivers/_nrf24l01.h"
-#include "Libs/_remote.h"
 
 /*Private variables
  *----------------------------------------------------------*/
@@ -754,14 +753,15 @@ NRF_RESULT nrf_send_packet_noack(const uint8_t *data) {
 //	return !NRF.rx_busy;
 //}
 
-void nrf_irq_handler(void)
+uint8_t nrf_irq_handler(void)
 {
 	uint8_t status = 0;
 	uint8_t fifo_status = 0;
+	uint8_t received = 0;
 
 	// read interrupt register
 	if (nrf_read_register(NRF_STATUS, &status) != NRF_OK)
-		return;
+		return 0;
 
 	if (status & NRF_RX_DR)
 	{
@@ -779,7 +779,7 @@ void nrf_irq_handler(void)
 			nrf_flush_rx();
 
 			NRF.rx_busy = 0;
-			RMT_PacketReceived(NRF.config.rx_buffer);
+			received = 1;
 		}
 		ce_set();
 	}
@@ -815,6 +815,8 @@ void nrf_irq_handler(void)
 		NRF.tx_result = NRF_ERROR;
 		NRF.tx_busy = 0;
 	}
+
+	return received;
 }
 
 /*Private functions implementation
@@ -933,5 +935,6 @@ static void nrf_clear_pending_irq(void) {
 		nrf_flush_rx();
 	if (status & NRF_MAX_RT)
 		nrf_flush_tx();
+
 	nrf_clear_interrupts();
 }

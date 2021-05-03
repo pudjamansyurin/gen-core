@@ -224,17 +224,15 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 	return valid;
 }
 
-void RMT_PacketReceived(uint8_t *data) {
-#if REMOTE_DEBUG
-	RawDebugger();
-	Debugger();
-#endif
-	osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RX_IT);
-}
-
 void RMT_IrqHandler(void) {
 	lock();
-	nrf_irq_handler();
+	if (nrf_irq_handler()) {
+		osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RX_IT);
+#if REMOTE_DEBUG
+		RawDebugger();
+		Debugger();
+#endif
+	}
 	unlock();
 }
 /* Private functions implementation
