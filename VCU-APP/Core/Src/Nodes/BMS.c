@@ -25,8 +25,8 @@ bms_t BMS = {
 		.PowerOverCan = BMS_PowerOverCan,
 		.RefreshIndex = BMS_RefreshIndex,
 		.MinIndex = BMS_MinIndex,
-		.GetMinKWH = BMS_GetMinKWH,
-		.GetKmPerKwh = BMS_GetKmPerKwh,
+		.GetMinWH = BMS_GetMinWH,
+		.GetMPerWH = BMS_GetMPerWH,
 };
 
 /* Private functions prototypes
@@ -38,6 +38,7 @@ static uint16_t MergeFault(void);
 static uint8_t AreActive(void);
 static uint8_t AreOverheat(void);
 static uint8_t AreRunning(uint8_t on);
+static float MovAvg(float *buf, uint16_t sz, float val);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -85,40 +86,51 @@ uint8_t BMS_MinIndex(void) {
 	return index;
 }
 
-float BMS_GetMinKWH(void) {
+float BMS_GetMinWH(void) {
 	pack_t *p = &(BMS.packs[BMS.MinIndex()]);
-	float kwh;
+	float wh = p->capacity * p->voltage;
 
-	kwh = (float) (p->soc * p->capacity * p->voltage) / 100.0;
+	wh = (p->soc * wh * 2.0) / 100.0;
 
-	BMS.d.kwh = kwh;
-	return kwh;
+	BMS.d.wh = MovAvg(BMS.d.buf, BMS_AVG_SZ, wh);
+	return BMS.d.wh;
 }
 
-float BMS_GetKmPerKwh(uint8_t m) {
-	static uint8_t lastON = 0;
-	static uint8_t lastM = 0;
-	static float lastKWH = 0;
-	float km_kwh = 0;
+float BMS_GetMPerWH(uint32_t odo) {
+	static uint32_t _odo = 0;
+	static uint8_t _on = 0;
+	static float _wh = 0;
+	float m_wh;
 
-	if (BMS.d.active != lastON) {
-		lastON = BMS.d.active;
-		lastKWH = BMS.GetMinKWH();
-		lastM = m;
+	if (BMS.d.active != _on) {
+		_on = BMS.d.active;
+		_wh = BMS.GetMinWH();
+		_odo = odo;
 	}
 
 	if (BMS.d.active) {
-		float kwh = BMS.GetMinKWH();
+		float wh = BMS.GetMinWH();
 
-		if (kwh < lastKWH) {
-			km_kwh = ((m - lastM) / (kwh - lastKWH)) / 1000.0;
-			lastKWH = kwh;
-			lastM = m;
-		}
-	}
+		if (odo != _odo) {
+			if (wh != _wh) {
+				m_wh = (odo - _odo) / (wh - _wh);
+				m_wh *= (m_wh < 0) ? -1 : 1;
 
-	BMS.d.km_kwh = km_kwh;
-	return km_kwh;
+				_wh = wh;
+			} else
+				m_wh = BMS.d.m_wh;
+
+			_odo = odo;
+		} else
+			m_wh = 0;
+	} else
+		m_wh = 0;
+
+	if (m_wh == 0)
+		memset(BMS.d.buf, 0, sizeof(BMS.d.buf));
+
+	BMS.d.m_wh = m_wh;
+	return BMS.d.m_wh;
 }
 
 /* ====================================== CAN RX
@@ -253,4 +265,26 @@ static uint8_t AreRunning(uint8_t on) {
 			return 0;
 	}
 	return 1;
+}
+
+static float MovAvg(float *buf, uint16_t sz, float val) {
+  static float sum = 0;
+  static uint32_t pos = 0;
+  static uint16_t length = 0;
+
+  // Subtract the oldest number from the prev sum, add the new number
+  sum = sum - buf[pos] + val;
+  // Assign the nextNum to the position in the array
+  buf[pos] = val;
+  // Increment position
+  pos++;
+  if (pos >= sz)
+    pos = 0;
+
+  // calculate filled array
+  if (length < sz)
+    length++;
+
+  // return the average
+  return sum / length;
 }

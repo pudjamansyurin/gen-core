@@ -232,6 +232,11 @@ void RMT_PacketReceived(uint8_t *data) {
 	osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RX_IT);
 }
 
+void RMT_IrqHandler(void) {
+	lock();
+	nrf_irq_handler();
+	unlock();
+}
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {

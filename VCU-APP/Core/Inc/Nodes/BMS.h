@@ -13,6 +13,8 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
+#define BMS_AVG_SZ ((uint8_t)10)
+
 #define BMS_COUNT 2
 #define BMS_TIMEOUT_MS ((uint32_t)4000)
 #define BMS_ID_NONE ((uint32_t)0xFFFFFFFF)
@@ -76,8 +78,9 @@ typedef struct {
 	uint8_t overheat;
 	uint16_t fault;
 	uint8_t soc;
-	float kwh;
-	float km_kwh;
+	float wh;
+	float m_wh;
+	float buf[BMS_AVG_SZ];
 } bms_data_t;
 
 typedef struct {
@@ -94,8 +97,8 @@ typedef struct {
 	void (*PowerOverCan)(uint8_t);
 	void (*RefreshIndex)(void);
 	uint8_t (*MinIndex)(void);
-	float (*GetMinKWH)(void);
-	float (*GetKmPerKwh)(uint8_t m);
+	float (*GetMinWH)(void);
+	float (*GetMPerWH)(uint32_t);
 } bms_t;
 
 /* Exported variables
@@ -108,8 +111,8 @@ void BMS_Init(void);
 void BMS_PowerOverCan(uint8_t on);
 void BMS_RefreshIndex(void);
 uint8_t BMS_MinIndex(void);
-float BMS_GetMinKWH(void);
-float BMS_GetKmPerKwh(uint8_t m);
+float BMS_GetMinWH(void);
+float BMS_GetMPerWH(uint32_t odo);
 
 void BMS_RX_Param1(can_rx_t *Rx);
 void BMS_RX_Param2(can_rx_t *Rx);

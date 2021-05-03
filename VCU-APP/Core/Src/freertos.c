@@ -1077,7 +1077,7 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_HBAR_REVERSE:
-					HBAR.state[HBAR_K_REVERSE] = val;
+					HBAR.d.pin[HBAR_K_REVERSE] = val;
 					break;
 
 				default:
@@ -1624,6 +1624,7 @@ void StartGateTask(void *argument)
 		}
 
 		HBAR_RefreshSelectSet();
+
 		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
 		HMI1.Power(VCU.d.state >= VEHICLE_STANDBY);
 		MCU.Power12v(VCU.d.state >= VEHICLE_READY);
@@ -1642,7 +1643,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 	if (GPIO_Pin & INT_REMOTE_IRQ_Pin) {
 		if (VCU.d.state >= VEHICLE_NORMAL)
-			nrf_irq_handler();
+			RMT_IrqHandler();
 	}
 
 	if (GPIO_Pin & EXT_FINGER_IRQ_Pin) {

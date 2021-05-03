@@ -72,15 +72,17 @@ typedef struct {
 
 typedef struct {
 	HBAR_STARTER starter;
+	hbar_sein_t sein;
 	uint8_t session;
 	struct {
-		uint32_t starter;
+		uint32_t sein;
 		uint32_t session;
 	} tick;
-} hbar_control_t;
+} hbar_ctl_t;
 
 typedef struct {
-	hbar_sein_t sein;
+	uint32_t odometer;
+	uint8_t pin[HBAR_K_MAX];
 	HBAR_MODE m;
 	uint8_t max[HBAR_M_MAX];
 	uint8_t mode[HBAR_M_MAX];
@@ -95,9 +97,8 @@ typedef struct {
 
 typedef struct {
 	hbar_data_t d;
-	hbar_control_t ctl;
-	uint8_t state[HBAR_K_MAX];
-	hbar_timer_t timer[2];
+	hbar_ctl_t ctl;
+	hbar_timer_t tim[3];
 } hbar_t;
 
 /* Exported variables
@@ -108,10 +109,8 @@ extern hbar_t HBAR;
 void HBAR_Init(void);
 void HBAR_ReadStarter(uint8_t normalState);
 void HBAR_ReadStates(void);
-void HBAR_HandleSelectSet(void);
 void HBAR_RefreshSelectSet(void);
-void HBAR_TimerSelectSet(void);
-hbar_sein_t HBAR_SeinController(void);
+void HBAR_RefreshSein(void);
 uint16_t HBAR_AccumulateTrip(uint8_t km);
 void HBAR_SetOdometer(uint8_t m);
 

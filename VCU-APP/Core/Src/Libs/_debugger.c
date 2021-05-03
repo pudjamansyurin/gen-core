@@ -27,7 +27,7 @@ void DBG_GetVCU(vcu_dbg_t *vcu) {
 }
 
 void DBG_GetHBAR(hbar_dbg_t *hbar) {
-	hbar->reverse = HBAR.state[HBAR_K_REVERSE];
+	hbar->reverse = HBAR.d.pin[HBAR_K_REVERSE];
 	hbar->mode.drive = HBAR.d.mode[HBAR_M_DRIVE];
 	hbar->mode.trip = HBAR.d.mode[HBAR_M_TRIP];
 	hbar->mode.report = HBAR.d.mode[HBAR_M_REPORT];

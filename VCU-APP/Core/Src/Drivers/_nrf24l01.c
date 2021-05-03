@@ -23,6 +23,7 @@ static NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data);
 static NRF_RESULT nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len);
 static NRF_RESULT nrf_write_register(uint8_t reg, uint8_t *data);
 static NRF_RESULT nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len);
+static void nrf_clear_pending_irq(void);
 
 /*Public functions implementation
  *---------------------------------------------*/
@@ -701,22 +702,14 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width)
 //	return NRF.tx_result;
 //}
 
-NRF_RESULT nrf_send_packet_noack(const uint8_t *data)
-{
-	uint8_t status = 0;
+NRF_RESULT nrf_send_packet_noack(const uint8_t *data) {
 	uint32_t tick;
 
 	ce_reset();
-	// read interrupt register
-	if (nrf_read_register(NRF_STATUS, &status) == NRF_OK) {
-		if (status & NRF_RX_DR)
-			nrf_flush_rx();
-		if (status & NRF_MAX_RT)
-			nrf_flush_tx();
-		nrf_clear_interrupts();
-	}
-	nrf_power_up(0);
+	nrf_clear_pending_irq();
+
 	NRF.tx_busy = 1;
+	nrf_power_up(0);
 	nrf_rx_tx_control(NRF_STATE_TX);
 	nrf_power_up(1);
 	nrf_write_tx_payload_noack(data);
@@ -928,4 +921,17 @@ static NRF_RESULT nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len)
 	}
 
 	return NRF_OK;
+}
+
+static void nrf_clear_pending_irq(void) {
+	uint8_t status = 0;
+
+	if (nrf_read_register(NRF_STATUS, &status) != NRF_OK)
+		return;
+
+	if (status & NRF_RX_DR)
+		nrf_flush_rx();
+	if (status & NRF_MAX_RT)
+		nrf_flush_tx();
+	nrf_clear_interrupts();
 }

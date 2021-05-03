@@ -81,7 +81,7 @@ void MCU_Power12v(uint8_t on) {
 }
 
 void MCU_PowerOverCan(uint8_t on) {
-	uint8_t R = HBAR.state[HBAR_K_REVERSE];
+	uint8_t R = HBAR.d.pin[HBAR_K_REVERSE];
 
 	if (on) {
 		if (MCU.d.inv.lockout) {

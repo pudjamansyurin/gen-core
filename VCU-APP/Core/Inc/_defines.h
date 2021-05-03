@@ -32,7 +32,7 @@
 /* Exported constants --------------------------------------------------------*/
 #define VCU_VENDOR "GEN"
 #define VCU_BUILD_YEAR ((uint8_t)21)
-#define MANAGER_WAKEUP_MS ((uint16_t)1111)
+#define MANAGER_WAKEUP_MS ((uint16_t)555)
 #define MCU_SPEED_MAX_KPH ((uint8_t)150)
 #define SIMCOM_MIN_MV ((uint16_t)3300)
 #define HMI_FOTA_MS ((uint32_t)20000)

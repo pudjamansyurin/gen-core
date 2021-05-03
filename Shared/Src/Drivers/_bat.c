@@ -25,7 +25,7 @@ static bat_t BAT = {
  * ----------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value);
+static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val);
 
 /* Public functions implementation ------------------------------------------*/
 void BAT_Init(void) {
@@ -43,18 +43,18 @@ void BAT_DeInit(void) {
 
 uint16_t BAT_ScanValue(void) {
   uint16_t value = 0;
-  uint8_t res;
+  uint8_t ok;
 
   lock();
   HAL_ADC_Start(BAT.padc);
-  res = HAL_ADC_PollForConversion(BAT.padc, 5) == HAL_OK;
-
-  if (res) value = HAL_ADC_GetValue(BAT.padc);
+  ok = HAL_ADC_PollForConversion(BAT.padc, 5) == HAL_OK;
+  if (ok)
+	  value = HAL_ADC_GetValue(BAT.padc);
   HAL_ADC_Stop(BAT.padc);
 
-  if (res) {
-    value = (value * BAT_MAX_VOLTAGE) / ADC_MAX_VALUE;
-    value = MovingAverage(BAT.buf, AVERAGE_SZ, value);
+  if (ok) {
+    value = (value * BAT_MAX_MV) / ADC_MAX_VALUE;
+    value = MovAvg(BAT.buf, BAT_AVG_SZ, value);
   }
 
   BAT.voltage = value;
@@ -77,21 +77,21 @@ static void unlock(void) {
 #endif
 }
 
-static uint16_t MovingAverage(uint16_t *pBuffer, uint16_t len, uint16_t value) {
+static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val) {
   static uint32_t sum = 0, pos = 0;
   static uint16_t length = 0;
 
   // Subtract the oldest number from the prev sum, add the new number
-  sum = sum - pBuffer[pos] + value;
+  sum = sum - buf[pos] + val;
   // Assign the nextNum to the position in the array
-  pBuffer[pos] = value;
+  buf[pos] = val;
   // Increment position
   pos++;
-  if (pos >= len)
+  if (pos >= sz)
     pos = 0;
 
   // calculate filled array
-  if (length < len)
+  if (length < sz)
     length++;
 
   // return the average

@@ -12,17 +12,17 @@
 #include "Libs/_utils.h"
 
 /* Defines -----------------------------------------------------------------*/
-#define AVERAGE_SZ (uint8_t)100
-#define ADC_MAX_VALUE (float)4095   // 12 bit
-#define REF_MAX_VOLTAGE (float)3300 // mV
-#define BAT_MAX_VOLTAGE (float)4150 // mV
-#define BAT_OFFSET_VOLTAGE (float)0 // mV
+#define BAT_AVG_SZ ((uint8_t)100)
+#define ADC_MAX_VALUE ((float)4095)   // 12 bit
+#define REF_MAX_MV ((float)3300)
+#define BAT_MAX_MV ((float)4150)
+#define BAT_OFFSET_MV ((float)0)
 
 /* Exported struct
  * --------------------------------------------------------------*/
 typedef struct {
 	uint16_t voltage;
-	uint16_t buf[AVERAGE_SZ];
+	uint16_t buf[BAT_AVG_SZ];
 	ADC_HandleTypeDef *padc;
 } bat_t;
 

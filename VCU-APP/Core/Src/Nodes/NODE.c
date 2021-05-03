@@ -73,7 +73,6 @@ void NODE_Refresh(void) {
 void NODE_RX_Debug(can_rx_t *Rx) {
 	UNION64 *d = &(Rx->data);
 
-	// read the content
 	NODE.d.debug = d->u8[0];
 
 	NODE.d.tick.dbg = _GetTickMS();
@@ -111,14 +110,14 @@ void NODE_TX_DebugGroup(void) {
 	d->u8[5] |= (bms.run & 0x01) << 1;
 	d->u8[6] = bms.soc;
 
-	d->u8[7] = (HBAR.state[HBAR_K_SELECT] & 0x01);
-	d->u8[7] |= (HBAR.state[HBAR_K_SET] & 0x01) << 1;
-	d->u8[7] |= (HBAR.state[HBAR_K_STARTER] & 0x01) << 2;
-	d->u8[7] |= (HBAR.state[HBAR_K_SEIN_L] & 0x01) << 3;
-	d->u8[7] |= (HBAR.state[HBAR_K_SEIN_R] & 0x01) << 4;
-	d->u8[7] |= (HBAR.state[HBAR_K_REVERSE] & 0x01) << 5;
-	d->u8[7] |= (HBAR.state[HBAR_K_LAMP] & 0x01) << 6;
-	d->u8[7] |= (HBAR.state[HBAR_K_ABS] & 0x01) << 7;
+	d->u8[7] = (HBAR.d.pin[HBAR_K_SELECT] & 0x01);
+	d->u8[7] |= (HBAR.d.pin[HBAR_K_SET] & 0x01) << 1;
+	d->u8[7] |= (HBAR.d.pin[HBAR_K_STARTER] & 0x01) << 2;
+	d->u8[7] |= (HBAR.d.pin[HBAR_K_SEIN_L] & 0x01) << 3;
+	d->u8[7] |= (HBAR.d.pin[HBAR_K_SEIN_R] & 0x01) << 4;
+	d->u8[7] |= (HBAR.d.pin[HBAR_K_REVERSE] & 0x01) << 5;
+	d->u8[7] |= (HBAR.d.pin[HBAR_K_LAMP] & 0x01) << 6;
+	d->u8[7] |= (HBAR.d.pin[HBAR_K_ABS] & 0x01) << 7;
 
 	CANBUS_Write(&Tx, CAND_DBG_GROUP, 8, 0);
 }

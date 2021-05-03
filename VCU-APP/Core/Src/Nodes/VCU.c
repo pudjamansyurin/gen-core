@@ -206,9 +206,9 @@ uint8_t VCU_TX_SwitchControl(void) {
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
-	d->u8[0] = HBAR.state[HBAR_K_ABS];
+	d->u8[0] = HBAR.d.pin[HBAR_K_ABS];
 	d->u8[0] |= HMI2.d.mirroring << 1;
-	d->u8[0] |= HBAR.state[HBAR_K_LAMP] << 2;
+	d->u8[0] |= HBAR.d.pin[HBAR_K_LAMP] << 2;
 	d->u8[0] |= NODE.d.error << 3;
 	d->u8[0] |= NODE.d.overheat << 4;
 	d->u8[0] |= !FGR.d.id << 5;
@@ -216,10 +216,10 @@ uint8_t VCU_TX_SwitchControl(void) {
 	d->u8[0] |= RTC_Daylight() << 7;
 
 	// sein value
-	hbar_sein_t sein = HBAR_SeinController();
-	d->u8[1] = sein.left;
-	d->u8[1] |= sein.right << 1;
-	//	d->u8[1] |= HBAR.state[HBAR_K_REVERSE] << 2;
+	HBAR_RefreshSein();
+	d->u8[1] = HBAR.ctl.sein.left;
+	d->u8[1] |= HBAR.ctl.sein.right << 1;
+	//	d->u8[1] |= HBAR.d.pin[HBAR_K_REVERSE] << 2;
 	d->u8[1] |= MCU.Reversed() << 2;
 	d->u8[1] |= BMS.d.run << 3;
 	d->u8[1] |= MCU.d.run << 4;
