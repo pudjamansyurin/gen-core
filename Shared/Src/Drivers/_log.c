@@ -40,7 +40,9 @@ int _write(int file, char *ptr, int len) {
 	return len;
 }
 
-void printf_init(void) { setvbuf(stdout, NULL, _IONBF, 0); }
+void printf_init(void) {
+	setvbuf(stdout, NULL, _IONBF, 0);
+}
 
 void printf_hex(char *data, uint16_t size) {
 	lock();

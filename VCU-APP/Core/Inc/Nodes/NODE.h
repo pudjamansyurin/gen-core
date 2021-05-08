@@ -28,7 +28,8 @@ typedef enum {
 	CDBG_MEMS,
 	CDBG_RMT,
 	CDBG_TASK,
-	CDBG_MCU
+	CDBG_MCU,
+	CDBG_BMS,
 } CDBG;
 
 /* Exported struct
@@ -47,17 +48,9 @@ typedef struct {
 	struct {
 		void (*Debug)(can_rx_t *);
 	} r;
-	struct {
-		void (*DebugGroup)(void);
-		void (*DebugVCU)(void);
-		void (*DebugGPS)(void);
-		void (*DebugMEMS)(void);
-		void (*DebugRMT)(void);
-		void (*DebugTASK)(void);
-		void (*DebugMCU)(void);
-	} t;
 	void (*Init)(void);
 	void (*Refresh)(void);
+	void (*DebugCAN)(void);
 } node_t;
 
 /* Exported variables
@@ -68,6 +61,7 @@ extern node_t NODE;
  * --------------------------------------------*/
 void NODE_Init(void);
 void NODE_Refresh(void);
+void NODE_DebugCAN(void);
 
 void NODE_RX_Debug(can_rx_t *Rx);
 void NODE_TX_DebugGroup(void);
@@ -77,5 +71,6 @@ void NODE_TX_DebugMEMS(void);
 void NODE_TX_DebugRMT(void);
 void NODE_TX_DebugTASK(void);
 void NODE_TX_DebugMCU(void);
+void NODE_TX_DebugBMS(void);
 
 #endif /* INC_NODES_NODE_H_ */

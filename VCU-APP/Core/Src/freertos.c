@@ -92,7 +92,7 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE END Variables */
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
-uint32_t ManagerTaskBuffer[ 256 ];
+uint32_t ManagerTaskBuffer[ 328 ];
 osStaticThreadDef_t ManagerTaskControlBlock;
 const osThreadAttr_t ManagerTask_attributes = {
 		.name = "ManagerTask",
@@ -708,8 +708,6 @@ void StartManagerTask(void *argument)
 		if (osMessageQueueGet(OverrideStateQueueHandle, &overrideState, NULL, 0U) == osOK)
 			VCU.d.state = (int8_t) overrideState;
 		VCU.CheckState();
-
-		HBAR_SetOdometer(VCU.CalcDistance());
 
 		IWDG_Refresh();
 		osDelayUntil(lastWake + MANAGER_WAKEUP_MS);
@@ -1453,9 +1451,9 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):																																																				BMS.r.Param1(&Rx);
-					break;
+				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):																																																											BMS.r.Param2(&Rx);
-					break;
+				break;
 				default:
 					break;
 				}
@@ -1494,9 +1492,9 @@ void StartCanTxTask(void *argument)
 		// Check notifications
 		if (_osFlagAny(&notif, 20)) {
 			if (notif & FLAG_CAN_TASK_STOP) {
-				HMI2.PowerByCan(0);
-				MCU.PowerOverCan(0);
-				BMS.PowerOverCan(0);
+				HMI2.PowerByCAN(0);
+				MCU.PowerOverCAN(0);
+				BMS.PowerOverCAN(0);
 
 				CANBUS_DeInit();
 				_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
@@ -1512,9 +1510,9 @@ void StartCanTxTask(void *argument)
 		if (_GetTickMS() - last500ms > 500) {
 			last500ms = _GetTickMS();
 
-			HMI2.PowerByCan(VCU.d.state >= VEHICLE_STANDBY);
-			BMS.PowerOverCan(VCU.d.state >= VEHICLE_READY);
-			MCU.PowerOverCan(BMS.d.run && VCU.d.state == VEHICLE_RUN);
+			HMI2.PowerByCAN(VCU.d.state >= VEHICLE_STANDBY);
+			BMS.PowerOverCAN(VCU.d.state >= VEHICLE_READY);
+			MCU.PowerOverCAN(BMS.d.run && VCU.d.state == VEHICLE_RUN);
 		}
 
 		// send every 1000ms
@@ -1527,17 +1525,11 @@ void StartCanTxTask(void *argument)
 			}
 
 			if (MCU.d.active) {
-				MCU.Sync();
+				MCU.SyncCAN();
 			}
 
 			if (NODE.d.debug) {
-				NODE.t.DebugGroup();
-				NODE.t.DebugVCU();
-				NODE.t.DebugGPS();
-				NODE.t.DebugMEMS();
-				NODE.t.DebugRMT();
-				NODE.t.DebugTASK();
-				NODE.t.DebugMCU();
+				NODE.DebugCAN();
 			}
 
 			VCU.t.Heartbeat();
@@ -1588,7 +1580,7 @@ void StartHmi2PowerTask(void *argument)
 void StartGateTask(void *argument)
 {
 	/* USER CODE BEGIN StartGateTask */
-	uint32_t notif;
+	uint32_t notif, tick100ms;
 
 	_osEventManager();
 
@@ -1597,6 +1589,7 @@ void StartGateTask(void *argument)
 	HBAR_ReadStates();
 
 	/* Infinite loop */
+	tick100ms = _GetTickMS();
 	for (;;) {
 		TASKS.tick.gate = _GetTickMS();
 
@@ -1624,6 +1617,11 @@ void StartGateTask(void *argument)
 		}
 
 		HBAR_RefreshSelectSet();
+		if (_GetTickMS() - tick100ms > 100) {
+			tick100ms = _GetTickMS();
+			HBAR_SetOdometer(VCU.CalcDistance());
+			HBAR_SetReport(HBAR.d.odometer);
+		}
 
 		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
 		HMI1.Power(VCU.d.state >= VEHICLE_STANDBY);

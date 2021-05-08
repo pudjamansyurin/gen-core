@@ -33,7 +33,7 @@ typedef struct {
   } r;
   void (*Init)(void);
   void (*Refresh)(void);
-  void (*PowerByCan)(uint8_t);
+  void (*PowerByCAN)(uint8_t);
   void (*PowerOn)(void);
   void (*PowerOff)(void);
 } hmi2_t;
@@ -46,7 +46,7 @@ extern hmi2_t HMI2;
  * --------------------------------------------*/
 void HMI2_Init(void);
 void HMI2_Refresh(void);
-void HMI2_PowerByCan(uint8_t state);
+void HMI2_PowerByCAN(uint8_t state);
 void HMI2_RX_State(can_rx_t *Rx);
 void HMI2_PowerOn(void);
 void HMI2_PowerOff(void);

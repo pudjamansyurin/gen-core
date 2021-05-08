@@ -22,7 +22,6 @@ static NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data);
 static NRF_RESULT nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len);
 static NRF_RESULT nrf_write_register(uint8_t reg, uint8_t *data);
 static NRF_RESULT nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len);
-static void nrf_clear_pending_irq(void);
 
 /*Public functions implementation
  *---------------------------------------------*/
@@ -702,22 +701,22 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width)
 //}
 
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data) {
-	uint32_t tick;
+	NRF_RESULT res;
 
 	ce_reset();
 	nrf_clear_pending_irq();
-
 	NRF.tx_busy = 1;
 	nrf_power_up(0);
 	nrf_rx_tx_control(NRF_STATE_TX);
 	nrf_power_up(1);
-	nrf_write_tx_payload_noack(data);
+	res = nrf_write_tx_payload_noack(data);
 	ce_set();
 
-	tick = _GetTickMS();
-	while(NRF.tx_busy && (_GetTickMS() - tick) <= 3){};
+	return res;
+}
 
-	return (NRF.tx_busy ? NRF_ERROR : NRF_OK);
+uint8_t nrf_tx_busy(void) {
+	return NRF.tx_busy;
 }
 
 //NRF_RESULT nrf_push_packet(const uint8_t *data) {
@@ -774,7 +773,7 @@ uint8_t nrf_irq_handler(void)
 		{
 			nrf_read_rx_payload(NRF.config.rx_buffer);
 
-			status |= NRF_RX_DR;
+			status |= NRF_RX_DR;	// clear the interrupt flag
 			nrf_write_register(NRF_STATUS, &status);
 			nrf_flush_rx();
 
@@ -807,7 +806,6 @@ uint8_t nrf_irq_handler(void)
 		nrf_flush_tx();
 		nrf_power_up(0);	// power down
 		nrf_power_up(1);	// power up
-
 		nrf_write_register(NRF_STATUS, &status);
 		nrf_rx_tx_control(NRF_STATE_RX);
 		ce_set();
@@ -817,6 +815,20 @@ uint8_t nrf_irq_handler(void)
 	}
 
 	return received;
+}
+
+void nrf_clear_pending_irq(void) {
+	uint8_t status = 0;
+
+	if (nrf_read_register(NRF_STATUS, &status) != NRF_OK)
+		return;
+
+	if (status & NRF_RX_DR)
+		nrf_flush_rx();
+	if (status & NRF_MAX_RT)
+		nrf_flush_tx();
+
+	nrf_clear_interrupts();
 }
 
 /*Private functions implementation
@@ -923,18 +935,4 @@ static NRF_RESULT nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len)
 	}
 
 	return NRF_OK;
-}
-
-static void nrf_clear_pending_irq(void) {
-	uint8_t status = 0;
-
-	if (nrf_read_register(NRF_STATUS, &status) != NRF_OK)
-		return;
-
-	if (status & NRF_RX_DR)
-		nrf_flush_rx();
-	if (status & NRF_MAX_RT)
-		nrf_flush_tx();
-
-	nrf_clear_interrupts();
 }

@@ -137,6 +137,7 @@ NRF_RESULT nrf_check(void);
  * You must call this function on Falling edge trigger detection interrupt
  * handler, typically, from HAL_GPIO_EXTI_Callback  */
 uint8_t nrf_irq_handler(void);
+void nrf_clear_pending_irq(void);
 /* Blocking Data Receiving
  *
  * Blocks until the data has arrived, then returns a pointer to received data.
@@ -155,6 +156,7 @@ uint8_t nrf_irq_handler(void);
  *
  * Disables the AA for this packet, thus this method always returns NRF_OK */
 NRF_RESULT nrf_send_packet_noack(const uint8_t *data);
+uint8_t nrf_tx_busy(void);
 /* Non-Blocking Data Sending */
 //NRF_RESULT nrf_push_packet(const uint8_t *data);
 

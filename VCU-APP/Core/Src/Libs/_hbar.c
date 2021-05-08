@@ -140,23 +140,20 @@ void HBAR_SetOdometer(uint8_t m) {
 	if (init) {
 		init = 0;
 		HBAR.d.odometer = ((*odo_km) * 1000);
-	} else {
-		HBAR.d.odometer += m;
-
-		{
-			float m_wh = BMS.GetMPerWH(HBAR.d.odometer);
-			float km = m_wh * BMS.GetMinWH();
-
-			HBAR.d.report[HBAR_M_REPORT_AVERAGE] = m_wh;
-			HBAR.d.report[HBAR_M_REPORT_RANGE] = km;
-		}
-
-		if ((HBAR.d.odometer / 1000) > (*odo_km)) {
-			uint8_t d_km = (HBAR.d.odometer / 1000) - (*odo_km);
-			uint16_t odom = HBAR_AccumulateTrip(d_km);
-			EEPROM_Odometer(EE_CMD_W, odom);
-		}
 	}
+
+	HBAR.d.odometer += m;
+
+	if ((HBAR.d.odometer / 1000) > (*odo_km)) {
+		uint8_t d_km = (HBAR.d.odometer / 1000) - (*odo_km);
+		uint16_t odom = HBAR_AccumulateTrip(d_km);
+		EEPROM_Odometer(EE_CMD_W, odom);
+	}
+}
+
+void HBAR_SetReport(uint32_t odom) {
+	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = BMS.GetMPerWH(odom);
+	HBAR.d.report[HBAR_M_REPORT_RANGE] = BMS.GetRangeKM();
 }
 
 /* Private functions implementation

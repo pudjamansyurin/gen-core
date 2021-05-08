@@ -13,10 +13,10 @@
 
 /* Defines -----------------------------------------------------------------*/
 #define BAT_AVG_SZ ((uint8_t)100)
-#define ADC_MAX_VALUE ((float)4095)   // 12 bit
-#define REF_MAX_MV ((float)3300)
-#define BAT_MAX_MV ((float)4150)
-#define BAT_OFFSET_MV ((float)0)
+#define ADC_MAX_VALUE ((float)4095.0)   // 12 bit
+#define REF_MAX_MV ((float)3300.0)
+#define BAT_MAX_MV ((float)4150.0)
+#define BAT_OFFSET_MV ((float)0.0)
 
 /* Exported struct
  * --------------------------------------------------------------*/

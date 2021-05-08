@@ -27,21 +27,19 @@ mcu_t MCU = {
 		.t = {
 				MCU_TX_Setting,
 				MCU_TX_Template,
-				MCU_RpmMax,
-				MCU_Templates,
 		},
 		.Init = MCU_Init,
 		.Power12v = MCU_Power12v,
-		.PowerOverCan = MCU_PowerOverCan,
+		.PowerOverCAN = MCU_PowerOverCAN,
 		.Refresh = MCU_Refresh,
 		.SetSpeedMax = MCU_SetSpeedMax,
 		.SetTemplates = MCU_SetTemplates,
+		.SyncCAN = MCU_SyncCAN,
 		.RpmToSpeed = MCU_RpmToSpeed,
 		.SpeedToRpm = MCU_SpeedToRpm,
 		.SpeedToVolume = MCU_SpeedToVolume,
 		.Reversed = MCU_Reversed,
 		.Running = MCU_Running,
-		.Sync = MCU_Sync
 };
 
 /* Private variables
@@ -57,6 +55,8 @@ static void SetTemplateAddr(void);
 static uint8_t SyncedSpeedMax(void);
 static uint8_t SyncedTemplates(void);
 static uint8_t IsOverheat(void);
+static void SetRpmMaxCAN(uint8_t write);
+static void SetTemplatesCAN(uint8_t write);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -80,7 +80,7 @@ void MCU_Power12v(uint8_t on) {
 	}
 }
 
-void MCU_PowerOverCan(uint8_t on) {
+void MCU_PowerOverCAN(uint8_t on) {
 	uint8_t R = HBAR.d.pin[HBAR_K_REVERSE];
 
 	if (on) {
@@ -130,16 +130,9 @@ void MCU_SetTemplates(mcu_templates_t t) {
 	MCU.set.template = 1;
 }
 
-void MCU_RpmMax(uint8_t write) {
-	MCU.t.Template(MTP_RPM_MAX, write, write ? MCU.set.par.rpm_max : 0);
-}
-
-void MCU_Templates(uint8_t write) {
-	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
-		MCU.t.Template(tplAddr[m].discur_max, write, write ? MCU.set.par.tpl[m].discur_max : 0);
-		MCU.t.Template(tplAddr[m].torque_max, write, write ? MCU.set.par.tpl[m].torque_max * 10 : 0);
-		//		MCU.t.Template(tplAddr[m].rbs_switch, write, write ? MCU.set.par.tpl[m].rbs_switch : 0);
-	}
+void MCU_SyncCAN(void) {
+	SetTemplatesCAN(MCU.set.template && !SyncedTemplates());
+	SetRpmMaxCAN(MCU.set.rpm_max && !SyncedSpeedMax());
 }
 
 uint8_t MCU_RpmToSpeed(int16_t rpm) {
@@ -153,7 +146,6 @@ int16_t MCU_SpeedToRpm(uint8_t speed) {
 uint8_t MCU_SpeedToVolume(void) {
 	//	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm) * 100 / MCU_SPEED_MAX_KPH;
 	uint8_t vol = MCU.RpmToSpeed(MCU.d.rpm);
-
 	return vol > 100 ? 100 : vol;
 }
 
@@ -163,11 +155,6 @@ uint8_t MCU_Reversed(void) {
 
 uint8_t MCU_Running(void) {
 	return MCU.RpmToSpeed(MCU.d.rpm) > 0;
-}
-
-void MCU_Sync(void) {
-	MCU.t.Templates(MCU.set.template && !SyncedTemplates());
-	MCU.t.RpmMax(MCU.set.rpm_max && !SyncedSpeedMax());
 }
 
 /* ====================================== CAN RX
@@ -336,4 +323,16 @@ static uint8_t IsOverheat(void) {
 		temp |= (MCU.d.fault.run & BIT(overheat_run[i]));
 
 	return temp;
+}
+
+static void SetRpmMaxCAN(uint8_t write) {
+	MCU.t.Template(MTP_RPM_MAX, write, write ? MCU.set.par.rpm_max : 0);
+}
+
+static void SetTemplatesCAN(uint8_t write) {
+	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
+		MCU.t.Template(tplAddr[m].discur_max, write, write ? MCU.set.par.tpl[m].discur_max : 0);
+		MCU.t.Template(tplAddr[m].torque_max, write, write ? MCU.set.par.tpl[m].torque_max * 10 : 0);
+		//		MCU.t.Template(tplAddr[m].rbs_switch, write, write ? MCU.set.par.tpl[m].rbs_switch : 0);
+	}
 }

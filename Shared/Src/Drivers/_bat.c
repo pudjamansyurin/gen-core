@@ -78,22 +78,19 @@ static void unlock(void) {
 }
 
 static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val) {
-  static uint32_t sum = 0, pos = 0;
-  static uint16_t length = 0;
+  static uint32_t sum = 0;
+  static uint16_t pos = 0, len = 0;
 
   // Subtract the oldest number from the prev sum, add the new number
   sum = sum - buf[pos] + val;
   // Assign the nextNum to the position in the array
   buf[pos] = val;
   // Increment position
-  pos++;
-  if (pos >= sz)
+  if (++pos >= sz)
     pos = 0;
-
   // calculate filled array
-  if (length < sz)
-    length++;
-
+  if (len < sz)
+    len++;
   // return the average
-  return sum / length;
+  return sum / len;
 }

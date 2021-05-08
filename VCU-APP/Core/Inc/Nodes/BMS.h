@@ -57,6 +57,13 @@ typedef enum {
 /* Exported struct
  * -------------------------------------------------------------*/
 typedef struct {
+	double sum;
+	uint16_t pos;
+	uint16_t len;
+	float buf[BMS_AVG_SZ];
+} averager_t;
+
+typedef struct {
 	uint8_t run;
 	uint8_t active;
 	uint32_t id;
@@ -79,8 +86,8 @@ typedef struct {
 	uint16_t fault;
 	uint8_t soc;
 	float wh;
-	float m_wh;
-	float buf[BMS_AVG_SZ];
+	float mwh;
+	uint32_t km;
 } bms_data_t;
 
 typedef struct {
@@ -94,11 +101,11 @@ typedef struct {
 		uint8_t (*Setting)(BMS_STATE, uint8_t);
 	} t;
 	void (*Init)(void);
-	void (*PowerOverCan)(uint8_t);
+	void (*PowerOverCAN)(uint8_t);
 	void (*RefreshIndex)(void);
 	uint8_t (*MinIndex)(void);
-	float (*GetMinWH)(void);
-	float (*GetMPerWH)(uint32_t);
+	uint8_t (*GetMPerWH)(uint32_t);
+	uint8_t (*GetRangeKM)(void);
 } bms_t;
 
 /* Exported variables
@@ -108,11 +115,11 @@ extern bms_t BMS;
 /* Public functions implementation
  * --------------------------------------------*/
 void BMS_Init(void);
-void BMS_PowerOverCan(uint8_t on);
+void BMS_PowerOverCAN(uint8_t on);
 void BMS_RefreshIndex(void);
 uint8_t BMS_MinIndex(void);
-float BMS_GetMinWH(void);
-float BMS_GetMPerWH(uint32_t odo);
+uint8_t BMS_GetMPerWH(uint32_t odo);
+uint8_t BMS_GetRangeKM(void);
 
 void BMS_RX_Param1(can_rx_t *Rx);
 void BMS_RX_Param2(can_rx_t *Rx);

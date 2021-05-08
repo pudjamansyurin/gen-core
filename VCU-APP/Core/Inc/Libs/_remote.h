@@ -52,6 +52,7 @@ typedef struct {
 	remote_data_t d;
 	remote_packet_t t;
 	remote_packet_t r;
+	uint8_t ISRlocked;
 	SPI_HandleTypeDef *pspi;
 } remote_t;
 

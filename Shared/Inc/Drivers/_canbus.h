@@ -32,6 +32,7 @@ typedef enum {
   CAND_HMI1 = 0x7A1,
   CAND_HMI2 = 0x7A2,
 
+  CAND_DBG_BMS = 0x7ED,
   CAND_DBG_MCU_1 = 0x7EE,
   CAND_DBG_MCU_2 = 0x7EF,
   CAND_DBG_GROUP = 0x7F0,

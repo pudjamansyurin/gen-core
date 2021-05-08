@@ -22,11 +22,11 @@ bms_t BMS = {
 				BMS_TX_Setting
 		},
 		.Init = BMS_Init,
-		.PowerOverCan = BMS_PowerOverCan,
+		.PowerOverCAN = BMS_PowerOverCAN,
 		.RefreshIndex = BMS_RefreshIndex,
 		.MinIndex = BMS_MinIndex,
-		.GetMinWH = BMS_GetMinWH,
 		.GetMPerWH = BMS_GetMPerWH,
+		.GetRangeKM = BMS_GetRangeKM,
 };
 
 /* Private functions prototypes
@@ -38,7 +38,8 @@ static uint16_t MergeFault(void);
 static uint8_t AreActive(void);
 static uint8_t AreOverheat(void);
 static uint8_t AreRunning(uint8_t on);
-static float MovAvg(float *buf, uint16_t sz, float val);
+static float GetMinWH(void);
+static float MovAvg(averager_t *m, float val);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -49,7 +50,7 @@ void BMS_Init(void) {
 		ResetIndex(i);
 }
 
-void BMS_PowerOverCan(uint8_t on) {
+void BMS_PowerOverCAN(uint8_t on) {
 	static uint8_t lastState = 0;
 	BMS_STATE state = on ? BMS_STATE_FULL : BMS_STATE_IDLE;
 	uint8_t sc = on && (BMS.d.fault & BIT(BMSF_SHORT_CIRCUIT));
@@ -86,51 +87,48 @@ uint8_t BMS_MinIndex(void) {
 	return index;
 }
 
-float BMS_GetMinWH(void) {
-	pack_t *p = &(BMS.packs[BMS.MinIndex()]);
-	float wh = p->capacity * p->voltage;
-
-	wh = (p->soc * wh * 2.0) / 100.0;
-
-	BMS.d.wh = MovAvg(BMS.d.buf, BMS_AVG_SZ, wh);
-	return BMS.d.wh;
-}
-
-float BMS_GetMPerWH(uint32_t odo) {
+uint8_t BMS_GetMPerWH(uint32_t odo) {
+	static averager_t avgMWH = {0}, avgD = {0};
 	static uint32_t _odo = 0;
 	static uint8_t _on = 0;
-	static float _wh = 0;
-	float m_wh;
+	static float wh, _wh = 0;
+	float mwh;
 
 	if (BMS.d.active != _on) {
 		_on = BMS.d.active;
-		_wh = BMS.GetMinWH();
+		_wh = GetMinWH();
 		_odo = odo;
 	}
 
 	if (BMS.d.active) {
-		float wh = BMS.GetMinWH();
+		wh = GetMinWH();
 
 		if (odo != _odo) {
 			if (wh != _wh) {
-				m_wh = (odo - _odo) / (wh - _wh);
-				m_wh *= (m_wh < 0) ? -1 : 1;
+				float d = MovAvg(&avgD, odo - _odo);
+				mwh = d / (wh - _wh);
+				mwh *= (mwh < 0) ? -1 : 1;
 
 				_wh = wh;
 			} else
-				m_wh = BMS.d.m_wh;
+				mwh = BMS.d.mwh;
 
 			_odo = odo;
 		} else
-			m_wh = 0;
+			mwh = 0;
 	} else
-		m_wh = 0;
+		mwh = 0;
 
-	if (m_wh == 0)
-		memset(BMS.d.buf, 0, sizeof(BMS.d.buf));
+	BMS.d.mwh = MovAvg(&avgMWH, mwh);
+	return BMS.d.mwh > UINT8_MAX ? UINT8_MAX : BMS.d.mwh;
+}
 
-	BMS.d.m_wh = m_wh;
-	return BMS.d.m_wh;
+uint8_t BMS_GetRangeKM(void) {
+	static averager_t avg = {0};
+	float m = BMS.d.mwh * BMS.d.wh;
+
+	BMS.d.km =  MovAvg(&avg, m / 1000.0);
+	return BMS.d.km > UINT8_MAX ? UINT8_MAX : BMS.d.km;
 }
 
 /* ====================================== CAN RX
@@ -267,24 +265,34 @@ static uint8_t AreRunning(uint8_t on) {
 	return 1;
 }
 
-static float MovAvg(float *buf, uint16_t sz, float val) {
-  static float sum = 0;
-  static uint32_t pos = 0;
-  static uint16_t length = 0;
+static float GetMinWH(void) {
+	static averager_t avg = {0};
+	pack_t *p = &(BMS.packs[BMS.MinIndex()]);
+	float V, I, wh;
 
-  // Subtract the oldest number from the prev sum, add the new number
-  sum = sum - buf[pos] + val;
-  // Assign the nextNum to the position in the array
-  buf[pos] = val;
-  // Increment position
-  pos++;
-  if (pos >= sz)
-    pos = 0;
+	I = (p->soc * p->capacity) / 100.0;
+	V = p->voltage - 51.34;
+	V = V < 0 ? 0 : V;
+	wh = (I * V) * 2.0;
 
-  // calculate filled array
-  if (length < sz)
-    length++;
+	BMS.d.wh = MovAvg(&avg, wh);
+	return BMS.d.wh;
+}
 
-  // return the average
-  return sum / length;
+static float MovAvg(averager_t *m, float val) {
+	uint16_t sz = sizeof(m->buf) / sizeof(m->buf[0]);
+
+	// Subtract the oldest number from the prev sum, add the new number
+	m->sum = m->sum - m->buf[m->pos] + val;
+	// Assign the nextNum to the position in the array
+	m->buf[m->pos] = val;
+	// Increment position
+	m->pos++;
+	if (m->pos >= sz)
+		m->pos = 0;
+	// calculate filled array
+	if (m->len < sz)
+		m->len++;
+	// return the average
+	return m->sum / m->len;
 }

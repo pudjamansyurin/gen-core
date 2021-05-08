@@ -24,17 +24,9 @@ node_t NODE = {
 		.r = {
 				NODE_RX_Debug,
 		},
-		.t = {
-				NODE_TX_DebugGroup,
-				NODE_TX_DebugVCU,
-				NODE_TX_DebugGPS,
-				NODE_TX_DebugMEMS,
-				NODE_TX_DebugRMT,
-				NODE_TX_DebugTASK,
-				NODE_TX_DebugMCU,
-		},
 		.Init = NODE_Init,
 		.Refresh = NODE_Refresh,
+		.DebugCAN = NODE_DebugCAN,
 };
 
 /* Public functions implementation
@@ -68,6 +60,25 @@ void NODE_Refresh(void) {
 	HMI2.Refresh();
 }
 
+void NODE_DebugCAN(void) {
+	if (CDBG_ID(NODE.d.debug, CDBG_GROUP))
+		NODE_TX_DebugGroup();
+	if (CDBG_ID(NODE.d.debug, CDBG_VCU))
+		NODE_TX_DebugVCU();
+	if (CDBG_ID(NODE.d.debug, CDBG_GPS))
+		NODE_TX_DebugGPS();
+	if (CDBG_ID(NODE.d.debug, CDBG_MEMS))
+		NODE_TX_DebugMEMS();
+	if (CDBG_ID(NODE.d.debug, CDBG_RMT))
+		NODE_TX_DebugRMT();
+	if (CDBG_ID(NODE.d.debug, CDBG_TASK))
+		NODE_TX_DebugTASK();
+	if (CDBG_ID(NODE.d.debug, CDBG_MCU))
+		NODE_TX_DebugMCU();
+	if (CDBG_ID(NODE.d.debug, CDBG_BMS))
+		NODE_TX_DebugBMS();
+}
+
 /* ====================================== CAN RX
  * =================================== */
 void NODE_RX_Debug(can_rx_t *Rx) {
@@ -81,9 +92,6 @@ void NODE_RX_Debug(can_rx_t *Rx) {
 /* ====================================== CAN TX
  * =================================== */
 void NODE_TX_DebugGroup(void) {
-	if (!CDBG_ID(NODE.d.debug, CDBG_GROUP))
-		return;
-
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -104,28 +112,19 @@ void NODE_TX_DebugGroup(void) {
 	d->u8[3] |= (audio.mute & 0x01) << 1;
 	d->u8[4] = audio.volume;
 
-	bms_dbg_t bms;
-	DBG_GetBMS(&bms);
-	d->u8[5] = (bms.active & 0x01);
-	d->u8[5] |= (bms.run & 0x01) << 1;
-	d->u8[6] = bms.soc;
+	d->u8[5] = (HBAR.d.pin[HBAR_K_SELECT] & 0x01);
+	d->u8[5] |= (HBAR.d.pin[HBAR_K_SET] & 0x01) << 1;
+	d->u8[5] |= (HBAR.d.pin[HBAR_K_STARTER] & 0x01) << 2;
+	d->u8[5] |= (HBAR.d.pin[HBAR_K_SEIN_L] & 0x01) << 3;
+	d->u8[5] |= (HBAR.d.pin[HBAR_K_SEIN_R] & 0x01) << 4;
+	d->u8[5] |= (HBAR.d.pin[HBAR_K_REVERSE] & 0x01) << 5;
+	d->u8[5] |= (HBAR.d.pin[HBAR_K_LAMP] & 0x01) << 6;
+	d->u8[5] |= (HBAR.d.pin[HBAR_K_ABS] & 0x01) << 7;
 
-	d->u8[7] = (HBAR.d.pin[HBAR_K_SELECT] & 0x01);
-	d->u8[7] |= (HBAR.d.pin[HBAR_K_SET] & 0x01) << 1;
-	d->u8[7] |= (HBAR.d.pin[HBAR_K_STARTER] & 0x01) << 2;
-	d->u8[7] |= (HBAR.d.pin[HBAR_K_SEIN_L] & 0x01) << 3;
-	d->u8[7] |= (HBAR.d.pin[HBAR_K_SEIN_R] & 0x01) << 4;
-	d->u8[7] |= (HBAR.d.pin[HBAR_K_REVERSE] & 0x01) << 5;
-	d->u8[7] |= (HBAR.d.pin[HBAR_K_LAMP] & 0x01) << 6;
-	d->u8[7] |= (HBAR.d.pin[HBAR_K_ABS] & 0x01) << 7;
-
-	CANBUS_Write(&Tx, CAND_DBG_GROUP, 8, 0);
+	CANBUS_Write(&Tx, CAND_DBG_GROUP, 6, 0);
 }
 
 void NODE_TX_DebugVCU(void) {
-	if (!CDBG_ID(NODE.d.debug, CDBG_VCU))
-		return;
-
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -133,16 +132,14 @@ void NODE_TX_DebugVCU(void) {
 	DBG_GetVCU(&vcu);
 
 	d->u16[0] = vcu.events;
-	d->s8[2] = vcu.state;
-	d->u8[3] = vcu.buffered;
-	d->u8[4] = vcu.battery;
-	CANBUS_Write(&Tx, CAND_DBG_VCU, 5, 0);
+	d->u8[2] = vcu.buffered;
+	d->u8[3] = vcu.battery;
+	d->u32[1] = HBAR.d.odometer;
+
+	CANBUS_Write(&Tx, CAND_DBG_VCU, 8, 0);
 }
 
 void NODE_TX_DebugGPS(void) {
-	if (!CDBG_ID(NODE.d.debug, CDBG_GPS))
-		return;
-
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -164,9 +161,6 @@ void NODE_TX_DebugGPS(void) {
 }
 
 void NODE_TX_DebugMEMS(void) {
-	if (!CDBG_ID(NODE.d.debug, CDBG_MEMS))
-		return;
-
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -200,9 +194,6 @@ void NODE_TX_DebugMEMS(void) {
 }
 
 void NODE_TX_DebugRMT(void) {
-	if (!CDBG_ID(NODE.d.debug, CDBG_RMT))
-		return;
-
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -223,9 +214,6 @@ void NODE_TX_DebugRMT(void) {
 }
 
 void NODE_TX_DebugTASK(void) {
-	if (!CDBG_ID(NODE.d.debug, CDBG_TASK))
-		return;
-
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -272,9 +260,6 @@ void NODE_TX_DebugTASK(void) {
 }
 
 void NODE_TX_DebugMCU(void) {
-	if (!CDBG_ID(NODE.d.debug, CDBG_MCU))
-		return;
-
 	can_tx_t Tx = {0};
 	UNION64 *d = &(Tx.data);
 
@@ -298,4 +283,20 @@ void NODE_TX_DebugMCU(void) {
 	d->s16[2] = mcu.par.tpl[1].torque_max;
 	d->s16[3] = mcu.par.tpl[2].torque_max;
 	CANBUS_Write(&Tx, CAND_DBG_MCU_2, 8, 0);
+}
+
+void NODE_TX_DebugBMS(void) {
+	can_tx_t Tx = {0};
+	UNION64 *d = &(Tx.data);
+
+	bms_dbg_t bms;
+	DBG_GetBMS(&bms);
+	d->u8[0] = (bms.active & 0x01);
+	d->u8[0] |= (bms.run & 0x01) << 1;
+	d->u8[1] = bms.soc;
+	d->u16[1] = BMS.d.wh * 10;
+	d->u16[2] = BMS.d.mwh * 10;
+	d->u16[3] = BMS.d.km * 10;
+
+	CANBUS_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

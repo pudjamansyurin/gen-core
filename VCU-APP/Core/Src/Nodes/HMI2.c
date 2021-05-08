@@ -29,7 +29,7 @@ hmi2_t HMI2 = {
 		},
 		.Init = HMI2_Init,
 		.Refresh = HMI2_Refresh,
-		.PowerByCan = HMI2_PowerByCan,
+		.PowerByCAN = HMI2_PowerByCAN,
 		.PowerOn = HMI2_PowerOn,
 		.PowerOff = HMI2_PowerOff
 };
@@ -46,7 +46,7 @@ void HMI2_Refresh(void) {
 	if (!HMI2.d.run) HMI2.d.mirroring = 0;
 }
 
-void HMI2_PowerByCan(uint8_t state) {
+void HMI2_PowerByCAN(uint8_t state) {
 	if (HMI2.d.powerRequest != state) {
 		HMI2.d.powerRequest = state;
 		osThreadFlagsSet(Hmi2PowerTaskHandle, FLAG_HMI2POWER_CHANGED);

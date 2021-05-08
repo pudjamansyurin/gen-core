@@ -183,21 +183,19 @@ typedef struct {
 	struct {
 		uint8_t (*Setting)(uint8_t, uint8_t);
 		uint8_t (*Template)(uint16_t, uint8_t, int16_t);
-		void (*RpmMax)(uint8_t);
-		void (*Templates)(uint8_t);
 	} t;
 	void (*Init)(void);
 	void (*Power12v)(uint8_t);
-	void (*PowerOverCan)(uint8_t);
+	void (*PowerOverCAN)(uint8_t);
 	void (*Refresh)(void);
 	void (*SetSpeedMax)(uint8_t);
 	void (*SetTemplates)(mcu_templates_t t);
+	void (*SyncCAN)(void);
 	uint8_t (*RpmToSpeed)(int16_t);
 	int16_t (*SpeedToRpm)(uint8_t);
 	uint8_t (*SpeedToVolume)(void);
 	uint8_t (*Reversed)(void);
 	uint8_t (*Running)(void);
-	void (*Sync)(void);
 } mcu_t;
 
 /* Exported variables
@@ -209,17 +207,15 @@ extern mcu_t MCU;
 void MCU_Init(void);
 void MCU_Refresh(void);
 void MCU_Power12v(uint8_t on);
-void MCU_PowerOverCan(uint8_t on);
+void MCU_PowerOverCAN(uint8_t on);
 void MCU_SetSpeedMax(uint8_t speed_max);
 void MCU_SetTemplates(mcu_templates_t t);
-void MCU_RpmMax(uint8_t write);
-void MCU_Templates(uint8_t write);
+void MCU_SyncCAN(void);
 uint8_t MCU_RpmToSpeed(int16_t rpm);
 int16_t MCU_SpeedToRpm(uint8_t speed);
 uint8_t MCU_SpeedToVolume(void);
 uint8_t MCU_Reversed(void);
 uint8_t MCU_Running(void);
-void MCU_Sync(void);
 void MCU_RX_CurrentDC(can_rx_t *Rx);
 void MCU_RX_VoltageDC(can_rx_t *Rx);
 void MCU_RX_TorqueSpeed(can_rx_t *Rx);

@@ -36,6 +36,9 @@ BS_:
 BU_: HMI1 HMI2 VCU BMS MCU
 
 
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ DBG_VCU__State : 16|8@1- (1,0) [0|0] "" Vector__XXX
+
 BO_ 1952 VCU_Heartbeat: 2 VCU
  SG_ VCU__Version : 0|16@1+ (1,0) [0|0] "" Vector__XXX
 
@@ -203,6 +206,14 @@ BO_ 2333081603 BMS2_Param2: 8 BMS
  SG_ BMS2__Discharge : 61|1@1+ (1,0) [0|0] ""  VCU
  SG_ BMS2__Sleep : 62|1@1+ (1,0) [0|0] ""  VCU
 
+BO_ 2029 DBG_BMS: 8 VCU
+ SG_ DBG_BMS__Active : 0|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_BMS__Run : 1|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_BMS__SoC : 8|8@1+ (1,0) [0|0] "%" Vector__XXX
+ SG_ DBG_BMS__WH : 16|16@1+ (0.1,0) [0|0] "wh" Vector__XXX
+ SG_ DBG_BMS__Efficiency : 32|16@1+ (0.1,0) [0|0] "km/kwh" Vector__XXX
+ SG_ DBG_BMS__KM : 48|16@1+ (0.1,0) [0|0] "km" Vector__XXX
+
 BO_ 2030 DBG_MCU1: 8 VCU
  SG_ DBG_MCU__Active : 0|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ DBG_MCU__Run : 1|1@1+ (1,0) [0|0] "" Vector__XXX
@@ -221,7 +232,7 @@ BO_ 2031 DBG_MCU2: 8 VCU
  SG_ DBG_MCU__TorqueMax2 : 32|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
  SG_ DBG_MCU__TorqueMax3 : 48|16@1- (0.1,0) [0|0] "Nm" Vector__XXX
 
-BO_ 2032 DBG_Group: 8 VCU
+BO_ 2032 DBG_Group: 6 VCU
  SG_ DBG_NET__State : 0|8@1- (1,0) [0|0] "" Vector__XXX
  SG_ DBG_NET__IpStatus : 8|8@1- (1,0) [0|0] "" Vector__XXX
  SG_ DBG_FGR__Verified : 16|1@1+ (1,0) [0|0] "" Vector__XXX
@@ -230,23 +241,20 @@ BO_ 2032 DBG_Group: 8 VCU
  SG_ DBG_Audio__Active : 24|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ DBG_Audio__Mute : 25|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ DBG_Audio__Volume : 32|8@1+ (1,0) [0|0] "%" Vector__XXX
- SG_ DBG_BMS__Active : 40|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_BMS__Run : 41|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_BMS__SoC : 48|8@1+ (1,0) [0|0] "%" Vector__XXX
- SG_ DBG_HBAR__StateSelect : 56|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_HBAR__StateSet : 57|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_HBAR__StateStarter : 58|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_HBAR__StateSeinL : 59|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_HBAR__StateSeinR : 60|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_HBAR__StateReverse : 61|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_HBAR__StateLamp : 62|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_HBAR__StateABS : 63|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateSelect : 40|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateSet : 41|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateStarter : 42|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateSeinL : 43|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateSeinR : 44|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateReverse : 45|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateLamp : 46|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_HBAR__StateABS : 47|1@1+ (1,0) [0|0] "" Vector__XXX
 
-BO_ 2033 DBG_VCU: 5 VCU
+BO_ 2033 DBG_VCU: 8 VCU
  SG_ DBG_VCU__Events : 0|16@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_VCU__State : 16|8@1- (1,0) [0|0] "" Vector__XXX
- SG_ DBG_VCU__Buffered : 24|8@1+ (1,0) [0|0] "" Vector__XXX
- SG_ DBG_VCU__Battery : 32|8@1+ (18,0) [0|0] "mV" Vector__XXX
+ SG_ DBG_VCU__Buffered : 16|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ DBG_VCU__Battery : 24|8@1+ (18,0) [0|0] "mV" Vector__XXX
+ SG_ DBG_VCU__Odometer : 32|32@1+ (1,0) [0|0] "m" Vector__XXX
 
 BO_ 2034 DBG_GPS1: 8 VCU
  SG_ DBG_GPS__Active : 0|1@1+ (1,0) [0|0] "" Vector__XXX
@@ -341,6 +349,7 @@ BO_ 2047 NODE_DBG: 1 Vector__XXX
  SG_ NODE_DBG__RMT : 4|1@1+ (1,0) [0|0] ""  VCU
  SG_ NODE_DBG__TASK : 5|1@1+ (1,0) [0|0] ""  VCU
  SG_ NODE_DBG__MCU : 6|1@1+ (1,0) [0|0] ""  VCU
+ SG_ NODE_DBG__BMS : 7|1@1+ (1,0) [0|0] "" Vector__XXX
 
 
 
