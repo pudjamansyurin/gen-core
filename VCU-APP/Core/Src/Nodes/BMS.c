@@ -25,6 +25,8 @@ static uint16_t MergeFault(void);
 static uint8_t AreActive(void);
 static uint8_t AreOverheat(void);
 static uint8_t AreRunning(uint8_t on);
+static float BMS_GetEfficiency(uint8_t distance);
+static float BMS_GetTotalCapacity(void);
 static float GetDischargeCapacity(uint32_t duration);
 
 /* Public functions implementation
@@ -74,69 +76,13 @@ uint8_t BMS_MinIndex(void) {
 	return index;
 }
 
-uint8_t BMS_GetEfficiency(uint32_t odo) {
-	static uint32_t tick, _odo = 0;
-	static uint8_t _on = 0;
-	static float wh, _wh = 0;
-	float mwh = 0;
+void BMS_GetPrediction(uint8_t *eff, uint8_t *km, uint8_t distance) {
+	BMS.ai.capacity = BMS_GetTotalCapacity();
+	BMS.ai.efficiency = BMS_GetEfficiency(distance);
+	BMS.ai.distance = (BMS.ai.efficiency * BMS.ai.capacity) / 1000.0;
 
-	if (BMS.d.active != _on) {
-		_on = BMS.d.active;
-		_wh = GetDischargeCapacity(100);
-		_odo = odo;
-	} else if (BMS.d.active) {
-		wh = GetDischargeCapacity(_GetTickMS() - tick);
-
-		if (odo != _odo) {
-			if (wh != _wh) {
-				mwh = (odo - _odo) / (wh - _wh);
-				mwh *= (mwh < 0) ? -1 : 1;
-
-				_wh = wh;
-			} else
-				mwh = BMS.d.mwh;
-
-			_odo = odo;
-		}
-	}
-	tick = _GetTickMS();
-
-	BMS.d.mwh = _MovAvgFloat(
-			&BMS.avg.handle[BMS_AVG_EFFICIENCY],
-			BMS.avg.buffer[BMS_AVG_EFFICIENCY],
-			BMS_AVG_SZ,
-			mwh
-	);
-	return BMS.d.mwh > UINT8_MAX ? UINT8_MAX : BMS.d.mwh;
-}
-
-uint8_t BMS_GetInRange(void) {
-	float km = (BMS.d.mwh * BMS.d.wh) / 1000.0;
-
-	BMS.d.km = _MovAvgFloat(
-			&BMS.avg.handle[BMS_AVG_INRANGE],
-			BMS.avg.buffer[BMS_AVG_INRANGE],
-			BMS_AVG_SZ,
-			km
-	);
-	return BMS.d.km > UINT8_MAX ? UINT8_MAX : BMS.d.km;
-}
-
-float BMS_GetTotalCapacity(void) {
-	bms_pack_t *p = &(BMS.packs[BMS_MinIndex()]);
-	float V, I, wh;
-
-	I = (p->soc * p->capacity) / 100.0;
-	V = p->voltage;
-	wh = I * V;
-
-	BMS.d.wh = _MovAvgFloat(
-			&BMS.avg.handle[BMS_AVG_CAPACITY],
-			BMS.avg.buffer[BMS_AVG_CAPACITY],
-			BMS_AVG_SZ,
-			wh * 2.0
-	);
-	return BMS.d.wh;
+	*eff = BMS.ai.efficiency > UINT8_MAX ? UINT8_MAX : BMS.ai.efficiency;
+	*km = BMS.ai.distance > UINT8_MAX ? UINT8_MAX : BMS.ai.distance;
 }
 
 /* ====================================== CAN RX
@@ -273,6 +219,54 @@ static uint8_t AreRunning(uint8_t on) {
 	return 1;
 }
 
+static float BMS_GetEfficiency(uint8_t distance) {
+	static uint32_t tick;
+	static uint8_t _on = 0;
+	static float wh, _wh;
+	float mwh = 0;
+
+	if (BMS.d.active != _on) {
+		_on = BMS.d.active;
+		_wh = 0;
+	} else if (BMS.d.active) {
+		wh = GetDischargeCapacity(_GetTickMS() - tick);
+
+		if (distance) {
+			if (wh != _wh) {
+				mwh = distance / (wh - _wh);
+				mwh *= mwh < 0 ? -1 : 1;
+
+				_wh = wh;
+			} else
+				mwh = BMS.ai.efficiency;
+		}
+	}
+	tick = _GetTickMS();
+
+	return _MovAvgFloat(
+			&BMS.avg.handle[BMS_AVG_EFFICIENCY],
+			BMS.avg.buffer[BMS_AVG_EFFICIENCY],
+			BMS_AVG_SZ,
+			mwh
+	);
+}
+
+static float BMS_GetTotalCapacity(void) {
+	bms_pack_t *p = &(BMS.packs[BMS_MinIndex()]);
+	float V, I, wh;
+
+	I = (p->soc * p->capacity) / 100.0;
+	V = p->voltage;
+	wh = I * V;
+
+	return _MovAvgFloat(
+			&BMS.avg.handle[BMS_AVG_CAPACITY],
+			BMS.avg.buffer[BMS_AVG_CAPACITY],
+			BMS_AVG_SZ,
+			wh * 2.0
+	);
+}
+
 static float GetDischargeCapacity(uint32_t duration) {
 	bms_pack_t *p = &(BMS.packs[BMS_MinIndex()]);
 	float V, I, wh = 0;
@@ -281,11 +275,10 @@ static float GetDischargeCapacity(uint32_t duration) {
 	V = p->voltage;
 	wh = (I * V * duration) / (3600.0 * 1000.0);
 
-	wh = _MovAvgFloat(
+	return _MovAvgFloat(
 			&BMS.avg.handle[BMS_AVG_DISCHARGE],
 			BMS.avg.buffer[BMS_AVG_DISCHARGE],
 			BMS_AVG_SZ,
 			wh * 2.0
 	);
-	return wh;
 }

@@ -81,14 +81,17 @@ typedef struct {
 } bms_pack_t;
 
 typedef struct {
+	float capacity;
+	float efficiency;
+	uint32_t distance;
+} bms_prediction_t;
+
+typedef struct {
 	uint8_t run;
 	uint8_t active;
 	uint8_t overheat;
 	uint16_t fault;
 	uint8_t soc;
-	float wh;
-	float mwh;
-	uint32_t km;
 } bms_data_t;
 
 typedef struct {
@@ -98,6 +101,7 @@ typedef struct {
 
 typedef struct {
 	bms_data_t d;
+	bms_prediction_t ai;
 	bms_pack_t packs[BMS_COUNT];
 	bms_avg_t avg;
 } bms_t;
@@ -112,9 +116,7 @@ void BMS_Init(void);
 void BMS_PowerOverCAN(uint8_t on);
 void BMS_RefreshIndex(void);
 uint8_t BMS_MinIndex(void);
-uint8_t BMS_GetEfficiency(uint32_t odo);
-uint8_t BMS_GetInRange(void);
-float BMS_GetTotalCapacity(void);
+void BMS_GetPrediction(uint8_t *eff, uint8_t *km, uint8_t distance);
 
 void BMS_RX_Param1(can_rx_t *Rx);
 void BMS_RX_Param2(can_rx_t *Rx);

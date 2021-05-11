@@ -1631,8 +1631,9 @@ void StartGateTask(void *argument)
 		HBAR_RefreshSelectSet();
 		if (_GetTickMS() - tick100ms > 100) {
 			tick100ms = _GetTickMS();
-			HBAR_SetOdometer(VCU_CalcDistance());
-			HBAR_SetReport(HBAR.d.odometer);
+			uint8_t distance = VCU_CalcDistance();
+			HBAR_SetOdometer(distance);
+			HBAR_SetReport(distance);
 		}
 
 		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);

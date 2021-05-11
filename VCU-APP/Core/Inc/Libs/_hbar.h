@@ -113,6 +113,6 @@ void HBAR_RefreshSelectSet(void);
 void HBAR_RefreshSein(void);
 uint16_t HBAR_AccumulateTrip(uint8_t km);
 void HBAR_SetOdometer(uint8_t m);
-void HBAR_SetReport(uint32_t odom);
+void HBAR_SetReport(uint8_t distance);
 
 #endif /* LIBS__HBAR_H_ */

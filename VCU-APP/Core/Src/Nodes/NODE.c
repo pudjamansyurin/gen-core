@@ -288,9 +288,9 @@ void NODE_TX_DebugBMS(void) {
 	d->u8[0] = (bms.active & 0x01);
 	d->u8[0] |= (bms.run & 0x01) << 1;
 	d->u8[1] = bms.soc;
-	d->u16[1] = BMS.d.wh * 10;
-	d->u16[2] = BMS.d.mwh * 10;
-	d->u16[3] = BMS.d.km * 10;
+	d->u16[1] = BMS.ai.capacity * 10;
+	d->u16[2] = BMS.ai.efficiency * 10;
+	d->u16[3] = BMS.ai.distance * 10;
 
 	CANBUS_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

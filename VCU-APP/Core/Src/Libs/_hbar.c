@@ -151,10 +151,12 @@ void HBAR_SetOdometer(uint8_t m) {
 	}
 }
 
-void HBAR_SetReport(uint32_t odom) {
-	BMS_GetTotalCapacity();
-	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = BMS_GetEfficiency(odom);
-	HBAR.d.report[HBAR_M_REPORT_RANGE] = BMS_GetInRange();
+void HBAR_SetReport(uint8_t distance) {
+	uint8_t eff, km;
+
+	BMS_GetPrediction(&eff, &km, distance);
+	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = eff;
+	HBAR.d.report[HBAR_M_REPORT_RANGE] = km;
 }
 
 /* Private functions implementation
