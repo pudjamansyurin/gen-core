@@ -92,6 +92,7 @@ void MEMS_Refresh(void) {
 void MEMS_Flush(void) {
 	lock();
 	memset(&(MEMS.d), 0, sizeof(mems_data_t));
+	memset(&(MEMS.avg), 0, sizeof(mems_avg_t));
 	memset(&(MEMS.det), 0, sizeof(mems_detector_t));
 	unlock();
 }
@@ -121,20 +122,33 @@ uint8_t MEMS_Process(void) {
 
 	lock();
 	ConvertAccel(tilt, &(raw->accel));
-	MEMS.d.tot.accel = sqrt(
-			pow(raw->accel.x, 2) +
-			pow(raw->accel.y, 2) +
-			pow(raw->accel.z, 2)
-	);
-	MEMS.d.tot.gyro = sqrt(
-			pow(raw->gyro.x, 2) +
-			pow(raw->gyro.y, 2) +
-			pow(raw->gyro.z, 2)
-	);
-	MEMS.d.tot.tilt = sqrt(
-			pow(tilt->roll, 2) +
-			pow(tilt->pitch, 2)
-	);
+
+	MEMS.d.tot.accel = _MovAvgFloat(
+			&MEMS.avg.handle[MEMS_AVG_ACCEL],
+			MEMS.avg.buffer[MEMS_AVG_ACCEL],
+			MEMS_AVG_SZ,
+			sqrt(
+					pow(raw->accel.x, 2) +
+					pow(raw->accel.y, 2) +
+					pow(raw->accel.z, 2)
+			));
+	MEMS.d.tot.gyro = _MovAvgFloat(
+			&MEMS.avg.handle[MEMS_AVG_GYRO],
+			MEMS.avg.buffer[MEMS_AVG_GYRO],
+			MEMS_AVG_SZ,
+			sqrt(
+					pow(raw->gyro.x, 2) +
+					pow(raw->gyro.y, 2) +
+					pow(raw->gyro.z, 2)
+			));
+	MEMS.d.tot.tilt = _MovAvgFloat(
+			&MEMS.avg.handle[MEMS_AVG_TILT],
+			MEMS.avg.buffer[MEMS_AVG_TILT],
+			MEMS_AVG_SZ,
+			sqrt(
+					pow(tilt->roll, 2) +
+					pow(tilt->pitch, 2)
+			));
 
 	MEMS.d.crash = MEMS.d.tot.accel > CRASH_LIMIT;
 	MEMS.d.fall = MEMS.d.tot.tilt > FALL_LIMIT;
@@ -152,7 +166,7 @@ void MEMS_GetRefDetector(void) {
 	mems_tilt_t *ref = &(MEMS.det.tilt.ref);
 
 	lock();
-	VCU.SetEvent(EVG_BIKE_MOVED, 0);
+	VCU_SetEvent(EVG_BIKE_MOVED, 0);
 	memcpy(ref, cur, sizeof(mems_tilt_t));
 	unlock();
 }

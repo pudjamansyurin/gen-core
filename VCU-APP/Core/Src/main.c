@@ -119,6 +119,7 @@ int main(void)
   MX_TIM10_Init();
   MX_UART9_Init();
   /* USER CODE BEGIN 2 */
+  GATE_LedBlink(1000);
   /* USER CODE END 2 */
 
   /* Init scheduler */

@@ -13,13 +13,24 @@
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/
+#define MEMS_AVG_SZ ((uint8_t)10)
 #define MEMS_TIMEOUT_MS ((uint16_t)5000)
 
 #define DRAGGED_LIMIT ((uint8_t)10)
-#define FALL_LIMIT ((uint8_t)45)
-#define CRASH_LIMIT ((uint8_t)16)
+#define FALL_LIMIT ((uint8_t)60)
+#define CRASH_LIMIT ((uint8_t)20)
 
 #define RAD2DEG(rad) ((rad)*180.0 / M_PI)
+
+
+/* Exported enum
+ * ---------------------------------------------------------------*/
+typedef enum {
+	MEMS_AVG_ACCEL = 0,
+	MEMS_AVG_GYRO,
+	MEMS_AVG_TILT,
+	MEMS_AVG_MAX,
+} MEMS_AVG_TYPE;
 
 /* Exported struct
  * ------------------------------------------------------------*/
@@ -65,8 +76,14 @@ typedef struct {
 } mems_data_t;
 
 typedef struct {
+	averager_float_t handle[MEMS_AVG_MAX];
+	float buffer[MEMS_AVG_MAX][MEMS_AVG_SZ];
+} mems_avg_t;
+
+typedef struct {
 	mems_data_t d;
 	mems_detector_t det;
+	mems_avg_t avg;
 	MPU6050 dev;
 	I2C_HandleTypeDef *pi2c;
 } mems_t;

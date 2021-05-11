@@ -102,14 +102,14 @@ void DBG_GetBMS(bms_dbg_t *bms) {
 	bms->fault = BMS.d.fault;
 	bms->soc= BMS.d.soc;
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		pack_t *pack = &(BMS.packs[i]);
+		bms_pack_t *p = &(BMS.packs[i]);
 
-		bms->packs[i].id = pack->id;
-		bms->packs[i].fault = pack->fault;
-		bms->packs[i].voltage = pack->voltage * 100;
-		bms->packs[i].current = pack->current * 10;
-		bms->packs[i].soc = pack->soc;
-		bms->packs[i].temperature = pack->temperature;
+		bms->packs[i].id = p->id;
+		bms->packs[i].fault = p->fault;
+		bms->packs[i].voltage = p->voltage * 100;
+		bms->packs[i].current = p->current * 10;
+		bms->packs[i].soc = p->soc;
+		bms->packs[i].temperature = p->temperature;
 	}
 }
 
@@ -117,7 +117,7 @@ void DBG_GetMCU(mcu_dbg_t *mcu) {
 	mcu->active = MCU.d.active;
 	mcu->run = MCU.d.run;
 	mcu->rpm = MCU.d.rpm;
-	mcu->speed = MCU.RpmToSpeed(MCU.d.rpm);
+	mcu->speed = MCU_RpmToSpeed(MCU.d.rpm);
 	mcu->reverse = MCU.d.reverse;
 	mcu->temperature = (uint16_t)(MCU.d.temperature * 10);
 	mcu->drive_mode = MCU.d.drive_mode;
@@ -132,7 +132,7 @@ void DBG_GetMCU(mcu_dbg_t *mcu) {
 	mcu->inv.discharge = MCU.d.inv.discharge;
 
 	mcu->par.rpm_max = MCU.d.par.rpm_max;
-	mcu->par.speed_max = MCU.RpmToSpeed(MCU.d.par.rpm_max);
+	mcu->par.speed_max = MCU_RpmToSpeed(MCU.d.par.rpm_max);
 	for (uint8_t m=0; m<HBAR_M_DRIVE_MAX; m++) {
 		mcu->par.tpl[m].discur_max = MCU.d.par.tpl[m].discur_max;
 		mcu->par.tpl[m].torque_max = MCU.d.par.tpl[m].torque_max * 10;

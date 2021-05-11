@@ -25,6 +25,14 @@
 /* Exported enum
  * ---------------------------------------------------------------*/
 typedef enum {
+	BMS_AVG_CAPACITY = 0,
+	BMS_AVG_EFFICIENCY,
+	BMS_AVG_INRANGE,
+	BMS_AVG_DISCHARGE,
+	BMS_AVG_MAX,
+} BMS_AVG_TYPE;
+
+typedef enum {
 	BMS_STATE_OFF = -1,
 	BMS_STATE_IDLE = 0,
 	BMS_STATE_DISCHARGE,
@@ -57,13 +65,6 @@ typedef enum {
 /* Exported struct
  * -------------------------------------------------------------*/
 typedef struct {
-	double sum;
-	uint16_t pos;
-	uint16_t len;
-	float buf[BMS_AVG_SZ];
-} averager_t;
-
-typedef struct {
 	uint8_t run;
 	uint8_t active;
 	uint32_t id;
@@ -77,7 +78,7 @@ typedef struct {
 	uint16_t fault;
 	BMS_STATE state;
 	uint32_t tick;
-} pack_t;
+} bms_pack_t;
 
 typedef struct {
 	uint8_t run;
@@ -91,21 +92,14 @@ typedef struct {
 } bms_data_t;
 
 typedef struct {
+	averager_float_t handle[BMS_AVG_MAX];
+	float buffer[BMS_AVG_MAX][BMS_AVG_SZ];
+} bms_avg_t;
+
+typedef struct {
 	bms_data_t d;
-	pack_t packs[BMS_COUNT];
-	struct {
-		void (*Param1)(can_rx_t *);
-		void (*Param2)(can_rx_t *);
-	} r;
-	struct {
-		uint8_t (*Setting)(BMS_STATE, uint8_t);
-	} t;
-	void (*Init)(void);
-	void (*PowerOverCAN)(uint8_t);
-	void (*RefreshIndex)(void);
-	uint8_t (*MinIndex)(void);
-	uint8_t (*GetMPerWH)(uint32_t);
-	uint8_t (*GetRangeKM)(void);
+	bms_pack_t packs[BMS_COUNT];
+	bms_avg_t avg;
 } bms_t;
 
 /* Exported variables
@@ -118,8 +112,9 @@ void BMS_Init(void);
 void BMS_PowerOverCAN(uint8_t on);
 void BMS_RefreshIndex(void);
 uint8_t BMS_MinIndex(void);
-uint8_t BMS_GetMPerWH(uint32_t odo);
-uint8_t BMS_GetRangeKM(void);
+uint8_t BMS_GetEfficiency(uint32_t odo);
+uint8_t BMS_GetInRange(void);
+float BMS_GetTotalCapacity(void);
 
 void BMS_RX_Param1(can_rx_t *Rx);
 void BMS_RX_Param2(can_rx_t *Rx);

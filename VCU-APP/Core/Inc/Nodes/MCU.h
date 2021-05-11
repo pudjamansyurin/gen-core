@@ -172,30 +172,6 @@ typedef struct {
 		uint8_t rpm_max;
 		uint8_t template;
 	} synced;
-	struct {
-		void (*CurrentDC)(can_rx_t *);
-		void (*VoltageDC)(can_rx_t *);
-		void (*TorqueSpeed)(can_rx_t *);
-		void (*FaultCode)(can_rx_t *);
-		void (*State)(can_rx_t *);
-		void (*Template)(can_rx_t *);
-	} r;
-	struct {
-		uint8_t (*Setting)(uint8_t, uint8_t);
-		uint8_t (*Template)(uint16_t, uint8_t, int16_t);
-	} t;
-	void (*Init)(void);
-	void (*Power12v)(uint8_t);
-	void (*PowerOverCAN)(uint8_t);
-	void (*Refresh)(void);
-	void (*SetSpeedMax)(uint8_t);
-	void (*SetTemplates)(mcu_templates_t t);
-	void (*SyncCAN)(void);
-	uint8_t (*RpmToSpeed)(int16_t);
-	int16_t (*SpeedToRpm)(uint8_t);
-	uint8_t (*SpeedToVolume)(void);
-	uint8_t (*Reversed)(void);
-	uint8_t (*Running)(void);
 } mcu_t;
 
 /* Exported variables

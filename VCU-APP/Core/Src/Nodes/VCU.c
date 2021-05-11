@@ -21,18 +21,6 @@
  * -----------------------------------------------------------*/
 vcu_t VCU = {
 		.d = {0},
-		.t = {
-				VCU_TX_Heartbeat,
-				VCU_TX_SwitchControl,
-				VCU_TX_Datetime,
-				VCU_TX_ModeData
-		},
-		.Init = VCU_Init,
-		.Refresh = VCU_Refresh,
-		.CheckState = VCU_CheckState,
-		.SetEvent = VCU_SetEvent,
-		.ReadEvent = VCU_ReadEvent,
-		.CalcDistance = VCU_CalcDistance,
 };
 
 /* External variables -----------------------------------------*/
@@ -50,7 +38,7 @@ void VCU_Refresh(void) {
 
 	VCU.d.uptime++;
 	VCU.d.buffered = osMessageQueueGetCount(ReportQueueHandle);
-	VCU.d.error = VCU.ReadEvent(EVG_BIKE_FALLEN);
+	VCU.d.error = VCU_GetEvent(EVG_BIKE_FALLEN);
 }
 
 void VCU_CheckState(void) {
@@ -91,7 +79,7 @@ void VCU_CheckState(void) {
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_STOP);
 
 				VCU.d.tick.independent = _GetTickMS();
-				VCU.SetEvent(EVG_REMOTE_MISSING, 1);
+				VCU_SetEvent(EVG_REMOTE_MISSING, 1);
 			}
 
 			if ((_GetTickMS() - VCU.d.tick.independent) > (VCU_LOST_MODE_S*1000))
@@ -121,8 +109,10 @@ void VCU_CheckState(void) {
 
 			if (!GATE_ReadPower5v())
 				VCU.d.state--;
-			else if (start && RMT.d.nearby)
-				VCU.d.state++;
+			else if (start) {
+				if (RMT.d.nearby) VCU.d.state++;
+				else osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RESET);
+			}
 			break;
 
 		case VEHICLE_STANDBY:
@@ -157,7 +147,7 @@ void VCU_CheckState(void) {
 				start = 0;
 			}
 
-			if (!GATE_ReadPower5v() || (start && !MCU.Running()) || normalize || NODE.d.error)
+			if (!GATE_ReadPower5v() || (start && !MCU_Running()) || normalize || NODE.d.error)
 				VCU.d.state--;
 			break;
 
@@ -173,7 +163,7 @@ void VCU_SetEvent(uint8_t bit, uint8_t value) {
 	else BC(VCU.d.events, bit);
 }
 
-uint8_t VCU_ReadEvent(uint8_t bit) {
+uint8_t VCU_GetEvent(uint8_t bit) {
 	return (VCU.d.events & BIT(bit)) == BIT(bit);
 }
 
@@ -183,7 +173,7 @@ uint8_t VCU_CalcDistance(void) {
 	float mps;
 
 	if (tick > 0) {
-		mps = (float) MCU.RpmToSpeed(MCU.d.rpm) / 3.6;
+		mps = (float) MCU_RpmToSpeed(MCU.d.rpm) / 3.6;
 		meter = ((_GetTickMS() - tick) * mps) / 1000;
 	}
 	tick = _GetTickMS();
@@ -220,7 +210,7 @@ uint8_t VCU_TX_SwitchControl(void) {
 	d->u8[1] = HBAR.ctl.sein.left;
 	d->u8[1] |= HBAR.ctl.sein.right << 1;
 	//	d->u8[1] |= HBAR.d.pin[HBAR_K_REVERSE] << 2;
-	d->u8[1] |= MCU.Reversed() << 2;
+	d->u8[1] |= MCU_Reversed() << 2;
 	d->u8[1] |= BMS.d.run << 3;
 	d->u8[1] |= MCU.d.run << 4;
 	d->u8[1] |= (FGR.d.registering & 0x03) << 5;
@@ -234,7 +224,7 @@ uint8_t VCU_TX_SwitchControl(void) {
 	d->u8[2] |= (HBAR.ctl.session > 0) << 7;
 
 	// others
-	d->u8[3] = MCU.RpmToSpeed(MCU.d.rpm);
+	d->u8[3] = MCU_RpmToSpeed(MCU.d.rpm);
 	d->u8[4] = (uint8_t) MCU.d.dcbus.current;
 	d->u8[5] = BMS.d.soc;
 	d->u8[6] = SIM.d.signal;

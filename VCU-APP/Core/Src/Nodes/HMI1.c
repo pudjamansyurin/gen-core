@@ -12,12 +12,6 @@
  * -----------------------------------------------------------*/
 hmi1_t HMI1 = {
 		.d = {0},
-		.r ={
-				HMI1_RX_State
-		},
-		.Init = HMI1_Init,
-		.Refresh = HMI1_Refresh,
-		.Power = GATE_Hmi1Power
 };
 
 /* Private functions prototypes
@@ -35,6 +29,10 @@ void HMI1_Refresh(void) {
 
 	if (!HMI1.d.active)
 		Reset();
+}
+
+void HMI1_Power(uint8_t state) {
+	GATE_Hmi1Power(state);
 }
 
 /* ====================================== CAN RX

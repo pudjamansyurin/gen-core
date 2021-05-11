@@ -14,19 +14,6 @@
  * -----------------------------------------------------------*/
 bms_t BMS = {
 		.d = {0},
-		.r = {
-				BMS_RX_Param1,
-				BMS_RX_Param2
-		},
-		.t = {
-				BMS_TX_Setting
-		},
-		.Init = BMS_Init,
-		.PowerOverCAN = BMS_PowerOverCAN,
-		.RefreshIndex = BMS_RefreshIndex,
-		.MinIndex = BMS_MinIndex,
-		.GetMPerWH = BMS_GetMPerWH,
-		.GetRangeKM = BMS_GetRangeKM,
 };
 
 /* Private functions prototypes
@@ -38,13 +25,13 @@ static uint16_t MergeFault(void);
 static uint8_t AreActive(void);
 static uint8_t AreOverheat(void);
 static uint8_t AreRunning(uint8_t on);
-static float GetMinWH(void);
-static float MovAvg(averager_t *m, float val);
+static float GetDischargeCapacity(uint32_t duration);
 
 /* Public functions implementation
  * --------------------------------------------*/
 void BMS_Init(void) {
 	memset(&(BMS.d), 0, sizeof(bms_data_t));
+	memset(&(BMS.avg), 0, sizeof(bms_avg_t));
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++)
 		ResetIndex(i);
@@ -59,18 +46,18 @@ void BMS_PowerOverCAN(uint8_t on) {
 		lastState = on;
 		if (on) ResetFaults();
 	}
-	BMS.t.Setting(state, sc);
+	BMS_TX_Setting(state, sc);
 }
 
 void BMS_RefreshIndex(void) {
 	BMS.d.active = AreActive();
 	BMS.d.run = BMS.d.active && AreRunning(1);
 
-	BMS.d.soc = BMS.packs[BMS.MinIndex()].soc;
+	BMS.d.soc = BMS.packs[BMS_MinIndex()].soc;
 	BMS.d.fault = MergeFault();
 	BMS.d.overheat = AreOverheat();
 
-	VCU.SetEvent(EVG_BMS_ERROR, BMS.d.fault > 0);
+	VCU_SetEvent(EVG_BMS_ERROR, BMS.d.fault > 0);
 }
 
 uint8_t BMS_MinIndex(void) {
@@ -87,26 +74,22 @@ uint8_t BMS_MinIndex(void) {
 	return index;
 }
 
-uint8_t BMS_GetMPerWH(uint32_t odo) {
-	static averager_t avgMWH = {0}, avgD = {0};
-	static uint32_t _odo = 0;
+uint8_t BMS_GetEfficiency(uint32_t odo) {
+	static uint32_t tick, _odo = 0;
 	static uint8_t _on = 0;
 	static float wh, _wh = 0;
-	float mwh;
+	float mwh = 0;
 
 	if (BMS.d.active != _on) {
 		_on = BMS.d.active;
-		_wh = GetMinWH();
+		_wh = GetDischargeCapacity(100);
 		_odo = odo;
-	}
-
-	if (BMS.d.active) {
-		wh = GetMinWH();
+	} else if (BMS.d.active) {
+		wh = GetDischargeCapacity(_GetTickMS() - tick);
 
 		if (odo != _odo) {
 			if (wh != _wh) {
-				float d = MovAvg(&avgD, odo - _odo);
-				mwh = d / (wh - _wh);
+				mwh = (odo - _odo) / (wh - _wh);
 				mwh *= (mwh < 0) ? -1 : 1;
 
 				_wh = wh;
@@ -114,56 +97,81 @@ uint8_t BMS_GetMPerWH(uint32_t odo) {
 				mwh = BMS.d.mwh;
 
 			_odo = odo;
-		} else
-			mwh = 0;
-	} else
-		mwh = 0;
+		}
+	}
+	tick = _GetTickMS();
 
-	BMS.d.mwh = MovAvg(&avgMWH, mwh);
+	BMS.d.mwh = _MovAvgFloat(
+			&BMS.avg.handle[BMS_AVG_EFFICIENCY],
+			BMS.avg.buffer[BMS_AVG_EFFICIENCY],
+			BMS_AVG_SZ,
+			mwh
+	);
 	return BMS.d.mwh > UINT8_MAX ? UINT8_MAX : BMS.d.mwh;
 }
 
-uint8_t BMS_GetRangeKM(void) {
-	static averager_t avg = {0};
-	float m = BMS.d.mwh * BMS.d.wh;
+uint8_t BMS_GetInRange(void) {
+	float km = (BMS.d.mwh * BMS.d.wh) / 1000.0;
 
-	BMS.d.km =  MovAvg(&avg, m / 1000.0);
+	BMS.d.km = _MovAvgFloat(
+			&BMS.avg.handle[BMS_AVG_INRANGE],
+			BMS.avg.buffer[BMS_AVG_INRANGE],
+			BMS_AVG_SZ,
+			km
+	);
 	return BMS.d.km > UINT8_MAX ? UINT8_MAX : BMS.d.km;
+}
+
+float BMS_GetTotalCapacity(void) {
+	bms_pack_t *p = &(BMS.packs[BMS_MinIndex()]);
+	float V, I, wh;
+
+	I = (p->soc * p->capacity) / 100.0;
+	V = p->voltage;
+	wh = I * V;
+
+	BMS.d.wh = _MovAvgFloat(
+			&BMS.avg.handle[BMS_AVG_CAPACITY],
+			BMS.avg.buffer[BMS_AVG_CAPACITY],
+			BMS_AVG_SZ,
+			wh * 2.0
+	);
+	return BMS.d.wh;
 }
 
 /* ====================================== CAN RX
  * =================================== */
 void BMS_RX_Param1(can_rx_t *Rx) {
 	uint8_t i = GetIndex(Rx->header.ExtId);
-	pack_t *pack = &(BMS.packs[i]);
+	bms_pack_t *p = &(BMS.packs[i]);
 	UNION64 *d = &(Rx->data);
 
 	// read the content
-	pack->voltage = d->u16[0] * 0.01;
-	pack->current = d->u16[1] * 0.1;
-	pack->soc = d->u16[2];
-	pack->temperature = d->u16[3] - 40;
+	p->voltage = d->u16[0] * 0.01;
+	p->current = d->u16[1] * 0.1;
+	p->soc = d->u16[2];
+	p->temperature = d->u16[3] - 40;
 
 	// update index
-	pack->id = BMS_ID(Rx->header.ExtId);
-	pack->tick = _GetTickMS();
+	p->id = BMS_ID(Rx->header.ExtId);
+	p->tick = _GetTickMS();
 }
 
 void BMS_RX_Param2(can_rx_t *Rx) {
 	uint8_t i = GetIndex(Rx->header.ExtId);
-	pack_t *pack = &(BMS.packs[i]);
+	bms_pack_t *p = &(BMS.packs[i]);
 	UNION64 *d = &(Rx->data);
 
 	// read content
-	pack->capacity = d->u16[0] * 0.1;
-	pack->soh = d->u16[1];
-	pack->cycle = d->u16[2];
-	pack->fault = d->u16[3] & 0x0FFF;
-	pack->state = (((d->u8[7] >> 4) & 0x01) << 1) | ((d->u8[7] >> 5) & 0x01);
+	p->capacity = d->u16[0] * 0.1;
+	p->soh = d->u16[1];
+	p->cycle = d->u16[2];
+	p->fault = d->u16[3] & 0x0FFF;
+	p->state = (((d->u8[7] >> 4) & 0x01) << 1) | ((d->u8[7] >> 5) & 0x01);
 
 	// update index
-	pack->id = BMS_ID(Rx->header.ExtId);
-	pack->tick = _GetTickMS();
+	p->id = BMS_ID(Rx->header.ExtId);
+	p->tick = _GetTickMS();
 }
 
 /* ====================================== CAN TX
@@ -184,11 +192,11 @@ uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t sc) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void ResetIndex(uint8_t i) {
-	pack_t *pack = &(BMS.packs[i]);
+	bms_pack_t *p = &(BMS.packs[i]);
 
-	memset(pack, 0, sizeof(pack_t));
-	pack->state = BMS_STATE_OFF;
-	pack->id = BMS_ID_NONE;
+	memset(p, 0, sizeof(bms_pack_t));
+	p->state = BMS_STATE_OFF;
+	p->id = BMS_ID_NONE;
 }
 
 static void ResetFaults(void) {
@@ -225,10 +233,10 @@ static uint8_t AreActive(void) {
 	uint8_t active = 1;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		pack_t *pack = &(BMS.packs[i]);
+		bms_pack_t *p = &(BMS.packs[i]);
 
-		pack->active = pack->tick && (_GetTickMS() - pack->tick) < BMS_TIMEOUT_MS;
-		if (!pack->active) {
+		p->active = p->tick && (_GetTickMS() - p->tick) < BMS_TIMEOUT_MS;
+		if (!p->active) {
 			ResetIndex(i);
 			active = 0;
 		}
@@ -255,44 +263,29 @@ static uint8_t AreRunning(uint8_t on) {
 	BMS_STATE state = on ? BMS_STATE_FULL : BMS_STATE_IDLE;
 
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
-		pack_t *pack = &(BMS.packs[i]);
+		bms_pack_t *p = &(BMS.packs[i]);
 
-		if (pack->state != state)
+		if (p->state != state)
 			return 0;
-		if (on && pack->fault)
+		if (on && p->fault)
 			return 0;
 	}
 	return 1;
 }
 
-static float GetMinWH(void) {
-	static averager_t avg = {0};
-	pack_t *p = &(BMS.packs[BMS.MinIndex()]);
-	float V, I, wh;
+static float GetDischargeCapacity(uint32_t duration) {
+	bms_pack_t *p = &(BMS.packs[BMS_MinIndex()]);
+	float V, I, wh = 0;
 
-	I = (p->soc * p->capacity) / 100.0;
-	V = p->voltage - 51.34;
-	V = V < 0 ? 0 : V;
-	wh = (I * V) * 2.0;
+	I = p->current;
+	V = p->voltage;
+	wh = (I * V * duration) / (3600.0 * 1000.0);
 
-	BMS.d.wh = MovAvg(&avg, wh);
-	return BMS.d.wh;
-}
-
-static float MovAvg(averager_t *m, float val) {
-	uint16_t sz = sizeof(m->buf) / sizeof(m->buf[0]);
-
-	// Subtract the oldest number from the prev sum, add the new number
-	m->sum = m->sum - m->buf[m->pos] + val;
-	// Assign the nextNum to the position in the array
-	m->buf[m->pos] = val;
-	// Increment position
-	m->pos++;
-	if (m->pos >= sz)
-		m->pos = 0;
-	// calculate filled array
-	if (m->len < sz)
-		m->len++;
-	// return the average
-	return m->sum / m->len;
+	wh = _MovAvgFloat(
+			&BMS.avg.handle[BMS_AVG_DISCHARGE],
+			BMS.avg.buffer[BMS_AVG_DISCHARGE],
+			BMS_AVG_SZ,
+			wh * 2.0
+	);
+	return wh;
 }

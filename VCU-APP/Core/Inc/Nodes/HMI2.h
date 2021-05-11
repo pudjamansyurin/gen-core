@@ -28,14 +28,6 @@ typedef struct {
 
 typedef struct {
   hmi2_data_t d;
-  struct {
-    void (*State)(can_rx_t *);
-  } r;
-  void (*Init)(void);
-  void (*Refresh)(void);
-  void (*PowerByCAN)(uint8_t);
-  void (*PowerOn)(void);
-  void (*PowerOff)(void);
 } hmi2_t;
 
 /* Exported variables

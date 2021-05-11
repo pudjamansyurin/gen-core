@@ -25,12 +25,6 @@ typedef struct {
 
 typedef struct {
 	hmi1_data_t d;
-	struct {
-		void (*State)(can_rx_t *);
-	} r;
-	void (*Init)(void);
-	void (*Refresh)(void);
-	void (*Power)(GPIO_PinState);
 } hmi1_t;
 
 /* Exported variables
@@ -41,6 +35,7 @@ extern hmi1_t HMI1;
  * --------------------------------------------*/
 void HMI1_Init(void);
 void HMI1_Refresh(void);
+void HMI1_Power(uint8_t state);
 void HMI1_RX_State(can_rx_t *Rx);
 
 #endif /* INC_NODES_HMI1_H_ */

@@ -152,8 +152,9 @@ void HBAR_SetOdometer(uint8_t m) {
 }
 
 void HBAR_SetReport(uint32_t odom) {
-	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = BMS.GetMPerWH(odom);
-	HBAR.d.report[HBAR_M_REPORT_RANGE] = BMS.GetRangeKM();
+	BMS_GetTotalCapacity();
+	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = BMS_GetEfficiency(odom);
+	HBAR.d.report[HBAR_M_REPORT_RANGE] = BMS_GetInRange();
 }
 
 /* Private functions implementation
@@ -175,7 +176,7 @@ static uint32_t Timer(uint8_t key) {
 
 static uint8_t Reversed(void) {
 	//	return HBAR.d.pin[HBAR_K_REVERSE];
-	return MCU.Reversed();
+	return MCU_Reversed();
 }
 
 static void RunSelect(void) {

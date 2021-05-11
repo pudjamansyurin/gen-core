@@ -107,6 +107,8 @@ int main(void)
   MX_UART9_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  GATE_LedBlink(250); _DelayMS(750);
+
   BAT_Init();
   EEPROM_Init();
   CANBUS_Init();

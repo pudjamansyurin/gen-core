@@ -41,18 +41,6 @@ typedef struct {
 
 typedef struct {
 	vcu_data_t d;
-	struct {
-		uint8_t (*Heartbeat)(void);
-		uint8_t (*SwitchControl)(void);
-		uint8_t (*Datetime)(datetime_t);
-		uint8_t (*ModeData)(void);
-	} t;
-	void (*Init)(void);
-	void (*Refresh)(void);
-	void (*CheckState)(void);
-	void (*SetEvent)(uint8_t, uint8_t);
-	uint8_t (*ReadEvent)(uint8_t);
-	uint8_t (*CalcDistance)(void);
 } vcu_t;
 
 /* Exported variables
@@ -65,7 +53,7 @@ void VCU_Init(void);
 void VCU_Refresh(void);
 void VCU_CheckState(void);
 void VCU_SetEvent(uint8_t bit, uint8_t value);
-uint8_t VCU_ReadEvent(uint8_t bit);
+uint8_t VCU_GetEvent(uint8_t bit);
 uint8_t VCU_CalcDistance(void);
 
 uint8_t VCU_TX_Heartbeat(void);

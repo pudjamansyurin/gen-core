@@ -78,3 +78,20 @@ uint32_t _ByteSwap32(uint32_t x) {
 //
 //  return pos;
 //}
+
+float _MovAvgFloat(averager_float_t *m, float *buf, uint16_t sz, float val) {
+	// Subtract the oldest number from the prev sum, add the new number
+	m->sum = m->sum - buf[m->pos] + val;
+	// Assign the nextNum to the position in the array
+	buf[m->pos] = val;
+	// Increment position
+	m->pos++;
+	if (m->pos >= sz)
+		m->pos = 0;
+	// calculate filled array
+	if (m->len < sz)
+		m->len++;
+	// return the average
+	return m->sum / m->len;
+}
+

@@ -119,7 +119,7 @@ void RMT_Refresh(vehicle_state_t state) {
 	lock();
 	timeout = state == VEHICLE_RUN ? RMT_BEAT_RUN_MS : RMT_BEAT_MS;
 	RMT.d.nearby = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < timeout;
-	VCU.SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
+	VCU_SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
 
 	RMT.d.active = (RMT.d.tick.ping && (_GetTickMS() - RMT.d.tick.ping) < RMT_TIMEOUT_MS) || RMT.d.nearby;
 	if (!RMT.d.active) {

@@ -21,21 +21,15 @@
  * -----------------------------------------------------------*/
 node_t NODE = {
 		.d = {0},
-		.r = {
-				NODE_RX_Debug,
-		},
-		.Init = NODE_Init,
-		.Refresh = NODE_Refresh,
-		.DebugCAN = NODE_DebugCAN,
 };
 
 /* Public functions implementation
  * --------------------------------------------*/
 void NODE_Init(void) {
-	BMS.Init();
-	MCU.Init();
-	HMI1.Init();
-	HMI2.Init();
+	BMS_Init();
+	MCU_Init();
+	HMI1_Init();
+	HMI2_Init();
 }
 
 void NODE_Refresh(void) {
@@ -54,10 +48,10 @@ void NODE_Refresh(void) {
 	if (!(NODE.d.tick.dbg && (_GetTickMS() - NODE.d.tick.dbg) < NODE_DEBUG_MS))
 		NODE.d.debug = 0;
 
-	BMS.RefreshIndex();
-	MCU.Refresh();
-	HMI1.Refresh();
-	HMI2.Refresh();
+	BMS_RefreshIndex();
+	MCU_Refresh();
+	HMI1_Refresh();
+	HMI2_Refresh();
 }
 
 void NODE_DebugCAN(void) {

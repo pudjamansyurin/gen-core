@@ -11,65 +11,98 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_reporter.h"
 
-/* Exported define
+#define CMD_SUB_MAX ((uint8_t) 10)
+
+/* Exported enums
  * ------------------------------------------------------------*/
-// Response Status List
-#define RESPONSE_STATUS_ERROR ((uint8_t)0)
-#define RESPONSE_STATUS_OK ((uint8_t)1)
-#define RESPONSE_STATUS_INVALID ((uint8_t)2)
+typedef enum {
+	RESP_ERROR = 0,
+	RESP_OK,
+	RESP_INVALID,
+} CMD_RESP;
 
-// Command Code List
-#define CMD_CODE_GEN ((uint8_t)0)
-#define CMD_CODE_OVERRIDE ((uint8_t)1)
-#define CMD_CODE_AUDIO ((uint8_t)2)
-#define CMD_CODE_FINGER ((uint8_t)3)
-#define CMD_CODE_REMOTE ((uint8_t)4)
-#define CMD_CODE_FOTA ((uint8_t)5)
-#define CMD_CODE_NET ((uint8_t)6)
-#define CMD_CODE_HBAR ((uint8_t)7)
-#define CMD_CODE_MCU ((uint8_t)8)
+typedef enum {
+	CMD_CODE_GEN = 0,
+	CMD_CODE_OVD,
+	CMD_CODE_AUDIO,
+	CMD_CODE_FGR,
+	CMD_CODE_RMT,
+	CMD_CODE_FOTA,
+	CMD_CODE_NET,
+	CMD_CODE_HBAR,
+	CMD_CODE_MCU,
+	CMD_CODE_MAX,
+} CMD_CODE;
 
-// Command Sub-Code List
-#define CMD_GEN_INFO ((uint8_t)0)
-#define CMD_GEN_LED ((uint8_t)1)
-#define CMD_GEN_RTC ((uint8_t)2)
-#define CMD_GEN_ODOM ((uint8_t)3)
-#define CMD_GEN_FLUSH ((uint8_t)4)
-#define CMD_GEN_DETECTOR ((uint8_t)5)
+typedef enum {
+	CMD_GEN_INFO = 0,
+	CMD_GEN_LED,
+	CMD_GEN_RTC,
+	CMD_GEN_ODOM,
+	CMD_GEN_FLUSH,
+	CMD_GEN_DETECTOR,
+	CMD_GEN_MAX,
+} CMD_SUB_GEN;
 
-#define CMD_OVERRIDE_STATE ((uint8_t)0)
-#define CMD_OVERRIDE_RPT_INTERVAL ((uint8_t)1)
-#define CMD_OVERRIDE_RPT_FRAME ((uint8_t)2)
-#define CMD_OVERRIDE_RMT_SEAT ((uint8_t)3)
-#define CMD_OVERRIDE_RMT_ALARM ((uint8_t)4)
+typedef enum {
+	CMD_OVD_STATE = 0,
+	CMD_OVD_RPT_INTERVAL,
+	CMD_OVD_RPT_FRAME,
+	CMD_OVD_RMT_SEAT,
+	CMD_OVD_RMT_ALARM,
+	CMD_OVD_MAX,
+} CMD_SUB_OVD;
 
-#define CMD_AUDIO_BEEP ((uint8_t)0)
+typedef enum {
+	CMD_AUDIO_BEEP = 0,
+	CMD_AUDIO_MAX,
+} CMD_SUB_AUDIO;
 
-#define CMD_FINGER_FETCH ((uint8_t)0)
-#define CMD_FINGER_ADD ((uint8_t)1)
-#define CMD_FINGER_DEL ((uint8_t)2)
-#define CMD_FINGER_RST ((uint8_t)3)
+typedef enum {
+	CMD_FGR_FETCH = 0,
+	CMD_FGR_ADD,
+	CMD_FGR_DEL,
+	CMD_FGR_RST,
+	CMD_FGR_MAX,
+} CMD_SUB_FGR;
 
-#define CMD_REMOTE_PAIRING ((uint8_t)0)
+typedef enum {
+	CMD_RMT_PAIRING = 0,
+	CMD_RMT_MAX,
+} CMD_SUB_RMT;
 
-#define CMD_FOTA_VCU ((uint8_t)0)
-#define CMD_FOTA_HMI ((uint8_t)1)
+typedef enum {
+	CMD_FOTA_VCU = 0,
+	CMD_FOTA_HMI,
+	CMD_FOTA_MAX,
+} CMD_SUB_FOTA;
 
-#define CMD_NET_SEND_USSD ((uint8_t)0)
-#define CMD_NET_READ_SMS ((uint8_t)1)
+typedef enum {
+	CMD_NET_SEND_USSD = 0,
+	CMD_NET_READ_SMS,
+	CMD_NET_MAX,
+} CMD_SUB_NET;
 
-#define CMD_HBAR_DRIVE ((uint8_t)0)
-#define CMD_HBAR_TRIP ((uint8_t)1)
-#define CMD_HBAR_REPORT ((uint8_t)2)
-#define CMD_HBAR_REVERSE ((uint8_t)3)
+typedef enum {
+	CMD_HBAR_DRIVE = 0,
+	CMD_HBAR_TRIP,
+	CMD_HBAR_REPORT,
+	CMD_HBAR_REVERSE,
+	CMD_HBAR_MAX,
+} CMD_SUB_HBAR;
 
-#define CMD_MCU_SPEED_MAX ((uint8_t)0)
-#define CMD_MCU_TEMPLATES ((uint8_t)1)
+typedef enum {
+	CMD_MCU_SPEED_MAX = 0,
+	CMD_MCU_TEMPLATES,
+	CMD_MCU_MAX,
+} CMD_SUB_MCU;
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t CMD_ValidateCommand(void *ptr, uint8_t len);
-void CMD_ExecuteCommand(command_t *cmd);
+void CMD_Init(void);
+uint8_t CMD_Validate(command_t *cmd);
+uint8_t CMD_ValidateRaw(void *ptr, uint8_t len);
+void CMD_Execute(command_t *cmd);
 void CMD_GenInfo(response_t *resp);
 void CMD_ReportRTC(command_t *cmd);
 void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue);

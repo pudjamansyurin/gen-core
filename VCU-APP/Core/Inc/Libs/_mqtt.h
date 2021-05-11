@@ -21,36 +21,38 @@
 
 /* Exported structs --------------------------------------------------------*/
 typedef struct {
-  char topic[20];
-  unsigned short packetid;
-  unsigned char dup;
-  unsigned char retained;
-  unsigned char packettype;
-  int qos;
-} mqtt_data_t;
+	char topic[20];
+	unsigned short packetid;
+	unsigned char dup;
+	unsigned char retained;
+	unsigned char packettype;
+	int qos;
+} mqtt_handler_t;
 
 typedef struct {
-  unsigned short packetid;
-  uint8_t subscribed;
-  uint8_t willed;
-  uint32_t tick;
-  struct {
-    int command;
-    int response;
-    int report;
-    int will;
-  } qos;
-  struct {
-    char command[20];
-    char response[20];
-    char report[20];
-    char will[20];
-  } topic;
-  struct {
-    command_t command;
-    uint8_t received;
-    mqtt_data_t d;
-  } rx;
+	uint8_t pending;
+	command_t command;
+	mqtt_handler_t d;
+} mqtt_rx_t;
+
+typedef struct {
+	unsigned short packetid;
+	uint8_t subscribed;
+	uint8_t willed;
+	uint32_t tick;
+	struct {
+		int command;
+		int response;
+		int report;
+		int will;
+	} qos;
+	struct {
+		char command[20];
+		char response[20];
+		char report[20];
+		char will[20];
+	} topic;
+	mqtt_rx_t rx;
 } mqtt_t;
 
 /* Public functions prototypes ----------------------------------------------*/
@@ -61,9 +63,12 @@ uint8_t MQTT_Unsubscribe(void);
 uint8_t MQTT_Connect(void);
 uint8_t MQTT_Disconnect(void);
 uint8_t MQTT_Ping(void);
+
 uint8_t MQTT_GotPublish(void);
 uint8_t MQTT_AckPublish(command_t *cmd);
 uint8_t MQTT_GotCommand(void);
+void MQTT_FlushCommand(void);
+
 uint8_t MQTT_Subscribed(void);
 uint8_t MQTT_Willed(void);
 

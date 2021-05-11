@@ -46,7 +46,7 @@ uint8_t FW_PostFota(response_t *response) {
     response->header.code = CMD_CODE_FOTA;
     response->header.sub_code =
         FOTA.TYPE == IAP_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
-    response->data.res_code = RESPONSE_STATUS_ERROR;
+    response->data.res_code = RESP_ERROR;
     sprintf(response->data.message, "%s Failed", node);
 
     // check fota response
@@ -76,7 +76,7 @@ uint8_t FW_PostFota(response_t *response) {
     case IAP_FOTA_SUCCESS:
       FW_MakeResponseIAP(response->data.message, node);
 
-      response->data.res_code = RESPONSE_STATUS_OK;
+      response->data.res_code = RESP_OK;
       break;
     default:
       break;

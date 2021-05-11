@@ -24,14 +24,6 @@ extern osThreadId_t Hmi2PowerTaskHandle;
  * -----------------------------------------------------------*/
 hmi2_t HMI2 = {
 		.d = {0},
-		.r = {
-				HMI2_RX_State
-		},
-		.Init = HMI2_Init,
-		.Refresh = HMI2_Refresh,
-		.PowerByCAN = HMI2_PowerByCAN,
-		.PowerOn = HMI2_PowerOn,
-		.PowerOff = HMI2_PowerOff
 };
 
 /* Public functions implementation

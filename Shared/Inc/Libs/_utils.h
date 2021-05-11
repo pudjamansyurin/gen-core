@@ -31,6 +31,14 @@ typedef union {
     double DOUBLE;
 } UNION64;
 
+/* Exported struct
+ * -------------------------------------------------------------*/
+typedef struct {
+	double sum;
+	uint16_t pos;
+	uint16_t len;
+} averager_float_t;
+
 /* Public functions prototype ------------------------------------------------*/
 void _I2C_ClearBusyFlagErratum(void);
 void _DelayMS(uint32_t ms);
@@ -38,4 +46,5 @@ uint32_t _GetTickMS(void);
 void _Error(char msg[50]);
 uint32_t _ByteSwap32(uint32_t x);
 //int8_t _BitPos(uint64_t event_id);
+float _MovAvgFloat(averager_float_t *m, float *buf, uint16_t sz, float val);
 #endif /* UTILS_H_ */

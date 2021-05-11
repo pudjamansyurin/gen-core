@@ -45,12 +45,6 @@ typedef struct {
 
 typedef struct {
 	node_data_t d;
-	struct {
-		void (*Debug)(can_rx_t *);
-	} r;
-	void (*Init)(void);
-	void (*Refresh)(void);
-	void (*DebugCAN)(void);
 } node_t;
 
 /* Exported variables

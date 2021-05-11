@@ -67,13 +67,10 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, EXT_GPIO_OUT1_Pin|EXT_GPIO_OUT2_Pin|SYS_LED_Pin|INT_CAN_PWR_Pin
-                          |INT_AUDIO_RST_Pin, GPIO_PIN_RESET);
+                          |INT_AUDIO_RST_Pin|EXT_BMS_WAKEUP_Pin|EXT_BMS_FAN_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(INT_REMOTE_CSN_GPIO_Port, INT_REMOTE_CSN_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, EXT_BMS_WAKEUP_Pin|EXT_BMS_FAN_PWR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : PEPin PEPin PEPin PEPin
                            PEPin PEPin PEPin PEPin */
