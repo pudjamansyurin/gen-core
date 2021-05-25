@@ -102,9 +102,9 @@
   - [x] ~~Library: https://github.com/sparkfun/SparkFun_Ublox_Aacrduino_Library~~
 - [x] Simplify CANBUS library with pointer data
 - [x] Add new fingerprint can only be executed when KNOB is ON (HMI1 ON)
-- [ ] E-Scooter Diagram:
-  - [?] HMI.Primary Fingerprint indicator blink when Scanning
-  - [?] Try to add more than 5 fingerprint user
+- [x] E-Scooter Diagram:
+  - [x] HMI.Primary Fingerprint indicator blink when Scanning
+  - [x] Try to add more than 5 fingerprint user
   - [x] Handle remote lost
     - [x] Only when knob ON
     - [x] HMI.Primary Remote blink
@@ -122,15 +122,303 @@
   - [x] ~~MCU Power control with GPIO ?~~
     - [x] Controlled by BMS_WAKEUP (by 63V power)
   - [x] SteerLock & Kickstand use GPIO of KNOB_IRQ
-  - [ ] MCU related
-    - [ ] Handle sound volume based on MCU RPM
-    - [ ] Drive mode handle MCU related parameters
-    - [ ] HMI.Primary 'warning' & 'overheat' based on MCU
-- [ ] Make routine to check SIMCOM internet package
-- [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
+  - [x] MCU related
+    - [x] Handle sound volume based on MCU RPM
+    - [x] Drive mode handle MCU related parameters
+    - [x] HMI.Primary 'warning' & 'overheat' based on MCU
+- [x] Make routine to check SIMCOM internet package
 - [x] RTOS: give timeout for any osWaitForever
 - [x] Remote: Move RNG to VCU side, not FOB. It act as challenge code.
 - [x] MQTT Protocol with backend server
+- [x] Add BMS kwh & HBAR odometer to CAN debugger
+- [x] Handle _MV define
+- [x] Validate select set
+- [x] Refactor select, set & starter timer
+- [x] Validate starter
+- [x] Validate sein
+- [x] Add bms min pack
+- [x] Handle range prediction
+- [x] Sometimes Setting MUC parameter caused node.error
+- [x] Debug by CAN, disable swo
+- [x] Add MCU template & rpm max debugger
+- [x] Add detector activation command
+- [x] Revert back event group to 16bit
+- [x] Handle mode blinker properly
+- [x] increase report log 10 to 100 again to trigger stack overflow, handle the error properly
+- [x] Increase nrf receive timeout, and check average response time
+- [x] hazard disturb starter
+- [x] Refactor BMS average soc, and test only 1 bms attached
+- [x] Sometimes mems reports only temperature, other parameters are zeros
+- [x] Add _MS & _S in defines, remove the variable type
+- [x] Sometimes keyless still stuck
+- [x] Parse bms can data manually
+- [x] Freeze finger indicator when registering fingerprint
+- [x] Show go indicator when mcu run
+- [x] Turn on mcu on state 2 & 3
+- [x] Rmt task priority is decreased when state 3
+- [x] Simplify mems detector & add report for it
+- [x] Overspeed, shutdown cause nrf not synced
+- [x] Handle mcu lockout
+- [x] Show mcu.run & bms.run on hmi
+- [x] Do not runSelect() on first press, use increment to chek the listening value
+- [x] Remove duplicate audio mute
+- [x] Fix rst log command
+- [x] Long press set to reset trip meter
+- [x] Hazard caused blink on menus
+- [x] Do not clear mcu & bms fault, reset only on startup
+- [x] Add command to reset buffer
+- [x] Mcu first template set
+- [x] Set audio mute after successful audio init
+- [x] Default audio mute on
+- [x] FINGER command
+- [x] GetImage: EF01FFFFFFFF010003010005
+- [x] Verify: EF01FFFFFFFF0100071300000000001
+- [x] CHECK: accumulate odometer
+- [x] Handle audio dma error when gps threads on
+- [x] Check mems activation problem
+- [x] audio dma always busy?
+- [x] re-pairing keyless
+- [x] Remove / change resistor value on VCU Keyless
+- [x] nrf send error
+- [x] check audio task refresh
+- [x] Recheck yaw & roll
+- [x] GPS reinit problem
+- [x] CAN reinit problem
+- [x] recheck EVG_BIKE_MOVED always on
+- [x] lock all modules routine
+- [x] move hmi1.state.mirroring to hmi2 state
+- [x] do not blink the sein, follow sein L & R gpio
+- [x] dont turn on hazard when reverse
+- [x] handle HBAR gpio manually, not list
+- [x] handle starter in hbar
+- [x] recheck accelerometer g force value
+- [x] change mems crash & fall value to resultant
+- [x] AUDIO
+- [x] Handle peripheral error & infinite init
+- [x] each bms fault report
+- [x] Add remote active tick, add distance prop
+- [x] move define to peripheral header, check effect on app & bl
+- [x] use recursive mutex for all peripheral
+- [x] REMOTE
+- [x] FINGER ?
+- [x] move hmi warning & overheat to vcu
+- [x] Replace RTOS queue with global variable
+- [x] Check fingerprint module
+- [x] MEMS
+- [x] GPS
+- [x] Revert back gps task
+- [x] Add gps refresh
+- [x] Add gyro_debug_t with active property
+- [x] Add timeout in GPS & GYRO init
+- [x] Change hmi run to active
+- [x] show hmi2 task report
+- [x] terminate audio task
+- [x] unify hmi can download address protocol (FOCAN_RUNNING)
+- [x] change handlebar to hbar
+- [x] Download FOCAN error HMI
+- [x] revert back hmi1 power
+- [x] Decreas mcu & bms timeout
+- [x] Change "iot" to network
+- [x] Add IT prefix to gps process buffer
+- [x] Remove CAN RX task, move logic to IT directly
+- [x] Move CAN RX Refresh to manager
+- [x] add normal vehicle state override
+- [x] try reduce iot stack
+- [x] revert report qos back to 1 ?
+- [x] increase bike moved treshold
+- [x] change bms as optional debug data
+- [x] refactor events group
+- [x] Change disharge current size in can protocol
+- [x] Send discharge current for HMI
+- [x] Sync MCU can protocol
+- [x] Handle MCU fault code report
+- [x] Send MCU report
+- [x] Reduce drive mode 
+- [x] keep gps speed
+- [x] Increase FOTA CAN address priority
+- [x] handle scripts error correctly
+- [x] Add prefix for command ack
+- [x] Sync BMS can protocol
+- [x] Check crashed CAN Address by MCU & BMS
+- [x] Only send HMI related can data when HMI is on
+- [x] Remove can fired ErrorHandler
+- [x] Replace CHECKSUM to CRC
+- [x] Save VIN in the last flash area of bootloader
+- [x] Remove change VIN (UnitID) command
+- [x] handle +FTPSIZE: 1,62,0 fota
+- [x] Figure out to validate app firmware on first download, use STMCubeProgrammer CLI
+- [x] Add mutex to all MX peripheral, iwdg dll
+- [x] GPS cannot lock when HMI is turned on
+- [x] Handle Simcom NoReponse properly, do not for state to down
+- [x] Handle mqtt not receive publish,  using application level ACK
+- [x] Watchdog triggered ?
+- [x] Overflowed variable size
+- [x] Overflowed sizeof()
+- [x] Global variable in RTOS?
+- [x] test GYRO_Decision with 1 sample
+- [x] Uptime not synced with 1111ms
+- [x] Add DAC feature to bootloader
+- [x] Separate USSD and SMS
+- [x] Add dedicated command for USSD & SMS
+- [x] USSD command should dynamic
+- [x] use extern peripheral struct for lib ititialization
+- [x] Add uptime to detect system reset
+- [x] add mutex to all peripheral
+- [x] Handle double fota retained command
+- [x] Move define_shared content to related lib header
+- [x] move code & sub_code of command & response to header
+- [x] Use GPS idle line, do not polling every second
+- [x] When GPS got signal?
+- [x] MQTT not receive command if publisher use qos > 0
+- [x] add immediate ack for longer timeout command, or make command async await
+- [x] Make command payload dynamic length
+- [x] Make response payload dynamic length
+- [x] add sendDatetime to command & response struct
+- [x] Change simcom usart peripheral, or change mass download pin
+- [x] Struct eeprom dfu fota variables
+- [x] Refactor eeprom
+- [x] trap hard fault with led, reset iwdg
+- [x] revert back dma simcom variable to static
+- [x] GPS lock is too long
+- [x] replace unsafe str function: strcmp (strncmp), strlen
+- [x] do not use sizeof in str operation
+- [x] VCU stop sending at 17.15
+- [x] check using stlinkv2 swv utility
+- [x] Add more iot stack (100 words)
+- [x] Add more command stack (75 words)
+- [x] change freertos dynamic allocation to static
+- [x] add last will testament mqtt
+- [x] fix BL simcom
+- [x] simcom, hard reset on looped simcom creg, cgreg
+- [x] reduce simcom hard reset continuously
+- [x] increase starter button rise time
+- [x] Add simcom check quota command
+- [x] increase gate task priority
+- [x] remove CRC for IoT packet
+- [x] mqtt subcribe CMD should use qos 2. problem: recursive loop
+- [x] increment mqtt packet id
+- [x] mqtt publish qos 1 error
+- [x] tes genupload.sh on linux
+- [x] update genupload.sh for windows
+- [x] revert back HMI CAN data
+- [x] validate pairing aes (on failed should not change)
+- [x] validate fota resume
+- [x] BL, put FTP init in simcom state
+- [x] decrease starter press for shutdown
+- [x] develop auto resume fota on CME ERROR
+- [x] find the bugs, SIM.state value -2
+- [x] remove VCU.odometer, replace with HBAR instead
+- [x] change trip from U32 to U16
+- [x] sync VCU.Odometer with HBAR.odometer
+- [x] give initial state to HBAR, and only change in > NORMAL mode
+- [x] EEPROM error cause: NRF, VCU_FOTA failed
+- [x] handle EV_VCU_BIKE_MOVED
+- [x] revert aes back on failed pairing
+- [x] peripheral initiate problem after battery empty
+- [x] Reset gyro value according vehicle state
+- [x] Reporter task wakeup should event-driven
+- [x] Increase command timeout
+- [x] Use mqtt retained publish
+- [x] Dont reduce Mqtt pingreq interval
+- [x] Send related hmi can, based on hmi state
+- [x] Restructure vcu data
+- [x] wrap state related response with {} curly brace, also inverse the statement
+- [x] Reset at normal mode: drive mode, estimation, sub trip
+- [x] change prefix response
+- [x] unit id change, but keyless error
+- [x] check anything related to unitID
+- [x] at unit id change, also change mqtt paths
+- [x] enable unit id command change, update the NRF also
+- [x] check any static function used as public
+- [x] save dark mode in localstorage
+- [x] move vehicle state as required frame
+- [x] long press on starter, shutdown system completely
+- [x] handle starter press properly
+- [x] Make ping longer when remote is valid
+- [x] disable can task on gpio5v power off
+- [x] use driver id start from 1 - 5
+- [x] increase iot stack
+- [x] somtimes MQTT command is collided with report, make it timeout
+- [x] Remove Sequential ID in packet frame
+- [x] Use unix timestamp to replace RTC_Encode
+- [x] Handle fingerpirnt code error efficiently
+- [x] change can_handler_t
+- [x] Change SWO to printf
+- [x] Peripheral initiate problem
+- [x] Remote still stuck on long period
+- [x] Change .handle to .h
+- [x] Use generated MX_Init for each peripheral
+- [x] decrease remote ping to 10 ms again
+- [x] Sometimes REMOTE is stuck
+- [x] Select & Set emulation
+- [x] Evt group when gyro change in normal mode
+- [x] Clear FOTA flags after start
+- [x] Use mqtt protocol
+- [x] Combine peripheral handle to single struct
+- [x] Decrease remote range
+- [x] VCU-BL: only turned on HMI when on FOTA state
+- [x] Restart ADC on 5v power change
+- [x] Stop peripheral when not used: Gyro, Remote?, Finger? Audio?
+- [x] Stop unused micro peripheral when not used
+- [x] Replace SWO_DEBUG with (Debug, Release) from IDE
+- [x] Add test struct to report frame
+- [x] Put HMI.unfiger inside VCU.SetDriver
+- [x] Pause unnecessary thread bases on vehicle state
+- [x] VCU sould be upgradeable in all vehicle condition, except lost & run.
+- [x] HMI sould be upgradeable in vehicle condition STANDBY & READY
+- [x] Check EVT_IOT_DISCARD, when reports buffer is full, the command never responsed
+- [x] Add vehicle_state after events_group
+- [x] Use pointer, nodes should only used in freertos.c
+- [x] Keyless sometimes stuck if running long time, maybe not synced.
+- [x] Disable Battery ADC DMA, use poll instead
+- [x] reset remote missing on pauses remote task
+- [x] Keyles not paired again after VCU reset
+- [x] Pairing with all task active failed
+- [x] Fix ADC re-init bug
+- [x] Upgrade HMI failed
+- [x] Handle mcu reverse faster
+- [x] Refactor SetOdometer
+- [x] Move nrf interrupt handler to remote, not direct, to lock peripheral with mutex
+- [-] Dont use dma for fingerprint
+- [-] Use TM libraries ? Or use STM32Cube Package ?
+- [-] Move GPS_Init to reporter ? Remove gps task
+- [ ] Use USART1 as SWV printf
+- [-] add report version
+- [-] Read IPD received data size to determine packet
+- [x] Try to use CIPQSEND "DATA ACCEPT"
+- [x] Horn disturb finger irq
+    "It is disturbed on uController pin side"
+- [x] Recheck mems detector horn output
+    "Something wrong with components soldering (too fragile)"
+- [x] Check finger not interruptting
+    "Its caused by unstable power source"
+- [x] use gyro interrupt instead of polling
+    "Solved by reducing sample "
+- [x] Find HardFault (PRECISERR) culprit. 
+    "Solved by increasing GPS buffer"
+    - [-] VCU sometime resets forever on power changes
+- [-] CAN Debugging
+    - [ ] NODE add  BMS &CAN timeout flags
+    - [ ] Keyless seat &alarm state, use GetTick() and timeout
+- [ ] Finger IRQ sometimes still interrupted
+- [ ] Sometimes keyless still missing, DC-DC bug?
+- [ ] Range & Energy estimation
+- [ ] Check got command when sending report, for faster mqtt command
+- [ ] Separate files based on functionality
+- [ ] Put BL configuration on EEPROM, &it should updateable by command
+    - [ ] MQTT host
+    - [ ] Simcom APN
+- [ ] Use mpu DMP feature to minimalize error ?
+- [ ] PCB revision
+    - [ ] Check new sim7600e pcb trace
+    - [ ] Change fingerprint Vin &Vtouch from 3.3v to 5v source
+    - [ ] Revert back GATE_ReadPower5v() logic
+    - [ ] 5v irq not triggered (alwasy floating)
+    - [ ] BOOT1 should pulled down
+    - [ ] Change USART1 (SIMCOM) to UART9
+- [ ] Try hmi download again, check error, increase retry
+- [ ] Save global variable to intermediate variable, do not use pointer
+- [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
 
 ## Hardware Progress:
 

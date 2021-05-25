@@ -22,8 +22,7 @@ static uint8_t FW_ValidResponseIAP(void);
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
   /* Retain FOTA */
   EEPROM_FotaType(EE_CMD_W, type);
-  EEPROM_FotaVersion(EE_CMD_W,
-                     (type == IAP_HMI) ? HMI1.d.version : VCU_VERSION);
+  EEPROM_FotaVersion(EE_CMD_W, (type == IAP_HMI) ? HMI1.d.version : VCU_VERSION);
 
   /* Set flag to SRAM */
   *(uint32_t *)IAP_FLAG_ADDR = IAP_FLAG;

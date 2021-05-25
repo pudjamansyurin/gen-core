@@ -1592,7 +1592,7 @@ void StartHmi2PowerTask(void *argument)
 void StartGateTask(void *argument)
 {
   /* USER CODE BEGIN StartGateTask */
-	uint32_t notif, tick100ms;
+	uint32_t notif, tick1000ms;
 
 	_osEventManager();
 
@@ -1601,7 +1601,7 @@ void StartGateTask(void *argument)
 	HBAR_ReadStates();
 
 	/* Infinite loop */
-	tick100ms = _GetTickMS();
+	tick1000ms = _GetTickMS();
 	for (;;) {
 		TASKS.tick.gate = _GetTickMS();
 
@@ -1629,8 +1629,8 @@ void StartGateTask(void *argument)
 		}
 
 		HBAR_RefreshSelectSet();
-		if (_GetTickMS() - tick100ms > 100) {
-			tick100ms = _GetTickMS();
+		if (_GetTickMS() - tick1000ms > 1000) {
+			tick1000ms = _GetTickMS();
 			uint8_t distance = VCU_CalcDistance();
 			HBAR_SetOdometer(distance);
 			HBAR_SetReport(distance);
