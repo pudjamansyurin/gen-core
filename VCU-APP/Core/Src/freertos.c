@@ -1618,8 +1618,8 @@ void StartGateTask(void *argument)
 			}
 
 			if (notif & FLAG_GATE_BEEP_HORN) {
-				GATE_Horn(250);
-				GATE_Horn(250);
+				GATE_Horn(500);
+				GATE_Horn(500);
 			}
 
 			if (notif & FLAG_GATE_OPEN_SEAT) {

@@ -34,6 +34,8 @@ extern "C" {
 extern RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN Private defines */
+#define RTC_BKP_REG 	RTC_BKP_DR0
+#define RTC_BKP_VAL		((uint32_t)0x89ABCDEF)
 
 /* USER CODE END Private defines */
 
