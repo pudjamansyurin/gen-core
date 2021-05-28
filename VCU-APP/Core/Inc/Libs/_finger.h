@@ -18,6 +18,14 @@
 #define FINGER_CONFIDENCE_MIN_PERCENT ((uint8_t)75)
 #define FINGER_USER_MAX ((uint8_t)5)
 
+
+/* Enums
+ * --------------------------------------------------------------------*/
+typedef enum {
+	FGR_REG_HIDE = 0,
+	FGR_REG_SHOW,
+} FGR_REG;
+
 /* Structs
  * --------------------------------------------------------------------*/
 typedef struct {

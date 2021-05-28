@@ -22,7 +22,7 @@ static uint8_t FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
 /* Public functions implementation
  * --------------------------------------------*/
  uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
-	 uint32_t retry = 5;
+	 uint32_t retry = 1;
 	 can_tx_t Tx = {0};
 	 uint8_t p;
 

@@ -30,7 +30,7 @@ static void lock(void);
 static void unlock(void);
 //static uint8_t Auth(void);
 static uint8_t AuthFast(void);
-static void RegisterState(uint8_t show, uint8_t error);
+static void RegisterState(FGR_REG state, uint8_t error);
 static uint8_t Scan(uint8_t slot, uint32_t timeout);
 static uint8_t GenerateID(uint8_t *theId);
 static uint8_t ConvertImage(uint8_t slot);
@@ -124,23 +124,22 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
 	*ok = (res == FINGERPRINT_OK && *id > 0);
 
 	if (*ok) {
-		RegisterState(1,0);
+		RegisterState(FGR_REG_SHOW,0);
 		printf("FGR:Waiting for valid finger to enroll as #%u\n", *id);
 		*ok = Scan(1, FINGER_SCAN_MS);
 	}
 
 	if (*ok) {
-		RegisterState(0,0);
+		RegisterState(FGR_REG_HIDE,0);
 		while (fz3387_getImage() != FINGERPRINT_NOFINGER) {
 			_DelayMS(50);
 		}
 
-		RegisterState(1,0);
+		RegisterState(FGR_REG_SHOW,0);
 		printf("FGR:Waiting for valid finger to enroll as #%u\n", *id);
 		*ok = Scan(2, FINGER_SCAN_MS);
 	}
-
-	RegisterState(0,0);
+	RegisterState(FGR_REG_HIDE,0);
 
 	if (*ok) {
 		while (fz3387_getImage() != FINGERPRINT_NOFINGER) {
@@ -161,9 +160,9 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
 	}
 	unlock();
 
-	RegisterState(1, !(*ok));
-	_DelayMS(1000);
-	RegisterState(0, 0);
+	RegisterState(FGR_REG_SHOW, !(*ok));
+	_DelayMS(500);
+	RegisterState(FGR_REG_HIDE, 0);
 
 	return (res == FINGERPRINT_OK);
 }
@@ -210,9 +209,9 @@ void FGR_Authentication(void) {
 		FGR.d.id = FGR.d.id ? 0: id;
 	}
 
-	RegisterState(1, !ok);
-	_DelayMS(1000);
-	RegisterState(0, 0);
+	RegisterState(FGR_REG_SHOW, !ok);
+	_DelayMS(500);
+	RegisterState(FGR_REG_HIDE, 0);
 }
 
 /* Private functions implementation
@@ -236,7 +235,7 @@ static void unlock(void) {
 //	uint8_t ok, res, theId = 0;
 //
 //	lock();
-//	ok = GetImage(2000);
+//	ok = GetImage(500);
 //
 //	if (ok)
 //		ok = (ConvertImage(1));
@@ -263,7 +262,7 @@ static uint8_t AuthFast(void) {
 	uint8_t theId = 0;
 
 	lock();
-	if (GetImage(2000))
+	if (GetImage(500))
 		if (fz3387_image2Tz(1) == FINGERPRINT_OK)
 			if (fz3387_fingerFastSearch(&id, &confidence) == FINGERPRINT_OK)
 				if (confidence > FINGER_CONFIDENCE_MIN_PERCENT)
@@ -273,8 +272,8 @@ static uint8_t AuthFast(void) {
 	return theId;
 }
 
-static void RegisterState(uint8_t show, uint8_t error) {
-	FGR.d.registering = ((error & 0x01) << 1) | (show & 0x01);
+static void RegisterState(FGR_REG state, uint8_t error) {
+	FGR.d.registering = ((error & 0x01) << 1) | (state & 0x01);
 }
 
 static uint8_t Scan(uint8_t slot, uint32_t timeout) {

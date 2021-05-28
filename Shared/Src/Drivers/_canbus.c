@@ -170,7 +170,6 @@ static void unlock(void) {
 
 static void Reset(void) {
 	CANBUS_DeInit();
-	_DelayMS(500);
 	CANBUS_Init();
 }
 

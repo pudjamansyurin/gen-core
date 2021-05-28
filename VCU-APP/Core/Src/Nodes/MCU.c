@@ -121,7 +121,12 @@ int16_t MCU_SpeedToRpm(uint8_t speed) {
 
 uint8_t MCU_SpeedToVolume(void) {
 	uint8_t vol = MCU_RpmToSpeed(MCU.d.rpm);
-	return vol > 100 ? 100 : vol;
+
+	if (vol < MCU_AUDIO_MAX_SPEED_KPH)
+		vol = (vol * 100) / MCU_AUDIO_MAX_SPEED_KPH;
+	else
+		vol = 100;
+	return vol;
 }
 
 uint8_t MCU_Reversed(void) {
