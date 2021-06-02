@@ -939,9 +939,7 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_OVD_RMT_ALARM:
-					if (VCU_GetEvent(EVG_BIKE_MOVED))
-						osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
-					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
+					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
 					break;
 
 				default:
@@ -1193,7 +1191,7 @@ void StartMemsTask(void *argument)
 				if (MEMS_Dragged())
 					VCU_SetEvent(EVG_BIKE_MOVED, 1);
 				if (VCU_GetEvent(EVG_BIKE_MOVED))
-					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
+					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_WINK_HORN);
 			} else {
 				MEMS_GetRefDetector();
 			}
@@ -1261,9 +1259,7 @@ void StartRemoteTask(void *argument)
 					}
 					else {
 						if (command == RMT_CMD_ALARM) {
-							if (VCU_GetEvent(EVG_BIKE_MOVED))
-								osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
-							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
+							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
 						}
 						else if (command == RMT_CMD_SEAT)
 							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
@@ -1379,10 +1375,11 @@ void StartAudioTask(void *argument)
 
 			// Beep command
 			if (notif & FLAG_AUDIO_BEEP) {
-				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
+				AUDIO_OUT_Pause();
 				AUDIO_OUT_SetVolume(100);
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 500); _DelayMS(500);
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 500); _DelayMS(500);
+				AUDIO_OUT_SetMute(0);
+				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 1000);
+				AUDIO_OUT_Resume();
 			}
 		}
 
@@ -1612,10 +1609,18 @@ void StartGateTask(void *argument)
 					HBAR_ReadStates();
 			}
 
-			if (notif & FLAG_GATE_BEEP_HORN) {
+			if (notif & FLAG_GATE_WINK_HORN) {
+				if (VCU_GetEvent(EVG_BIKE_MOVED))
+					osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
+				else
+					GATE_Horn(500);
+			}
+
+			if (notif & FLAG_GATE_ALARM_HORN) {
 				GATE_Horn(500);
 				GATE_Horn(500);
 			}
+
 
 			if (notif & FLAG_GATE_OPEN_SEAT) {
 				if (VCU.d.state == VEHICLE_NORMAL)

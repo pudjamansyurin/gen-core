@@ -191,6 +191,7 @@ uint8_t MEMS_Dragged(void) {
 #endif
 	return dragged;
 }
+
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
