@@ -140,9 +140,9 @@ void RMT_Refresh(vehicle_state_t state) {
 uint8_t RMT_Ping(vehicle_state_t state) {
 	uint32_t tick;
 
-	if (state == VEHICLE_RUN && RMT.d.nearby)
-		if ((_GetTickMS() - RMT.d.tick.heartbeat) < (RMT_BEAT_RUN_MS - RMT_TIMEOUT_MS))
-			return 1;
+//	if (state == VEHICLE_RUN && RMT.d.nearby)
+//		if ((_GetTickMS() - RMT.d.tick.heartbeat) < (RMT_BEAT_RUN_MS - RMT_TIMEOUT_MS))
+//			return 1;
 
 	lock();
 	RNG_Generate32((uint32_t *)RMT.t.payload, NRF_DATA_LENGTH / 4);

@@ -1379,10 +1379,10 @@ void StartAudioTask(void *argument)
 
 			// Beep command
 			if (notif & FLAG_AUDIO_BEEP) {
-				AUDIO_OUT_SetMute(0);
+				AUDIO_OUT_SetMute(AUDIO_MUTE_OFF);
 				AUDIO_OUT_SetVolume(100);
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250); _DelayMS(250);
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 250); _DelayMS(250);
+				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 500); _DelayMS(500);
+				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 500); _DelayMS(500);
 			}
 		}
 
