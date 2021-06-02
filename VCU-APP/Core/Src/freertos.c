@@ -1277,6 +1277,7 @@ void StartRemoteTask(void *argument)
 
 		RMT_Refresh(VCU.d.state);
 		RMT.d.duration.full = _GetTickMS() - TASKS.tick.remote;
+		osThreadFlagsClear(FLAG_REMOTE_RESET);
 	}
   /* USER CODE END StartRemoteTask */
 }
@@ -1314,7 +1315,6 @@ void StartFingerTask(void *argument)
 			if (VCU.d.state >= VEHICLE_STANDBY) {
 				if (notif & FLAG_FINGER_PLACED) {
 					FGR_Authenticate();
-					// osDelay(200);
 					osThreadFlagsClear(FLAG_FINGER_PLACED);
 				}
 
