@@ -88,7 +88,7 @@ FRAME_TYPE RPT_FrameDecider(void) {
 	return frame;
 }
 
-uint16_t RPT_IntervalDecider(vehicle_state_t state) {
+uint32_t RPT_IntervalDeciderMS(vehicle_state_t state) {
 	uint8_t override = RPT.override.interval;
 	uint16_t interval = RPT_INTERVAL_NORMAL_S;
 
@@ -102,7 +102,7 @@ uint16_t RPT_IntervalDecider(vehicle_state_t state) {
 	if (override)
 		interval = override;
 
-	return interval;
+	return interval * 1000;
 }
 
 uint8_t RPT_PayloadPending(payload_t *payload) {

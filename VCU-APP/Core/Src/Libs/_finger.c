@@ -200,7 +200,7 @@ uint8_t FGR_SetPassword(uint32_t password) {
 	return (res == FINGERPRINT_OK);
 }
 
-void FGR_Authentication(void) {
+void FGR_Authenticate(void) {
 	uint8_t id, ok;
 
 	id = AuthFast();
@@ -299,7 +299,7 @@ static uint8_t GetImage(uint32_t timeout) {
 		else DebugResponse(res, "Image taken");
 
 		ok = (res == FINGERPRINT_OK);
-		_DelayMS(10);
+		_DelayMS(1);
 	} while (!ok && (_GetTickMS() - tick) < timeout);
 
 	return ok;

@@ -811,18 +811,15 @@ void StartReporterTask(void *argument)
 {
   /* USER CODE BEGIN StartReporterTask */
 	uint32_t notif;
-	uint16_t interval;
 	report_t report;
-	FRAME_TYPE frame;
 
 	_osEventManager();
 
 	/* Infinite loop */
-	interval = RPT_IntervalDecider(VCU.d.state);
 	for (;;) {
 		TASKS.tick.reporter = _GetTickMS();
 
-		if (_osFlagAny(&notif, interval * 1000)) {
+		if (_osFlagAny(&notif, RPT_IntervalDeciderMS(VCU.d.state))) {
 			if (notif & FLAG_REPORTER_YIELD) {
 				// nothing, just wakeup
 			}
@@ -832,11 +829,8 @@ void StartReporterTask(void *argument)
 			}
 		}
 
-		interval = RPT_IntervalDecider(VCU.d.state);
-		frame = RPT_FrameDecider();
-
 		// Put report to log
-		RPT_ReportCapture(frame, &report);
+		RPT_ReportCapture(RPT_FrameDecider(), &report);
 		while(_osQueuePut(ReportQueueHandle, &report) == 0) {
 			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
 			_DelayMS(1);
@@ -945,9 +939,9 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_OVD_RMT_ALARM:
-					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
 					if (VCU_GetEvent(EVG_BIKE_MOVED))
 						osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
+					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
 					break;
 
 				default:
@@ -1267,9 +1261,9 @@ void StartRemoteTask(void *argument)
 					}
 					else {
 						if (command == RMT_CMD_ALARM) {
-							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
 							if (VCU_GetEvent(EVG_BIKE_MOVED))
 								osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
+							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_BEEP_HORN);
 						}
 						else if (command == RMT_CMD_SEAT)
 							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
@@ -1319,8 +1313,8 @@ void StartFingerTask(void *argument)
 
 			if (VCU.d.state >= VEHICLE_STANDBY) {
 				if (notif & FLAG_FINGER_PLACED) {
-					FGR_Authentication();
-					osDelay(200);
+					FGR_Authenticate();
+					// osDelay(200);
 					osThreadFlagsClear(FLAG_FINGER_PLACED);
 				}
 
@@ -1347,7 +1341,8 @@ void StartFingerTask(void *argument)
 			}
 		}
 
-		if (!FGR.d.verified) FGR_Verify();
+		if (!FGR.d.verified)
+			FGR_Verify();
 	}
   /* USER CODE END StartFingerTask */
 }

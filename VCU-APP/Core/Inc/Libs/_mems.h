@@ -16,7 +16,7 @@
 #define MEMS_AVG_SZ ((uint8_t)10)
 #define MEMS_TIMEOUT_MS ((uint16_t)5000)
 
-#define DRAGGED_LIMIT ((uint8_t)10)
+#define DRAGGED_LIMIT ((uint8_t)5)
 #define FALL_LIMIT ((uint8_t)60)
 #define CRASH_LIMIT ((uint8_t)20)
 

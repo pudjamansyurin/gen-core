@@ -118,7 +118,7 @@ extern reporter_t RPT;
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report);
 void RPT_ResponseCapture(response_t *response);
 FRAME_TYPE RPT_FrameDecider(void);
-uint16_t RPT_IntervalDecider(vehicle_state_t state);
+uint32_t RPT_IntervalDeciderMS(vehicle_state_t state);
 uint8_t RPT_PayloadPending(payload_t *payload);
 uint8_t RPT_WrapPayload(payload_t *payload);
 #endif /* REPORTER_H_ */

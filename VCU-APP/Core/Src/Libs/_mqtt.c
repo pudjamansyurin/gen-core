@@ -39,7 +39,7 @@ uint8_t MQTT_Publish(payload_t *payload) {
 	int qos;
 
 	if (payload->type == PAYLOAD_REPORT) {
-		qos = MQTT.qos.report;
+		qos = (payload->size == sizeof(report_t)) ? MQTT.qos.report : 0;
 		topic = MQTT.topic.report;
 	} else {
 		qos = MQTT.qos.response;
