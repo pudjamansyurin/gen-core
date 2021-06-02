@@ -15,7 +15,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 #define MCU_TIMEOUT_MS ((uint32_t)4000)
-#define MCU_AUDIO_MAX_SPEED_KPH ((uint8_t)50)
+#define MCU_AUDIO_MAX_SPEED_KPH ((uint8_t)30)
 
 /* Exported enum ------------------------------------------------------------*/
 typedef enum {
