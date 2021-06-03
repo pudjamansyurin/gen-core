@@ -8,10 +8,33 @@
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_reporter.h"
 
+/* External variables
+ * ----------------------------------------------------------*/
+extern osMessageQueueId_t ResponseQueueHandle, ReportQueueHandle;
+
+/* Private variables
+ * ----------------------------------------------------------*/
+static report_t report;
+static response_t response;
+
 /* Public variables
  * ----------------------------------------------------------*/
 reporter_t RPT = {
+		.block = 0,
 		.override = {0},
+		.payloads = {
+				{
+						.type = PAYLOAD_RESPONSE,
+						.queue = &ResponseQueueHandle,
+						.data = &response,
+						.pending = 0
+				}, {
+						.type = PAYLOAD_REPORT,
+						.queue = &ReportQueueHandle,
+						.data = &report,
+						.pending = 0
+				}
+		}
 };
 
 /* Public functions implementation -------------------------------------------*/
@@ -106,18 +129,24 @@ uint32_t RPT_IntervalDeciderMS(vehicle_state_t state) {
 }
 
 uint8_t RPT_PayloadPending(payload_t *payload) {
-	if (!payload->pending)
-		if (osMessageQueueGet(*(payload->pQueue), payload->pPayload, NULL, 0) == osOK)
+	report_header_t *header = NULL;
+
+	if (RPT.block && payload->type == PAYLOAD_REPORT)
+		return 0;
+
+	if (!payload->pending) {
+		if (osMessageQueueGet(*(payload->queue), payload->data, NULL, 0) == osOK) {
+			header = (report_header_t *)(payload->data);
+
+			payload->size = sizeof(header->prefix) + sizeof(header->size) + header->size;
 			payload->pending = 1;
+		}
+	}
+
+	if (payload->pending) {
+		header = (report_header_t *)(payload->data);
+		header->send_time = RTC_Read();
+	}
 
 	return payload->pending;
-}
-
-uint8_t RPT_WrapPayload(payload_t *payload) {
-	report_header_t *header = (report_header_t *)(payload->pPayload);
-
-	header->send_time = RTC_Read();
-	payload->size = sizeof(header->prefix) + sizeof(header->size) + header->size;
-
-	return payload->size;
 }

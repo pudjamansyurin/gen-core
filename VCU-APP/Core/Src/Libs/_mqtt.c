@@ -42,14 +42,13 @@ uint8_t MQTT_Publish(payload_t *payload) {
 	if (payload->type == PAYLOAD_REPORT) {
 		qos = MQTT.qos.report;
 		topic = MQTT.topic.report;
-
 		retained = payload->size == sizeof(report_t);
 	} else {
 		qos = MQTT.qos.response;
 		topic = MQTT.topic.response;
 	}
 
-	return Publish(payload->pPayload, payload->size, topic, qos, retained);
+	return Publish(payload->data, payload->size, topic, qos, retained);
 }
 
 uint8_t MQTT_PublishWill(uint8_t on) {

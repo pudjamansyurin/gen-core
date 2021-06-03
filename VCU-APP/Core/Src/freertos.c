@@ -727,21 +727,6 @@ void StartNetworkTask(void *argument)
 	/* USER CODE BEGIN StartNetworkTask */
 	uint32_t notif;
 	command_t cmd;
-	report_t report;
-	response_t response;
-	payload_t payloads[] = {
-			{
-					.type = PAYLOAD_RESPONSE,
-					.pQueue = &ResponseQueueHandle,
-					.pPayload = &response,
-					.pending = 0
-			}, {
-					.type = PAYLOAD_REPORT,
-					.pQueue = &ReportQueueHandle,
-					.pPayload = &report,
-					.pending = 0
-			}
-	};
 
 	_osEventManager();
 
@@ -755,7 +740,7 @@ void StartNetworkTask(void *argument)
 
 		if (_osFlagAny(&notif, 100)) {
 			if (notif & FLAG_NET_REPORT_DISCARD)
-				payloads[PAYLOAD_REPORT].pending = 0;
+				RPT.payloads[PAYLOAD_REPORT].pending = 0;
 
 			if (notif & FLAG_NET_READ_SMS || notif & FLAG_NET_SEND_USSD) {
 				char buf[200] = {0};
@@ -781,19 +766,15 @@ void StartNetworkTask(void *argument)
 
 		// Upload Payloads (Report & Response)
 		for (uint8_t i=0; i<PAYLOAD_MAX; i++)
-			if (RPT_PayloadPending(&payloads[i]))
-				if (RPT_WrapPayload(&payloads[i]))
-					if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
-						if (MQTT_Publish(&payloads[i]))
-							payloads[i].pending = 0;
+			if (RPT_PayloadPending(&(RPT.payloads[i])))
+				if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
+					RPT.payloads[i].pending = !MQTT_Publish(&(RPT.payloads[i]));
 
 		// Check Command
 		if (Simcom_SetState(SIM_STATE_MQTT_ON, 0)) {
 			if (MQTT_GotCommand()) {
-				if (MQTT_AckPublish(&cmd))
-					CMD_Execute(&cmd);
-				else
-					MQTT_FlushCommand();
+				if (MQTT_AckPublish(&cmd)) CMD_Execute(&cmd);
+				else MQTT_FlushCommand();
 			}
 		}
 	}
@@ -831,10 +812,8 @@ void StartReporterTask(void *argument)
 
 		// Put report to log
 		RPT_ReportCapture(RPT_FrameDecider(), &report);
-		while(_osQueuePut(ReportQueueHandle, &report) == 0) {
+		if(!_osQueuePut(ReportQueueHandle, &report))
 			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
-			_DelayMS(1);
-		}
 
 		// reset some events group
 		VCU_SetEvent(EVG_NET_SOFT_RESET, 0);
@@ -900,12 +879,16 @@ void StartCommandTask(void *argument)
 					EEPROM_Odometer(EE_CMD_W, *(uint16_t *)cmd.data.value);
 					break;
 
-				case CMD_GEN_FLUSH:
+				case CMD_GEN_DETECTOR:
+					MEMS.det.active = val;
+					break;
+
+				case CMD_GEN_RPT_FLUSH:
 					osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_FLUSH);
 					break;
 
-				case CMD_GEN_DETECTOR:
-					MEMS.det.active = val;
+				case CMD_GEN_RPT_BLOCK:
+					RPT.block = val;
 					break;
 
 				default:
@@ -1453,10 +1436,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-							BMS_RX_Param1(&Rx);
+									BMS_RX_Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-							BMS_RX_Param2(&Rx);
+									BMS_RX_Param2(&Rx);
 				break;
 				default:
 					break;
@@ -1514,9 +1497,9 @@ void StartCanTxTask(void *argument)
 		if (_GetTickMS() - last500ms > 500) {
 			last500ms = _GetTickMS();
 
-			HMI2_PowerByCAN(VCU.d.state >= VEHICLE_STANDBY);
-			BMS_PowerOverCAN(VCU.d.state >= VEHICLE_READY);
 			MCU_PowerOverCAN(BMS.d.run && VCU.d.state == VEHICLE_RUN);
+			BMS_PowerOverCAN(VCU.d.state >= VEHICLE_READY);
+			HMI2_PowerByCAN(VCU.d.state >= VEHICLE_STANDBY);
 		}
 
 		// send every 1000ms

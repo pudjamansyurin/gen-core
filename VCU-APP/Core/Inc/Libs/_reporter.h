@@ -34,13 +34,6 @@ typedef enum {
 
 /* Exported struct
  * --------------------------------------------------------------*/
-typedef struct __attribute__((packed)) {
-	struct {
-		uint16_t interval;
-		uint8_t frame;
-	} override;
-} reporter_t;
-
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {
 	char prefix[2];
@@ -104,11 +97,20 @@ typedef struct __attribute__((packed)) {
 
 typedef struct {
 	PAYLOAD_TYPE type;
-	osMessageQueueId_t *pQueue;
-	void *pPayload;
+	osMessageQueueId_t *queue;
+	void *data;
 	uint8_t pending;
 	uint8_t size;
 } payload_t;
+
+typedef struct {
+	uint8_t block;
+	struct {
+		uint16_t interval;
+		uint8_t frame;
+	} override;
+	payload_t payloads[PAYLOAD_MAX];
+} reporter_t;
 
 /* Exported variables
  * ----------------------------------------------------------*/
@@ -120,5 +122,4 @@ void RPT_ResponseCapture(response_t *response);
 FRAME_TYPE RPT_FrameDecider(void);
 uint32_t RPT_IntervalDeciderMS(vehicle_state_t state);
 uint8_t RPT_PayloadPending(payload_t *payload);
-uint8_t RPT_WrapPayload(payload_t *payload);
 #endif /* REPORTER_H_ */
