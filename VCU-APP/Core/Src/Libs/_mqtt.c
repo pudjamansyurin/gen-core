@@ -30,23 +30,26 @@ static mqtt_t MQTT = {
 
 /* Private functions prototype
  * ------------------------------------------------*/
-static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos);
+static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos, uint8_t retained);
 static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply, uint16_t timeout);
 
 /* Public functions implementation -------------------------------------------*/
 uint8_t MQTT_Publish(payload_t *payload) {
+	uint8_t retained = 1;
 	char *topic;
 	int qos;
 
 	if (payload->type == PAYLOAD_REPORT) {
-		qos = (payload->size == sizeof(report_t)) ? MQTT.qos.report : 0;
+		qos = MQTT.qos.report;
 		topic = MQTT.topic.report;
+
+		retained = payload->size == sizeof(report_t);
 	} else {
 		qos = MQTT.qos.response;
 		topic = MQTT.topic.response;
 	}
 
-	return Publish(payload->pPayload, payload->size, topic, qos);
+	return Publish(payload->pPayload, payload->size, topic, qos, retained);
 }
 
 uint8_t MQTT_PublishWill(uint8_t on) {
@@ -54,7 +57,7 @@ uint8_t MQTT_PublishWill(uint8_t on) {
 
 	MQTT.willed = on;
 	strcpy(status, on ? "1" : "0");
-	return Publish(status, strlen(status), MQTT.topic.will, MQTT.qos.will);
+	return Publish(status, strlen(status), MQTT.topic.will, MQTT.qos.will, 1);
 }
 
 uint8_t MQTT_Subscribe(void) {
@@ -273,7 +276,7 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
 	}
 
 	// send ACK (application-level)
-	if (!Publish(PREFIX_ACK, 2, MQTT.topic.response, MQTT.qos.response))
+	if (!Publish(PREFIX_ACK, 2, MQTT.topic.response, MQTT.qos.response, 1))
 		return 0;
 
 	if (!CMD_Validate(&(MQTT.rx.command)))
@@ -302,7 +305,7 @@ uint8_t MQTT_Willed(void) {
 
 /* Private functions implementation
  * -------------------------------------------*/
-static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos) {
+static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos, uint8_t retained) {
 	MQTTString topicName = MQTTString_initializer;
 	unsigned char buf[512];
 	int len, buflen = sizeof(buf);
@@ -310,7 +313,7 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos)
 	uint8_t reply = 0;
 
 	topicName.cstring = topic;
-	len = MQTTSerialize_publish(buf, buflen, 0, qos, 1, ++MQTT.packetid, topicName, payload, payloadlen);
+	len = MQTTSerialize_publish(buf, buflen, 0, qos, (unsigned char) retained, ++MQTT.packetid, topicName, payload, payloadlen);
 
 	if (qos)
 		reply = (qos == 1) ? PUBACK : PUBREC;
