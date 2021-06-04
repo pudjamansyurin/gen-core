@@ -43,7 +43,6 @@ void VCU_Refresh(void) {
 
 void VCU_CheckState(void) {
 	static vehicle_state_t lastState = VEHICLE_UNKNOWN;
-	static uint32_t lastRemoteReset = 0;
 	vehicle_state_t initialState;
 	uint8_t normalize = 0, start = 0;
 
@@ -112,12 +111,8 @@ void VCU_CheckState(void) {
 				VCU.d.state--;
 			else if (start) {
 				if (RMT.d.nearby) VCU.d.state++;
-				else {
-					if (_GetTickMS() - lastRemoteReset > REMOTE_RESET_GUARD_MS) {
-						osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RESET);
-						lastRemoteReset = _GetTickMS();
-					}
-				}
+				else
+					osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RESET);
 			}
 			break;
 

@@ -18,10 +18,13 @@ static mqtt_t MQTT = {
 		.willed = 0,
 		.subscribed = 0,
 		.qos = {
+				.will = 1,
 				.command = 0,
 				.response = 1,
-				.report = 1,
-				.will = 1
+				.report = {
+						.simple = 0,
+						.full = 0,
+				},
 		},
 		.rx = {
 				.pending = 0,
@@ -40,9 +43,11 @@ uint8_t MQTT_Publish(payload_t *payload) {
 	int qos;
 
 	if (payload->type == PAYLOAD_REPORT) {
-		qos = MQTT.qos.report;
+		uint8_t fullFrame = payload->size == sizeof(report_t);
+
+		qos = fullFrame ? MQTT.qos.report.full : MQTT.qos.report.simple;
 		topic = MQTT.topic.report;
-		retained = payload->size == sizeof(report_t);
+		retained = fullFrame;
 	} else {
 		qos = MQTT.qos.response;
 		topic = MQTT.topic.response;

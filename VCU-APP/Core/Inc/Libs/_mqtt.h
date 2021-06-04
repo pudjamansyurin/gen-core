@@ -41,10 +41,13 @@ typedef struct {
 	uint8_t willed;
 	uint32_t tick;
 	struct {
+		int will;
 		int command;
 		int response;
-		int report;
-		int will;
+		struct {
+			int simple;
+			int full;
+		} report;
 	} qos;
 	struct {
 		char command[20];

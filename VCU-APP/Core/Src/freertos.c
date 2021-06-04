@@ -739,9 +739,6 @@ void StartNetworkTask(void *argument)
 		TASKS.tick.network = _GetTickMS();
 
 		if (_osFlagAny(&notif, 100)) {
-			if (notif & FLAG_NET_REPORT_DISCARD)
-				RPT.payloads[PAYLOAD_REPORT].pending = 0;
-
 			if (notif & FLAG_NET_READ_SMS || notif & FLAG_NET_SEND_USSD) {
 				char buf[200] = {0};
 				uint8_t ok = 0;
@@ -758,13 +755,16 @@ void StartNetworkTask(void *argument)
 
 				osThreadFlagsSet(CommandTaskHandle,	ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
 			}
+
+			if (notif & FLAG_NET_REPORT_DISCARD)
+				RPT.payloads[PAYLOAD_REPORT].pending = 0;
 		}
 
 		// SIMCOM related routines
 		if (RTC_NeedCalibration())
 			Simcom_CalibrateTime();
 
-		// Upload Payloads (Report & Response)
+		// Upload data (Report & Response)
 		for (uint8_t i=0; i<PAYLOAD_MAX; i++)
 			if (RPT_PayloadPending(&(RPT.payloads[i])))
 				if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
@@ -812,8 +812,10 @@ void StartReporterTask(void *argument)
 
 		// Put report to log
 		RPT_ReportCapture(RPT_FrameDecider(), &report);
-		if(!_osQueuePut(ReportQueueHandle, &report))
+		while(!_osQueuePut(ReportQueueHandle, &report)) {
 			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
+			_DelayMS(500);
+		}
 
 		// reset some events group
 		VCU_SetEvent(EVG_NET_SOFT_RESET, 0);
@@ -879,8 +881,8 @@ void StartCommandTask(void *argument)
 					EEPROM_Odometer(EE_CMD_W, *(uint16_t *)cmd.data.value);
 					break;
 
-				case CMD_GEN_DETECTOR:
-					MEMS.det.active = val;
+				case CMD_GEN_ANTITHIEF:
+					osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_TOGGLE);
 					break;
 
 				case CMD_GEN_RPT_FLUSH:
@@ -1162,6 +1164,10 @@ void StartMemsTask(void *argument)
 			if (notif & FLAG_MEMS_DETECTOR_RESET) {
 				MEMS_GetRefDetector();
 			}
+
+			if (notif & FLAG_MEMS_DETECTOR_TOGGLE) {
+				MEMS.det.active = !MEMS.det.active;
+			}
 		}
 
 		// Read all data
@@ -1195,7 +1201,7 @@ void StartMemsTask(void *argument)
 void StartRemoteTask(void *argument)
 {
 	/* USER CODE BEGIN StartRemoteTask */
-	uint32_t notif;
+	uint32_t notif, lastReset = 0;
 	RMT_CMD command;
 
 	_osEventManager();
@@ -1223,13 +1229,17 @@ void StartRemoteTask(void *argument)
 			}
 
 			if (notif & FLAG_REMOTE_RESET) {
-				VCU_SetEvent(EVG_REMOTE_MISSING, 1);
-				RMT_DeInit();
-				RMT_Init();
+				if (_GetTickMS() - lastReset > RMT_RESET_GUARD_MS) {
+					lastReset = _GetTickMS();
+					VCU_SetEvent(EVG_REMOTE_MISSING, 1);
+					RMT_DeInit();
+					RMT_Init();
+				}
 			}
 
 			if (notif & FLAG_REMOTE_PAIRING)
-				RMT_Pairing();
+				if (RMT_Pairing())
+					printf("NRF:Pairing Sent\n");
 
 			if (notif & FLAG_REMOTE_RX_IT) {
 				if (RMT_ValidateCommand(&command)) {
@@ -1241,13 +1251,16 @@ void StartRemoteTask(void *argument)
 							osThreadFlagsSet(CommandTaskHandle, FLAG_COMMAND_OK);
 					}
 					else {
-						if (command == RMT_CMD_ALARM) {
+						if (command == RMT_CMD_ANTITHIEF) {
+							osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_TOGGLE);
+						}
+						else if (command == RMT_CMD_ALARM) {
 							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
 						}
 						else if (command == RMT_CMD_SEAT)
 							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
 
-						_DelayMS(500);
+						_DelayMS(200);
 						osThreadFlagsClear(FLAG_REMOTE_RX_IT);
 					}
 				}
@@ -1256,7 +1269,6 @@ void StartRemoteTask(void *argument)
 
 		RMT_Refresh(VCU.d.state);
 		RMT.d.duration.full = _GetTickMS() - TASKS.tick.remote;
-		osThreadFlagsClear(FLAG_REMOTE_RESET);
 	}
 	/* USER CODE END StartRemoteTask */
 }
@@ -1436,10 +1448,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-									BMS_RX_Param1(&Rx);
+																			BMS_RX_Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-									BMS_RX_Param2(&Rx);
+																			BMS_RX_Param2(&Rx);
 				break;
 				default:
 					break;
@@ -1497,9 +1509,19 @@ void StartCanTxTask(void *argument)
 		if (_GetTickMS() - last500ms > 500) {
 			last500ms = _GetTickMS();
 
-			MCU_PowerOverCAN(BMS.d.run && VCU.d.state == VEHICLE_RUN);
-			BMS_PowerOverCAN(VCU.d.state >= VEHICLE_READY);
 			HMI2_PowerByCAN(VCU.d.state >= VEHICLE_STANDBY);
+
+			if (VCU.d.state >= VEHICLE_READY) {
+				BMS_PowerOverCAN(1);
+			} else {
+				BMS_PowerOverCAN(MCU.d.run);
+			}
+
+			if (VCU.d.state == VEHICLE_RUN) {
+				MCU_PowerOverCAN(BMS.d.run);
+			} else {
+				MCU_PowerOverCAN(0);
+			}
 		}
 
 		// send every 1000ms

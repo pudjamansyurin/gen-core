@@ -31,16 +31,17 @@ remote_t RMT = {
 				.address = {0x00, 0x00, 0x00, 0x00, 0xCD},
 				.payload = {0},
 		},
-		.ISRlocked = 0,
+//		.ISRlocked = 0,
 		.pspi = &hspi1
 };
 
 /* Private variables
  * -----------------------------------------------------------*/
-static const uint8_t COMMAND[3][8] = {
+static const uint8_t COMMAND[4][8] = {
 		{0x5e, 0x6c, 0xa7, 0x74, 0xfd, 0xe3, 0xdf, 0xbc},
 		{0xf7, 0xda, 0x4a, 0x4f, 0x65, 0x2d, 0x6e, 0xf0},
 		{0xff, 0xa6, 0xe6, 0x5a, 0x84, 0x82, 0x66, 0x4f},
+		{0xab, 0xf5, 0x83, 0xc4, 0xe9, 0x27, 0x0a, 0xb2},
 };
 
 /* Private functions declaration ---------------------------------------------*/
@@ -48,6 +49,7 @@ static void lock(void);
 static void unlock(void);
 static void ChangeMode(RMT_MODE mode);
 static uint8_t Payload(RMT_ACTION action, uint8_t *payload);
+static uint8_t Transmit(const uint8_t *data);
 #if REMOTE_DEBUG
 static void RawDebugger(void);
 static void Debugger(RMT_CMD command);
@@ -108,7 +110,7 @@ uint8_t RMT_Probe(void) {
 void RMT_Flush(void) {
 	lock();
 	memset(&(RMT.d), 0, sizeof(remote_data_t));
-	RMT.ISRlocked = 0;
+//	RMT.ISRlocked = 0;
 	unlock();
 }
 
@@ -138,7 +140,7 @@ void RMT_Refresh(vehicle_state_t state) {
 }
 
 uint8_t RMT_Ping(vehicle_state_t state) {
-	uint32_t tick;
+	uint8_t ok;
 
 //	if (state == VEHICLE_RUN && RMT.d.nearby)
 //		if ((_GetTickMS() - RMT.d.tick.heartbeat) < (RMT_BEAT_RUN_MS - RMT_TIMEOUT_MS))
@@ -146,17 +148,15 @@ uint8_t RMT_Ping(vehicle_state_t state) {
 
 	lock();
 	RNG_Generate32((uint32_t *)RMT.t.payload, NRF_DATA_LENGTH / 4);
-	nrf_send_packet_noack(RMT.t.payload);
+	ok = Transmit(RMT.t.payload);
 	unlock();
 
-	tick = _GetTickMS();
-	while(nrf_tx_busy() && (_GetTickMS() - tick) <= 2){};
-
-	return !nrf_tx_busy();
+	return ok;
 }
 
-void RMT_Pairing(void) {
+uint8_t RMT_Pairing(void) {
 	uint32_t aes[4];
+	uint8_t ok;
 
 	lock();
 	RMT.d.tick.pairing = _GetTickMS();
@@ -170,12 +170,11 @@ void RMT_Pairing(void) {
 	memcpy(&RMT.t.payload[NRF_DATA_LENGTH], RMT.t.address, NRF_ADDR_LENGTH);
 
 	ChangeMode(RMT_MODE_PAIRING);
-	nrf_send_packet_noack(RMT.t.payload);
-
-	// back to normal
-	//nrf_configure();
+	ok = Transmit(RMT.t.payload);
 	ChangeMode(RMT_MODE_NORMAL);
 	unlock();
+
+	return ok;
 }
 
 uint8_t RMT_GotPairedResponse(void) {
@@ -229,8 +228,8 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 }
 
 void RMT_IrqHandler(void) {
-	if (RMT.ISRlocked)
-		return;
+//	if (RMT.ISRlocked)
+//		return;
 
 	if (nrf_irq_handler()) {
 		osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RX_IT);
@@ -245,13 +244,13 @@ void RMT_IrqHandler(void) {
 static void lock(void) {
 #if (RTOS_ENABLE)
 	osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
-	RMT.ISRlocked = 1;
+//	RMT.ISRlocked = 1;
 #endif
 }
 
 static void unlock(void) {
 #if (RTOS_ENABLE)
-	RMT.ISRlocked = 0;
+//	RMT.ISRlocked = 0;
 	osMutexRelease(RemoteRecMutexHandle);
 #endif
 }
@@ -286,6 +285,16 @@ static uint8_t Payload(RMT_ACTION action, uint8_t *payload) {
 		ret = AES_Encrypt(RMT.t.payload, payload, NRF_DATA_LENGTH);
 
 	return ret;
+}
+
+static uint8_t Transmit(const uint8_t *data) {
+	uint32_t tick;
+
+	nrf_send_packet_noack(data);
+	tick = _GetTickMS();
+	while(nrf_tx_busy() && (_GetTickMS() - tick) <= 2){};
+
+	return !nrf_tx_busy();
 }
 
 #if REMOTE_DEBUG

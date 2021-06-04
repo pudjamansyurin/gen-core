@@ -13,10 +13,6 @@
 #include "Libs/_gps.h"
 #include "Libs/_mems.h"
 
-/* Exported define
- * ------------------------------------------------------------*/
-#define REMOTE_RESET_GUARD_MS 		((uint16_t) 5000)
-
 /* Exported enum
  * ------------------------------------------------------------*/
 typedef enum {
