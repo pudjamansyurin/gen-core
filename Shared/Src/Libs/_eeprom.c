@@ -34,28 +34,28 @@ static I2C_HandleTypeDef *pi2c = &hi2c2;
 
 /* Private functions prototype
  * ------------------------------------------------*/
-static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size);
+static uint8_t Command(uint16_t vaddr, EE_CMD cmd, void *value, void *ptr, uint16_t size);
 static void lock(void);
 static void unlock(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t EEPROM_Init(void) {
+uint8_t EE_Init(void) {
 	uint8_t retry = 2, ok;
 
 	lock();
 	printf("EEPROM:Init\n");
-	EEPROM24XX_SetDevice(pi2c, EEPROM_ADDR);
+	EEPROM24XX_SetDevice(pi2c, EE_ADDR);
 	do {
 		ok = EEPROM24XX_IsConnected(100);
 	} while (!ok && retry--);
 
 	if (ok) {
 #if (!BOOTLOADER)
-		EEPROM_ResetOrLoad();
-		EEPROM_FotaVersion(EE_CMD_R, EE_NULL);
+		EE_ResetOrLoad();
+		EE_FotaVersion(EE_CMD_R, EE_NULL);
 #endif
-		EEPROM_FotaType(EE_CMD_R, EE_NULL);
+		EE_FotaType(EE_CMD_R, EE_NULL);
 	} else
 		printf("EEPROM:Error\n");
 	unlock();
@@ -64,19 +64,19 @@ uint8_t EEPROM_Init(void) {
 }
 
 #if (!BOOTLOADER)
-void EEPROM_ResetOrLoad(void) {
+void EE_ResetOrLoad(void) {
 	lock();
-	if (!EEPROM_Reset(EE_CMD_R, EEPROM_RESET)) {
-		EEPROM_Odometer(EE_CMD_R, EE_NULL);
-		EEPROM_AesKey(EE_CMD_R, EE_NULL);
+	if (!EE_Reset(EE_CMD_R, EE_RESET)) {
+		EE_Odometer(EE_CMD_R, EE_NULL);
+		EE_AesKey(EE_CMD_R, EE_NULL);
 	} else {
-		EEPROM_Odometer(EE_CMD_W, 0);
-		EEPROM_Reset(EE_CMD_W, EEPROM_RESET);
+		EE_Odometer(EE_CMD_W, 0);
+		EE_Reset(EE_CMD_W, EE_RESET);
 	}
 	unlock();
 }
 
-uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
+uint8_t EE_Reset(EE_CMD cmd, uint16_t value) {
 	uint16_t tmp = value, temp;
 	uint8_t ret;
 
@@ -89,7 +89,7 @@ uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value) {
 	return ret;
 }
 
-uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
+uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value) {
 	uint32_t *ptr, tmp[4];
 	uint8_t ret;
 
@@ -99,13 +99,13 @@ uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value) {
 	return ret;
 }
 
-uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint16_t value) {
+uint8_t EE_Odometer(EE_CMD cmd, uint16_t value) {
 	return Command(VADDR_ODOMETER, cmd, &value, &(HBAR.d.trip[HBAR_M_TRIP_ODO]), sizeof(value));
 }
 
 #endif
 
-uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value) {
+uint8_t EE_FotaType(EE_CMD cmd, IAP_TYPE value) {
 	uint32_t ret;
 
 	ret = Command(VADDR_FOTA_TYPE, cmd, &value, &(FOTA.TYPE), sizeof(uint32_t));
@@ -117,16 +117,16 @@ uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value) {
 	return ret;
 }
 
-uint8_t EEPROM_FotaFlag(EEPROM_COMMAND cmd, uint32_t value) {
+uint8_t EE_FotaFlag(EE_CMD cmd, uint32_t value) {
 	return Command(VADDR_FOTA_FLAG, cmd, &value, &(FOTA.FLAG), sizeof(value));
 }
 
-uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value) {
+uint8_t EE_FotaVersion(EE_CMD cmd, uint16_t value) {
 	return Command(VADDR_FOTA_VERSION, cmd, &value, &(FOTA.VERSION), sizeof(value));
 }
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t Command(uint16_t vaddr, EEPROM_COMMAND cmd, void *value, void *ptr, uint16_t size) {
+static uint8_t Command(uint16_t vaddr, EE_CMD cmd, void *value, void *ptr, uint16_t size) {
 	uint8_t ret = 0;
 
 	lock();

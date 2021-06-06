@@ -147,7 +147,7 @@ void HBAR_SetOdometer(uint8_t m) {
 	if ((HBAR.d.odometer / 1000) > (*odo_km)) {
 		uint8_t d_km = (HBAR.d.odometer / 1000) - (*odo_km);
 		uint16_t odom = HBAR_AccumulateTrip(d_km);
-		EEPROM_Odometer(EE_CMD_W, odom);
+		EE_Odometer(EE_CMD_W, odom);
 	}
 }
 

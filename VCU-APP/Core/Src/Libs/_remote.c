@@ -185,7 +185,7 @@ uint8_t RMT_GotPairedResponse(void) {
 		RMT.d.tick.pairing = 0;
 		paired = 1;
 
-		EEPROM_AesKey(EE_CMD_W, RMT.d.pairing_aes);
+		EE_AesKey(EE_CMD_W, RMT.d.pairing_aes);
 		AES_ChangeKey(NULL);
 	}
 	unlock();

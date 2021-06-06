@@ -12,9 +12,8 @@
 #include "Libs/_utils.h"
 
 /* Exported macro function ---------------------------------------------------*/
-#define EEPROM_ADDR  			   ((uint16_t)0xA0)
+#define EE_ADDR  			   		((uint16_t)0xA0)
 #define EE_NULL                     ((uint8_t)0)
-
 #define EE_AREA(ad, sz)             ((uint16_t)((ad*32) + sz))
 
 /* Exported constants --------------------------------------------------------*/
@@ -36,20 +35,20 @@ typedef struct {
 typedef enum {
     EE_CMD_R = 0,
     EE_CMD_W = 1
-} EEPROM_COMMAND;
+} EE_CMD;
 
 /* Exported variables ---------------------------------------------------------*/
 extern fota_t FOTA;
 
 /* Public functions prototype ------------------------------------------------*/
-uint8_t EEPROM_Init(void);
+uint8_t EE_Init(void);
 #if (!BOOTLOADER)
-void EEPROM_ResetOrLoad(void);
-uint8_t EEPROM_Reset(EEPROM_COMMAND cmd, uint16_t value);
-uint8_t EEPROM_AesKey(EEPROM_COMMAND cmd, uint32_t *value);
-uint8_t EEPROM_Odometer(EEPROM_COMMAND cmd, uint16_t value);
+void EE_ResetOrLoad(void);
+uint8_t EE_Reset(EE_CMD cmd, uint16_t value);
+uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value);
+uint8_t EE_Odometer(EE_CMD cmd, uint16_t value);
 #endif
-uint8_t EEPROM_FotaType(EEPROM_COMMAND cmd, IAP_TYPE value);
-uint8_t EEPROM_FotaFlag(EEPROM_COMMAND cmd, uint32_t value);
-uint8_t EEPROM_FotaVersion(EEPROM_COMMAND cmd, uint16_t value);
+uint8_t EE_FotaType(EE_CMD cmd, IAP_TYPE value);
+uint8_t EE_FotaFlag(EE_CMD cmd, uint32_t value);
+uint8_t EE_FotaVersion(EE_CMD cmd, uint16_t value);
 #endif /* EEPROM_H_ */

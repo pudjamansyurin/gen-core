@@ -15,7 +15,7 @@
 #include "_defines_shared.h"
 
 #define VCU_VERSION ((uint16_t)654)
-#define EEPROM_RESET ((uint16_t)53)
+#define EE_RESET ((uint16_t)53)
 
 #define SIMCOM_DEBUG  	1
 #define CAN_DEBUG		0

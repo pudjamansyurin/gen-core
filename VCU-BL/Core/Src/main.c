@@ -111,7 +111,7 @@ int main(void)
   GATE_LedWrite(0); HAL_Delay(500);
 
   BAT_Init();
-  EEPROM_Init();
+  EE_Init();
   CANBUS_Init();
   Simcom_Init();
   /* USER CODE END 2 */

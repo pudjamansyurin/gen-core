@@ -346,9 +346,9 @@ uint8_t FOTA_NeedBackup(void) {
 
 uint8_t FOTA_InProgress(void) { return (FOTA.FLAG == FOTA_PROGRESS_FLAG); }
 
-void FOTA_SetFlag(void) { EEPROM_FotaFlag(EE_CMD_W, FOTA_PROGRESS_FLAG); }
+void FOTA_SetFlag(void) { EE_FotaFlag(EE_CMD_W, FOTA_PROGRESS_FLAG); }
 
-void FOTA_ResetFlag(void) { EEPROM_FotaFlag(EE_CMD_W, 0); }
+void FOTA_ResetFlag(void) { EE_FotaFlag(EE_CMD_W, 0); }
 
 /* Private functions implementation
  * --------------------------------------------*/

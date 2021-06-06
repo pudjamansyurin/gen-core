@@ -673,7 +673,7 @@ void StartManagerTask(void *argument)
 	// Peripheral Initiate
 	BAT_Init();
 	RTC_Init();
-	EEPROM_Init();
+	EE_Init();
 
 	// Threads management:
 	//		osThreadSuspend(NetworkTaskHandle);
@@ -878,7 +878,7 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_GEN_ODOM:
-					EEPROM_Odometer(EE_CMD_W, *(uint16_t *)cmd.data.value);
+					EE_Odometer(EE_CMD_W, *(uint16_t *)cmd.data.value);
 					break;
 
 				case CMD_GEN_ANTITHIEF:
