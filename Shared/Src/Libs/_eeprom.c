@@ -34,7 +34,7 @@ static I2C_HandleTypeDef *pi2c = &hi2c2;
 
 /* Private functions prototype
  * ------------------------------------------------*/
-static uint8_t Command(uint16_t vaddr, EE_CMD cmd, void *value, void *ptr, uint16_t size);
+static uint8_t Command(EE_VADDR vaddr, EE_CMD cmd, void *value, void *ptr, uint16_t size);
 static void lock(void);
 static void unlock(void);
 
@@ -135,7 +135,8 @@ uint8_t EE_FotaVersion(EE_CMD cmd, uint16_t value) {
 }
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t Command(uint16_t vaddr, EE_CMD cmd, void *value, void *ptr, uint16_t size) {
+static uint8_t Command(EE_VADDR vaddr, EE_CMD cmd, void *value, void *ptr, uint16_t size) {
+	uint16_t addr = EE_WORD(vaddr);
 	uint8_t ret = 0;
 
 	lock();
@@ -144,10 +145,10 @@ static uint8_t Command(uint16_t vaddr, EE_CMD cmd, void *value, void *ptr, uint1
 		// apply the value
 		memcpy(ptr, value, size);
 		// save the value
-		ret = EEPROM24XX_Save(vaddr, value, size);
+		ret = EEPROM24XX_Save(addr, value, size);
 	} else {
 		// load the value
-		ret = EEPROM24XX_Load(vaddr, value, size);
+		ret = EEPROM24XX_Load(addr, value, size);
 		// apply the value
 		if (ret)
 			memcpy(ptr, value, size);
