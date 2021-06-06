@@ -139,12 +139,12 @@ void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue) {
 	resp->data.res_code = RESP_ERROR;
 	if (_osFlagAny(&notif, (FINGER_SCAN_MS*2) + 5000)) {
 		if (notif & FLAG_COMMAND_OK) {
-			if (osMessageQueueGet(queue, &id, NULL, 0U) == osOK) {
+			if (_osQueueGet(queue, &id)) {
 				sprintf(resp->data.message, "%u", id);
 				resp->data.res_code = RESP_OK;
 			}
 		} else {
-			if (osMessageQueueGet(queue, &id, NULL, 0U) == osOK)
+			if (_osQueueGet(queue, &id))
 				if (id == 0)
 					sprintf(resp->data.message, "Max. reached : %u", FINGER_USER_MAX);
 		}
@@ -199,7 +199,7 @@ void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue) {
 	// wait response until timeout
 	resp->data.res_code = RESP_ERROR;
 	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 40000))
-		if (osMessageQueueGet(queue, resp->data.message, NULL, 0U) == osOK)
+		if (_osQueueGet(queue, resp->data.message))
 			resp->data.res_code = RESP_OK;
 }
 

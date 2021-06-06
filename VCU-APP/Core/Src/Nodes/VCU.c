@@ -24,7 +24,7 @@ vcu_t VCU = {
 };
 
 /* External variables -----------------------------------------*/
-extern osMessageQueueId_t ReportQueueHandle;
+extern osMessageQueueId_t ReportQueueHandle, OverrideStateQueueHandle;
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -44,9 +44,12 @@ void VCU_Refresh(void) {
 void VCU_CheckState(void) {
 	static vehicle_state_t lastState = VEHICLE_UNKNOWN;
 	vehicle_state_t initialState;
-	uint8_t normalize = 0, start = 0;
-
+	uint8_t ovdState, normalize = 0, start = 0;
 	HBAR_STARTER starter = HBAR.ctl.starter;
+
+	if (_osQueueGet(OverrideStateQueueHandle, &ovdState))
+		VCU.d.state = (int8_t) ovdState;
+
 	if (starter != HBAR_STARTER_UNKNOWN) {
 		HBAR.ctl.starter = HBAR_STARTER_UNKNOWN;
 		normalize = starter == HBAR_STARTER_OFF;

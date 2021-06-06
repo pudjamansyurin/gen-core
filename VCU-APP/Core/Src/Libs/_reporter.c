@@ -135,7 +135,7 @@ uint8_t RPT_PayloadPending(payload_t *payload) {
 		return 0;
 
 	if (!payload->pending) {
-		if (osMessageQueueGet(*(payload->queue), payload->data, NULL, 0) == osOK) {
+		if (_osQueueGet(*(payload->queue), payload->data)) {
 			header = (report_header_t *)(payload->data);
 
 			payload->size = sizeof(header->prefix) + sizeof(header->size) + header->size;

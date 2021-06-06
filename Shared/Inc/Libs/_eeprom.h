@@ -10,7 +10,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#if (!BOOTLOADER)
 #include "Libs/_hbar.h"
+#endif
 
 /* Exported macro function ---------------------------------------------------*/
 #define EE_ADDR  			   		((uint16_t)0xA0)
@@ -24,7 +26,9 @@
 #define VADDR_FOTA_VERSION          EE_WORD(3)
 #define VADDR_FOTA_FLAG             EE_WORD(4)
 #define VADDR_FOTA_TYPE             EE_WORD(5)
-#define VADDR_TRIP_BASE             EE_WORD(6)	// 6,7,8 is used for trips
+#define VADDR_TRIP_BASE             EE_WORD(6)
+#define VADDR_USED_TRIP1            EE_WORD(7)
+#define VADDR_USED_TRIP2            EE_WORD(8)
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {

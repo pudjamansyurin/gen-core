@@ -663,9 +663,6 @@ void MX_FREERTOS_Init(void) {
 void StartManagerTask(void *argument)
 {
 	/* USER CODE BEGIN StartManagerTask */
-	TickType_t lastWake;
-	uint8_t overrideState;
-
 	// Initiate, this task get executed first!
 	VCU_Init();
 	NODE_Init();
@@ -698,19 +695,16 @@ void StartManagerTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		TASKS.tick.manager = _GetTickMS();
-		lastWake = _GetTickMS();
 
 		_osCheckTasks();
 
 		VCU_Refresh();
 		NODE_Refresh();
 
-		if (osMessageQueueGet(OverrideStateQueueHandle, &overrideState, NULL, 0U) == osOK)
-			VCU.d.state = (int8_t) overrideState;
 		VCU_CheckState();
 
 		IWDG_Refresh();
-		osDelayUntil(lastWake + MANAGER_WAKEUP_MS);
+		osDelayUntil(TASKS.tick.manager + MANAGER_WAKEUP_MS);
 	}
 	/* USER CODE END StartManagerTask */
 }
@@ -745,7 +739,7 @@ void StartNetworkTask(void *argument)
 
 				if (notif & FLAG_NET_SEND_USSD) {
 					char ussd[20];
-					if (osMessageQueueGet(UssdQueueHandle, ussd, NULL, 0U) == osOK)
+					if (_osQueueGet(UssdQueueHandle, ussd))
 						ok = Simcom_SendUSSD(ussd, buf, sizeof(buf));
 				} else if (notif & FLAG_NET_READ_SMS)
 					ok = Simcom_ReadNewSMS(buf, sizeof(buf));
@@ -1318,7 +1312,7 @@ void StartFingerTask(void *argument)
 						osThreadFlagsClear(FLAG_FINGER_PLACED);
 					}
 					if (notif & FLAG_FINGER_DEL) {
-						if (osMessageQueueGet(DriverQueueHandle, &id, NULL, 0U) == osOK)
+						if (_osQueueGet(DriverQueueHandle, &id))
 							ok = FGR_DeleteID(id);
 					}
 					if (notif & FLAG_FINGER_FETCH) {
@@ -1637,9 +1631,9 @@ void StartGateTask(void *argument)
 		HBAR_RefreshSelectSet();
 		if (_GetTickMS() - tick1000ms > 1000) {
 			tick1000ms = _GetTickMS();
-			uint8_t m = VCU_CalcDistance();
-			HBAR_AddTripMeter(m);
-			HBAR_SetReport(m);
+			uint8_t distance = VCU_CalcDistance();
+			HBAR_AddTripMeter(distance);
+			HBAR_SetReport(distance);
 		}
 
 		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
