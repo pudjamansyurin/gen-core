@@ -58,6 +58,7 @@
 #include "Libs/_mqtt.h"
 #include "Libs/_remote.h"
 #include "Libs/_reporter.h"
+#include "Libs/_network.h"
 
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
@@ -720,7 +721,6 @@ void StartNetworkTask(void *argument)
 {
 	/* USER CODE BEGIN StartNetworkTask */
 	uint32_t notif;
-	command_t cmd;
 
 	_osEventManager();
 
@@ -733,19 +733,13 @@ void StartNetworkTask(void *argument)
 		TASKS.tick.network = _GetTickMS();
 
 		if (_osFlagAny(&notif, 100)) {
-			if (notif & FLAG_NET_READ_SMS || notif & FLAG_NET_SEND_USSD) {
-				char buf[200] = {0};
+			if (notif & (FLAG_NET_READ_SMS | FLAG_NET_SEND_USSD)) {
 				uint8_t ok = 0;
 
-				if (notif & FLAG_NET_SEND_USSD) {
-					char ussd[20];
-					if (_osQueueGet(UssdQueueHandle, ussd))
-						ok = Simcom_SendUSSD(ussd, buf, sizeof(buf));
-				} else if (notif & FLAG_NET_READ_SMS)
-					ok = Simcom_ReadNewSMS(buf, sizeof(buf));
-
-				if (ok)
-					ok = _osQueuePutRst(QuotaQueueHandle, buf);
+				if (notif & FLAG_NET_SEND_USSD)
+					ok = NET_SendUSSD();
+				else if (notif & FLAG_NET_READ_SMS)
+					ok = NET_ReadSMS();
 
 				osThreadFlagsSet(CommandTaskHandle,	ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
 			}
@@ -754,23 +748,12 @@ void StartNetworkTask(void *argument)
 				RPT.payloads[PAYLOAD_REPORT].pending = 0;
 		}
 
-		// SIMCOM related routines
+		NET_CheckPayload(PAYLOAD_RESPONSE);
+		NET_CheckPayload(PAYLOAD_REPORT);
+		NET_CheckCommand();
+
 		if (RTC_NeedCalibration())
 			Simcom_CalibrateTime();
-
-		// Upload data (Report & Response)
-		for (uint8_t i=0; i<PAYLOAD_MAX; i++)
-			if (RPT_PayloadPending(&(RPT.payloads[i])))
-				if (Simcom_SetState(SIM_STATE_MQTT_ON, 0))
-					RPT.payloads[i].pending = !MQTT_Publish(&(RPT.payloads[i]));
-
-		// Check Command
-		if (Simcom_SetState(SIM_STATE_MQTT_ON, 0)) {
-			if (MQTT_GotCommand()) {
-				if (MQTT_AckPublish(&cmd)) CMD_Execute(&cmd);
-				else MQTT_FlushCommand();
-			}
-		}
 	}
 	/* USER CODE END StartNetworkTask */
 }
