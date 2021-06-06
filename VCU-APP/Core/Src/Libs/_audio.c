@@ -109,9 +109,10 @@ uint8_t AUDIO_Probe(void) {
 
 void AUDIO_Refresh(void) {
 	lock();
-	AUDIO.d.active = AUDIO.d.tick && (_GetTickMS() - AUDIO.d.tick) < AUDIO_TIMEOUT_MS;
+	AUDIO.d.active = _TickIn(AUDIO.d.tick, AUDIO_TIMEOUT_MS);
+
 	if (!AUDIO.d.active) {
-		// FIXME: Reinit wont recover
+		// FIXME: Re-init not recover
 		AUDIO_DeInit();
 		_DelayMS(500);
 		AUDIO_Init();

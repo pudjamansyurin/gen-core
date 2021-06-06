@@ -68,7 +68,7 @@ void GPS_DeInit(void) {
 
 void GPS_Refresh(void) {
 	lock();
-	GPS.d.active = GPS.d.tick && (_GetTickMS() - GPS.d.tick) < GPS_TIMEOUT_MS;
+	GPS.d.active = _TickIn(GPS.d.tick, GPS_TIMEOUT_MS);
 	if (!GPS.d.active) {
 		GPS_DeInit();
 		_DelayMS(500);

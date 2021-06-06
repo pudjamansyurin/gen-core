@@ -106,7 +106,7 @@ static void FW_MakeResponseIAP(char *message, char *node) {
     do {
       vNew = HMI1.d.version;
       _DelayMS(100);
-    } while (!vNew && (_GetTickMS() - tick < HMI_FOTA_MS));
+    } while (!vNew && _TickIn(tick, HMI_FOTA_MS));
 
     /* Handle empty firmware */
     if (vOld == 0xFFFF)

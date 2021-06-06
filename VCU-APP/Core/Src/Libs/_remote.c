@@ -115,24 +115,23 @@ void RMT_Flush(void) {
 }
 
 void RMT_Refresh(vehicle_state_t state) {
+	remote_tick_t *tick = &(RMT.d.tick);
 	uint32_t timeout;
-	uint8_t pairing;
 
 	lock();
 	timeout = state == VEHICLE_RUN ? RMT_BEAT_RUN_MS : RMT_BEAT_MS;
-	RMT.d.nearby = RMT.d.tick.heartbeat && (_GetTickMS() - RMT.d.tick.heartbeat) < timeout;
+	RMT.d.nearby = _TickIn(tick->heartbeat, timeout);
 	VCU_SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
 
-	RMT.d.active = (RMT.d.tick.ping && (_GetTickMS() - RMT.d.tick.ping) < RMT_TIMEOUT_MS) || RMT.d.nearby;
+	RMT.d.active = _TickIn(tick->ping, RMT_TIMEOUT_MS) || RMT.d.nearby;
 	if (!RMT.d.active) {
 		RMT_DeInit();
 		_DelayMS(500);
 		RMT_Init();
 	}
 
-	pairing = RMT.d.tick.pairing && (_GetTickMS() - RMT.d.tick.pairing) > RMT_PAIRING_MS;
-	if (pairing) {
-		RMT.d.tick.pairing = 0;
+	if (_TickOut(tick->pairing, RMT_PAIRING_MS)) {
+		tick->pairing = 0;
 		AES_ChangeKey(NULL);
 	}
 
@@ -292,7 +291,7 @@ static uint8_t Transmit(const uint8_t *data) {
 
 	nrf_send_packet_noack(data);
 	tick = _GetTickMS();
-	while(nrf_tx_busy() && (_GetTickMS() - tick) <= 2){};
+	while(nrf_tx_busy() && _TickIn(tick, 3)){};
 
 	return !nrf_tx_busy();
 }

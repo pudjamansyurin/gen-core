@@ -300,7 +300,7 @@ static uint8_t GetImage(uint32_t timeout) {
 
 		ok = (res == FINGERPRINT_OK);
 		_DelayMS(1);
-	} while (!ok && (_GetTickMS() - tick) < timeout);
+	} while (!ok && _TickIn(tick, timeout));
 
 	return ok;
 }

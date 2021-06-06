@@ -43,6 +43,8 @@ typedef struct {
 void _I2C_ClearBusyFlagErratum(void);
 void _DelayMS(uint32_t ms);
 uint32_t _GetTickMS(void);
+uint8_t _TickOut(uint32_t tick, uint32_t ms);
+uint8_t _TickIn(uint32_t tick, uint32_t ms);
 void _Error(char msg[50]);
 uint32_t _ByteSwap32(uint32_t x);
 //int8_t _BitPos(uint64_t event_id);

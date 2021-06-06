@@ -25,7 +25,7 @@ void HMI1_Init(void) {
 }
 
 void HMI1_Refresh(void) {
-	HMI1.d.active = HMI1.d.tick && (_GetTickMS() - HMI1.d.tick) < HMI1_TIMEOUT_MS;
+	HMI1.d.active = _TickIn(HMI1.d.tick, HMI1_TIMEOUT_MS);
 
 	if (!HMI1.d.active)
 		Reset();

@@ -181,7 +181,7 @@ static uint8_t AreActive(void) {
 	for (uint8_t i = 0; i < BMS_COUNT; i++) {
 		bms_pack_t *p = &(BMS.packs[i]);
 
-		p->active = p->tick && (_GetTickMS() - p->tick) < BMS_TIMEOUT_MS;
+		p->active = _TickIn(p->tick, BMS_TIMEOUT_MS);
 		if (!p->active) {
 			ResetIndex(i);
 			active = 0;

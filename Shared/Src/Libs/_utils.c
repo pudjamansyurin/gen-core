@@ -49,6 +49,14 @@ uint32_t _GetTickMS(void) {
 #endif
 }
 
+uint8_t _TickOut(uint32_t tick, uint32_t ms) {
+	return (tick && (_GetTickMS() - tick) > ms);
+}
+
+uint8_t _TickIn(uint32_t tick, uint32_t ms) {
+	return (tick && (_GetTickMS() - tick) < ms);
+}
+
 void _Error(char msg[50]) {
 #if RTOS_ENABLE
   if (osKernelGetState() == osKernelRunning)

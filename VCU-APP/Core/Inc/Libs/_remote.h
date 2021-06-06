@@ -28,20 +28,24 @@ typedef enum { RMT_MODE_NORMAL = 0, RMT_MODE_PAIRING } RMT_MODE;
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
+	uint32_t ping;
+	uint32_t heartbeat;
+	uint32_t pairing;
+	uint32_t rx;
+} remote_tick_t;
+
+typedef struct {
+	uint8_t tx;
+	uint8_t rx;
+	uint8_t full;
+} remote_duration_t;
+
+typedef struct {
 	uint8_t active;
 	uint8_t nearby;
 	uint32_t pairing_aes[4];
-	struct {
-		uint32_t ping;
-		uint32_t heartbeat;
-		uint32_t pairing;
-		uint32_t rx;
-	} tick;
-	struct {
-		uint8_t tx;
-		uint8_t rx;
-		uint8_t full;
-	} duration;
+	remote_tick_t tick;
+	remote_duration_t duration;
 } remote_data_t;
 
 typedef struct {

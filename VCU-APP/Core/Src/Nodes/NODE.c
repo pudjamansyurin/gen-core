@@ -37,7 +37,7 @@ void NODE_Refresh(void) {
 	uint8_t eMCU = (MCU.d.fault.post | MCU.d.fault.run) > 0;
 
 	if (VCU.d.state >= VEHICLE_READY) {
-		if (VCU.d.tick.ready && (_GetTickMS() - VCU.d.tick.ready) > NODE_TIMEOUT_MS) {
+		if (_TickOut(VCU.d.tick.ready, NODE_TIMEOUT_MS)) {
 			eBMS |= !BMS.d.active;
 			eMCU |= !MCU.d.active;
 		}
@@ -45,7 +45,7 @@ void NODE_Refresh(void) {
 
 	NODE.d.overheat = BMS.d.overheat || MCU.d.overheat;
 	NODE.d.error = VCU.d.error || eBMS || eMCU;
-	if (!(NODE.d.tick.dbg && (_GetTickMS() - NODE.d.tick.dbg) < NODE_DEBUG_MS))
+	if (!_TickIn(NODE.d.tick.dbg, NODE_DEBUG_MS))
 		NODE.d.debug = 0;
 
 	BMS_RefreshIndex();

@@ -75,7 +75,7 @@ void MCU_PowerOverCAN(uint8_t on) {
 }
 
 void MCU_Refresh(void) {
-	MCU.d.active = MCU.d.tick && (_GetTickMS() - MCU.d.tick) < MCU_TIMEOUT_MS;
+	MCU.d.active = _TickIn(MCU.d.tick, MCU_TIMEOUT_MS);
 	if (MCU.d.active) {
 		if (MCU.set.rpm_max && SyncedSpeedMax()) {
 			MCU.set.rpm_max = 0;

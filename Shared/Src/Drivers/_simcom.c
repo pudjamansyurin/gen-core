@@ -310,13 +310,14 @@ int Simcom_GetData(unsigned char *buf, int count) {
 }
 
 uint8_t Simcom_ReceivedResponse(uint32_t timeout) {
-	TickType_t tick = _GetTickMS();
+	TickType_t tick;
 	char *ptr = NULL;
 
+	tick = _GetTickMS();
 	do {
 		ptr = Simcom_Resp(SIM_RSP_IPD, NULL);
 		_DelayMS(10);
-	} while (ptr == NULL && (_GetTickMS() - tick) < timeout);
+	} while (ptr == NULL && _TickIn(tick, timeout));
 
 	if (ptr != NULL)
 		if ((ptr = Simcom_Resp(":", ptr)) != NULL)
@@ -508,7 +509,7 @@ static uint8_t Simcom_ProcessResponse(void) {
 #endif
 
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay) {
-	if (timeout && (_GetTickMS() - tick) > timeout) {
+	if (_TickOut(timeout, timeout)) {
 		printf("Simcom:StateTimeout\n");
 		return 1;
 	}

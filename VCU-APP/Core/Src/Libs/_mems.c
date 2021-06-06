@@ -75,7 +75,7 @@ void MEMS_DeInit(void) {
 
 void MEMS_Refresh(void) {
 	lock();
-	MEMS.d.active = MEMS.d.tick && (_GetTickMS() - MEMS.d.tick) < MEMS_TIMEOUT_MS;
+	MEMS.d.active = _TickIn(MEMS.d.tick, MEMS_TIMEOUT_MS);
 
 	// handle bug, when only got temperature
 	if (MEMS.d.active)

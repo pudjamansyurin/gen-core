@@ -33,7 +33,7 @@ void HMI2_Init(void) {
 }
 
 void HMI2_Refresh(void) {
-	HMI2.d.run = HMI2.d.tick && (_GetTickMS() - HMI2.d.tick) < HMI2_TIMEOUT_MS;
+	HMI2.d.run = _TickIn(HMI2.d.tick, HMI2_TIMEOUT_MS);
 
 	if (!HMI2.d.run) HMI2.d.mirroring = 0;
 }
