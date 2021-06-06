@@ -33,20 +33,20 @@ void HBAR_Init(void) {
 	HBAR.ctl.session = 0;
 	HBAR.ctl.tick.session = 0;
 
+	HBAR.d.max[HBAR_M_DRIVE] = HBAR_M_DRIVE_MAX - 1;
+	HBAR.d.max[HBAR_M_TRIP] = HBAR_M_TRIP_MAX - 1;
+	HBAR.d.max[HBAR_M_REPORT] = HBAR_M_REPORT_MAX - 1;
+
 	HBAR.d.m = HBAR_M_DRIVE;
 	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
 	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
 	HBAR.d.mode[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
 
-	HBAR.d.max[HBAR_M_DRIVE] = HBAR_M_DRIVE_MAX - 1;
-	HBAR.d.max[HBAR_M_TRIP] = HBAR_M_TRIP_MAX - 1;
-	HBAR.d.max[HBAR_M_REPORT] = HBAR_M_REPORT_MAX - 1;
-
 	HBAR.d.report[HBAR_M_REPORT_RANGE] = 0;
 	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = 0;
 
-	HBAR.d.trip[HBAR_M_TRIP_A] = 0;
-	HBAR.d.trip[HBAR_M_TRIP_B] = 0;
+	//	HBAR.d.trip[HBAR_M_TRIP_A] = 0;
+	//	HBAR.d.trip[HBAR_M_TRIP_B] = 0;
 	//	HBAR.d.trip[HBAR_M_TRIP_ODO] = 0;
 }
 
@@ -121,33 +121,19 @@ void HBAR_RefreshSein(void) {
 	}
 }
 
-uint16_t HBAR_AccumulateTrip(uint8_t km) {
+void HBAR_AddTripMeter(uint8_t m) {
 	HBAR_MODE_TRIP mTrip = HBAR.d.mode[HBAR_M_TRIP];
-	uint16_t *trip = &(HBAR.d.trip[mTrip]);
+	uint16_t km, *odo_km = &(HBAR.d.trip[HBAR_M_TRIP_ODO]);
 
-	*trip += km;
+	HBAR.d.meter += m;
+	km = HBAR.d.meter / 1000;
 
-	if (mTrip != HBAR_M_TRIP_ODO)
-		HBAR.d.trip[HBAR_M_TRIP_ODO] += km;
+	if (km > *odo_km) {
+		uint8_t d_km = km - *odo_km;
 
-	return HBAR.d.trip[HBAR_M_TRIP_ODO];
-}
-
-void HBAR_SetOdometer(uint8_t m) {
-	static uint8_t init = 1;
-	uint16_t *odo_km = &(HBAR.d.trip[HBAR_M_TRIP_ODO]);
-
-	if (init) {
-		init = 0;
-		HBAR.d.odometer = ((*odo_km) * 1000);
-	}
-
-	HBAR.d.odometer += m;
-
-	if ((HBAR.d.odometer / 1000) > (*odo_km)) {
-		uint8_t d_km = (HBAR.d.odometer / 1000) - (*odo_km);
-		uint16_t odom = HBAR_AccumulateTrip(d_km);
-		EE_Odometer(EE_CMD_W, odom);
+		EE_TripMeter(EE_CMD_W, mTrip, HBAR.d.trip[mTrip] + d_km);
+		if (mTrip != HBAR_M_TRIP_ODO)
+			EE_TripMeter(EE_CMD_W, HBAR_M_TRIP_ODO, *odo_km + d_km);
 	}
 }
 

@@ -81,7 +81,7 @@ typedef struct {
 } hbar_ctl_t;
 
 typedef struct {
-	uint32_t odometer;
+	uint32_t meter;
 	uint8_t pin[HBAR_K_MAX];
 	HBAR_MODE m;
 	uint8_t max[HBAR_M_MAX];
@@ -111,8 +111,7 @@ void HBAR_ReadStarter(uint8_t normalState);
 void HBAR_ReadStates(void);
 void HBAR_RefreshSelectSet(void);
 void HBAR_RefreshSein(void);
-uint16_t HBAR_AccumulateTrip(uint8_t km);
-void HBAR_SetOdometer(uint8_t m);
+void HBAR_AddTripMeter(uint8_t m);
 void HBAR_SetReport(uint8_t distance);
 
 #endif /* LIBS__HBAR_H_ */

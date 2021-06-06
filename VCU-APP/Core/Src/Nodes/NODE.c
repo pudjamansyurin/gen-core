@@ -128,7 +128,7 @@ void NODE_TX_DebugVCU(void) {
 	d->u16[0] = vcu.events;
 	d->u8[2] = vcu.buffered;
 	d->u8[3] = vcu.battery;
-	d->u32[1] = HBAR.d.odometer;
+	d->u32[1] = HBAR.d.meter;
 
 	CANBUS_Write(&Tx, CAND_DBG_VCU, 8, 0);
 }

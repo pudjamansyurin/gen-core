@@ -10,19 +10,21 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Libs/_hbar.h"
 
 /* Exported macro function ---------------------------------------------------*/
 #define EE_ADDR  			   		((uint16_t)0xA0)
 #define EE_NULL                     ((uint8_t)0)
-#define EE_AREA(ad, sz)             ((uint16_t)((ad*32) + sz))
+#define EE_WORD(ad)             	((uint16_t)(ad*32))
 
 /* Exported constants --------------------------------------------------------*/
-#define VADDR_RESET                 EE_AREA(0, 2)
-#define VADDR_ODOMETER              EE_AREA(1, 2)
-#define VADDR_AES_KEY               EE_AREA(2, 16)
-#define VADDR_FOTA_VERSION          EE_AREA(3, 2)
-#define VADDR_FOTA_FLAG             EE_AREA(4, 4)
-#define VADDR_FOTA_TYPE             EE_AREA(5, 4)
+#define VADDR_RESET                 EE_WORD(0)
+#define VADDR_UNUSED                EE_WORD(1)
+#define VADDR_AES_KEY               EE_WORD(2)
+#define VADDR_FOTA_VERSION          EE_WORD(3)
+#define VADDR_FOTA_FLAG             EE_WORD(4)
+#define VADDR_FOTA_TYPE             EE_WORD(5)
+#define VADDR_TRIP_BASE             EE_WORD(6)	// 6,7,8 is used for trips
 
 /* Exported struct -----------------------------------------------------------*/
 typedef struct {
@@ -46,7 +48,7 @@ uint8_t EE_Init(void);
 void EE_ResetOrLoad(void);
 uint8_t EE_Reset(EE_CMD cmd, uint16_t value);
 uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value);
-uint8_t EE_Odometer(EE_CMD cmd, uint16_t value);
+uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP type, uint16_t value);
 #endif
 uint8_t EE_FotaType(EE_CMD cmd, IAP_TYPE value);
 uint8_t EE_FotaFlag(EE_CMD cmd, uint32_t value);

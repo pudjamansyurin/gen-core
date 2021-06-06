@@ -67,11 +67,13 @@ uint8_t EE_Init(void) {
 void EE_ResetOrLoad(void) {
 	lock();
 	if (!EE_Reset(EE_CMD_R, EE_RESET)) {
-		EE_Odometer(EE_CMD_R, EE_NULL);
 		EE_AesKey(EE_CMD_R, EE_NULL);
+		for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
+			EE_TripMeter(EE_CMD_R, mTrip, EE_NULL);
 	} else {
-		EE_Odometer(EE_CMD_W, 0);
 		EE_Reset(EE_CMD_W, EE_RESET);
+		for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
+			EE_TripMeter(EE_CMD_W, mTrip, 0);
 	}
 	unlock();
 }
@@ -99,8 +101,15 @@ uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value) {
 	return ret;
 }
 
-uint8_t EE_Odometer(EE_CMD cmd, uint16_t value) {
-	return Command(VADDR_ODOMETER, cmd, &value, &(HBAR.d.trip[HBAR_M_TRIP_ODO]), sizeof(value));
+uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP type, uint16_t value) {
+	uint16_t vaddr = VADDR_TRIP_BASE + EE_WORD(type);
+	uint8_t ret;
+
+	ret = Command(vaddr, cmd, &value, &(HBAR.d.trip[type]), sizeof(value));
+	if (cmd == EE_CMD_R && type == HBAR_M_TRIP_ODO)
+		HBAR.d.meter = value * 1000;
+
+	return ret;
 }
 
 #endif

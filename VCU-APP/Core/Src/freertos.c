@@ -878,7 +878,7 @@ void StartCommandTask(void *argument)
 					break;
 
 				case CMD_GEN_ODOM:
-					EE_Odometer(EE_CMD_W, *(uint16_t *)cmd.data.value);
+					EE_TripMeter(EE_CMD_W, HBAR_M_TRIP_ODO, *(uint16_t *)cmd.data.value);
 					break;
 
 				case CMD_GEN_ANTITHIEF:
@@ -1637,9 +1637,9 @@ void StartGateTask(void *argument)
 		HBAR_RefreshSelectSet();
 		if (_GetTickMS() - tick1000ms > 1000) {
 			tick1000ms = _GetTickMS();
-			uint8_t distance = VCU_CalcDistance();
-			HBAR_SetOdometer(distance);
-			HBAR_SetReport(distance);
+			uint8_t m = VCU_CalcDistance();
+			HBAR_AddTripMeter(m);
+			HBAR_SetReport(m);
 		}
 
 		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
