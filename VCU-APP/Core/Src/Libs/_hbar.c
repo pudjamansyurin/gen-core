@@ -33,14 +33,10 @@ void HBAR_Init(void) {
 	HBAR.ctl.session = 0;
 	HBAR.ctl.tick.session = 0;
 
-	HBAR.d.max[HBAR_M_DRIVE] = HBAR_M_DRIVE_MAX - 1;
-	HBAR.d.max[HBAR_M_TRIP] = HBAR_M_TRIP_MAX - 1;
-	HBAR.d.max[HBAR_M_REPORT] = HBAR_M_REPORT_MAX - 1;
-
-//	HBAR.d.m = HBAR_M_DRIVE;
-//	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
-//	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
-//	HBAR.d.mode[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
+	//	HBAR.d.m = HBAR_M_DRIVE;
+	//	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
+	//	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
+	//	HBAR.d.mode[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
 
 	HBAR.d.report[HBAR_M_REPORT_RANGE] = 0;
 	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = 0;
@@ -48,6 +44,26 @@ void HBAR_Init(void) {
 	//	HBAR.d.trip[HBAR_M_TRIP_A] = 0;
 	//	HBAR.d.trip[HBAR_M_TRIP_B] = 0;
 	//	HBAR.d.trip[HBAR_M_TRIP_ODO] = 0;
+}
+
+uint8_t HBAR_SubModeMax(HBAR_MODE m) {
+	uint8_t max;
+
+	switch (m) {
+	case HBAR_M_DRIVE:
+		max = HBAR_M_DRIVE_MAX;
+		break;
+	case HBAR_M_TRIP:
+		max = HBAR_M_TRIP_MAX;
+		break;
+	case HBAR_M_REPORT:
+		max = HBAR_M_REPORT_MAX;
+		break;
+	default:
+		max = 0;
+		break;
+	}
+	return max;
 }
 
 void HBAR_ReadStarter(uint8_t normalState) {
@@ -181,7 +197,7 @@ static void RunSet(void) {
 	if (m == HBAR_M_TRIP && mTrip != HBAR_M_TRIP_ODO && HBAR.tim[HBAR_K_SET].time > MODE_RESET_MS )
 		EE_TripMeter(EE_CMD_W, mTrip, 0);
 	else {
-		if (HBAR.d.mode[m] >= HBAR.d.max[m])
+		if (HBAR.d.mode[m] >= (HBAR_SubModeMax(m) - 1))
 			EE_SubMode(EE_CMD_W, m, 0);
 		else
 			EE_SubMode(EE_CMD_W, m, HBAR.d.mode[m] + 1);

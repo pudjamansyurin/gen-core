@@ -106,26 +106,12 @@ uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP mTrip, uint16_t value) {
 }
 
 uint8_t EE_SubMode(EE_CMD cmd, HBAR_MODE m, uint8_t value) {
-	uint8_t ret, max;
+	uint8_t ret;
 
 	ret = Command(VADDR_MODE_DRIVE + m, cmd, &value, &(HBAR.d.mode[m]), sizeof(value));
 	if (cmd == EE_CMD_R) {
-		switch (m) {
-			case HBAR_M_DRIVE:
-				max = HBAR_M_DRIVE_MAX;
-				break;
-			case HBAR_M_TRIP:
-				max = HBAR_M_TRIP_MAX;
-				break;
-			case HBAR_M_REPORT:
-				max = HBAR_M_REPORT_MAX;
-				break;
-			default:
-				max = 0;
-				break;
-		}
 
-		if (HBAR.d.mode[m] > max)
+		if (HBAR.d.mode[m] > HBAR_SubModeMax(m))
 			HBAR.d.mode[m] = 0;
 	}
 

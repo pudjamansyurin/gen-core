@@ -84,7 +84,6 @@ typedef struct {
 	uint32_t meter;
 	uint8_t pin[HBAR_K_MAX];
 	HBAR_MODE m;
-	uint8_t max[HBAR_M_MAX];
 	uint8_t mode[HBAR_M_MAX];
 	uint8_t report[HBAR_M_REPORT_MAX];
 	uint16_t trip[HBAR_M_TRIP_MAX];
@@ -107,6 +106,7 @@ extern hbar_t HBAR;
 
 /* Public functions prototype ------------------------------------------------*/
 void HBAR_Init(void);
+uint8_t HBAR_SubModeMax(HBAR_MODE m);
 void HBAR_ReadStarter(uint8_t normalState);
 void HBAR_ReadStates(void);
 void HBAR_RefreshSelectSet(void);
