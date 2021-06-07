@@ -240,7 +240,7 @@ uint8_t MQTT_GotPublish(void) {
 	if (strcmp(d->topic, MQTT.topic.command) != 0)
 		return 0;
 
-	if (!CMD_ValidateRaw(dst, len))
+	if (!CMD_ValidateContent(dst, len))
 		return 0;
 
 	memcpy(&(MQTT.rx.command), dst, len); _DelayMS(2);
@@ -283,7 +283,7 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
 	if (!Publish(PREFIX_ACK, 2, MQTT.topic.response, MQTT.qos.response, 1))
 		return 0;
 
-	if (!CMD_Validate(&(MQTT.rx.command)))
+	if (!CMD_ValidateCode(&(MQTT.rx.command)))
 		return 0;
 
 	memcpy(cmd, &(MQTT.rx.command), sizeof(command_t)); _DelayMS(2);

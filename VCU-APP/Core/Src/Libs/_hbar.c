@@ -37,10 +37,10 @@ void HBAR_Init(void) {
 	HBAR.d.max[HBAR_M_TRIP] = HBAR_M_TRIP_MAX - 1;
 	HBAR.d.max[HBAR_M_REPORT] = HBAR_M_REPORT_MAX - 1;
 
-	HBAR.d.m = HBAR_M_DRIVE;
-	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
-	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
-	HBAR.d.mode[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
+//	HBAR.d.m = HBAR_M_DRIVE;
+//	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
+//	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
+//	HBAR.d.mode[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
 
 	HBAR.d.report[HBAR_M_REPORT_RANGE] = 0;
 	HBAR.d.report[HBAR_M_REPORT_AVERAGE] = 0;
@@ -168,19 +168,22 @@ static uint8_t Reversed(void) {
 }
 
 static void RunSelect(void) {
-	if (HBAR.d.m == (HBAR_M_MAX - 1))
-		HBAR.d.m = 0;
-	else HBAR.d.m++;
+	if (HBAR.d.m >= (HBAR_M_MAX - 1))
+		EE_Mode(EE_CMD_W, 0);
+	else
+		EE_Mode(EE_CMD_W, HBAR.d.m + 1);
 }
 
 static void RunSet(void) {
 	HBAR_MODE_TRIP mTrip = HBAR.d.mode[HBAR_M_TRIP];
+	HBAR_MODE m = HBAR.d.m;
 
-	if (HBAR.d.m == HBAR_M_TRIP && mTrip != HBAR_M_TRIP_ODO && HBAR.tim[HBAR_K_SET].time > MODE_RESET_MS )
+	if (m == HBAR_M_TRIP && mTrip != HBAR_M_TRIP_ODO && HBAR.tim[HBAR_K_SET].time > MODE_RESET_MS )
 		EE_TripMeter(EE_CMD_W, mTrip, 0);
 	else {
-		if (HBAR.d.mode[HBAR.d.m] == HBAR.d.max[HBAR.d.m])
-			HBAR.d.mode[HBAR.d.m] = 0;
-		else HBAR.d.mode[HBAR.d.m]++;
+		if (HBAR.d.mode[m] >= HBAR.d.max[m])
+			EE_SubMode(EE_CMD_W, m, 0);
+		else
+			EE_SubMode(EE_CMD_W, m, HBAR.d.mode[m] + 1);
 	}
 }

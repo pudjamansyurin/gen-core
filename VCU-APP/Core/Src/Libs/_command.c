@@ -78,7 +78,7 @@ void CMD_Init(void) {
 
 }
 
-uint8_t CMD_Validate(command_t *cmd) {
+uint8_t CMD_ValidateCode(command_t *cmd) {
 	command_header_t *h = &(cmd->header);
 	uint8_t valid = 0;
 
@@ -89,7 +89,7 @@ uint8_t CMD_Validate(command_t *cmd) {
 	return valid;
 }
 
-uint8_t CMD_ValidateRaw(void *ptr, uint8_t len) {
+uint8_t CMD_ValidateContent(void *ptr, uint8_t len) {
 	if (len > sizeof(command_t))
 		return 0;
 

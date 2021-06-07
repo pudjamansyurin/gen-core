@@ -16,7 +16,6 @@
 #include "Libs/_remote.h"
 #include "Libs/_reporter.h"
 #include "Nodes/VCU.h"
-
 #endif
 
 /* External variables -------------------------------------------------------*/
@@ -41,18 +40,16 @@ static void unlock(void);
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t EE_Init(void) {
-	uint8_t retry = 2, ok;
+	uint8_t ok;
 
 	lock();
 	printf("EEPROM:Init\n");
 	EEPROM24XX_SetDevice(pi2c, EE_ADDR);
-	do {
-		ok = EEPROM24XX_IsConnected(100);
-	} while (!ok && retry--);
+	ok = EEPROM24XX_IsConnected(100);
 
 	if (ok) {
 #if (!BOOTLOADER)
-		EE_ResetOrLoad();
+		EE_Load();
 		EE_FotaVersion(EE_CMD_R, EE_NULL);
 #endif
 		EE_FotaType(EE_CMD_R, EE_NULL);
@@ -64,32 +61,29 @@ uint8_t EE_Init(void) {
 }
 
 #if (!BOOTLOADER)
-void EE_ResetOrLoad(void) {
+void EE_Load(void) {
 	lock();
-	if (!EE_Reset(EE_CMD_R, EE_RESET)) {
-		EE_AesKey(EE_CMD_R, EE_NULL);
-		for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
-			EE_TripMeter(EE_CMD_R, mTrip, EE_NULL);
-	} else {
-		EE_Reset(EE_CMD_W, EE_RESET);
-		for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
-			EE_TripMeter(EE_CMD_W, mTrip, 0);
-	}
+	EE_AesKey(EE_CMD_R, EE_NULL);
+	EE_Mode(EE_CMD_R, EE_NULL);
+	for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
+		EE_TripMeter(EE_CMD_R, mTrip, EE_NULL);
+	for (uint8_t m = 0; m < HBAR_M_MAX; m++)
+		EE_SubMode(EE_CMD_R, m, EE_NULL);
 	unlock();
 }
 
-uint8_t EE_Reset(EE_CMD cmd, uint16_t value) {
-	uint16_t tmp = value, temp;
-	uint8_t ret;
-
-	ret = Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
-
-	if (ret)
-		if (cmd == EE_CMD_R)
-			return tmp != temp;
-
-	return ret;
-}
+//uint8_t EE_Reset(EE_CMD cmd, uint16_t value) {
+//	uint16_t tmp = value, temp;
+//	uint8_t ret;
+//
+//	ret = Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
+//
+//	if (ret)
+//		if (cmd == EE_CMD_R)
+//			return tmp != temp;
+//
+//	return ret;
+//}
 
 uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value) {
 	uint32_t *ptr, tmp[4];
@@ -102,12 +96,33 @@ uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value) {
 }
 
 uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP mTrip, uint16_t value) {
-	uint16_t vaddr = VADDR_TRIP_A + mTrip;
 	uint8_t ret;
 
-	ret = Command(vaddr, cmd, &value, &(HBAR.d.trip[mTrip]), sizeof(value));
+	ret = Command(VADDR_TRIP_A + mTrip, cmd, &value, &(HBAR.d.trip[mTrip]), sizeof(value));
 	if (mTrip == HBAR_M_TRIP_ODO)
 		HBAR.d.meter = value * 1000;
+
+	return ret;
+}
+
+uint8_t EE_SubMode(EE_CMD cmd, HBAR_MODE m, uint8_t value) {
+	uint8_t ret;
+
+	ret = Command(VADDR_MODE_DRIVE + m, cmd, &value, &(HBAR.d.mode[m]), sizeof(value));
+	if (cmd == EE_CMD_R)
+		if (HBAR.d.mode[m] > HBAR.d.max[m])
+			HBAR.d.mode[m] = 0;
+
+	return ret;
+}
+
+uint8_t EE_Mode(EE_CMD cmd, uint8_t value) {
+	uint8_t ret;
+
+	ret = Command(VADDR_MODE, cmd, &value, &(HBAR.d.m), sizeof(value));
+	if (cmd == EE_CMD_R)
+		if (HBAR.d.m >= HBAR_M_MAX)
+			HBAR.d.m = 0;
 
 	return ret;
 }
@@ -133,6 +148,7 @@ uint8_t EE_FotaFlag(EE_CMD cmd, uint32_t value) {
 uint8_t EE_FotaVersion(EE_CMD cmd, uint16_t value) {
 	return Command(VADDR_FOTA_VERSION, cmd, &value, &(FOTA.VERSION), sizeof(value));
 }
+
 /* Private functions implementation
  * --------------------------------------------*/
 static uint8_t Command(EE_VADDR vaddr, EE_CMD cmd, void *value, void *ptr, uint16_t size) {
@@ -140,16 +156,11 @@ static uint8_t Command(EE_VADDR vaddr, EE_CMD cmd, void *value, void *ptr, uint1
 	uint8_t ret = 0;
 
 	lock();
-	// check if new value is same with old value
 	if (cmd == EE_CMD_W) {
-		// apply the value
 		memcpy(ptr, value, size);
-		// save the value
 		ret = EEPROM24XX_Save(addr, value, size);
 	} else {
-		// load the value
 		ret = EEPROM24XX_Load(addr, value, size);
-		// apply the value
 		if (ret)
 			memcpy(ptr, value, size);
 	}

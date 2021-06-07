@@ -15,7 +15,7 @@
 #include "_defines_shared.h"
 
 #define VCU_VERSION ((uint16_t)654)
-#define EE_RESET ((uint16_t)53)
+//#define EE_RESET ((uint16_t)53)
 
 #define SIMCOM_DEBUG  	1
 #define CAN_DEBUG		0
@@ -29,12 +29,13 @@
 #define AT_USE_TCP	 	1
 #define AT_USE_FTP	 	0
 
+#define SIMCOM_MIN_MV ((uint16_t)3300)
+
 /* Exported constants --------------------------------------------------------*/
 #define VCU_VENDOR "GEN"
 #define VCU_BUILD_YEAR ((uint8_t)21)
 #define MANAGER_WAKEUP_MS ((uint16_t)555)
 #define MCU_SPEED_MAX_KPH ((uint8_t)150)
-#define SIMCOM_MIN_MV ((uint16_t)3300)
 #define HMI_FOTA_MS ((uint32_t)20000)
 #define VCU_LOST_MODE_S ((uint16_t)(5 * 60))
 

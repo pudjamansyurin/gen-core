@@ -101,8 +101,8 @@ typedef enum {
 /* Public functions implementation
  * --------------------------------------------*/
 void CMD_Init(void);
-uint8_t CMD_Validate(command_t *cmd);
-uint8_t CMD_ValidateRaw(void *ptr, uint8_t len);
+uint8_t CMD_ValidateCode(command_t *cmd);
+uint8_t CMD_ValidateContent(void *ptr, uint8_t len);
 void CMD_Execute(command_t *cmd);
 void CMD_GenInfo(response_t *resp);
 void CMD_ReportRTC(command_t *cmd);

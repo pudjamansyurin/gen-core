@@ -37,6 +37,10 @@ typedef enum {
 	VADDR_TRIP_A,
 	VADDR_TRIP_B,
 	VADDR_TRIP_ODO,
+	VADDR_MODE_DRIVE,
+	VADDR_MODE_TRIP,
+	VADDR_MODE_REPORT,
+	VADDR_MODE,
 	VADDR_MAX,
 } EE_VADDR;
 
@@ -51,10 +55,12 @@ extern fota_t FOTA;
 /* Public functions prototype ------------------------------------------------*/
 uint8_t EE_Init(void);
 #if (!BOOTLOADER)
-void EE_ResetOrLoad(void);
-uint8_t EE_Reset(EE_CMD cmd, uint16_t value);
+void EE_Load(void);
+//uint8_t EE_Reset(EE_CMD cmd, uint16_t value);
 uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value);
 uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP mTrip, uint16_t value);
+uint8_t EE_SubMode(EE_CMD cmd, HBAR_MODE m, uint8_t value);
+uint8_t EE_Mode(EE_CMD cmd, uint8_t value);
 #endif
 uint8_t EE_FotaType(EE_CMD cmd, IAP_TYPE value);
 uint8_t EE_FotaFlag(EE_CMD cmd, uint32_t value);
