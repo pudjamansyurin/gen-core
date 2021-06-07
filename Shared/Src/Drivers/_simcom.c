@@ -509,7 +509,7 @@ static uint8_t Simcom_ProcessResponse(void) {
 #endif
 
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay) {
-	if (_TickOut(timeout, timeout)) {
+	if (_TickOut(tick, timeout)) {
 		printf("Simcom:StateTimeout\n");
 		return 1;
 	}

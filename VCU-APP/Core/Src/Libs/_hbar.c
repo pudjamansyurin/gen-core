@@ -174,8 +174,10 @@ static void RunSelect(void) {
 }
 
 static void RunSet(void) {
-	if (HBAR.d.m == HBAR_M_TRIP && HBAR.d.mode[HBAR.d.m] != HBAR_M_TRIP_ODO && HBAR.tim[HBAR_K_SET].time > MODE_RESET_MS )
-		HBAR.d.trip[HBAR.d.mode[HBAR.d.m]] = 0;
+	HBAR_MODE_TRIP mTrip = HBAR.d.mode[HBAR_M_TRIP];
+
+	if (HBAR.d.m == HBAR_M_TRIP && mTrip != HBAR_M_TRIP_ODO && HBAR.tim[HBAR_K_SET].time > MODE_RESET_MS )
+		EE_TripMeter(EE_CMD_W, mTrip, 0);
 	else {
 		if (HBAR.d.mode[HBAR.d.m] == HBAR.d.max[HBAR.d.m])
 			HBAR.d.mode[HBAR.d.m] = 0;

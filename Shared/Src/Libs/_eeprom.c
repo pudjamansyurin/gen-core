@@ -101,12 +101,12 @@ uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value) {
 	return ret;
 }
 
-uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP type, uint16_t value) {
-	uint16_t vaddr = VADDR_TRIP_BASE + EE_WORD(type);
+uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP mTrip, uint16_t value) {
+	uint16_t vaddr = VADDR_TRIP_A + mTrip;
 	uint8_t ret;
 
-	ret = Command(vaddr, cmd, &value, &(HBAR.d.trip[type]), sizeof(value));
-	if (cmd == EE_CMD_R && type == HBAR_M_TRIP_ODO)
+	ret = Command(vaddr, cmd, &value, &(HBAR.d.trip[mTrip]), sizeof(value));
+	if (mTrip == HBAR_M_TRIP_ODO)
 		HBAR.d.meter = value * 1000;
 
 	return ret;
