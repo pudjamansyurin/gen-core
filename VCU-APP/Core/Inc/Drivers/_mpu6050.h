@@ -123,7 +123,6 @@ typedef enum {
  */
 typedef struct {
   /* Private */
-  uint8_t Address; /*!< I2C address of device. */
   float Gyro_Mult; /*!< Gyroscope corrector from raw data to "degrees/s". Only
                       for private use */
   float Acce_Mult; /*!< Accelerometer corrector from raw data to "g". Only for
@@ -189,8 +188,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
  * value of @ref MPU6050_Gyroscope_t enumeration
  * @retval Member of @ref MPU6050_Result_t enumeration
  */
-MPU6050_Result MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx,
-                                    MPU6050 *DataStruct,
+MPU6050_Result MPU6050_SetGyroscope(MPU6050 *DataStruct,
                                     MPU6050_Gyroscope GyroscopeSensitivity);
 
 /**
@@ -201,9 +199,8 @@ MPU6050_Result MPU6050_SetGyroscope(I2C_HandleTypeDef *I2Cx,
  * be a value of @ref MPU6050_Accelerometer_t enumeration
  * @retval Member of @ref MPU6050_Result_t enumeration
  */
-MPU6050_Result
-MPU6050_SetAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
-                         MPU6050_Accelerometer AccelerometerSensitivity);
+MPU6050_Result MPU6050_SetAccelerometer(MPU6050 *DataStruct,
+                         	 	 	 	 	 	 	 MPU6050_Accelerometer AccelerometerSensitivity);
 
 /**
  * @brief  Sets output data rate
@@ -212,8 +209,7 @@ MPU6050_SetAccelerometer(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
  * @param  rate: Data rate value. An 8-bit value for prescaler value
  * @retval Member of @ref MPU6050_Result_t enumeration
  */
-MPU6050_Result MPU6050_SetDataRate(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
-                                   uint8_t rate);
+MPU6050_Result MPU6050_SetDataRate(uint8_t rate);
 
 /**
  * @brief  Reads accelerometer, gyroscope and temperature data from sensor
@@ -222,7 +218,7 @@ MPU6050_Result MPU6050_SetDataRate(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
  *            - MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-MPU6050_Result MPU6050_ReadAll(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
+MPU6050_Result MPU6050_ReadAll(MPU6050 *DataStruct);
 
 /**
  * @brief  Reads accelerometer data from sensor
@@ -231,8 +227,7 @@ MPU6050_Result MPU6050_ReadAll(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct);
  *            - MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-MPU6050_Result MPU6050_ReadAccelerometer(I2C_HandleTypeDef *I2Cx,
-                                         MPU6050 *DataStruct);
+MPU6050_Result MPU6050_ReadAccelerometer(MPU6050 *DataStruct);
 
 /**
  * @brief  Reads gyroscope data from sensor
@@ -241,8 +236,7 @@ MPU6050_Result MPU6050_ReadAccelerometer(I2C_HandleTypeDef *I2Cx,
  *            - MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-MPU6050_Result MPU6050_ReadGyroscope(I2C_HandleTypeDef *I2Cx,
-                                     MPU6050 *DataStruct);
+MPU6050_Result MPU6050_ReadGyroscope(MPU6050 *DataStruct);
 
 /**
  * @brief  Reads temperature data from sensor
@@ -251,8 +245,7 @@ MPU6050_Result MPU6050_ReadGyroscope(I2C_HandleTypeDef *I2Cx,
  *            - MPU6050_Result_Ok: everything is OK
  *            - Other: in other cases
  */
-MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx,
-                                       MPU6050 *DataStruct);
+MPU6050_Result MPU6050_ReadTemperature(MPU6050 *DataStruct);
 
 /**
  * @brief  Enables interrupts
@@ -260,8 +253,7 @@ MPU6050_Result MPU6050_ReadTemperature(I2C_HandleTypeDef *I2Cx,
  * device
  * @retval Member of @ref MPU6050_Result_t enumeration
  */
-MPU6050_Result MPU6050_EnableInterrupts(I2C_HandleTypeDef *I2Cx,
-                                        MPU6050 *DataStruct);
+MPU6050_Result MPU6050_EnableInterrupts(void);
 
 /**
  * @brief  Disables interrupts
@@ -269,8 +261,7 @@ MPU6050_Result MPU6050_EnableInterrupts(I2C_HandleTypeDef *I2Cx,
  * device
  * @retval Member of @ref MPU6050_Result_t enumeration
  */
-MPU6050_Result MPU6050_DisableInterrupts(I2C_HandleTypeDef *I2Cx,
-                                         MPU6050 *DataStruct);
+MPU6050_Result MPU6050_DisableInterrupts(void);
 
 /**
  * @brief  Reads and clears interrupts
@@ -280,8 +271,6 @@ MPU6050_Result MPU6050_DisableInterrupts(I2C_HandleTypeDef *I2Cx,
  * store status in
  * @retval Member of @ref MPU6050_Result_t enumeration
  */
-MPU6050_Result MPU6050_ReadInterrupts(I2C_HandleTypeDef *I2Cx,
-                                      MPU6050 *DataStruct,
-                                      MPU6050_Interrupt *InterruptsStruct);
+MPU6050_Result MPU6050_ReadInterrupts(MPU6050_Interrupt *InterruptsStruct);
 
 #endif /* MPU6050_H_ */

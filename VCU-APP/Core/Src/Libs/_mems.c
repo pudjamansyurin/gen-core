@@ -211,7 +211,7 @@ static uint8_t Capture(mems_raw_t *raw) {
 	uint8_t ok;
 
 	// read sensor
-	ok = MPU6050_ReadAll(MEMS.pi2c, &(MEMS.dev)) == MPU6050_Result_Ok;
+	ok = MPU6050_ReadAll(dev) == MPU6050_Result_Ok;
 
 	if (ok) {
 		// convert the RAW values into acceleration in 'g'
