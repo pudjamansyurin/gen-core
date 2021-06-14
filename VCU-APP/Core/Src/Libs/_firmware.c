@@ -9,6 +9,7 @@
 #include "Drivers/_bat.h"
 #include "Libs/_firmware.h"
 #include "Libs/_command.h"
+#include "Libs/_reporter.h"
 #include "Libs/_eeprom.h"
 #include "Nodes/HMI1.h"
 

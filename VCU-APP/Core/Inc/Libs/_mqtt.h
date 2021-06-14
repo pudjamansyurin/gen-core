@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_command.h"
+#include "Libs/_reporter.h"
 #include "Libs/_utils.h"
 
 /* Exported constants --------------------------------------------------------*/

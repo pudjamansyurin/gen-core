@@ -9,8 +9,11 @@
 #define INC_LIBS__COMMAND_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_reporter.h"
+#include "Libs/_utils.h"
+#include "Drivers/_rtc.h"
 
+/* Exported defines
+ * -------------------------------------------------------------*/
 #define CMD_SUB_MAX ((uint8_t) 10)
 
 /* Exported enums
@@ -98,18 +101,40 @@ typedef enum {
 	CMD_MCU_MAX,
 } CMD_SUB_MCU;
 
+
+/* Exported structs
+ * ------------------------------------------------------------*/
+typedef struct __attribute__((packed)) {
+	char prefix[2];
+	uint8_t size;
+	uint32_t vin;
+	datetime_t send_time;
+	uint8_t code;
+	uint8_t sub_code;
+} command_header_t;
+
+typedef struct __attribute__((packed)) {
+	uint8_t res_code;
+	char message[200];
+} response_data_t;
+
+typedef struct __attribute__((packed)) {
+	command_header_t header;
+	response_data_t data;
+} response_t;
+
+typedef struct __attribute__((packed)) {
+	command_header_t header;
+	struct __attribute__((packed)) {
+		char value[200];
+	} data;
+} command_t;
+
 /* Public functions implementation
  * --------------------------------------------*/
 void CMD_Init(void);
 uint8_t CMD_ValidateCode(command_t *cmd);
 uint8_t CMD_ValidateContent(void *ptr, uint8_t len);
 void CMD_Execute(command_t *cmd);
-void CMD_GenInfo(response_t *resp);
-void CMD_ReportRTC(command_t *cmd);
-void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue);
-void CMD_FingerFetch(response_t *resp);
-void CMD_Finger(response_t *resp);
-void CMD_RemotePairing(response_t *resp);
-void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue);
 
 #endif /* INC_LIBS__COMMAND_H_ */

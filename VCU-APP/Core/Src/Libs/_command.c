@@ -7,8 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_command.h"
-#include "Libs/_finger.h"
-#include "Nodes/HMI1.h"
+#include "Libs/_reporter.h"
 
 /* External variables -------------------------------------------------------*/
 #if (RTOS_ENABLE)
@@ -115,92 +114,8 @@ uint8_t CMD_ValidateContent(void *ptr, uint8_t len) {
 }
 
 void CMD_Execute(command_t *cmd) {
-	Debugger(cmd);
 	_osQueuePutRst(CommandQueueHandle, cmd);
-}
-
-void CMD_GenInfo(response_t *resp) {
-	char msg[20];
-	sprintf(msg, "VCU v.%d,", VCU_VERSION);
-
-	if (HMI1.d.active)
-		sprintf(resp->data.message, "%.*s HMI v.%d,", strlen(msg), msg,
-				HMI1.d.version);
-
-	sprintf(resp->data.message, "%.*s " VCU_VENDOR " - 20%d", strlen(msg), msg,
-			VCU_BUILD_YEAR);
-}
-
-void CMD_FingerAdd(response_t *resp, osMessageQueueId_t queue) {
-	uint32_t notif;
-	uint8_t id;
-
-	// wait response until timeout
-	resp->data.res_code = RESP_ERROR;
-	if (_osFlagAny(&notif, (FINGER_SCAN_MS*2) + 5000)) {
-		if (notif & FLAG_COMMAND_OK) {
-			if (_osQueueGet(queue, &id)) {
-				sprintf(resp->data.message, "%u", id);
-				resp->data.res_code = RESP_OK;
-			}
-		} else {
-			if (_osQueueGet(queue, &id))
-				if (id == 0)
-					sprintf(resp->data.message, "Max. reached : %u", FINGER_USER_MAX);
-		}
-	}
-}
-
-void CMD_FingerFetch(response_t *resp) {
-	uint32_t notif, len;
-	char fingers[3];
-
-	// wait response until timeout
-	memset(FGR.d.db, 0, FINGER_USER_MAX);
-	resp->data.res_code = RESP_ERROR;
-	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)){
-		resp->data.res_code = RESP_OK;
-
-		for (uint8_t id = 1; id <= FINGER_USER_MAX; id++) {
-			if (FGR.d.db[id - 1]) {
-				sprintf(fingers, "%1d,", id);
-				strcat(resp->data.message, fingers);
-			}
-		}
-
-		// remove last comma
-		len = strnlen(resp->data.message, sizeof(resp->data.message));
-		if (len > 0)
-			resp->data.message[len - 1] = '\0';
-	}
-}
-
-void CMD_Finger(response_t *resp) {
-	uint32_t notif;
-
-	// wait response until timeout
-	resp->data.res_code = RESP_ERROR;
-	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000))
-		resp->data.res_code = RESP_OK;
-}
-
-void CMD_RemotePairing(response_t *resp) {
-	uint32_t notif;
-
-	// wait response until timeout
-	resp->data.res_code = RESP_ERROR;
-	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000))
-		resp->data.res_code = RESP_OK;
-}
-
-void CMD_NetQuota(response_t *resp, osMessageQueueId_t queue) {
-	uint32_t notif;
-
-	// wait response until timeout
-	resp->data.res_code = RESP_ERROR;
-	if (_osFlagOne(&notif, FLAG_COMMAND_OK, 40000))
-		if (_osQueueGet(queue, resp->data.message))
-			resp->data.res_code = RESP_OK;
+	Debugger(cmd);
 }
 
 /* Private functions implementation
