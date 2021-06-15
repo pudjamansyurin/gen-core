@@ -10,13 +10,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Libs/_command.h"
 #include "Libs/_debugger.h"
-#include "Drivers/_rtc.h"
 
-/* Exported define
+/* Exported defines
  * -------------------------------------------------------------*/
-#define RPT_FRAME_FULL_S ((uint8_t)20)      
-#define RPT_INTERVAL_NORMAL_S ((uint8_t)5) 
+#define RPT_FRAME_FULL_S ((uint8_t)20)
+#define RPT_INTERVAL_NORMAL_S ((uint8_t)5)
 #define RPT_INTERVAL_BACKUP_S ((uint8_t)20)
 #define RPT_INTERVAL_LOST_S ((uint8_t)60)
 
@@ -41,15 +41,6 @@ typedef struct __attribute__((packed)) {
 	uint32_t vin;
 	datetime_t send_time;
 } report_header_t;
-
-typedef struct __attribute__((packed)) {
-	char prefix[2];
-	uint8_t size;
-	uint32_t vin;
-	datetime_t send_time;
-	uint8_t code;
-	uint8_t sub_code;
-} command_header_t;
 
 // report frame
 typedef struct __attribute__((packed)) {
@@ -77,23 +68,6 @@ typedef struct __attribute__((packed)) {
 	report_header_t header;
 	report_data_t data;
 } report_t;
-
-// response frame
-typedef struct __attribute__((packed)) {
-	command_header_t header;
-	struct __attribute__((packed)) {
-		uint8_t res_code;
-		char message[200];
-	} data;
-} response_t;
-
-// command frame (from server)
-typedef struct __attribute__((packed)) {
-	command_header_t header;
-	struct __attribute__((packed)) {
-		char value[200];
-	} data;
-} command_t;
 
 typedef struct {
 	PAYLOAD_TYPE type;

@@ -9,7 +9,7 @@
 #define INC_LIBS__FIRMWARE_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "Libs/_reporter.h"
+#include "Libs/_command.h"
 #include "Libs/_utils.h"
 
 /* Public functions prototype ------------------------------------------------*/

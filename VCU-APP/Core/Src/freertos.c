@@ -67,6 +67,9 @@
 #include "Nodes/VCU.h"
 #include "Nodes/NODE.h"
 
+#include "Business/_states.h"
+#include "Business/_exec.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -702,7 +705,7 @@ void StartManagerTask(void *argument)
 		VCU_Refresh();
 		NODE_Refresh();
 
-		VCU_CheckState();
+		StatesCheck();
 
 		IWDG_Refresh();
 		osDelayUntil(TASKS.tick.manager + MANAGER_WAKEUP_MS);
@@ -826,246 +829,10 @@ void StartCommandTask(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		TASKS.tick.command = _GetTickMS();
-		// get command in queue
+
 		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==	osOK) {
-			uint8_t val = *(uint8_t *)cmd.data.value;
-			uint8_t code = cmd.header.code;
-			uint8_t sub_code = cmd.header.sub_code;
+			ExecCommand(&cmd, &resp);
 
-			// default command response
-			uint8_t *res_code = &(resp.data.res_code);
-			resp.header.code = code;
-			resp.header.sub_code = sub_code;
-			resp.data.res_code = RESP_OK;
-			strcpy(resp.data.message, "");
-
-			// handle the command
-			if (code == CMD_CODE_GEN) {
-				switch (sub_code) {
-				case CMD_GEN_INFO:
-					CMD_GenInfo(&resp);
-					break;
-
-				case CMD_GEN_LED:
-					GATE_LedWrite(val);
-					break;
-
-				case CMD_GEN_RTC:
-					RTC_Write(*(datetime_t *)cmd.data.value);
-					break;
-
-				case CMD_GEN_ODOM:
-					EE_TripMeter(EE_CMD_W, HBAR_M_TRIP_ODO, *(uint16_t *)cmd.data.value);
-					break;
-
-				case CMD_GEN_ANTITHIEF:
-					osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_TOGGLE);
-					break;
-
-				case CMD_GEN_RPT_FLUSH:
-					osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_FLUSH);
-					break;
-
-				case CMD_GEN_RPT_BLOCK:
-					RPT.block = val;
-					break;
-
-				default:
-					*res_code = RESP_INVALID;
-					break;
-				}
-			}
-
-			else if (code == CMD_CODE_OVD) {
-				switch (sub_code) {
-
-				case CMD_OVD_STATE:
-					if (VCU.d.state < VEHICLE_NORMAL) {
-						sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
-						*res_code = RESP_ERROR;
-					} else
-						_osQueuePutRst(OvdStateQueueHandle, &val);
-					break;
-
-				case CMD_OVD_RPT_INTERVAL:
-					RPT.override.interval = *(uint16_t *)cmd.data.value;
-					break;
-
-				case CMD_OVD_RPT_FRAME:
-					RPT.override.frame = val;
-					break;
-
-				case CMD_OVD_RMT_SEAT:
-					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
-					break;
-
-				case CMD_OVD_RMT_ALARM:
-					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
-					break;
-
-				default:
-					*res_code = RESP_INVALID;
-					break;
-				}
-			}
-
-			else if (code == CMD_CODE_AUDIO) {
-				if (VCU.d.state < VEHICLE_NORMAL) {
-					sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
-					*res_code = RESP_ERROR;
-				} else
-					switch (sub_code) {
-					case CMD_AUDIO_BEEP:
-						osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_BEEP);
-						break;
-
-					default:
-						*res_code = RESP_INVALID;
-						break;
-					}
-			}
-
-			else if (code == CMD_CODE_FGR) {
-				if (VCU.d.state != VEHICLE_STANDBY) {
-					sprintf(resp.data.message, "State should = {%d}.", VEHICLE_STANDBY);
-					*res_code = RESP_ERROR;
-				} else
-					switch (sub_code) {
-					case CMD_FGR_FETCH:
-						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_FETCH);
-						CMD_FingerFetch(&resp);
-						break;
-
-					case CMD_FGR_ADD:
-						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_ADD);
-						CMD_FingerAdd(&resp, DriverQueueHandle);
-						break;
-
-					case CMD_FGR_DEL:
-						_osQueuePutRst(DriverQueueHandle, &val);
-						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_DEL);
-						CMD_Finger(&resp);
-						break;
-
-					case CMD_FGR_RST:
-						osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_RST);
-						CMD_Finger(&resp);
-						break;
-
-					default:
-						*res_code = RESP_INVALID;
-						break;
-					}
-			}
-
-			else if (code == CMD_CODE_RMT) {
-				if (VCU.d.state < VEHICLE_NORMAL) {
-					sprintf(resp.data.message, "State should >= {%d}.", VEHICLE_NORMAL);
-					*res_code = RESP_ERROR;
-				} else
-					switch (sub_code) {
-					case CMD_RMT_PAIRING:
-						osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_PAIRING);
-						CMD_RemotePairing(&resp);
-						break;
-
-					default:
-						*res_code = RESP_INVALID;
-						break;
-					}
-			}
-
-			else if (code == CMD_CODE_FOTA) {
-				*res_code = RESP_ERROR;
-
-				if (VCU.d.state == VEHICLE_RUN) {
-					sprintf(resp.data.message, "State should != {%d}.", VEHICLE_RUN);
-				} else
-					switch (sub_code) {
-					case CMD_FOTA_VCU:
-						FW_EnterModeIAP(IAP_VCU, resp.data.message);
-						break;
-
-					case CMD_FOTA_HMI:
-						FW_EnterModeIAP(IAP_HMI, resp.data.message);
-						break;
-
-					default:
-						*res_code = RESP_INVALID;
-						break;
-					}
-			}
-
-			else if (code == CMD_CODE_NET) {
-				*res_code = RESP_ERROR;
-
-				switch (sub_code) {
-				case CMD_NET_SEND_USSD:
-					_osQueuePutRst(UssdQueueHandle, cmd.data.value);
-					osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_SEND_USSD);
-					CMD_NetQuota(&resp, QuotaQueueHandle);
-					break;
-
-				case CMD_NET_READ_SMS:
-					osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_READ_SMS);
-					CMD_NetQuota(&resp, QuotaQueueHandle);
-					break;
-
-				default:
-					*res_code = RESP_INVALID;
-					break;
-				}
-			}
-
-			else if (code == CMD_CODE_HBAR) {
-				switch (sub_code) {
-
-				case CMD_HBAR_DRIVE:
-					HBAR.d.mode[HBAR_M_DRIVE] = val;
-					break;
-
-				case CMD_HBAR_TRIP:
-					HBAR.d.mode[HBAR_M_TRIP] = val;
-					break;
-
-				case CMD_HBAR_REPORT:
-					HBAR.d.mode[HBAR_M_REPORT] = val;
-					break;
-
-				case CMD_HBAR_REVERSE:
-					HBAR.d.pin[HBAR_K_REVERSE] = val;
-					break;
-
-				default:
-					*res_code = RESP_INVALID;
-					break;
-				}
-			}
-
-			else if (code == CMD_CODE_MCU) {
-				if (!MCU.d.active || MCU.d.run) {
-					sprintf(resp.data.message, "MCU not ready!");
-					*res_code = RESP_ERROR;
-				} else
-					switch (sub_code) {
-					case CMD_MCU_SPEED_MAX:
-						MCU_SetSpeedMax(val);
-						break;
-
-					case CMD_MCU_TEMPLATES:
-						MCU_SetTemplates(*(mcu_templates_t*)cmd.data.value);
-						break;
-
-					default:
-						*res_code = RESP_INVALID;
-						break;
-					}
-			}
-
-			else
-				*res_code = RESP_INVALID;
-
-			// Get current snapshot
 			RPT_ResponseCapture(&resp);
 			_osQueuePutRst(ResponseQueueHandle, &resp);
 		}
@@ -1140,10 +907,8 @@ void StartMemsTask(void *argument)
 			if (notif & FLAG_MEMS_DETECTOR_RESET)
 				MEMS_GetRefDetector();
 
-
 			if (notif & FLAG_MEMS_DETECTOR_TOGGLE)
 				MEMS.det.active = !MEMS.det.active;
-
 		}
 
 		// Read all data
@@ -1583,9 +1348,8 @@ void StartGateTask(void *argument)
 					HBAR_ReadStates();
 			}
 
-			if (notif & FLAG_GATE_WINK_HORN) {
+			if (notif & FLAG_GATE_WINK_HORN)
 				GATE_Horn(500);
-			}
 
 			if (notif & FLAG_GATE_ALARM_HORN) {
 				if (VCU_GetEvent(EVG_BIKE_MOVED))
@@ -1596,11 +1360,9 @@ void StartGateTask(void *argument)
 				}
 			}
 
-
-			if (notif & FLAG_GATE_OPEN_SEAT) {
+			if (notif & FLAG_GATE_OPEN_SEAT)
 				if (VCU.d.state == VEHICLE_NORMAL)
 					GATE_Seat(1000);
-			}
 		}
 
 		HBAR_RefreshSelectSet();

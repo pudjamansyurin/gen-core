@@ -47,11 +47,10 @@ typedef struct {
  * ---------------------------------------------------------*/
 extern vcu_t VCU;
 
-/* Public functions implementation
+/* Public functions declarations
  * --------------------------------------------*/
 void VCU_Init(void);
 void VCU_Refresh(void);
-void VCU_CheckState(void);
 void VCU_SetEvent(uint8_t bit, uint8_t value);
 uint8_t VCU_GetEvent(uint8_t bit);
 uint8_t VCU_CalcDistance(void);
