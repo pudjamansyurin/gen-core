@@ -18,10 +18,13 @@
 /* External variables -----------------------------------------*/
 extern osMessageQueueId_t OvdStateQueueHandle;
 
+
+/* Private variables -----------------------------------------*/
+static vehicle_state_t LAST_STATE = VEHICLE_UNKNOWN;
+
 /* Public functions implementation
  * --------------------------------------------*/
 void StatesCheck(void) {
-	static vehicle_state_t lastState = VEHICLE_UNKNOWN;
 	uint8_t ovdState, normalize = 0, start = 0;
 	HBAR_STARTER starter = HBAR.ctl.starter;
 	vehicle_state_t initialState;
@@ -40,8 +43,8 @@ void StatesCheck(void) {
 
 		switch (VCU.d.state) {
 		case VEHICLE_LOST:
-			if (lastState != VEHICLE_LOST) {
-				lastState = VEHICLE_LOST;
+			if (LAST_STATE != VEHICLE_LOST) {
+				LAST_STATE = VEHICLE_LOST;
 				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
 			}
 
@@ -50,8 +53,8 @@ void StatesCheck(void) {
 			break;
 
 		case VEHICLE_BACKUP:
-			if (lastState != VEHICLE_BACKUP) {
-				lastState = VEHICLE_BACKUP;
+			if (LAST_STATE != VEHICLE_BACKUP) {
+				LAST_STATE = VEHICLE_BACKUP;
 				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
 				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_STOP);
 				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_STOP);
@@ -71,8 +74,8 @@ void StatesCheck(void) {
 			break;
 
 		case VEHICLE_NORMAL:
-			if (lastState != VEHICLE_NORMAL) {
-				lastState = VEHICLE_NORMAL;
+			if (LAST_STATE != VEHICLE_NORMAL) {
+				LAST_STATE = VEHICLE_NORMAL;
 				osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
 				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_START);
 				osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_START);
@@ -99,8 +102,8 @@ void StatesCheck(void) {
 			break;
 
 		case VEHICLE_STANDBY:
-			if (lastState != VEHICLE_STANDBY) {
-				lastState = VEHICLE_STANDBY;
+			if (LAST_STATE != VEHICLE_STANDBY) {
+				LAST_STATE = VEHICLE_STANDBY;
 				start = 0;
 				FGR.d.id = 0;
 			}
@@ -112,8 +115,8 @@ void StatesCheck(void) {
 			break;
 
 		case VEHICLE_READY:
-			if (lastState != VEHICLE_READY) {
-				lastState = VEHICLE_READY;
+			if (LAST_STATE != VEHICLE_READY) {
+				LAST_STATE = VEHICLE_READY;
 				start = 0;
 				VCU.d.tick.ready = _GetTickMS();
 			}
@@ -125,8 +128,8 @@ void StatesCheck(void) {
 			break;
 
 		case VEHICLE_RUN:
-			if (lastState != VEHICLE_RUN) {
-				lastState = VEHICLE_RUN;
+			if (LAST_STATE != VEHICLE_RUN) {
+				LAST_STATE = VEHICLE_RUN;
 				start = 0;
 			}
 

@@ -135,7 +135,7 @@ void GATE_FingerReset(void) {
 void GATE_FingerDigitalPower(GPIO_PinState state) {
 	//HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin, !state);
 	HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, state);
-	_DelayMS(500);
+	_DelayMS(50);
 }
 
 void GATE_AudioShutdown(void) {

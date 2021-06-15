@@ -160,8 +160,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
 	}
 	unlock();
 
-	RegisterState(FGR_REG_SHOW, !(*ok));
-	_DelayMS(500);
+	RegisterState(FGR_REG_SHOW, !(*ok)); _DelayMS(250);
 	RegisterState(FGR_REG_HIDE, 0);
 
 	return (res == FINGERPRINT_OK);
@@ -209,8 +208,7 @@ void FGR_Authenticate(void) {
 		FGR.d.id = FGR.d.id ? 0: id;
 	}
 
-	RegisterState(FGR_REG_SHOW, !ok);
-	_DelayMS(500);
+	RegisterState(FGR_REG_SHOW, !ok); _DelayMS(250);
 	RegisterState(FGR_REG_HIDE, 0);
 }
 
@@ -220,11 +218,11 @@ static void lock(void) {
 #if (RTOS_ENABLE)
 	osMutexAcquire(FingerRecMutexHandle, osWaitForever);
 #endif
-	GATE_FingerDigitalPower(1);
+//	GATE_FingerDigitalPower(1);
 }
 
 static void unlock(void) {
-	GATE_FingerDigitalPower(0);
+//	GATE_FingerDigitalPower(0);
 #if (RTOS_ENABLE)
 	osMutexRelease(FingerRecMutexHandle);
 #endif
