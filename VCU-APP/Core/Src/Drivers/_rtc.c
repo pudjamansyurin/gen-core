@@ -16,6 +16,7 @@ extern osMutexId_t RtcMutexHandle;
 
 /* Private variables
  * ----------------------------------------------------------*/
+static uint32_t lastCalibrationTick = 0;
 static RTC_HandleTypeDef *prtc = &hrtc;
 
 /* Private functions declaration
@@ -48,15 +49,14 @@ void RTC_Write(datetime_t dt) {
 }
 
 uint8_t RTC_NeedCalibration(void) {
-  timestamp_t ts;
-
-  RTC_ReadRaw(&ts);
-  return ts.date.Year < VCU_BUILD_YEAR;
+  return !_TickIn(lastCalibrationTick, RTC_CALIBRATION_MINUTES*60*1000);
 }
 
 void RTC_Calibrate(timestamp_t *ts) {
-  if (ts->date.Year >= VCU_BUILD_YEAR)
+  if (ts->date.Year >= VCU_BUILD_YEAR) {
     RTC_WriteRaw(ts);
+	lastCalibrationTick = _GetTickMS();
+  }
 }
 
 uint8_t RTC_Daylight() {

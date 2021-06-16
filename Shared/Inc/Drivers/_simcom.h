@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#include "Drivers/_rtc.h"
 
 /* Exported constants --------------------------------------------------------*/
 #define NET_BOOT_MS ((uint16_t)8000)
@@ -117,7 +118,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char *Simcom_Resp(char *keyword, char *from);
 SIM_RESULT Simcom_Cmd(char *command, char *reply, uint32_t ms);
 #if (!BOOTLOADER)
-void Simcom_CalibrateTime(void);
+uint8_t Simcom_FetchTime(timestamp_t *ts);
 uint8_t Simcom_SendUSSD(char *ussd, char *buf, uint8_t buflen);
 uint8_t Simcom_ReadNewSMS(char *buf, uint8_t buflen);
 // uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen);

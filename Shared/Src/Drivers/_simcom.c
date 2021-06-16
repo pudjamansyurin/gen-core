@@ -195,14 +195,14 @@ char *Simcom_Resp(char *keyword, char *from) {
 }
 
 #if (!BOOTLOADER)
-void Simcom_CalibrateTime(void) {
-	timestamp_t ts;
+uint8_t Simcom_FetchTime(timestamp_t *ts) {
+	uint8_t ok = 0;
 
-	if (!Simcom_SetState(SIM_STATE_READY, 0))
-		return;
+	if (Simcom_SetState(SIM_STATE_READY, 0))
+		if (AT_Clock(ATR, ts) == SIM_OK)
+			ok = 1;
 
-	if (AT_Clock(ATR, &ts) == SIM_OK)
-		RTC_Calibrate(&ts);
+	return ok;
 }
 
 uint8_t Simcom_SendUSSD(char *ussd, char *buf, uint8_t buflen) {
