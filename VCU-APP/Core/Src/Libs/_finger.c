@@ -54,7 +54,7 @@ uint8_t FGR_Init(void) {
 
 		ok = FGR_Probe();
 		if (!ok) _DelayMS(500);
-	} while (!ok && _GetTickMS() - tick < FINGER_TIMEOUT_MS);
+	} while (!ok && _TickIn(tick, FINGER_TIMEOUT_MS));
 
 	FGR.d.verified = ok;
 	unlock();
@@ -84,7 +84,7 @@ uint8_t FGR_Probe(void) {
 	return ok;
 }
 
-uint8_t FGR_Verify(void) {
+void FGR_Verify(void) {
 	lock();
 	FGR.d.verified = FGR_Probe();
 	if (!FGR.d.verified) {
@@ -93,8 +93,6 @@ uint8_t FGR_Verify(void) {
 		FGR_Init();
 	}
 	unlock();
-
-	return FGR.d.verified;
 }
 
 void FGR_Flush(void) {

@@ -200,7 +200,7 @@ uint8_t Simcom_FetchTime(timestamp_t *ts) {
 
 	if (Simcom_SetState(SIM_STATE_READY, 0))
 		if (AT_Clock(ATR, ts) == SIM_OK)
-			ok = 1;
+			ok = (ts->date.Year >= VCU_BUILD_YEAR);
 
 	return ok;
 }

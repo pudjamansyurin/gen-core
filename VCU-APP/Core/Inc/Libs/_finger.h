@@ -49,7 +49,7 @@ extern finger_t FGR;
 uint8_t FGR_Init(void);
 void FGR_DeInit(void);
 uint8_t FGR_Probe(void);
-uint8_t FGR_Verify(void);
+void FGR_Verify(void);
 void FGR_Flush(void);
 uint8_t FGR_Fetch(void);
 uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok);
