@@ -1044,7 +1044,7 @@ void StartFingerTask(void *argument)
 			}
 
 			if (VCU.d.state == VEHICLE_STANDBY) {
-				if (!(notif & FLAG_FINGER_PLACED)) {
+				if (notif & (FLAG_FINGER_ADD | FLAG_FINGER_DEL | FLAG_FINGER_FETCH | FLAG_FINGER_RST)) {
 					uint8_t ok = 0;
 
 					if (notif & FLAG_FINGER_ADD) {
@@ -1056,28 +1056,31 @@ void StartFingerTask(void *argument)
 						if (_osQueueGet(DriverQueueHandle, &id))
 							ok = FGR_DeleteID(id);
 					}
+					else if (notif & FLAG_FINGER_RST)
+						ok = FGR_ResetDB();
 					else if (notif & FLAG_FINGER_FETCH)
 						ok = FGR_Fetch();
 
-					else if (notif & FLAG_FINGER_RST)
-						ok = FGR_ResetDB();
 
-					osThreadFlagsSet(CommandTaskHandle, ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
+					osThreadFlagsSet(
+							CommandTaskHandle,
+							ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR
+					);
 				}
 
-				//				else {
-				//					FGR_Authenticate();
-				//					osThreadFlagsClear(FLAG_FINGER_PLACED);
-				//				}
+//				if (notif & FLAG_FINGER_PLACED) {
+//					FGR_Authenticate();
+//					osThreadFlagsClear(FLAG_FINGER_PLACED);
+//				}
 			}
 		}
 
-		GATE_FingerDigitalPower(VCU.d.state == VEHICLE_STANDBY);
+		GATE_FingerChipPower(VCU.d.state == VEHICLE_STANDBY);
 		if (VCU.d.state == VEHICLE_STANDBY)
 			FGR_Authenticate();
 
-		//if (!FGR.d.verified)
-		//	FGR_Verify();
+		if (!FGR.d.verified)
+			FGR_Verify();
 	}
 	/* USER CODE END StartFingerTask */
 }
@@ -1192,10 +1195,10 @@ void StartCanRxTask(void *argument)
 			} else {
 				switch (BMS_CAND(Rx.header.ExtId)) {
 				case BMS_CAND(CAND_BMS_PARAM_1):
-							BMS_RX_Param1(&Rx);
+																											BMS_RX_Param1(&Rx);
 				break;
 				case BMS_CAND(CAND_BMS_PARAM_2):
-							BMS_RX_Param2(&Rx);
+																											BMS_RX_Param2(&Rx);
 				break;
 				default:
 					break;
@@ -1377,9 +1380,9 @@ void StartGateTask(void *argument)
 			HBAR_SetReport(distance);
 		}
 
-		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
 		HMI1_Power(VCU.d.state >= VEHICLE_STANDBY);
 		MCU_Power12v(VCU.d.state >= VEHICLE_READY);
+		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
 	}
 	/* USER CODE END StartGateTask */
 }
@@ -1398,10 +1401,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			RMT_IrqHandler();
 	}
 
-	if (GPIO_Pin & EXT_FINGER_IRQ_Pin) {
-		if (VCU.d.state == VEHICLE_STANDBY)
-			osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_PLACED);
-	}
+//	if (GPIO_Pin & EXT_FINGER_IRQ_Pin) {
+//		if (VCU.d.state == VEHICLE_STANDBY)
+//			osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_PLACED);
+//	}
 
 	if (!((GPIO_Pin & INT_REMOTE_IRQ_Pin) || (GPIO_Pin & EXT_FINGER_IRQ_Pin))) {
 		if (VCU.d.state >= VEHICLE_NORMAL)

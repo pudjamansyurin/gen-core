@@ -38,7 +38,7 @@ void GATE_RemoteCSN(GPIO_PinState state);
 void GATE_RemoteCE(GPIO_PinState state);
 void GATE_FingerShutdown(void);
 void GATE_FingerReset(void);
-void GATE_FingerDigitalPower(GPIO_PinState state);
+void GATE_FingerChipPower(GPIO_PinState state);
 void GATE_AudioShutdown(void);
 void GATE_AudioReset(void);
 void GATE_AudioCodecStop(void);
