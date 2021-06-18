@@ -920,7 +920,7 @@ void StartMemsTask(void *argument)
 			VCU_SetEvent(EVG_BIKE_FALLEN, fallen);
 
 			// Drag detector
-			if (VCU.d.state == VEHICLE_NORMAL && MEMS.det.active) {
+			if (MEMS.det.active) {
 				if (MEMS_Dragged())
 					VCU_SetEvent(EVG_BIKE_MOVED, 1);
 				if (VCU_GetEvent(EVG_BIKE_MOVED))
@@ -1363,7 +1363,8 @@ void StartGateTask(void *argument)
 			}
 
 			if (notif & FLAG_GATE_ALARM_HORN)
-				GATE_Horn(500);
+				if (VCU.d.state == VEHICLE_NORMAL)
+					GATE_Horn(500);
 
 			if (notif & FLAG_GATE_OPEN_SEAT)
 				if (VCU.d.state == VEHICLE_NORMAL)
