@@ -924,7 +924,7 @@ void StartMemsTask(void *argument)
 				if (MEMS_Dragged())
 					VCU_SetEvent(EVG_BIKE_MOVED, 1);
 				if (VCU_GetEvent(EVG_BIKE_MOVED))
-					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_WINK_HORN);
+					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
 			} else
 				MEMS_GetRefDetector();
 		}
@@ -997,8 +997,12 @@ void StartRemoteTask(void *argument)
 						if (command == RMT_CMD_ANTITHIEF)
 							osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_TOGGLE);
 
-						else if (command == RMT_CMD_ALARM)
-							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
+						else if (command == RMT_CMD_ALARM) {
+							if (VCU_GetEvent(EVG_BIKE_MOVED))
+								osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
+							else
+								osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
+						}
 
 						else if (command == RMT_CMD_SEAT)
 							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
@@ -1358,17 +1362,8 @@ void StartGateTask(void *argument)
 					HBAR_ReadStates();
 			}
 
-			if (notif & FLAG_GATE_WINK_HORN)
+			if (notif & FLAG_GATE_ALARM_HORN)
 				GATE_Horn(500);
-
-			if (notif & FLAG_GATE_ALARM_HORN) {
-				if (VCU_GetEvent(EVG_BIKE_MOVED))
-					osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
-				else {
-					GATE_Horn(500);
-					GATE_Horn(500);
-				}
-			}
 
 			if (notif & FLAG_GATE_OPEN_SEAT)
 				if (VCU.d.state == VEHICLE_NORMAL)
