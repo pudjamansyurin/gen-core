@@ -1,16 +1,15 @@
 /*
- * _states.h
+ * _state.h
  *
  *  Created on: Jun 14, 2021
  *      Author: pudja
  */
 
-#ifndef INC_BUSINESS__STATES_H_
-#define INC_BUSINESS__STATES_H_
-
+#ifndef INC_BUSINESS__STATE_H_
+#define INC_BUSINESS__STATE_H_
 
 /* Public functions declarations
  * --------------------------------------------*/
-void StatesCheck(void);
+void STATE_Check(void);
 
-#endif /* INC_BUSINESS__STATES_H_ */
+#endif /* INC_BUSINESS__STATE_H_ */

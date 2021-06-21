@@ -20,16 +20,16 @@ extern osMessageQueueId_t OvdStateQueueHandle, DriverQueueHandle, UssdQueueHandl
 
 /* Private functions declarations
  * --------------------------------------------*/
-static void CMD_GenInfo(response_data_t *resp);
-static void CMD_FingerAdd(response_data_t *rdata, osMessageQueueId_t queue);
-static void CMD_FingerFetch(response_data_t *rdata);
-static void CMD_Finger(response_data_t *rdata);
-static void CMD_RemotePairing(response_data_t *rdata);
-static void CMD_NetQuota(response_data_t *rdata, osMessageQueueId_t queue);
+static void EXE_GenInfo(response_data_t *resp);
+static void EXE_FingerAdd(response_data_t *rdata, osMessageQueueId_t queue);
+static void EXE_FingerFetch(response_data_t *rdata);
+static void EXE_Finger(response_data_t *rdata);
+static void EXE_RemotePairing(response_data_t *rdata);
+static void EXE_NetQuota(response_data_t *rdata, osMessageQueueId_t queue);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void ExecCommand(command_t *cmd, response_t *resp) {
+void EXEC_Command(command_t *cmd, response_t *resp) {
 	uint8_t code = cmd->header.code;
 	uint8_t subCode = cmd->header.sub_code;
 	void *val = cmd->data.value;
@@ -47,7 +47,7 @@ void ExecCommand(command_t *cmd, response_t *resp) {
 	if (code == CMD_CODE_GEN) {
 		switch (subCode) {
 		case CMD_GEN_INFO:
-			CMD_GenInfo(rdata);
+			EXE_GenInfo(rdata);
 			break;
 
 		case CMD_GEN_LED:
@@ -137,23 +137,23 @@ void ExecCommand(command_t *cmd, response_t *resp) {
 			switch (subCode) {
 			case CMD_FGR_FETCH:
 				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_FETCH);
-				CMD_FingerFetch(rdata);
+				EXE_FingerFetch(rdata);
 				break;
 
 			case CMD_FGR_ADD:
 				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_ADD);
-				CMD_FingerAdd(rdata, DriverQueueHandle);
+				EXE_FingerAdd(rdata, DriverQueueHandle);
 				break;
 
 			case CMD_FGR_DEL:
 				_osQueuePutRst(DriverQueueHandle, (uint8_t*)val);
 				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_DEL);
-				CMD_Finger(rdata);
+				EXE_Finger(rdata);
 				break;
 
 			case CMD_FGR_RST:
 				osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_RST);
-				CMD_Finger(rdata);
+				EXE_Finger(rdata);
 				break;
 
 			default:
@@ -170,7 +170,7 @@ void ExecCommand(command_t *cmd, response_t *resp) {
 			switch (subCode) {
 			case CMD_RMT_PAIRING:
 				osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_PAIRING);
-				CMD_RemotePairing(rdata);
+				EXE_RemotePairing(rdata);
 				break;
 
 			default:
@@ -207,12 +207,12 @@ void ExecCommand(command_t *cmd, response_t *resp) {
 		case CMD_NET_SEND_USSD:
 			_osQueuePutRst(UssdQueueHandle, val);
 			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_SEND_USSD);
-			CMD_NetQuota(rdata, QuotaQueueHandle);
+			EXE_NetQuota(rdata, QuotaQueueHandle);
 			break;
 
 		case CMD_NET_READ_SMS:
 			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_READ_SMS);
-			CMD_NetQuota(rdata, QuotaQueueHandle);
+			EXE_NetQuota(rdata, QuotaQueueHandle);
 			break;
 
 		default:
@@ -274,7 +274,7 @@ void ExecCommand(command_t *cmd, response_t *resp) {
 
 /* Private functions implementation
  * -------------------------------------------*/
-static void CMD_GenInfo(response_data_t *rdata) {
+static void EXE_GenInfo(response_data_t *rdata) {
 	char msg[20];
 	sprintf(msg, "VCU v.%d,", VCU_VERSION);
 
@@ -286,7 +286,7 @@ static void CMD_GenInfo(response_data_t *rdata) {
 			VCU_BUILD_YEAR);
 }
 
-static void CMD_FingerAdd(response_data_t *rdata, osMessageQueueId_t queue) {
+static void EXE_FingerAdd(response_data_t *rdata, osMessageQueueId_t queue) {
 	uint32_t notif;
 	uint8_t id;
 
@@ -306,7 +306,7 @@ static void CMD_FingerAdd(response_data_t *rdata, osMessageQueueId_t queue) {
 	}
 }
 
-static void CMD_FingerFetch(response_data_t *rdata) {
+static void EXE_FingerFetch(response_data_t *rdata) {
 	uint32_t notif, len;
 	char fingers[3];
 
@@ -330,7 +330,7 @@ static void CMD_FingerFetch(response_data_t *rdata) {
 	}
 }
 
-static void CMD_Finger(response_data_t *rdata) {
+static void EXE_Finger(response_data_t *rdata) {
 	uint32_t notif;
 
 	// wait response until timeout
@@ -339,7 +339,7 @@ static void CMD_Finger(response_data_t *rdata) {
 		rdata->res_code = RESP_OK;
 }
 
-static void CMD_RemotePairing(response_data_t *rdata) {
+static void EXE_RemotePairing(response_data_t *rdata) {
 	uint32_t notif;
 
 	// wait response until timeout
@@ -348,7 +348,7 @@ static void CMD_RemotePairing(response_data_t *rdata) {
 		rdata->res_code = RESP_OK;
 }
 
-static void CMD_NetQuota(response_data_t *rdata, osMessageQueueId_t queue) {
+static void EXE_NetQuota(response_data_t *rdata, osMessageQueueId_t queue) {
 	uint32_t notif;
 
 	// wait response until timeout

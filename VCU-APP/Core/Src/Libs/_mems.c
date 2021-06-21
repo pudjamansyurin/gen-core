@@ -166,7 +166,7 @@ void MEMS_GetRefDetector(void) {
 	mems_tilt_t *ref = &(MEMS.det.tilt.ref);
 
 	lock();
-	VCU_SetEvent(EVG_BIKE_MOVED, 0);
+	EVT_Clr(EVG_BIKE_MOVED);
 	memcpy(ref, cur, sizeof(mems_tilt_t));
 	unlock();
 }

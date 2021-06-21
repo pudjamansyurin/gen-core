@@ -92,7 +92,7 @@ void MCU_Refresh(void) {
 	MCU.d.overheat = IsOverheat();
 	MCU.d.run = MCU.d.active && MCU.d.inv.enabled;
 
-	VCU_SetEvent(EVG_MCU_ERROR, (MCU.d.fault.post | MCU.d.fault.run) > 0);
+	EVT_SetVal(EVG_MCU_ERROR, (MCU.d.fault.post | MCU.d.fault.run) > 0);
 }
 
 

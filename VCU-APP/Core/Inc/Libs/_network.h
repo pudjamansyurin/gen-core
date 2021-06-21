@@ -12,6 +12,7 @@
 #include "Libs/_utils.h"
 
 /* Public functions declaration -------------------------------------------*/
+void NET_CheckClock(void);
 void NET_CheckCommand(void);
 void NET_CheckPayload(PAYLOAD_TYPE type);
 uint8_t NET_SendUSSD(void);

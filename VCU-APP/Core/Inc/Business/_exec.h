@@ -13,7 +13,7 @@
 
 /* Public functions declarations
  * --------------------------------------------*/
-void ExecCommand(command_t *cmd, response_t *resp);
+void EXEC_Command(command_t *cmd, response_t *resp);
 
 
 #endif /* INC_BUSINESS__EXEC_H_ */

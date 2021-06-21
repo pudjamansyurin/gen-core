@@ -112,6 +112,6 @@ void HBAR_ReadStates(void);
 void HBAR_RefreshSelectSet(void);
 void HBAR_RefreshSein(void);
 void HBAR_AddTripMeter(uint8_t m);
-void HBAR_SetReport(uint8_t distance);
+void HBAR_SetReport(uint8_t eff, uint8_t km);
 
 #endif /* LIBS__HBAR_H_ */

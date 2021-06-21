@@ -353,7 +353,7 @@ static SIM_RESULT Reset(uint8_t hard) {
 		GATE_SimcomSoftReset();
 
 #if (!BOOTLOADER)
-	VCU_SetEvent(hard ? EVG_NET_HARD_RESET : EVG_NET_SOFT_RESET, 1);
+	EVT_Set(hard ? EVG_NET_HARD_RESET : EVG_NET_SOFT_RESET);
 #endif
 
 	// Wait until ready
@@ -453,7 +453,7 @@ static SIM_RESULT TransmitCmd(char *data, uint16_t size, uint32_t ms,
 					res = SIM_RESTARTED;
 					SIM.d.state = SIM_STATE_READY;
 #if (!BOOTLOADER)
-					VCU_SetEvent(EVG_NET_SOFT_RESET, 1);
+					EVT_Set(EVG_NET_SOFT_RESET);
 #endif
 				}
 

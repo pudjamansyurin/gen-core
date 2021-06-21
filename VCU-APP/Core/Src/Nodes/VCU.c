@@ -14,7 +14,6 @@
 #include "Nodes/NODE.h"
 #include "Nodes/MCU.h"
 #include "Nodes/BMS.h"
-#include "Nodes/HMI2.h"
 
 /* Public variables
  * -----------------------------------------------------------*/
@@ -37,30 +36,7 @@ void VCU_Refresh(void) {
 
 	VCU.d.uptime++;
 	VCU.d.buffered = osMessageQueueGetCount(ReportQueueHandle);
-	VCU.d.error = VCU_GetEvent(EVG_BIKE_FALLEN);
-}
-
-void VCU_SetEvent(uint8_t bit, uint8_t value) {
-	if (value & 1) BV(VCU.d.events, bit);
-	else BC(VCU.d.events, bit);
-}
-
-uint8_t VCU_GetEvent(uint8_t bit) {
-	return (VCU.d.events & BIT(bit)) == BIT(bit);
-}
-
-uint8_t VCU_CalcDistance(void) {
-	static uint32_t tick = 0;
-	uint8_t meter = 0;
-	float mps;
-
-	if (tick > 0) {
-		mps = (float) MCU_RpmToSpeed(MCU.d.rpm) / 3.6;
-		meter = ((_GetTickMS() - tick) * mps) / 1000;
-	}
-	tick = _GetTickMS();
-
-	return meter;
+	VCU.d.error = EVT_Get(EVG_BIKE_FALLEN);
 }
 
 /* ====================================== CAN TX
@@ -79,7 +55,6 @@ uint8_t VCU_TX_SwitchControl(void) {
 	UNION64 *d = &(Tx.data);
 
 	d->u8[0] = HBAR.d.pin[HBAR_K_ABS];
-	d->u8[0] |= HMI2.d.mirroring << 1;
 	d->u8[0] |= HBAR.d.pin[HBAR_K_LAMP] << 2;
 	d->u8[0] |= NODE.d.error << 3;
 	d->u8[0] |= NODE.d.overheat << 4;

@@ -15,6 +15,9 @@
 #if RTOS_ENABLE
 #include "Libs/_rtos.h"
 #endif
+#if !BOOTLOADER
+#include "Business/_event.h"
+#endif
 
 /* Exported union ------------------------------------------------------------*/
 typedef union {

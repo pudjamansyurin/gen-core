@@ -59,7 +59,7 @@ void BMS_RefreshIndex(void) {
 	BMS.d.fault = MergeFault();
 	BMS.d.overheat = AreOverheat();
 
-	VCU_SetEvent(EVG_BMS_ERROR, BMS.d.fault > 0);
+	EVT_SetVal(EVG_BMS_ERROR, BMS.d.fault > 0);
 }
 
 uint8_t BMS_MinIndex(void) {

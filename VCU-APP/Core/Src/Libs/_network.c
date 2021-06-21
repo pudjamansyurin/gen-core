@@ -7,8 +7,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_network.h"
-#include "Drivers/_simcom.h"
 #include "Libs/_mqtt.h"
+#include "Drivers/_simcom.h"
+#include "Drivers/_rtc.h"
 
 /* External variables -------------------------------------------*/
 extern osMessageQueueId_t UssdQueueHandle, QuotaQueueHandle;
@@ -17,6 +18,14 @@ extern osMessageQueueId_t UssdQueueHandle, QuotaQueueHandle;
 static char buf[200];
 
 /* Public functions implementation -------------------------------------------*/
+void NET_CheckClock(void) {
+	timestamp_t ts;
+
+	if (RTC_NeedCalibration())
+		if (Simcom_FetchTime(&ts))
+			RTC_Calibrate(&ts);
+}
+
 void NET_CheckCommand(void) {
 	command_t cmd;
 

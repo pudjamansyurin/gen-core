@@ -87,10 +87,8 @@ void GPS_ReceiveCallback(void *ptr, size_t len) {
 #if GPS_DEBUG
 	Debugger(ptr, len);
 #endif
-	if (nmea_process(&(GPS.d.nmea), (char *)ptr, len))  {
+	if (nmea_process(&(GPS.d.nmea), (char *)ptr, len))
 		GPS.d.tick = _GetTickMS();
-		osThreadFlagsSet(GpsTaskHandle, FLAG_GPS_RECEIVED);
-	}
 }
 
 /* Private functions implementation

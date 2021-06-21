@@ -1,12 +1,12 @@
 /*
- * _states.c
+ * _state.c
  *
  *  Created on: Jun 14, 2021
  *      Author: pudja
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "Business/_states.h"
+#include "Business/_state.h"
 #include "Nodes/VCU.h"
 #include "Nodes/NODE.h"
 #include "Nodes/MCU.h"
@@ -18,13 +18,12 @@
 /* External variables -----------------------------------------*/
 extern osMessageQueueId_t OvdStateQueueHandle;
 
-
 /* Private variables -----------------------------------------*/
 static vehicle_state_t LAST_STATE = VEHICLE_UNKNOWN;
 
 /* Public functions implementation
  * --------------------------------------------*/
-void StatesCheck(void) {
+void STATE_Check(void) {
 	uint8_t ovdState, normalize = 0, start = 0;
 	HBAR_STARTER starter = HBAR.ctl.starter;
 	vehicle_state_t initialState;
@@ -64,7 +63,7 @@ void StatesCheck(void) {
 				osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_STOP);
 
 				VCU.d.tick.independent = _GetTickMS();
-				VCU_SetEvent(EVG_REMOTE_MISSING, 1);
+				EVT_Set(EVG_REMOTE_MISSING);
 			}
 
 			if ((_GetTickMS() - VCU.d.tick.independent) > (VCU_LOST_MODE_S*1000))

@@ -61,7 +61,7 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define RPT_QUEUE_SZ 10
+#define RPT_QUEUE_SZ 25
 #define EXT_HBAR_SELECT_Pin GPIO_PIN_2
 #define EXT_HBAR_SELECT_GPIO_Port GPIOE
 #define EXT_HBAR_SELECT_EXTI_IRQn EXTI2_IRQn

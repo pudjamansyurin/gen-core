@@ -30,7 +30,6 @@ typedef enum {
 typedef struct {
 	uint8_t error;
 	uint8_t buffered;
-	uint16_t events;
 	uint32_t uptime;
 	vehicle_state_t state;
 	struct {
@@ -51,9 +50,6 @@ extern vcu_t VCU;
  * --------------------------------------------*/
 void VCU_Init(void);
 void VCU_Refresh(void);
-void VCU_SetEvent(uint8_t bit, uint8_t value);
-uint8_t VCU_GetEvent(uint8_t bit);
-uint8_t VCU_CalcDistance(void);
 
 uint8_t VCU_TX_Heartbeat(void);
 uint8_t VCU_TX_SwitchControl(void);

@@ -66,7 +66,6 @@ void _osCheckTasks(void) {
 	t->wakeup.network = MAX_U8((now - t->tick.network)/1000);
 	t->wakeup.reporter = MAX_U8((now - t->tick.reporter)/1000);
 	t->wakeup.command = MAX_U8((now - t->tick.command)/1000);
-	t->wakeup.gps = MAX_U8((now - t->tick.gps)/1000);
 	t->wakeup.mems = MAX_U8((now - t->tick.mems)/1000);
 	t->wakeup.remote = MAX_U8((now - t->tick.remote)/1000);
 	t->wakeup.finger = MAX_U8((now - t->tick.finger)/1000);
@@ -74,13 +73,11 @@ void _osCheckTasks(void) {
 	t->wakeup.gate = MAX_U8((now - t->tick.gate)/1000);
 	t->wakeup.canRx = MAX_U8((now - t->tick.canRx)/1000);
 	t->wakeup.canTx = MAX_U8((now - t->tick.canTx)/1000);
-	t->wakeup.hmi2Power = MAX_U8((now - t->tick.hmi2Power)/1000);
 
 	t->stack.manager = osThreadGetStackSpace(ManagerTaskHandle);
 	t->stack.network = osThreadGetStackSpace(NetworkTaskHandle);
 	t->stack.reporter = osThreadGetStackSpace(ReporterTaskHandle);
 	t->stack.command = osThreadGetStackSpace(CommandTaskHandle);
-	t->stack.gps = osThreadGetStackSpace(GpsTaskHandle);
 	t->stack.mems = osThreadGetStackSpace(MemsTaskHandle);
 	t->stack.remote = osThreadGetStackSpace(RemoteTaskHandle);
 	t->stack.finger = osThreadGetStackSpace(FingerTaskHandle);
@@ -88,7 +85,6 @@ void _osCheckTasks(void) {
 	t->stack.gate = osThreadGetStackSpace(GateTaskHandle);
 	t->stack.canRx = osThreadGetStackSpace(CanRxTaskHandle);
 	t->stack.canTx = osThreadGetStackSpace(CanTxTaskHandle);
-	t->stack.hmi2Power = osThreadGetStackSpace(Hmi2PowerTaskHandle);
 }
 
 

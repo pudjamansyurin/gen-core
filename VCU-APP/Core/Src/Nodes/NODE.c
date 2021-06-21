@@ -15,7 +15,6 @@
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
 #include "Nodes/HMI1.h"
-#include "Nodes/HMI2.h"
 
 /* Public variables
  * -----------------------------------------------------------*/
@@ -29,7 +28,6 @@ void NODE_Init(void) {
 	BMS_Init();
 	MCU_Init();
 	HMI1_Init();
-	HMI2_Init();
 }
 
 void NODE_Refresh(void) {
@@ -51,7 +49,6 @@ void NODE_Refresh(void) {
 	BMS_RefreshIndex();
 	MCU_Refresh();
 	HMI1_Refresh();
-	HMI2_Refresh();
 }
 
 void NODE_DebugCAN(void) {
@@ -220,7 +217,7 @@ void NODE_TX_DebugTASK(void) {
 	d->u16[3] = t.stack.command;
 	CANBUS_Write(&Tx, CAND_DBG_TASK_1, 8, 0);
 
-	d->u16[0] = t.stack.gps;
+	d->u16[0] = 0;
 	d->u16[1] = t.stack.mems;
 	d->u16[2] = t.stack.remote;
 	d->u16[3] = t.stack.finger;
@@ -236,7 +233,7 @@ void NODE_TX_DebugTASK(void) {
 	d->u8[1] = t.wakeup.network;
 	d->u8[2] = t.wakeup.reporter;
 	d->u8[3] = t.wakeup.command;
-	d->u8[4] = t.wakeup.gps;
+	d->u8[4] = 0;
 	d->u8[5] = t.wakeup.mems;
 	d->u8[6] = t.wakeup.remote;
 	d->u8[7] = t.wakeup.finger;

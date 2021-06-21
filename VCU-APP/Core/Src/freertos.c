@@ -44,7 +44,6 @@
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_iwdg.h"
-#include "Drivers/_rtc.h"
 #include "Drivers/_simcom.h"
 
 #include "Libs/_audio.h"
@@ -62,13 +61,13 @@
 
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
-#include "Nodes/HMI2.h"
 #include "Nodes/MCU.h"
 #include "Nodes/VCU.h"
 #include "Nodes/NODE.h"
 
-#include "Business/_states.h"
+#include "Business/_state.h"
 #include "Business/_exec.h"
+#include "Business/_general.h"
 
 /* USER CODE END Includes */
 
@@ -142,18 +141,6 @@ const osThreadAttr_t CommandTask_attributes = {
   .stack_size = sizeof(CommandTaskBuffer),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
-/* Definitions for GpsTask */
-osThreadId_t GpsTaskHandle;
-uint32_t GpsTaskBuffer[ 256 ];
-osStaticThreadDef_t GpsTaskControlBlock;
-const osThreadAttr_t GpsTask_attributes = {
-  .name = "GpsTask",
-  .cb_mem = &GpsTaskControlBlock,
-  .cb_size = sizeof(GpsTaskControlBlock),
-  .stack_mem = &GpsTaskBuffer[0],
-  .stack_size = sizeof(GpsTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* Definitions for MemsTask */
 osThreadId_t MemsTaskHandle;
 uint32_t MemsTaskBuffer[ 304 ];
@@ -225,18 +212,6 @@ const osThreadAttr_t CanTxTask_attributes = {
   .stack_mem = &CanTxTaskBuffer[0],
   .stack_size = sizeof(CanTxTaskBuffer),
   .priority = (osPriority_t) osPriorityAboveNormal,
-};
-/* Definitions for Hmi2PowerTask */
-osThreadId_t Hmi2PowerTaskHandle;
-uint32_t Hmi2PowerTaskBuffer[ 176 ];
-osStaticThreadDef_t Hmi2PowerTaskControlBlock;
-const osThreadAttr_t Hmi2PowerTask_attributes = {
-  .name = "Hmi2PowerTask",
-  .cb_mem = &Hmi2PowerTaskControlBlock,
-  .cb_size = sizeof(Hmi2PowerTaskControlBlock),
-  .stack_mem = &Hmi2PowerTaskBuffer[0],
-  .stack_size = sizeof(Hmi2PowerTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for GateTask */
 osThreadId_t GateTaskHandle;
@@ -492,14 +467,12 @@ void StartManagerTask(void *argument);
 void StartNetworkTask(void *argument);
 void StartReporterTask(void *argument);
 void StartCommandTask(void *argument);
-void StartGpsTask(void *argument);
 void StartMemsTask(void *argument);
 void StartRemoteTask(void *argument);
 void StartFingerTask(void *argument);
 void StartAudioTask(void *argument);
 void StartCanRxTask(void *argument);
 void StartCanTxTask(void *argument);
-void StartHmi2PowerTask(void *argument);
 void StartGateTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -617,9 +590,6 @@ void MX_FREERTOS_Init(void) {
   /* creation of CommandTask */
   CommandTaskHandle = osThreadNew(StartCommandTask, NULL, &CommandTask_attributes);
 
-  /* creation of GpsTask */
-  GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
-
   /* creation of MemsTask */
   MemsTaskHandle = osThreadNew(StartMemsTask, NULL, &MemsTask_attributes);
 
@@ -637,9 +607,6 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of CanTxTask */
   CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
-
-  /* creation of Hmi2PowerTask */
-  Hmi2PowerTaskHandle = osThreadNew(StartHmi2PowerTask, NULL, &Hmi2PowerTask_attributes);
 
   /* creation of GateTask */
   GateTaskHandle = osThreadNew(StartGateTask, NULL, &GateTask_attributes);
@@ -680,7 +647,6 @@ void StartManagerTask(void *argument)
 	//		osThreadSuspend(NetworkTaskHandle);
 	//		osThreadSuspend(ReporterTaskHandle);
 	//		osThreadSuspend(CommandTaskHandle);
-	//		osThreadSuspend(GpsTaskHandle);
 	//		osThreadSuspend(MemsTaskHandle);
 	//		osThreadSuspend(RemoteTaskHandle);
 	//		osThreadSuspend(FingerTaskHandle);
@@ -688,7 +654,6 @@ void StartManagerTask(void *argument)
 	//		osThreadSuspend(CanRxTaskHandle);
 	//		osThreadSuspend(CanTxTaskHandle);
 	//		osThreadSuspend(GateTaskHandle);
-	osThreadSuspend(Hmi2PowerTaskHandle);
 
 	// Check thread creation
 	if (!_osCheckRTOS()) return;
@@ -705,7 +670,7 @@ void StartManagerTask(void *argument)
 		VCU_Refresh();
 		NODE_Refresh();
 
-		StatesCheck();
+		STATE_Check();
 
 		IWDG_Refresh();
 		osDelayUntil(TASKS.tick.manager + MANAGER_WAKEUP_MS);
@@ -753,13 +718,9 @@ void StartNetworkTask(void *argument)
 
 		NET_CheckPayload(PAYLOAD_RESPONSE);
 		NET_CheckPayload(PAYLOAD_REPORT);
-		NET_CheckCommand();
 
-		if (RTC_NeedCalibration()) {
-			timestamp_t ts;
-			if (Simcom_FetchTime(&ts))
-				RTC_Calibrate(&ts);
-		}
+		NET_CheckCommand();
+		NET_CheckClock();
 	}
   /* USER CODE END StartNetworkTask */
 }
@@ -778,6 +739,7 @@ void StartReporterTask(void *argument)
 	report_t report;
 
 	_osEventManager();
+	GPS_Init();
 
 	/* Infinite loop */
 	for (;;) {
@@ -797,12 +759,14 @@ void StartReporterTask(void *argument)
 		RPT_ReportCapture(RPT_FrameDecider(), &report);
 		while(!_osQueuePut(ReportQueueHandle, &report)) {
 			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
-			_DelayMS(500);
+			_DelayMS(100);
 		}
 
 		// reset some events group
-		VCU_SetEvent(EVG_NET_SOFT_RESET, 0);
-		VCU_SetEvent(EVG_NET_HARD_RESET, 0);
+		EVT_Clr(EVG_NET_SOFT_RESET);
+		EVT_Clr(EVG_NET_HARD_RESET);
+
+		GPS_Refresh();
 	}
   /* USER CODE END StartReporterTask */
 }
@@ -834,43 +798,13 @@ void StartCommandTask(void *argument)
 		TASKS.tick.command = _GetTickMS();
 
 		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==	osOK) {
-			ExecCommand(&cmd, &resp);
+			EXEC_Command(&cmd, &resp);
 
 			RPT_ResponseCapture(&resp);
 			_osQueuePutRst(ResponseQueueHandle, &resp);
 		}
 	}
   /* USER CODE END StartCommandTask */
-}
-
-/* USER CODE BEGIN Header_StartGpsTask */
-/**
- * @brief Function implementing the GpsTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartGpsTask */
-void StartGpsTask(void *argument)
-{
-  /* USER CODE BEGIN StartGpsTask */
-	uint32_t notif;
-
-	_osEventManager();
-
-	GPS_Init();
-
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.gps = _GetTickMS();
-
-		// Check notifications
-		if (_osFlagOne(&notif, FLAG_GPS_RECEIVED, 1000)) {
-			// nmea ready, do something
-		}
-
-		GPS_Refresh();
-	}
-  /* USER CODE END StartGpsTask */
 }
 
 /* USER CODE BEGIN Header_StartMemsTask */
@@ -899,8 +833,8 @@ void StartMemsTask(void *argument)
 		// Check notifications
 		if (_osFlagAny(&notif, 1000)) {
 			if (notif & FLAG_MEMS_TASK_STOP) {
-				VCU_SetEvent(EVG_BIKE_FALLEN, 0);
-				VCU_SetEvent(EVG_BIKE_MOVED, 0);
+				EVT_Clr(EVG_BIKE_FALLEN);
+				EVT_Clr(EVG_BIKE_MOVED);
 
 				MEMS_DeInit();
 				_osFlagOne(&notif, FLAG_MEMS_TASK_START, osWaitForever);
@@ -917,13 +851,13 @@ void StartMemsTask(void *argument)
 		// Read all data
 		if (MEMS_Capture()) {
 			fallen = MEMS_Process();
-			VCU_SetEvent(EVG_BIKE_FALLEN, fallen);
+			EVT_SetVal(EVG_BIKE_FALLEN, fallen);
 
 			// Drag detector
 			if (MEMS.det.active) {
 				if (MEMS_Dragged())
-					VCU_SetEvent(EVG_BIKE_MOVED, 1);
-				if (VCU_GetEvent(EVG_BIKE_MOVED))
+					EVT_Set(EVG_BIKE_MOVED);
+				if (EVT_Get(EVG_BIKE_MOVED))
 					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
 			} else
 				MEMS_GetRefDetector();
@@ -965,7 +899,7 @@ void StartRemoteTask(void *argument)
 
 		if (_osFlagAny(&notif, 5)) {
 			if (notif & FLAG_REMOTE_TASK_STOP) {
-				VCU_SetEvent(EVG_REMOTE_MISSING, 1);
+				EVT_Set(EVG_REMOTE_MISSING);
 				RMT_DeInit();
 				_osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
 				RMT_Init();
@@ -974,7 +908,7 @@ void StartRemoteTask(void *argument)
 			if (notif & FLAG_REMOTE_RESET) {
 				if (_GetTickMS() - lastReset > RMT_RESET_GUARD_MS) {
 					lastReset = _GetTickMS();
-					VCU_SetEvent(EVG_REMOTE_MISSING, 1);
+					EVT_Set(EVG_REMOTE_MISSING);
 					RMT_DeInit();
 					RMT_Init();
 				}
@@ -998,7 +932,7 @@ void StartRemoteTask(void *argument)
 							osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_TOGGLE);
 
 						else if (command == RMT_CMD_ALARM) {
-							if (VCU_GetEvent(EVG_BIKE_MOVED))
+							if (EVT_Get(EVG_BIKE_MOVED))
 								osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
 							else
 								osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
@@ -1172,9 +1106,6 @@ void StartCanRxTask(void *argument)
 				case CAND_HMI1:
 					HMI1_RX_State(&Rx);
 					break;
-				case CAND_HMI2:
-					HMI2_RX_State(&Rx);
-					break;
 				case CAND_NODE_DEBUG:
 					NODE_RX_Debug(&Rx);
 					break;
@@ -1226,7 +1157,7 @@ void StartCanRxTask(void *argument)
 void StartCanTxTask(void *argument)
 {
   /* USER CODE BEGIN StartCanTxTask */
-	uint32_t notif, last500ms, last1000ms;
+	uint32_t notif, last100ms, last1000ms;
 
 	_osEventManager();
 	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
@@ -1236,7 +1167,7 @@ void StartCanTxTask(void *argument)
 	CANBUS_Init();
 
 	/* Infinite loop */
-	last500ms = _GetTickMS();
+	last100ms = _GetTickMS();
 	last1000ms = _GetTickMS();
 	for (;;) {
 		TASKS.tick.canTx = _GetTickMS();
@@ -1244,7 +1175,6 @@ void StartCanTxTask(void *argument)
 		// Check notifications
 		if (_osFlagAny(&notif, 20)) {
 			if (notif & FLAG_CAN_TASK_STOP) {
-				HMI2_PowerByCAN(0);
 				MCU_PowerOverCAN(0);
 				BMS_PowerOverCAN(0);
 
@@ -1259,20 +1189,11 @@ void StartCanTxTask(void *argument)
 			VCU_TX_SwitchControl();
 
 		// send every 500ms
-		if (_GetTickMS() - last500ms > 500) {
-			last500ms = _GetTickMS();
+		if (_GetTickMS() - last100ms > 100) {
+			last100ms = _GetTickMS();
 
-			HMI2_PowerByCAN(VCU.d.state >= VEHICLE_STANDBY);
-
-			if (VCU.d.state >= VEHICLE_READY)
-				BMS_PowerOverCAN(1);
-			else
-				BMS_PowerOverCAN(MCU.d.run);
-
-			if (VCU.d.state == VEHICLE_RUN)
-				MCU_PowerOverCAN(BMS.d.run);
-			else
-				MCU_PowerOverCAN(0);
+			MCU_PowerOverCAN(VCU.d.state == VEHICLE_RUN && BMS.d.run);
+			BMS_PowerOverCAN(VCU.d.state >= VEHICLE_READY || MCU.d.run);
 		}
 
 		// send every 1000ms
@@ -1296,38 +1217,6 @@ void StartCanTxTask(void *argument)
   /* USER CODE END StartCanTxTask */
 }
 
-/* USER CODE BEGIN Header_StartHmi2PowerTask */
-/**
- * @brief Function implementing the Hmi2PowerTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartHmi2PowerTask */
-void StartHmi2PowerTask(void *argument)
-{
-  /* USER CODE BEGIN StartHmi2PowerTask */
-	uint32_t notif;
-
-	_osEventManager();
-
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.hmi2Power = _GetTickMS();
-
-		if (_osFlagOne(&notif, FLAG_HMI2POWER_CHANGED, osWaitForever)) {
-
-			if (HMI2.d.powerRequest)
-				while (!HMI2.d.run)
-					HMI2_PowerOn();
-
-			else
-				while (HMI2.d.run)
-					HMI2_PowerOff();
-		}
-	}
-  /* USER CODE END StartHmi2PowerTask */
-}
-
 /* USER CODE BEGIN Header_StartGateTask */
 /**
  * @brief Function implementing the GateTask thread.
@@ -1338,7 +1227,7 @@ void StartHmi2PowerTask(void *argument)
 void StartGateTask(void *argument)
 {
   /* USER CODE BEGIN StartGateTask */
-	uint32_t notif, tick1000ms;
+	uint32_t notif;
 
 	_osEventManager();
 
@@ -1347,7 +1236,6 @@ void StartGateTask(void *argument)
 	HBAR_ReadStates();
 
 	/* Infinite loop */
-	tick1000ms = _GetTickMS();
 	for (;;) {
 		TASKS.tick.gate = _GetTickMS();
 
@@ -1372,12 +1260,7 @@ void StartGateTask(void *argument)
 		}
 
 		HBAR_RefreshSelectSet();
-		if (_GetTickMS() - tick1000ms > 1000) {
-			tick1000ms = _GetTickMS();
-			uint8_t distance = VCU_CalcDistance();
-			HBAR_AddTripMeter(distance);
-			HBAR_SetReport(distance);
-		}
+		GEN_RangePrediction();
 
 		HMI1_Power(VCU.d.state >= VEHICLE_STANDBY);
 		MCU_Power12v(VCU.d.state >= VEHICLE_READY);

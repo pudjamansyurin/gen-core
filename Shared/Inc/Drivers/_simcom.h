@@ -10,7 +10,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Libs/_utils.h"
+#if !BOOTLOADER
 #include "Drivers/_rtc.h"
+#endif
 
 /* Exported constants --------------------------------------------------------*/
 #define NET_BOOT_MS ((uint16_t)8000)

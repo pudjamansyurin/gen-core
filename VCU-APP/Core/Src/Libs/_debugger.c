@@ -19,7 +19,7 @@
 
 /* Public functions implementation -------------------------------------------*/
 void DBG_GetVCU(vcu_dbg_t *vcu) {
-	vcu->events = VCU.d.events;
+	vcu->events = EVT_Val();
 	vcu->state = (int8_t)VCU.d.state;
 	vcu->uptime = (VCU.d.uptime * MANAGER_WAKEUP_MS) / 1000;
 	vcu->buffered = VCU.d.buffered;

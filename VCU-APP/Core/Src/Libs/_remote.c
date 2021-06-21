@@ -31,7 +31,6 @@ remote_t RMT = {
 				.address = {0x00, 0x00, 0x00, 0x00, 0xCD},
 				.payload = {0},
 		},
-//		.ISRlocked = 0,
 		.pspi = &hspi1
 };
 
@@ -110,7 +109,6 @@ uint8_t RMT_Probe(void) {
 void RMT_Flush(void) {
 	lock();
 	memset(&(RMT.d), 0, sizeof(remote_data_t));
-//	RMT.ISRlocked = 0;
 	unlock();
 }
 
@@ -121,7 +119,7 @@ void RMT_Refresh(vehicle_state_t state) {
 	lock();
 	timeout = state == VEHICLE_RUN ? RMT_BEAT_RUN_MS : RMT_BEAT_MS;
 	RMT.d.nearby = _TickIn(tick->heartbeat, timeout);
-	VCU_SetEvent(EVG_REMOTE_MISSING, !RMT.d.nearby);
+	EVT_SetVal(EVG_REMOTE_MISSING, !RMT.d.nearby);
 
 	RMT.d.active = _TickIn(tick->ping, RMT_TIMEOUT_MS) || RMT.d.nearby;
 	if (!RMT.d.active) {
@@ -227,9 +225,6 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
 }
 
 void RMT_IrqHandler(void) {
-//	if (RMT.ISRlocked)
-//		return;
-
 	if (nrf_irq_handler()) {
 		osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RX_IT);
 #if REMOTE_DEBUG
@@ -243,13 +238,11 @@ void RMT_IrqHandler(void) {
 static void lock(void) {
 #if (RTOS_ENABLE)
 	osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
-//	RMT.ISRlocked = 1;
 #endif
 }
 
 static void unlock(void) {
 #if (RTOS_ENABLE)
-//	RMT.ISRlocked = 0;
 	osMutexRelease(RemoteRecMutexHandle);
 #endif
 }
