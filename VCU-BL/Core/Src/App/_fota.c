@@ -7,14 +7,14 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_fota.h"
+#include "App/_fota.h"
 
+#include "App/_focan.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_flasher.h"
 #include "Libs/_eeprom.h"
-#include "Libs/_focan.h"
 #include "adc.h"
 #include "can.h"
 #include "crc.h"

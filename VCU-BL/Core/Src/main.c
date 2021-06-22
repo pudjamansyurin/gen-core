@@ -29,17 +29,17 @@
 #include "iwdg.h"
 #include "usart.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "App/_fota.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
-#include "Libs/_fota.h"
 #include "Libs/_utils.h"
+
 
 /* USER CODE END Includes */
 

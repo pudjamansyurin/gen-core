@@ -7,7 +7,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_focan.h"
+#include "App/_focan.h"
 
 #include "Drivers/_canbus.h"
 #include "Drivers/_iwdg.h"

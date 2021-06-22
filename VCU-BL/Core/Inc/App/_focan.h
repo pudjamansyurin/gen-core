@@ -10,11 +10,11 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_fota.h"
+#include "App/_fota.h"
 
 /* Exported constants
  * --------------------------------------------*/
-#define BLK_SIZE (uint16_t)(256 * 5)
+#define BLK_SIZE ((uint16_t)(256 * 5))
 #define FOCAN_RETRY ((uint8_t)5)
 
 /* Public functions prototype

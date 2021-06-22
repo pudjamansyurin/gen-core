@@ -23,8 +23,8 @@
 #else
 #include "Drivers/_flasher.h"
 #include "Libs/_eeprom.h"
-#include "Libs/_focan.h"
-#include "Libs/_fota.h"
+#include "App/_focan.h"
+#include "App/_fota.h"
 #include "iwdg.h"
 
 #endif

@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "Drivers/_flasher.h"
 
-#include "Libs/_fota.h"
+#include "App/_fota.h"
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -241,15 +241,11 @@ uint8_t FLASHER_BackupApp(void) {
   if (FOTA_NeedBackup()) {
     p = FLASHER_EraseBkpArea();
 
-    if (p) {
-      p = FLASHER_WriteBkpArea(ptr, APP_MAX_SIZE, 0);
-    }
+    if (p) p = FLASHER_WriteBkpArea(ptr, APP_MAX_SIZE, 0);
   }
 
   // Erase APP area
-  if (p) {
-    p = FLASHER_EraseAppArea();
-  }
+  if (p) p = FLASHER_EraseAppArea();
 
   return p;
 }
@@ -260,9 +256,7 @@ uint8_t FLASHER_RestoreApp(void) {
 
   p = FLASHER_EraseAppArea();
 
-  if (p) {
-    p = FLASHER_WriteAppArea(ptr, APP_MAX_SIZE, 0);
-  }
+  if (p) p = FLASHER_WriteAppArea(ptr, APP_MAX_SIZE, 0);
 
   return p;
 }
