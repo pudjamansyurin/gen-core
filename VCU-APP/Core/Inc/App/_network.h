@@ -2,7 +2,7 @@
  * _network.h
  *
  *  Created on: Jun 6, 2021
- *      Author: pujak
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__NETWORK_H_

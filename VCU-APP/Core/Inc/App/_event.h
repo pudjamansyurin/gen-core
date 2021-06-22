@@ -2,7 +2,7 @@
  * _event.h
  *
  *  Created on: Jun 21, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_BUSINESS__EVENT_H_

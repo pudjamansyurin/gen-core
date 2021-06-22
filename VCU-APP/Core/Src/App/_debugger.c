@@ -2,7 +2,7 @@
  * _debugger.c
  *
  *  Created on: Apr 28, 2021
- *      Author: GEN
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

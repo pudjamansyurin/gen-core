@@ -2,7 +2,7 @@
  * _crc.h
  *
  *  Created on: Feb 4, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef CRC_H_

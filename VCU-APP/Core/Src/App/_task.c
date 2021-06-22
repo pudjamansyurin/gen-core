@@ -2,7 +2,7 @@
  * _task.c
  *
  *  Created on: Jun 22, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

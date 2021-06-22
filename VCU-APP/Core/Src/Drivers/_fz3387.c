@@ -2,7 +2,7 @@
  * _finger_ada.c
  *
  *  Created on: Aug 28, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 /***************************************************
@@ -23,7 +23,6 @@
 #include "Drivers/_fz3387.h"
 
 #include "DMA/_dma_finger.h"
-
 
 /* Private variables
  * --------------------------------------------*/

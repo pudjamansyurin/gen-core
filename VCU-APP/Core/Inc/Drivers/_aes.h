@@ -2,7 +2,7 @@
  * _aes.h
  *
  *  Created on: May 12, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__AES_H_

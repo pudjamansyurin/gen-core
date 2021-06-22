@@ -2,7 +2,7 @@
  * _database.h
  *
  *  Created on: Oct 11, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef DEFINES_H_

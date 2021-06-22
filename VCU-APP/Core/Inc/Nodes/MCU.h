@@ -2,7 +2,7 @@
  * MCU.h
  *
  *  Created on: May 10, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_NODES_MCU_H_

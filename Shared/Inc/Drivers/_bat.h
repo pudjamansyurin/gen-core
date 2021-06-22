@@ -2,7 +2,7 @@
  * _bat.h
  *
  *  Created on: Dec 11, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__BAT_H_

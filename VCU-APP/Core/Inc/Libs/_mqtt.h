@@ -2,7 +2,7 @@
  * _mqtt.h
  *
  *  Created on: Jan 17, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__MQTT_H_

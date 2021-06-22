@@ -2,7 +2,7 @@
  * _bat.c
  *
  *  Created on: Dec 11, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

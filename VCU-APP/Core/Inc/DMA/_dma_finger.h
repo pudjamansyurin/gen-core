@@ -2,7 +2,7 @@
  * _dma_finger.h
  *
  *  Created on: Aug 27, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef DMA_FINGER_H_

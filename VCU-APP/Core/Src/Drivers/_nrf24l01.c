@@ -2,7 +2,7 @@
  *_nrf24l01.c
  *
  *Created on: Sep 19, 2019
- *     Author: Puja
+ *     Author: Pudja Mansyurin
  */
 /* Includes
  * --------------------------------------------*/

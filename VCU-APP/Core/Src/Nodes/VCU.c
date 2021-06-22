@@ -2,7 +2,7 @@
  * VCU.c
  *
  *  Created on: May 11, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

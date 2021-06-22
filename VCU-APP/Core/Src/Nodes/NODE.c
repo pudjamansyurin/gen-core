@@ -2,7 +2,7 @@
  * NODE.c
  *
  *  Created on: Mar 23, 2021
- *      Author: pujak
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

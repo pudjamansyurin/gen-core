@@ -2,7 +2,7 @@
  * _user_ring_buffer.h
  *
  *  Created on: Oct 22, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__USART_RING_H_

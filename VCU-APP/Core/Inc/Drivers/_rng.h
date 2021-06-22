@@ -2,7 +2,7 @@
  * _rng.h
  *
  *  Created on: Mar 8, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_DRIVERS__RNG_H_

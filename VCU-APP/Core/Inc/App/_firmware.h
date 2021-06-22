@@ -2,7 +2,7 @@
  * _firmware.h
  *
  *  Created on: 29 Jun 2020
- *      Author: geni
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__FIRMWARE_H_

@@ -2,7 +2,7 @@
  * _iwdg.h
  *
  *  Created on: Mar 14, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_DRIVERS__IWDG_H_

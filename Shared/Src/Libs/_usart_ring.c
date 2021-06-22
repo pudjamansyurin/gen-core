@@ -2,7 +2,7 @@
  * _usart_ring_buffer.c
  *
  *  Created on: Oct 22, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

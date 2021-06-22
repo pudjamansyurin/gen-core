@@ -2,7 +2,7 @@
  * _finger.c
  *
  *  Created on: Aug 28, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

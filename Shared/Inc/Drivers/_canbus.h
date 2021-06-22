@@ -2,7 +2,7 @@
  * _can.h
  *
  *  Created on: Oct 7, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef CANBUS_H_

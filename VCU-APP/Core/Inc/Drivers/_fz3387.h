@@ -2,7 +2,7 @@
  * _finger_ada.h
  *
  *  Created on: Aug 28, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 /***************************************************
  This is a library for our optical Fingerprint sensor

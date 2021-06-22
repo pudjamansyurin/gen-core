@@ -2,7 +2,7 @@
  * _gate.c
  *
  *  Created on: Dec 13, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

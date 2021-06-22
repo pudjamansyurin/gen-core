@@ -2,7 +2,7 @@
  * _nmea.c
  *
  *  Created on: Aug 19, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 /**

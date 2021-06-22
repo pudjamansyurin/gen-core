@@ -2,7 +2,7 @@
  * _log.h
  *
  *  Created on: Jan 15, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__LOGGER_H_

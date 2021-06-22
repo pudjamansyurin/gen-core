@@ -2,7 +2,7 @@
  * HMI1.h
  *
  *  Created on: May 10, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_NODES_HMI1_H_

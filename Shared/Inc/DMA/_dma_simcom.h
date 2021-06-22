@@ -2,7 +2,7 @@
  * DMA_Simcom.h
  *
  *  Created on: Aug 14, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef DMA_SIMCOM_H_

@@ -2,7 +2,7 @@
  * _buzzer.h
  *
  *  Created on: Mar 17, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_DRIVERS__BUZZER_H_

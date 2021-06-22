@@ -2,7 +2,7 @@
  * _state.h
  *
  *  Created on: Jun 14, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_BUSINESS__STATE_H_

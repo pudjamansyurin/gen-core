@@ -2,7 +2,7 @@
  * simcom.c
  *
  *  Created on: Aug 14, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes
@@ -21,10 +21,10 @@
 #include "Nodes/VCU.h"
 
 #else
-#include "Drivers/_flasher.h"
-#include "Libs/_eeprom.h"
 #include "App/_focan.h"
 #include "App/_fota.h"
+#include "Drivers/_flasher.h"
+#include "Libs/_eeprom.h"
 #include "iwdg.h"
 
 #endif

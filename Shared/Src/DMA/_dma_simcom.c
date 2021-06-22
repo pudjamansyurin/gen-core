@@ -2,7 +2,7 @@
  * DMA_Simcom.c
  *
  *  Created on: Aug 14, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  *  See:
  * https://github.com/MaJerle/stm32-usart-uart-dma-rx-tx/blob/master/projects/usart_rx_idle_line_irq_ringbuff_G0/Src/main.c
  */

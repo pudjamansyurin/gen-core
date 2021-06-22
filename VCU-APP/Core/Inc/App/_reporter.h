@@ -2,7 +2,7 @@
  * _reporter.h
  *
  *  Created on: Oct 2, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef REPORTER_H_

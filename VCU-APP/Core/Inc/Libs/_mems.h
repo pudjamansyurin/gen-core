@@ -2,7 +2,7 @@
  * mems.h
  *
  *  Created on: Aug 23, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef MEMS_H_

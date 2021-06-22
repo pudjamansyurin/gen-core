@@ -2,7 +2,7 @@
  * _network.c
  *
  *  Created on: Jun 6, 2021
- *      Author: pujak
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

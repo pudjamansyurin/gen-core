@@ -2,7 +2,7 @@
  * _iwdg.c
  *
  *  Created on: Mar 14, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

@@ -2,7 +2,7 @@
  * _can.c
  *
  *  Created on: Oct 7, 2019
- *      Author: Puja Kusuma
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

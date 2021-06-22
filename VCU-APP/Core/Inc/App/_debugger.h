@@ -2,7 +2,7 @@
  * _debugger.h
  *
  *  Created on: Apr 28, 2021
- *      Author: GEN
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__DEBUGGER_H_

@@ -2,7 +2,7 @@
  * _buzzer.c
  *
  *  Created on: Mar 17, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  *      Source:
  * https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
  *

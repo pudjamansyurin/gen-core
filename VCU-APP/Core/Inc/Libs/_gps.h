@@ -2,7 +2,7 @@
  * _ublox.h
  *
  *  Created on: Mar 4, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef GPS_H_

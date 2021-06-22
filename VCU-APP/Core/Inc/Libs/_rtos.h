@@ -2,7 +2,7 @@
  * _rtos.h
  *
  *  Created on: Mar 22, 2021
- *      Author: pujak
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__RTOS_H_

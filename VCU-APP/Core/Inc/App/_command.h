@@ -2,7 +2,7 @@
  * _command.h
  *
  *  Created on: 28 Oct 2020
- *      Author: geni
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__COMMAND_H_

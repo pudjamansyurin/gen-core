@@ -2,7 +2,7 @@
  * _gate.h
  *
  *  Created on: Dec 13, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_DRIVERS__GATE_H_

@@ -2,7 +2,7 @@
  * _flash.c
  *
  *  Created on: 12 Jun 2020
- *      Author: geni
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

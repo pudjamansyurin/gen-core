@@ -2,7 +2,7 @@
  * _request.c
  *
  *  Created on: Jun 14, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

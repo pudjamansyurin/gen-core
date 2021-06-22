@@ -2,7 +2,7 @@
  * HMI1.c
  *
  *  Created on: May 10, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

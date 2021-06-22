@@ -2,7 +2,7 @@
  * _flash.h
  *
  *  Created on: 12 Jun 2020
- *      Author: geni
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_DRIVERS__FLASHER_H_

@@ -2,7 +2,7 @@
  * _task.h
  *
  *  Created on: Jun 22, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_APP__TASK_H_

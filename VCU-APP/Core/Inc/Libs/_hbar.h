@@ -2,7 +2,7 @@
  * _hbar.h
  *
  *  Created on: Apr 16, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef LIBS__HBAR_H_

@@ -2,7 +2,7 @@
  * _nrf24l01.h
  *
  *  Created on: Sep 19, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef NRF24L01_H_

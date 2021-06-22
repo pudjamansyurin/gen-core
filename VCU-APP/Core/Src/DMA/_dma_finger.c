@@ -2,7 +2,7 @@
  * _dma_finger.c
  *
  *  Created on: Aug 27, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

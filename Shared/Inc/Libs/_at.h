@@ -2,7 +2,7 @@
  * _at.h
  *
  *  Created on: May 13, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_LIBS__AT_H_

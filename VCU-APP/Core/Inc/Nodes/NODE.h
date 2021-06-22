@@ -2,7 +2,7 @@
  * NODE.h
  *
  *  Created on: Mar 23, 2021
- *      Author: pujak
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_NODES_NODE_H_

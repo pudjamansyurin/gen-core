@@ -2,7 +2,7 @@
  * _at.c
  *
  *  Created on: May 13, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

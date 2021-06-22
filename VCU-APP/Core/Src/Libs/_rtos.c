@@ -2,7 +2,7 @@
  * _rtos.c
  *
  *  Created on: Mar 22, 2021
- *      Author: pujak
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

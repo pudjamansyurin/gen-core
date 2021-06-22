@@ -2,7 +2,7 @@
  * _aes.c
  *
  *  Created on: May 12, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes

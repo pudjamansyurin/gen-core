@@ -2,7 +2,7 @@
  * _finger.h
  *
  *  Created on: Aug 28, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef FINGER_H_

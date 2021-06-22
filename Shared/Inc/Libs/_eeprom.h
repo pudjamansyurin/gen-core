@@ -2,7 +2,7 @@
  * _flash.h
  *
  *  Created on: Sep 9, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef EEPROM_H_

@@ -2,7 +2,7 @@
  * _hbar.c
  *
  *  Created on: Apr 16, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 /* Includes
