@@ -35,15 +35,17 @@
  ******************************************************************************
  */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
+/* Define to prevent recursive inclusion
+ * --------------------------------------------*/
 #ifndef AUDIO_H_
 #define AUDIO_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_cs43l22.h"
-#include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 #define AUDIO_TIMEOUT_MS ((uint16_t)5000)
 #define AUDIO_BUFFER_SIZE 4096
 #define AUDIO_I2C_ADDRESS 0x94
@@ -56,37 +58,37 @@
 #define AUDIO_OK 0
 #define AUDIO_ERROR 1
 
-/* Exported macro functions
- * ---------------------------------------------------*/
-#define DMA_MAX(_X_) (((_X_) <= DMA_MAX_SZE) ? (_X_) : DMA_MAX_SZE)
+/* Exported macros
+ * --------------------------------------------*/
+#define DMA_MAX(X) (((X) <= DMA_MAX_SZE) ? (X) : DMA_MAX_SZE)
 
-/* Structs
- * --------------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 
 typedef struct {
-	uint16_t played;
-	uint32_t remaining;
+  uint16_t played;
+  uint32_t remaining;
 } audio_size_t;
 
 typedef struct {
-	uint32_t tick;
-	uint8_t active;
-	uint8_t mute;
-	uint8_t volume;
-	audio_size_t size;
+  uint32_t tick;
+  uint8_t active;
+  uint8_t mute;
+  uint8_t volume;
+  audio_size_t size;
 } audio_data_t;
 
 typedef struct {
-	audio_data_t d;
-	I2S_HandleTypeDef *pi2s;
+  audio_data_t d;
+  I2S_HandleTypeDef *pi2s;
 } audio_t;
 
 /* Exported variables
- * ----------------------------------------------------------*/
+ * --------------------------------------------*/
 extern audio_t AUDIO;
 
 /* Public functions prototype
- * -------------------------------------------------*/
+ * --------------------------------------------*/
 uint8_t AUDIO_Init(void);
 void AUDIO_DeInit(void);
 uint8_t AUDIO_Probe(void);
@@ -122,7 +124,7 @@ void AUDIO_OUT_Error_CallBack(void);
 /* These function can be modified in case the current settings (e.g. DMA stream)
  need to be changed for specific application needs */
 void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq,
-		void *Params);
+                           void *Params);
 
 #endif /* AUDIO_H_ */
 

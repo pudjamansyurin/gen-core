@@ -5,23 +5,28 @@
  *      Author: pudja
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_iwdg.h"
 #include "iwdg.h"
 
-/* External variables -------------------------------------------------------*/
+/* External variables
+ * --------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t IwdgMutexHandle;
 #endif
 
-/* Private variable ----------------------------------------------------------*/
+/* Private variable
+ * --------------------------------------------*/
 static IWDG_HandleTypeDef *piwdg = &hiwdg;
 
-/* Private functions declaration ---------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
-/* Public functions implementation -------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void IWDG_Refresh(void) {
   lock();
   HAL_IWDG_Refresh(piwdg);

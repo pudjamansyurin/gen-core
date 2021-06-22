@@ -8,10 +8,12 @@
 #ifndef INC_DRIVERS__GATE_H_
 #define INC_DRIVERS__GATE_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "_defines.h"
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void GATE_LedWrite(GPIO_PinState state);
 void GATE_LedToggle(void);
 void GATE_LedBlink(uint32_t time);

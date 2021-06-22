@@ -8,14 +8,17 @@
 #ifndef CANBUS_H_
 #define CANBUS_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Defines -----------------------------------------------------------------*/
-#define CAN_DATA 	UNION64
+/* Exported constants
+ * --------------------------------------------*/
+#define CAN_DATA UNION64
 #define CAN_RX_MS ((uint16_t)1000)
 
-/* Exported defines ----------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 typedef enum {
   CAND_FOCAN_PROGRESS = 0x01A,
   CAND_FOCAN_CRC = 0x01B,
@@ -86,8 +89,8 @@ typedef enum {
 
 } CAN_ADDR;
 
-/* Exported struct
- * ------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
   CAN_TxHeaderTypeDef header;
   UNION64 data;
@@ -102,7 +105,8 @@ typedef struct {
   CAN_HandleTypeDef *pcan;
 } can_t;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void CANBUS_Init(void);
 void CANBUS_DeInit(void);
 uint8_t CANBUS_Filter(void);

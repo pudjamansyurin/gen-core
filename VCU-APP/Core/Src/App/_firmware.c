@@ -5,16 +5,17 @@
  *      Author: geni
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
+#include "App/_firmware.h"
+#include "App/_command.h"
+#include "App/_reporter.h"
 #include "Drivers/_bat.h"
-#include "Libs/_firmware.h"
-#include "Libs/_command.h"
-#include "Libs/_reporter.h"
 #include "Libs/_eeprom.h"
 #include "Nodes/HMI1.h"
 
 /* Private functions prototypes
- * -----------------------------------------------*/
+ * --------------------------------------------*/
 static void FW_MakeResponseIAP(char *message, char *node);
 static uint8_t FW_ValidResponseIAP(void);
 

@@ -8,11 +8,12 @@
 #ifndef INC_LIBS__FOTA_H_
 #define INC_LIBS__FOTA_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_simcom.h"
 #include "Libs/_at.h"
 
-/* Public functions implementation
+/* Public functions prototype
  * --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type);
 uint8_t FOTA_DownloadCRC(at_ftpget_t *ftpGET, uint32_t *crc);

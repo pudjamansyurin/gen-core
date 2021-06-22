@@ -8,10 +8,12 @@
 #ifndef INC_DRIVERS__IWDG_H_
 #define INC_DRIVERS__IWDG_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Public functions implementation -------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void IWDG_Refresh(void);
 
 #endif /* INC_DRIVERS__IWDG_H_ */

@@ -8,32 +8,35 @@
 #ifndef GPS_H_
 #define GPS_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_nmea.h"
-#include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 #define GPS_TIMEOUT_MS ((uint16_t)5000)
 #define GPS_LENGTH_MIN ((uint8_t)100)
 
-/* Exported struct -----------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
-	uint8_t active;
-	uint32_t tick;
-	nmea_t nmea;
+  uint8_t active;
+  uint32_t tick;
+  nmea_t nmea;
 } gps_data_t;
 
 typedef struct {
-	gps_data_t d;
-	UART_HandleTypeDef *puart;
-	DMA_HandleTypeDef *pdma;
+  gps_data_t d;
+  UART_HandleTypeDef *puart;
+  DMA_HandleTypeDef *pdma;
 } gps_t;
 
 /* Exported variables
- * ----------------------------------------------------------*/
+ * --------------------------------------------*/
 extern gps_t GPS;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 uint8_t GPS_Init(void);
 void GPS_DeInit(void);
 void GPS_Refresh(void);

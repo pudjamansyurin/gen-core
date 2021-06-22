@@ -8,10 +8,12 @@
 #ifndef INC_DRIVERS__FLASHER_H_
 #define INC_DRIVERS__FLASHER_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Exported macro ------------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 /* Base address of the Flash sectors */
 #define ADDR_FLASH_SECTOR_0                                                    \
   ((uint32_t)0x08000000) /* Base address of Sector 0, 16 Kbytes */
@@ -46,7 +48,8 @@
 #define ADDR_FLASH_SECTOR_15                                                   \
   ((uint32_t)0x08160000) /* Base address of Sector15, 128 Kbytes */
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 uint8_t FLASHER_EraseBkpArea(void);
 uint8_t FLASHER_EraseAppArea(void);
 uint8_t FLASHER_WriteBkpArea(uint8_t *ptr, uint32_t size, uint32_t offset);

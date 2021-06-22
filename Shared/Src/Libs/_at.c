@@ -5,10 +5,12 @@
  *      Author: pudja
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_at.h"
 
-/* Private functions prototype -----------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 #if AT_USE_FTP
 static uint8_t FindInBuffer(char *prefix, char **str);
 #endif
@@ -626,7 +628,6 @@ SIM_RESULT AT_BearerInitialize(void) {
 
   return res;
 }
-
 
 SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
   SIM_RESULT res = SIM_ERROR;

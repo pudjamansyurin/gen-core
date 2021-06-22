@@ -35,11 +35,13 @@
  ******************************************************************************
  */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
+/* Define to prevent recursive inclusion
+ * --------------------------------------------*/
 #ifndef CS43L22_H_
 #define CS43L22_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
 /******************************************************************************/
@@ -201,7 +203,8 @@
  */
 #define CS43L22_CHIPID_ADDR 0x01
 
-/* Structs -------------------------------------------------------------------*/
+/* Exported tructs
+ * --------------------------------------------*/
 typedef struct {
   uint8_t volume;
   uint8_t stopDevice;
@@ -209,7 +212,8 @@ typedef struct {
   uint16_t outputDevice;
 } cs43l22_t;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice,
                       uint8_t Volume, uint32_t AudioFreq);
 void cs43l22_DeInit(void);

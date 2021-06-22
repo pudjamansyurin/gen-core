@@ -8,15 +8,16 @@
 #ifndef INC_LIBS__FOCAN_H_
 #define INC_LIBS__FOCAN_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_fota.h"
 
-/* Exported macro
- * -------------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 #define BLK_SIZE (uint16_t)(256 * 5)
-#define FOCAN_RETRY (uint8_t)5
+#define FOCAN_RETRY ((uint8_t)5)
 
-/* Public functions implementation
+/* Public functions prototype
  * --------------------------------------------*/
 uint8_t FOCAN_GetCRC(uint32_t *crc);
 uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent);

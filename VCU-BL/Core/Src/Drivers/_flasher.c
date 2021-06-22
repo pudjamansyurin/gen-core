@@ -6,12 +6,12 @@
  */
 
 /* Includes
- * -------------------------------------------------------------------*/
+ * --------------------------------------------*/
 #include "Drivers/_flasher.h"
 #include "Libs/_fota.h"
 
 /* Private functions prototype
- * ------------------------------------------------*/
+ * --------------------------------------------*/
 static void FLASHER_ClearErrors(void);
 static uint8_t FLASHER_WriteByte(uint8_t *ptr, uint32_t size, uint32_t address,
                                  uint32_t end);
@@ -20,7 +20,7 @@ static uint32_t FLASHER_GetSector(uint32_t Address);
 // static uint32_t FLASHER_GetSectorSize(uint32_t Sector);
 
 /* Public functions implementation
- * ---------------------------------------------*/
+ * --------------------------------------------*/
 static void FLASHER_ClearErrors(void) {
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
                          FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR |
@@ -198,7 +198,6 @@ static uint32_t FLASHER_GetSector(uint32_t Address) {
 //    return sectorsize;
 //}
 
-/* ============================================================= */
 uint8_t FLASHER_EraseBkpArea(void) {
   uint32_t FirstSector = 0, NbOfSectors = 0;
 

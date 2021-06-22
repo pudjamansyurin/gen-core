@@ -6,18 +6,19 @@
  *      See: crccalc.com (CRC-32/MPEG-2)
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_crc.h"
 #include "crc.h"
 
 /* External variables
- * ---------------------------------------------------------*/
+ * --------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t CrcMutexHandle;
 #endif
 
-/* Private functions declaration
- * ----------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 

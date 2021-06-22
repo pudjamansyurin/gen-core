@@ -5,29 +5,33 @@
  *      Author: pudja
  */
 
-/* Includes -----------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_bat.h"
 #include "adc.h"
 
-/* External variables -------------------------------------------------------*/
+/* External variables
+ * --------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t BatMutexHandle;
 #endif
 
-/* Private variables --------------------------------------------------------*/
+/* Private variables
+ * --------------------------------------------*/
 static bat_t BAT = {
-		.voltage = 0,
-		.buf = {0},
-		.padc = &hadc1,
+    .voltage = 0,
+    .buf = {0},
+    .padc = &hadc1,
 };
 
-/* Private functions declaration
- * ----------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val);
 
-/* Public functions implementation ------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void BAT_Init(void) {
   lock();
   MX_ADC1_Init();
@@ -49,7 +53,7 @@ uint16_t BAT_ScanValue(void) {
   HAL_ADC_Start(BAT.padc);
   ok = HAL_ADC_PollForConversion(BAT.padc, 5) == HAL_OK;
   if (ok)
-	  value = HAL_ADC_GetValue(BAT.padc);
+    value = HAL_ADC_GetValue(BAT.padc);
   HAL_ADC_Stop(BAT.padc);
 
   if (ok) {

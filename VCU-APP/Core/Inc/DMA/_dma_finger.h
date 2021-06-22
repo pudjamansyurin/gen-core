@@ -8,18 +8,22 @@
 #ifndef DMA_FINGER_H_
 #define DMA_FINGER_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_usart_ring.h"
 #include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
-#define FINGER_UART_RX_SZ (uint16_t)(256)
-#define FINGER_DMA_RX_SZ (uint16_t)(64)
+/* Exported constants
+ * --------------------------------------------*/
+#define FINGER_UART_RX_SZ ((uint16_t)256)
+#define FINGER_DMA_RX_SZ ((uint16_t)64)
 
-/* Exported variables --------------------------------------------------------*/
+/* Exported variables
+ * --------------------------------------------*/
 extern char FINGER_UART_RX[FINGER_UART_RX_SZ];
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void FINGER_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 void FINGER_DMA_Stop(void);
 void FINGER_DMA_IrqHandler(void);

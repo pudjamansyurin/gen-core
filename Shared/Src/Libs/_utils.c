@@ -5,7 +5,8 @@
  *      Author: Puja
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
 /* Public functions implementation
@@ -50,11 +51,11 @@ uint32_t _GetTickMS(void) {
 }
 
 uint8_t _TickOut(uint32_t tick, uint32_t ms) {
-	return (tick && (_GetTickMS() - tick) > ms);
+  return (tick && (_GetTickMS() - tick) > ms);
 }
 
 uint8_t _TickIn(uint32_t tick, uint32_t ms) {
-	return (tick && (_GetTickMS() - tick) < ms);
+  return (tick && (_GetTickMS() - tick) < ms);
 }
 
 void _Error(char msg[50]) {
@@ -75,31 +76,18 @@ uint32_t _ByteSwap32(uint32_t x) {
   return y;
 }
 
-// int8_t _BitPos(uint64_t event_id) {
-//  int8_t pos = -1;
-//
-//  for (int8_t i = 0; i < 64; i++)
-//    if (event_id & BIT(i)) {
-//      pos = i;
-//      break;
-//    }
-//
-//  return pos;
-//}
-
 float _MovAvgFloat(averager_float_t *m, float *buf, uint16_t sz, float val) {
-	// Subtract the oldest number from the prev sum, add the new number
-	m->sum = m->sum - buf[m->pos] + val;
-	// Assign the nextNum to the position in the array
-	buf[m->pos] = val;
-	// Increment position
-	m->pos++;
-	if (m->pos >= sz)
-		m->pos = 0;
-	// calculate filled array
-	if (m->len < sz)
-		m->len++;
-	// return the average
-	return m->sum / m->len;
+  // Subtract the oldest number from the prev sum, add the new number
+  m->sum = m->sum - buf[m->pos] + val;
+  // Assign the nextNum to the position in the array
+  buf[m->pos] = val;
+  // Increment position
+  m->pos++;
+  if (m->pos >= sz)
+    m->pos = 0;
+  // calculate filled array
+  if (m->len < sz)
+    m->len++;
+  // return the average
+  return m->sum / m->len;
 }
-

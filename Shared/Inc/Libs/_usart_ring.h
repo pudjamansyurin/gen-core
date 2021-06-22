@@ -8,31 +8,34 @@
 #ifndef INC_LIBS__USART_RING_H_
 #define INC_LIBS__USART_RING_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "main.h"
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
+#include "main.h"
 
-/* Exported struct --------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
-	UART_HandleTypeDef *huart;
-	DMA_HandleTypeDef *hdma;
+  UART_HandleTypeDef *huart;
+  DMA_HandleTypeDef *hdma;
   void (*IdleCallback)(void);
-	struct {
-		size_t idx;
-		char *buf;
-		uint16_t sz;
-	} usart;
-	struct {
-		char *buf;
-		uint16_t sz;
-	} dma;
-	struct {
-		uint8_t idle;
-		size_t old_pos;
-	} tmp;
+  struct {
+    size_t idx;
+    char *buf;
+    uint16_t sz;
+  } usart;
+  struct {
+    char *buf;
+    uint16_t sz;
+  } dma;
+  struct {
+    uint8_t idle;
+    size_t old_pos;
+  } tmp;
 } usart_ring_t;
 
-/* Public functions implementation --------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void USART_DMA_Start(usart_ring_t *ring);
 void USART_DMA_Stop(usart_ring_t *ring);
 void USART_DMA_IrqHandler(usart_ring_t *ring);

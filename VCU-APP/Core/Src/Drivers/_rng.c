@@ -5,23 +5,28 @@
  *      Author: pudja
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_rng.h"
 #include "rng.h"
 
-/* External variables -------------------------------------------------------*/
+/* External variables
+ * --------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t RngMutexHandle;
 #endif
 
-/* Private variable ----------------------------------------------------------*/
+/* Private variables
+ * --------------------------------------------*/
 static RNG_HandleTypeDef *prng = &hrng;
 
-/* Private functions declaration ---------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
-/* Public functions implementation -------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 uint8_t RNG_Generate32(uint32_t *payload, uint8_t size) {
   uint8_t ok = 1;
 

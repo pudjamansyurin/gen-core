@@ -5,20 +5,21 @@
  *      Author: Puja
  */
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_reporter.h"
+/* Includes
+ * --------------------------------------------*/
+#include "App/_reporter.h"
 
 /* External variables
- * ----------------------------------------------------------*/
+ * --------------------------------------------*/
 extern osMessageQueueId_t ResponseQueueHandle, ReportQueueHandle;
 
 /* Private variables
- * ----------------------------------------------------------*/
+ * --------------------------------------------*/
 static report_t report;
 static response_t response;
 
 /* Public variables
- * ----------------------------------------------------------*/
+ * --------------------------------------------*/
 reporter_t RPT = {
 		.block = 0,
 		.override = {0},
@@ -37,7 +38,8 @@ reporter_t RPT = {
 		}
 };
 
-/* Public functions implementation -------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 	report_header_t *header = (report_header_t *)report;
 	report_data_t *d = &(report->data);

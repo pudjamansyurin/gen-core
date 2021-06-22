@@ -8,17 +8,21 @@
 #ifndef DMA_SIMCOM_H_
 #define DMA_SIMCOM_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Constants -----------------------------------------------------------------*/
-#define SIMCOM_UART_RX_SZ (uint16_t)(1024 + 512 + 128)
-#define SIMCOM_DMA_RX_SZ (uint16_t)(128)
+/* Exported constants
+ * --------------------------------------------*/
+#define SIMCOM_UART_RX_SZ ((uint16_t)(1024 + 512 + 128))
+#define SIMCOM_DMA_RX_SZ ((uint16_t)128)
 
-/* Exported variables --------------------------------------------------------*/
+/* Exported variables
+ * --------------------------------------------*/
 extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void SIMCOM_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
 void SIMCOM_DMA_Stop(void);
 void SIMCOM_USART_IrqHandler(void);

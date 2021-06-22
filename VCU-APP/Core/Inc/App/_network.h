@@ -8,10 +8,12 @@
 #ifndef INC_LIBS__NETWORK_H_
 #define INC_LIBS__NETWORK_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Public functions declaration -------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void NET_CheckClock(void);
 void NET_CheckCommand(void);
 void NET_CheckPayload(PAYLOAD_TYPE type);

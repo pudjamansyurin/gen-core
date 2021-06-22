@@ -8,7 +8,7 @@
 #ifndef INC_BUSINESS__STATE_H_
 #define INC_BUSINESS__STATE_H_
 
-/* Public functions declarations
+/* Public functions prototype
  * --------------------------------------------*/
 void STATE_Check(void);
 

@@ -8,11 +8,12 @@
 #ifndef INC_LIBS__FIRMWARE_H_
 #define INC_LIBS__FIRMWARE_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_command.h"
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
+#include "App/_command.h"
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message);
 uint8_t FW_PostFota(response_t *response);
 

@@ -20,10 +20,12 @@
 #ifndef fz3387_H_
 #define fz3387_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 #define FINGERPRINT_RECEIVING_MS ((uint16_t)1000)
 
 #define FINGERPRINT_OK 0x00
@@ -75,17 +77,18 @@
 #define FINGERPRINT_PASSWORD 0x0000000
 #define FINGERPRINT_ADDRESS 0xFFFFFFFF
 
-/* Exported struct
- * --------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
-	uint16_t start_code; ///< "Wakeup" code for packet detection
-	uint8_t address[4];  ///< 32-bit Fingerprint sensor address
-	uint8_t type;        ///< Type of packet
-	uint16_t length;     ///< Length of packet
-	uint8_t data[64];    ///< The raw buffer for packet payload
+  uint16_t start_code; ///< "Wakeup" code for packet detection
+  uint8_t address[4];  ///< 32-bit Fingerprint sensor address
+  uint8_t type;        ///< Type of packet
+  uint16_t length;     ///< Length of packet
+  uint8_t data[64];    ///< The raw buffer for packet payload
 } packet_t;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 uint8_t fz3387_checkPassword(void);
 uint8_t fz3387_getImage(void);
 uint8_t fz3387_image2Tz(uint8_t slot);

@@ -5,19 +5,20 @@
  *      Author: pudja
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_log.h"
 #include "Libs/_utils.h"
 #include <stdarg.h>
 
 /* External variables
- * ----------------------------------------------------------*/
+ * --------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t LogRecMutexHandle;
 #endif
 
-/* Private functions declarations
- * ----------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 static void SendITM(char ch);
@@ -25,30 +26,28 @@ static void SendITM(char ch);
 /* Public functions implementation
  * --------------------------------------------*/
 int __io_putchar(int ch) {
-	SendITM(ch);
-	return ch;
+  SendITM(ch);
+  return ch;
 }
 
 int _write(int file, char *ptr, int len) {
-	int DataIdx;
+  int DataIdx;
 
-	lock();
-	for (DataIdx = 0; DataIdx < len; DataIdx++)
-		__io_putchar(*ptr++);
-	unlock();
+  lock();
+  for (DataIdx = 0; DataIdx < len; DataIdx++)
+    __io_putchar(*ptr++);
+  unlock();
 
-	return len;
+  return len;
 }
 
-void printf_init(void) {
-	setvbuf(stdout, NULL, _IONBF, 0);
-}
+void printf_init(void) { setvbuf(stdout, NULL, _IONBF, 0); }
 
 void printf_hex(char *data, uint16_t size) {
-	lock();
-	for (uint32_t i = 0; i < size; i++)
-		printf("%02X", *(data + i));
-	unlock();
+  lock();
+  for (uint32_t i = 0; i < size; i++)
+    printf("%02X", *(data + i));
+  unlock();
 }
 // void Log(const char *fmt, ...) {
 //   va_list args;
@@ -60,27 +59,28 @@ void printf_hex(char *data, uint16_t size) {
 // }
 
 /* Private functions implementations
- * ----------------------------------------------*/
+ * --------------------------------------------*/
 static void lock(void) {
 #if (RTOS_ENABLE)
-	osMutexAcquire(LogRecMutexHandle, osWaitForever);
+  osMutexAcquire(LogRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
 #if (RTOS_ENABLE)
-	osMutexRelease(LogRecMutexHandle);
+  osMutexRelease(LogRecMutexHandle);
 #endif
 }
 
 static void SendITM(char ch) {
 #ifdef DEBUG
-	uint32_t tick;
+  uint32_t tick;
 
-	// wait if busy
-	tick = _GetTickMS();
-	while (_GetTickMS() - tick <= LOG_TIMEOUT_MS && ITM->PORT[0].u32 == 0);
+  // wait if busy
+  tick = _GetTickMS();
+  while (_GetTickMS() - tick <= LOG_TIMEOUT_MS && ITM->PORT[0].u32 == 0)
+    ;
 
-	ITM->PORT[0].u8 = (uint8_t)ch;
+  ITM->PORT[0].u8 = (uint8_t)ch;
 #endif
 }

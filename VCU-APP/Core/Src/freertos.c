@@ -47,17 +47,13 @@
 #include "Drivers/_simcom.h"
 
 #include "Libs/_audio.h"
-#include "Libs/_command.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
-#include "Libs/_firmware.h"
 #include "Libs/_gps.h"
 #include "Libs/_mems.h"
 #include "Libs/_hbar.h"
 #include "Libs/_mqtt.h"
 #include "Libs/_remote.h"
-#include "Libs/_reporter.h"
-#include "Libs/_network.h"
 
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
@@ -65,9 +61,14 @@
 #include "Nodes/VCU.h"
 #include "Nodes/NODE.h"
 
-#include "Business/_state.h"
-#include "Business/_exec.h"
-#include "Business/_general.h"
+#include "App/_command.h"
+#include "App/_firmware.h"
+#include "App/_reporter.h"
+#include "App/_network.h"
+#include "App/_state.h"
+#include "App/_exec.h"
+#include "App/_task.h"
+#include "App/_ml.h"
 
 /* USER CODE END Includes */
 
@@ -656,7 +657,8 @@ void StartManagerTask(void *argument)
 	//		osThreadSuspend(GateTaskHandle);
 
 	// Check thread creation
-	if (!_osCheckRTOS()) return;
+	if (TASK_KernelFailed())
+		return;
 
 	// Release threads
 	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
@@ -665,7 +667,8 @@ void StartManagerTask(void *argument)
 	for (;;) {
 		TASKS.tick.manager = _GetTickMS();
 
-		_osCheckTasks();
+		TASK_CheckStack();
+		TASK_CheckWakeup();
 
 		VCU_Refresh();
 		NODE_Refresh();
@@ -690,7 +693,7 @@ void StartNetworkTask(void *argument)
   /* USER CODE BEGIN StartNetworkTask */
 	uint32_t notif;
 
-	_osEventManager();
+	TASK_WaitManager();
 
 	// Initiate
 	Simcom_Init();
@@ -738,7 +741,7 @@ void StartReporterTask(void *argument)
 	uint32_t notif;
 	report_t report;
 
-	_osEventManager();
+	TASK_WaitManager();
 	GPS_Init();
 
 	/* Infinite loop */
@@ -784,7 +787,7 @@ void StartCommandTask(void *argument)
 	command_t cmd;
 	response_t resp;
 
-	_osEventManager();
+	TASK_WaitManager();
 
 	// Initiate
 	CMD_Init();
@@ -820,7 +823,7 @@ void StartMemsTask(void *argument)
 	uint32_t notif;
 	uint8_t fallen;
 
-	_osEventManager();
+	TASK_WaitManager();
 	_osFlagOne(&notif, FLAG_MEMS_TASK_START, osWaitForever);
 	osThreadFlagsClear(FLAG_MASK);
 
@@ -881,7 +884,7 @@ void StartRemoteTask(void *argument)
 	uint32_t notif, lastReset = 0;
 	RMT_CMD command;
 
-	_osEventManager();
+	TASK_WaitManager();
 	_osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
 	osThreadFlagsClear(FLAG_MASK);
 
@@ -967,7 +970,7 @@ void StartFingerTask(void *argument)
 	uint32_t notif;
 	uint8_t id;
 
-	_osEventManager();
+	TASK_WaitManager();
 	_osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
 	osThreadFlagsClear(FLAG_MASK);
 
@@ -1038,7 +1041,7 @@ void StartAudioTask(void *argument)
   /* USER CODE BEGIN StartAudioTask */
 	uint32_t notif;
 
-	_osEventManager();
+	TASK_WaitManager();
 	_osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
 	osThreadFlagsClear(FLAG_MASK);
 
@@ -1086,7 +1089,7 @@ void StartCanRxTask(void *argument)
 	uint32_t notif;
 	can_rx_t Rx;
 
-	_osEventManager();
+	TASK_WaitManager();
 	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
 	osThreadFlagsClear(FLAG_MASK);
 
@@ -1159,7 +1162,7 @@ void StartCanTxTask(void *argument)
   /* USER CODE BEGIN StartCanTxTask */
 	uint32_t notif, last100ms, last1000ms;
 
-	_osEventManager();
+	TASK_WaitManager();
 	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
 	osThreadFlagsClear(FLAG_MASK);
 
@@ -1229,7 +1232,7 @@ void StartGateTask(void *argument)
   /* USER CODE BEGIN StartGateTask */
 	uint32_t notif;
 
-	_osEventManager();
+	TASK_WaitManager();
 
 	// Initiate
 	HBAR_Init();
@@ -1260,7 +1263,8 @@ void StartGateTask(void *argument)
 		}
 
 		HBAR_RefreshSelectSet();
-		GEN_RangePrediction();
+
+		ML_PredictRange();
 
 		HMI1_Power(VCU.d.state >= VEHICLE_STANDBY);
 		MCU_Power12v(VCU.d.state >= VEHICLE_READY);

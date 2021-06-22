@@ -8,30 +8,32 @@
 #ifndef INC_NODES_HMI1_H_
 #define INC_NODES_HMI1_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_canbus.h"
+#include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 #define HMI1_TIMEOUT_MS ((uint32_t)10000)
 
-/* Exported struct
- * ------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
-	uint8_t active;
-	uint32_t tick;
-	uint16_t version;
+  uint8_t active;
+  uint32_t tick;
+  uint16_t version;
 } hmi1_data_t;
 
 typedef struct {
-	hmi1_data_t d;
+  hmi1_data_t d;
 } hmi1_t;
 
 /* Exported variables
- * ---------------------------------------------------------*/
+ * --------------------------------------------*/
 extern hmi1_t HMI1;
 
-/* Public functions implementation
+/* Public functions prototype
  * --------------------------------------------*/
 void HMI1_Init(void);
 void HMI1_Refresh(void);

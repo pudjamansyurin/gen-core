@@ -8,18 +8,19 @@
  *
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_buzzer.h"
 #include "tim.h"
 
 /* External variables
- * ---------------------------------------------------------*/
+ * --------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t BuzzerMutexHandle;
 #endif
 
-/* Private functions declaration
- * ----------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 

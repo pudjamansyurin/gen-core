@@ -8,45 +8,46 @@
 #ifndef INC_NODES_VCU_H_
 #define INC_NODES_VCU_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_rtc.h"
 #include "Libs/_gps.h"
 #include "Libs/_mems.h"
 
-/* Exported enum
- * ------------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 typedef enum {
-	EVG_NET_SOFT_RESET = 0,
-	EVG_NET_HARD_RESET,
-	EVG_REMOTE_MISSING,
-	EVG_BIKE_FALLEN,
-	EVG_BIKE_MOVED,
-	EVG_BMS_ERROR,
-	EVG_MCU_ERROR
+  EVG_NET_SOFT_RESET = 0,
+  EVG_NET_HARD_RESET,
+  EVG_REMOTE_MISSING,
+  EVG_BIKE_FALLEN,
+  EVG_BIKE_MOVED,
+  EVG_BMS_ERROR,
+  EVG_MCU_ERROR
 } EVENTS_GROUP_BIT;
 
-/* Exported struct
- * --------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
-	uint8_t error;
-	uint8_t buffered;
-	uint32_t uptime;
-	vehicle_state_t state;
-	struct {
-		uint32_t independent;
-		uint32_t ready;
-	} tick;
+  uint8_t error;
+  uint8_t buffered;
+  uint32_t uptime;
+  vehicle_state_t state;
+  struct {
+    uint32_t independent;
+    uint32_t ready;
+  } tick;
 } vcu_data_t;
 
 typedef struct {
-	vcu_data_t d;
+  vcu_data_t d;
 } vcu_t;
 
 /* Exported variables
- * ---------------------------------------------------------*/
+ * --------------------------------------------*/
 extern vcu_t VCU;
 
-/* Public functions declarations
+/* Public functions prototype
  * --------------------------------------------*/
 void VCU_Init(void);
 void VCU_Refresh(void);

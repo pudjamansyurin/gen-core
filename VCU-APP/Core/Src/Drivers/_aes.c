@@ -5,26 +5,32 @@
  *      Author: pudja
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_aes.h"
 #include "aes.h"
 
-/* External variables -------------------------------------------------------*/
+/* External variables
+ * --------------------------------------------*/
 #if (RTOS_ENABLE)
 extern osMutexId_t AesMutexHandle;
 #endif
 
-/* Public variable -----------------------------------------------------------*/
+/* Public variable
+ * --------------------------------------------*/
 __ALIGN_BEGIN uint32_t AES_KEY[4] __ALIGN_END;
 
-/* Private variable ----------------------------------------------------------*/
+/* Private variable
+ * --------------------------------------------*/
 static CRYP_HandleTypeDef *pcryp = &hcryp;
 
-/* Private functions declaration ---------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
-/* Public functions implementation -------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 uint8_t AES_Init(void) {
   uint8_t ok;
 
@@ -55,7 +61,8 @@ uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
   uint8_t ok;
 
   lock();
-  ok = (HAL_CRYP_Encrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst, 1000) == HAL_OK);
+  ok = (HAL_CRYP_Encrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst, 1000) ==
+        HAL_OK);
   unlock();
 
   return ok;
@@ -65,7 +72,8 @@ uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
   uint8_t ok;
 
   lock();
-  ok = (HAL_CRYP_Decrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst, 1000) == HAL_OK);
+  ok = (HAL_CRYP_Decrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst, 1000) ==
+        HAL_OK);
   unlock();
 
   return ok;

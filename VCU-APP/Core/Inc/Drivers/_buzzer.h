@@ -8,10 +8,12 @@
 #ifndef INC_DRIVERS__BUZZER_H_
 #define INC_DRIVERS__BUZZER_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_utils.h"
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void BUZZER_Write(uint8_t state);
 
 #endif /* INC_DRIVERS__BUZZER_H_ */

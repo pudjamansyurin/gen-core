@@ -37,17 +37,20 @@
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  */
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Libs/_nmea.h"
 
-/* Private constants ---------------------------------------------------------*/
+/* Private constants
+ * --------------------------------------------*/
 #define STAT_UNKNOWN 0
 #define STAT_GGA 1
 #define STAT_GSA 2
 #define STAT_GSV 3
 #define STAT_RMC 4
 
-/* Private macro functions  --------------------------------------------------*/
+/* Private macros
+ * --------------------------------------------*/
 #define FLT(x) ((nmea_float_t)(x))
 #define D2R(x) FLT(FLT(x) * FLT(0.01745329251994))  /*!< Degrees to radians */
 #define R2D(x) FLT(FLT(x) * FLT(57.29577951308232)) /*!< Radians to degrees */
@@ -80,7 +83,7 @@
               : (((x) >= 'A' && (x) <= 'Z') ? ((x) - 'A' + 10) : 0)))
 
 /* Private functions prototype
- * ------------------------------------------------*/
+ * --------------------------------------------*/
 static int32_t parse_number(nmea_t *nh, const char *t);
 static nmea_float_t parse_float_number(nmea_t *nh, const char *t);
 static nmea_float_t parse_lat_long(nmea_t *nh);
@@ -89,7 +92,7 @@ static uint8_t check_crc(nmea_t *nh);
 static uint8_t copy_from_tmp_memory(nmea_t *nh);
 
 /* Public functions implementation
- * ---------------------------------------------*/
+ * --------------------------------------------*/
 /**
  * @brief           Init NMEA handle
  * @param[in]       gh: NMEA handle structure
@@ -270,7 +273,7 @@ nmea_float_t nmea_to_speed(nmea_float_t sik, NMEA_SPEED ts) {
 }
 
 /* Private functions implementation
- * ---------------------------------------------*/
+ * --------------------------------------------*/
 /**
  * @brief           Parse number as integer
  * @param[in]       gh: NMEA handle
