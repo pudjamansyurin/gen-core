@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_gate.h"
+
 #include "Libs/_utils.h"
 
 /* Public functions implementation
@@ -74,14 +75,14 @@ void GATE_McuPower(GPIO_PinState state) {
 
 void GATE_Hmi2Stop(void) {
   //	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin,
-  //GPIO_PIN_SET);
+  // GPIO_PIN_SET);
 }
 
 void GATE_Hmi2Reset(void) {
   //	GATE_Hmi2Stop();
   //	_DelayMS(100);
   //	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin,
-  //GPIO_PIN_RESET);
+  // GPIO_PIN_RESET);
 }
 
 void GATE_MemsShutdown(void) {

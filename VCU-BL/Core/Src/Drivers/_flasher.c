@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_flasher.h"
+
 #include "Libs/_fota.h"
 
 /* Private functions prototype

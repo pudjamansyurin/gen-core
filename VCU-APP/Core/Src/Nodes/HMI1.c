@@ -26,8 +26,7 @@ void HMI1_Init(void) { Reset(); }
 void HMI1_Refresh(void) {
   HMI1.d.active = _TickIn(HMI1.d.tick, HMI1_TIMEOUT_MS);
 
-  if (!HMI1.d.active)
-    Reset();
+  if (!HMI1.d.active) Reset();
 }
 
 void HMI1_Power(uint8_t state) { GATE_Hmi1Power(state); }

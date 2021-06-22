@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_mqtt.h"
+
 #include "Drivers/_simcom.h"
 #include "MQTTPacket.h"
 
@@ -80,8 +81,7 @@ uint8_t MQTT_Subscribe(void) {
   len = MQTTSerialize_subscribe(buf, buflen, 0, ++MQTT.packetid, count,
                                 topicFilters, qoss);
 
-  if (!Upload(buf, len, SUBACK, MQTT_UPLOAD_MS))
-    return 0;
+  if (!Upload(buf, len, SUBACK, MQTT_UPLOAD_MS)) return 0;
 
   if (!MQTTDeserialize_suback(&(d.packetid), count, &count_rx, qoss_rx, buf,
                               buflen)) {
@@ -119,8 +119,7 @@ uint8_t MQTT_Unsubscribe(void) {
   len = MQTTSerialize_unsubscribe(buf, buflen, 0, ++MQTT.packetid, count,
                                   &topicFilters);
 
-  if (!Upload(buf, len, UNSUBACK, MQTT_UPLOAD_MS))
-    return 0;
+  if (!Upload(buf, len, UNSUBACK, MQTT_UPLOAD_MS)) return 0;
 
   if (!MQTTDeserialize_unsuback(&(d.packetid), buf, buflen)) {
     printf("MQTT:Unsubscribe failed\n");
@@ -170,8 +169,7 @@ uint8_t MQTT_Connect(void) {
 
   len = MQTTSerialize_connect(buf, buflen, &data);
 
-  if (!Upload(buf, len, CONNACK, MQTT_UPLOAD_MS))
-    return 0;
+  if (!Upload(buf, len, CONNACK, MQTT_UPLOAD_MS)) return 0;
 
   if (!MQTTDeserialize_connack(&sessionPresent, &connack_rc, buf, buflen) ||
       connack_rc != 0) {
@@ -180,8 +178,7 @@ uint8_t MQTT_Connect(void) {
   }
   printf("MQTT:CONNACK\n");
 
-  if (sessionPresent)
-    MQTT.subscribed = 1;
+  if (sessionPresent) MQTT.subscribed = 1;
 
   printf("MQTT:Connected\n");
   MQTT.tick = _GetTickMS();
@@ -194,8 +191,7 @@ uint8_t MQTT_Disconnect(void) {
 
   len = MQTTSerialize_disconnect(buf, buflen);
 
-  if (!Upload(buf, len, 0, 0))
-    return 0;
+  if (!Upload(buf, len, 0, 0)) return 0;
 
   printf("MQTT:Disconnected\n");
   MQTT.tick = _GetTickMS();
@@ -206,13 +202,11 @@ uint8_t MQTT_Ping(void) {
   unsigned char buf[2];
   int len, buflen = sizeof(buf);
 
-  if ((_GetTickMS() - MQTT.tick) <= (MQTT_KEEPALIVE_S * 1000))
-    return 1;
+  if ((_GetTickMS() - MQTT.tick) <= (MQTT_KEEPALIVE_S * 1000)) return 1;
 
   len = MQTTSerialize_pingreq(buf, buflen);
 
-  if (!Upload(buf, len, PINGRESP, MQTT_UPLOAD_MS))
-    return 0;
+  if (!Upload(buf, len, PINGRESP, MQTT_UPLOAD_MS)) return 0;
 
   printf("MQTT:Pinged\n");
   MQTT.tick = _GetTickMS();
@@ -225,27 +219,22 @@ uint8_t MQTT_GotPublish(void) {
   mqtt_handler_t *d = &(MQTT.rx.d);
   MQTTString topic;
 
-  if (MQTT.rx.pending)
-    return 0;
+  if (MQTT.rx.pending) return 0;
 
   d->packettype = MQTTPacket_read(buf, buflen, Simcom_GetData);
-  if (d->packettype != PUBLISH)
-    return 0;
+  if (d->packettype != PUBLISH) return 0;
 
   if (!MQTTDeserialize_publish(&(d->dup), &(d->qos), &(d->retained),
                                &(d->packetid), &topic, &dst, &len, buf, buflen))
     return 0;
 
   printf("MQTT:Received %d bytes\n", len);
-  if (len == 0)
-    return 0;
+  if (len == 0) return 0;
 
   sprintf(d->topic, "%.*s", topic.lenstring.len, topic.lenstring.data);
-  if (strcmp(d->topic, MQTT.topic.command) != 0)
-    return 0;
+  if (strcmp(d->topic, MQTT.topic.command) != 0) return 0;
 
-  if (!CMD_ValidateContent(dst, len))
-    return 0;
+  if (!CMD_ValidateContent(dst, len)) return 0;
 
   memcpy(&(MQTT.rx.command), dst, len);
   _DelayMS(2);
@@ -261,14 +250,12 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
 
   if (d->qos == 1) {
     len = MQTTSerialize_puback(buf, buflen, d->packetid);
-    if (!Upload(buf, len, 0, MQTT_UPLOAD_MS))
-      return 0;
+    if (!Upload(buf, len, 0, MQTT_UPLOAD_MS)) return 0;
   }
 
   else if (d->qos == 2) {
     len = MQTTSerialize_ack(buf, buflen, PUBREC, 0, d->packetid);
-    if (!Upload(buf, len, PUBREL, MQTT_UPLOAD_MS))
-      return 0;
+    if (!Upload(buf, len, PUBREL, MQTT_UPLOAD_MS)) return 0;
 
     if (!MQTTDeserialize_ack(&packettype, &(d->dup), &packetid, buf, buflen))
       return 0;
@@ -280,16 +267,14 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
     printf("MQTT:PUBREL packet mismatched\n");
 
     len = MQTTSerialize_pubcomp(buf, buflen, d->packetid);
-    if (!Upload(buf, len, 0, MQTT_UPLOAD_MS))
-      return 0;
+    if (!Upload(buf, len, 0, MQTT_UPLOAD_MS)) return 0;
   }
 
   // send ACK (application-level)
   if (!Publish(PREFIX_ACK, 2, MQTT.topic.response, MQTT.qos.response, 1))
     return 0;
 
-  if (!CMD_ValidateCode(&(MQTT.rx.command)))
-    return 0;
+  if (!CMD_ValidateCode(&(MQTT.rx.command))) return 0;
 
   memcpy(cmd, &(MQTT.rx.command), sizeof(command_t));
   _DelayMS(2);
@@ -319,11 +304,9 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos,
   len = MQTTSerialize_publish(buf, buflen, 0, qos, (unsigned char)retained,
                               ++MQTT.packetid, topicName, payload, payloadlen);
 
-  if (qos)
-    reply = (qos == 1) ? PUBACK : PUBREC;
+  if (qos) reply = (qos == 1) ? PUBACK : PUBREC;
 
-  if (!Upload(buf, len, reply, MQTT_UPLOAD_MS))
-    return 0;
+  if (!Upload(buf, len, reply, MQTT_UPLOAD_MS)) return 0;
 
   if (qos == 1) {
     if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf,
@@ -349,8 +332,7 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos,
     printf("MQTT:PUBREC\n");
 
     len = MQTTSerialize_pubrel(buf, buflen, 0, MQTT.packetid);
-    if (!Upload(buf, len, PUBCOMP, MQTT_UPLOAD_MS))
-      return 0;
+    if (!Upload(buf, len, PUBCOMP, MQTT_UPLOAD_MS)) return 0;
 
     if (!MQTTDeserialize_ack(&(d.packettype), &(d.dup), &(d.packetid), buf,
                              buflen))
@@ -370,15 +352,12 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos,
 
 static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,
                       uint16_t timeout) {
-  if (!Simcom_Upload(buf, len))
-    return 0;
+  if (!Simcom_Upload(buf, len)) return 0;
 
   if (reply) {
-    if (!Simcom_ReceivedResponse(timeout))
-      return 0;
+    if (!Simcom_ReceivedResponse(timeout)) return 0;
 
-    if (MQTTPacket_read(buf, len, Simcom_GetData) != reply)
-      return 0;
+    if (MQTTPacket_read(buf, len, Simcom_GetData) != reply) return 0;
   }
 
   return 1;

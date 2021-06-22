@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_rng.h"
+
 #include "rng.h"
 
 /* External variables

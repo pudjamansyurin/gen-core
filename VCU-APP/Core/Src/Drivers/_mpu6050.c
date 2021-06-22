@@ -54,17 +54,14 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DS,
 
   /* Check who am I */
   /* Send address */
-  if (!I2C_Read(MPU6050_WHO_AM_I, &temp, 1))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_WHO_AM_I, &temp, 1)) return MPU6050_Result_Error;
 
   /* Checking */
-  if (temp != MPU6050_I_AM)
-    return MPU6050_Result_DeviceInvalid;
+  if (temp != MPU6050_I_AM) return MPU6050_Result_DeviceInvalid;
 
   /* Wakeup MPU6050 */
   data = 0x01;
-  if (!I2C_Write(MPU6050_PWR_MGMT_1, &data))
-    return MPU6050_Result_Error;
+  if (!I2C_Write(MPU6050_PWR_MGMT_1, &data)) return MPU6050_Result_Error;
 
   /* Set sample rate to 1kHz */
   if (MPU6050_SetDataRate(MPU6050_DataRate_8KHz) != MPU6050_Result_Ok)
@@ -84,40 +81,36 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DS,
 }
 
 MPU6050_Result MPU6050_SetDataRate(uint8_t rate) {
-  if (!I2C_Write(MPU6050_SMPLRT_DIV, &rate))
-    return MPU6050_Result_Error;
+  if (!I2C_Write(MPU6050_SMPLRT_DIV, &rate)) return MPU6050_Result_Error;
   return MPU6050_Result_Ok;
 }
 
-MPU6050_Result
-MPU6050_SetAccelerometer(MPU6050 *DS,
-                         MPU6050_Accelerometer AccelerometerSensitivity) {
+MPU6050_Result MPU6050_SetAccelerometer(
+    MPU6050 *DS, MPU6050_Accelerometer AccelerometerSensitivity) {
   uint8_t data;
 
   /* Config accelerometer */
-  if (!I2C_Read(MPU6050_ACCEL_CONFIG, &data, 1))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_ACCEL_CONFIG, &data, 1)) return MPU6050_Result_Error;
 
   data = (data & 0xE7) | (uint8_t)AccelerometerSensitivity << 3;
-  if (!I2C_Write(MPU6050_ACCEL_CONFIG, &data))
-    return MPU6050_Result_Error;
+  if (!I2C_Write(MPU6050_ACCEL_CONFIG, &data)) return MPU6050_Result_Error;
 
   /* Set sensitivities for multiplying gyro and accelerometer data */
   switch (AccelerometerSensitivity) {
-  case MPU6050_Accelerometer_2G:
-    DS->Acce_Mult = (float)1 / MPU6050_ACCE_SENS_2;
-    break;
-  case MPU6050_Accelerometer_4G:
-    DS->Acce_Mult = (float)1 / MPU6050_ACCE_SENS_4;
-    break;
-  case MPU6050_Accelerometer_8G:
-    DS->Acce_Mult = (float)1 / MPU6050_ACCE_SENS_8;
-    break;
-  case MPU6050_Accelerometer_16G:
-    DS->Acce_Mult = (float)1 / MPU6050_ACCE_SENS_16;
-    break;
-  default:
-    break;
+    case MPU6050_Accelerometer_2G:
+      DS->Acce_Mult = (float)1 / MPU6050_ACCE_SENS_2;
+      break;
+    case MPU6050_Accelerometer_4G:
+      DS->Acce_Mult = (float)1 / MPU6050_ACCE_SENS_4;
+      break;
+    case MPU6050_Accelerometer_8G:
+      DS->Acce_Mult = (float)1 / MPU6050_ACCE_SENS_8;
+      break;
+    case MPU6050_Accelerometer_16G:
+      DS->Acce_Mult = (float)1 / MPU6050_ACCE_SENS_16;
+      break;
+    default:
+      break;
   }
 
   return MPU6050_Result_Ok;
@@ -128,28 +121,26 @@ MPU6050_Result MPU6050_SetGyroscope(MPU6050 *DS,
   uint8_t data;
 
   /* Config gyroscope */
-  if (!I2C_Read(MPU6050_GYRO_CONFIG, &data, 1))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_GYRO_CONFIG, &data, 1)) return MPU6050_Result_Error;
 
   data = (data & 0xE7) | (uint8_t)GyroscopeSensitivity << 3;
-  if (!I2C_Write(MPU6050_GYRO_CONFIG, &data))
-    return MPU6050_Result_Error;
+  if (!I2C_Write(MPU6050_GYRO_CONFIG, &data)) return MPU6050_Result_Error;
 
   switch (GyroscopeSensitivity) {
-  case MPU6050_Gyroscope_250s:
-    DS->Gyro_Mult = (float)1 / MPU6050_GYRO_SENS_250;
-    break;
-  case MPU6050_Gyroscope_500s:
-    DS->Gyro_Mult = (float)1 / MPU6050_GYRO_SENS_500;
-    break;
-  case MPU6050_Gyroscope_1000s:
-    DS->Gyro_Mult = (float)1 / MPU6050_GYRO_SENS_1000;
-    break;
-  case MPU6050_Gyroscope_2000s:
-    DS->Gyro_Mult = (float)1 / MPU6050_GYRO_SENS_2000;
-    break;
-  default:
-    break;
+    case MPU6050_Gyroscope_250s:
+      DS->Gyro_Mult = (float)1 / MPU6050_GYRO_SENS_250;
+      break;
+    case MPU6050_Gyroscope_500s:
+      DS->Gyro_Mult = (float)1 / MPU6050_GYRO_SENS_500;
+      break;
+    case MPU6050_Gyroscope_1000s:
+      DS->Gyro_Mult = (float)1 / MPU6050_GYRO_SENS_1000;
+      break;
+    case MPU6050_Gyroscope_2000s:
+      DS->Gyro_Mult = (float)1 / MPU6050_GYRO_SENS_2000;
+      break;
+    default:
+      break;
   }
 
   return MPU6050_Result_Ok;
@@ -160,8 +151,7 @@ MPU6050_Result MPU6050_ReadAll(MPU6050 *DS) {
   int16_t temp;
 
   /* Read full raw data, 14bytes */
-  if (!I2C_Read(MPU6050_ACCEL_XOUT_H, data, 14))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_ACCEL_XOUT_H, data, 14)) return MPU6050_Result_Error;
 
   /* Format accelerometer data */
   DS->Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
@@ -185,8 +175,7 @@ MPU6050_Result MPU6050_ReadAccelerometer(MPU6050 *DS) {
   uint8_t data[6];
 
   /* Read accelerometer data */
-  if (!I2C_Read(MPU6050_ACCEL_XOUT_H, data, 6))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_ACCEL_XOUT_H, data, 6)) return MPU6050_Result_Error;
 
   /* Format */
   DS->Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
@@ -200,8 +189,7 @@ MPU6050_Result MPU6050_ReadGyroscope(MPU6050 *DS) {
   uint8_t data[6];
 
   /* Read gyroscope data */
-  if (!I2C_Read(MPU6050_GYRO_XOUT_H, data, 6))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_GYRO_XOUT_H, data, 6)) return MPU6050_Result_Error;
 
   /* Format */
   DS->Gyroscope_X = (int16_t)(data[0] << 8 | data[1]);
@@ -216,8 +204,7 @@ MPU6050_Result MPU6050_ReadTemperature(MPU6050 *DS) {
   int16_t temp;
 
   /* Read temperature */
-  if (!I2C_Read(MPU6050_TEMP_OUT_H, data, 2))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_TEMP_OUT_H, data, 2)) return MPU6050_Result_Error;
 
   /* Format temperature */
   temp = (data[0] << 8 | data[1]);
@@ -231,16 +218,13 @@ MPU6050_Result MPU6050_EnableInterrupts(void) {
 
   /* Enable interrupts for data ready and motion detect */
   data = 0x21;
-  if (!I2C_Write(MPU6050_INT_ENABLE, &data))
-    return MPU6050_Result_Error;
+  if (!I2C_Write(MPU6050_INT_ENABLE, &data)) return MPU6050_Result_Error;
 
   /* Clear IRQ flag on any read operation */
-  if (!I2C_Read(MPU6050_INT_PIN_CFG, &temp, 14))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_INT_PIN_CFG, &temp, 14)) return MPU6050_Result_Error;
 
   temp |= 0x10;
-  if (!I2C_Write(MPU6050_INT_PIN_CFG, &temp))
-    return MPU6050_Result_Error;
+  if (!I2C_Write(MPU6050_INT_PIN_CFG, &temp)) return MPU6050_Result_Error;
 
   return MPU6050_Result_Ok;
 }
@@ -250,8 +234,7 @@ MPU6050_Result MPU6050_DisableInterrupts(void) {
 
   /* Disable interrupts */
   data = 0x00;
-  if (!I2C_Write(MPU6050_INT_ENABLE, &data))
-    return MPU6050_Result_Error;
+  if (!I2C_Write(MPU6050_INT_ENABLE, &data)) return MPU6050_Result_Error;
 
   return MPU6050_Result_Ok;
 }
@@ -262,8 +245,7 @@ MPU6050_Result MPU6050_ReadInterrupts(MPU6050_Interrupt *InterruptsStruct) {
   /* Reset structure */
   InterruptsStruct->Status = 0;
 
-  if (!I2C_Read(MPU6050_INT_STATUS, &data, 14))
-    return MPU6050_Result_Error;
+  if (!I2C_Read(MPU6050_INT_STATUS, &data, 14)) return MPU6050_Result_Error;
 
   /* Fill value */
   InterruptsStruct->Status = data;

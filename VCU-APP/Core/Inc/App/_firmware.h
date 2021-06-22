@@ -15,6 +15,6 @@
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message);
-uint8_t FW_PostFota(response_t *response);
+uint8_t FW_PostFota(response_t *r);
 
 #endif /* INC_LIBS__FIRMWARE_H_ */

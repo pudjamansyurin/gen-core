@@ -21,7 +21,9 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_fz3387.h"
+
 #include "DMA/_dma_finger.h"
+
 
 /* Private variables
  * --------------------------------------------*/
@@ -293,43 +295,43 @@ static uint8_t getStructuredPacket(void) {
     byte = FINGER_UART_RX[idx];
 
     switch (idx) {
-    case 0:
-      if (byte != (FINGERPRINT_STARTCODE >> 8)) {
-        return FINGERPRINT_BADPACKET;
-      }
-      PKT.start_code = (uint16_t)byte << 8;
-      break;
-    case 1:
-      PKT.start_code |= byte;
-      if (PKT.start_code != FINGERPRINT_STARTCODE) {
-        return FINGERPRINT_BADPACKET;
-      }
-      break;
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-      PKT.address[idx - 2] = byte;
-      break;
-    case 6:
-      PKT.type = byte;
-      break;
-    case 7:
-      PKT.length = (uint16_t)byte << 8;
-      break;
-    case 8:
-      PKT.length |= byte;
-      break;
-    default:
-      if ((idx - 8) > sizeof(PKT.data)) {
-        return FINGERPRINT_BADPACKET;
-      }
+      case 0:
+        if (byte != (FINGERPRINT_STARTCODE >> 8)) {
+          return FINGERPRINT_BADPACKET;
+        }
+        PKT.start_code = (uint16_t)byte << 8;
+        break;
+      case 1:
+        PKT.start_code |= byte;
+        if (PKT.start_code != FINGERPRINT_STARTCODE) {
+          return FINGERPRINT_BADPACKET;
+        }
+        break;
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+        PKT.address[idx - 2] = byte;
+        break;
+      case 6:
+        PKT.type = byte;
+        break;
+      case 7:
+        PKT.length = (uint16_t)byte << 8;
+        break;
+      case 8:
+        PKT.length |= byte;
+        break;
+      default:
+        if ((idx - 8) > sizeof(PKT.data)) {
+          return FINGERPRINT_BADPACKET;
+        }
 
-      PKT.data[idx - 9] = byte;
-      if ((idx - 8) == PKT.length) {
-        return FINGERPRINT_OK;
-      }
-      break;
+        PKT.data[idx - 9] = byte;
+        if ((idx - 8) == PKT.length) {
+          return FINGERPRINT_OK;
+        }
+        break;
     }
     idx++;
   }

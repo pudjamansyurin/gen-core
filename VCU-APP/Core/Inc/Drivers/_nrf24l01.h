@@ -14,8 +14,8 @@
 
 /* Exported constants
  * --------------------------------------------*/
-#define NRF_DATA_LENGTH ((uint8_t)16) // Max: 32 bytes
-#define NRF_ADDR_LENGTH ((uint8_t)5)  // Range 3:5
+#define NRF_DATA_LENGTH ((uint8_t)16)  // Max: 32 bytes
+#define NRF_ADDR_LENGTH ((uint8_t)5)   // Range 3:5
 #define NRF_DATA_PAIR_LENGTH ((uint8_t)(NRF_DATA_LENGTH + NRF_ADDR_LENGTH))
 
 #define NRF_RX_DR (1 << 6)
@@ -199,11 +199,11 @@ NRF_RESULT nrf_enable_rx_data_ready_irq(uint8_t activate);
 NRF_RESULT nrf_enable_tx_data_sent_irq(uint8_t activate);
 NRF_RESULT nrf_enable_max_retransmit_irq(uint8_t activate);
 /* RX_ADDR_P0 */
-NRF_RESULT nrf_set_rx_address_p0(const uint8_t *address); // 5bytes of address
+NRF_RESULT nrf_set_rx_address_p0(const uint8_t *address);  // 5bytes of address
 /* RX_ADDR_P1 */
-NRF_RESULT nrf_set_rx_address_p1(const uint8_t *address); // 5bytes of address
+NRF_RESULT nrf_set_rx_address_p1(const uint8_t *address);  // 5bytes of address
 /* TX_ADDR */
-NRF_RESULT nrf_set_tx_address(const uint8_t *address); // 5bytes of address
+NRF_RESULT nrf_set_tx_address(const uint8_t *address);  // 5bytes of address
 /* RX_PW_P0 */
 NRF_RESULT nrf_set_rx_payload_width_p0(uint8_t width);
 /* RX_PW_P1 */

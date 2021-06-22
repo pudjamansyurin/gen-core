@@ -103,13 +103,13 @@ typedef struct {
   uint8_t signal;
   SIMCOM_STATE state;
   AT_CIPSTATUS ipstatus;
-  char *response;
+  char* response;
 } sim_data_t;
 
 typedef struct {
   sim_data_t d;
-  UART_HandleTypeDef *puart;
-  DMA_HandleTypeDef *pdma;
+  UART_HandleTypeDef* puart;
+  DMA_HandleTypeDef* pdma;
 } sim_t;
 
 /* Exported variables
@@ -123,15 +123,15 @@ void Simcom_DeInit(void);
 void Simcom_Lock(void);
 void Simcom_Unlock(void);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
-char *Simcom_Resp(char *keyword, char *from);
-SIM_RESULT Simcom_Cmd(char *command, char *reply, uint32_t ms);
+char* Simcom_Resp(char* keyword, char* from);
+SIM_RESULT Simcom_Cmd(char* command, char* reply, uint32_t ms);
 #if (!BOOTLOADER)
-uint8_t Simcom_FetchTime(timestamp_t *ts);
-uint8_t Simcom_SendUSSD(char *ussd, char *buf, uint8_t buflen);
-uint8_t Simcom_ReadNewSMS(char *buf, uint8_t buflen);
+uint8_t Simcom_FetchTime(timestamp_t* ts);
+uint8_t Simcom_SendUSSD(char* ussd, char* buf, uint8_t buflen);
+uint8_t Simcom_ReadNewSMS(char* buf, uint8_t buflen);
 // uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen);
-uint8_t Simcom_Upload(void *payload, uint16_t size);
-int Simcom_GetData(unsigned char *buf, int count);
+uint8_t Simcom_Upload(void* payload, uint16_t size);
+int Simcom_GetData(unsigned char* buf, int count);
 uint8_t Simcom_ReceivedResponse(uint32_t timeout);
 #endif
 

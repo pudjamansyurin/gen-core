@@ -12,16 +12,16 @@
 /* Private functions prototype
  * --------------------------------------------*/
 #if AT_USE_FTP
-static uint8_t FindInBuffer(char *prefix, char **str);
+static uint8_t FindInBuffer(char* prefix, char** str);
 #endif
-static SIM_RESULT SingleString(char *command, AT_MODE mode, char *string,
+static SIM_RESULT SingleString(char* command, AT_MODE mode, char* string,
                                uint8_t size, uint8_t executor);
-static SIM_RESULT SingleInteger(char *command, AT_MODE mode, int32_t *value,
+static SIM_RESULT SingleInteger(char* command, AT_MODE mode, int32_t* value,
                                 uint8_t executor);
-static SIM_RESULT CmdWrite(char *cmd, char *reply, uint32_t ms);
-static SIM_RESULT CmdRead(char *cmd, char *reply, uint32_t ms, char **str);
-static void ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size);
-static int32_t ParseNumber(const char *ptr, uint8_t *cnt);
+static SIM_RESULT CmdWrite(char* cmd, char* reply, uint32_t ms);
+static SIM_RESULT CmdRead(char* cmd, char* reply, uint32_t ms, char** str);
+static void ParseText(const char* ptr, uint8_t* cnt, char* text, uint8_t size);
+static int32_t ParseNumber(const char* ptr, uint8_t* cnt);
 // static float AT_ParseFloat(const char *ptr, uint8_t *cnt);
 
 /* Public functions implementation
@@ -39,10 +39,10 @@ SIM_RESULT AT_CommandEchoMode(uint8_t state) {
   return res;
 }
 
-SIM_RESULT AT_QueryTransmittedData(at_cipack_t *info) {
+SIM_RESULT AT_QueryTransmittedData(at_cipack_t* info) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
-  char *str = NULL;
+  char* str = NULL;
 
   Simcom_Lock();
   // Read
@@ -59,10 +59,10 @@ SIM_RESULT AT_QueryTransmittedData(at_cipack_t *info) {
   return res;
 }
 
-SIM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
+SIM_RESULT AT_SignalQualityReport(at_csq_t* signal) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
-  char *str = NULL;
+  char* str = NULL;
   float dBm;
 
   Simcom_Lock();
@@ -76,8 +76,7 @@ SIM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
     // Formatting
     {
       // Handle not detectable value
-      if (signal->rssi > 31)
-        signal->rssi = 0;
+      if (signal->rssi > 31) signal->rssi = 0;
 
       // Scale RSSI to dBm
       dBm = (signal->rssi * 63.0 / 31.0) - 115.0;
@@ -93,7 +92,7 @@ SIM_RESULT AT_SignalQualityReport(at_csq_t *signal) {
   return res;
 }
 
-SIM_RESULT AT_ConnectionStatus(AT_CIPSTATUS *state) {
+SIM_RESULT AT_ConnectionStatus(AT_CIPSTATUS* state) {
   SIM_RESULT res = SIM_ERROR;
   char status[20], *str = NULL;
   uint8_t len;
@@ -139,7 +138,7 @@ SIM_RESULT AT_ConnectionStatus(AT_CIPSTATUS *state) {
   return res;
 }
 
-SIM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
+SIM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t* param) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[14];
@@ -175,7 +174,7 @@ SIM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param) {
   return res;
 }
 
-SIM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param) {
+SIM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t* param) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[20];
@@ -210,7 +209,7 @@ SIM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param) {
 }
 
 SIM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode,
-                                  at_c_greg_t *param) {
+                                  at_c_greg_t* param) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[14], reply[15];
@@ -242,28 +241,28 @@ SIM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode,
   return res;
 }
 
-SIM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state) {
-  return SingleInteger("CSCLK", mode, (int32_t *)state, 0);
+SIM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK* state) {
+  return SingleInteger("CSCLK", mode, (int32_t*)state, 0);
 }
 
-SIM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state) {
-  return SingleInteger("CMEE", mode, (int32_t *)state, 0);
+SIM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE* state) {
+  return SingleInteger("CMEE", mode, (int32_t*)state, 0);
 }
 
-SIM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate) {
-  return SingleInteger("IPR", mode, (int32_t *)rate, 0);
+SIM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t* rate) {
+  return SingleInteger("IPR", mode, (int32_t*)rate, 0);
 }
 
-SIM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state) {
-  return SingleInteger("CGATT", mode, (int32_t *)state, 0);
+SIM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT* state) {
+  return SingleInteger("CGATT", mode, (int32_t*)state, 0);
 }
 
 #if AT_USE_CLK
-SIM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state) {
-  return SingleInteger("CLTS", mode, (int32_t *)state, 0);
+SIM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL* state) {
+  return SingleInteger("CLTS", mode, (int32_t*)state, 0);
 }
 
-SIM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
+SIM_RESULT AT_Clock(AT_MODE mode, timestamp_t* tm) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[39];
@@ -306,11 +305,11 @@ SIM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm) {
 #endif
 
 #if AT_USE_SMS
-SIM_RESULT AT_CharacterSetTE(AT_MODE mode, char *chset, uint8_t len) {
+SIM_RESULT AT_CharacterSetTE(AT_MODE mode, char* chset, uint8_t len) {
   return SingleString("CSCS", mode, chset, len, 0);
 }
 
-SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param, char *buf,
+SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t* param, char* buf,
                               uint8_t buflen) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
@@ -369,11 +368,11 @@ SIM_RESULT AT_MessageIndicationSMS(uint8_t mode, uint8_t mt) {
   return res;
 }
 
-SIM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF *state) {
-  return SingleInteger("CMGF", mode, (int32_t *)state, 0);
+SIM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF* state) {
+  return SingleInteger("CMGF", mode, (int32_t*)state, 0);
 }
 
-uint8_t AT_WaitMessageSMS(at_cmti_t *param, uint32_t timeout) {
+uint8_t AT_WaitMessageSMS(at_cmti_t* param, uint32_t timeout) {
   char *str = NULL, *prefix = "+CMTI: ";
   uint8_t cnt, len = 0;
   uint32_t tick;
@@ -396,7 +395,7 @@ uint8_t AT_WaitMessageSMS(at_cmti_t *param, uint32_t timeout) {
   return str != NULL;
 }
 
-SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param) {
+SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t* param) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, *prefix = "+CPMS: ", cmd[50];
@@ -447,7 +446,7 @@ SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param) {
   return res;
 }
 
-SIM_RESULT AT_DeleteMessageSMS(at_cmgd_t *param) {
+SIM_RESULT AT_DeleteMessageSMS(at_cmgd_t* param) {
   SIM_RESULT res = SIM_ERROR;
   char cmd[30];
 
@@ -460,7 +459,7 @@ SIM_RESULT AT_DeleteMessageSMS(at_cmgd_t *param) {
   return res;
 }
 
-SIM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen) {
+SIM_RESULT AT_ReadMessageSMS(at_cmgr_t* param, char* buf, uint8_t buflen) {
   SIM_RESULT res = SIM_ERROR;
   char *end, *str = NULL, cmd[30], *prefix = "+CMGR: ";
 
@@ -476,8 +475,7 @@ SIM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen) {
       if ((str = Simcom_Resp(SIM_RSP_NONE, str)) != NULL) {
         str += strlen(SIM_RSP_NONE);
         if ((end = Simcom_Resp(SIM_RSP_OK, str)) != NULL) {
-          if ((end - str) < buflen)
-            buflen = (end - str);
+          if ((end - str) < buflen) buflen = (end - str);
           strncpy(buf, str, buflen - 1);
         }
       }
@@ -488,7 +486,7 @@ SIM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen) {
   return res;
 }
 
-SIM_RESULT AT_ListMessageSMS(at_cmgl_t *param) {
+SIM_RESULT AT_ListMessageSMS(at_cmgl_t* param) {
   SIM_RESULT res = SIM_ERROR;
   char cmd[30];
   char stat[5][11] = {"REC UNREAD", "REC READ", "STO UNSENT", "STO SENT",
@@ -505,7 +503,7 @@ SIM_RESULT AT_ListMessageSMS(at_cmgl_t *param) {
 #endif
 
 #if AT_USE_TCP
-SIM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
+SIM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t* param) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[80];
@@ -538,9 +536,9 @@ SIM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param) {
   return res;
 }
 
-SIM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param) {
+SIM_RESULT AT_GetLocalIpAddress(at_cifsr_t* param) {
   SIM_RESULT res = SIM_ERROR;
-  char *str = NULL;
+  char* str = NULL;
 
   Simcom_Lock();
   // Read
@@ -553,7 +551,7 @@ SIM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param) {
   return res;
 }
 
-SIM_RESULT AT_StartConnection(at_cipstart_t *param) {
+SIM_RESULT AT_StartConnection(at_cipstart_t* param) {
   SIM_RESULT res = SIM_ERROR;
   char cmd[80];
 
@@ -577,28 +575,28 @@ SIM_RESULT AT_StartConnection(at_cipstart_t *param) {
   return res;
 }
 
-SIM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state) {
-  return SingleInteger("CIPRXGET", mode, (int32_t *)state, 0);
+SIM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET* state) {
+  return SingleInteger("CIPRXGET", mode, (int32_t*)state, 0);
 }
 
-SIM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state) {
-  return SingleInteger("CIPMUX", mode, (int32_t *)state, 0);
+SIM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX* state) {
+  return SingleInteger("CIPMUX", mode, (int32_t*)state, 0);
 }
 
-SIM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state) {
-  return SingleInteger("CIPMODE", mode, (int32_t *)state, 0);
+SIM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE* state) {
+  return SingleInteger("CIPMODE", mode, (int32_t*)state, 0);
 }
 
-SIM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state) {
-  return SingleInteger("CIPSRIP", mode, (int32_t *)state, 0);
+SIM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL* state) {
+  return SingleInteger("CIPSRIP", mode, (int32_t*)state, 0);
 }
 
-SIM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state) {
-  return SingleInteger("CIPHEAD", mode, (int32_t *)state, 0);
+SIM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL* state) {
+  return SingleInteger("CIPHEAD", mode, (int32_t*)state, 0);
 }
 
-SIM_RESULT AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND *state) {
-  return SingleInteger("CIPQSEND", mode, (int32_t *)state, 0);
+SIM_RESULT AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND* state) {
+  return SingleInteger("CIPQSEND", mode, (int32_t*)state, 0);
 }
 #endif
 
@@ -620,16 +618,14 @@ SIM_RESULT AT_BearerInitialize(void) {
   res = AT_BearerSettings(ATW, &setBEARER);
 
   // BEARER init
-  if (res == SIM_OK)
-    res = AT_BearerSettings(ATR, &getBEARER);
+  if (res == SIM_OK) res = AT_BearerSettings(ATR, &getBEARER);
 
-  if (res == SIM_OK && getBEARER.status != SAPBR_CONNECTED)
-    res = SIM_ERROR;
+  if (res == SIM_OK && getBEARER.status != SAPBR_CONNECTED) res = SIM_ERROR;
 
   return res;
 }
 
-SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
+SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[80];
@@ -689,7 +685,7 @@ SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param) {
   return res;
 }
 
-SIM_RESULT AT_FtpInitialize(at_ftp_t *param) {
+SIM_RESULT AT_FtpInitialize(at_ftp_t* param) {
   SIM_RESULT res;
   int32_t cid = 1;
 
@@ -718,10 +714,10 @@ SIM_RESULT AT_FtpInitialize(at_ftp_t *param) {
   return res;
 }
 
-SIM_RESULT AT_FtpFileSize(at_ftp_t *param) {
+SIM_RESULT AT_FtpFileSize(at_ftp_t* param) {
   SIM_RESULT res = SIM_ERROR;
   uint8_t cnt, len = 0;
-  char *str = NULL;
+  char* str = NULL;
 
   Simcom_Lock();
   // Read
@@ -743,7 +739,7 @@ SIM_RESULT AT_FtpFileSize(at_ftp_t *param) {
   return res;
 }
 
-SIM_RESULT AT_FtpDownload(at_ftpget_t *param) {
+SIM_RESULT AT_FtpDownload(at_ftpget_t* param) {
   SIM_RESULT res = SIM_ERROR;
   uint32_t tick;
   uint8_t cnt, len = 0;
@@ -766,8 +762,7 @@ SIM_RESULT AT_FtpDownload(at_ftpget_t *param) {
     if (param->mode == FTPGET_OPEN) {
       param->response = ParseNumber(&str[len], &cnt);
 
-      if (param->response != FTP_READY)
-        res = SIM_ERROR;
+      if (param->response != FTP_READY) res = SIM_ERROR;
     } else {
       param->cnflength = ParseNumber(&str[len], &cnt);
       len += cnt + 2;
@@ -791,29 +786,28 @@ SIM_RESULT AT_FtpDownload(at_ftpget_t *param) {
   return res;
 }
 
-SIM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state) {
-  return SingleInteger("FTPSTATE", ATR, (int32_t *)state, 1);
+SIM_RESULT AT_FtpCurrentState(AT_FTP_STATE* state) {
+  return SingleInteger("FTPSTATE", ATR, (int32_t*)state, 1);
 }
 
 SIM_RESULT AT_FtpResume(uint32_t start) {
-  return SingleInteger("FTPREST", ATW, (int32_t *)&start, 0);
+  return SingleInteger("FTPREST", ATW, (int32_t*)&start, 0);
 }
 #endif
 
 /* Private functions implementation
  * --------------------------------------------*/
 #if AT_USE_FTP
-static uint8_t FindInBuffer(char *prefix, char **str) {
+static uint8_t FindInBuffer(char* prefix, char** str) {
   *str = Simcom_Resp(prefix, NULL);
 
-  if (*str != NULL)
-    *str += strlen(prefix);
+  if (*str != NULL) *str += strlen(prefix);
 
   return *str != NULL;
 }
 #endif
 
-static SIM_RESULT SingleString(char *command, AT_MODE mode, char *string,
+static SIM_RESULT SingleString(char* command, AT_MODE mode, char* string,
                                uint8_t size, uint8_t executor) {
   SIM_RESULT res = SIM_ERROR;
   char *str = NULL, cmd[20], reply[20], tmp[size];
@@ -843,7 +837,7 @@ static SIM_RESULT SingleString(char *command, AT_MODE mode, char *string,
   return res;
 }
 
-static SIM_RESULT SingleInteger(char *command, AT_MODE mode, int32_t *value,
+static SIM_RESULT SingleInteger(char* command, AT_MODE mode, int32_t* value,
                                 uint8_t executor) {
   SIM_RESULT res = SIM_ERROR;
   char *str = NULL, cmd[20], reply[20];
@@ -873,16 +867,15 @@ static SIM_RESULT SingleInteger(char *command, AT_MODE mode, int32_t *value,
   return res;
 }
 
-static SIM_RESULT CmdWrite(char *cmd, char *reply, uint32_t ms) {
+static SIM_RESULT CmdWrite(char* cmd, char* reply, uint32_t ms) {
   SIM_RESULT res = SIM_ERROR;
 
-  if (SIM.d.state >= SIM_STATE_READY)
-    res = Simcom_Cmd(cmd, reply, ms);
+  if (SIM.d.state >= SIM_STATE_READY) res = Simcom_Cmd(cmd, reply, ms);
 
   return res;
 }
 
-static SIM_RESULT CmdRead(char *cmd, char *reply, uint32_t ms, char **str) {
+static SIM_RESULT CmdRead(char* cmd, char* reply, uint32_t ms, char** str) {
   SIM_RESULT res = SIM_ERROR;
 
   if (SIM.d.state >= SIM_STATE_READY) {
@@ -902,7 +895,7 @@ static SIM_RESULT CmdRead(char *cmd, char *reply, uint32_t ms, char **str) {
   return res;
 }
 
-static void ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size) {
+static void ParseText(const char* ptr, uint8_t* cnt, char* text, uint8_t size) {
   uint8_t i = 0;
 
   // check for double quote start
@@ -921,19 +914,17 @@ static void ParseText(const char *ptr, uint8_t *cnt, char *text, uint8_t size) {
     size--;
 
     // handle overflow
-    if (size <= 1)
-      break;
+    if (size <= 1) break;
   }
   // end of parsing for : double-quote, tab, new-line
   *text = '\0';
   ptr++;
   i++;
   // Save number of characters used for number
-  if (cnt != NULL)
-    *cnt = i;
+  if (cnt != NULL) *cnt = i;
 }
 
-static int32_t ParseNumber(const char *ptr, uint8_t *cnt) {
+static int32_t ParseNumber(const char* ptr, uint8_t* cnt) {
   uint8_t minus = 0, i = 0;
   int32_t sum = 0;
 

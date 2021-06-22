@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_network.h"
+
 #include "Drivers/_rtc.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_mqtt.h"
@@ -26,8 +27,7 @@ void NET_CheckClock(void) {
   timestamp_t ts;
 
   if (RTC_NeedCalibration())
-    if (Simcom_FetchTime(&ts))
-      RTC_Calibrate(&ts);
+    if (Simcom_FetchTime(&ts)) RTC_Calibrate(&ts);
 }
 
 void NET_CheckCommand(void) {

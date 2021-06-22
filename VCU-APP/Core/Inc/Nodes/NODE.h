@@ -18,6 +18,8 @@
 #define NODE_TIMEOUT_MS ((uint16_t)5000)
 #define NODE_DEBUG_MS ((uint16_t)1000)
 
+/* Exported macros
+ * --------------------------------------------*/
 #define CDBG_ID(c, dbg) ((c >> dbg) & 0x01)
 
 /* Exported enums

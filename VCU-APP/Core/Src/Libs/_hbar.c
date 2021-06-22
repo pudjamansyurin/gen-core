@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_hbar.h"
+
 #include "Libs/_eeprom.h"
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
@@ -49,18 +50,18 @@ uint8_t HBAR_SubModeMax(HBAR_MODE m) {
   uint8_t max;
 
   switch (m) {
-  case HBAR_M_DRIVE:
-    max = HBAR_M_DRIVE_MAX;
-    break;
-  case HBAR_M_TRIP:
-    max = HBAR_M_TRIP_MAX;
-    break;
-  case HBAR_M_REPORT:
-    max = HBAR_M_REPORT_MAX;
-    break;
-  default:
-    max = 0;
-    break;
+    case HBAR_M_DRIVE:
+      max = HBAR_M_DRIVE_MAX;
+      break;
+    case HBAR_M_TRIP:
+      max = HBAR_M_TRIP_MAX;
+      break;
+    case HBAR_M_REPORT:
+      max = HBAR_M_REPORT_MAX;
+      break;
+    default:
+      max = 0;
+      break;
   }
   return max;
 }
@@ -86,18 +87,15 @@ void HBAR_ReadStates(void) {
   HBAR.d.pin[HBAR_K_ABS] = GATE_ReadABS();
 
   if (!Reversed()) {
-    if (Timer(HBAR_K_SELECT))
-      HBAR.ctl.session++;
+    if (Timer(HBAR_K_SELECT)) HBAR.ctl.session++;
 
     if (HBAR.ctl.session) {
       Timer(HBAR_K_SET);
 
       if (HBAR.tim[HBAR_K_SELECT].time || HBAR.tim[HBAR_K_SET].time) {
         HBAR.ctl.tick.session = _GetTickMS();
-        if (HBAR.tim[HBAR_K_SELECT].time && HBAR.ctl.session > 1)
-          RunSelect();
-        if (HBAR.tim[HBAR_K_SET].time)
-          RunSet();
+        if (HBAR.tim[HBAR_K_SELECT].time && HBAR.ctl.session > 1) RunSelect();
+        if (HBAR.tim[HBAR_K_SET].time) RunSet();
       }
     }
   }

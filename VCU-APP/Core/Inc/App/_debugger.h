@@ -159,17 +159,17 @@ typedef struct __attribute__((packed)) {
 
 /* Public functions prototype
  * --------------------------------------------*/
-void DBG_GetVCU(vcu_dbg_t *vcu);
-void DBG_GetNET(net_dbg_t *net);
-void DBG_GetGPS(gps_dbg_t *gps);
-void DBG_GetMEMS(mems_dbg_t *mems);
-void DBG_GetRMT(remote_dbg_t *rmt);
-void DBG_GetFGR(finger_dbg_t *fgr);
-void DBG_GetAudio(audio_dbg_t *audio);
-void DBG_GetHBAR(hbar_dbg_t *hbar);
-void DBG_GetHMI1(hmi1_dbg_t *hmi1);
-void DBG_GetBMS(bms_dbg_t *bms);
-void DBG_GetMCU(mcu_dbg_t *mcu);
-void DBG_GetTasks(tasks_dbg_t *tasks);
+void DBG_GetVCU(vcu_dbg_t* vcu);
+void DBG_GetNET(net_dbg_t* net);
+void DBG_GetGPS(gps_dbg_t* gps);
+void DBG_GetMEMS(mems_dbg_t* mems);
+void DBG_GetRMT(remote_dbg_t* rmt);
+void DBG_GetFGR(finger_dbg_t* fgr);
+void DBG_GetAudio(audio_dbg_t* audio);
+void DBG_GetHBAR(hbar_dbg_t* hbar);
+void DBG_GetHMI1(hmi1_dbg_t* hmi1);
+void DBG_GetBMS(bms_dbg_t* bms);
+void DBG_GetMCU(mcu_dbg_t* mcu);
+void DBG_GetTasks(tasks_dbg_t* tasks);
 
 #endif /* INC_LIBS__DEBUGGER_H_ */

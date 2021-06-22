@@ -19,6 +19,8 @@
 #define BMS_TIMEOUT_MS ((uint32_t)4000)
 #define BMS_ID_NONE ((uint32_t)0xFFFFFFFF)
 
+/* Exported macros
+ * --------------------------------------------*/
 #define BMS_CAND(X) ((X) >> 20)
 #define BMS_ID(X) ((X)&0xFFFFF)
 

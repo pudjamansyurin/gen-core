@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_bat.h"
+
 #include "adc.h"
 
 /* External variables
@@ -28,7 +29,7 @@ static bat_t BAT = {
  * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val);
+static uint16_t MovAvg(uint16_t* buf, uint16_t sz, uint16_t val);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -52,8 +53,7 @@ uint16_t BAT_ScanValue(void) {
   lock();
   HAL_ADC_Start(BAT.padc);
   ok = HAL_ADC_PollForConversion(BAT.padc, 5) == HAL_OK;
-  if (ok)
-    value = HAL_ADC_GetValue(BAT.padc);
+  if (ok) value = HAL_ADC_GetValue(BAT.padc);
   HAL_ADC_Stop(BAT.padc);
 
   if (ok) {
@@ -81,7 +81,7 @@ static void unlock(void) {
 #endif
 }
 
-static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val) {
+static uint16_t MovAvg(uint16_t* buf, uint16_t sz, uint16_t val) {
   static uint32_t sum = 0;
   static uint16_t pos = 0, len = 0;
 
@@ -90,11 +90,9 @@ static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val) {
   // Assign the nextNum to the position in the array
   buf[pos] = val;
   // Increment position
-  if (++pos >= sz)
-    pos = 0;
+  if (++pos >= sz) pos = 0;
   // calculate filled array
-  if (len < sz)
-    len++;
+  if (len < sz) len++;
   // return the average
   return sum / len;
 }

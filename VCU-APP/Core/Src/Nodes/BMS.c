@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Nodes/BMS.h"
+
 #include "App/_ml.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
@@ -32,8 +33,7 @@ static uint8_t AreRunning(uint8_t on);
  * --------------------------------------------*/
 void BMS_Init(void) {
   memset(&(BMS.d), 0, sizeof(bms_data_t));
-  for (uint8_t i = 0; i < BMS_COUNT; i++)
-    ResetIndex(i);
+  for (uint8_t i = 0; i < BMS_COUNT; i++) ResetIndex(i);
 
   ML_BMS_Init();
 }
@@ -45,8 +45,7 @@ void BMS_PowerOverCAN(uint8_t on) {
 
   if (lastState != on) {
     lastState = on;
-    if (on)
-      ResetFaults();
+    if (on) ResetFaults();
   }
   BMS_TX_Setting(state, sc);
 }
@@ -137,21 +136,18 @@ static void ResetIndex(uint8_t i) {
 }
 
 static void ResetFaults(void) {
-  for (uint8_t i = 0; i < BMS_COUNT; i++)
-    BMS.packs[i].fault = 0;
+  for (uint8_t i = 0; i < BMS_COUNT; i++) BMS.packs[i].fault = 0;
   BMS.d.fault = 0;
 }
 
 static uint8_t GetIndex(uint32_t addr) {
   // find index (if already exist)
   for (uint8_t i = 0; i < BMS_COUNT; i++)
-    if (BMS.packs[i].id == BMS_ID(addr))
-      return i;
+    if (BMS.packs[i].id == BMS_ID(addr)) return i;
 
   // find index (if not exist)
   for (uint8_t i = 0; i < BMS_COUNT; i++)
-    if (BMS.packs[i].id == BMS_ID_NONE)
-      return i;
+    if (BMS.packs[i].id == BMS_ID_NONE) return i;
 
   // force replace first index (if already full)
   return 0;
@@ -160,8 +156,7 @@ static uint8_t GetIndex(uint32_t addr) {
 static uint16_t MergeFault(void) {
   uint16_t fault = 0;
 
-  for (uint8_t i = 0; i < BMS_COUNT; i++)
-    fault |= BMS.packs[i].fault;
+  for (uint8_t i = 0; i < BMS_COUNT; i++) fault |= BMS.packs[i].fault;
 
   return fault;
 }
@@ -202,10 +197,8 @@ static uint8_t AreRunning(uint8_t on) {
   for (uint8_t i = 0; i < BMS_COUNT; i++) {
     bms_pack_t *p = &(BMS.packs[i]);
 
-    if (p->state != state)
-      return 0;
-    if (on && p->fault)
-      return 0;
+    if (p->state != state) return 0;
+    if (on && p->fault) return 0;
   }
   return 1;
 }

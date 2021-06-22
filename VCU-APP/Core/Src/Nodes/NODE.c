@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Nodes/NODE.h"
+
 #include "App/_debugger.h"
 #include "App/_ml.h"
 #include "Drivers/_aes.h"
@@ -45,8 +46,7 @@ void NODE_Refresh(void) {
 
   NODE.d.overheat = BMS.d.overheat || MCU.d.overheat;
   NODE.d.error = VCU.d.error || eBMS || eMCU;
-  if (!_TickIn(NODE.d.tick.dbg, NODE_DEBUG_MS))
-    NODE.d.debug = 0;
+  if (!_TickIn(NODE.d.tick.dbg, NODE_DEBUG_MS)) NODE.d.debug = 0;
 
   BMS_RefreshIndex();
   MCU_Refresh();
@@ -54,22 +54,14 @@ void NODE_Refresh(void) {
 }
 
 void NODE_DebugCAN(void) {
-  if (CDBG_ID(NODE.d.debug, CDBG_GROUP))
-    NODE_TX_DebugGroup();
-  if (CDBG_ID(NODE.d.debug, CDBG_VCU))
-    NODE_TX_DebugVCU();
-  if (CDBG_ID(NODE.d.debug, CDBG_GPS))
-    NODE_TX_DebugGPS();
-  if (CDBG_ID(NODE.d.debug, CDBG_MEMS))
-    NODE_TX_DebugMEMS();
-  if (CDBG_ID(NODE.d.debug, CDBG_RMT))
-    NODE_TX_DebugRMT();
-  if (CDBG_ID(NODE.d.debug, CDBG_TASK))
-    NODE_TX_DebugTASK();
-  if (CDBG_ID(NODE.d.debug, CDBG_MCU))
-    NODE_TX_DebugMCU();
-  if (CDBG_ID(NODE.d.debug, CDBG_BMS))
-    NODE_TX_DebugBMS();
+  if (CDBG_ID(NODE.d.debug, CDBG_GROUP)) NODE_TX_DebugGroup();
+  if (CDBG_ID(NODE.d.debug, CDBG_VCU)) NODE_TX_DebugVCU();
+  if (CDBG_ID(NODE.d.debug, CDBG_GPS)) NODE_TX_DebugGPS();
+  if (CDBG_ID(NODE.d.debug, CDBG_MEMS)) NODE_TX_DebugMEMS();
+  if (CDBG_ID(NODE.d.debug, CDBG_RMT)) NODE_TX_DebugRMT();
+  if (CDBG_ID(NODE.d.debug, CDBG_TASK)) NODE_TX_DebugTASK();
+  if (CDBG_ID(NODE.d.debug, CDBG_MCU)) NODE_TX_DebugMCU();
+  if (CDBG_ID(NODE.d.debug, CDBG_BMS)) NODE_TX_DebugBMS();
 }
 
 /* CAN RX

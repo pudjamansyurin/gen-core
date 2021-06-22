@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Nodes/VCU.h"
+
 #include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_finger.h"

@@ -202,9 +202,8 @@ MPU6050_Result MPU6050_SetGyroscope(MPU6050 *DataStruct,
  * be a value of @ref MPU6050_Accelerometer_t enumeration
  * @retval Member of @ref MPU6050_Result_t enumeration
  */
-MPU6050_Result
-MPU6050_SetAccelerometer(MPU6050 *DataStruct,
-                         MPU6050_Accelerometer AccelerometerSensitivity);
+MPU6050_Result MPU6050_SetAccelerometer(
+    MPU6050 *DataStruct, MPU6050_Accelerometer AccelerometerSensitivity);
 
 /**
  * @brief  Sets output data rate

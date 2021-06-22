@@ -11,17 +11,17 @@
 
 /* Public functions implementation
  * --------------------------------------------*/
-void USART_DMA_Start(usart_ring_t *ring) {
+void USART_DMA_Start(usart_ring_t* ring) {
   __HAL_UART_ENABLE_IT(ring->huart, UART_IT_IDLE);
   __HAL_DMA_ENABLE_IT(ring->hdma, DMA_IT_TC);
   __HAL_DMA_ENABLE_IT(ring->hdma, DMA_IT_HT);
 
-  HAL_UART_Receive_DMA(ring->huart, (uint8_t *)(ring->dma.buf), ring->dma.sz);
+  HAL_UART_Receive_DMA(ring->huart, (uint8_t*)(ring->dma.buf), ring->dma.sz);
 }
 
-void USART_DMA_Stop(usart_ring_t *ring) { HAL_UART_DMAStop(ring->huart); }
+void USART_DMA_Stop(usart_ring_t* ring) { HAL_UART_DMAStop(ring->huart); }
 
-void USART_DMA_IrqHandler(usart_ring_t *ring) {
+void USART_DMA_IrqHandler(usart_ring_t* ring) {
   // if the source is HT
   if (__HAL_DMA_GET_IT_SOURCE(ring->hdma, DMA_IT_HT)) {
     __HAL_DMA_CLEAR_FLAG(ring->hdma, __HAL_DMA_GET_HT_FLAG_INDEX(ring->hdma));
@@ -40,11 +40,11 @@ void USART_DMA_IrqHandler(usart_ring_t *ring) {
     __HAL_DMA_CLEAR_FLAG(ring->hdma, __HAL_DMA_GET_FE_FLAG_INDEX(ring->hdma));
     __HAL_DMA_CLEAR_FLAG(ring->hdma, __HAL_DMA_GET_DME_FLAG_INDEX(ring->hdma));
 
-    HAL_UART_Receive_DMA(ring->huart, (uint8_t *)(ring->dma.buf), ring->dma.sz);
+    HAL_UART_Receive_DMA(ring->huart, (uint8_t*)(ring->dma.buf), ring->dma.sz);
   }
 }
 
-void USART_IrqHandler(usart_ring_t *ring) {
+void USART_IrqHandler(usart_ring_t* ring) {
   if (__HAL_UART_GET_FLAG(ring->huart, UART_FLAG_IDLE)) {
     __HAL_UART_CLEAR_IDLEFLAG(ring->huart);
 
@@ -53,7 +53,7 @@ void USART_IrqHandler(usart_ring_t *ring) {
   }
 }
 
-void USART_Check_Buffer(usart_ring_t *ring) {
+void USART_Check_Buffer(usart_ring_t* ring) {
   size_t pos;
 
   /* Calculate current position in buffer */
@@ -96,9 +96,9 @@ void USART_Check_Buffer(usart_ring_t *ring) {
 /**
  * Write data to buffer
  */
-void USART_Fill_Buffer(usart_ring_t *ring, size_t start, size_t len) {
-  void *dest = &(ring->usart.buf[ring->usart.idx]);
-  void *src = &(ring->dma.buf[start]);
+void USART_Fill_Buffer(usart_ring_t* ring, size_t start, size_t len) {
+  void* dest = &(ring->usart.buf[ring->usart.idx]);
+  void* src = &(ring->dma.buf[start]);
 
   // check
   if ((ring->usart.idx + 1 + len) > ring->usart.sz)
@@ -111,8 +111,8 @@ void USART_Fill_Buffer(usart_ring_t *ring, size_t start, size_t len) {
 /**
  * Clear rx buffer
  */
-void USART_Reset_Buffer(usart_ring_t *ring) {
-  void *dest = &(ring->usart.buf[0]);
+void USART_Reset_Buffer(usart_ring_t* ring) {
+  void* dest = &(ring->usart.buf[0]);
 
   // check
   //	if ((ring->usart.idx + 1) > ring->usart.sz)

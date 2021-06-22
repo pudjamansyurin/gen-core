@@ -43,8 +43,7 @@ static uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options,
                        uint32_t timeout) {
   *notif = osThreadFlagsWait(flags, options, timeout);
 
-  if (*notif > FLAG_MASK)
-    return 0;
+  if (*notif > FLAG_MASK) return 0;
 
   return (*notif & flags) > 0;
 }

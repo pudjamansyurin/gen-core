@@ -311,7 +311,7 @@ typedef struct {
   AT_FTP_RESPONSE response;
   uint16_t reqlength;
   uint16_t cnflength;
-  char *ptr;
+  char* ptr;
 } at_ftpget_t;
 
 typedef struct {
@@ -325,55 +325,55 @@ typedef struct {
 /* Public functions prototype
  * --------------------------------------------*/
 SIM_RESULT AT_CommandEchoMode(uint8_t state);
-SIM_RESULT AT_QueryTransmittedData(at_cipack_t *info);
-SIM_RESULT AT_SignalQualityReport(at_csq_t *signal);
-SIM_RESULT AT_ConnectionStatus(AT_CIPSTATUS *state);
-SIM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t *param);
-SIM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t *param);
+SIM_RESULT AT_QueryTransmittedData(at_cipack_t* info);
+SIM_RESULT AT_SignalQualityReport(at_csq_t* signal);
+SIM_RESULT AT_ConnectionStatus(AT_CIPSTATUS* state);
+SIM_RESULT AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t* param);
+SIM_RESULT AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t* param);
 SIM_RESULT AT_NetworkRegistration(char command[20], AT_MODE mode,
-                                  at_c_greg_t *param);
-SIM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK *state);
-SIM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE *state);
-SIM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t *rate);
-SIM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT *state);
+                                  at_c_greg_t* param);
+SIM_RESULT AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK* state);
+SIM_RESULT AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE* state);
+SIM_RESULT AT_FixedLocalRate(AT_MODE mode, uint32_t* rate);
+SIM_RESULT AT_GprsAttachment(AT_MODE mode, AT_CGATT* state);
 
 #if AT_USE_CLK
-SIM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL *state);
-SIM_RESULT AT_Clock(AT_MODE mode, timestamp_t *tm);
+SIM_RESULT AT_EnableLocalTimestamp(AT_MODE mode, AT_BOOL* state);
+SIM_RESULT AT_Clock(AT_MODE mode, timestamp_t* tm);
 #endif
 
 #if AT_USE_SMS
-SIM_RESULT AT_CharacterSetTE(AT_MODE mode, char *chset, uint8_t len);
-SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t *param, char *buf,
+SIM_RESULT AT_CharacterSetTE(AT_MODE mode, char* chset, uint8_t len);
+SIM_RESULT AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t* param, char* buf,
                               uint8_t buflen);
 SIM_RESULT AT_MessageIndicationSMS(uint8_t mode, uint8_t mt);
-SIM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF *state);
-uint8_t AT_WaitMessageSMS(at_cmti_t *param, uint32_t timeout);
-SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t *param);
-SIM_RESULT AT_DeleteMessageSMS(at_cmgd_t *param);
-SIM_RESULT AT_ReadMessageSMS(at_cmgr_t *param, char *buf, uint8_t buflen);
-SIM_RESULT AT_ListMessageSMS(at_cmgl_t *param);
+SIM_RESULT AT_MessageFormatSMS(AT_MODE mode, AT_CMGF* state);
+uint8_t AT_WaitMessageSMS(at_cmti_t* param, uint32_t timeout);
+SIM_RESULT AT_StorageMessageSMS(AT_MODE mode, at_cpms_t* param);
+SIM_RESULT AT_DeleteMessageSMS(at_cmgd_t* param);
+SIM_RESULT AT_ReadMessageSMS(at_cmgr_t* param, char* buf, uint8_t buflen);
+SIM_RESULT AT_ListMessageSMS(at_cmgl_t* param);
 #endif
 
 #if AT_USE_TCP
-SIM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t *param);
-SIM_RESULT AT_GetLocalIpAddress(at_cifsr_t *param);
-SIM_RESULT AT_StartConnection(at_cipstart_t *param);
-SIM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET *state);
-SIM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX *state);
-SIM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE *state);
-SIM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL *state);
-SIM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL *state);
-SIM_RESULT AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND *state);
+SIM_RESULT AT_ConfigureAPN(AT_MODE mode, at_cstt_t* param);
+SIM_RESULT AT_GetLocalIpAddress(at_cifsr_t* param);
+SIM_RESULT AT_StartConnection(at_cipstart_t* param);
+SIM_RESULT AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET* state);
+SIM_RESULT AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX* state);
+SIM_RESULT AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE* state);
+SIM_RESULT AT_ShowRemoteIp(AT_MODE mode, AT_BOOL* state);
+SIM_RESULT AT_IpPackageHeader(AT_MODE mode, AT_BOOL* state);
+SIM_RESULT AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND* state);
 #endif
 
 #if AT_USE_FTP
 SIM_RESULT AT_BearerInitialize(void);
-SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t *param);
-SIM_RESULT AT_FtpInitialize(at_ftp_t *param);
-SIM_RESULT AT_FtpFileSize(at_ftp_t *param);
-SIM_RESULT AT_FtpDownload(at_ftpget_t *param);
-SIM_RESULT AT_FtpCurrentState(AT_FTP_STATE *state);
+SIM_RESULT AT_BearerSettings(AT_MODE mode, at_sapbr_t* param);
+SIM_RESULT AT_FtpInitialize(at_ftp_t* param);
+SIM_RESULT AT_FtpFileSize(at_ftp_t* param);
+SIM_RESULT AT_FtpDownload(at_ftpget_t* param);
+SIM_RESULT AT_FtpCurrentState(AT_FTP_STATE* state);
 SIM_RESULT AT_FtpResume(uint32_t start);
 #endif
 #endif /* INC_LIBS__AT_H_ */

@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_remote.h"
+
 #include "App/_task.h"
 #include "Drivers/_aes.h"
 #include "Drivers/_rng.h"
@@ -46,7 +47,7 @@ static const uint8_t COMMAND[4][8] = {
     {0xab, 0xf5, 0x83, 0xc4, 0xe9, 0x27, 0x0a, 0xb2},
 };
 
-/* Private functions prototype
+/* Private functions declaration
  * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
@@ -78,8 +79,7 @@ uint8_t RMT_ReInit(void) {
     GATE_RemoteReset();
 
     ok = RMT_Probe();
-    if (!ok)
-      _DelayMS(500);
+    if (!ok) _DelayMS(500);
   } while (!ok && _GetTickMS() - tick < RMT_TIMEOUT_MS);
 
   if (ok) {
@@ -165,8 +165,7 @@ uint8_t RMT_Pairing(void) {
   AES_ChangeKey(RMT.d.pairing_aes);
 
   // Insert to payload
-  for (uint8_t i = 0; i < 4; i++)
-    aes[i] = _ByteSwap32(RMT.d.pairing_aes[i]);
+  for (uint8_t i = 0; i < 4; i++) aes[i] = _ByteSwap32(RMT.d.pairing_aes[i]);
   memcpy(&RMT.t.payload[0], aes, NRF_DATA_LENGTH);
   memcpy(&RMT.t.payload[NRF_DATA_LENGTH], RMT.t.address, NRF_ADDR_LENGTH);
 
@@ -216,13 +215,11 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
     }
   }
 
-  if (valid)
-    RMT.d.tick.heartbeat = _GetTickMS();
+  if (valid) RMT.d.tick.heartbeat = _GetTickMS();
   unlock();
 
 #if REMOTE_DEBUG
-  if (valid)
-    Debugger(*cmd);
+  if (valid) Debugger(*cmd);
 #endif
 
   return valid;

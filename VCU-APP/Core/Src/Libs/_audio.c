@@ -38,7 +38,9 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_audio.h"
+
 #include "i2s.h"
+
 
 /* External variables
  * --------------------------------------------*/
@@ -89,8 +91,7 @@ uint8_t AUDIO_Init(void) {
     GATE_AudioReset();
     ok = AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, AUDIO.d.volume, SOUND_FREQ) ==
          AUDIO_OK;
-    if (!ok)
-      _DelayMS(500);
+    if (!ok) _DelayMS(500);
   } while (!ok && _GetTickMS() - tick < AUDIO_TIMEOUT_MS);
   unlock();
 
@@ -261,8 +262,7 @@ uint8_t AUDIO_OUT_Stop(uint32_t Option) {
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
 uint8_t AUDIO_OUT_SetVolume(uint8_t Volume) {
-  if (AUDIO.d.volume == Volume)
-    return AUDIO_OK;
+  if (AUDIO.d.volume == Volume) return AUDIO_OK;
 
   /* Call the codec volume control function with converted volume value */
   if (cs43l22_SetVolume(AUDIO_I2C_ADDRESS, Volume) != 0)
@@ -400,8 +400,7 @@ __weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
   size->remaining -= size->played;
 
   // done, repeat
-  if (size->remaining == 0)
-    size->remaining = SOUND_SIZE;
+  if (size->remaining == 0) size->remaining = SOUND_SIZE;
 
   // check remaining data
   if (size->remaining > AUDIO_BUFFER_SIZE)
@@ -477,8 +476,7 @@ peripheral */
 Prepare the Media to be used for the audio transfer from memory to I2S
 peripheral */
   /* Configure the I2S peripheral */
-  if (I2S_Init(AudioFreq) != AUDIO_OK)
-    ret = AUDIO_ERROR;
+  if (I2S_Init(AudioFreq) != AUDIO_OK) ret = AUDIO_ERROR;
 
   if (ret == AUDIO_OK) {
     /* Retrieve audio codec identifier */
@@ -512,8 +510,7 @@ static void AUDIO_OUT_DeInit(void) {
  */
 static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
   /* Call the audio Codec Play function */
-  if (cs43l22_Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0)
-    return AUDIO_ERROR;
+  if (cs43l22_Play(AUDIO_I2C_ADDRESS, pBuffer, Size) != 0) return AUDIO_ERROR;
 
   /* Update the Media layer and enable it for play */
   if (HAL_I2S_Transmit_DMA(AUDIO.pi2s, pBuffer,
@@ -542,8 +539,7 @@ static uint8_t I2S_Init(uint32_t AudioFreq) {
   AUDIO.pi2s->Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
 
   /* Initialize the I2S peripheral with the structure above */
-  if (HAL_I2S_Init(AUDIO.pi2s) != HAL_OK)
-    return AUDIO_ERROR;
+  if (HAL_I2S_Init(AUDIO.pi2s) != HAL_OK) return AUDIO_ERROR;
 
   return AUDIO_OK;
 }

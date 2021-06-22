@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_codec.h"
+
 #include "i2c.h"
 
 /* Private variables
@@ -56,8 +57,7 @@ void CODEC_Write(uint8_t Addr, uint8_t Reg, uint8_t Value) {
                              &Value, 1, I2Cx_TIMEOUT_MAX);
 
   /* Check the communication status */
-  if (status != HAL_OK)
-    /* Execute user timeout callback */
+  if (status != HAL_OK) /* Execute user timeout callback */
     I2Cx_Error(Addr);
 }
 
@@ -75,8 +75,7 @@ uint8_t CODEC_Read(uint8_t Addr, uint8_t Reg) {
                             &value, 1, I2Cx_TIMEOUT_MAX);
 
   /* Check the communication status */
-  if (status != HAL_OK)
-    /* Execute user timeout callback */
+  if (status != HAL_OK) /* Execute user timeout callback */
     I2Cx_Error(Addr);
 
   return value;

@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Nodes/MCU.h"
+
 #include "Nodes/BMS.h"
 #include "Nodes/VCU.h"
 
@@ -43,8 +44,7 @@ void MCU_Init(void) {
 }
 
 void MCU_Power12v(uint8_t on) {
-  if (MCU.d.run)
-    return;
+  if (MCU.d.run) return;
 
   if (on) {
     if (!MCU.d.active) {
@@ -126,8 +126,7 @@ int16_t MCU_SpeedToRpm(uint8_t speed) {
 uint8_t MCU_SpeedToVolume(void) {
   uint8_t vol = MCU_RpmToSpeed(MCU.d.rpm);
 
-  if (vol > MCU_AUDIO_MAX_SPEED_KPH)
-    vol = MCU_AUDIO_MAX_SPEED_KPH;
+  if (vol > MCU_AUDIO_MAX_SPEED_KPH) vol = MCU_AUDIO_MAX_SPEED_KPH;
 
   return (vol * 100) / MCU_AUDIO_MAX_SPEED_KPH;
 }

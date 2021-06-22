@@ -36,11 +36,11 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
   c->data_rate = NRF_DATA_RATE_250KBPS;
   c->tx_power = NRF_TX_PWR_M18dBm;
   c->crc_width = NRF_CRC_WIDTH_1B;
-  c->retransmit_count = 0x00; // maximum is 15 (0F) times
-  c->retransmit_delay = 0x00; // 4000us, LSB:250us (0F)
+  c->retransmit_count = 0x00;  // maximum is 15 (0F) times
+  c->retransmit_delay = 0x00;  // 4000us, LSB:250us (0F)
   c->rf_channel = 110;
   c->spi = hspi;
-  c->spi_timeout = 10; // milliseconds
+  c->spi_timeout = 10;  // milliseconds
 }
 
 // Checks the presence of the nRF24L01
@@ -79,8 +79,7 @@ NRF_RESULT nrf_configure(void) {
   nrf_power_up(1);
 
   // wait for powerup
-  while ((config_reg & 2) == 0)
-    nrf_read_register(NRF_CONFIG, &config_reg);
+  while ((config_reg & 2) == 0) nrf_read_register(NRF_CONFIG, &config_reg);
 
   // address width
   nrf_set_address_width(c->addr_width);
@@ -221,8 +220,8 @@ NRF_RESULT nrf_set_tx_power(NRF_TX_PWR pwr) {
     return NRF_ERROR;
   }
 
-  reg &= 0xF9;     // clear bits 1,2
-  reg |= pwr << 1; // set bits 1,2
+  reg &= 0xF9;      // clear bits 1,2
+  reg |= pwr << 1;  // set bits 1,2
   if (nrf_write_register(NRF_RF_SETUP, &reg) != NRF_OK) {
     return NRF_ERROR;
   }
@@ -283,7 +282,7 @@ NRF_RESULT nrf_set_rf_channel(uint8_t ch) {
     return NRF_ERROR;
   }
 
-  reg |= ch; // setting channel
+  reg |= ch;  // setting channel
   if (nrf_write_register(NRF_RF_CH, &reg) != NRF_OK) {
     return NRF_ERROR;
   }
@@ -300,8 +299,8 @@ NRF_RESULT nrf_set_retransmittion_count(uint8_t count) {
     return NRF_ERROR;
   }
 
-  reg &= 0xF0;  // clearing bits 0,1,2,3
-  reg |= count; // setting count
+  reg &= 0xF0;   // clearing bits 0,1,2,3
+  reg |= count;  // setting count
 
   if (nrf_write_register(NRF_SETUP_RETR, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -319,8 +318,8 @@ NRF_RESULT nrf_set_retransmittion_delay(uint8_t delay) {
     return NRF_ERROR;
   }
 
-  reg &= 0x0F;       // clearing bits 1,2,6,7
-  reg |= delay << 4; // setting delay
+  reg &= 0x0F;        // clearing bits 1,2,6,7
+  reg |= delay << 4;  // setting delay
 
   if (nrf_write_register(NRF_SETUP_RETR, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -336,8 +335,8 @@ NRF_RESULT nrf_set_address_width(NRF_ADDR_WIDTH width) {
     return NRF_ERROR;
   }
 
-  reg &= 0x03;  // clearing bits 0,1
-  reg |= width; // setting delay
+  reg &= 0x03;   // clearing bits 0,1
+  reg |= width;  // setting delay
 
   if (nrf_write_register(NRF_SETUP_AW, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -654,8 +653,7 @@ uint8_t nrf_irq_handler(void) {
   uint8_t received = 0;
 
   // read interrupt register
-  if (nrf_read_register(NRF_STATUS, &status) != NRF_OK)
-    return 0;
+  if (nrf_read_register(NRF_STATUS, &status) != NRF_OK) return 0;
 
   if (status & NRF_RX_DR) {
     // RX FIFO Interrupt
@@ -666,7 +664,7 @@ uint8_t nrf_irq_handler(void) {
     if ((fifo_status & 1) == 0) {
       nrf_read_rx_payload(NRF.config.rx_buffer);
 
-      status |= NRF_RX_DR; // clear the interrupt flag
+      status |= NRF_RX_DR;  // clear the interrupt flag
       nrf_write_register(NRF_STATUS, &status);
       nrf_flush_rx();
 
@@ -678,7 +676,7 @@ uint8_t nrf_irq_handler(void) {
 
   if (status & NRF_TX_DS) {
     // TX Data Sent Interrupt
-    status |= NRF_TX_DS; // clear the interrupt flag
+    status |= NRF_TX_DS;  // clear the interrupt flag
 
     ce_reset();
     nrf_write_register(NRF_STATUS, &status);
@@ -691,12 +689,12 @@ uint8_t nrf_irq_handler(void) {
 
   if (status & NRF_MAX_RT) {
     // MaxRetransmits reached
-    status |= NRF_MAX_RT; // clear the interrupt flag
+    status |= NRF_MAX_RT;  // clear the interrupt flag
 
     ce_reset();
     nrf_flush_tx();
-    nrf_power_up(0); // power down
-    nrf_power_up(1); // power up
+    nrf_power_up(0);  // power down
+    nrf_power_up(1);  // power up
     nrf_write_register(NRF_STATUS, &status);
     nrf_rx_tx_control(NRF_STATE_RX);
     ce_set();
@@ -711,13 +709,10 @@ uint8_t nrf_irq_handler(void) {
 void nrf_clear_pending_irq(void) {
   uint8_t status = 0;
 
-  if (nrf_read_register(NRF_STATUS, &status) != NRF_OK)
-    return;
+  if (nrf_read_register(NRF_STATUS, &status) != NRF_OK) return;
 
-  if (status & NRF_RX_DR)
-    nrf_flush_rx();
-  if (status & NRF_MAX_RT)
-    nrf_flush_tx();
+  if (status & NRF_RX_DR) nrf_flush_rx();
+  if (status & NRF_MAX_RT) nrf_flush_tx();
 
   nrf_clear_interrupts();
 }
@@ -755,8 +750,7 @@ static NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
                                 NRF.config.spi_timeout) == HAL_OK);
 
   if (ok) {
-    for (i = 0; i < len; i++)
-      rx[i] = myRX[1 + i];
+    for (i = 0; i < len; i++) rx[i] = myRX[1 + i];
   }
 
   csn_set();

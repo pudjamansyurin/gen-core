@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_iwdg.h"
+
 #include "iwdg.h"
 
 /* External variables
@@ -18,7 +19,7 @@ extern osMutexId_t IwdgMutexHandle;
 
 /* Private variable
  * --------------------------------------------*/
-static IWDG_HandleTypeDef *piwdg = &hiwdg;
+static IWDG_HandleTypeDef* piwdg = &hiwdg;
 
 /* Private functions prototype
  * --------------------------------------------*/

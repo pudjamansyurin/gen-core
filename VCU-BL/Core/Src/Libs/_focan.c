@@ -8,21 +8,22 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_focan.h"
+
 #include "Drivers/_canbus.h"
 #include "Drivers/_iwdg.h"
 #include "iwdg.h"
 
 /* Private functions prototypes
  * --------------------------------------------*/
-static uint8_t WriteAndWaitResponse(can_tx_t *Tx, uint32_t addr, uint32_t DLC,
+static uint8_t WriteAndWaitResponse(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
                                     uint8_t response, uint32_t timeout,
                                     uint32_t retry);
-static uint8_t WriteAndWaitSqueezed(can_tx_t *Tx, uint32_t addr, uint32_t DLC,
-                                    CAN_DATA *RxData, uint32_t timeout,
+static uint8_t WriteAndWaitSqueezed(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
+                                    CAN_DATA* RxData, uint32_t timeout,
                                     uint32_t retry);
 static uint8_t WaitResponse(uint32_t addr, uint32_t timeout);
-static uint8_t WaitSqueezed(uint32_t addr, CAN_DATA *RxData, uint32_t timeout);
-static uint8_t FlashBlock(uint8_t *ptr, uint32_t *tmpBlk);
+static uint8_t WaitSqueezed(uint32_t addr, CAN_DATA* RxData, uint32_t timeout);
+static uint8_t FlashBlock(uint8_t* ptr, uint32_t* tmpBlk);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -42,7 +43,7 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
   return p;
 }
 
-uint8_t FOCAN_GetCRC(uint32_t *crc) {
+uint8_t FOCAN_GetCRC(uint32_t* crc) {
   CAN_DATA RxData = {0};
   can_tx_t Tx = {0};
   uint8_t p;
@@ -51,13 +52,12 @@ uint8_t FOCAN_GetCRC(uint32_t *crc) {
   p = WriteAndWaitSqueezed(&Tx, CAND_FOCAN_CRC, 0, &RxData, 20000, 1);
 
   // process response
-  if (p)
-    *crc = RxData.u32[0];
+  if (p) *crc = RxData.u32[0];
 
   return p;
 }
 
-uint8_t FOCAN_DownloadHook(uint32_t addr, uint32_t *data) {
+uint8_t FOCAN_DownloadHook(uint32_t addr, uint32_t* data) {
   can_tx_t Tx = {0};
   uint8_t p;
 
@@ -69,7 +69,7 @@ uint8_t FOCAN_DownloadHook(uint32_t addr, uint32_t *data) {
   return p;
 }
 
-uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset,
+uint8_t FOCAN_DownloadFlash(uint8_t* ptr, uint32_t size, uint32_t offset,
                             uint32_t total_size) {
   uint32_t pendingBlk, tmpBlk;
   can_tx_t Tx = {0};
@@ -88,12 +88,10 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset,
     p = WriteAndWaitResponse(&Tx, CAND_FOCAN_INIT, 6, FOCAN_ACK, 500, 20);
 
     // flash
-    if (p)
-      p = FlashBlock(ptr, &tmpBlk);
+    if (p) p = FlashBlock(ptr, &tmpBlk);
 
     // wait final response
-    if (p)
-      p = (WaitResponse(CAND_FOCAN_INIT, 5000) == FOCAN_ACK);
+    if (p) p = (WaitResponse(CAND_FOCAN_INIT, 5000) == FOCAN_ACK);
 
     // update pointer
     if (p) {
@@ -113,7 +111,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t *ptr, uint32_t size, uint32_t offset,
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
+static uint8_t FlashBlock(uint8_t* ptr, uint32_t* tmpBlk) {
   uint32_t pendingSubBlk, pos, len;
   can_tx_t Tx = {0};
   uint8_t p;
@@ -125,7 +123,7 @@ static uint8_t FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
     pos = (*tmpBlk - pendingSubBlk);
     // set message
     Tx.data.u16[0] = pos;
-    Tx.data.u32[1] = *(uint32_t *)ptr;
+    Tx.data.u32[1] = *(uint32_t*)ptr;
     // send message
     p = WriteAndWaitResponse(&Tx, CAND_FOCAN_RUN, 8, pos, 5, (100 / 5));
 
@@ -139,7 +137,7 @@ static uint8_t FlashBlock(uint8_t *ptr, uint32_t *tmpBlk) {
   return p;
 }
 
-static uint8_t WriteAndWaitResponse(can_tx_t *Tx, uint32_t addr, uint32_t DLC,
+static uint8_t WriteAndWaitResponse(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
                                     uint8_t response, uint32_t timeout,
                                     uint32_t retry) {
   uint8_t p;
@@ -148,19 +146,17 @@ static uint8_t WriteAndWaitResponse(can_tx_t *Tx, uint32_t addr, uint32_t DLC,
     // send message
     p = CANBUS_Write(Tx, addr, DLC, 0);
     // wait response
-    if (p)
-      p = (WaitResponse(addr, timeout) == response);
+    if (p) p = (WaitResponse(addr, timeout) == response);
   } while (!p && --retry);
 
   // handle error
-  if (!p)
-    *(uint32_t *)IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
+  if (!p) *(uint32_t*)IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
 
   return p;
 }
 
-static uint8_t WriteAndWaitSqueezed(can_tx_t *Tx, uint32_t addr, uint32_t DLC,
-                                    CAN_DATA *RxData, uint32_t timeout,
+static uint8_t WriteAndWaitSqueezed(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
+                                    CAN_DATA* RxData, uint32_t timeout,
                                     uint32_t retry) {
   uint8_t p;
 
@@ -168,13 +164,11 @@ static uint8_t WriteAndWaitSqueezed(can_tx_t *Tx, uint32_t addr, uint32_t DLC,
     // send message
     p = CANBUS_Write(Tx, addr, DLC, 0);
     // wait response
-    if (p)
-      p = WaitSqueezed(addr, RxData, timeout);
+    if (p) p = WaitSqueezed(addr, RxData, timeout);
   } while (!p && --retry);
 
   // handle error
-  if (!p)
-    *(uint32_t *)IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
+  if (!p) *(uint32_t*)IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
 
   return p;
 }
@@ -201,7 +195,7 @@ static uint8_t WaitResponse(uint32_t addr, uint32_t timeout) {
   return response;
 }
 
-static uint8_t WaitSqueezed(uint32_t addr, CAN_DATA *RxData, uint32_t timeout) {
+static uint8_t WaitSqueezed(uint32_t addr, CAN_DATA* RxData, uint32_t timeout) {
   uint8_t step = 0, reply = 3;
   can_rx_t Rx = {0};
   uint32_t tick;
@@ -213,18 +207,18 @@ static uint8_t WaitSqueezed(uint32_t addr, CAN_DATA *RxData, uint32_t timeout) {
     if (CANBUS_Read(&Rx)) {
       if (CANBUS_ReadID(&(Rx.header)) == addr) {
         switch (step) {
-        case 0: // ack
-          step += (Rx.data.u8[0] == FOCAN_ACK);
-          break;
-        case 1: // data
-          memcpy(RxData, &(Rx.data), 8);
-          step++;
-          break;
-        case 2: // ack
-          step += (Rx.data.u8[0] == FOCAN_ACK);
-          break;
-        default:
-          break;
+          case 0:  // ack
+            step += (Rx.data.u8[0] == FOCAN_ACK);
+            break;
+          case 1:  // data
+            memcpy(RxData, &(Rx.data), 8);
+            step++;
+            break;
+          case 2:  // ack
+            step += (Rx.data.u8[0] == FOCAN_ACK);
+            break;
+          default:
+            break;
         }
       }
     }

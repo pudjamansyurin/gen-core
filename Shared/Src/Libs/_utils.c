@@ -60,8 +60,7 @@ uint8_t _TickIn(uint32_t tick, uint32_t ms) {
 
 void _Error(char msg[50]) {
 #if RTOS_ENABLE
-  if (osKernelGetState() == osKernelRunning)
-    printf(msg);
+  if (osKernelGetState() == osKernelRunning) printf(msg);
 #else
   printf(msg);
 #endif
@@ -76,18 +75,16 @@ uint32_t _ByteSwap32(uint32_t x) {
   return y;
 }
 
-float _MovAvgFloat(averager_float_t *m, float *buf, uint16_t sz, float val) {
+float _MovAvgFloat(averager_float_t* m, float* buf, uint16_t sz, float val) {
   // Subtract the oldest number from the prev sum, add the new number
   m->sum = m->sum - buf[m->pos] + val;
   // Assign the nextNum to the position in the array
   buf[m->pos] = val;
   // Increment position
   m->pos++;
-  if (m->pos >= sz)
-    m->pos = 0;
+  if (m->pos >= sz) m->pos = 0;
   // calculate filled array
-  if (m->len < sz)
-    m->len++;
+  if (m->len < sz) m->len++;
   // return the average
   return m->sum / m->len;
 }

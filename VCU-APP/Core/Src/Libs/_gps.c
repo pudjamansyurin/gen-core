@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_gps.h"
+
 #include "DMA/_dma_ublox.h"
 #include "usart.h"
 
@@ -50,8 +51,7 @@ uint8_t GPS_Init(void) {
 
   tick = _GetTickMS();
   while (_GetTickMS() - tick < GPS_TIMEOUT_MS)
-    if (GPS.d.tick)
-      break;
+    if (GPS.d.tick) break;
 
   ok = GPS.d.tick > 0;
   unlock();
@@ -90,8 +90,7 @@ void GPS_ReceiveCallback(void *ptr, size_t len) {
 #if GPS_DEBUG
   Debugger(ptr, len);
 #endif
-  if (nmea_process(&(GPS.d.nmea), (char *)ptr, len))
-    GPS.d.tick = _GetTickMS();
+  if (nmea_process(&(GPS.d.nmea), (char *)ptr, len)) GPS.d.tick = _GetTickMS();
 }
 
 /* Private functions implementation

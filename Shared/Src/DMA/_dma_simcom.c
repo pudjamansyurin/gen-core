@@ -10,6 +10,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "DMA/_dma_simcom.h"
+
 #include "Libs/_usart_ring.h"
 
 /* Public variables
@@ -30,7 +31,7 @@ static usart_ring_t SIMCOM_RING = {
 
 /* Public functions implementation
  * --------------------------------------------*/
-void SIMCOM_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
+void SIMCOM_DMA_Start(UART_HandleTypeDef* huart, DMA_HandleTypeDef* hdma) {
   SIMCOM_RING.huart = huart;
   SIMCOM_RING.hdma = hdma;
   USART_DMA_Start(&SIMCOM_RING);
@@ -44,9 +45,9 @@ void SIMCOM_USART_IrqHandler(void) { USART_IrqHandler(&SIMCOM_RING); }
 
 void SIMCOM_Reset_Buffer(void) { USART_Reset_Buffer(&SIMCOM_RING); }
 
-uint8_t SIMCOM_Transmit(char *data, uint16_t Size) {
+uint8_t SIMCOM_Transmit(char* data, uint16_t Size) {
   SIMCOM_Reset_Buffer();
 
-  return (HAL_UART_Transmit(SIMCOM_RING.huart, (uint8_t *)data, Size,
+  return (HAL_UART_Transmit(SIMCOM_RING.huart, (uint8_t*)data, Size,
                             HAL_MAX_DELAY) == HAL_OK);
 }

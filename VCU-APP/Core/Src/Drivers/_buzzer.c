@@ -11,6 +11,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_buzzer.h"
+
 #include "tim.h"
 
 /* External variables

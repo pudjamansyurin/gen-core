@@ -7,6 +7,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_mems.h"
+
 #include "Nodes/VCU.h"
 #include "i2c.h"
 
@@ -58,12 +59,10 @@ uint8_t MEMS_Init(void) {
     ok = MPU6050_Init(MEMS.pi2c, &(MEMS.dev), MPU6050_Device_0,
                       MPU6050_Accelerometer_16G,
                       MPU6050_Gyroscope_2000s) == MPU6050_Result_Ok;
-    if (!ok)
-      _DelayMS(500);
+    if (!ok) _DelayMS(500);
   } while (!ok && _GetTickMS() - tick < MEMS_TIMEOUT_MS);
 
-  if (ok)
-    MEMS.d.tick = _GetTickMS();
+  if (ok) MEMS.d.tick = _GetTickMS();
   unlock();
 
   printf("MEMS:%s\n", ok ? "OK" : "Error");
@@ -83,8 +82,7 @@ void MEMS_Refresh(void) {
   MEMS.d.active = _TickIn(MEMS.d.tick, MEMS_TIMEOUT_MS);
 
   // handle bug, when only got temperature
-  if (MEMS.d.active)
-    MEMS.d.active = !OnlyGotTemperature();
+  if (MEMS.d.active) MEMS.d.active = !OnlyGotTemperature();
 
   if (!MEMS.d.active) {
     MEMS_DeInit();
@@ -173,8 +171,7 @@ uint8_t MEMS_Dragged(void) {
 
   dragged = euclidean > DRAGGED_LIMIT;
 #if MEMS_DEBUG
-  if (dragged)
-    printf("MEMS:Gyro dragged = %d\n", euclidean);
+  if (dragged) printf("MEMS:Gyro dragged = %d\n", euclidean);
 #endif
   return dragged;
 }
@@ -207,8 +204,8 @@ static uint8_t Capture(mems_raw_t *raw) {
     raw->accel.z = dev->Accelerometer_Z * dev->Acce_Mult;
     // convert the RAW values into dps (deg/s)
     raw->gyro.x = dev->Gyroscope_X * dev->Gyro_Mult;
-    raw->gyro.y = dev->Gyroscope_Y * dev->Gyro_Mult; // reverse Yaw & Roll
-    raw->gyro.z = dev->Gyroscope_Z * dev->Gyro_Mult; // reverse Yaw & Roll
+    raw->gyro.y = dev->Gyroscope_Y * dev->Gyro_Mult;  // reverse Yaw & Roll
+    raw->gyro.z = dev->Gyroscope_Z * dev->Gyro_Mult;  // reverse Yaw & Roll
     // temperature
     raw->temp = dev->Temperature;
   }
@@ -248,10 +245,11 @@ static void Debugger(move_t *move) {
 }
 
 static void RawDebugger(mems_raw_t *raw) {
-  printf("Acce:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-         "Gyro:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
-         "Temp: %d\n\n",
-         raw->accel.x, raw->accel.y, raw->accel.z, raw->gyro.x, raw->gyro.y,
-         raw->gyro.z, (int8_t)raw->temp);
+  printf(
+      "Acce:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+      "Gyro:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
+      "Temp: %d\n\n",
+      raw->accel.x, raw->accel.y, raw->accel.z, raw->gyro.x, raw->gyro.y,
+      raw->gyro.z, (int8_t)raw->temp);
 }
 #endif

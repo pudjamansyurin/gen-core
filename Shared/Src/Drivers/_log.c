@@ -8,8 +8,10 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_log.h"
-#include "Libs/_utils.h"
+
 #include <stdarg.h>
+
+#include "Libs/_utils.h"
 
 /* External variables
  * --------------------------------------------*/
@@ -30,12 +32,11 @@ int __io_putchar(int ch) {
   return ch;
 }
 
-int _write(int file, char *ptr, int len) {
+int _write(int file, char* ptr, int len) {
   int DataIdx;
 
   lock();
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-    __io_putchar(*ptr++);
+  for (DataIdx = 0; DataIdx < len; DataIdx++) __io_putchar(*ptr++);
   unlock();
 
   return len;
@@ -43,10 +44,9 @@ int _write(int file, char *ptr, int len) {
 
 void printf_init(void) { setvbuf(stdout, NULL, _IONBF, 0); }
 
-void printf_hex(char *data, uint16_t size) {
+void printf_hex(char* data, uint16_t size) {
   lock();
-  for (uint32_t i = 0; i < size; i++)
-    printf("%02X", *(data + i));
+  for (uint32_t i = 0; i < size; i++) printf("%02X", *(data + i));
   unlock();
 }
 // void Log(const char *fmt, ...) {
@@ -78,8 +78,8 @@ static void SendITM(char ch) {
 
   // wait if busy
   tick = _GetTickMS();
-  while (_GetTickMS() - tick <= LOG_TIMEOUT_MS && ITM->PORT[0].u32 == 0)
-    ;
+  while (_GetTickMS() - tick <= LOG_TIMEOUT_MS && ITM->PORT[0].u32 == 0) {
+  };
 
   ITM->PORT[0].u8 = (uint8_t)ch;
 #endif

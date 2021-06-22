@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_command.h"
+
 #include "App/_reporter.h"
 
 /* External variables
@@ -90,25 +91,20 @@ uint8_t CMD_ValidateCode(command_t *cmd) {
 }
 
 uint8_t CMD_ValidateContent(void *ptr, uint8_t len) {
-  if (len > sizeof(command_t))
-    return 0;
+  if (len > sizeof(command_t)) return 0;
 
-  if (len < sizeof(command_header_t))
-    return 0;
+  if (len < sizeof(command_header_t)) return 0;
 
   command_t *cmd = ptr;
   command_header_t *h = &(cmd->header);
 
-  if (memcmp(h->prefix, PREFIX_COMMAND, 2) != 0)
-    return 0;
+  if (memcmp(h->prefix, PREFIX_COMMAND, 2) != 0) return 0;
 
   uint8_t size = sizeof(h->vin) + sizeof(h->send_time) + sizeof(h->code) +
                  sizeof(h->sub_code) + sizeof(cmd->data);
-  if (h->size > size)
-    return 0;
+  if (h->size > size) return 0;
 
-  if (h->vin != VIN_VALUE)
-    return 0;
+  if (h->vin != VIN_VALUE) return 0;
 
   return 1;
 }

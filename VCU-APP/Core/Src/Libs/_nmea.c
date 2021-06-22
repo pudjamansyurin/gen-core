@@ -57,29 +57,29 @@
 #define EARTH_RADIUS FLT(6371.0) /*!< Earth radius in units of kilometers */
 
 #define CRC_ADD(_nh, ch) (_nh)->p.crc_calc ^= (uint8_t)(ch)
-#define TERM_ADD(_nh, ch)                                                      \
-  do {                                                                         \
-    if ((_nh)->p.term_pos < (sizeof((_nh)->p.term_str) - 1)) {                 \
-      (_nh)->p.term_str[(_nh)->p.term_pos++] = (ch);                           \
-      (_nh)->p.term_str[(_nh)->p.term_pos] = 0;                                \
-    }                                                                          \
+#define TERM_ADD(_nh, ch)                                      \
+  do {                                                         \
+    if ((_nh)->p.term_pos < (sizeof((_nh)->p.term_str) - 1)) { \
+      (_nh)->p.term_str[(_nh)->p.term_pos++] = (ch);           \
+      (_nh)->p.term_str[(_nh)->p.term_pos] = 0;                \
+    }                                                          \
   } while (0)
-#define TERM_NEXT(_nh)                                                         \
-  do {                                                                         \
-    (_nh)->p.term_str[((_nh)->p.term_pos = 0)] = 0;                            \
-    (_nh)->p.term_num++;                                                       \
+#define TERM_NEXT(_nh)                              \
+  do {                                              \
+    (_nh)->p.term_str[((_nh)->p.term_pos = 0)] = 0; \
+    (_nh)->p.term_num++;                            \
   } while (0)
 
 #define CIN(x) ((x) >= '0' && (x) <= '9')
-#define CIHN(x)                                                                \
-  (((x) >= '0' && (x) <= '9') || ((x) >= 'a' && (x) <= 'f') ||                 \
+#define CIHN(x)                                                \
+  (((x) >= '0' && (x) <= '9') || ((x) >= 'a' && (x) <= 'f') || \
    ((x) >= 'A' && (x) <= 'F'))
 #define CTN(x) ((x) - '0')
-#define CHTN(x)                                                                \
-  (((x) >= '0' && (x) <= '9')                                                  \
-       ? ((x) - '0')                                                           \
-       : (((x) >= 'a' && (x) <= 'z')                                           \
-              ? ((x) - 'a' + 10)                                               \
+#define CHTN(x)                      \
+  (((x) >= '0' && (x) <= '9')        \
+       ? ((x) - '0')                 \
+       : (((x) >= 'a' && (x) <= 'z') \
+              ? ((x) - 'a' + 10)     \
               : (((x) >= 'A' && (x) <= 'Z') ? ((x) - 'A' + 10) : 0)))
 
 /* Private functions prototype
@@ -234,41 +234,41 @@ uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los,
  */
 nmea_float_t nmea_to_speed(nmea_float_t sik, NMEA_SPEED ts) {
   switch (ts) {
-  case nmea_speed_kps:
-    return FLT(sik * FLT(0.000514));
-  case nmea_speed_kph:
-    return FLT(sik * FLT(1.852));
-  case nmea_speed_mps:
-    return FLT(sik * FLT(0.5144));
-  case nmea_speed_mpm:
-    return FLT(sik * FLT(30.87));
+    case nmea_speed_kps:
+      return FLT(sik * FLT(0.000514));
+    case nmea_speed_kph:
+      return FLT(sik * FLT(1.852));
+    case nmea_speed_mps:
+      return FLT(sik * FLT(0.5144));
+    case nmea_speed_mpm:
+      return FLT(sik * FLT(30.87));
 
-  case nmea_speed_mips:
-    return FLT(sik * FLT(0.0003197));
-  case nmea_speed_mph:
-    return FLT(sik * FLT(1.151));
-  case nmea_speed_fps:
-    return FLT(sik * FLT(1.688));
-  case nmea_speed_fpm:
-    return FLT(sik * FLT(101.3));
+    case nmea_speed_mips:
+      return FLT(sik * FLT(0.0003197));
+    case nmea_speed_mph:
+      return FLT(sik * FLT(1.151));
+    case nmea_speed_fps:
+      return FLT(sik * FLT(1.688));
+    case nmea_speed_fpm:
+      return FLT(sik * FLT(101.3));
 
-  case nmea_speed_mpk:
-    return FLT(sik * FLT(32.4));
-  case nmea_speed_spk:
-    return FLT(sik * FLT(1944.0));
-  case nmea_speed_sp100m:
-    return FLT(sik * FLT(194.4));
-  case nmea_speed_mipm:
-    return FLT(sik * FLT(52.14));
-  case nmea_speed_spm:
-    return FLT(sik * FLT(3128.0));
-  case nmea_speed_sp100y:
-    return FLT(sik * FLT(177.7));
+    case nmea_speed_mpk:
+      return FLT(sik * FLT(32.4));
+    case nmea_speed_spk:
+      return FLT(sik * FLT(1944.0));
+    case nmea_speed_sp100m:
+      return FLT(sik * FLT(194.4));
+    case nmea_speed_mipm:
+      return FLT(sik * FLT(52.14));
+    case nmea_speed_spm:
+      return FLT(sik * FLT(3128.0));
+    case nmea_speed_sp100y:
+      return FLT(sik * FLT(177.7));
 
-  case nmea_speed_smph:
-    return FLT(sik * FLT(1.0));
-  default:
-    return 0;
+    case nmea_speed_smph:
+      return FLT(sik * FLT(1.0));
+    default:
+      return 0;
   }
 }
 
@@ -381,146 +381,146 @@ static uint8_t parse_term(nmea_t *nh) {
 #if NMEA_CFG_STATEMENT_GPGGA
   } else if (nh->p.stat == STAT_GGA) { /* Process GPGGA statement */
     switch (nh->p.term_num) {
-    case 1: /* Process UTC time */
-      nh->p.data.gga.hours =
-          10 * CTN(nh->p.term_str[0]) + CTN(nh->p.term_str[1]);
-      nh->p.data.gga.minutes =
-          10 * CTN(nh->p.term_str[2]) + CTN(nh->p.term_str[3]);
-      nh->p.data.gga.seconds =
-          10 * CTN(nh->p.term_str[4]) + CTN(nh->p.term_str[5]);
-      break;
-    case 2:                                         /* Latitude */
-      nh->p.data.gga.latitude = parse_lat_long(nh); /* Parse latitude */
-      break;
-    case 3: /* Latitude north/south information */
-      if (nh->p.term_str[0] == 'S' || nh->p.term_str[0] == 's') {
-        nh->p.data.gga.latitude = -nh->p.data.gga.latitude;
-      }
-      break;
-    case 4:                                          /* Longitude */
-      nh->p.data.gga.longitude = parse_lat_long(nh); /* Parse longitude */
-      break;
-    case 5: /* Longitude east/west information */
-      if (nh->p.term_str[0] == 'W' || nh->p.term_str[0] == 'w') {
-        nh->p.data.gga.longitude = -nh->p.data.gga.longitude;
-      }
-      break;
-    case 6: /* Fix status */
-      nh->p.data.gga.fix = (uint8_t)parse_number(nh, NULL);
-      break;
-    case 7: /* Satellites in use */
-      nh->p.data.gga.sats_in_use = (uint8_t)parse_number(nh, NULL);
-      break;
-    case 9: /* Altitude */
-      nh->p.data.gga.altitude = parse_float_number(nh, NULL);
-      break;
-    case 11: /* Altitude above ellipsoid */
-      nh->p.data.gga.geo_sep = parse_float_number(nh, NULL);
-      break;
-    default:
-      break;
+      case 1: /* Process UTC time */
+        nh->p.data.gga.hours =
+            10 * CTN(nh->p.term_str[0]) + CTN(nh->p.term_str[1]);
+        nh->p.data.gga.minutes =
+            10 * CTN(nh->p.term_str[2]) + CTN(nh->p.term_str[3]);
+        nh->p.data.gga.seconds =
+            10 * CTN(nh->p.term_str[4]) + CTN(nh->p.term_str[5]);
+        break;
+      case 2:                                         /* Latitude */
+        nh->p.data.gga.latitude = parse_lat_long(nh); /* Parse latitude */
+        break;
+      case 3: /* Latitude north/south information */
+        if (nh->p.term_str[0] == 'S' || nh->p.term_str[0] == 's') {
+          nh->p.data.gga.latitude = -nh->p.data.gga.latitude;
+        }
+        break;
+      case 4:                                          /* Longitude */
+        nh->p.data.gga.longitude = parse_lat_long(nh); /* Parse longitude */
+        break;
+      case 5: /* Longitude east/west information */
+        if (nh->p.term_str[0] == 'W' || nh->p.term_str[0] == 'w') {
+          nh->p.data.gga.longitude = -nh->p.data.gga.longitude;
+        }
+        break;
+      case 6: /* Fix status */
+        nh->p.data.gga.fix = (uint8_t)parse_number(nh, NULL);
+        break;
+      case 7: /* Satellites in use */
+        nh->p.data.gga.sats_in_use = (uint8_t)parse_number(nh, NULL);
+        break;
+      case 9: /* Altitude */
+        nh->p.data.gga.altitude = parse_float_number(nh, NULL);
+        break;
+      case 11: /* Altitude above ellipsoid */
+        nh->p.data.gga.geo_sep = parse_float_number(nh, NULL);
+        break;
+      default:
+        break;
     }
 #endif /* NMEA_CFG_STATEMENT_GPGGA */
 #if NMEA_CFG_STATEMENT_GPGSA
   } else if (nh->p.stat == STAT_GSA) { /* Process GPGSA statement */
     switch (nh->p.term_num) {
-    case 2: /* Process fix mode */
-      nh->p.data.gsa.fix_mode = (uint8_t)parse_number(nh, NULL);
-      break;
-    case 15: /* Process PDOP */
-      nh->p.data.gsa.dop_p = parse_float_number(nh, NULL);
-      break;
-    case 16: /* Process HDOP */
-      nh->p.data.gsa.dop_h = parse_float_number(nh, NULL);
-      break;
-    case 17: /* Process VDOP */
-      nh->p.data.gsa.dop_v = parse_float_number(nh, NULL);
-      break;
-    default:
-      /* Parse satellite IDs */
-      if (nh->p.term_num >= 3 && nh->p.term_num <= 14) {
-        nh->p.data.gsa.satellites_ids[nh->p.term_num - 3] =
-            (uint8_t)parse_number(nh, NULL);
-      }
-      break;
+      case 2: /* Process fix mode */
+        nh->p.data.gsa.fix_mode = (uint8_t)parse_number(nh, NULL);
+        break;
+      case 15: /* Process PDOP */
+        nh->p.data.gsa.dop_p = parse_float_number(nh, NULL);
+        break;
+      case 16: /* Process HDOP */
+        nh->p.data.gsa.dop_h = parse_float_number(nh, NULL);
+        break;
+      case 17: /* Process VDOP */
+        nh->p.data.gsa.dop_v = parse_float_number(nh, NULL);
+        break;
+      default:
+        /* Parse satellite IDs */
+        if (nh->p.term_num >= 3 && nh->p.term_num <= 14) {
+          nh->p.data.gsa.satellites_ids[nh->p.term_num - 3] =
+              (uint8_t)parse_number(nh, NULL);
+        }
+        break;
     }
 #endif /* NMEA_CFG_STATEMENT_GPGSA */
 #if NMEA_CFG_STATEMENT_GPGSV
   } else if (nh->p.stat == STAT_GSV) { /* Process GPGSV statement */
     switch (nh->p.term_num) {
-    case 2: /* Current GPGSV statement number */
-      nh->p.data.gsv.stat_num = (uint8_t)parse_number(nh, NULL);
-      break;
-    case 3: /* Process satellites in view */
-      nh->p.data.gsv.sats_in_view = (uint8_t)parse_number(nh, NULL);
-      break;
-    default:
+      case 2: /* Current GPGSV statement number */
+        nh->p.data.gsv.stat_num = (uint8_t)parse_number(nh, NULL);
+        break;
+      case 3: /* Process satellites in view */
+        nh->p.data.gsv.sats_in_view = (uint8_t)parse_number(nh, NULL);
+        break;
+      default:
 #if NMEA_CFG_STATEMENT_GPGSV_SAT_DET
-      if (nh->p.term_num >= 4 &&
-          nh->p.term_num <= 19) { /* Check current term number */
-        uint8_t index,
-            term_num = nh->p.term_num -
-                       4; /* Normalize term number from 4-19 to 0-15 */
-        uint16_t value;
+        if (nh->p.term_num >= 4 &&
+            nh->p.term_num <= 19) { /* Check current term number */
+          uint8_t index,
+              term_num = nh->p.term_num -
+                         4; /* Normalize term number from 4-19 to 0-15 */
+          uint16_t value;
 
-        index = 4 * (nh->p.data.gsv.stat_num - 1) +
-                term_num / 4; /* Get array index */
-        if (index <
-            sizeof(nh->sats_in_view_desc) / sizeof(nh->sats_in_view_desc[0])) {
-          value =
-              (uint16_t)parse_number(nh, NULL); /* Parse number as integer */
-          switch (term_num % 4) {
-          case 0:
-            nh->sats_in_view_desc[index].num = value;
-            break;
-          case 1:
-            nh->sats_in_view_desc[index].elevation = value;
-            break;
-          case 2:
-            nh->sats_in_view_desc[index].azimuth = value;
-            break;
-          case 3:
-            nh->sats_in_view_desc[index].snr = value;
-            break;
-          default:
-            break;
+          index = 4 * (nh->p.data.gsv.stat_num - 1) +
+                  term_num / 4; /* Get array index */
+          if (index < sizeof(nh->sats_in_view_desc) /
+                          sizeof(nh->sats_in_view_desc[0])) {
+            value =
+                (uint16_t)parse_number(nh, NULL); /* Parse number as integer */
+            switch (term_num % 4) {
+              case 0:
+                nh->sats_in_view_desc[index].num = value;
+                break;
+              case 1:
+                nh->sats_in_view_desc[index].elevation = value;
+                break;
+              case 2:
+                nh->sats_in_view_desc[index].azimuth = value;
+                break;
+              case 3:
+                nh->sats_in_view_desc[index].snr = value;
+                break;
+              default:
+                break;
+            }
           }
         }
-      }
 #endif /* NMEA_CFG_STATEMENT_GPGSV_SAT_DET */
-      break;
+        break;
     }
 #endif /* NMEA_CFG_STATEMENT_GPGSV */
 #if NMEA_CFG_STATEMENT_GPRMC
   } else if (nh->p.stat == STAT_RMC) { /* Process GPRMC statement */
     switch (nh->p.term_num) {
-    case 2: /* Process valid status */
-      nh->p.data.rmc.is_valid = (nh->p.term_str[0] == 'A');
-      break;
-    case 7: /* Process ground speed in knots */
-      nh->p.data.rmc.speed = parse_float_number(nh, NULL);
-      break;
-    case 8: /* Process true ground coarse */
-      nh->p.data.rmc.coarse = parse_float_number(nh, NULL);
-      break;
-    case 9: /* Process date */
-      nh->p.data.rmc.date =
-          (uint8_t)(10 * CTN(nh->p.term_str[0]) + CTN(nh->p.term_str[1]));
-      nh->p.data.rmc.month =
-          (uint8_t)(10 * CTN(nh->p.term_str[2]) + CTN(nh->p.term_str[3]));
-      nh->p.data.rmc.year =
-          (uint8_t)(10 * CTN(nh->p.term_str[4]) + CTN(nh->p.term_str[5]));
-      break;
-    case 10: /* Process magnetic variation */
-      nh->p.data.rmc.variation = parse_float_number(nh, NULL);
-      break;
-    case 11: /* Process magnetic variation east/west */
-      if (nh->p.term_str[0] == 'W' || nh->p.term_str[0] == 'w') {
-        nh->p.data.rmc.variation = -nh->p.data.rmc.variation;
-      }
-      break;
-    default:
-      break;
+      case 2: /* Process valid status */
+        nh->p.data.rmc.is_valid = (nh->p.term_str[0] == 'A');
+        break;
+      case 7: /* Process ground speed in knots */
+        nh->p.data.rmc.speed = parse_float_number(nh, NULL);
+        break;
+      case 8: /* Process true ground coarse */
+        nh->p.data.rmc.coarse = parse_float_number(nh, NULL);
+        break;
+      case 9: /* Process date */
+        nh->p.data.rmc.date =
+            (uint8_t)(10 * CTN(nh->p.term_str[0]) + CTN(nh->p.term_str[1]));
+        nh->p.data.rmc.month =
+            (uint8_t)(10 * CTN(nh->p.term_str[2]) + CTN(nh->p.term_str[3]));
+        nh->p.data.rmc.year =
+            (uint8_t)(10 * CTN(nh->p.term_str[4]) + CTN(nh->p.term_str[5]));
+        break;
+      case 10: /* Process magnetic variation */
+        nh->p.data.rmc.variation = parse_float_number(nh, NULL);
+        break;
+      case 11: /* Process magnetic variation east/west */
+        if (nh->p.term_str[0] == 'W' || nh->p.term_str[0] == 'w') {
+          nh->p.data.rmc.variation = -nh->p.data.rmc.variation;
+        }
+        break;
+      default:
+        break;
     }
 #endif /* NMEA_CFG_STATEMENT_GPRMC */
   }

@@ -8,7 +8,9 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_canbus.h"
+
 #include "can.h"
+
 #if (RTOS_ENABLE)
 #include "Nodes/NODE.h"
 #endif
@@ -29,11 +31,11 @@ static can_t can = {.pcan = &hcan1};
 static void lock(void);
 static void unlock(void);
 static void Reset(void);
-static void Header(CAN_TxHeaderTypeDef *header, uint32_t address, uint32_t DLC,
+static void Header(CAN_TxHeaderTypeDef* header, uint32_t address, uint32_t DLC,
                    uint8_t ext);
 #if CAN_DEBUG
-static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData);
-static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData);
+static void TxDebugger(CAN_TxHeaderTypeDef* TxHeader, CAN_DATA* TxData);
+static void RxDebugger(CAN_RxHeaderTypeDef* RxHeader, CAN_DATA* RxData);
 #endif
 
 /* Public functions implementation
@@ -46,8 +48,7 @@ void CANBUS_Init(void) {
 
   e = (!CANBUS_Filter());
 
-  if (!e)
-    e = (HAL_CAN_Start(can.pcan) != HAL_OK);
+  if (!e) e = (HAL_CAN_Start(can.pcan) != HAL_OK);
 
 #if (RTOS_ENABLE)
   if (!e)
@@ -55,8 +56,7 @@ void CANBUS_Init(void) {
          HAL_OK);
 #endif
 
-  if (e)
-    printf("CAN: Initiate error.\n");
+  if (e) printf("CAN: Initiate error.\n");
 }
 
 void CANBUS_DeInit(void) {
@@ -87,7 +87,7 @@ uint8_t CANBUS_Filter(void) {
   return (HAL_CAN_ConfigFilter(can.pcan, &sFilterConfig) == HAL_OK);
 }
 
-uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC,
+uint8_t CANBUS_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC,
                      uint8_t ext) {
   HAL_StatusTypeDef status;
   uint32_t tick;
@@ -103,17 +103,15 @@ uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC,
   status = HAL_CAN_AddTxMessage(can.pcan, &(Tx->header), Tx->data.u8, NULL);
 
 #if CAN_DEBUG
-  if (status == HAL_OK)
-    TxDebugger(&(Tx->header), &(Tx->data));
+  if (status == HAL_OK) TxDebugger(&(Tx->header), &(Tx->data));
 #endif
-  if (status != HAL_OK)
-    Reset();
+  if (status != HAL_OK) Reset();
 
   unlock();
   return (status == HAL_OK);
 }
 
-uint8_t CANBUS_Read(can_rx_t *Rx) {
+uint8_t CANBUS_Read(can_rx_t* Rx) {
   HAL_StatusTypeDef status = HAL_ERROR;
 
   memset(Rx, 0x00, sizeof(can_rx_t));
@@ -124,11 +122,9 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
                                   Rx->data.u8);
 
 #if CAN_DEBUG
-    if (status == HAL_OK)
-      RxDebugger(&(Rx->header), &(Rx->data));
+    if (status == HAL_OK) RxDebugger(&(Rx->header), &(Rx->data));
 #endif
-    if (status != HAL_OK)
-      Reset();
+    if (status != HAL_OK) Reset();
   }
 
   unlock();
@@ -136,14 +132,13 @@ uint8_t CANBUS_Read(can_rx_t *Rx) {
   return (status == HAL_OK);
 }
 
-uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef *RxHeader) {
-  if (RxHeader->IDE == CAN_ID_STD)
-    return RxHeader->StdId;
+uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef* RxHeader) {
+  if (RxHeader->IDE == CAN_ID_STD) return RxHeader->StdId;
   return RxHeader->ExtId;
 }
 
 #if (RTOS_ENABLE)
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
   can_rx_t Rx;
 
   if (CANBUS_Read(&Rx))
@@ -171,7 +166,7 @@ static void Reset(void) {
   CANBUS_Init();
 }
 
-static void Header(CAN_TxHeaderTypeDef *header, uint32_t address, uint32_t DLC,
+static void Header(CAN_TxHeaderTypeDef* header, uint32_t address, uint32_t DLC,
                    uint8_t ext) {
   if (ext) {
     header->IDE = CAN_ID_EXT;
@@ -186,7 +181,7 @@ static void Header(CAN_TxHeaderTypeDef *header, uint32_t address, uint32_t DLC,
 }
 
 #if CAN_DEBUG
-static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
+static void TxDebugger(CAN_TxHeaderTypeDef* TxHeader, CAN_DATA* TxData) {
   printf("CAN:[TX] 0x%08X => %.*s\n",
          (unsigned int)((TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId
                                                       : TxHeader->ExtId),
@@ -194,7 +189,7 @@ static void TxDebugger(CAN_TxHeaderTypeDef *TxHeader, CAN_DATA *TxData) {
          (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR");
 }
 
-static void RxDebugger(CAN_RxHeaderTypeDef *RxHeader, CAN_DATA *RxData) {
+static void RxDebugger(CAN_RxHeaderTypeDef* RxHeader, CAN_DATA* RxData) {
   printf("CAN:[RX] 0x%08X <=  %.*s\n", (unsigned int)CANBUS_ReadID(RxHeader),
          (RxHeader->RTR == CAN_RTR_DATA) ? (int)RxHeader->DLC : strlen("RTR"),
          (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR");

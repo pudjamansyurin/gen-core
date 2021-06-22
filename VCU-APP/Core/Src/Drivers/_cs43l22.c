@@ -37,7 +37,9 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_cs43l22.h"
+
 #include "Drivers/_codec.h"
+
 
 /* Private variables
  * --------------------------------------------*/
@@ -72,21 +74,21 @@ uint32_t cs43l22_Init(uint16_t DeviceAddr, uint16_t OutputDevice,
 
   /*Save Output device for mute ON/OFF procedure*/
   switch (OutputDevice) {
-  case OUTPUT_DEVICE_SPEAKER:
-    cs43l22.outputDev = 0xFA;
-    break;
-  case OUTPUT_DEVICE_HEADPHONE:
-    cs43l22.outputDev = 0xAF;
-    break;
-  case OUTPUT_DEVICE_BOTH:
-    cs43l22.outputDev = 0xAA;
-    break;
-  case OUTPUT_DEVICE_AUTO:
-    cs43l22.outputDev = 0x05;
-    break;
-  default:
-    cs43l22.outputDev = 0x05;
-    break;
+    case OUTPUT_DEVICE_SPEAKER:
+      cs43l22.outputDev = 0xFA;
+      break;
+    case OUTPUT_DEVICE_HEADPHONE:
+      cs43l22.outputDev = 0xAF;
+      break;
+    case OUTPUT_DEVICE_BOTH:
+      cs43l22.outputDev = 0xAA;
+      break;
+    case OUTPUT_DEVICE_AUTO:
+      cs43l22.outputDev = 0x05;
+      break;
+    default:
+      cs43l22.outputDev = 0x05;
+      break;
   }
 
   counter +=
@@ -346,37 +348,37 @@ uint32_t cs43l22_SetOutputMode(uint16_t DeviceAddr, uint8_t Output) {
   uint32_t counter = 0;
 
   switch (Output) {
-  case OUTPUT_DEVICE_SPEAKER:
-    counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
-                              0xFA); /* SPK always ON & HP always OFF */
-    cs43l22.outputDev = 0xFA;
-    break;
+    case OUTPUT_DEVICE_SPEAKER:
+      counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
+                                0xFA); /* SPK always ON & HP always OFF */
+      cs43l22.outputDev = 0xFA;
+      break;
 
-  case OUTPUT_DEVICE_HEADPHONE:
-    counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
-                              0xAF); /* SPK always OFF & HP always ON */
-    cs43l22.outputDev = 0xAF;
-    break;
+    case OUTPUT_DEVICE_HEADPHONE:
+      counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
+                                0xAF); /* SPK always OFF & HP always ON */
+      cs43l22.outputDev = 0xAF;
+      break;
 
-  case OUTPUT_DEVICE_BOTH:
-    counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
-                              0xAA); /* SPK always ON & HP always ON */
-    cs43l22.outputDev = 0xAA;
-    break;
+    case OUTPUT_DEVICE_BOTH:
+      counter += CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
+                                0xAA); /* SPK always ON & HP always ON */
+      cs43l22.outputDev = 0xAA;
+      break;
 
-  case OUTPUT_DEVICE_AUTO:
-    counter +=
-        CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
-                       0x05); /* Detect the HP or the SPK automatically */
-    cs43l22.outputDev = 0x05;
-    break;
+    case OUTPUT_DEVICE_AUTO:
+      counter +=
+          CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
+                         0x05); /* Detect the HP or the SPK automatically */
+      cs43l22.outputDev = 0x05;
+      break;
 
-  default:
-    counter +=
-        CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
-                       0x05); /* Detect the HP or the SPK automatically */
-    cs43l22.outputDev = 0x05;
-    break;
+    default:
+      counter +=
+          CODEC_IO_Write(DeviceAddr, CS43L22_REG_POWER_CTL2,
+                         0x05); /* Detect the HP or the SPK automatically */
+      cs43l22.outputDev = 0x05;
+      break;
   }
   return counter;
 }

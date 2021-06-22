@@ -60,7 +60,7 @@ uint8_t EE_Init(void);
 #if (!BOOTLOADER)
 void EE_Load(void);
 // uint8_t EE_Reset(EE_CMD cmd, uint16_t value);
-uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value);
+uint8_t EE_AesKey(EE_CMD cmd, uint32_t* value);
 uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP mTrip, uint16_t value);
 uint8_t EE_SubMode(EE_CMD cmd, HBAR_MODE m, uint8_t value);
 uint8_t EE_Mode(EE_CMD cmd, uint8_t value);

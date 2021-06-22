@@ -16,16 +16,16 @@
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
-  UART_HandleTypeDef *huart;
-  DMA_HandleTypeDef *hdma;
+  UART_HandleTypeDef* huart;
+  DMA_HandleTypeDef* hdma;
   void (*IdleCallback)(void);
   struct {
     size_t idx;
-    char *buf;
+    char* buf;
     uint16_t sz;
   } usart;
   struct {
-    char *buf;
+    char* buf;
     uint16_t sz;
   } dma;
   struct {
@@ -36,12 +36,12 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
-void USART_DMA_Start(usart_ring_t *ring);
-void USART_DMA_Stop(usart_ring_t *ring);
-void USART_DMA_IrqHandler(usart_ring_t *ring);
-void USART_IrqHandler(usart_ring_t *ring);
-void USART_Check_Buffer(usart_ring_t *ring);
-void USART_Fill_Buffer(usart_ring_t *ring, size_t start, size_t len);
-void USART_Reset_Buffer(usart_ring_t *ring);
+void USART_DMA_Start(usart_ring_t* ring);
+void USART_DMA_Stop(usart_ring_t* ring);
+void USART_DMA_IrqHandler(usart_ring_t* ring);
+void USART_IrqHandler(usart_ring_t* ring);
+void USART_Check_Buffer(usart_ring_t* ring);
+void USART_Fill_Buffer(usart_ring_t* ring, size_t start, size_t len);
+void USART_Reset_Buffer(usart_ring_t* ring);
 
 #endif /* INC_LIBS__USART_RING_H_ */

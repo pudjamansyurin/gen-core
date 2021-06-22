@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_fota.h"
+
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_crc.h"
@@ -29,17 +30,15 @@ static SIM_RESULT openFTP(at_ftpget_t *ftpGET);
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
+  uint32_t timeout = 60000, crcOld = 0, crcNew = 0, len = 0;
   SIM_RESULT res = SIM_OK;
-  uint32_t timeout = 60000;
-  uint32_t crcOld = 0, crcNew = 0, len = 0;
   at_ftpget_t ftpget;
   at_ftp_t ftp = {
       .file = "CRC_APP.bin",
       .size = 0,
   };
 
-  if (BAT_ScanValue() < SIMCOM_MIN_MV)
-    res = SIM_ERROR;
+  if (BAT_ScanValue() < SIMCOM_MIN_MV) res = SIM_ERROR;
 
   // Turn ON HMI-Primary.
   if (res == SIM_OK) {
@@ -59,8 +58,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   /* Backup if needed */
   if (res == SIM_OK) {
     FOCAN_SetProgress(type, 0.0f);
-    if (!FOTA_InProgress())
-      FOTA_SetFlag();
+    if (!FOTA_InProgress()) FOTA_SetFlag();
   }
 
   /* Get the stored crc information */
@@ -77,8 +75,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     FOCAN_SetProgress(type, 0.0f);
     res = prepareFTP(&ftp, timeout);
 
-    if (res <= 0)
-      *(uint32_t *)IAP_RESPONSE_ADDR = IAP_SIMCOM_TIMEOUT;
+    if (res <= 0) *(uint32_t *)IAP_RESPONSE_ADDR = IAP_SIMCOM_TIMEOUT;
   }
 
   // Get file size
@@ -110,8 +107,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     }
 
     // Decrease the total size
-    if (res == SIM_OK)
-      ftp.size -= sizeof(uint32_t);
+    if (res == SIM_OK) ftp.size -= sizeof(uint32_t);
   }
 
   // Download & Program new firmware
@@ -161,8 +157,7 @@ uint8_t FOTA_DownloadCRC(at_ftpget_t *ftpGET, uint32_t *crc) {
   ftpGET->reqlength = sizeof(uint32_t);
   res = AT_FtpDownload(ftpGET);
 
-  if (res == SIM_OK)
-    memcpy(crc, ftpGET->ptr, sizeof(uint32_t));
+  if (res == SIM_OK) memcpy(crc, ftpGET->ptr, sizeof(uint32_t));
 
   return (res == SIM_OK);
 }
@@ -219,12 +214,9 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
           Simcom_Cmd("AT+FTPQUIT\r", SIM_RSP_OK, 500);
 
         res = prepareFTP(ftp, timeout);
-        if (res == SIM_OK)
-          res = AT_FtpResume(*len);
-        if (res == SIM_OK)
-          res = openFTP(ftpGET);
-        if (res == SIM_OK && ftpGET->response != FTP_READY)
-          res = SIM_ERROR;
+        if (res == SIM_OK) res = AT_FtpResume(*len);
+        if (res == SIM_OK) res = openFTP(ftpGET);
+        if (res == SIM_OK && ftpGET->response != FTP_READY) res = SIM_ERROR;
       }
 
     } while ((res == SIM_OK) && (*len < ftp->size));
@@ -322,8 +314,7 @@ void FOTA_JumpToApplication(void) {
 
 void FOTA_Reboot(IAP_TYPE type) {
   /* Clear backup area */
-  if (type == IAP_VCU)
-    FLASHER_EraseBkpArea();
+  if (type == IAP_VCU) FLASHER_EraseBkpArea();
 
   FOTA_ResetFlag();
   HAL_NVIC_SystemReset();
@@ -332,8 +323,7 @@ void FOTA_Reboot(IAP_TYPE type) {
 void FOTA_GetCRC(uint32_t *crc) {
   uint32_t address = BKP_START_ADDR;
 
-  if (FOTA_NeedBackup())
-    address = APP_START_ADDR;
+  if (FOTA_NeedBackup()) address = APP_START_ADDR;
 
   *crc = *(uint32_t *)(address + CRC_OFFSET);
 }
@@ -358,8 +348,7 @@ static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
   SIM_RESULT res;
 
   res = Simcom_SetState(SIM_STATE_BEARER_ON, timeout);
-  if (res == SIM_OK)
-    res = AT_FtpInitialize(ftp);
+  if (res == SIM_OK) res = AT_FtpInitialize(ftp);
 
   return res;
 }

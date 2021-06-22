@@ -8,10 +8,10 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_finger.h"
+
 #include "DMA/_dma_finger.h"
 #include "Drivers/_fz3387.h"
 #include "usart.h"
-
 
 /* External variables
  * --------------------------------------------*/
@@ -46,14 +46,12 @@ uint8_t FGR_Init(void) {
 
   tick = _GetTickMS();
   do {
-
     MX_UART4_Init();
     FINGER_DMA_Start(FGR.puart, FGR.pdma);
     GATE_FingerReset();
 
     ok = FGR_Probe();
-    if (!ok)
-      _DelayMS(500);
+    if (!ok) _DelayMS(500);
   } while (!ok && _TickIn(tick, FINGER_TIMEOUT_MS));
 
   FGR.d.verified = ok;
@@ -127,8 +125,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
     printf("FGR:Waiting for valid finger to enroll as #%u\n", *id);
     *ok = GetImage(FINGER_SCAN_MS);
   }
-  if (*ok)
-    *ok = ConvertImage(1);
+  if (*ok) *ok = ConvertImage(1);
 
   if (*ok) {
     IndicatorHide();
@@ -140,8 +137,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
     printf("FGR:Waiting for valid finger to enroll as #%u\n", *id);
     *ok = GetImage(FINGER_SCAN_MS);
   }
-  if (*ok)
-    *ok = ConvertImage(2);
+  if (*ok) *ok = ConvertImage(2);
 
   IndicatorHide();
   if (*ok) {
@@ -210,8 +206,7 @@ void FGR_Authenticate(void) {
   if (GetImage(50)) {
     id = AuthFast();
     ok = id > 0;
-    if (ok)
-      FGR.d.id = FGR.d.id ? 0 : id;
+    if (ok) FGR.d.id = FGR.d.id ? 0 : id;
 
     IndicatorShow(ok);
     _DelayMS(250);
@@ -242,8 +237,7 @@ static uint8_t AuthFast(void) {
   lock();
   if (fz3387_image2Tz(1) == FINGERPRINT_OK) {
     if (fz3387_fingerFastSearch(&id, &confidence) == FINGERPRINT_OK) {
-      if (confidence < FINGER_CONFIDENCE_MIN_PERCENT)
-        id = 0;
+      if (confidence < FINGER_CONFIDENCE_MIN_PERCENT) id = 0;
     } else
       id = 0;
   }
@@ -312,43 +306,43 @@ static uint8_t GenerateID(uint8_t *theId) {
 static void DebugResponse(uint8_t res, char *msg) {
 #if FINGER_DEBUG
   switch (res) {
-  case FINGERPRINT_OK:
-    printf("FGR:%s\n", msg);
-    break;
-  case FINGERPRINT_NOFINGER:
-    printf("FGR:No finger detected\n");
-    break;
-  case FINGERPRINT_NOTFOUND:
-    printf("FGR:Did not find a match\n");
-    break;
-  case FINGERPRINT_PACKETRECIEVEERR:
-    printf("FGR:Communication error\n");
-    break;
-  case FINGERPRINT_ENROLLMISMATCH:
-    printf("FGR:Fingerprints did not match\n");
-    break;
-  case FINGERPRINT_IMAGEMESS:
-    printf("FGR:Image too messy\n");
-    break;
-  case FINGERPRINT_IMAGEFAIL:
-    printf("FGR:Imaging error\n");
-    break;
-  case FINGERPRINT_FEATUREFAIL:
-    printf("FGR:Could not find finger print features fail\n");
-    break;
-  case FINGERPRINT_INVALIDIMAGE:
-    printf("FGR:Could not find finger print features invalid\n");
-    break;
-  case FINGERPRINT_BADLOCATION:
-    printf("FGR:Could not execute in that location\n");
-    break;
-  case FINGERPRINT_FLASHERR:
-    printf("FGR:Error writing to flash\n");
-    break;
-  default:
-    printf("FGR:Unknown error: 0x%02X\n", res);
-    FGR_Verify();
-    break;
+    case FINGERPRINT_OK:
+      printf("FGR:%s\n", msg);
+      break;
+    case FINGERPRINT_NOFINGER:
+      printf("FGR:No finger detected\n");
+      break;
+    case FINGERPRINT_NOTFOUND:
+      printf("FGR:Did not find a match\n");
+      break;
+    case FINGERPRINT_PACKETRECIEVEERR:
+      printf("FGR:Communication error\n");
+      break;
+    case FINGERPRINT_ENROLLMISMATCH:
+      printf("FGR:Fingerprints did not match\n");
+      break;
+    case FINGERPRINT_IMAGEMESS:
+      printf("FGR:Image too messy\n");
+      break;
+    case FINGERPRINT_IMAGEFAIL:
+      printf("FGR:Imaging error\n");
+      break;
+    case FINGERPRINT_FEATUREFAIL:
+      printf("FGR:Could not find finger print features fail\n");
+      break;
+    case FINGERPRINT_INVALIDIMAGE:
+      printf("FGR:Could not find finger print features invalid\n");
+      break;
+    case FINGERPRINT_BADLOCATION:
+      printf("FGR:Could not execute in that location\n");
+      break;
+    case FINGERPRINT_FLASHERR:
+      printf("FGR:Error writing to flash\n");
+      break;
+    default:
+      printf("FGR:Unknown error: 0x%02X\n", res);
+      FGR_Verify();
+      break;
   }
 #endif
 }

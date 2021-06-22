@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_debugger.h"
+
 #include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_audio.h"

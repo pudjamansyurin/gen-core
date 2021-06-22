@@ -9,6 +9,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_crc.h"
+
 #include "crc.h"
 
 /* External variables
@@ -24,7 +25,7 @@ static void unlock(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
+uint32_t CRC_Calculate8(uint8_t* arr, uint32_t count, uint8_t swapped) {
   uint32_t cnt, result, value = 0;
   uint8_t index = 0, remaining[4] = {0};
 
@@ -37,7 +38,7 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
 
   /* Calculate */
   while (cnt--) {
-    value = *(uint32_t *)arr;
+    value = *(uint32_t*)arr;
     /* Set new value */
     hcrc.Instance->DR = swapped ? _ByteSwap32(value) : value;
 
@@ -50,10 +51,9 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
 
   if (cnt) {
     /* Calculate */
-    while (cnt--)
-      remaining[index++] = *arr++;
+    while (cnt--) remaining[index++] = *arr++;
     /* Set new value */
-    value = *(uint32_t *)remaining;
+    value = *(uint32_t*)remaining;
     hcrc.Instance->DR = swapped ? _ByteSwap32(value) : value;
   }
   result = hcrc.Instance->DR;
@@ -62,7 +62,7 @@ uint32_t CRC_Calculate8(uint8_t *arr, uint32_t count, uint8_t swapped) {
   return result;
 }
 
-uint32_t CRC_Calculate32(uint32_t *arr, uint32_t count) {
+uint32_t CRC_Calculate32(uint32_t* arr, uint32_t count) {
   uint32_t result;
 
   lock();

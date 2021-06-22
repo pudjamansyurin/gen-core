@@ -80,11 +80,11 @@
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
-  uint16_t start_code; ///< "Wakeup" code for packet detection
-  uint8_t address[4];  ///< 32-bit Fingerprint sensor address
-  uint8_t type;        ///< Type of packet
-  uint16_t length;     ///< Length of packet
-  uint8_t data[64];    ///< The raw buffer for packet payload
+  uint16_t start_code;  ///< "Wakeup" code for packet detection
+  uint8_t address[4];   ///< 32-bit Fingerprint sensor address
+  uint8_t type;         ///< Type of packet
+  uint16_t length;      ///< Length of packet
+  uint8_t data[64];     ///< The raw buffer for packet payload
 } packet_t;
 
 /* Public functions prototype
