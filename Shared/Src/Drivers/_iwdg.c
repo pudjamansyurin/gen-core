@@ -17,7 +17,7 @@
 extern osMutexId_t IwdgMutexHandle;
 #endif
 
-/* Private variable
+/* Private variables
  * --------------------------------------------*/
 static IWDG_HandleTypeDef* piwdg = &hiwdg;
 

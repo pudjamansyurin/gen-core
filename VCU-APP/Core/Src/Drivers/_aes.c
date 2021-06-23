@@ -17,11 +17,11 @@
 extern osMutexId_t AesMutexHandle;
 #endif
 
-/* Public variable
+/* Public variables
  * --------------------------------------------*/
 __ALIGN_BEGIN uint32_t AES_KEY[4] __ALIGN_END;
 
-/* Private variable
+/* Private variables
  * --------------------------------------------*/
 static CRYP_HandleTypeDef *pcryp = &hcryp;
 
@@ -37,7 +37,7 @@ uint8_t AES_Init(void) {
 
   do {
     ok = AES_ChangeKey(NULL);
-    _DelayMS(100);
+    if (!ok) _DelayMS(100);
   } while (!ok);
 
   return ok;

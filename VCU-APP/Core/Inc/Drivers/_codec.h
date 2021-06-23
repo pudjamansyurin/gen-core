@@ -20,14 +20,13 @@
  // You may modify these timeout values depending on CPU frequency and
  // application conditions (interrupts routines ...). */
 #define I2Cx_TIMEOUT_MAX 0x1000
-#define VERIFY_WRITTENDATA
+#define VERIFY_WRITTENDATA 0
 
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t CODEC_Init(uint8_t Addr);
 void CODEC_DeInit(void);
-void CODEC_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
-uint8_t CODEC_Read(uint8_t Addr, uint8_t Reg);
-uint8_t CODEC_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value);
+uint8_t CODEC_Write(uint8_t Reg, uint8_t Value);
+uint8_t CODEC_Read(uint8_t Reg);
 
 #endif /* INC_DRIVERS__CODEC_H_ */
