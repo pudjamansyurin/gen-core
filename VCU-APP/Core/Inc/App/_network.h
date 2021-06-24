@@ -17,7 +17,7 @@
 void NET_CheckClock(void);
 void NET_CheckCommand(void);
 void NET_CheckPayload(PAYLOAD_TYPE type);
-uint8_t NET_SendUSSD(void);
-uint8_t NET_ReadSMS(void);
+bool NET_SendUSSD(void);
+bool NET_ReadSMS(void);
 
 #endif /* INC_LIBS__NETWORK_H_ */

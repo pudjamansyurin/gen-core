@@ -22,26 +22,24 @@ static uint8_t FW_ValidResponseIAP(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t FW_EnterModeIAP(IAP_TYPE type, char *message) {
+bool FW_EnterModeIAP(IAP_TYPE type, char *message) {
   /* Retain FOTA */
   EE_FotaType(EE_CMD_W, type);
   EE_FotaVersion(EE_CMD_W, (type == IAP_HMI) ? HMI1.d.version : VCU_VERSION);
-
   /* Set flag to SRAM */
   *(uint32_t *)IAP_FLAG_ADDR = IAP_FLAG;
-
   /* Reset */
   HAL_NVIC_SystemReset();
-
   /* Never reached if FOTA executed */
-  return 0;
+  return false;
 }
 
-uint8_t FW_PostFota(response_t *r) {
+bool FW_PostFota(response_t *r) {
   char node[4];
-  uint8_t valid = 0;
+  bool ok;
 
-  if (FW_ValidResponseIAP()) {
+  ok = FW_ValidResponseIAP();
+  if (ok) {
     sprintf(node, FOTA.TYPE == IAP_HMI ? "HMI" : "VCU");
 
     // set default value
@@ -76,7 +74,6 @@ uint8_t FW_PostFota(response_t *r) {
         break;
       case IAP_FOTA_SUCCESS:
         FW_MakeResponseIAP(r->data.message, node);
-
         r->data.res_code = RESP_OK;
         break;
       default:
@@ -85,7 +82,6 @@ uint8_t FW_PostFota(response_t *r) {
 
     /* Send Response */
     RPT_ResponseCapture(r);
-    valid = 1;
 
     /* Reset after FOTA */
     EE_FotaType(EE_CMD_W, 0);
@@ -93,7 +89,7 @@ uint8_t FW_PostFota(response_t *r) {
     *(uint32_t *)IAP_RESPONSE_ADDR = 0;
   }
 
-  return valid;
+  return ok;
 }
 
 /* Private functions implementation

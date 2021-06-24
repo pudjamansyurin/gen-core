@@ -10,6 +10,7 @@
 
 #include "Nodes/VCU.h"
 #include "i2c.h"
+#include <math.h>
 
 /* External variables
  * --------------------------------------------*/

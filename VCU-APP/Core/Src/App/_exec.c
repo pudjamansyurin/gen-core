@@ -25,11 +25,11 @@ extern osMessageQueueId_t OvdStateQueueHandle, DriverQueueHandle,
 /* Private functions prototype
  * --------------------------------------------*/
 static void EXEC_GenInfo(response_data_t *resp);
-static void EXEC_FingerAdd(response_data_t *rdata, osMessageQueueId_t queue);
+static void EXEC_FingerAdd(response_data_t *rdata);
 static void EXEC_FingerFetch(response_data_t *rdata);
 static void EXEC_Finger(response_data_t *rdata);
 static void EXEC_RemotePairing(response_data_t *rdata);
-static void EXEC_NetQuota(response_data_t *rdata, osMessageQueueId_t queue);
+static void EXEC_NetQuota(response_data_t *rdata);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -145,7 +145,7 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
 
         case CMD_FGR_ADD:
           osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_ADD);
-          EXEC_FingerAdd(rdata, DriverQueueHandle);
+          EXEC_FingerAdd(rdata);
           break;
 
         case CMD_FGR_DEL:
@@ -210,12 +210,12 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
       case CMD_NET_SEND_USSD:
         _osQueuePutRst(UssdQueueHandle, val);
         osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_SEND_USSD);
-        EXEC_NetQuota(rdata, QuotaQueueHandle);
+        EXEC_NetQuota(rdata);
         break;
 
       case CMD_NET_READ_SMS:
         osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_READ_SMS);
-        EXEC_NetQuota(rdata, QuotaQueueHandle);
+        EXEC_NetQuota(rdata);
         break;
 
       default:
@@ -286,20 +286,19 @@ static void EXEC_GenInfo(response_data_t *rdata) {
           VCU_BUILD_YEAR);
 }
 
-static void EXEC_FingerAdd(response_data_t *rdata, osMessageQueueId_t queue) {
+static void EXEC_FingerAdd(response_data_t *rdata) {
   uint32_t notif;
   uint8_t id;
 
-  // wait response until timeout
   rdata->res_code = RESP_ERROR;
   if (_osFlagAny(&notif, (FINGER_SCAN_MS * 2) + 5000)) {
     if (notif & FLAG_COMMAND_OK) {
-      if (_osQueueGet(queue, &id)) {
+      if (_osQueueGet(DriverQueueHandle, &id)) {
         sprintf(rdata->message, "%u", id);
         rdata->res_code = RESP_OK;
       }
     } else {
-      if (_osQueueGet(queue, &id))
+      if (_osQueueGet(DriverQueueHandle, &id))
         if (id == 0)
           sprintf(rdata->message, "Max. reached : %u", FINGER_USER_MAX);
     }
@@ -310,7 +309,6 @@ static void EXEC_FingerFetch(response_data_t *rdata) {
   uint32_t notif, len;
   char fingers[3];
 
-  // wait response until timeout
   memset(FGR.d.db, 0, FINGER_USER_MAX);
   rdata->res_code = RESP_ERROR;
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) {
@@ -332,24 +330,24 @@ static void EXEC_FingerFetch(response_data_t *rdata) {
 static void EXEC_Finger(response_data_t *rdata) {
   uint32_t notif;
 
-  // wait response until timeout
   rdata->res_code = RESP_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = RESP_OK;
+  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000))
+  	rdata->res_code = RESP_OK;
 }
 
 static void EXEC_RemotePairing(response_data_t *rdata) {
   uint32_t notif;
 
-  // wait response until timeout
   rdata->res_code = RESP_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = RESP_OK;
+  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000))
+  	rdata->res_code = RESP_OK;
 }
 
-static void EXEC_NetQuota(response_data_t *rdata, osMessageQueueId_t queue) {
+static void EXEC_NetQuota(response_data_t *rdata) {
   uint32_t notif;
 
-  // wait response until timeout
   rdata->res_code = RESP_ERROR;
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 40000))
-    if (_osQueueGet(queue, rdata->message)) rdata->res_code = RESP_OK;
+    if (_osQueueGet(QuotaQueueHandle, rdata->message))
+    	rdata->res_code = RESP_OK;
 }

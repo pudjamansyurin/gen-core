@@ -48,6 +48,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
   d->req.log_time = RTC_Read();
 
   DBG_GetVCU(&(d->req.vcu));
+  DBG_GetGPS(&(d->req.gps));
 
   // Optional data
   if (frame == FR_FULL) {
@@ -55,7 +56,6 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 
     DBG_GetHBAR(&(d->opt.hbar));
     DBG_GetNET(&(d->opt.net));
-    DBG_GetGPS(&(d->opt.gps));
     DBG_GetMEMS(&(d->opt.mems));
     DBG_GetRMT(&(d->opt.rmt));
     DBG_GetFGR(&(d->opt.fgr));
@@ -121,10 +121,10 @@ uint32_t RPT_IntervalDeciderMS(vehicle_state_t state) {
   return interval * 1000;
 }
 
-uint8_t RPT_PayloadPending(payload_t *payload) {
+bool RPT_PayloadPending(payload_t *payload) {
   report_header_t *header = NULL;
 
-  if (RPT.block && payload->type == PAYLOAD_REPORT) return 0;
+  if (RPT.block && payload->type == PAYLOAD_REPORT) return false;
 
   if (!payload->pending) {
     if (_osQueueGet(*(payload->queue), payload->data)) {
@@ -132,7 +132,7 @@ uint8_t RPT_PayloadPending(payload_t *payload) {
 
       payload->size =
           sizeof(header->prefix) + sizeof(header->size) + header->size;
-      payload->pending = 1;
+      payload->pending = true;
     }
   }
 

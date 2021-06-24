@@ -39,6 +39,7 @@
 #include "Drivers/_cs43l22.h"
 
 #include "Drivers/_codec.h"
+#include <math.h>
 
 /* Private variables
  * --------------------------------------------*/

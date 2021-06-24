@@ -51,8 +51,8 @@ void NET_CheckPayload(PAYLOAD_TYPE type) {
       payload->pending = !MQTT_Publish(payload);
 }
 
-uint8_t NET_SendUSSD(void) {
-  uint8_t ok = 0;
+bool NET_SendUSSD(void) {
+	bool ok = false;
   char ussd[20];
 
   memset(NET_BUF, 0, sizeof(NET_BUF));
@@ -63,8 +63,8 @@ uint8_t NET_SendUSSD(void) {
   return ok;
 }
 
-uint8_t NET_ReadSMS(void) {
-  uint8_t ok = 0;
+bool NET_ReadSMS(void) {
+	bool ok = false;
 
   memset(NET_BUF, 0, sizeof(NET_BUF));
   if (Simcom_ReadNewSMS(NET_BUF, sizeof(NET_BUF)))

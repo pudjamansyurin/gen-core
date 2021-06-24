@@ -49,11 +49,11 @@ typedef struct __attribute__((packed)) {
     uint8_t frame_id;
     datetime_t log_time;
     vcu_dbg_t vcu;
+    gps_dbg_t gps;
   } req;
   struct __attribute__((packed)) {
     hbar_dbg_t hbar;
     net_dbg_t net;
-    gps_dbg_t gps;
     mems_dbg_t mems;
     remote_dbg_t rmt;
     finger_dbg_t fgr;
@@ -74,7 +74,7 @@ typedef struct {
   PAYLOAD_TYPE type;
   osMessageQueueId_t *queue;
   void *data;
-  uint8_t pending;
+  bool pending;
   uint8_t size;
 } payload_t;
 
@@ -97,5 +97,5 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report);
 void RPT_ResponseCapture(response_t *response);
 FRAME_TYPE RPT_FrameDecider(void);
 uint32_t RPT_IntervalDeciderMS(vehicle_state_t state);
-uint8_t RPT_PayloadPending(payload_t *payload);
+bool RPT_PayloadPending(payload_t *payload);
 #endif /* REPORTER_H_ */

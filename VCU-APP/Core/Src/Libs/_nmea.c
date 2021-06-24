@@ -41,6 +41,9 @@
  * --------------------------------------------*/
 #include "Libs/_nmea.h"
 
+#include <math.h>
+#include <stdlib.h>
+
 /* Private constants
  * --------------------------------------------*/
 #define STAT_UNKNOWN 0

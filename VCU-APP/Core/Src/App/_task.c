@@ -28,16 +28,15 @@ uint32_t TASK_WaitManager(void) {
                           osWaitForever);
 }
 
-uint8_t TASK_KernelFailed(void) {
+bool TASK_KernelFailed(void) {
   uint8_t expectedThread = sizeof(tasks_wakeup_t);
   uint8_t activeThread = (uint8_t)(osThreadGetCount() - 2);
-  uint8_t error = 0;
+  bool error;
 
-  if (activeThread < expectedThread) {
+  error = (activeThread < expectedThread);
+  if (error)
     printf("RTOS:Failed, active thread %d < %d\n", activeThread,
            expectedThread);
-    error = 1;
-  }
 
   return error;
 }

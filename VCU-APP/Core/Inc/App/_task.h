@@ -129,7 +129,7 @@ extern tasks_t TASKS;
 /* Public functions prototype
  * --------------------------------------------*/
 uint32_t TASK_WaitManager(void);
-uint8_t TASK_KernelFailed(void);
+bool TASK_KernelFailed(void);
 void TASK_CheckWakeup(void);
 void TASK_CheckStack(void);
 

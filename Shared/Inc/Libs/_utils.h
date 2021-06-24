@@ -10,6 +10,10 @@
 
 /* Includes
  * --------------------------------------------*/
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+
 #include "Drivers/_gate.h"
 #include "Drivers/_log.h"
 #include "_defines.h"

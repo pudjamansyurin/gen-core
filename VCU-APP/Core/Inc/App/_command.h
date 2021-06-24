@@ -133,8 +133,8 @@ typedef struct __attribute__((packed)) {
 /* Public functions prototype
  * --------------------------------------------*/
 void CMD_Init(void);
-uint8_t CMD_ValidateCode(command_t* cmd);
-uint8_t CMD_ValidateContent(void* ptr, uint8_t len);
+bool CMD_ValidateCode(command_t* cmd);
+bool CMD_ValidateContent(void* ptr, uint8_t len);
 void CMD_Execute(command_t* cmd);
 
 #endif /* INC_LIBS__COMMAND_H_ */

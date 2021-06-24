@@ -15,11 +15,6 @@
 #include "cmsis_os.h"
 #endif
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #define RTOS_ENABLE !BOOTLOADER
 
 /* Exported defines

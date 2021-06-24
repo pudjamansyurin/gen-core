@@ -11,6 +11,7 @@
 
 #include "Nodes/BMS.h"
 #include "Nodes/VCU.h"
+#include <stdlib.h>
 
 /* Public variables
  * --------------------------------------------*/

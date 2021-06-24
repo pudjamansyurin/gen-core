@@ -79,34 +79,31 @@ void CMD_Init(void) {
   CMD_SZ[CMD_CODE_MCU][CMD_MCU_TEMPLATES] = 4 * 3;
 }
 
-uint8_t CMD_ValidateCode(command_t *cmd) {
+bool CMD_ValidateCode(command_t *cmd) {
   command_header_t *h = &(cmd->header);
-  uint8_t valid = 0;
+  bool ok = false;
 
   if (h->code < CMD_CODE_MAX)
     if (h->sub_code < SUB_SZ[h->code])
-      valid = PayloadLen(cmd) <= CMD_SZ[h->code][h->sub_code];
+      ok = PayloadLen(cmd) <= CMD_SZ[h->code][h->sub_code];
 
-  return valid;
+  return ok;
 }
 
-uint8_t CMD_ValidateContent(void *ptr, uint8_t len) {
-  if (len > sizeof(command_t)) return 0;
-
-  if (len < sizeof(command_header_t)) return 0;
+bool CMD_ValidateContent(void *ptr, uint8_t len) {
+  if (len > sizeof(command_t)) return false;
+  if (len < sizeof(command_header_t)) return false;
 
   command_t *cmd = ptr;
   command_header_t *h = &(cmd->header);
-
-  if (memcmp(h->prefix, PREFIX_COMMAND, 2) != 0) return 0;
+  if (memcmp(h->prefix, PREFIX_COMMAND, 2) != 0) return false;
 
   uint8_t size = sizeof(h->vin) + sizeof(h->send_time) + sizeof(h->code) +
                  sizeof(h->sub_code) + sizeof(cmd->data);
-  if (h->size > size) return 0;
+  if (h->size > size) return false;
+  if (h->vin != VIN_VALUE) return false;
 
-  if (h->vin != VIN_VALUE) return 0;
-
-  return 1;
+  return true;
 }
 
 void CMD_Execute(command_t *cmd) {
