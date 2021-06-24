@@ -79,7 +79,7 @@ uint8_t VCU_TX_SwitchControl(void) {
   d->u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
   //	d->u8[2] = MCU.d.drive_mode;
   d->u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
-  d->u8[2] |= HBAR.d.mode[HBAR_M_REPORT] << 4;
+  d->u8[2] |= HBAR.d.mode[HBAR_M_PREDICTION] << 4;
   d->u8[2] |= HBAR.d.m << 5;
   d->u8[2] |= (HBAR.ctl.session > 0) << 7;
 
@@ -119,8 +119,8 @@ uint8_t VCU_TX_ModeData(void) {
   d->u16[0] = HBAR.d.trip[HBAR_M_TRIP_A];
   d->u16[1] = HBAR.d.trip[HBAR_M_TRIP_B];
   d->u16[2] = HBAR.d.trip[HBAR_M_TRIP_ODO];
-  d->u8[6] = HBAR.d.report[HBAR_M_REPORT_RANGE];
-  d->u8[7] = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
+  d->u8[6] = HBAR.d.prediction[HBAR_M_PREDICTION_RANGE];
+  d->u8[7] = HBAR.d.prediction[HBAR_M_PREDICTION_EFFICIENCY];
 
   return CANBUS_Write(&Tx, CAND_VCU_MODE_DATA, 8, 0);
 }

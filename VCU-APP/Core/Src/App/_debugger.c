@@ -33,12 +33,12 @@ void DBG_GetHBAR(hbar_dbg_t *hbar) {
   hbar->reverse = HBAR.d.pin[HBAR_K_REVERSE];
   hbar->mode.drive = HBAR.d.mode[HBAR_M_DRIVE];
   hbar->mode.trip = HBAR.d.mode[HBAR_M_TRIP];
-  hbar->mode.report = HBAR.d.mode[HBAR_M_REPORT];
+  hbar->mode.prediction = HBAR.d.mode[HBAR_M_PREDICTION];
   hbar->trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
   hbar->trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
   hbar->trip.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO];
-  hbar->report.range = HBAR.d.report[HBAR_M_REPORT_RANGE];
-  hbar->report.efficiency = HBAR.d.report[HBAR_M_REPORT_AVERAGE];
+  hbar->prediction.range = HBAR.d.prediction[HBAR_M_PREDICTION_RANGE];
+  hbar->prediction.efficiency = HBAR.d.prediction[HBAR_M_PREDICTION_EFFICIENCY];
 }
 
 void DBG_GetNET(net_dbg_t *net) {

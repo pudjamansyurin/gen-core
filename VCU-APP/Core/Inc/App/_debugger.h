@@ -29,7 +29,7 @@ typedef struct __attribute__((packed)) {
   struct __attribute__((packed)) {
     uint8_t drive;
     uint8_t trip;
-    uint8_t report;
+    uint8_t prediction;
   } mode;
   struct __attribute__((packed)) {
     uint16_t a;
@@ -39,7 +39,7 @@ typedef struct __attribute__((packed)) {
   struct __attribute__((packed)) {
     uint8_t range;
     uint8_t efficiency;
-  } report;
+  } prediction;
 } hbar_dbg_t;
 
 typedef struct __attribute__((packed)) {

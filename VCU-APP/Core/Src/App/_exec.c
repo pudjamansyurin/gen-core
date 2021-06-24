@@ -235,8 +235,8 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         HBAR.d.mode[HBAR_M_TRIP] = v;
         break;
 
-      case CMD_HBAR_REPORT:
-        HBAR.d.mode[HBAR_M_REPORT] = v;
+      case CMD_HBAR_PREDICTION:
+        HBAR.d.mode[HBAR_M_PREDICTION] = v;
         break;
 
       case CMD_HBAR_REVERSE:
@@ -331,16 +331,14 @@ static void EXEC_Finger(response_data_t *rdata) {
   uint32_t notif;
 
   rdata->res_code = RESP_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000))
-  	rdata->res_code = RESP_OK;
+  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = RESP_OK;
 }
 
 static void EXEC_RemotePairing(response_data_t *rdata) {
   uint32_t notif;
 
   rdata->res_code = RESP_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000))
-  	rdata->res_code = RESP_OK;
+  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = RESP_OK;
 }
 
 static void EXEC_NetQuota(response_data_t *rdata) {
@@ -349,5 +347,5 @@ static void EXEC_NetQuota(response_data_t *rdata) {
   rdata->res_code = RESP_ERROR;
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 40000))
     if (_osQueueGet(QuotaQueueHandle, rdata->message))
-    	rdata->res_code = RESP_OK;
+      rdata->res_code = RESP_OK;
 }

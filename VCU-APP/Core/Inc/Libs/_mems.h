@@ -75,7 +75,7 @@ typedef struct {
 } mems_data_t;
 
 typedef struct {
-  averager_float_t handle[MEMS_AVG_MAX];
+  avg_float_t handle[MEMS_AVG_MAX];
   float buffer[MEMS_AVG_MAX][MEMS_AVG_SZ];
 } mems_avg_t;
 

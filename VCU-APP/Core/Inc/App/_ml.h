@@ -26,7 +26,7 @@ typedef struct {
 } bms_prediction_t;
 
 typedef struct {
-  averager_float_t handle[BMS_AVG_MAX];
+  avg_float_t handle[BMS_AVG_MAX];
   float buffer[BMS_AVG_MAX][BMS_AVG_SZ];
 } bms_avg_t;
 

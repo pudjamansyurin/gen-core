@@ -36,14 +36,14 @@ void HBAR_Init(void) {
   //	HBAR.d.m = HBAR_M_DRIVE;
   //	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
   //	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
-  //	HBAR.d.mode[HBAR_M_REPORT] = HBAR_M_REPORT_RANGE;
+  //	HBAR.d.mode[HBAR_M_PREDICTION] = HBAR_M_PREDICTION_RANGE;
 
   //	HBAR.d.trip[HBAR_M_TRIP_A] = 0;
   //	HBAR.d.trip[HBAR_M_TRIP_B] = 0;
   //	HBAR.d.trip[HBAR_M_TRIP_ODO] = 0;
 
-  HBAR.d.report[HBAR_M_REPORT_RANGE] = 0;
-  HBAR.d.report[HBAR_M_REPORT_AVERAGE] = 0;
+  HBAR.d.prediction[HBAR_M_PREDICTION_RANGE] = 0;
+  HBAR.d.prediction[HBAR_M_PREDICTION_EFFICIENCY] = 0;
 }
 
 uint8_t HBAR_SubModeMax(HBAR_MODE m) {
@@ -56,8 +56,8 @@ uint8_t HBAR_SubModeMax(HBAR_MODE m) {
     case HBAR_M_TRIP:
       max = HBAR_M_TRIP_MAX;
       break;
-    case HBAR_M_REPORT:
-      max = HBAR_M_REPORT_MAX;
+    case HBAR_M_PREDICTION:
+      max = HBAR_M_PREDICTION_MAX;
       break;
     default:
       max = 0;
@@ -152,8 +152,8 @@ void HBAR_AddTripMeter(uint8_t m) {
 }
 
 void HBAR_SetReport(uint8_t eff, uint8_t km) {
-  HBAR.d.report[HBAR_M_REPORT_AVERAGE] = eff;
-  HBAR.d.report[HBAR_M_REPORT_RANGE] = km;
+  HBAR.d.prediction[HBAR_M_PREDICTION_EFFICIENCY] = eff;
+  HBAR.d.prediction[HBAR_M_PREDICTION_RANGE] = km;
 }
 
 /* Private functions implementation

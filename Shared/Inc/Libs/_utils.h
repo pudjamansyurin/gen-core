@@ -10,13 +10,14 @@
 
 /* Includes
  * --------------------------------------------*/
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "Drivers/_gate.h"
 #include "Drivers/_log.h"
 #include "_defines.h"
+
 
 #if RTOS_ENABLE
 #include "Libs/_rtos.h"
@@ -60,7 +61,7 @@ typedef struct {
   double sum;
   uint16_t pos;
   uint16_t len;
-} averager_float_t;
+} avg_float_t;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -71,5 +72,5 @@ uint8_t _TickOut(uint32_t tick, uint32_t ms);
 uint8_t _TickIn(uint32_t tick, uint32_t ms);
 void _Error(char msg[50]);
 uint32_t _ByteSwap32(uint32_t x);
-float _MovAvgFloat(averager_float_t* m, float* buf, uint16_t sz, float val);
+float _MovAvgFloat(avg_float_t* m, float* buf, uint16_t sz, float val);
 #endif /* UTILS_H_ */

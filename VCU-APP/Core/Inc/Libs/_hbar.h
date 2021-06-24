@@ -35,7 +35,7 @@ typedef enum {
 typedef enum {
   HBAR_M_DRIVE = 0,
   HBAR_M_TRIP,
-  HBAR_M_REPORT,
+  HBAR_M_PREDICTION,
   HBAR_M_MAX = 3
 } HBAR_MODE;
 
@@ -54,10 +54,10 @@ typedef enum {
 } HBAR_MODE_TRIP;
 
 typedef enum {
-  HBAR_M_REPORT_RANGE = 0,
-  HBAR_M_REPORT_AVERAGE,
-  HBAR_M_REPORT_MAX = 2
-} HBAR_MODE_REPORT;
+  HBAR_M_PREDICTION_RANGE = 0,
+  HBAR_M_PREDICTION_EFFICIENCY,
+  HBAR_M_PREDICTION_MAX = 2
+} HBAR_MODE_PREDICTION;
 
 typedef enum {
   HBAR_STARTER_UNKNOWN = 0,
@@ -87,7 +87,7 @@ typedef struct {
   uint8_t pin[HBAR_K_MAX];
   HBAR_MODE m;
   uint8_t mode[HBAR_M_MAX];
-  uint8_t report[HBAR_M_REPORT_MAX];
+  uint8_t prediction[HBAR_M_PREDICTION_MAX];
   uint16_t trip[HBAR_M_TRIP_MAX];
 } hbar_data_t;
 

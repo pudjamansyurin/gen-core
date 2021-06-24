@@ -75,7 +75,7 @@ uint32_t _ByteSwap32(uint32_t x) {
   return y;
 }
 
-float _MovAvgFloat(averager_float_t* m, float* buf, uint16_t sz, float val) {
+float _MovAvgFloat(avg_float_t* m, float* buf, uint16_t sz, float val) {
   // Subtract the oldest number from the prev sum, add the new number
   m->sum = m->sum - buf[m->pos] + val;
   // Assign the nextNum to the position in the array

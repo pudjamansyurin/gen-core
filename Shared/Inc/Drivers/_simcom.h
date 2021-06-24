@@ -31,8 +31,8 @@
 //#define NET_CON_USERNAME                        "indosat"
 //#define NET_CON_PASSWORD                        "indosat"
 
-#define NET_FTP_SERVER "ftp.genmotorcycles.com"
-#define NET_FTP_USERNAME "fota@genmotorcycles.com"
+#define NET_FTP_SERVER "ftp.garda-energi.com"
+#define NET_FTP_USERNAME "fota@garda-energi.com"
 #define NET_FTP_PASSWORD "@Garda313"
 
 //#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
