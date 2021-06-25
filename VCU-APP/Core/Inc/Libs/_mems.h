@@ -11,7 +11,6 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_mpu6050.h"
-#include "Libs/_utils.h"
 
 /* Exported constants
  * --------------------------------------------*/

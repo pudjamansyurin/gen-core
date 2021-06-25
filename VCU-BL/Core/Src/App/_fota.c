@@ -10,11 +10,11 @@
 #include "App/_fota.h"
 
 #include "App/_focan.h"
+#include "App/_eeprom.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_flasher.h"
-#include "Libs/_eeprom.h"
 #include "adc.h"
 #include "can.h"
 #include "crc.h"

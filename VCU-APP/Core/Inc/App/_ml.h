@@ -10,7 +10,6 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_utils.h"
 #include "Nodes/BMS.h"
 
 /* Exported constants

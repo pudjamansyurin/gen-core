@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "Libs/_hbar.h"
 
-#include "Libs/_eeprom.h"
+#include "App/_eeprom.h"
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
 

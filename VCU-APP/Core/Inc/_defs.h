@@ -8,12 +8,12 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
-/* Choose  between VCU or Boot-loader mode */
-#define BOOTLOADER 0
+/* Choose  between APP or BL mode */
+#define APP 		1
 
 /* Includes
  * --------------------------------------------*/
-#include "_defines_shared.h"
+#include "_defs_shared.h"
 
 /* Exported constants
  * --------------------------------------------*/
@@ -41,23 +41,5 @@
 
 //#define MCU_SPEED_MAX_KPH ((uint8_t)140)
 //#define MCU_DISCUR_MAX ((uint8_t)210)
-
-/* Exported enums
- * --------------------------------------------*/
-typedef enum {
-  VEHICLE_UNKNOWN = -3,
-  VEHICLE_LOST = -2,
-  VEHICLE_BACKUP = -1,
-  VEHICLE_NORMAL = 0,
-  VEHICLE_STANDBY = 1,
-  VEHICLE_READY = 2,
-  VEHICLE_RUN = 3,
-} vehicle_state_t;
-
-typedef enum {
-  PAYLOAD_RESPONSE = 0,
-  PAYLOAD_REPORT,
-  PAYLOAD_MAX = 2,
-} PAYLOAD_TYPE;
 
 #endif /* DEFINES_H_ */

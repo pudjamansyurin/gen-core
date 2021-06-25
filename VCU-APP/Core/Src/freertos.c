@@ -48,7 +48,6 @@
 #include "Drivers/_simcom.h"
 
 #include "Libs/_audio.h"
-#include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
 #include "Libs/_gps.h"
 #include "Libs/_hbar.h"
@@ -56,14 +55,13 @@
 #include "Libs/_mqtt.h"
 #include "Libs/_remote.h"
 
-
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/MCU.h"
 #include "Nodes/NODE.h"
 #include "Nodes/VCU.h"
 
-
+#include "App/_eeprom.h"
 #include "App/_command.h"
 #include "App/_exec.h"
 #include "App/_firmware.h"

@@ -15,7 +15,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t FingerRecMutexHandle;
 #endif
 
@@ -218,7 +218,7 @@ void FGR_Authenticate(void) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(FingerRecMutexHandle, osWaitForever);
 #endif
   //	GATE_FingerChipPower(1);
@@ -226,7 +226,7 @@ static void lock(void) {
 
 static void unlock(void) {
   //	GATE_FingerChipPower(0);
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(FingerRecMutexHandle);
 #endif
 }

@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_event.h"
+#include "App/_common.h"
 
 /* Private variables
  * --------------------------------------------*/

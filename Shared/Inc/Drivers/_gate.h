@@ -10,7 +10,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "_defines.h"
+#include "_defs.h"
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -25,7 +25,7 @@ void GATE_CanbusShutdown(void);
 void GATE_CanbusReset(void);
 void GATE_Hmi1Power(GPIO_PinState state);
 
-#if (!BOOTLOADER)
+#if (APP)
 void GATE_System12v(GPIO_PinState state);
 void GATE_McuPower(GPIO_PinState state);
 void GATE_Hmi2Reset(void);

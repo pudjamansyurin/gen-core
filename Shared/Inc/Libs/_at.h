@@ -11,7 +11,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_simcom.h"
-#if (!BOOTLOADER)
+#if (APP)
 #include "Drivers/_rtc.h"
 #endif
 

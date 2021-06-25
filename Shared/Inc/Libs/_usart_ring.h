@@ -10,8 +10,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_utils.h"
-#include "main.h"
+#include "App/_common.h"
 
 /* Exported structs
  * --------------------------------------------*/

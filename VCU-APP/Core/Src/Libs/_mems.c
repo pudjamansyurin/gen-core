@@ -8,13 +8,15 @@
  * --------------------------------------------*/
 #include "Libs/_mems.h"
 
+#include <math.h>
+
 #include "Nodes/VCU.h"
 #include "i2c.h"
-#include <math.h>
+
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t MemsRecMutexHandle;
 #endif
 
@@ -180,13 +182,13 @@ uint8_t MEMS_Dragged(void) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(MemsRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(MemsRecMutexHandle);
 #endif
 }

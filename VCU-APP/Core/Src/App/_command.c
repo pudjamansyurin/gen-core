@@ -13,7 +13,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMessageQueueId_t CommandQueueHandle;
 #endif
 

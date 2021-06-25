@@ -8,8 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_gate.h"
-
-#include "Libs/_utils.h"
+#include "App/_common.h"
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -64,7 +63,7 @@ void GATE_Hmi1Power(GPIO_PinState state) {
   HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin, state);
 }
 
-#if (!BOOTLOADER)
+#if (APP)
 void GATE_System12v(GPIO_PinState state) {
   HAL_GPIO_WritePin(EXT_GPIO_OUT1_GPIO_Port, EXT_GPIO_OUT1_Pin, state);
 }

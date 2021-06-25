@@ -13,7 +13,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t AesMutexHandle;
 #endif
 
@@ -83,13 +83,13 @@ uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(AesMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(AesMutexHandle);
 #endif
 }

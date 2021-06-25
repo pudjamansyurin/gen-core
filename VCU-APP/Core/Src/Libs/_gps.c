@@ -14,7 +14,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osThreadId_t GpsTaskHandle;
 extern osMutexId_t GpsRecMutexHandle;
 #endif
@@ -96,13 +96,13 @@ void GPS_ReceiveCallback(void *ptr, size_t len) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(GpsRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(GpsRecMutexHandle);
 #endif
 }

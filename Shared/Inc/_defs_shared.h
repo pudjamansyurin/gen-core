@@ -10,12 +10,16 @@
 
 /* Includes
  * --------------------------------------------*/
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "main.h"
-#if (!BOOTLOADER)
+
+#if (APP)
 #include "cmsis_os.h"
 #endif
-
-#define RTOS_ENABLE !BOOTLOADER
 
 /* Exported defines
  * --------------------------------------------*/

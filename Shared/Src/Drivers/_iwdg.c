@@ -13,7 +13,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t IwdgMutexHandle;
 #endif
 
@@ -37,13 +37,13 @@ void IWDG_Refresh(void) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(IwdgMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(IwdgMutexHandle);
 #endif
 }

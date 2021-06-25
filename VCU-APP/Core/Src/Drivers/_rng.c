@@ -13,7 +13,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t RngMutexHandle;
 #endif
 
@@ -43,13 +43,13 @@ uint8_t RNG_Generate32(uint32_t *payload, uint8_t size) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(RngMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(RngMutexHandle);
 #endif
 }

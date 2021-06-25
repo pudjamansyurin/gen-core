@@ -15,7 +15,7 @@
 #include "Libs/_at.h"
 #include "usart.h"
 
-#if (!BOOTLOADER)
+#if (APP)
 #include "App/_reporter.h"
 #include "Libs/_mqtt.h"
 #include "Nodes/VCU.h"
@@ -23,15 +23,15 @@
 #else
 #include "App/_focan.h"
 #include "App/_fota.h"
+#include "App/_eeprom.h"
 #include "Drivers/_flasher.h"
-#include "Libs/_eeprom.h"
 #include "iwdg.h"
 
 #endif
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t SimcomRecMutexHandle;
 #endif
 
@@ -56,7 +56,7 @@ static SIM_RESULT Simcom_CmdRaw(char* data, uint16_t size, char* reply,
                                 uint32_t ms);
 static SIM_RESULT TransmitCmd(char* data, uint16_t size, uint32_t ms,
                               char* reply);
-#if (!BOOTLOADER)
+#if (APP)
 static uint8_t Simcom_ProcessResponse(void);
 #endif
 
@@ -73,7 +73,7 @@ static void SetStateConfigured(SIM_RESULT* res, uint32_t tick,
 static void SetStateNetworkOn(SIM_RESULT* res, uint32_t tick, uint32_t timeout);
 static void SetStateNetworkOn(SIM_RESULT* res, uint32_t tick, uint32_t timeout);
 static void SetStateGprsOn(SIM_RESULT* res, uint32_t tick, uint32_t timeout);
-#if (BOOTLOADER)
+#if (!APP)
 static void SetStatePdpOn(SIM_RESULT* res);
 #else
 static void SetStatePdpOn(SIM_RESULT* res);
@@ -86,13 +86,13 @@ static void SetStateMqttOn(void);
 /* Public functions implementation
  * --------------------------------------------*/
 void Simcom_Lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
 #endif
 }
 
 void Simcom_Unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(SimcomRecMutexHandle);
 #endif
 }
@@ -145,7 +145,7 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
         SetStateGprsOn(&res, tick, timeout);
         break;
 
-#if (BOOTLOADER)
+#if (!APP)
       case SIM_STATE_PDP_ON:
         SetStatePdpOn(&res);
         break;
@@ -193,14 +193,14 @@ char* Simcom_Resp(char* keyword, char* from) {
   if (from != NULL)
     if (from >= start && from <= stop) start = from;
 
-#if (BOOTLOADER)
+#if (!APP)
   IWDG_Refresh();
 #endif
 
   return strnstr(start, keyword, stop - start);
 }
 
-#if (!BOOTLOADER)
+#if (APP)
 uint8_t Simcom_FetchTime(timestamp_t* ts) {
   uint8_t ok = 0;
 
@@ -351,7 +351,7 @@ static SIM_RESULT Reset(uint8_t hard) {
   else
     GATE_SimcomSoftReset();
 
-#if (!BOOTLOADER)
+#if (APP)
   EVT_Set(hard ? EVG_NET_HARD_RESET : EVG_NET_SOFT_RESET);
 #endif
 
@@ -361,7 +361,7 @@ static SIM_RESULT Reset(uint8_t hard) {
     if (Simcom_Resp(SIM_RSP_READY, NULL) || Simcom_Resp(SIM_RSP_OK, NULL))
       break;
 
-#if (BOOTLOADER)
+#if (!APP)
     IWDG_Refresh();
 #endif
 
@@ -376,7 +376,7 @@ static void Simcom_IdleJob(void) {
   at_csq_t signal;
   if (AT_SignalQualityReport(&signal) == SIM_OK) SIM.d.signal = signal.percent;
 
-#if (!BOOTLOADER)
+#if (APP)
   AT_ConnectionStatus(&(SIM.d.ipstatus));
 #endif
 }
@@ -421,7 +421,7 @@ static SIM_RESULT TransmitCmd(char* data, uint16_t size, uint32_t ms,
   SIM_RESULT res = SIM_ERROR;
   uint32_t tick;
 
-#if (!BOOTLOADER)
+#if (APP)
   if (Simcom_ReceivedResponse(0)) Simcom_ProcessResponse();
 #endif
   SIMCOM_Transmit(data, size);
@@ -432,7 +432,7 @@ static SIM_RESULT TransmitCmd(char* data, uint16_t size, uint32_t ms,
   while (1) {
     if (Simcom_Resp(reply, NULL) || Simcom_Resp(SIM_RSP_ERROR, NULL) ||
         Simcom_Resp(SIM_RSP_READY, NULL)
-#if (!BOOTLOADER)
+#if (APP)
         || Simcom_Resp(SIM_RSP_IPD, NULL)
 #endif
         || (_GetTickMS() - tick) > ms) {
@@ -448,11 +448,11 @@ static SIM_RESULT TransmitCmd(char* data, uint16_t size, uint32_t ms,
           printf("Simcom:Restarted\n");
           res = SIM_RESTARTED;
           SIM.d.state = SIM_STATE_READY;
-#if (!BOOTLOADER)
+#if (APP)
           EVT_Set(EVG_NET_SOFT_RESET);
 #endif
         }
-#if (!BOOTLOADER)
+#if (APP)
         // exception for server command collision
         else if (strcmp(reply, SIM_RSP_ACCEPT) != 0) {
           if (Simcom_ReceivedResponse(0)) {
@@ -490,7 +490,7 @@ static SIM_RESULT TransmitCmd(char* data, uint16_t size, uint32_t ms,
   return res;
 }
 
-#if (!BOOTLOADER)
+#if (APP)
 static uint8_t Simcom_ProcessResponse(void) {
   char* ptr = SIM.d.response;
 
@@ -600,7 +600,7 @@ static void SetStateReady(SIM_RESULT* res) {
     AT_CSCLK param = CSCLK_EN_DTR;
     *res = AT_ConfigureSlowClock(ATW, &param);
   }
-#if (!BOOTLOADER)
+#if (APP)
   // Enable time reporting
   if (*res == SIM_OK) {
     AT_BOOL param = AT_ENABLE;
@@ -698,7 +698,7 @@ static void SetStateGprsOn(SIM_RESULT* res, uint32_t tick, uint32_t timeout) {
     SIM.d.state = SIM_STATE_NETWORK_ON;
 }
 
-#if (BOOTLOADER)
+#if (!APP)
 static void SetStatePdpOn(SIM_RESULT* res) {
   /* FTP CONFIGURATION */
   // Initiate bearer for TCP based applications.

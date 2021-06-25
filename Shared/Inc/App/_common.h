@@ -10,20 +10,13 @@
 
 /* Includes
  * --------------------------------------------*/
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "Drivers/_gate.h"
 #include "Drivers/_log.h"
-#include "_defines.h"
+#include "_defs.h"
 
-
-#if RTOS_ENABLE
-#include "Libs/_rtos.h"
-#endif
-#if !BOOTLOADER
+#if (APP)
 #include "App/_event.h"
+#include "Libs/_rtos.h"
 #endif
 
 /* Exported macros
@@ -54,6 +47,24 @@ typedef union {
   float FLOAT[2];
   double DOUBLE;
 } UNION64;
+
+/* Exported enums
+ * --------------------------------------------*/
+typedef enum {
+  VEHICLE_UNKNOWN = -3,
+  VEHICLE_LOST = -2,
+  VEHICLE_BACKUP = -1,
+  VEHICLE_NORMAL = 0,
+  VEHICLE_STANDBY = 1,
+  VEHICLE_READY = 2,
+  VEHICLE_RUN = 3,
+} vehicle_state_t;
+
+typedef enum {
+  PAYLOAD_RESPONSE = 0,
+  PAYLOAD_REPORT,
+  PAYLOAD_MAX = 2,
+} PAYLOAD_TYPE;
 
 /* Exported structs
  * --------------------------------------------*/

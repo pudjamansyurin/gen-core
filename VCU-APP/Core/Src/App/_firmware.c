@@ -12,7 +12,7 @@
 #include "App/_command.h"
 #include "App/_reporter.h"
 #include "Drivers/_bat.h"
-#include "Libs/_eeprom.h"
+#include "App/_eeprom.h"
 #include "Nodes/HMI1.h"
 
 /* Private functions prototypes

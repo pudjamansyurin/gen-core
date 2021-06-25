@@ -9,16 +9,16 @@
  * --------------------------------------------*/
 #include "Libs/_remote.h"
 
+#include "App/_eeprom.h"
 #include "App/_task.h"
 #include "Drivers/_aes.h"
 #include "Drivers/_rng.h"
-#include "Libs/_eeprom.h"
 #include "Nodes/VCU.h"
 #include "spi.h"
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osThreadId_t RemoteTaskHandle;
 extern osMutexId_t RemoteRecMutexHandle;
 #endif
@@ -237,13 +237,13 @@ void RMT_IrqHandler(void) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(RemoteRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(RemoteRecMutexHandle);
 #endif
 }

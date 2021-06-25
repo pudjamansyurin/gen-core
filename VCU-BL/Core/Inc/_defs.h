@@ -8,12 +8,12 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
-/* Choose between VCU or Boot-loader mode */
-#define BOOTLOADER 1
+/* Choose between APP or BL mode */
+#define APP 0
 
 /* Includes
  * --------------------------------------------*/
-#include "_defines_shared.h"
+#include "_defs_shared.h"
 
 /* Exported constants
  * --------------------------------------------*/

@@ -11,13 +11,13 @@
 
 #include "can.h"
 
-#if (RTOS_ENABLE)
+#if (APP)
 #include "Nodes/NODE.h"
 #endif
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMessageQueueId_t CanRxQueueHandle;
 extern osMutexId_t CanTxMutexHandle;
 #endif
@@ -50,7 +50,7 @@ void CANBUS_Init(void) {
 
   if (!e) e = (HAL_CAN_Start(can.pcan) != HAL_OK);
 
-#if (RTOS_ENABLE)
+#if (APP)
   if (!e)
     e = (HAL_CAN_ActivateNotification(can.pcan, CAN_IT_RX_FIFO0_MSG_PENDING) !=
          HAL_OK);
@@ -96,8 +96,8 @@ uint8_t CANBUS_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC,
   Header(&(Tx->header), address, DLC, ext);
   tick = _GetTickMS();
   while (_GetTickMS() - tick < CAN_RX_MS &&
-         HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0)
-    ;
+         HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0) {
+  };
 
   /* Start the Transmission process */
   status = HAL_CAN_AddTxMessage(can.pcan, &(Tx->header), Tx->data.u8, NULL);
@@ -137,7 +137,7 @@ uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef* RxHeader) {
   return RxHeader->ExtId;
 }
 
-#if (RTOS_ENABLE)
+#if (APP)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
   can_rx_t Rx;
 
@@ -150,13 +150,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(CanTxMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(CanTxMutexHandle);
 #endif
 }

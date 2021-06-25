@@ -12,7 +12,6 @@
  * --------------------------------------------*/
 #include "App/_command.h"
 #include "App/_debugger.h"
-#include "Libs/_utils.h"
 
 /* Exported constants
  * --------------------------------------------*/

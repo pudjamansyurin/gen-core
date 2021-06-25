@@ -8,14 +8,11 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_log.h"
-
-#include <stdarg.h>
-
-#include "Libs/_utils.h"
+#include "App/_common.h"
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t LogRecMutexHandle;
 #endif
 
@@ -49,6 +46,7 @@ void printf_hex(char* data, uint16_t size) {
   for (uint32_t i = 0; i < size; i++) printf("%02X", *(data + i));
   unlock();
 }
+
 // void Log(const char *fmt, ...) {
 //   va_list args;
 //   lock();
@@ -61,13 +59,13 @@ void printf_hex(char* data, uint16_t size) {
 /* Private functions implementations
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(LogRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(LogRecMutexHandle);
 #endif
 }
@@ -78,8 +76,7 @@ static void SendITM(char ch) {
 
   // wait if busy
   tick = _GetTickMS();
-  while (_GetTickMS() - tick <= LOG_TIMEOUT_MS && ITM->PORT[0].u32 == 0) {
-  };
+  while (_TickIn(tick, LOG_TIMEOUT_MS) && ITM->PORT[0].u32 == 0) {};
 
   ITM->PORT[0].u8 = (uint8_t)ch;
 #endif

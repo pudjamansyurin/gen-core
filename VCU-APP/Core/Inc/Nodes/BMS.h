@@ -11,7 +11,6 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_canbus.h"
-#include "Libs/_utils.h"
 
 /* Exported constants
  * --------------------------------------------*/

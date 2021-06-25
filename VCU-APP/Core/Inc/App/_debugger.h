@@ -11,7 +11,6 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_task.h"
-#include "Libs/_utils.h"
 #include "Nodes/MCU.h"
 
 /* Exported structs

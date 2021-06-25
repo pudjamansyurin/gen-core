@@ -7,27 +7,27 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_utils.h"
+#include "App/_common.h"
 
 /* Public functions implementation
  * --------------------------------------------*/
 void _I2C_ClearBusyFlagErratum(void) {
   __HAL_RCC_I2C2_CLK_ENABLE();
-#if (!BOOTLOADER)
+#if (APP)
   __HAL_RCC_I2C1_CLK_ENABLE();
   __HAL_RCC_I2C3_CLK_ENABLE();
 #endif
   HAL_Delay(100);
 
   __HAL_RCC_I2C2_FORCE_RESET();
-#if (!BOOTLOADER)
+#if (APP)
   __HAL_RCC_I2C1_FORCE_RESET();
   __HAL_RCC_I2C3_FORCE_RESET();
 #endif
   HAL_Delay(100);
 
   __HAL_RCC_I2C2_RELEASE_RESET();
-#if (!BOOTLOADER)
+#if (APP)
   __HAL_RCC_I2C1_RELEASE_RESET();
   __HAL_RCC_I2C3_RELEASE_RESET();
 #endif
@@ -35,7 +35,7 @@ void _I2C_ClearBusyFlagErratum(void) {
 }
 
 void _DelayMS(uint32_t ms) {
-#if RTOS_ENABLE
+#if (APP)
   osDelay(ms);
 #else
   HAL_Delay(ms);
@@ -43,7 +43,7 @@ void _DelayMS(uint32_t ms) {
 }
 
 uint32_t _GetTickMS(void) {
-#if RTOS_ENABLE
+#if (APP)
   return osKernelGetTickCount();
 #else
   return HAL_GetTick();
@@ -59,7 +59,7 @@ uint8_t _TickIn(uint32_t tick, uint32_t ms) {
 }
 
 void _Error(char msg[50]) {
-#if RTOS_ENABLE
+#if (APP)
   if (osKernelGetState() == osKernelRunning) printf(msg);
 #else
   printf(msg);

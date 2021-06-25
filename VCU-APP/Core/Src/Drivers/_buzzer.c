@@ -16,7 +16,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t BuzzerMutexHandle;
 #endif
 
@@ -39,13 +39,13 @@ void BUZZER_Write(uint8_t state) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(BuzzerMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(BuzzerMutexHandle);
 #endif
 }

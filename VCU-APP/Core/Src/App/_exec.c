@@ -12,7 +12,7 @@
 #include "App/_firmware.h"
 #include "App/_reporter.h"
 #include "App/_task.h"
-#include "Libs/_eeprom.h"
+#include "App/_eeprom.h"
 #include "Libs/_finger.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"

@@ -7,12 +7,12 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_eeprom.h"
+#include "App/_eeprom.h"
 
 #include "Drivers/_ee24xx.h"
 #include "i2c.h"
 
-#if (!BOOTLOADER)
+#if (APP)
 #include "App/_reporter.h"
 #include "Drivers/_aes.h"
 #include "Libs/_hbar.h"
@@ -23,7 +23,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t EepromRecMutexHandle;
 #endif
 
@@ -53,7 +53,7 @@ uint8_t EE_Init(void) {
   ok = EEPROM24XX_IsConnected(100);
 
   if (ok) {
-#if (!BOOTLOADER)
+#if (APP)
     EE_Load();
     EE_FotaVersion(EE_CMD_R, EE_NULL);
 #endif
@@ -65,7 +65,7 @@ uint8_t EE_Init(void) {
   return ok;
 }
 
-#if (!BOOTLOADER)
+#if (APP)
 void EE_Load(void) {
   lock();
   EE_AesKey(EE_CMD_R, EE_NULL);
@@ -174,13 +174,13 @@ static uint8_t Command(EE_VADDR vaddr, EE_CMD cmd, void* value, void* ptr,
 }
 
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(EepromRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(EepromRecMutexHandle);
 #endif
 }

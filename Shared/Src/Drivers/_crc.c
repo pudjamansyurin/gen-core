@@ -14,7 +14,7 @@
 
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t CrcMutexHandle;
 #endif
 
@@ -75,13 +75,13 @@ uint32_t CRC_Calculate32(uint32_t* arr, uint32_t count) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(CrcMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(CrcMutexHandle);
 #endif
 }

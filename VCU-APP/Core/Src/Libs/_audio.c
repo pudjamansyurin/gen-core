@@ -41,10 +41,9 @@
 
 #include "i2s.h"
 
-
 /* External variables
  * --------------------------------------------*/
-#if (RTOS_ENABLE)
+#if (APP)
 extern osMutexId_t AudioRecMutexHandle;
 #endif
 extern uint32_t SOUND_FREQ;
@@ -545,13 +544,13 @@ static uint8_t I2S_Init(uint32_t AudioFreq) {
 }
 
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(AudioRecMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(AudioRecMutexHandle);
 #endif
 }

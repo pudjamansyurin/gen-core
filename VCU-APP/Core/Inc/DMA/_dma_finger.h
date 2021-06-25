@@ -11,7 +11,6 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_usart_ring.h"
-#include "Libs/_utils.h"
 
 /* Exported constants
  * --------------------------------------------*/

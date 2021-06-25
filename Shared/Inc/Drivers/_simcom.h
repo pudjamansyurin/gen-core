@@ -10,8 +10,9 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_utils.h"
-#if !BOOTLOADER
+#include "App/_common.h"
+
+#if (APP)
 #include "Drivers/_rtc.h"
 #endif
 
@@ -73,7 +74,7 @@ typedef enum {
   SIM_STATE_NETWORK_ON,
   SIM_STATE_GPRS_ON,
   SIM_STATE_PDP_ON,
-#if (BOOTLOADER)
+#if (!APP)
   SIM_STATE_BEARER_ON,
 #else
   SIM_STATE_INTERNET_ON,
@@ -125,7 +126,7 @@ void Simcom_Unlock(void);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Resp(char* keyword, char* from);
 SIM_RESULT Simcom_Cmd(char* command, char* reply, uint32_t ms);
-#if (!BOOTLOADER)
+#if (APP)
 uint8_t Simcom_FetchTime(timestamp_t* ts);
 uint8_t Simcom_SendUSSD(char* ussd, char* buf, uint8_t buflen);
 uint8_t Simcom_ReadNewSMS(char* buf, uint8_t buflen);

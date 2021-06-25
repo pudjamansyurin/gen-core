@@ -10,8 +10,9 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Libs/_utils.h"
-#if (!BOOTLOADER)
+#include "App/_common.h"
+
+#if (APP)
 #include "Libs/_hbar.h"
 #endif
 
@@ -57,7 +58,7 @@ extern fota_t FOTA;
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t EE_Init(void);
-#if (!BOOTLOADER)
+#if (APP)
 void EE_Load(void);
 // uint8_t EE_Reset(EE_CMD cmd, uint16_t value);
 uint8_t EE_AesKey(EE_CMD cmd, uint32_t* value);
