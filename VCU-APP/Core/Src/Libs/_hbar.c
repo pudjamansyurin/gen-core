@@ -160,6 +160,14 @@ void HBAR_SetReport(uint8_t eff, uint8_t km) {
   HBAR.d.prediction[HBAR_M_PREDICTION_RANGE] = km;
 }
 
+void HBAR_LoadStore(void) {
+  HBAR_ModeStore(NULL);
+  for (uint8_t m = 0; m < HBAR_M_MAX; m++)
+  	HBAR_SubModeStore(m, NULL);
+  for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
+  	HBAR_TripMeterStore(mTrip, NULL);
+}
+
 uint8_t HBAR_TripMeterStore(HBAR_MODE_TRIP mTrip, uint16_t *src) {
   void *dst = &HBAR.d.trip[mTrip];
   uint8_t ok;

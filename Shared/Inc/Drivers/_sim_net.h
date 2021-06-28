@@ -41,8 +41,9 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
+void SIM_NET_LoadStore(void);
 uint8_t SIM_NET_ConStore(char* apn, char* user, char *pass);
-uint8_t SIM_NET_Ftp(char* host, char* user, char *pass);
-uint8_t SIM_NET_Mqtt(char* host, uint16_t *port, char* user, char *pass);
+uint8_t SIM_NET_FtpStore(char* host, char* user, char *pass);
+uint8_t SIM_NET_MqttStore(char* host, uint16_t *port, char* user, char *pass);
 
 #endif /* INC_DRIVERS__SIM_NET_H_ */

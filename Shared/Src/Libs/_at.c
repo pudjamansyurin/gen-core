@@ -505,13 +505,13 @@ SIMR AT_ListMessageSMS(at_cmgl_t* param) {
 #endif
 
 #if AT_USE_TCP
-SIMR AT_ConfigureAPN(AT_MODE mode, at_cstt_t* param) {
+SIMR AT_ConfigureAPN(AT_MODE mode, net_con_t* param) {
   SIMR res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[80];
 
   // Copy by value
-  at_cstt_t tmp = *param;
+  net_con_t tmp = *param;
 
   SIM_Lock();
   // Read
@@ -519,15 +519,15 @@ SIMR AT_ConfigureAPN(AT_MODE mode, at_cstt_t* param) {
   if (res == SIM_OK) {
     ParseText(&str[len], &cnt, tmp.apn, sizeof(tmp.apn));
     len += cnt + 1;
-    ParseText(&str[len], &cnt, tmp.username, sizeof(tmp.username));
+    ParseText(&str[len], &cnt, tmp.user, sizeof(tmp.user));
     len += cnt + 1;
-    ParseText(&str[len], &cnt, tmp.password, sizeof(tmp.password));
+    ParseText(&str[len], &cnt, tmp.pass, sizeof(tmp.pass));
 
     // Write
     if (mode == ATW) {
       if (memcmp(&tmp, param, sizeof(tmp)) != 0) {
         sprintf(cmd, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", param->apn,
-                param->username, param->password);
+                param->user, param->pass);
         res = CmdWrite(cmd, SIM_RSP_OK, 1000);
       }
     } else
@@ -553,14 +553,13 @@ SIMR AT_GetLocalIpAddress(at_cifsr_t* param) {
   return res;
 }
 
-SIMR AT_StartConnection(at_cipstart_t* param) {
+SIMR AT_StartConnection(net_mqtt_t *param) {
   SIMR res = SIM_ERROR;
   char cmd[80];
 
   SIM_Lock();
   // Write
-  sprintf(cmd, "AT+CIPSTART=\"%s\",\"%s\",\"%d\"\r", param->mode, param->ip,
-          param->port);
+  sprintf(cmd, "AT+CIPSTART=\"TCP\",\"%s\",\"%d\"\r", param->host, param->port);
   res = CmdWrite(cmd, "CONNECT", 30000);
 
   // check either connection ok / error
@@ -607,12 +606,7 @@ SIMR AT_BearerInitialize(void) {
   at_sapbr_t getBEARER, setBEARER = {
                             .cmd_type = SAPBR_BEARER_OPEN,
                             .status = SAPBR_CONNECTED,
-                            .con =
-                                {
-                                    .apn = NET_CON_APN,
-                                    .username = NET_CON_USER,
-                                    .password = NET_CON_PASS,
-                                },
+                            .con = SIM.net.con,
                         };
 
   // BEARER attach
@@ -650,10 +644,10 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
         ParseText(&str[0], NULL, tmp.con.apn, sizeof(tmp.con.apn));
 
       if (FindInBuffer("USER: ", &str))
-        ParseText(&str[0], NULL, tmp.con.username, sizeof(tmp.con.username));
+        ParseText(&str[0], NULL, tmp.con.user, sizeof(tmp.con.user));
 
       if (FindInBuffer("PWD: ", &str))
-        ParseText(&str[0], NULL, tmp.con.password, sizeof(tmp.con.password));
+        ParseText(&str[0], NULL, tmp.con.pass, sizeof(tmp.con.pass));
     }
 
     // Write
@@ -662,14 +656,14 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
         sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", param->con.apn);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmp.con.username, param->con.username,
-                 sizeof(param->con.username)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->con.username);
+      if (memcmp(tmp.con.user, param->con.user,
+                 sizeof(param->con.user)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->con.user);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmp.con.password, param->con.password,
-                 sizeof(param->con.password)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->con.password);
+      if (memcmp(tmp.con.pass, param->con.pass,
+                 sizeof(param->con.pass)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->con.pass);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
 
@@ -686,7 +680,7 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
   return res;
 }
 
-SIMR AT_FtpInitialize(at_ftp_t* param) {
+SIMR AT_FtpInitialize(at_ftp_t* param, net_ftp_t *ftp) {
   SIMR res;
   int32_t cid = 1;
 
@@ -694,13 +688,13 @@ SIMR AT_FtpInitialize(at_ftp_t* param) {
   res = SingleInteger("FTPCID", ATW, &cid, 0);
 
   if (res == SIM_OK)
-    res = SingleString("FTPSERV", ATW, NET_FTP_HOST, sizeof(NET_FTP_HOST), 0);
+    res = SingleString("FTPSERV", ATW, ftp->host, sizeof(ftp->host), 0);
 
   if (res == SIM_OK)
-    res = SingleString("FTPUN", ATW, NET_FTP_USER, sizeof(NET_FTP_USER), 0);
+    res = SingleString("FTPUN", ATW, ftp->user, sizeof(ftp->user), 0);
 
   if (res == SIM_OK)
-    res = SingleString("FTPPW", ATW, NET_FTP_PASS, sizeof(NET_FTP_PASS), 0);
+    res = SingleString("FTPPW", ATW, ftp->pass, sizeof(ftp->pass), 0);
 
   if (res == SIM_OK)
     res = SingleString("FTPGETPATH", ATW, param->path, sizeof(param->path), 0);

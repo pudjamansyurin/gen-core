@@ -63,8 +63,8 @@ uint8_t MQTT_Connect(void) {
   data.clientID.cstring = clientId;
   data.cleansession = !MQTT_PERSIST_SESSION;
   data.keepAliveInterval = MQTT_KEEPALIVE_S;
-  data.username.cstring = NET_MQTT_USER;
-  data.password.cstring = NET_MQTT_PASS;
+  data.username.cstring = SIM.net.mqtt.user;
+  data.password.cstring = SIM.net.mqtt.pass;
 
   data.willFlag = 1;
   data.will.retained = 1;

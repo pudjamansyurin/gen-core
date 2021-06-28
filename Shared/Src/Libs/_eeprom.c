@@ -16,6 +16,7 @@
 #include "Drivers/_aes.h"
 #include "Libs/_hbar.h"
 #endif
+#include "Drivers/_sim_net.h"
 
 /* External variables
  * --------------------------------------------*/
@@ -45,19 +46,16 @@ uint8_t EE_Init(void) {
   if (ok) {
 #if (APP)
   	AES_KeyStore(NULL);
-    HBAR_ModeStore(NULL);
-    for (uint8_t m = 0; m < HBAR_M_MAX; m++)
-    	HBAR_SubModeStore(m, NULL);
-    for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
-    	HBAR_TripMeterStore(mTrip, NULL);
-
+  	HBAR_LoadStore();
     IAP_VersionStore(NULL);
 #endif
     IAP_TypeStore(NULL);
-  } else
-    printf("EEPROM:Error\n");
+  	SIM_NET_LoadStore();
+  }
   unlock();
 
+  if (!ok)
+    printf("EEPROM:Error\n");
   return ok;
 }
 

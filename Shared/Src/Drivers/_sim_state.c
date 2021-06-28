@@ -217,12 +217,7 @@ void SIM_STA_PdpOn(SIMR* res) {
   /* PDP ATTACH */
   // Set type of authentication for PDP connections of socket
   if (*res == SIM_OK) {
-    at_cstt_t param = {
-        .apn = NET_CON_APN,
-        .username = NET_CON_USER,
-        .password = NET_CON_PASS,
-    };
-    *res = AT_ConfigureAPN(ATW, &param);
+    *res = AT_ConfigureAPN(ATW, &SIM.net.con);
   }
   // Select TCPIP application mode:
   // (0: Non Transparent (command mode), 1: Transparent (data mode))
@@ -292,9 +287,7 @@ void SIM_STA_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   AT_ConnectionStatus(&(SIM.d.ipstatus));
   if (*res == SIM_OK && (SIM.d.ipstatus != CIPSTAT_CONNECT_OK ||
                          SIM.d.ipstatus != CIPSTAT_CONNECTING)) {
-    at_cipstart_t param = {
-        .mode = "TCP", .ip = NET_MQTT_HOST, .port = NET_MQTT_PORT};
-    *res = AT_StartConnection(&param);
+    *res = AT_StartConnection(&SIM.net.mqtt);
 
     // wait until attached
     do {

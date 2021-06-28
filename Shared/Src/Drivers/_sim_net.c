@@ -14,6 +14,12 @@
 
 /* Public functions implementation
  * --------------------------------------------*/
+void SIM_NET_LoadStore(void) {
+	SIM_NET_ConStore(NULL, NULL, NULL);
+	SIM_NET_FtpStore(NULL, NULL, NULL);
+	SIM_NET_MqttStore(NULL, NULL, NULL, NULL);
+}
+
 uint8_t SIM_NET_ConStore(char* apn, char* user, char *pass) {
 	net_con_t *dst = &SIM.net.con;
   uint8_t ok = 0;
@@ -25,7 +31,7 @@ uint8_t SIM_NET_ConStore(char* apn, char* user, char *pass) {
   return ok == 3;
 }
 
-uint8_t SIM_NET_Ftp(char* host, char* user, char *pass) {
+uint8_t SIM_NET_FtpStore(char* host, char* user, char *pass) {
   net_ftp_t* dst = &SIM.net.ftp;
   uint8_t ok = 0;
 
@@ -36,7 +42,7 @@ uint8_t SIM_NET_Ftp(char* host, char* user, char *pass) {
   return ok == 3;
 }
 
-uint8_t SIM_NET_Mqtt(char* host, uint16_t *port, char* user, char *pass) {
+uint8_t SIM_NET_MqttStore(char* host, uint16_t *port, char* user, char *pass) {
   net_mqtt_t* dst = &SIM.net.mqtt;
   uint8_t ok = 0;
 

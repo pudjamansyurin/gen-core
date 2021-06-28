@@ -24,28 +24,28 @@
 #define NET_BOOT_MS ((uint16_t)8000)
 #define NET_GUARD_MS ((uint16_t)1000)
 
-#define NET_CON_APN "3gprs"
-#define NET_CON_USER "3gprs"
-#define NET_CON_PASS "3gprs"
-//#define NET_CON_APN                             "telkomsel"
-//#define NET_CON_USER                        "wap"
-//#define NET_CON_PASS                        "wap123"
-//#define NET_CON_APN                             "indosatgprs"
-//#define NET_CON_USER                        "indosat"
-//#define NET_CON_PASS                        "indosat"
-
-#define NET_MQTT_HOST "test.mosquitto.org"
-#define NET_MQTT_PORT ((uint16_t)1883)
-#define NET_MQTT_USER ""
-#define NET_MQTT_PASS ""
-//#define NET_MQTT_HOST                          "pujakusumae-30856.portmap.io"
-//#define NET_MQTT_PORT                 ((uint16_t)46606)
-//#define NET_MQTT_HOST                          "mqtt.eclipseprojects.io"
-//#define NET_MQTT_PORT                 ((uint16_t)1883)
-
-#define NET_FTP_HOST "ftp.garda-energi.com"
-#define NET_FTP_USER "fota@garda-energi.com"
-#define NET_FTP_PASS "@Garda313"
+//#define NET_CON_APN "3gprs"
+//#define NET_CON_USER "3gprs"
+//#define NET_CON_PASS "3gprs"
+////#define NET_CON_APN                             "telkomsel"
+////#define NET_CON_USER                        "wap"
+////#define NET_CON_PASS                        "wap123"
+////#define NET_CON_APN                             "indosatgprs"
+////#define NET_CON_USER                        "indosat"
+////#define NET_CON_PASS                        "indosat"
+//
+//#define NET_MQTT_HOST "test.mosquitto.org"
+//#define NET_MQTT_PORT ((uint16_t)1883)
+//#define NET_MQTT_USER ""
+//#define NET_MQTT_PASS ""
+////#define NET_MQTT_HOST                          "pujakusumae-30856.portmap.io"
+////#define NET_MQTT_PORT                 ((uint16_t)46606)
+////#define NET_MQTT_HOST                          "mqtt.eclipseprojects.io"
+////#define NET_MQTT_PORT                 ((uint16_t)1883)
+//
+//#define NET_FTP_HOST "ftp.garda-energi.com"
+//#define NET_FTP_USER "fota@garda-energi.com"
+//#define NET_FTP_PASS "@Garda313"
 
 /* Exported structs
  * --------------------------------------------*/
