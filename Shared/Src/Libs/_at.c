@@ -505,19 +505,19 @@ SIMR AT_ListMessageSMS(at_cmgl_t* param) {
 #endif
 
 #if AT_USE_TCP
-SIMR AT_ConfigureAPN(AT_MODE mode, net_con_t* param) {
+SIMR AT_ConfigureAPN(AT_MODE mode, con_apn_t* param) {
   SIMR res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[80];
 
   // Copy by value
-  net_con_t tmp = *param;
+  con_apn_t tmp = *param;
 
   SIM_Lock();
   // Read
   res = CmdRead("AT+CSTT?\r", "+CSTT: ", 500, &str);
   if (res == SIM_OK) {
-    ParseText(&str[len], &cnt, tmp.apn, sizeof(tmp.apn));
+    ParseText(&str[len], &cnt, tmp.name, sizeof(tmp.name));
     len += cnt + 1;
     ParseText(&str[len], &cnt, tmp.user, sizeof(tmp.user));
     len += cnt + 1;
@@ -526,7 +526,7 @@ SIMR AT_ConfigureAPN(AT_MODE mode, net_con_t* param) {
     // Write
     if (mode == ATW) {
       if (memcmp(&tmp, param, sizeof(tmp)) != 0) {
-        sprintf(cmd, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", param->apn,
+        sprintf(cmd, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", param->name,
                 param->user, param->pass);
         res = CmdWrite(cmd, SIM_RSP_OK, 1000);
       }
@@ -553,7 +553,7 @@ SIMR AT_GetLocalIpAddress(at_cifsr_t* param) {
   return res;
 }
 
-SIMR AT_StartConnection(net_mqtt_t *param) {
+SIMR AT_StartConnection(con_mqtt_t *param) {
   SIMR res = SIM_ERROR;
   char cmd[80];
 
@@ -606,27 +606,27 @@ SIMR AT_BearerInitialize(void) {
   at_sapbr_t getBEARER, setBEARER = {
                             .cmd_type = SAPBR_BEARER_OPEN,
                             .status = SAPBR_CONNECTED,
+                            .apn = SIM.con.apn,
                         };
 
   // BEARER attach
-  res = AT_BearerSettings(ATW, &setBEARER, &SIM.net.con);
+  res = AT_BearerSettings(ATW, &setBEARER);
 
   // BEARER init
-  if (res == SIM_OK) res = AT_BearerSettings(ATR, &getBEARER, &SIM.net.con);
+  if (res == SIM_OK) res = AT_BearerSettings(ATR, &getBEARER);
 
   if (res == SIM_OK && getBEARER.status != SAPBR_CONNECTED) res = SIM_ERROR;
 
   return res;
 }
 
-SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param, net_con_t *con) {
+SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
   SIMR res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[80];
 
   // Copy by value
   at_sapbr_t tmp = *param;
-  net_con_t tmpCon = *con;
 
   SIM_Lock();
   // Read
@@ -641,29 +641,29 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param, net_con_t *con) {
     res = CmdRead("AT+SAPBR=4,1\r", "+SAPBR:", 500, &str);
     if (res == SIM_OK) {
       if (FindInBuffer("APN: ", &str))
-        ParseText(&str[0], NULL, tmpCon.apn, sizeof(tmpCon.apn));
+        ParseText(&str[0], NULL, tmp.apn.name, sizeof(tmp.apn.name));
 
       if (FindInBuffer("USER: ", &str))
-        ParseText(&str[0], NULL, tmpCon.user, sizeof(tmpCon.user));
+        ParseText(&str[0], NULL, tmp.apn.user, sizeof(tmp.apn.user));
 
       if (FindInBuffer("PWD: ", &str))
-        ParseText(&str[0], NULL, tmpCon.pass, sizeof(tmpCon.pass));
+        ParseText(&str[0], NULL, tmp.apn.pass, sizeof(tmp.apn.pass));
     }
 
     // Write
     if (mode == ATW) {
-      if (memcmp(tmpCon.apn, con->apn, sizeof(con->apn)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", con->apn);
+      if (memcmp(tmp.apn.name, param->apn.name, sizeof(param->apn.name)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", param->apn.name);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmpCon.user, con->user,
-                 sizeof(con->user)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", con->user);
+      if (memcmp(tmp.apn.user, param->apn.user,
+                 sizeof(param->apn.user)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->apn.user);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmpCon.pass, con->pass,
-                 sizeof(con->pass)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", con->pass);
+      if (memcmp(tmp.apn.pass, param->apn.pass,
+                 sizeof(param->apn.pass)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->apn.pass);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
 
@@ -680,7 +680,7 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param, net_con_t *con) {
   return res;
 }
 
-SIMR AT_FtpInitialize(at_ftp_t* param, net_ftp_t *ftp) {
+SIMR AT_FtpInitialize(at_ftp_t* param, con_ftp_t *ftp) {
   SIMR res;
   int32_t cid = 1;
 

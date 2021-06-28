@@ -10,7 +10,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/_sim_net.h"
+#include "Drivers/_sim_con.h"
 #include "Drivers/_sim_state.h"
 #if (APP)
 #include "Drivers/_rtc.h"
@@ -292,6 +292,7 @@ typedef struct {
 typedef struct {
   AT_SAPBR_CMD cmd_type;
   AT_SAPBR_STATUS status;
+  con_apn_t apn;
 } at_sapbr_t;
 
 typedef struct {
@@ -343,9 +344,9 @@ SIMR AT_ListMessageSMS(at_cmgl_t* param);
 #endif
 
 #if AT_USE_TCP
-SIMR AT_ConfigureAPN(AT_MODE mode, net_con_t* param);
+SIMR AT_ConfigureAPN(AT_MODE mode, con_apn_t* param);
 SIMR AT_GetLocalIpAddress(at_cifsr_t* param);
-SIMR AT_StartConnection(net_mqtt_t* param);
+SIMR AT_StartConnection(con_mqtt_t* param);
 SIMR AT_ManuallyReceiveData(AT_MODE mode, AT_CIPRXGET* state);
 SIMR AT_MultiIpConnection(AT_MODE mode, AT_CIPMUX* state);
 SIMR AT_TcpApllicationMode(AT_MODE mode, AT_CIPMODE* state);
@@ -356,8 +357,8 @@ SIMR AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND* state);
 
 #if AT_USE_FTP
 SIMR AT_BearerInitialize(void);
-SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param, net_con_t *con);
-SIMR AT_FtpInitialize(at_ftp_t* param, net_ftp_t *ftp);
+SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param);
+SIMR AT_FtpInitialize(at_ftp_t* param, con_ftp_t *ftp);
 SIMR AT_FtpFileSize(at_ftp_t* param);
 SIMR AT_FtpDownload(at_ftpget_t* param);
 SIMR AT_FtpCurrentState(AT_FTP_STATE* state);

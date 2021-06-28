@@ -354,7 +354,7 @@ static SIMR prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
   SIMR res;
 
   res = SIM_SetState(SIM_STATE_BEARER_ON, timeout);
-  if (res == SIM_OK) res = AT_FtpInitialize(ftp, &SIM.net.ftp);
+  if (res == SIM_OK) res = AT_FtpInitialize(ftp, &SIM.con.ftp);
 
   return res;
 }

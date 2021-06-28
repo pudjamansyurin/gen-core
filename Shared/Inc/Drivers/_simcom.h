@@ -13,7 +13,7 @@
 #include "App/_common.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_sim_state.h"
-#include "Drivers/_sim_net.h"
+#include "Drivers/_sim_con.h"
 
 #if (APP)
 #include "Drivers/_rtc.h"
@@ -58,7 +58,7 @@ typedef struct {
 
 typedef struct {
   sim_data_t d;
-  sim_net_t net;
+  sim_con_t con;
   UART_HandleTypeDef* puart;
   DMA_HandleTypeDef* pdma;
 } sim_t;

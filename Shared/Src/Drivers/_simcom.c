@@ -79,9 +79,9 @@ uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout) {
 
   SIM_Lock();
   do {
-    if (SIM_STA_StateTimeout(&tick, timeout, res)) break;
-    if (SIM_STA_StateLockedLoop(&lastState, &retry)) break;
-    if (SIM_STA_StatePoorSignal()) break;
+    if (SIMSta_StateTimeout(&tick, timeout, res)) break;
+    if (SIMSta_StateLockedLoop(&lastState, &retry)) break;
+    if (SIMSta_StatePoorSignal()) break;
 
     // Set value
     res = SIM_OK;
@@ -89,28 +89,28 @@ uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout) {
     // Handle states
     switch (SIM.d.state) {
       case SIM_STATE_DOWN:
-        SIM_STA_Down(&res);
+        SIMSta_Down(&res);
         break;
 
       case SIM_STATE_READY:
-        SIM_STA_Ready(&res);
+        SIMSta_Ready(&res);
         break;
 
       case SIM_STATE_CONFIGURED:
-        SIM_STA_Configured(&res, tick, timeout);
+        SIMSta_Configured(&res, tick, timeout);
         break;
 
       case SIM_STATE_NETWORK_ON:
-        SIM_STA_NetworkOn(&res, tick, timeout);
+        SIMSta_NetworkOn(&res, tick, timeout);
         break;
 
       case SIM_STATE_GPRS_ON:
-        SIM_STA_GprsOn(&res, tick, timeout);
+        SIMSta_GprsOn(&res, tick, timeout);
         break;
 
 #if (!APP)
       case SIM_STATE_PDP_ON:
-        SIM_STA_PdpOn(&res);
+        SIMSta_PdpOn(&res);
         break;
       case SIM_STATE_BEARER_ON:
         /*nothing*/
@@ -118,19 +118,19 @@ uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout) {
 #else
 
       case SIM_STATE_PDP_ON:
-        SIM_STA_PdpOn(&res);
+        SIMSta_PdpOn(&res);
         break;
 
       case SIM_STATE_INTERNET_ON:
-        SIM_STA_InternetOn(&res, tick, timeout);
+        SIMSta_InternetOn(&res, tick, timeout);
         break;
 
       case SIM_STATE_SERVER_ON:
-        SIM_STA_ServerOn();
+        SIMSta_ServerOn();
         break;
 
       case SIM_STATE_MQTT_ON:
-        SIM_STA_MqttOn();
+        SIMSta_MqttOn();
         break;
 #endif
 

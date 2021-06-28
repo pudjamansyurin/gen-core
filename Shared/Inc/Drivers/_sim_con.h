@@ -1,12 +1,12 @@
 /*
- * _sim_net.h
+ * _sim_con.h
  *
  *  Created on: Jun 28, 2021
  *      Author: pudja
  */
 
-#ifndef INC_DRIVERS__SIM_NET_H_
-#define INC_DRIVERS__SIM_NET_H_
+#ifndef INC_DRIVERS__SIMCon_H_
+#define INC_DRIVERS__SIMCon_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -15,35 +15,35 @@
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
-  char apn[20];
+  char name[20];
   char user[20];
   char pass[20];
-} net_con_t;
+} con_apn_t;
 
 typedef struct {
   char host[30];
   uint16_t port;
   char user[30];
   char pass[30];
-} net_mqtt_t;
+} con_mqtt_t;
 
 typedef struct {
   char host[30];
   char user[30];
   char pass[30];
-} net_ftp_t;
+} con_ftp_t;
 
 typedef struct {
-  net_con_t con;
-  net_ftp_t ftp;
-  net_mqtt_t mqtt;
-} sim_net_t;
+  con_apn_t apn;
+  con_ftp_t ftp;
+  con_mqtt_t mqtt;
+} sim_con_t;
 
 /* Public functions prototype
  * --------------------------------------------*/
-void SIM_NET_LoadStore(void);
-uint8_t SIM_NET_ConStore(char* apn, char* user, char *pass);
-uint8_t SIM_NET_FtpStore(char* host, char* user, char *pass);
-uint8_t SIM_NET_MqttStore(char* host, uint16_t *port, char* user, char *pass);
+void SIMCon_LoadStore(void);
+uint8_t SIMCon_ApnStore(char* name, char* user, char *pass);
+uint8_t SIMCon_FtpStore(char* host, char* user, char *pass);
+uint8_t SIMCon_MqttStore(char* host, uint16_t *port, char* user, char *pass);
 
-#endif /* INC_DRIVERS__SIM_NET_H_ */
+#endif /* INC_DRIVERS__SIMCon_H_ */

@@ -16,7 +16,7 @@
 #include "Drivers/_aes.h"
 #include "Libs/_hbar.h"
 #endif
-#include "Drivers/_sim_net.h"
+#include "Drivers/_sim_con.h"
 
 /* External variables
  * --------------------------------------------*/
@@ -50,7 +50,7 @@ uint8_t EE_Init(void) {
     IAP_VersionStore(NULL);
 #endif
     IAP_TypeStore(NULL);
-  	SIM_NET_LoadStore();
+  	SIMCon_LoadStore();
   }
   unlock();
 

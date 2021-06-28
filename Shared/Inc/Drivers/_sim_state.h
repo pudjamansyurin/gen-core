@@ -71,23 +71,23 @@ typedef enum {
 
 /* Public functions prototype
  * --------------------------------------------*/
-uint8_t SIM_STA_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res);
-uint8_t SIM_STA_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry);
-uint8_t SIM_STA_StatePoorSignal(void);
+uint8_t SIMSta_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res);
+uint8_t SIMSta_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry);
+uint8_t SIMSta_StatePoorSignal(void);
 
-void SIM_STA_Down(SIMR* res);
-void SIM_STA_Ready(SIMR* res);
-void SIM_STA_Configured(SIMR* res, uint32_t tick, uint32_t timeout);
-void SIM_STA_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout);
-void SIM_STA_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout);
-void SIM_STA_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout);
+void SIMSta_Down(SIMR* res);
+void SIMSta_Ready(SIMR* res);
+void SIMSta_Configured(SIMR* res, uint32_t tick, uint32_t timeout);
+void SIMSta_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout);
+void SIMSta_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout);
+void SIMSta_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout);
 #if (!APP)
-void SIM_STA_PdpOn(SIMR* res);
+void SIMSta_PdpOn(SIMR* res);
 #else
-void SIM_STA_PdpOn(SIMR* res);
-void SIM_STA_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout);
-void SIM_STA_ServerOn(void);
-void SIM_STA_MqttOn(void);
+void SIMSta_PdpOn(SIMR* res);
+void SIMSta_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout);
+void SIMSta_ServerOn(void);
+void SIMSta_MqttOn(void);
 #endif
 
 #endif /* INC_DRIVERS__SIM_STATE_H_ */

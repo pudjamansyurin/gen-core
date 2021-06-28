@@ -31,7 +31,7 @@ static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t SIM_STA_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res) {
+uint8_t SIMSta_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res) {
   if (timeout) {
     if (res == SIM_OK) *tick = _GetTickMS();
 
@@ -40,7 +40,7 @@ uint8_t SIM_STA_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res) {
   return 0;
 }
 
-uint8_t SIM_STA_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry) {
+uint8_t SIMSta_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry) {
   // Handle locked-loop
   if (SIM.d.state < *lastState) {
     if (*retry == 0) {
@@ -54,7 +54,7 @@ uint8_t SIM_STA_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry) {
   return 0;
 }
 
-uint8_t SIM_STA_StatePoorSignal(void) {
+uint8_t SIMSta_StatePoorSignal(void) {
   // Handle signal strength
   if (SIM.d.state == SIM_STATE_DOWN)
     SIM.d.signal = 0;
@@ -70,7 +70,7 @@ uint8_t SIM_STA_StatePoorSignal(void) {
   return 0;
 }
 
-void SIM_STA_Down(SIMR* res) {
+void SIMSta_Down(SIMR* res) {
   uint8_t ok;
 
   printf("Simcom:Init\n");
@@ -84,7 +84,7 @@ void SIM_STA_Down(SIMR* res) {
   printf("Simcom:%s\n", ok ? "OK" : "Error");
 }
 
-void SIM_STA_Ready(SIMR* res) {
+void SIMSta_Ready(SIMR* res) {
   /* BASIC CONFIGURATION */
   // disable command echo
   if (*res == SIM_OK) *res = AT_CommandEchoMode(0);
@@ -140,7 +140,7 @@ void SIM_STA_Ready(SIMR* res) {
     SIM.d.state = SIM_STATE_DOWN;
 }
 
-void SIM_STA_Configured(SIMR* res, uint32_t tick, uint32_t timeout) {
+void SIMSta_Configured(SIMR* res, uint32_t tick, uint32_t timeout) {
   /*  NETWORK ATTACH */
   // Set signal Generation 2G(13)/3G(14)/AUTO(2)
   if (*res == SIM_OK) {
@@ -160,7 +160,7 @@ void SIM_STA_Configured(SIMR* res, uint32_t tick, uint32_t timeout) {
   }
 }
 
-void SIM_STA_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout) {
+void SIMSta_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   /* GPRS ATTACH */
   // GPRS Registration Status
   if (*res == SIM_OK) NetworkRegistration("CGREG", res, tick, timeout);
@@ -175,7 +175,7 @@ void SIM_STA_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   }
 }
 
-void SIM_STA_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout) {
+void SIMSta_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   // Attach to GPRS service
   if (*res == SIM_OK) {
     AT_CGATT param;
@@ -200,7 +200,7 @@ void SIM_STA_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout) {
 }
 
 #if (!APP)
-void SIM_STA_PdpOn(SIMR* res) {
+void SIMSta_PdpOn(SIMR* res) {
   /* FTP CONFIGURATION */
   // Initiate bearer for TCP based applications.
   *res = AT_BearerInitialize();
@@ -213,11 +213,12 @@ void SIM_STA_PdpOn(SIMR* res) {
 }
 
 #else
-void SIM_STA_PdpOn(SIMR* res) {
+void SIMSta_PdpOn(SIMR* res) {
   /* PDP ATTACH */
   // Set type of authentication for PDP connections of socket
   if (*res == SIM_OK) {
-    *res = AT_ConfigureAPN(ATW, &SIM.net.con);
+    con_apn_t apn = SIM.con.apn;
+    *res = AT_ConfigureAPN(ATW, &apn);
   }
   // Select TCPIP application mode:
   // (0: Non Transparent (command mode), 1: Transparent (data mode))
@@ -281,13 +282,13 @@ void SIM_STA_PdpOn(SIMR* res) {
   }
 }
 
-void SIM_STA_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
+void SIMSta_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   /* SOCKET CONFIGURATION */
   // Establish connection with server
   AT_ConnectionStatus(&(SIM.d.ipstatus));
   if (*res == SIM_OK && (SIM.d.ipstatus != CIPSTAT_CONNECT_OK ||
                          SIM.d.ipstatus != CIPSTAT_CONNECTING)) {
-    *res = AT_StartConnection(&SIM.net.mqtt);
+    *res = AT_StartConnection(&SIM.con.mqtt);
 
     // wait until attached
     do {
@@ -322,7 +323,7 @@ void SIM_STA_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   }
 }
 
-void SIM_STA_ServerOn(void) {
+void SIMSta_ServerOn(void) {
   uint8_t valid = 0;
 
   AT_ConnectionStatus(&(SIM.d.ipstatus));
@@ -340,7 +341,7 @@ void SIM_STA_ServerOn(void) {
   }
 }
 
-void SIM_STA_MqttOn(void) {
+void SIMSta_MqttOn(void) {
   //	if (!MQTT_Willed())
   //		MQTT_PublishWill(1);
   //	if (!MQTT_Subscribed())
