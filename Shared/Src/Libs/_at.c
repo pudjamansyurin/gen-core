@@ -606,27 +606,27 @@ SIMR AT_BearerInitialize(void) {
   at_sapbr_t getBEARER, setBEARER = {
                             .cmd_type = SAPBR_BEARER_OPEN,
                             .status = SAPBR_CONNECTED,
-                            .con = SIM.net.con,
                         };
 
   // BEARER attach
-  res = AT_BearerSettings(ATW, &setBEARER);
+  res = AT_BearerSettings(ATW, &setBEARER, &SIM.net.con);
 
   // BEARER init
-  if (res == SIM_OK) res = AT_BearerSettings(ATR, &getBEARER);
+  if (res == SIM_OK) res = AT_BearerSettings(ATR, &getBEARER, &SIM.net.con);
 
   if (res == SIM_OK && getBEARER.status != SAPBR_CONNECTED) res = SIM_ERROR;
 
   return res;
 }
 
-SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
+SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param, net_con_t *con) {
   SIMR res = SIM_ERROR;
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[80];
 
   // Copy by value
   at_sapbr_t tmp = *param;
+  net_con_t tmpCon = *con;
 
   SIM_Lock();
   // Read
@@ -641,29 +641,29 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
     res = CmdRead("AT+SAPBR=4,1\r", "+SAPBR:", 500, &str);
     if (res == SIM_OK) {
       if (FindInBuffer("APN: ", &str))
-        ParseText(&str[0], NULL, tmp.con.apn, sizeof(tmp.con.apn));
+        ParseText(&str[0], NULL, tmpCon.apn, sizeof(tmpCon.apn));
 
       if (FindInBuffer("USER: ", &str))
-        ParseText(&str[0], NULL, tmp.con.user, sizeof(tmp.con.user));
+        ParseText(&str[0], NULL, tmpCon.user, sizeof(tmpCon.user));
 
       if (FindInBuffer("PWD: ", &str))
-        ParseText(&str[0], NULL, tmp.con.pass, sizeof(tmp.con.pass));
+        ParseText(&str[0], NULL, tmpCon.pass, sizeof(tmpCon.pass));
     }
 
     // Write
     if (mode == ATW) {
-      if (memcmp(tmp.con.apn, param->con.apn, sizeof(param->con.apn)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", param->con.apn);
+      if (memcmp(tmpCon.apn, con->apn, sizeof(con->apn)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", con->apn);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmp.con.user, param->con.user,
-                 sizeof(param->con.user)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->con.user);
+      if (memcmp(tmpCon.user, con->user,
+                 sizeof(con->user)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", con->user);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmp.con.pass, param->con.pass,
-                 sizeof(param->con.pass)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->con.pass);
+      if (memcmp(tmpCon.pass, con->pass,
+                 sizeof(con->pass)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", con->pass);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
 

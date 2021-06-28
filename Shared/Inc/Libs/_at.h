@@ -292,7 +292,6 @@ typedef struct {
 typedef struct {
   AT_SAPBR_CMD cmd_type;
   AT_SAPBR_STATUS status;
-  net_con_t con;
 } at_sapbr_t;
 
 typedef struct {
@@ -357,7 +356,7 @@ SIMR AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND* state);
 
 #if AT_USE_FTP
 SIMR AT_BearerInitialize(void);
-SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param);
+SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param, net_con_t *con);
 SIMR AT_FtpInitialize(at_ftp_t* param, net_ftp_t *ftp);
 SIMR AT_FtpFileSize(at_ftp_t* param);
 SIMR AT_FtpDownload(at_ftpget_t* param);
