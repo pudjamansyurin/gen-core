@@ -33,13 +33,12 @@
 /* USER CODE BEGIN Includes */
 #include "App/_common.h"
 #include "App/_fota.h"
-#include "App/_eeprom.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_simcom.h"
-
+#include "Libs/_eeprom.h"
 
 /* USER CODE END Includes */
 
@@ -127,17 +126,17 @@ int main(void) {
   /* USER CODE BEGIN 3 */
   HAL_IWDG_Refresh(&hiwdg);
   /* IAP flag has been set, initiate firmware download procedure */
-  if (*(uint32_t *)IAP_FLAG_ADDR == IAP_FLAG) {
+  if (*(uint32_t *)IAP_FLAG_ADDR == IFLAG_SRAM) {
     printf("IAP set, do FOTA.\n");
     /* Everything went well */
-    if (FOTA_Upgrade(FOTA.TYPE)) {
+    if (FOTA_Upgrade(IAP.type)) {
       /* Reset IAP flag */
-      *(uint32_t *)IAP_FLAG_ADDR = 0;
+      *(uint32_t *)IAP_FLAG_ADDR = IFLAG_RESET;
       /* Take branching decision on next reboot */
-      FOTA_Reboot(FOTA.TYPE);
+      FOTA_Reboot(IAP.type);
     }
     /* Reset IAP flag */
-    *(uint32_t *)IAP_FLAG_ADDR = 0;
+    *(uint32_t *)IAP_FLAG_ADDR = IFLAG_RESET;
     /* FOTA failed */
     HAL_NVIC_SystemReset();
   }
@@ -149,12 +148,12 @@ int main(void) {
   }
   /* Power reset during FOTA, try once more */
   else if (FOTA_InProgress()) {
-    if (FOTA.TYPE == IAP_VCU) {
+    if (IAP.type == ITYPE_VCU) {
       printf("FOTA set, do FOTA once more.\n");
       /* Everything went well, boot form new image */
-      if (FOTA_Upgrade(IAP_VCU)) {
+      if (FOTA_Upgrade(ITYPE_VCU)) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA.TYPE);
+        FOTA_Reboot(IAP.type);
       }
       /* Erase partially programmed application area */
       FLASHER_EraseAppArea();
@@ -171,14 +170,14 @@ int main(void) {
       /* Restore back old image to application area */
       if (FLASHER_RestoreApp()) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA.TYPE);
+        FOTA_Reboot(IAP.type);
       }
     } else {
       printf("No image at all, do FOTA.\n");
       /* Download new firmware for the first time */
-      if (FOTA_Upgrade(IAP_VCU)) {
+      if (FOTA_Upgrade(ITYPE_VCU)) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA.TYPE);
+        FOTA_Reboot(IAP.type);
       }
     }
     HAL_NVIC_SystemReset();

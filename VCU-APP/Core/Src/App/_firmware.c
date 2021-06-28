@@ -12,7 +12,7 @@
 #include "App/_command.h"
 #include "App/_reporter.h"
 #include "Drivers/_bat.h"
-#include "App/_eeprom.h"
+#include "Libs/_eeprom.h"
 #include "Nodes/HMI1.h"
 
 /* Private functions prototypes
@@ -23,11 +23,13 @@ static uint8_t FW_ValidResponseIAP(void);
 /* Public functions implementation
  * --------------------------------------------*/
 bool FW_EnterModeIAP(IAP_TYPE type, char *message) {
+  uint16_t version = (type == ITYPE_HMI) ? HMI1.d.version : VCU_VERSION;
+
   /* Retain FOTA */
-  EE_FotaType(EE_CMD_W, type);
-  EE_FotaVersion(EE_CMD_W, (type == IAP_HMI) ? HMI1.d.version : VCU_VERSION);
+  IAP_TypeStore(&type);
+  IAP_VersionStore(&version);
   /* Set flag to SRAM */
-  *(uint32_t *)IAP_FLAG_ADDR = IAP_FLAG;
+  *(uint32_t *)IAP_FLAG_ADDR = IFLAG_SRAM;
   /* Reset */
   HAL_NVIC_SystemReset();
   /* Never reached if FOTA executed */
@@ -40,39 +42,39 @@ bool FW_PostFota(response_t *r) {
 
   ok = FW_ValidResponseIAP();
   if (ok) {
-    sprintf(node, FOTA.TYPE == IAP_HMI ? "HMI" : "VCU");
+    sprintf(node, IAP.type == ITYPE_HMI ? "HMI" : "VCU");
 
     // set default value
     r->header.code = CMD_CODE_FOTA;
-    r->header.sub_code = FOTA.TYPE == IAP_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
+    r->header.sub_code = IAP.type == ITYPE_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
     r->data.res_code = RESP_ERROR;
     sprintf(r->data.message, "%s Failed", node);
 
     // check fota response
-    switch (*(uint32_t *)IAP_RESPONSE_ADDR) {
-      case IAP_BATTERY_LOW:
+    switch (*(uint32_t *)IAP_RESP_ADDR) {
+      case IRESP_BATTERY_LOW:
         sprintf(r->data.message, "%s Battery Low (-%u mV)", node,
                 SIMCOM_MIN_MV - BAT_ScanValue());
         break;
-      case IAP_SIMCOM_TIMEOUT:
+      case IRESP_SIMCOM_TIMEOUT:
         sprintf(r->data.message, "%s Internet Timeout", node);
         break;
-      case IAP_DOWNLOAD_ERROR:
+      case IRESP_DOWNLOAD_ERROR:
         sprintf(r->data.message, "%s Download Error", node);
         break;
-      case IAP_FIRMWARE_SAME:
+      case IRESP_FIRMWARE_SAME:
         sprintf(r->data.message, "%s Version Same", node);
         break;
-      case IAP_CRC_INVALID:
+      case IRESP_CRC_INVALID:
         sprintf(r->data.message, "%s CRC Invalid", node);
         break;
-      case IAP_CANBUS_FAILED:
+      case IRESP_CANBUS_FAILED:
         sprintf(r->data.message, "%s Canbus Failed", node);
         break;
-      case IAP_FOTA_ERROR:
+      case IRESP_FOTA_ERROR:
         sprintf(r->data.message, "%s FOTA Error", node);
         break;
-      case IAP_FOTA_SUCCESS:
+      case IRESP_FOTA_SUCCESS:
         FW_MakeResponseIAP(r->data.message, node);
         r->data.res_code = RESP_OK;
         break;
@@ -84,9 +86,13 @@ bool FW_PostFota(response_t *r) {
     RPT_ResponseCapture(r);
 
     /* Reset after FOTA */
-    EE_FotaType(EE_CMD_W, 0);
-    EE_FotaVersion(EE_CMD_W, 0);
-    *(uint32_t *)IAP_RESPONSE_ADDR = 0;
+    IAP_TYPE d = ITYPE_RESET;
+    IAP_TypeStore(&d);
+
+    uint16_t v = 0;
+    IAP_VersionStore(&v);
+
+    *(uint32_t *)IAP_RESP_ADDR = 0;
   }
 
   return ok;
@@ -95,11 +101,10 @@ bool FW_PostFota(response_t *r) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void FW_MakeResponseIAP(char *message, char *node) {
+  uint16_t vNew = VCU_VERSION, vOld = IAP.version;
   uint32_t tick;
-  uint16_t vNew = VCU_VERSION;
-  uint16_t vOld = FOTA.VERSION;
 
-  if (FOTA.TYPE == IAP_HMI) {
+  if (IAP.type == ITYPE_HMI) {
     tick = _GetTickMS();
     do {
       vNew = HMI1.d.version;
@@ -119,20 +124,20 @@ static void FW_MakeResponseIAP(char *message, char *node) {
 static uint8_t FW_ValidResponseIAP(void) {
   uint8_t valid = 1;
 
-  switch (*(uint32_t *)IAP_RESPONSE_ADDR) {
-    case IAP_SIMCOM_TIMEOUT:
+  switch (*(uint32_t *)IAP_RESP_ADDR) {
+    case IRESP_SIMCOM_TIMEOUT:
       break;
-    case IAP_DOWNLOAD_ERROR:
+    case IRESP_DOWNLOAD_ERROR:
       break;
-    case IAP_FIRMWARE_SAME:
+    case IRESP_FIRMWARE_SAME:
       break;
-    case IAP_CRC_INVALID:
+    case IRESP_CRC_INVALID:
       break;
-    case IAP_CANBUS_FAILED:
+    case IRESP_CANBUS_FAILED:
       break;
-    case IAP_FOTA_ERROR:
+    case IRESP_FOTA_ERROR:
       break;
-    case IAP_FOTA_SUCCESS:
+    case IRESP_FOTA_SUCCESS:
       break;
     default:
       valid = 0;

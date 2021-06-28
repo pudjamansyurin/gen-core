@@ -12,7 +12,7 @@
 #include "App/_firmware.h"
 #include "App/_reporter.h"
 #include "App/_task.h"
-#include "App/_eeprom.h"
+#include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
@@ -63,7 +63,7 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       case CMD_GEN_ODOM:
-        EE_TripMeter(EE_CMD_W, HBAR_M_TRIP_ODO, *(uint16_t *)val);
+        HBAR_TripMeterStore(HBAR_M_TRIP_ODO, (uint16_t *)val);
         break;
 
       case CMD_GEN_ANTITHIEF:
@@ -190,11 +190,11 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
     } else
       switch (subCode) {
         case CMD_FOTA_VCU:
-          FW_EnterModeIAP(IAP_VCU, resMsg);
+          FW_EnterModeIAP(ITYPE_VCU, resMsg);
           break;
 
         case CMD_FOTA_HMI:
-          FW_EnterModeIAP(IAP_HMI, resMsg);
+          FW_EnterModeIAP(ITYPE_HMI, resMsg);
           break;
 
         default:

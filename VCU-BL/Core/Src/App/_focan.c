@@ -101,7 +101,7 @@ uint8_t FOCAN_DownloadFlash(uint8_t* ptr, uint32_t size, uint32_t offset,
 
       // indicator
       percent = (float)(offset * 100.0f / total_size);
-      FOCAN_SetProgress(IAP_HMI, percent);
+      FOCAN_SetProgress(ITYPE_HMI, percent);
     }
 
   } while (p && pendingBlk);
@@ -150,7 +150,7 @@ static uint8_t WriteAndWaitResponse(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
   } while (!p && --retry);
 
   // handle error
-  if (!p) *(uint32_t*)IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
+  if (!p) *(uint32_t*)IAP_RESP_ADDR = IRESP_CANBUS_FAILED;
 
   return p;
 }
@@ -168,7 +168,7 @@ static uint8_t WriteAndWaitSqueezed(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
   } while (!p && --retry);
 
   // handle error
-  if (!p) *(uint32_t*)IAP_RESPONSE_ADDR = IAP_CANBUS_FAILED;
+  if (!p) *(uint32_t*)IAP_RESP_ADDR = IRESP_CANBUS_FAILED;
 
   return p;
 }

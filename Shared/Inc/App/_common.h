@@ -10,9 +10,10 @@
 
 /* Includes
  * --------------------------------------------*/
+#include "_defs.h"
 #include "Drivers/_gate.h"
 #include "Drivers/_log.h"
-#include "_defs.h"
+#include "App/_iap.h"
 
 #if (APP)
 #include "App/_event.h"

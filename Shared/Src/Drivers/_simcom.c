@@ -23,9 +23,10 @@
 #else
 #include "App/_focan.h"
 #include "App/_fota.h"
-#include "App/_eeprom.h"
 #include "Drivers/_flasher.h"
+#include "Libs/_eeprom.h"
 #include "iwdg.h"
+
 
 #endif
 
@@ -44,11 +45,10 @@ sim_t SIM = {.d =
                      .signal = 0,
                      .response = NULL,
                  },
-//						 .net = {
-//								 .con = {0},
-//								 .ftp = {0},
-//								 .mqtt = {0},
-//						 },
+             //						 .net = {
+             //								 .con =
+             //{0}, 								 .ftp = {0}, 								 .mqtt = {0},
+             //						 },
              .puart = &huart1,
              .pdma = &hdma_usart1_rx};
 

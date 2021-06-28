@@ -117,4 +117,7 @@ void HBAR_RefreshSein(void);
 void HBAR_AddTripMeter(uint8_t m);
 void HBAR_SetReport(uint8_t eff, uint8_t km);
 
+uint8_t HBAR_TripMeterStore(HBAR_MODE_TRIP mTrip, uint16_t *src);
+uint8_t HBAR_SubModeStore(HBAR_MODE m, uint8_t *src);
+uint8_t HBAR_ModeStore(uint8_t *src);
 #endif /* LIBS__HBAR_H_ */

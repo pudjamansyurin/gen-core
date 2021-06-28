@@ -10,11 +10,11 @@
 #include "App/_fota.h"
 
 #include "App/_focan.h"
-#include "App/_eeprom.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_flasher.h"
+#include "Libs/_eeprom.h"
 #include "adc.h"
 #include "can.h"
 #include "crc.h"
@@ -46,10 +46,10 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     _DelayMS(1000);
 
     /* Set FTP directory */
-    sprintf(ftp.path, "/%s/", (type == IAP_HMI) ? "HMI" : "VCU");
+    sprintf(ftp.path, "/%s/", (type == ITYPE_HMI) ? "HMI" : "VCU");
 
     /* Set current IAP type */
-    *(uint32_t *)IAP_RESPONSE_ADDR = IAP_FOTA_ERROR;
+    *(uint32_t *)IAP_RESP_ADDR = IRESP_FOTA_ERROR;
     FOCAN_SetProgress(type, 0.0f);
 
     Simcom_SetState(SIM_STATE_READY, 0);
@@ -64,7 +64,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   /* Get the stored crc information */
   if (res == SIM_OK) {
     FOCAN_SetProgress(type, 0.0f);
-    if (type == IAP_HMI)
+    if (type == ITYPE_HMI)
       res = FOCAN_GetCRC(&crcOld);
     else
       FOTA_GetCRC(&crcOld);
@@ -75,7 +75,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     FOCAN_SetProgress(type, 0.0f);
     res = prepareFTP(&ftp, timeout);
 
-    if (res <= 0) *(uint32_t *)IAP_RESPONSE_ADDR = IAP_SIMCOM_TIMEOUT;
+    if (res <= 0) *(uint32_t *)IAP_RESP_ADDR = IRESP_SIMCOM_TIMEOUT;
   }
 
   // Get file size
@@ -100,7 +100,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       res = (crcOld != crcNew);
 
       if (res <= 0)
-        *(uint32_t *)IAP_RESPONSE_ADDR = IAP_FIRMWARE_SAME;
+        *(uint32_t *)IAP_RESP_ADDR = IRESP_FIRMWARE_SAME;
       else
         printf("FOTA:CRC = 0x%08X => 0x%08X\n", (unsigned int)crcOld,
                (unsigned int)crcNew);
@@ -115,13 +115,13 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     res = FOTA_DownloadFirmware(&ftp, &ftpget, &len, type, timeout);
 
     if (res <= 0)
-      if ((*(uint32_t *)IAP_RESPONSE_ADDR) != IAP_CANBUS_FAILED)
-        *(uint32_t *)IAP_RESPONSE_ADDR = IAP_DOWNLOAD_ERROR;
+      if ((*(uint32_t *)IAP_RESP_ADDR) != IRESP_CANBUS_FAILED)
+        *(uint32_t *)IAP_RESP_ADDR = IRESP_DOWNLOAD_ERROR;
   }
 
   // Buffer filled, compare the crc
   if (res == SIM_OK) {
-    if (type == IAP_HMI)
+    if (type == ITYPE_HMI)
       res = FOCAN_DownloadHook(CAND_FOCAN_PASCA, &crcNew);
     else {
       res = FOTA_ValidateCRC(crcNew, len, APP_START_ADDR);
@@ -133,7 +133,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     }
 
     if (res <= 0)
-      *(uint32_t *)IAP_RESPONSE_ADDR = IAP_CRC_INVALID;
+      *(uint32_t *)IAP_RESP_ADDR = IRESP_CRC_INVALID;
     else
       _DelayMS(2000);
   }
@@ -143,7 +143,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     FOTA_ResetFlag();
 
     // Handle success
-    *(uint32_t *)IAP_RESPONSE_ADDR = IAP_FOTA_SUCCESS;
+    *(uint32_t *)IAP_RESP_ADDR = IRESP_FOTA_SUCCESS;
   }
 
   return (res == SIM_OK);
@@ -170,7 +170,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
   float percent;
 
   // Backup and prepare the area
-  if (type == IAP_HMI)
+  if (type == ITYPE_HMI)
     res = FOCAN_DownloadHook(CAND_FOCAN_PRA, &(ftp->size));
   else
     FLASHER_BackupApp();
@@ -190,7 +190,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 
       // Copy buffer to flash
       if (res == SIM_OK && ftpGET->cnflength) {
-        if (type == IAP_HMI)
+        if (type == ITYPE_HMI)
           res = FOCAN_DownloadFlash((uint8_t *)ftpGET->ptr, ftpGET->cnflength,
                                     *len, ftp->size);
         else
@@ -314,7 +314,7 @@ void FOTA_JumpToApplication(void) {
 
 void FOTA_Reboot(IAP_TYPE type) {
   /* Clear backup area */
-  if (type == IAP_VCU) FLASHER_EraseBkpArea();
+  if (type == ITYPE_VCU) FLASHER_EraseBkpArea();
 
   FOTA_ResetFlag();
   HAL_NVIC_SystemReset();
@@ -336,11 +336,17 @@ uint8_t FOTA_NeedBackup(void) {
   return (FOTA_ValidImage(APP_START_ADDR) && !FOTA_ValidImage(BKP_START_ADDR));
 }
 
-uint8_t FOTA_InProgress(void) { return (FOTA.FLAG == FOTA_PROGRESS_FLAG); }
+uint8_t FOTA_InProgress(void) { return (IAP.flag == IFLAG_EEPROM); }
 
-void FOTA_SetFlag(void) { EE_FotaFlag(EE_CMD_W, FOTA_PROGRESS_FLAG); }
+void FOTA_SetFlag(void) {
+  IAP_FLAG flag = IFLAG_EEPROM;
+  IAP_FlagStore(&flag);
+}
 
-void FOTA_ResetFlag(void) { EE_FotaFlag(EE_CMD_W, 0); }
+void FOTA_ResetFlag(void) {
+  IAP_FLAG flag = IFLAG_RESET;
+  IAP_FlagStore(&flag);
+}
 
 /* Private functions implementation
  * --------------------------------------------*/

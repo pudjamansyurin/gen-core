@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "Libs/_remote.h"
 
-#include "App/_eeprom.h"
+#include "Libs/_eeprom.h"
 #include "App/_task.h"
 #include "Drivers/_aes.h"
 #include "Drivers/_rng.h"
@@ -185,7 +185,7 @@ uint8_t RMT_GotPairedResponse(void) {
     RMT.d.tick.pairing = 0;
     paired = 1;
 
-    EE_AesKey(EE_CMD_W, RMT.d.pairing_aes);
+    AES_KeyStore(RMT.d.pairing_aes);
     AES_ChangeKey(NULL);
   }
   unlock();
