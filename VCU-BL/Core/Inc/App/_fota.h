@@ -24,7 +24,7 @@ uint8_t FOTA_ValidImage(uint32_t address);
 void FOTA_JumpToApplication(void);
 void FOTA_Reboot(IAP_TYPE type);
 void FOTA_GetCRC(uint32_t *crc);
-void FOTA_GlueInfo32(uint32_t offset, uint32_t *data);
+void FOTA_SetAppMeta(uint32_t offset, uint32_t *data);
 uint8_t FOTA_NeedBackup(void);
 uint8_t FOTA_InProgress(void);
 void FOTA_SetFlag(void);

@@ -201,9 +201,9 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
   // Read payload
   if (Payload(RMT_ACTION_R, plain)) {
     for (uint8_t i = 0; i < (sizeof(COMMAND) / sizeof(COMMAND[0])); i++) {
-      if (memcmp(plain, &COMMAND[i], 8) == 0) {
+      ok = (memcmp(plain, &COMMAND[i], 8) == 0);
+      if (ok) {
         *cmd = i;
-        ok = 1;
         break;
       }
     }

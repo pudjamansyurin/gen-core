@@ -127,8 +127,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       res = FOTA_ValidateCRC(crcNew, len, APP_START_ADDR);
       // Glue related information to new image
       if (res == SIM_OK) {
-        FOTA_GlueInfo32(CRC_OFFSET, &crcNew);
-        FOTA_GlueInfo32(SIZE_OFFSET, &len);
+        FOTA_SetAppMeta(CRC_OFFSET, &crcNew);
+        FOTA_SetAppMeta(SIZE_OFFSET, &len);
       }
     }
 
@@ -328,7 +328,7 @@ void FOTA_GetCRC(uint32_t *crc) {
   *crc = *(uint32_t *)(address + CRC_OFFSET);
 }
 
-void FOTA_GlueInfo32(uint32_t offset, uint32_t *data) {
+void FOTA_SetAppMeta(uint32_t offset, uint32_t *data) {
   FLASHER_WriteAppArea((uint8_t *)data, sizeof(uint32_t), offset);
 }
 
