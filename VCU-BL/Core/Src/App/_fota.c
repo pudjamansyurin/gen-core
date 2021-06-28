@@ -332,6 +332,10 @@ void FOTA_SetAppMeta(uint32_t offset, uint32_t *data) {
   FLASHER_WriteAppArea((uint8_t *)data, sizeof(uint32_t), offset);
 }
 
+void FOTA_SetBootMeta(uint32_t offset, uint32_t *data) {
+  FLASHER_WriteBootArea((uint8_t *)data, sizeof(uint32_t), offset);
+}
+
 uint8_t FOTA_NeedBackup(void) {
   return (FOTA_ValidImage(APP_START_ADDR) && !FOTA_ValidImage(BKP_START_ADDR));
 }

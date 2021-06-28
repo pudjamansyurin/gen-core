@@ -54,6 +54,7 @@ uint8_t FLASHER_EraseBkpArea(void);
 uint8_t FLASHER_EraseAppArea(void);
 uint8_t FLASHER_WriteBkpArea(uint8_t *ptr, uint32_t size, uint32_t offset);
 uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset);
+uint8_t FLASHER_WriteBootArea(uint8_t *ptr, uint32_t size, uint32_t offset);
 uint8_t FLASHER_BackupApp(void);
 uint8_t FLASHER_RestoreApp(void);
 

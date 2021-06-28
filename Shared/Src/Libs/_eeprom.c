@@ -15,6 +15,8 @@
 #if (APP)
 #include "Drivers/_aes.h"
 #include "Libs/_hbar.h"
+#else
+#include "App/_fota.h"
 #endif
 #include "Drivers/_sim_con.h"
 
@@ -44,13 +46,19 @@ uint8_t EE_Init(void) {
   ok = EEPROM24XX_IsConnected(100);
 
   if (ok) {
-#if (APP)
-  	AES_KeyStore(NULL);
-  	HBAR_LoadStore();
-    IAP_VersionStore(NULL);
+#if (!APP)
+    if (IEEP_VALUE != IEEP_SET) {
+      uint32_t ieep = IEEP_SET;
+      FOTA_SetBootMeta(IEEP_OFFSET, &ieep);
+      SIMCon_SetDefaultStore();
+    }
+#else
+    AES_KeyStore(NULL);
+    HBAR_LoadStore();
 #endif
+    SIMCon_LoadStore();
+    IAP_VersionStore(NULL);
     IAP_TypeStore(NULL);
-  	SIMCon_LoadStore();
   }
   unlock();
 

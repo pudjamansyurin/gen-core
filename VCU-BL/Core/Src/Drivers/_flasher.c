@@ -56,6 +56,12 @@ uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset) {
   return FLASHER_WriteByte(ptr, size, address, APP_END_ADDR);
 }
 
+uint8_t FLASHER_WriteBootArea(uint8_t *ptr, uint32_t size, uint32_t offset) {
+  uint32_t address = BL_START_ADDR + offset;
+
+  return FLASHER_WriteByte(ptr, size, address, BL_END_ADDR);
+}
+
 uint8_t FLASHER_BackupApp(void) {
   uint8_t *ptr = (uint8_t *)APP_START_ADDR;
   uint8_t p = 1;

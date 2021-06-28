@@ -42,11 +42,19 @@
 #define BL_END_ADDR (BL_START_ADDR + BL_MAX_SIZE - 1)
 
 #define VIN_OFFSET (BL_MAX_SIZE - 4)
+#define IEEP_OFFSET (BL_MAX_SIZE - 8)
+
 #define VIN_VALUE (*(__IO uint32_t *)(BL_START_ADDR + VIN_OFFSET))
+#define IEEP_VALUE (*(__IO uint32_t *)(BL_START_ADDR + IEEP_OFFSET))
 
 /* Exported enums
  * --------------------------------------------*/
 typedef enum { FOCAN_ERROR = 0x00, FOCAN_ACK = 0x79, FOCAN_NACK = 0x1F } FOCAN;
+
+typedef enum {
+  IEEP_RESET = 0,
+  IEEP_SET = 0xFEDCBA98,
+} IAP_EEPROM;
 
 typedef enum {
   IFLAG_RESET = 0,
