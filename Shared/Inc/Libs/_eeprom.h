@@ -50,8 +50,4 @@ typedef enum {
  * --------------------------------------------*/
 uint8_t EE_Init(void);
 uint8_t EE_Cmd(EE_VA va, void *src, void *dst, uint16_t size);
-
-// uint8_t EE_NetCon(EE_CMD cmd, net_con_t con);
-// uint8_t EE_NetFtp(EE_CMD cmd, net_ftp_t ftp);
-// uint8_t EE_NetMqtt(EE_CMD cmd, net_mqtt_t mqtt);
 #endif /* EEPROM_H_ */

@@ -79,9 +79,9 @@ uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout) {
 
   SIM_Lock();
   do {
-    if (STAT_StateTimeout(&tick, timeout, res)) break;
-    if (STAT_StateLockedLoop(&lastState, &retry)) break;
-    if (STAT_StatePoorSignal()) break;
+    if (SIM_STA_StateTimeout(&tick, timeout, res)) break;
+    if (SIM_STA_StateLockedLoop(&lastState, &retry)) break;
+    if (SIM_STA_StatePoorSignal()) break;
 
     // Set value
     res = SIM_OK;
@@ -89,28 +89,28 @@ uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout) {
     // Handle states
     switch (SIM.d.state) {
       case SIM_STATE_DOWN:
-        STAT_Down(&res);
+        SIM_STA_Down(&res);
         break;
 
       case SIM_STATE_READY:
-        STAT_Ready(&res);
+        SIM_STA_Ready(&res);
         break;
 
       case SIM_STATE_CONFIGURED:
-        STAT_Configured(&res, tick, timeout);
+        SIM_STA_Configured(&res, tick, timeout);
         break;
 
       case SIM_STATE_NETWORK_ON:
-        STAT_NetworkOn(&res, tick, timeout);
+        SIM_STA_NetworkOn(&res, tick, timeout);
         break;
 
       case SIM_STATE_GPRS_ON:
-        STAT_GprsOn(&res, tick, timeout);
+        SIM_STA_GprsOn(&res, tick, timeout);
         break;
 
 #if (!APP)
       case SIM_STATE_PDP_ON:
-        STAT_PdpOn(&res);
+        SIM_STA_PdpOn(&res);
         break;
       case SIM_STATE_BEARER_ON:
         /*nothing*/
@@ -118,19 +118,19 @@ uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout) {
 #else
 
       case SIM_STATE_PDP_ON:
-        STAT_PdpOn(&res);
+        SIM_STA_PdpOn(&res);
         break;
 
       case SIM_STATE_INTERNET_ON:
-        STAT_InternetOn(&res, tick, timeout);
+        SIM_STA_InternetOn(&res, tick, timeout);
         break;
 
       case SIM_STATE_SERVER_ON:
-        STAT_ServerOn();
+        SIM_STA_ServerOn();
         break;
 
       case SIM_STATE_MQTT_ON:
-        STAT_MqttOn();
+        SIM_STA_MqttOn();
         break;
 #endif
 
@@ -245,7 +245,7 @@ int SIM_GetData(unsigned char* buf, int count) {
   return count;
 }
 
-uint8_t SIM_ReceivedResponse(uint32_t timeout) {
+uint8_t SIM_GotResponse(uint32_t timeout) {
   TickType_t tick;
   char* ptr = NULL;
 
@@ -303,7 +303,7 @@ static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply)
   uint32_t tick;
 
 #if (APP)
-  if (SIM_ReceivedResponse(0)) SIM_ProcessResponse();
+  if (SIM_GotResponse(0)) SIM_ProcessResponse();
 #endif
   SIM_Transmit(data, size);
 
@@ -335,7 +335,7 @@ static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply)
 #if (APP)
         // exception for server command collision
         else if (strcmp(reply, SIM_RSP_ACCEPT) != 0) {
-          if (SIM_ReceivedResponse(0)) {
+          if (SIM_GotResponse(0)) {
             if (SIM_ProcessResponse()) {
               printf("Simcom:CommandCollision\n");
               res = SIM_TIMEOUT;

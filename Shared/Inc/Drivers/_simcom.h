@@ -13,6 +13,7 @@
 #include "App/_common.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_sim_state.h"
+#include "Drivers/_sim_net.h"
 
 #if (APP)
 #include "Drivers/_rtc.h"
@@ -49,36 +50,11 @@
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
-  char apn[20];
-  char user[20];
-  char pass[20];
-} net_con_t;
-
-typedef struct {
-  char host[30];
-  uint16_t port;
-  char user[30];
-  char pass[30];
-} net_mqtt_t;
-
-typedef struct {
-  char host[30];
-  char user[30];
-  char pass[30];
-} net_ftp_t;
-
-typedef struct {
   uint8_t signal;
   SIM_STATE state;
   AT_CIPSTATUS ipstatus;
   char* response;
 } sim_data_t;
-
-typedef struct {
-  net_con_t con;
-  net_ftp_t ftp;
-  net_mqtt_t mqtt;
-} sim_net_t;
 
 typedef struct {
   sim_data_t d;
@@ -107,7 +83,7 @@ uint8_t SIM_ReadNewSMS(char* buf, uint8_t buflen);
 // uint8_t SIM_CheckQuota(char *buf, uint8_t buflen);
 uint8_t SIM_Upload(void* payload, uint16_t size);
 int SIM_GetData(unsigned char* buf, int count);
-uint8_t SIM_ReceivedResponse(uint32_t timeout);
+uint8_t SIM_GotResponse(uint32_t timeout);
 #endif
 
 #endif /* SIM_H_ */

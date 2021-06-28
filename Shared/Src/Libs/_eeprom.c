@@ -77,40 +77,6 @@ uint8_t EE_Cmd(EE_VA va, void* src, void *dst, uint16_t size) {
   return ok;
 }
 
-//uint8_t EE_NetCon(EE_CMD cmd, net_con_t con) {
-//  net_con_t* d = &SIM.net.con;
-//  uint8_t ok = 0;
-//
-//  ok += EE_Cmd(VA_NET_CON_APN, cmd, con.apn, d->apn, sizeof(d->apn));
-//  ok += EE_Cmd(VA_NET_CON_USER, cmd, con.user, d->user, sizeof(d->user));
-//  ok += EE_Cmd(VA_NET_CON_PASS, cmd, con.pass, d->pass, sizeof(d->pass));
-//
-//  return ok == 3;
-//}
-//
-//uint8_t EE_NetFtp(EE_CMD cmd, net_ftp_t ftp) {
-//  net_ftp_t* d = &SIM.net.ftp;
-//  uint8_t ok = 0;
-//
-//  ok += EE_Cmd(VA_NET_FTP_HOST, cmd, ftp.host, d->host, sizeof(d->host));
-//  ok += EE_Cmd(VA_NET_FTP_USER, cmd, ftp.user, d->user, sizeof(d->user));
-//  ok += EE_Cmd(VA_NET_FTP_PASS, cmd, ftp.pass, d->pass, sizeof(d->pass));
-//
-//  return ok == 3;
-//}
-//
-//uint8_t EE_NetMqtt(EE_CMD cmd, net_mqtt_t mqtt) {
-//  net_mqtt_t* d = &SIM.net.mqtt;
-//  uint8_t ok = 0;
-//
-//  ok += EE_Cmd(VA_NET_MQTT_HOST, cmd, mqtt.host, d->host, sizeof(d->host));
-//  ok += EE_Cmd(VA_NET_MQTT_PORT, cmd, &(mqtt.port), &(d->port), sizeof(d->port));
-//  ok += EE_Cmd(VA_NET_MQTT_USER, cmd, mqtt.user, d->user, sizeof(d->user));
-//  ok += EE_Cmd(VA_NET_MQTT_PASS, cmd, mqtt.pass, d->pass, sizeof(d->pass));
-//
-//  return ok == 4;
-//}
-
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {

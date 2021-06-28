@@ -355,7 +355,7 @@ static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,
   if (!SIM_Upload(buf, len)) return 0;
 
   if (reply) {
-    if (!SIM_ReceivedResponse(timeout)) return 0;
+    if (!SIM_GotResponse(timeout)) return 0;
 
     if (MQTTPacket_read(buf, len, SIM_GetData) != reply) return 0;
   }

@@ -24,14 +24,14 @@
  * --------------------------------------------*/
 static SIMR PowerUp(void);
 static SIMR Reset(uint8_t hard);
-static void SIM_IdleJob(void);
+static void IdleJob(void);
 static void NetworkRegistration(char* type, SIMR* res, uint32_t tick,
                                 uint32_t timeout);
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t STAT_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res) {
+uint8_t SIM_STA_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res) {
   if (timeout) {
     if (res == SIM_OK) *tick = _GetTickMS();
 
@@ -40,7 +40,7 @@ uint8_t STAT_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res) {
   return 0;
 }
 
-uint8_t STAT_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry) {
+uint8_t SIM_STA_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry) {
   // Handle locked-loop
   if (SIM.d.state < *lastState) {
     if (*retry == 0) {
@@ -54,12 +54,12 @@ uint8_t STAT_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry) {
   return 0;
 }
 
-uint8_t STAT_StatePoorSignal(void) {
+uint8_t SIM_STA_StatePoorSignal(void) {
   // Handle signal strength
   if (SIM.d.state == SIM_STATE_DOWN)
     SIM.d.signal = 0;
   else {
-    SIM_IdleJob();
+    IdleJob();
     if (SIM.d.state >= SIM_STATE_NETWORK_ON) {
       if (SIM.d.signal < 15) {
         printf("Simcom:PoorSignal\n");
@@ -70,7 +70,7 @@ uint8_t STAT_StatePoorSignal(void) {
   return 0;
 }
 
-void STAT_Down(SIMR* res) {
+void SIM_STA_Down(SIMR* res) {
   uint8_t ok;
 
   printf("Simcom:Init\n");
@@ -84,7 +84,7 @@ void STAT_Down(SIMR* res) {
   printf("Simcom:%s\n", ok ? "OK" : "Error");
 }
 
-void STAT_Ready(SIMR* res) {
+void SIM_STA_Ready(SIMR* res) {
   /* BASIC CONFIGURATION */
   // disable command echo
   if (*res == SIM_OK) *res = AT_CommandEchoMode(0);
@@ -140,7 +140,7 @@ void STAT_Ready(SIMR* res) {
     SIM.d.state = SIM_STATE_DOWN;
 }
 
-void STAT_Configured(SIMR* res, uint32_t tick, uint32_t timeout) {
+void SIM_STA_Configured(SIMR* res, uint32_t tick, uint32_t timeout) {
   /*  NETWORK ATTACH */
   // Set signal Generation 2G(13)/3G(14)/AUTO(2)
   if (*res == SIM_OK) {
@@ -160,7 +160,7 @@ void STAT_Configured(SIMR* res, uint32_t tick, uint32_t timeout) {
   }
 }
 
-void STAT_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout) {
+void SIM_STA_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   /* GPRS ATTACH */
   // GPRS Registration Status
   if (*res == SIM_OK) NetworkRegistration("CGREG", res, tick, timeout);
@@ -175,7 +175,7 @@ void STAT_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   }
 }
 
-void STAT_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout) {
+void SIM_STA_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   // Attach to GPRS service
   if (*res == SIM_OK) {
     AT_CGATT param;
@@ -200,7 +200,7 @@ void STAT_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout) {
 }
 
 #if (!APP)
-void STAT_PdpOn(SIMR* res) {
+void SIM_STA_PdpOn(SIMR* res) {
   /* FTP CONFIGURATION */
   // Initiate bearer for TCP based applications.
   *res = AT_BearerInitialize();
@@ -213,7 +213,7 @@ void STAT_PdpOn(SIMR* res) {
 }
 
 #else
-void STAT_PdpOn(SIMR* res) {
+void SIM_STA_PdpOn(SIMR* res) {
   /* PDP ATTACH */
   // Set type of authentication for PDP connections of socket
   if (*res == SIM_OK) {
@@ -286,7 +286,7 @@ void STAT_PdpOn(SIMR* res) {
   }
 }
 
-void STAT_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
+void SIM_STA_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   /* SOCKET CONFIGURATION */
   // Establish connection with server
   AT_ConnectionStatus(&(SIM.d.ipstatus));
@@ -329,7 +329,7 @@ void STAT_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
   }
 }
 
-void STAT_ServerOn(void) {
+void SIM_STA_ServerOn(void) {
   uint8_t valid = 0;
 
   AT_ConnectionStatus(&(SIM.d.ipstatus));
@@ -347,7 +347,7 @@ void STAT_ServerOn(void) {
   }
 }
 
-void STAT_MqttOn(void) {
+void SIM_STA_MqttOn(void) {
   //	if (!MQTT_Willed())
   //		MQTT_PublishWill(1);
   //	if (!MQTT_Subscribed())
@@ -402,7 +402,7 @@ static SIMR Reset(uint8_t hard) {
   return SIM_Cmd(SIM_CMD_BOOT, SIM_RSP_READY, 1000);
 }
 
-static void SIM_IdleJob(void) {
+static void IdleJob(void) {
   at_csq_t signal;
   if (AT_SignalQualityReport(&signal) == SIM_OK) SIM.d.signal = signal.percent;
 
