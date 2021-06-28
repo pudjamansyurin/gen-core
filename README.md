@@ -31,7 +31,7 @@
 - [x] Edit file database.c data type to structure
 - [x] Move all constant (config variable) to config.h file
 - [x] ~~Increase the baud-rate of all communication protocols~~
-- [x] Pass pointer of chars from Simcom_Resp() to Simcom_Send()
+- [x] Pass pointer of chars from SIM_Resp() to SIM_Send()
 - [x] De-structure "stm32f4_discovery_audio.c" and "stm32f4_discovery.c"
 - [x] Handle AT Command of new SIM5300e
 - [x] SIM5300e TCP communication

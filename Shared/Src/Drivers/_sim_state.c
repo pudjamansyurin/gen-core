@@ -24,7 +24,7 @@
  * --------------------------------------------*/
 static SIMR PowerUp(void);
 static SIMR Reset(uint8_t hard);
-static void Simcom_IdleJob(void);
+static void SIM_IdleJob(void);
 static void NetworkRegistration(char* type, SIMR* res, uint32_t tick,
                                 uint32_t timeout);
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay);
@@ -40,7 +40,7 @@ uint8_t STAT_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res) {
   return 0;
 }
 
-uint8_t STAT_StateLockedLoop(SIMCOM_STATE* lastState, uint8_t* retry) {
+uint8_t STAT_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry) {
   // Handle locked-loop
   if (SIM.d.state < *lastState) {
     if (*retry == 0) {
@@ -59,7 +59,7 @@ uint8_t STAT_StatePoorSignal(void) {
   if (SIM.d.state == SIM_STATE_DOWN)
     SIM.d.signal = 0;
   else {
-    Simcom_IdleJob();
+    SIM_IdleJob();
     if (SIM.d.state >= SIM_STATE_NETWORK_ON) {
       if (SIM.d.signal < 15) {
         printf("Simcom:PoorSignal\n");
@@ -122,7 +122,7 @@ void STAT_Ready(SIMR* res) {
 #endif
   /* NETWORK CONFIGURATION */
   // Check SIM Card
-  if (*res == SIM_OK) *res = Simcom_Cmd("AT+CPIN?\r", "READY", 500);
+  if (*res == SIM_OK) *res = SIM_Cmd("AT+CPIN?\r", "READY", 500);
 
   // Disable presentation of <AcT>&<rac> at CREG and CGREG
   if (*res == SIM_OK) {
@@ -258,7 +258,7 @@ void STAT_PdpOn(SIMR* res) {
   if (*res == SIM_OK) {
     AT_ConnectionStatus(&(SIM.d.ipstatus));
     if (SIM.d.ipstatus == CIPSTAT_IP_START)
-      *res = Simcom_Cmd("AT+CIICR\r", SIM_RSP_OK, 15000);
+      *res = SIM_Cmd("AT+CIICR\r", SIM_RSP_OK, 15000);
   }
 
   // Check IP Address
@@ -277,9 +277,9 @@ void STAT_PdpOn(SIMR* res) {
   else {
     AT_ConnectionStatus(&(SIM.d.ipstatus));
     if (SIM.d.ipstatus != CIPSTAT_IP_INITIAL) {
-      Simcom_Cmd("AT+CIPCLOSE\r", SIM_RSP_OK, 5000);
+      SIM_Cmd("AT+CIPCLOSE\r", SIM_RSP_OK, 5000);
       if (SIM.d.ipstatus != CIPSTAT_PDP_DEACT)
-        Simcom_Cmd("AT+CIPSHUT\r", SIM_RSP_OK, 1000);
+        SIM_Cmd("AT+CIPSHUT\r", SIM_RSP_OK, 1000);
     }
 
     if (SIM.d.state == SIM_STATE_PDP_ON) SIM.d.state = SIM_STATE_GPRS_ON;
@@ -314,7 +314,7 @@ void STAT_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
 
     // Close IP
     if (SIM.d.ipstatus == CIPSTAT_CONNECT_OK) {
-      *res = Simcom_Cmd("AT+CIPCLOSE\r", SIM_RSP_OK, 1000);
+      *res = SIM_Cmd("AT+CIPCLOSE\r", SIM_RSP_OK, 1000);
 
       // wait until closed
       do {
@@ -366,7 +366,7 @@ static SIMR PowerUp(void) {
 
   res = Reset(0);
   if (res != SIM_OK)
-    if (BAT_ScanValue() > SIMCOM_MIN_MV) return Reset(1);
+    if (BAT_ScanValue() > SIM_MIN_MV) return Reset(1);
 
   return res;
 }
@@ -374,7 +374,7 @@ static SIMR PowerUp(void) {
 static SIMR Reset(uint8_t hard) {
   uint32_t tick;
 
-  SIMCOM_Reset_Buffer();
+  SIM_Reset_Buffer();
   printf("Simcom:%s\n", hard ? "HardReset" : "SoftReset");
 
   if (hard)
@@ -389,8 +389,7 @@ static SIMR Reset(uint8_t hard) {
   // Wait until ready
   tick = _GetTickMS();
   do {
-    if (Simcom_Resp(SIM_RSP_READY, NULL) || Simcom_Resp(SIM_RSP_OK, NULL))
-      break;
+    if (SIM_Resp(SIM_RSP_READY, NULL) || SIM_Resp(SIM_RSP_OK, NULL)) break;
 
 #if (!APP)
     IWDG_Refresh();
@@ -400,10 +399,10 @@ static SIMR Reset(uint8_t hard) {
   } while (SIM.d.state == SIM_STATE_DOWN &&
            (_GetTickMS() - tick) < NET_BOOT_MS);
 
-  return Simcom_Cmd(SIM_CMD_BOOT, SIM_RSP_READY, 1000);
+  return SIM_Cmd(SIM_CMD_BOOT, SIM_RSP_READY, 1000);
 }
 
-static void Simcom_IdleJob(void) {
+static void SIM_IdleJob(void) {
   at_csq_t signal;
   if (AT_SignalQualityReport(&signal) == SIM_OK) SIM.d.signal = signal.percent;
 

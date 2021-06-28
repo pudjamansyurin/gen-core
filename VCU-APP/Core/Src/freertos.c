@@ -690,8 +690,8 @@ void StartNetworkTask(void* argument) {
   TASK_WaitManager();
 
   // Initiate
-  Simcom_Init();
-  Simcom_SetState(SIM_STATE_SERVER_ON, 0);
+  SIM_Init();
+  SIM_SetState(SIM_STATE_SERVER_ON, 0);
 
   /* Infinite loop */
   for (;;) {

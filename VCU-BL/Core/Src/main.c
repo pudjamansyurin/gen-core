@@ -116,7 +116,7 @@ int main(void) {
   BAT_Init();
   EE_Init();
   CANBUS_Init();
-  Simcom_Init();
+  SIM_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -5,15 +5,14 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef SIMCOM_H_
-#define SIMCOM_H_
+#ifndef SIM_H_
+#define SIM_H_
 
 /* Includes
  * --------------------------------------------*/
 #include "App/_common.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_sim_state.h"
-
 
 #if (APP)
 #include "Drivers/_rtc.h"
@@ -70,7 +69,7 @@ typedef struct {
 
 typedef struct {
   uint8_t signal;
-  SIMCOM_STATE state;
+  SIM_STATE state;
   AT_CIPSTATUS ipstatus;
   char* response;
 } sim_data_t;
@@ -94,21 +93,21 @@ extern sim_t SIM;
 
 /* Public functions prototype
  * --------------------------------------------*/
-void Simcom_Init(void);
-void Simcom_DeInit(void);
-void Simcom_Lock(void);
-void Simcom_Unlock(void);
-uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
-char* Simcom_Resp(char* keyword, char* from);
-SIMR Simcom_Cmd(char* command, char* reply, uint32_t ms);
+void SIM_Init(void);
+void SIM_DeInit(void);
+void SIM_Lock(void);
+void SIM_Unlock(void);
+uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout);
+char* SIM_Resp(char* keyword, char* from);
+SIMR SIM_Cmd(char* command, char* reply, uint32_t ms);
 #if (APP)
-uint8_t Simcom_FetchTime(timestamp_t* ts);
-uint8_t Simcom_SendUSSD(char* ussd, char* buf, uint8_t buflen);
-uint8_t Simcom_ReadNewSMS(char* buf, uint8_t buflen);
-// uint8_t Simcom_CheckQuota(char *buf, uint8_t buflen);
-uint8_t Simcom_Upload(void* payload, uint16_t size);
-int Simcom_GetData(unsigned char* buf, int count);
-uint8_t Simcom_ReceivedResponse(uint32_t timeout);
+uint8_t SIM_FetchTime(timestamp_t* ts);
+uint8_t SIM_SendUSSD(char* ussd, char* buf, uint8_t buflen);
+uint8_t SIM_ReadNewSMS(char* buf, uint8_t buflen);
+// uint8_t SIM_CheckQuota(char *buf, uint8_t buflen);
+uint8_t SIM_Upload(void* payload, uint16_t size);
+int SIM_GetData(unsigned char* buf, int count);
+uint8_t SIM_ReceivedResponse(uint32_t timeout);
 #endif
 
-#endif /* SIMCOM_H_ */
+#endif /* SIM_H_ */

@@ -54,9 +54,9 @@ bool FW_PostFota(response_t *r) {
     switch (*(uint32_t *)IAP_RESP_ADDR) {
       case IRESP_BATTERY_LOW:
         sprintf(r->data.message, "%s Battery Low (-%u mV)", node,
-                SIMCOM_MIN_MV - BAT_ScanValue());
+                SIM_MIN_MV - BAT_ScanValue());
         break;
-      case IRESP_SIMCOM_TIMEOUT:
+      case IRESP_SIM_TIMEOUT:
         sprintf(r->data.message, "%s Internet Timeout", node);
         break;
       case IRESP_DOWNLOAD_ERROR:
@@ -125,7 +125,7 @@ static uint8_t FW_ValidResponseIAP(void) {
   uint8_t valid = 1;
 
   switch (*(uint32_t *)IAP_RESP_ADDR) {
-    case IRESP_SIMCOM_TIMEOUT:
+    case IRESP_SIM_TIMEOUT:
       break;
     case IRESP_DOWNLOAD_ERROR:
       break;

@@ -9,7 +9,7 @@
 #define DEFINES_H_
 
 /* Choose  between APP or BL mode */
-#define APP 		1
+#define APP 1
 
 /* Includes
  * --------------------------------------------*/
@@ -20,7 +20,7 @@
 #define VCU_VERSION ((uint16_t)659)
 //#define EE_RESET ((uint16_t)53)
 
-#define SIMCOM_DEBUG 1
+#define SIM_DEBUG 1
 #define CAN_DEBUG 0
 #define GPS_DEBUG 0
 #define MEMS_DEBUG 0
@@ -32,7 +32,7 @@
 #define AT_USE_TCP 1
 #define AT_USE_FTP 0
 
-#define SIMCOM_MIN_MV ((uint16_t)3300)
+#define SIM_MIN_MV ((uint16_t)3300)
 
 #define VCU_VENDOR "GEN"
 #define VCU_BUILD_YEAR ((uint8_t)21)

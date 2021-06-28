@@ -40,44 +40,44 @@ sim_t SIM = {.d =
 
 /* Private functions prototype
  * --------------------------------------------*/
-static SIMR Simcom_CmdRaw(char* data, uint16_t size, char* reply, uint32_t ms);
-static SIMR TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply);
+static SIMR SIM_CmdRaw(char* data, uint16_t size, char* reply, uint32_t ms);
+static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply);
 #if (APP)
-static uint8_t Simcom_ProcessResponse(void);
+static uint8_t SIM_ProcessResponse(void);
 #endif
 
 /* Public functions implementation
  * --------------------------------------------*/
-void Simcom_Lock(void) {
+void SIM_Lock(void) {
 #if (APP)
   osMutexAcquire(SimcomRecMutexHandle, osWaitForever);
 #endif
 }
 
-void Simcom_Unlock(void) {
+void SIM_Unlock(void) {
 #if (APP)
   osMutexRelease(SimcomRecMutexHandle);
 #endif
 }
 
-void Simcom_Init(void) {
+void SIM_Init(void) {
   MX_USART1_UART_Init();
-  SIMCOM_DMA_Start(SIM.puart, SIM.pdma);
+  SIM_DMA_Start(SIM.puart, SIM.pdma);
 }
 
-void Simcom_DeInit(void) {
+void SIM_DeInit(void) {
   GATE_SimcomShutdown();
-  SIMCOM_DMA_Stop();
+  SIM_DMA_Stop();
   HAL_UART_DeInit(SIM.puart);
 }
 
-uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
-  SIMCOM_STATE lastState = SIM_STATE_DOWN;
+uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout) {
+  SIM_STATE lastState = SIM_STATE_DOWN;
   SIMR res = SIM_ERROR;
   uint32_t tick = _GetTickMS();
   uint8_t retry = 0;
 
-  Simcom_Lock();
+  SIM_Lock();
   do {
     if (STAT_StateTimeout(&tick, timeout, res)) break;
     if (STAT_StateLockedLoop(&lastState, &retry)) break;
@@ -139,18 +139,18 @@ uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout) {
     }
     _DelayMS(500);
   } while (SIM.d.state < state);
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return (SIM.d.state >= state);
 }
 
-SIMR Simcom_Cmd(char* command, char* reply, uint32_t ms) {
-  return Simcom_CmdRaw(command, strlen(command), reply, ms);
+SIMR SIM_Cmd(char* command, char* reply, uint32_t ms) {
+  return SIM_CmdRaw(command, strlen(command), reply, ms);
 }
 
-char* Simcom_Resp(char* keyword, char* from) {
-  char* start = &SIMCOM_UART_RX[0];
-  char* stop = &SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
+char* SIM_Resp(char* keyword, char* from) {
+  char* start = &SIM_UART_RX[0];
+  char* stop = &SIM_UART_RX[SIM_UART_RX_SZ];
 
   if (from != NULL)
     if (from >= start && from <= stop) start = from;
@@ -163,19 +163,19 @@ char* Simcom_Resp(char* keyword, char* from) {
 }
 
 #if (APP)
-uint8_t Simcom_FetchTime(timestamp_t* ts) {
+uint8_t SIM_FetchTime(timestamp_t* ts) {
   uint8_t ok = 0;
 
-  if (Simcom_SetState(SIM_STATE_READY, 0))
+  if (SIM_SetState(SIM_STATE_READY, 0))
     if (AT_Clock(ATR, ts) == SIM_OK) ok = (ts->date.Year >= VCU_BUILD_YEAR);
 
   return ok;
 }
 
-uint8_t Simcom_SendUSSD(char* ussd, char* buf, uint8_t buflen) {
+uint8_t SIM_SendUSSD(char* ussd, char* buf, uint8_t buflen) {
   SIMR res;
 
-  if (!Simcom_SetState(SIM_STATE_NETWORK_ON, 0)) return 0;
+  if (!SIM_SetState(SIM_STATE_NETWORK_ON, 0)) return 0;
 
   // Set TE Character
   {
@@ -197,10 +197,10 @@ uint8_t Simcom_SendUSSD(char* ussd, char* buf, uint8_t buflen) {
   return res == SIM_OK;
 }
 
-uint8_t Simcom_ReadNewSMS(char* buf, uint8_t buflen) {
+uint8_t SIM_ReadNewSMS(char* buf, uint8_t buflen) {
   SIMR res;
 
-  if (!Simcom_SetState(SIM_STATE_NETWORK_ON, 0)) return 0;
+  if (!SIM_SetState(SIM_STATE_NETWORK_ON, 0)) return 0;
 
   // Set SMS format
   {
@@ -216,28 +216,28 @@ uint8_t Simcom_ReadNewSMS(char* buf, uint8_t buflen) {
   return res == SIM_OK;
 }
 
-uint8_t Simcom_Upload(void* payload, uint16_t size) {
+uint8_t SIM_Upload(void* payload, uint16_t size) {
   SIMR res;
   char cmd[20];
 
   if (SIM.d.ipstatus != CIPSTAT_CONNECT_OK && SIM.d.state < SIM_STATE_SERVER_ON)
     return 0;
 
-  Simcom_Lock();
+  SIM_Lock();
   sprintf(cmd, "AT+CIPSEND=%d\r", size);
-  res = Simcom_Cmd(cmd, SIM_RSP_SEND, 500);
+  res = SIM_Cmd(cmd, SIM_RSP_SEND, 500);
 
   if (res == SIM_OK)
-    res = Simcom_CmdRaw((char*)payload, size, SIM_RSP_ACCEPT, 30000);
-  Simcom_Unlock();
+    res = SIM_CmdRaw((char*)payload, size, SIM_RSP_ACCEPT, 30000);
+  SIM_Unlock();
 
   return res == SIM_OK;
 }
 
-int Simcom_GetData(unsigned char* buf, int count) {
+int SIM_GetData(unsigned char* buf, int count) {
   if (SIM.d.response == NULL) return -1;
-  if (SIM.d.response < &SIMCOM_UART_RX[0]) return -1;
-  if ((SIM.d.response + count) > &SIMCOM_UART_RX[SIMCOM_UART_RX_SZ]) return -1;
+  if (SIM.d.response < &SIM_UART_RX[0]) return -1;
+  if ((SIM.d.response + count) > &SIM_UART_RX[SIM_UART_RX_SZ]) return -1;
 
   memcpy(buf, SIM.d.response, count);
   SIM.d.response += count;
@@ -245,18 +245,18 @@ int Simcom_GetData(unsigned char* buf, int count) {
   return count;
 }
 
-uint8_t Simcom_ReceivedResponse(uint32_t timeout) {
+uint8_t SIM_ReceivedResponse(uint32_t timeout) {
   TickType_t tick;
   char* ptr = NULL;
 
   tick = _GetTickMS();
   do {
-    ptr = Simcom_Resp(SIM_RSP_IPD, NULL);
+    ptr = SIM_Resp(SIM_RSP_IPD, NULL);
     _DelayMS(10);
   } while (ptr == NULL && _TickIn(tick, timeout));
 
   if (ptr != NULL)
-    if ((ptr = Simcom_Resp(":", ptr)) != NULL) SIM.d.response = ptr + 1;
+    if ((ptr = SIM_Resp(":", ptr)) != NULL) SIM.d.response = ptr + 1;
 
   return (ptr != NULL);
 }
@@ -264,7 +264,7 @@ uint8_t Simcom_ReceivedResponse(uint32_t timeout) {
 
 /* Private functions implementation
  * --------------------------------------------*/
-static SIMR Simcom_CmdRaw(char* data, uint16_t size, char* reply, uint32_t ms) {
+static SIMR SIM_CmdRaw(char* data, uint16_t size, char* reply, uint32_t ms) {
   SIMR res = SIM_ERROR;
 
   // only handle command if SIM_STATE_READY or BOOT_CMD
@@ -273,7 +273,7 @@ static SIMR Simcom_CmdRaw(char* data, uint16_t size, char* reply, uint32_t ms) {
     return res;
 
   // Debug: print payload
-  if (SIMCOM_DEBUG) {
+  if (SIM_DEBUG) {
     if (strcmp(reply, SIM_RSP_ACCEPT) == 0)
       printf_hex(data, size);
     else {
@@ -284,48 +284,47 @@ static SIMR Simcom_CmdRaw(char* data, uint16_t size, char* reply, uint32_t ms) {
   }
 
   // execute payload
-  Simcom_Lock();
+  SIM_Lock();
   GATE_SimcomSleep(0);
-  res = TransmitCmd(data, size, ms, reply);
+  res = SIM_TransmitCmd(data, size, ms, reply);
   GATE_SimcomSleep(1);
-  Simcom_Unlock();
+  SIM_Unlock();
 
   // Debug: print response (ignore FTPGET command)
-  if (SIMCOM_DEBUG)
+  if (SIM_DEBUG)
     if (strnstr(data, SIM_CMD_FTPGET, size) == NULL)
-      printf("%.*s\n", sizeof(SIMCOM_UART_RX), SIMCOM_UART_RX);
+      printf("%.*s\n", sizeof(SIM_UART_RX), SIM_UART_RX);
 
   return res;
 }
 
-static SIMR TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply) {
+static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply) {
   SIMR res = SIM_ERROR;
   uint32_t tick;
 
 #if (APP)
-  if (Simcom_ReceivedResponse(0)) Simcom_ProcessResponse();
+  if (SIM_ReceivedResponse(0)) SIM_ProcessResponse();
 #endif
-  SIMCOM_Transmit(data, size);
+  SIM_Transmit(data, size);
 
   // wait response from SIMCOM
   ms += NET_GUARD_MS;
   tick = _GetTickMS();
   while (1) {
-    if (Simcom_Resp(reply, NULL) || Simcom_Resp(SIM_RSP_ERROR, NULL) ||
-        Simcom_Resp(SIM_RSP_READY, NULL)
+    if (SIM_Resp(reply, NULL) || SIM_Resp(SIM_RSP_ERROR, NULL) ||
+        SIM_Resp(SIM_RSP_READY, NULL)
 #if (APP)
-        || Simcom_Resp(SIM_RSP_IPD, NULL)
+        || SIM_Resp(SIM_RSP_IPD, NULL)
 #endif
         || (_GetTickMS() - tick) > ms) {
 
       // check response
-      if (Simcom_Resp(reply, NULL)) res = SIM_OK;
+      if (SIM_Resp(reply, NULL)) res = SIM_OK;
 
       // Handle failure
       else {
         // exception for accidentally reboot
-        if (Simcom_Resp(SIM_RSP_READY, NULL) &&
-            (SIM.d.state >= SIM_STATE_READY)) {
+        if (SIM_Resp(SIM_RSP_READY, NULL) && (SIM.d.state >= SIM_STATE_READY)) {
           printf("Simcom:Restarted\n");
           res = SIM_RESTARTED;
           SIM.d.state = SIM_STATE_READY;
@@ -336,8 +335,8 @@ static SIMR TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply) {
 #if (APP)
         // exception for server command collision
         else if (strcmp(reply, SIM_RSP_ACCEPT) != 0) {
-          if (Simcom_ReceivedResponse(0)) {
-            if (Simcom_ProcessResponse()) {
+          if (SIM_ReceivedResponse(0)) {
+            if (SIM_ProcessResponse()) {
               printf("Simcom:CommandCollision\n");
               res = SIM_TIMEOUT;
             }
@@ -345,7 +344,7 @@ static SIMR TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply) {
         }
 #endif
         // exception for no response
-        else if (strnlen(SIMCOM_UART_RX, sizeof(SIMCOM_UART_RX)) == 0) {
+        else if (strnlen(SIM_UART_RX, sizeof(SIM_UART_RX)) == 0) {
           printf("Simcom:NoResponse\n");
           res = SIM_NORESPONSE;
           // SIM.d.state = SIM_STATE_DOWN;
@@ -372,7 +371,7 @@ static SIMR TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply) {
 }
 
 #if (APP)
-static uint8_t Simcom_ProcessResponse(void) {
+static uint8_t SIM_ProcessResponse(void) {
   char* ptr = SIM.d.response;
 
   _DelayMS(1000);

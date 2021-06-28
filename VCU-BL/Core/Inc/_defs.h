@@ -17,7 +17,7 @@
 
 /* Exported constants
  * --------------------------------------------*/
-#define SIMCOM_DEBUG 1
+#define SIM_DEBUG 1
 #define CAN_DEBUG 0
 
 #define AT_USE_CLK 0
@@ -25,6 +25,6 @@
 #define AT_USE_TCP 0
 #define AT_USE_FTP 1
 
-#define SIMCOM_MIN_MV ((uint16_t)3400)
+#define SIM_MIN_MV ((uint16_t)3400)
 
 #endif /* DEFINES_H_ */

@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Libs/_at.h"
+
 #include "Drivers/_simcom.h"
 
 /* Private functions prototype
@@ -31,11 +32,11 @@ SIMR AT_CommandEchoMode(uint8_t state) {
   SIMR res = SIM_ERROR;
   char cmd[8];
 
-  Simcom_Lock();
+  SIM_Lock();
   // Write
   sprintf(cmd, "ATE%d\r", state);
   res = CmdWrite(cmd, SIM_RSP_OK, 500);
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -45,7 +46,7 @@ SIMR AT_QueryTransmittedData(at_cipack_t* info) {
   uint8_t cnt, len = 0;
   char* str = NULL;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CIPACK?\r", "+CIPACK: ", 500, &str);
   if (res == SIM_OK) {
@@ -55,7 +56,7 @@ SIMR AT_QueryTransmittedData(at_cipack_t* info) {
     len += cnt + 1;
     info->nacklen = ParseNumber(&str[len], NULL);
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -66,7 +67,7 @@ SIMR AT_SignalQualityReport(at_csq_t* signal) {
   char* str = NULL;
   float dBm;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CSQ\r", "+CSQ: ", 500, &str);
   if (res == SIM_OK) {
@@ -88,7 +89,7 @@ SIMR AT_SignalQualityReport(at_csq_t* signal) {
       printf("Simcom:RSSI = %u %%\n", signal->percent);
     }
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -98,7 +99,7 @@ SIMR AT_ConnectionStatus(AT_CIPSTATUS* state) {
   char status[20], *str = NULL;
   uint8_t len;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CIPSTATUS\r", "STATE: ", 500, &str);
   if (res == SIM_OK) {
@@ -134,7 +135,7 @@ SIMR AT_ConnectionStatus(AT_CIPSTATUS* state) {
     }
   } else
     *state = CIPSTAT_UNKNOWN;
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -147,7 +148,7 @@ SIMR AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t* param) {
   // Copy by value
   at_cnmp_t tmp = *param;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CNMP?\r", "+CNMP: ", 500, &str);
   if (res == SIM_OK) {
@@ -170,7 +171,7 @@ SIMR AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t* param) {
     } else
       *param = tmp;
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -183,7 +184,7 @@ SIMR AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t* param) {
   // Copy by value
   at_csact_t tmp = *param;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CSACT?\r", "+CSACT: ", 500, &str);
   if (res == SIM_OK) {
@@ -204,7 +205,7 @@ SIMR AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t* param) {
     } else
       *param = tmp;
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -218,7 +219,7 @@ SIMR AT_NetworkRegistration(char command[20], AT_MODE mode,
   // Copy by value
   at_c_greg_t tmp = *param;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   sprintf(cmd, "AT+%s?\r", command);
   sprintf(reply, "+%s: ", command);
@@ -237,7 +238,7 @@ SIMR AT_NetworkRegistration(char command[20], AT_MODE mode,
     } else
       *param = tmp;
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -268,7 +269,7 @@ SIMR AT_Clock(AT_MODE mode, timestamp_t* tm) {
   uint8_t cnt, len = 0;
   char *str = NULL, cmd[39];
 
-  Simcom_Lock();
+  SIM_Lock();
   if (mode == ATW) {
     // Write
     sprintf(cmd, "AT+CCLK=\"%d/%d/%d,%d:%d:%d%+d\"\r", tm->date.Year,
@@ -299,7 +300,7 @@ SIMR AT_Clock(AT_MODE mode, timestamp_t* tm) {
       tm->date.WeekDay = RTC_WEEKDAY_MONDAY;
     }
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -319,7 +320,7 @@ SIMR AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t* param, char* buf,
   // Copy by value
   at_cusd_t tmp = *param;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CUSD?\r", prefix, 500, &str);
   if (res == SIM_OK) {
@@ -333,7 +334,7 @@ SIMR AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t* param, char* buf,
       // parsing
       if (res == SIM_OK) {
         // parsing
-        if ((str = Simcom_Resp(prefix, NULL)) != NULL) {
+        if ((str = SIM_Resp(prefix, NULL)) != NULL) {
           str += strlen(prefix);
           len = 0;
 
@@ -352,7 +353,7 @@ SIMR AT_ServiceDataUSSD(AT_MODE mode, at_cusd_t* param, char* buf,
       *param = tmp;
     }
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -361,10 +362,10 @@ SIMR AT_MessageIndicationSMS(uint8_t mode, uint8_t mt) {
   SIMR res = SIM_ERROR;
   char cmd[30];
 
-  Simcom_Lock();
+  SIM_Lock();
   sprintf(cmd, "AT+CNMI=%d,%d,0,0,0\r", mode, mt);
   res = CmdWrite(cmd, SIM_RSP_OK, 500);
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -381,7 +382,7 @@ uint8_t AT_WaitMessageSMS(at_cmti_t* param, uint32_t timeout) {
   // get message index
   tick = _GetTickMS();
   do {
-    str = Simcom_Resp(prefix, NULL);
+    str = SIM_Resp(prefix, NULL);
   } while (_GetTickMS() - tick < timeout && str == NULL);
 
   if (str != NULL) {
@@ -405,7 +406,7 @@ SIMR AT_StorageMessageSMS(AT_MODE mode, at_cpms_t* param) {
   // Copy by value
   at_cpms_t tmp = *param;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CPMS?\r", prefix, 1000, &str);
   if (res == SIM_OK) {
@@ -442,7 +443,7 @@ SIMR AT_StorageMessageSMS(AT_MODE mode, at_cpms_t* param) {
       param->mem[i].total = tmp.mem[i].total;
     }
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -451,11 +452,11 @@ SIMR AT_DeleteMessageSMS(at_cmgd_t* param) {
   SIMR res = SIM_ERROR;
   char cmd[30];
 
-  Simcom_Lock();
+  SIM_Lock();
   // Write
   sprintf(cmd, "AT+CMGD=%d,%d\r", param->index, param->delflag);
   res = CmdWrite(cmd, SIM_RSP_OK, 500);
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -464,25 +465,25 @@ SIMR AT_ReadMessageSMS(at_cmgr_t* param, char* buf, uint8_t buflen) {
   SIMR res = SIM_ERROR;
   char *end, *str = NULL, cmd[30], *prefix = "+CMGR: ";
 
-  Simcom_Lock();
+  SIM_Lock();
   // Write
   sprintf(cmd, "AT+CMGR=%d,%d\r", param->index, param->mode);
   res = CmdWrite(cmd, SIM_RSP_OK, 500);
 
   if (res == SIM_OK) {
     // parsing
-    if ((str = Simcom_Resp(prefix, NULL)) != NULL) {
+    if ((str = SIM_Resp(prefix, NULL)) != NULL) {
       str += strlen(prefix);
-      if ((str = Simcom_Resp(SIM_RSP_NONE, str)) != NULL) {
+      if ((str = SIM_Resp(SIM_RSP_NONE, str)) != NULL) {
         str += strlen(SIM_RSP_NONE);
-        if ((end = Simcom_Resp(SIM_RSP_OK, str)) != NULL) {
+        if ((end = SIM_Resp(SIM_RSP_OK, str)) != NULL) {
           if ((end - str) < buflen) buflen = (end - str);
           strncpy(buf, str, buflen - 1);
         }
       }
     }
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -493,11 +494,11 @@ SIMR AT_ListMessageSMS(at_cmgl_t* param) {
   char stat[5][11] = {"REC UNREAD", "REC READ", "STO UNSENT", "STO SENT",
                       "ALL"};
 
-  Simcom_Lock();
+  SIM_Lock();
   // Write
   sprintf(cmd, "AT+CMGL=\"%s\",%d\r", stat[param->stat], param->mode);
   res = CmdWrite(cmd, SIM_RSP_OK, 5000);
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -512,7 +513,7 @@ SIMR AT_ConfigureAPN(AT_MODE mode, at_cstt_t* param) {
   // Copy by value
   at_cstt_t tmp = *param;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CSTT?\r", "+CSTT: ", 500, &str);
   if (res == SIM_OK) {
@@ -532,7 +533,7 @@ SIMR AT_ConfigureAPN(AT_MODE mode, at_cstt_t* param) {
     } else
       *param = tmp;
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -541,13 +542,13 @@ SIMR AT_GetLocalIpAddress(at_cifsr_t* param) {
   SIMR res = SIM_ERROR;
   char* str = NULL;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+CIFSR\r", SIM_RSP_NONE, 500, &str);
   if (res == SIM_OK)
     ParseText(&str[0], NULL, param->address, sizeof(param->address));
 
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -556,7 +557,7 @@ SIMR AT_StartConnection(at_cipstart_t* param) {
   SIMR res = SIM_ERROR;
   char cmd[80];
 
-  Simcom_Lock();
+  SIM_Lock();
   // Write
   sprintf(cmd, "AT+CIPSTART=\"%s\",\"%s\",\"%d\"\r", param->mode, param->ip,
           param->port);
@@ -564,14 +565,13 @@ SIMR AT_StartConnection(at_cipstart_t* param) {
 
   // check either connection ok / error
   if (res == SIM_OK) {
-    if (Simcom_Resp("CONNECT OK", NULL) ||
-        Simcom_Resp("ALREADY CONNECT", NULL) ||
-        Simcom_Resp("TCP CLOSED", NULL)) {
+    if (SIM_Resp("CONNECT OK", NULL) || SIM_Resp("ALREADY CONNECT", NULL) ||
+        SIM_Resp("TCP CLOSED", NULL)) {
       res = SIM_OK;
     } else
       res = SIM_ERROR;
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -634,7 +634,7 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
   // Copy by value
   at_sapbr_t tmp = *param;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   sprintf(cmd, "AT+SAPBR=%d,1\r", SAPBR_BEARER_QUERY);
   res = CmdRead(cmd, "+SAPBR: ", 500, &str);
@@ -681,7 +681,7 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
     } else
       *param = tmp;
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -690,7 +690,7 @@ SIMR AT_FtpInitialize(at_ftp_t* param) {
   SIMR res;
   int32_t cid = 1;
 
-  Simcom_Lock();
+  SIM_Lock();
   res = SingleInteger("FTPCID", ATW, &cid, 0);
 
   if (res == SIM_OK)
@@ -708,7 +708,7 @@ SIMR AT_FtpInitialize(at_ftp_t* param) {
   if (res == SIM_OK)
     res = SingleString("FTPGETNAME", ATW, param->file, sizeof(param->file), 0);
 
-  Simcom_Unlock();
+  SIM_Unlock();
   return res;
 }
 
@@ -717,7 +717,7 @@ SIMR AT_FtpFileSize(at_ftp_t* param) {
   uint8_t cnt, len = 0;
   char* str = NULL;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   res = CmdRead("AT+FTPSIZE\r", "+FTPSIZE: ", 30000, &str);
   if (res == SIM_OK) {
@@ -732,7 +732,7 @@ SIMR AT_FtpFileSize(at_ftp_t* param) {
     else
       param->size = ParseNumber(&str[len], &cnt);
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -743,7 +743,7 @@ SIMR AT_FtpDownload(at_ftpget_t* param) {
   uint8_t cnt, len = 0;
   char *resp, *str = NULL, cmd[80];
 
-  Simcom_Lock();
+  SIM_Lock();
   // Open or Read
   if (param->mode == FTPGET_OPEN)
     sprintf(cmd, "AT+FTPGET=%d\r", param->mode);
@@ -779,7 +779,7 @@ SIMR AT_FtpDownload(at_ftpget_t* param) {
       };
     }
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -797,7 +797,7 @@ SIMR AT_FtpResume(uint32_t start) {
  * --------------------------------------------*/
 #if AT_USE_FTP
 static uint8_t FindInBuffer(char* prefix, char** str) {
-  *str = Simcom_Resp(prefix, NULL);
+  *str = SIM_Resp(prefix, NULL);
 
   if (*str != NULL) *str += strlen(prefix);
 
@@ -813,7 +813,7 @@ static SIMR SingleString(char* command, AT_MODE mode, char* string,
   // Copy by vale
   memcpy(tmp, string, size);
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   sprintf(cmd, "AT+%s%s", command, executor ? "\r" : "?\r");
   sprintf(reply, "+%s: ", command);
@@ -830,7 +830,7 @@ static SIMR SingleString(char* command, AT_MODE mode, char* string,
     } else
       memcpy(string, tmp, size);
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -843,7 +843,7 @@ static SIMR SingleInteger(char* command, AT_MODE mode, int32_t* value,
   // Copy by vale
   int32_t tmp = *value;
 
-  Simcom_Lock();
+  SIM_Lock();
   // Read
   sprintf(cmd, "AT+%s%s", command, executor ? "\r" : "?\r");
   sprintf(reply, "+%s: ", command);
@@ -860,7 +860,7 @@ static SIMR SingleInteger(char* command, AT_MODE mode, int32_t* value,
     } else
       *value = tmp;
   }
-  Simcom_Unlock();
+  SIM_Unlock();
 
   return res;
 }
@@ -868,7 +868,7 @@ static SIMR SingleInteger(char* command, AT_MODE mode, int32_t* value,
 static SIMR CmdWrite(char* cmd, char* reply, uint32_t ms) {
   SIMR res = SIM_ERROR;
 
-  if (SIM.d.state >= SIM_STATE_READY) res = Simcom_Cmd(cmd, reply, ms);
+  if (SIM.d.state >= SIM_STATE_READY) res = SIM_Cmd(cmd, reply, ms);
 
   return res;
 }
@@ -877,10 +877,10 @@ static SIMR CmdRead(char* cmd, char* reply, uint32_t ms, char** str) {
   SIMR res = SIM_ERROR;
 
   if (SIM.d.state >= SIM_STATE_READY) {
-    res = Simcom_Cmd(cmd, reply, ms);
+    res = SIM_Cmd(cmd, reply, ms);
 
     if (res == SIM_OK) {
-      *str = Simcom_Resp(reply, NULL);
+      *str = SIM_Resp(reply, NULL);
 
       if (*str != NULL) {
         *str += strlen(reply);

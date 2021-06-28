@@ -52,7 +52,7 @@ typedef enum {
   SIM_STATE_SERVER_ON,
   SIM_STATE_MQTT_ON
 #endif
-} SIMCOM_STATE;
+} SIM_STATE;
 
 typedef enum {
   CIPSTAT_UNKNOWN = -1,
@@ -72,7 +72,7 @@ typedef enum {
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t STAT_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res);
-uint8_t STAT_StateLockedLoop(SIMCOM_STATE* lastState, uint8_t* retry);
+uint8_t STAT_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry);
 uint8_t STAT_StatePoorSignal(void);
 
 void STAT_Down(SIMR* res);

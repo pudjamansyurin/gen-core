@@ -38,7 +38,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       .size = 0,
   };
 
-  if (BAT_ScanValue() < SIMCOM_MIN_MV) res = SIM_ERROR;
+  if (BAT_ScanValue() < SIM_MIN_MV) res = SIM_ERROR;
 
   // Turn ON HMI-Primary.
   if (res == SIM_OK) {
@@ -52,7 +52,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     *(uint32_t *)IAP_RESP_ADDR = IRESP_FOTA_ERROR;
     FOCAN_SetProgress(type, 0.0f);
 
-    Simcom_SetState(SIM_STATE_READY, 0);
+    SIM_SetState(SIM_STATE_READY, 0);
   }
 
   /* Backup if needed */
@@ -75,7 +75,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     FOCAN_SetProgress(type, 0.0f);
     res = prepareFTP(&ftp, timeout);
 
-    if (res <= 0) *(uint32_t *)IAP_RESP_ADDR = IRESP_SIMCOM_TIMEOUT;
+    if (res <= 0) *(uint32_t *)IAP_RESP_ADDR = IRESP_SIM_TIMEOUT;
   }
 
   // Get file size
@@ -211,7 +211,7 @@ uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
       } else {
         AT_FtpCurrentState(&state);
         if (state == FTP_STATE_ESTABLISHED)
-          Simcom_Cmd("AT+FTPQUIT\r", SIM_RSP_OK, 500);
+          SIM_Cmd("AT+FTPQUIT\r", SIM_RSP_OK, 500);
 
         res = prepareFTP(ftp, timeout);
         if (res == SIM_OK) res = AT_FtpResume(*len);
@@ -353,7 +353,7 @@ void FOTA_ResetFlag(void) {
 static SIMR prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
   SIMR res;
 
-  res = Simcom_SetState(SIM_STATE_BEARER_ON, timeout);
+  res = SIM_SetState(SIM_STATE_BEARER_ON, timeout);
   if (res == SIM_OK) res = AT_FtpInitialize(ftp);
 
   return res;
