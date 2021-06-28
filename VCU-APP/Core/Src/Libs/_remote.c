@@ -194,7 +194,7 @@ uint8_t RMT_GotPairedResponse(void) {
 }
 
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
-  uint8_t valid = 0, plain[NRF_DATA_LENGTH];
+  uint8_t ok = 0, plain[NRF_DATA_LENGTH];
   uint8_t rng = NRF_DATA_LENGTH / 2;
 
   lock();
@@ -203,26 +203,24 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
     for (uint8_t i = 0; i < (sizeof(COMMAND) / sizeof(COMMAND[0])); i++) {
       if (memcmp(plain, &COMMAND[i], 8) == 0) {
         *cmd = i;
-        valid = 1;
+        ok = 1;
         break;
       }
     }
   }
   // Is ping response
-  if (valid) {
-    if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT) {
-      valid = (memcmp(&plain[rng], &RMT.t.payload[rng], rng) == 0);
-    }
-  }
+  if (ok) 
+    if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT) 
+      ok = (memcmp(&plain[rng], &RMT.t.payload[rng], rng) == 0);
 
-  if (valid) RMT.d.tick.heartbeat = _GetTickMS();
+  if (ok) RMT.d.tick.heartbeat = _GetTickMS();
   unlock();
 
 #if REMOTE_DEBUG
-  if (valid) Debugger(*cmd);
+  if (ok) Debugger(*cmd);
 #endif
 
-  return valid;
+  return ok;
 }
 
 void RMT_IrqHandler(void) {

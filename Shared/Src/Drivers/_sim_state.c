@@ -324,16 +324,16 @@ void SIMSta_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout) {
 }
 
 void SIMSta_ServerOn(void) {
-  uint8_t valid = 0;
+  uint8_t ok = 0;
 
   AT_ConnectionStatus(&(SIM.d.ipstatus));
   if (SIM.d.ipstatus == CIPSTAT_CONNECT_OK)
     if (MQTT_Connect())
       if (MQTT_PublishWill(1))
-        if (MQTT_Subscribe()) valid = 1;
+        ok = MQTT_Subscribe();
 
   // upgrade simcom state
-  if (valid)
+  if (ok)
     SIM.d.state = SIM_STATE_MQTT_ON;
   else if (SIM.d.state == SIM_STATE_SERVER_ON) {
     // MQTT_Disconnect();

@@ -122,7 +122,7 @@ static void FW_MakeResponseIAP(char *message, char *node) {
 }
 
 static uint8_t FW_ValidResponseIAP(void) {
-  uint8_t valid = 1;
+  uint8_t ok = 1;
 
   switch (*(uint32_t *)IAP_RESP_ADDR) {
     case IRESP_SIM_TIMEOUT:
@@ -140,9 +140,9 @@ static uint8_t FW_ValidResponseIAP(void) {
     case IRESP_FOTA_SUCCESS:
       break;
     default:
-      valid = 0;
+      ok = 0;
       break;
   }
 
-  return valid;
+  return ok;
 }
