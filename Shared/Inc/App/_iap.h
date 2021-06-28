@@ -21,8 +21,6 @@
 #define SP_MASK ((uint32_t)0x2FFFFFFF)
 #define SP_RANGE (SP_MASK - (SRAM_SIZE - 1))
 
-//#define FOTA_PROGRESS_FLAG ((uint32_t)0x89ABCDEF)
-//#define IAP_FLAG ((uint32_t)0xAABBCCDD)
 #define IAP_FLAG_ADDR (SRAM_END_ADDR - 4)
 #define IAP_RESP_ADDR (SRAM_END_ADDR - 8)
 #define IS_VALID_SP(X) ((*(__IO uint32_t *)X & SP_RANGE) == SRAM_BASE_ADDR)

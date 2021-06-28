@@ -24,14 +24,14 @@
 
 /* Private functions prototypes
  * --------------------------------------------*/
-static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout);
-static SIM_RESULT openFTP(at_ftpget_t *ftpGET);
+static SIMR prepareFTP(at_ftp_t *ftp, uint32_t timeout);
+static SIMR openFTP(at_ftpget_t *ftpGET);
 
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t FOTA_Upgrade(IAP_TYPE type) {
   uint32_t timeout = 60000, crcOld = 0, crcNew = 0, len = 0;
-  SIM_RESULT res = SIM_OK;
+  SIMR res = SIM_OK;
   at_ftpget_t ftpget;
   at_ftp_t ftp = {
       .file = "CRC_APP.bin",
@@ -150,7 +150,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 }
 
 uint8_t FOTA_DownloadCRC(at_ftpget_t *ftpGET, uint32_t *crc) {
-  SIM_RESULT res;
+  SIMR res;
 
   // Initiate Download
   ftpGET->mode = FTPGET_READ;
@@ -164,7 +164,7 @@ uint8_t FOTA_DownloadCRC(at_ftpget_t *ftpGET, uint32_t *crc) {
 
 uint8_t FOTA_DownloadFirmware(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
                               IAP_TYPE type, uint32_t timeout) {
-  SIM_RESULT res = SIM_OK;
+  SIMR res = SIM_OK;
   AT_FTP_STATE state;
   uint32_t timer;
   float percent;
@@ -350,8 +350,8 @@ void FOTA_ResetFlag(void) {
 
 /* Private functions implementation
  * --------------------------------------------*/
-static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
-  SIM_RESULT res;
+static SIMR prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
+  SIMR res;
 
   res = Simcom_SetState(SIM_STATE_BEARER_ON, timeout);
   if (res == SIM_OK) res = AT_FtpInitialize(ftp);
@@ -359,7 +359,7 @@ static SIM_RESULT prepareFTP(at_ftp_t *ftp, uint32_t timeout) {
   return res;
 }
 
-static SIM_RESULT openFTP(at_ftpget_t *ftpGET) {
+static SIMR openFTP(at_ftpget_t *ftpGET) {
   ftpGET->mode = FTPGET_OPEN;
   return AT_FtpDownload(ftpGET);
 }

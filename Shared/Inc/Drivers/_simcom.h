@@ -11,6 +11,9 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_common.h"
+#include "DMA/_dma_simcom.h"
+#include "Drivers/_sim_state.h"
+
 
 #if (APP)
 #include "Drivers/_rtc.h"
@@ -44,80 +47,25 @@
 #define NET_FTP_USER "fota@garda-energi.com"
 #define NET_FTP_PASS "@Garda313"
 
-#define SIM_CMD_BOOT "AT\r"
-#define SIM_CMD_FTPGET "AT+FTPGET=2"
-
-#define SIM_RSP_NONE "\r\n"
-#define SIM_RSP_SEND ">"
-//#define SIM_RSP_SENT                 "SEND OK\r"
-#define SIM_RSP_ACCEPT "DATA ACCEPT:"
-#define SIM_RSP_OK "OK\r"
-#define SIM_RSP_ERROR "ERROR"
-#define SIM_RSP_READY "RDY"
-#define SIM_RSP_IPD "+IPD,"
-
-#define MAX_ENUM_SIZE (uint32_t)0xFFFFFFFF
-
-/* Exported enums
- * --------------------------------------------*/
-typedef enum {
-  SIM_RESTARTED = -3,
-  SIM_NORESPONSE = -2,
-  SIM_TIMEOUT = -1,
-  SIM_ERROR = 0,
-  SIM_OK = 1,
-} SIM_RESULT;
-
-typedef enum {
-  SIM_STATE_DOWN = -1,
-  SIM_STATE_READY = 0,
-  SIM_STATE_CONFIGURED,
-  SIM_STATE_NETWORK_ON,
-  SIM_STATE_GPRS_ON,
-  SIM_STATE_PDP_ON,
-#if (!APP)
-  SIM_STATE_BEARER_ON,
-#else
-  SIM_STATE_INTERNET_ON,
-  SIM_STATE_SERVER_ON,
-  SIM_STATE_MQTT_ON
-#endif
-} SIMCOM_STATE;
-
-typedef enum {
-  CIPSTAT_UNKNOWN = -1,
-  CIPSTAT_IP_INITIAL = 0,
-  CIPSTAT_IP_START,
-  CIPSTAT_IP_CONFIG,
-  CIPSTAT_IP_GPRSACT,
-  CIPSTAT_IP_STATUS,
-  CIPSTAT_CONNECTING,
-  CIPSTAT_CONNECT_OK,
-  CIPSTAT_CLOSING,
-  CIPSTAT_CLOSED,
-  CIPSTAT_PDP_DEACT,
-  CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
-} AT_CIPSTATUS;
-
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
-	char apn[20];
-	char user[20];
-	char pass[20];
+  char apn[20];
+  char user[20];
+  char pass[20];
 } net_con_t;
 
 typedef struct {
-	char host[30];
-	uint16_t port;
-	char user[30];
-	char pass[30];
+  char host[30];
+  uint16_t port;
+  char user[30];
+  char pass[30];
 } net_mqtt_t;
 
 typedef struct {
-	char host[30];
-	char user[30];
-	char pass[30];
+  char host[30];
+  char user[30];
+  char pass[30];
 } net_ftp_t;
 
 typedef struct {
@@ -128,9 +76,9 @@ typedef struct {
 } sim_data_t;
 
 typedef struct {
-	net_con_t con;
-	net_ftp_t ftp;
-	net_mqtt_t mqtt;
+  net_con_t con;
+  net_ftp_t ftp;
+  net_mqtt_t mqtt;
 } sim_net_t;
 
 typedef struct {
@@ -152,7 +100,7 @@ void Simcom_Lock(void);
 void Simcom_Unlock(void);
 uint8_t Simcom_SetState(SIMCOM_STATE state, uint32_t timeout);
 char* Simcom_Resp(char* keyword, char* from);
-SIM_RESULT Simcom_Cmd(char* command, char* reply, uint32_t ms);
+SIMR Simcom_Cmd(char* command, char* reply, uint32_t ms);
 #if (APP)
 uint8_t Simcom_FetchTime(timestamp_t* ts);
 uint8_t Simcom_SendUSSD(char* ussd, char* buf, uint8_t buflen);
