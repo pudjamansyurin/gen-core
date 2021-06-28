@@ -37,6 +37,7 @@
 #define IS_VALID_SP(X) ((*(__IO uint32_t *)X & SP_RANGE) == SRAM_BASE_ADDR)
 
 /* FLASH related */
+/* APP Firmware */
 #define APP_MAX_SIZE ((uint32_t)0xA0000)
 #define APP_START_ADDR ((uint32_t)0x08020000)
 #define APP_END_ADDR (APP_START_ADDR + APP_MAX_SIZE - 1)
@@ -44,7 +45,11 @@
 #define BKP_END_ADDR (BKP_START_ADDR + APP_MAX_SIZE - 1)
 #define SIZE_OFFSET (APP_MAX_SIZE - 4)
 #define CRC_OFFSET (APP_MAX_SIZE - 8)
-#define VIN_VALUE (*(__IO uint32_t *)(APP_START_ADDR - 4))
+/* Bootloader */
+#define BL_MAX_SIZE ((uint32_t)0x10000)
+#define BL_START_ADDR ((uint32_t)0x08000000)
+#define BL_END_ADDR (BL_START_ADDR + BL_MAX_SIZE - 1)
+#define VIN_VALUE (*(__IO uint32_t *)(BL_MAX_SIZE - 4))
 
 /* Exported enums
  * --------------------------------------------*/

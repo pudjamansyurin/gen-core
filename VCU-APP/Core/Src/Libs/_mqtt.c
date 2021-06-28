@@ -42,31 +42,80 @@ static uint8_t Upload(unsigned char *buf, uint16_t len, uint8_t reply,
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t MQTT_Publish(payload_t *payload) {
-  uint8_t retained = 1;
-  char *topic;
-  int qos;
+uint8_t MQTT_Connect(void) {
+  MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
+  unsigned char sessionPresent, connack_rc;
+  char clientId[20], status[] = "0";
+  unsigned char buf[256];
+  int len, buflen = sizeof(buf);
 
-  if (payload->type == PAYLOAD_REPORT) {
-    uint8_t fullFrame = payload->size == sizeof(report_t);
+  MQTT.subscribed = 0;
+  MQTT.willed = 0;
 
-    qos = fullFrame ? MQTT.qos.report.full : MQTT.qos.report.simple;
-    topic = MQTT.topic.report;
-    retained = fullFrame;
-  } else {
-    qos = MQTT.qos.response;
-    topic = MQTT.topic.response;
+  // generate topics
+  sprintf(MQTT.topic.command, "VCU/%lu/CMD", VIN_VALUE);
+  sprintf(MQTT.topic.response, "VCU/%lu/RSP", VIN_VALUE);
+  sprintf(MQTT.topic.report, "VCU/%lu/RPT", VIN_VALUE);
+  sprintf(MQTT.topic.will, "VCU/%lu/STS", VIN_VALUE);
+  sprintf(clientId, "VCU-%lu", VIN_VALUE);
+
+  // subscribe
+  data.clientID.cstring = clientId;
+  data.cleansession = !MQTT_PERSIST_SESSION;
+  data.keepAliveInterval = MQTT_KEEPALIVE_S;
+  data.username.cstring = NET_MQTT_USER;
+  data.password.cstring = NET_MQTT_PASS;
+
+  data.willFlag = 1;
+  data.will.retained = 1;
+  data.will.qos = MQTT.qos.will;
+  data.will.topicName.cstring = MQTT.topic.will;
+  data.will.message.cstring = status;
+
+  len = MQTTSerialize_connect(buf, buflen, &data);
+
+  if (!Upload(buf, len, CONNACK, MQTT_UPLOAD_MS)) return 0;
+
+  if (!MQTTDeserialize_connack(&sessionPresent, &connack_rc, buf, buflen) ||
+      connack_rc != 0) {
+    printf("MQTT:Connect failed, RC %d\n", connack_rc);
+    return 0;
   }
+  printf("MQTT:CONNACK\n");
 
-  return Publish(payload->data, payload->size, topic, qos, retained);
+  if (sessionPresent) MQTT.subscribed = 1;
+
+  printf("MQTT:Connected\n");
+  MQTT.tick = _GetTickMS();
+  return 1;
 }
 
-uint8_t MQTT_PublishWill(uint8_t on) {
-  char status[2];
+uint8_t MQTT_Disconnect(void) {
+  unsigned char buf[2];
+  int len, buflen = sizeof(buf);
 
-  MQTT.willed = on;
-  strcpy(status, on ? "1" : "0");
-  return Publish(status, strlen(status), MQTT.topic.will, MQTT.qos.will, 1);
+  len = MQTTSerialize_disconnect(buf, buflen);
+
+  if (!Upload(buf, len, 0, 0)) return 0;
+
+  printf("MQTT:Disconnected\n");
+  MQTT.tick = _GetTickMS();
+  return 1;
+}
+
+uint8_t MQTT_Ping(void) {
+  unsigned char buf[2];
+  int len, buflen = sizeof(buf);
+
+  if ((_GetTickMS() - MQTT.tick) <= (MQTT_KEEPALIVE_S * 1000)) return 1;
+
+  len = MQTTSerialize_pingreq(buf, buflen);
+
+  if (!Upload(buf, len, PINGRESP, MQTT_UPLOAD_MS)) return 0;
+
+  printf("MQTT:Pinged\n");
+  MQTT.tick = _GetTickMS();
+  return 1;
 }
 
 uint8_t MQTT_Subscribe(void) {
@@ -137,80 +186,31 @@ uint8_t MQTT_Unsubscribe(void) {
   return 1;
 }
 
-uint8_t MQTT_Connect(void) {
-  MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
-  unsigned char sessionPresent, connack_rc;
-  char clientId[20], status[] = "0";
-  unsigned char buf[256];
-  int len, buflen = sizeof(buf);
+uint8_t MQTT_Publish(payload_t *payload) {
+  uint8_t retained = 1;
+  char *topic;
+  int qos;
 
-  MQTT.subscribed = 0;
-  MQTT.willed = 0;
+  if (payload->type == PAYLOAD_REPORT) {
+    uint8_t fullFrame = payload->size == sizeof(report_t);
 
-  // generate topics
-  sprintf(MQTT.topic.command, "VCU/%lu/CMD", VIN_VALUE);
-  sprintf(MQTT.topic.response, "VCU/%lu/RSP", VIN_VALUE);
-  sprintf(MQTT.topic.report, "VCU/%lu/RPT", VIN_VALUE);
-  sprintf(MQTT.topic.will, "VCU/%lu/STS", VIN_VALUE);
-  sprintf(clientId, "VCU-%lu", VIN_VALUE);
-
-  // subscribe
-  data.clientID.cstring = clientId;
-  data.cleansession = !MQTT_PERSIST_SESSION;
-  data.keepAliveInterval = MQTT_KEEPALIVE_S;
-  data.username.cstring = MQTT_USERNAME;
-  data.password.cstring = MQTT_PASSWORD;
-
-  data.willFlag = 1;
-  data.will.retained = 1;
-  data.will.qos = MQTT.qos.will;
-  data.will.topicName.cstring = MQTT.topic.will;
-  data.will.message.cstring = status;
-
-  len = MQTTSerialize_connect(buf, buflen, &data);
-
-  if (!Upload(buf, len, CONNACK, MQTT_UPLOAD_MS)) return 0;
-
-  if (!MQTTDeserialize_connack(&sessionPresent, &connack_rc, buf, buflen) ||
-      connack_rc != 0) {
-    printf("MQTT:Connect failed, RC %d\n", connack_rc);
-    return 0;
+    qos = fullFrame ? MQTT.qos.report.full : MQTT.qos.report.simple;
+    topic = MQTT.topic.report;
+    retained = fullFrame;
+  } else {
+    qos = MQTT.qos.response;
+    topic = MQTT.topic.response;
   }
-  printf("MQTT:CONNACK\n");
 
-  if (sessionPresent) MQTT.subscribed = 1;
-
-  printf("MQTT:Connected\n");
-  MQTT.tick = _GetTickMS();
-  return 1;
+  return Publish(payload->data, payload->size, topic, qos, retained);
 }
 
-uint8_t MQTT_Disconnect(void) {
-  unsigned char buf[2];
-  int len, buflen = sizeof(buf);
+uint8_t MQTT_PublishWill(uint8_t on) {
+  char status[2];
 
-  len = MQTTSerialize_disconnect(buf, buflen);
-
-  if (!Upload(buf, len, 0, 0)) return 0;
-
-  printf("MQTT:Disconnected\n");
-  MQTT.tick = _GetTickMS();
-  return 1;
-}
-
-uint8_t MQTT_Ping(void) {
-  unsigned char buf[2];
-  int len, buflen = sizeof(buf);
-
-  if ((_GetTickMS() - MQTT.tick) <= (MQTT_KEEPALIVE_S * 1000)) return 1;
-
-  len = MQTTSerialize_pingreq(buf, buflen);
-
-  if (!Upload(buf, len, PINGRESP, MQTT_UPLOAD_MS)) return 0;
-
-  printf("MQTT:Pinged\n");
-  MQTT.tick = _GetTickMS();
-  return 1;
+  MQTT.willed = on;
+  strcpy(status, on ? "1" : "0");
+  return Publish(status, strlen(status), MQTT.topic.will, MQTT.qos.will, 1);
 }
 
 uint8_t MQTT_GotPublish(void) {

@@ -15,8 +15,6 @@
 
 /* Exported constants
  * --------------------------------------------*/
-#define MQTT_USERNAME ""
-#define MQTT_PASSWORD ""
 #define MQTT_PERSIST_SESSION 0
 #define MQTT_KEEPALIVE_S ((uint8_t)30)
 #define MQTT_UPLOAD_MS ((uint16_t)10000)
@@ -63,13 +61,15 @@ typedef struct {
 
 /* Public functions prototypes
  * --------------------------------------------*/
-uint8_t MQTT_Publish(payload_t *payload);
-uint8_t MQTT_PublishWill(uint8_t on);
-uint8_t MQTT_Subscribe(void);
-uint8_t MQTT_Unsubscribe(void);
 uint8_t MQTT_Connect(void);
 uint8_t MQTT_Disconnect(void);
 uint8_t MQTT_Ping(void);
+
+uint8_t MQTT_Subscribe(void);
+uint8_t MQTT_Unsubscribe(void);
+
+uint8_t MQTT_Publish(payload_t *payload);
+uint8_t MQTT_PublishWill(uint8_t on);
 
 uint8_t MQTT_GotPublish(void);
 uint8_t MQTT_AckPublish(command_t *cmd);

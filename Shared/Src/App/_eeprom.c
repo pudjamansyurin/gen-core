@@ -37,8 +37,7 @@ static I2C_HandleTypeDef* pi2c = &hi2c2;
 
 /* Private functions prototype
  * --------------------------------------------*/
-static uint8_t Command(EE_VADDR vaddr, EE_CMD cmd, void* value, void* ptr,
-                       uint16_t size);
+static uint8_t Cmd(EE_CMD cmd, EE_VA va, void* val, uint16_t size);
 static void lock(void);
 static void unlock(void);
 
@@ -54,7 +53,13 @@ uint8_t EE_Init(void) {
 
   if (ok) {
 #if (APP)
-    EE_Load();
+    EE_AesKey(EE_CMD_R, EE_NULL);
+    EE_Mode(EE_CMD_R, EE_NULL);
+    for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
+      EE_TripMeter(EE_CMD_R, mTrip, EE_NULL);
+    for (uint8_t m = 0; m < HBAR_M_MAX; m++)
+    	EE_SubMode(EE_CMD_R, m, EE_NULL);
+
     EE_FotaVersion(EE_CMD_R, EE_NULL);
 #endif
     EE_FotaType(EE_CMD_R, EE_NULL);
@@ -66,111 +71,159 @@ uint8_t EE_Init(void) {
 }
 
 #if (APP)
-void EE_Load(void) {
-  lock();
-  EE_AesKey(EE_CMD_R, EE_NULL);
-  EE_Mode(EE_CMD_R, EE_NULL);
-  for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
-    EE_TripMeter(EE_CMD_R, mTrip, EE_NULL);
-  for (uint8_t m = 0; m < HBAR_M_MAX; m++) EE_SubMode(EE_CMD_R, m, EE_NULL);
-  unlock();
-}
+uint8_t EE_AesKey(EE_CMD cmd, uint32_t val[4]) {
+  uint32_t *ptr = val;
+  uint8_t ok;
 
-// uint8_t EE_Reset(EE_CMD cmd, uint16_t value) {
-//	uint16_t tmp = value, temp;
-//	uint8_t ret;
-//
-//	ret = Command(VADDR_RESET, cmd, &value, &temp, sizeof(value));
-//
-//	if (ret)
-//		if (cmd == EE_CMD_R)
-//			return tmp != temp;
-//
-//	return ret;
-//}
-
-uint8_t EE_AesKey(EE_CMD cmd, uint32_t* value) {
-  uint32_t *ptr, tmp[4];
-  uint8_t ret;
-
-  ptr = (cmd == EE_CMD_W ? value : tmp);
-  ret = Command(VADDR_AES_KEY, cmd, ptr, AES_KEY, 16);
-
-  return ret;
-}
-
-uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP mTrip, uint16_t value) {
-  uint8_t ret;
-
-  ret = Command(VADDR_TRIP_A + mTrip, cmd, &value, &(HBAR.d.trip[mTrip]),
-                sizeof(value));
-  if (mTrip == HBAR_M_TRIP_ODO) HBAR.d.meter = value * 1000;
-
-  return ret;
-}
-
-uint8_t EE_SubMode(EE_CMD cmd, HBAR_MODE m, uint8_t value) {
-  uint8_t ret;
-
-  ret = Command(VADDR_MODE_DRIVE + m, cmd, &value, &(HBAR.d.mode[m]),
-                sizeof(value));
-  if (cmd == EE_CMD_R) {
-    if (HBAR.d.mode[m] > HBAR_SubModeMax(m)) HBAR.d.mode[m] = 0;
-  }
-
-  return ret;
-}
-
-uint8_t EE_Mode(EE_CMD cmd, uint8_t value) {
-  uint8_t ret;
-
-  ret = Command(VADDR_MODE, cmd, &value, &(HBAR.d.m), sizeof(value));
   if (cmd == EE_CMD_R)
-    if (HBAR.d.m >= HBAR_M_MAX) HBAR.d.m = 0;
+  	ptr = AES_KEY;
+  ok = Cmd(cmd, VA_AES_KEY, ptr, sizeof(AES_KEY));
+  if (cmd == EE_CMD_W)
+  	memcpy(AES_KEY, val, sizeof(AES_KEY));
 
-  return ret;
+  return ok;
+}
+
+uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP mTrip, uint16_t val) {
+	uint16_t *ptr = &val;
+  uint8_t ok;
+
+  if (cmd == EE_CMD_R)
+  	ptr = &HBAR.d.trip[mTrip];
+  ok = Cmd(cmd, VA_TRIP_A + mTrip, ptr, sizeof(val));
+  if (cmd == EE_CMD_W)
+  	memcpy(&(HBAR.d.trip[mTrip]), &val, sizeof(val));
+
+  if (mTrip == HBAR_M_TRIP_ODO)
+  	HBAR.d.meter = val * 1000;
+
+  return ok;
+}
+
+uint8_t EE_SubMode(EE_CMD cmd, HBAR_MODE m, uint8_t val) {
+	uint8_t *ptr = &val;
+  uint8_t ok;
+
+  if (cmd == EE_CMD_R)
+  	ptr = &HBAR.d.mode[m];
+  ok = Cmd(cmd, VA_MODE_DRIVE + m, ptr, sizeof(val));
+  if (cmd == EE_CMD_W)
+  	memcpy(&(HBAR.d.mode[m]), &val, sizeof(val));
+
+  if (HBAR.d.mode[m] > HBAR_SubModeMax(m))
+  	HBAR.d.mode[m] = 0;
+
+  return ok;
+}
+
+uint8_t EE_Mode(EE_CMD cmd, uint8_t val) {
+	uint8_t *ptr = &val;
+  uint8_t ok;
+
+  if (cmd == EE_CMD_R)
+  	ptr = &HBAR.d.m;
+  ok = Cmd(cmd, VA_MODE, ptr, sizeof(val));
+  if (cmd == EE_CMD_W)
+  	memcpy(&HBAR.d.m, &val, sizeof(val));
+
+  if (HBAR.d.m >= HBAR_M_MAX)
+  	HBAR.d.m = 0;
+
+  return ok;
 }
 
 #endif
 
-uint8_t EE_FotaType(EE_CMD cmd, IAP_TYPE value) {
-  uint32_t ret;
-
-  ret = Command(VADDR_FOTA_TYPE, cmd, &value, &(FOTA.TYPE), sizeof(uint32_t));
+uint8_t EE_FotaType(EE_CMD cmd, IAP_TYPE val) {
+	IAP_TYPE *ptr = &val;
+  uint8_t ok;
 
   if (cmd == EE_CMD_R)
-    if (!(FOTA.TYPE == IAP_VCU || FOTA.TYPE == IAP_HMI)) FOTA.TYPE = IAP_VCU;
+  	ptr = &FOTA.TYPE;
+  ok = Cmd(cmd, VA_FOTA_TYPE, ptr, sizeof(val));
+  if (cmd == EE_CMD_W)
+  	memcpy(&FOTA.TYPE, &val, sizeof(val));
 
-  return ret;
+  if (!(FOTA.TYPE == IAP_VCU || FOTA.TYPE == IAP_HMI))
+  	FOTA.TYPE = IAP_VCU;
+
+  return ok;
 }
 
-uint8_t EE_FotaFlag(EE_CMD cmd, uint32_t value) {
-  return Command(VADDR_FOTA_FLAG, cmd, &value, &(FOTA.FLAG), sizeof(value));
+uint8_t EE_FotaFlag(EE_CMD cmd, uint32_t val) {
+	uint32_t *ptr = &val;
+  uint8_t ok;
+
+  if (cmd == EE_CMD_R)
+  	ptr = &FOTA.FLAG;
+  ok = Cmd(cmd, VA_FOTA_FLAG, ptr, sizeof(val));
+  if (cmd == EE_CMD_W)
+  	memcpy(&FOTA.FLAG, &val, sizeof(val));
+
+  return ok;
 }
 
-uint8_t EE_FotaVersion(EE_CMD cmd, uint16_t value) {
-  return Command(VADDR_FOTA_VERSION, cmd, &value, &(FOTA.VERSION),
-                 sizeof(value));
+uint8_t EE_FotaVersion(EE_CMD cmd, uint16_t val) {
+	uint16_t *ptr = &val;
+  uint8_t ok;
+
+  if (cmd == EE_CMD_R)
+  	ptr = &FOTA.VERSION;
+  ok = Cmd(cmd, VA_FOTA_VERSION, ptr, sizeof(val));
+  if (cmd == EE_CMD_W)
+  	memcpy(&FOTA.VERSION, &val, sizeof(val));
+
+  return ok;
 }
+
+//uint8_t EE_NetCon(EE_CMD cmd, net_con_t con) {
+//  net_con_t* d = &SIM.net.con;
+//  uint8_t ok = 0;
+//
+//  ok += Cmd(VA_NET_CON_APN, cmd, con.apn, d->apn, sizeof(d->apn));
+//  ok += Cmd(VA_NET_CON_USER, cmd, con.user, d->user, sizeof(d->user));
+//  ok += Cmd(VA_NET_CON_PASS, cmd, con.pass, d->pass, sizeof(d->pass));
+//
+//  return ok == 3;
+//}
+//
+//uint8_t EE_NetFtp(EE_CMD cmd, net_ftp_t ftp) {
+//  net_ftp_t* d = &SIM.net.ftp;
+//  uint8_t ok = 0;
+//
+//  ok += Cmd(VA_NET_FTP_HOST, cmd, ftp.host, d->host, sizeof(d->host));
+//  ok += Cmd(VA_NET_FTP_USER, cmd, ftp.user, d->user, sizeof(d->user));
+//  ok += Cmd(VA_NET_FTP_PASS, cmd, ftp.pass, d->pass, sizeof(d->pass));
+//
+//  return ok == 3;
+//}
+//
+//uint8_t EE_NetMqtt(EE_CMD cmd, net_mqtt_t mqtt) {
+//  net_mqtt_t* d = &SIM.net.mqtt;
+//  uint8_t ok = 0;
+//
+//  ok += Cmd(VA_NET_MQTT_HOST, cmd, mqtt.host, d->host, sizeof(d->host));
+//  ok += Cmd(VA_NET_MQTT_PORT, cmd, &(mqtt.port), &(d->port), sizeof(d->port));
+//  ok += Cmd(VA_NET_MQTT_USER, cmd, mqtt.user, d->user, sizeof(d->user));
+//  ok += Cmd(VA_NET_MQTT_PASS, cmd, mqtt.pass, d->pass, sizeof(d->pass));
+//
+//  return ok == 4;
+//}
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t Command(EE_VADDR vaddr, EE_CMD cmd, void* value, void* ptr,
-                       uint16_t size) {
-  uint16_t addr = EE_WORD(vaddr);
-  uint8_t ret = 0;
+static uint8_t Cmd(EE_CMD cmd, EE_VA va, void* val, uint16_t size) {
+  uint16_t addr = EE_WORD(va);
+  uint8_t ok = 0;
 
   lock();
-  if (cmd == EE_CMD_W) {
-    memcpy(ptr, value, size);
-    ret = EEPROM24XX_Save(addr, value, size);
-  } else {
-    ret = EEPROM24XX_Load(addr, value, size);
-    if (ret) memcpy(ptr, value, size);
-  }
+  if (cmd == EE_CMD_W)
+    ok = EEPROM24XX_Save(addr, val, size);
+  else
+    ok = EEPROM24XX_Load(addr, val, size);
   unlock();
 
-  return ret;
+  return ok;
 }
 
 static void lock(void) {

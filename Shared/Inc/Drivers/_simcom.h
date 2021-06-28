@@ -22,26 +22,27 @@
 #define NET_GUARD_MS ((uint16_t)1000)
 
 #define NET_CON_APN "3gprs"
-#define NET_CON_USERNAME "3gprs"
-#define NET_CON_PASSWORD "3gprs"
-
+#define NET_CON_USER "3gprs"
+#define NET_CON_PASS "3gprs"
 //#define NET_CON_APN                             "telkomsel"
-//#define NET_CON_USERNAME                        "wap"
-//#define NET_CON_PASSWORD                        "wap123"
+//#define NET_CON_USER                        "wap"
+//#define NET_CON_PASS                        "wap123"
 //#define NET_CON_APN                             "indosatgprs"
-//#define NET_CON_USERNAME                        "indosat"
-//#define NET_CON_PASSWORD                        "indosat"
+//#define NET_CON_USER                        "indosat"
+//#define NET_CON_PASS                        "indosat"
 
-#define NET_FTP_SERVER "ftp.garda-energi.com"
-#define NET_FTP_USERNAME "fota@garda-energi.com"
-#define NET_FTP_PASSWORD "@Garda313"
+#define NET_MQTT_HOST "test.mosquitto.org"
+#define NET_MQTT_PORT ((uint16_t)1883)
+#define NET_MQTT_USER ""
+#define NET_MQTT_PASS ""
+//#define NET_MQTT_HOST                          "pujakusumae-30856.portmap.io"
+//#define NET_MQTT_PORT                 ((uint16_t)46606)
+//#define NET_MQTT_HOST                          "mqtt.eclipseprojects.io"
+//#define NET_MQTT_PORT                 ((uint16_t)1883)
 
-//#define NET_TCP_SERVER                          "pujakusumae-30856.portmap.io"
-//#define NET_TCP_PORT                 ((uint16_t)46606)
-//#define NET_TCP_SERVER                          "mqtt.eclipseprojects.io"
-//#define NET_TCP_PORT                 ((uint16_t)1883)
-#define NET_TCP_SERVER "test.mosquitto.org"
-#define NET_TCP_PORT ((uint16_t)1883)
+#define NET_FTP_HOST "ftp.garda-energi.com"
+#define NET_FTP_USER "fota@garda-energi.com"
+#define NET_FTP_PASS "@Garda313"
 
 #define SIM_CMD_BOOT "AT\r"
 #define SIM_CMD_FTPGET "AT+FTPGET=2"
@@ -101,6 +102,25 @@ typedef enum {
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
+	char apn[20];
+	char user[20];
+	char pass[20];
+} net_con_t;
+
+typedef struct {
+	char host[30];
+	uint16_t port;
+	char user[30];
+	char pass[30];
+} net_mqtt_t;
+
+typedef struct {
+	char host[30];
+	char user[30];
+	char pass[30];
+} net_ftp_t;
+
+typedef struct {
   uint8_t signal;
   SIMCOM_STATE state;
   AT_CIPSTATUS ipstatus;
@@ -108,7 +128,14 @@ typedef struct {
 } sim_data_t;
 
 typedef struct {
+	net_con_t con;
+	net_ftp_t ftp;
+	net_mqtt_t mqtt;
+} sim_net_t;
+
+typedef struct {
   sim_data_t d;
+  sim_net_t net;
   UART_HandleTypeDef* puart;
   DMA_HandleTypeDef* pdma;
 } sim_t;

@@ -609,8 +609,8 @@ SIM_RESULT AT_BearerInitialize(void) {
                             .con =
                                 {
                                     .apn = NET_CON_APN,
-                                    .username = NET_CON_USERNAME,
-                                    .password = NET_CON_PASSWORD,
+                                    .username = NET_CON_USER,
+                                    .password = NET_CON_PASS,
                                 },
                         };
 
@@ -694,14 +694,14 @@ SIM_RESULT AT_FtpInitialize(at_ftp_t* param) {
 
   if (res == SIM_OK)
     res =
-        SingleString("FTPSERV", ATW, NET_FTP_SERVER, sizeof(NET_FTP_SERVER), 0);
+        SingleString("FTPSERV", ATW, NET_FTP_HOST, sizeof(NET_FTP_HOST), 0);
 
   if (res == SIM_OK)
-    res = SingleString("FTPUN", ATW, NET_FTP_USERNAME, sizeof(NET_FTP_USERNAME),
+    res = SingleString("FTPUN", ATW, NET_FTP_USER, sizeof(NET_FTP_USER),
                        0);
 
   if (res == SIM_OK)
-    res = SingleString("FTPPW", ATW, NET_FTP_PASSWORD, sizeof(NET_FTP_PASSWORD),
+    res = SingleString("FTPPW", ATW, NET_FTP_PASS, sizeof(NET_FTP_PASS),
                        0);
 
   if (res == SIM_OK)

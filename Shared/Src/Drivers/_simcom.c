@@ -44,6 +44,11 @@ sim_t SIM = {.d =
                      .signal = 0,
                      .response = NULL,
                  },
+//						 .net = {
+//								 .con = {0},
+//								 .ftp = {0},
+//								 .mqtt = {0},
+//						 },
              .puart = &huart1,
              .pdma = &hdma_usart1_rx};
 
@@ -718,8 +723,8 @@ static void SetStatePdpOn(SIM_RESULT* res) {
   if (*res == SIM_OK) {
     at_cstt_t param = {
         .apn = NET_CON_APN,
-        .username = NET_CON_USERNAME,
-        .password = NET_CON_PASSWORD,
+        .username = NET_CON_USER,
+        .password = NET_CON_PASS,
     };
     *res = AT_ConfigureAPN(ATW, &param);
   }
@@ -793,7 +798,7 @@ static void SetStateInternetOn(SIM_RESULT* res, uint32_t tick,
   if (*res == SIM_OK && (SIM.d.ipstatus != CIPSTAT_CONNECT_OK ||
                          SIM.d.ipstatus != CIPSTAT_CONNECTING)) {
     at_cipstart_t param = {
-        .mode = "TCP", .ip = NET_TCP_SERVER, .port = NET_TCP_PORT};
+        .mode = "TCP", .ip = NET_MQTT_HOST, .port = NET_MQTT_PORT};
     *res = AT_StartConnection(&param);
 
     // wait until attached
