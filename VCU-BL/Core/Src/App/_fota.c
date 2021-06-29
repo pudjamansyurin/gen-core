@@ -58,7 +58,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   /* Backup if needed */
   if (res == SIM_OK) {
     FOCAN_SetProgress(type, 0.0f);
-    if (!FOTA_InProgress()) FOTA_SetFlag();
+    if (!IAP_InProgress()) IAP_SetFlag();
   }
 
   /* Get the stored crc information */
@@ -127,8 +127,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       res = FOTA_ValidateCRC(crcNew, len, APP_START_ADDR);
       // Glue related information to new image
       if (res == SIM_OK) {
-        FOTA_SetAppMeta(CRC_OFFSET, &crcNew);
-        FOTA_SetAppMeta(SIZE_OFFSET, &len);
+        IAP_SetAppMeta(CRC_OFFSET, &crcNew);
+        IAP_SetAppMeta(SIZE_OFFSET, &len);
       }
     }
 
@@ -140,7 +140,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   // Reset FOTA flag only when FOTA success
   if (res == SIM_OK) {
-    FOTA_ResetFlag();
+    IAP_ResetFlag();
 
     // Handle success
     *(uint32_t *)IAP_RESP_ADDR = IRESP_FOTA_SUCCESS;
@@ -316,7 +316,7 @@ void FOTA_Reboot(IAP_TYPE type) {
   /* Clear backup area */
   if (type == ITYPE_VCU) FLASHER_EraseBkpArea();
 
-  FOTA_ResetFlag();
+  IAP_ResetFlag();
   HAL_NVIC_SystemReset();
 }
 
@@ -328,28 +328,8 @@ void FOTA_GetCRC(uint32_t *crc) {
   *crc = *(uint32_t *)(address + CRC_OFFSET);
 }
 
-void FOTA_SetAppMeta(uint32_t offset, uint32_t *data) {
-  FLASHER_WriteAppArea((uint8_t *)data, sizeof(uint32_t), offset);
-}
-
-void FOTA_SetBootMeta(uint32_t offset, uint32_t *data) {
-  FLASHER_WriteBootArea((uint8_t *)data, sizeof(uint32_t), offset);
-}
-
 uint8_t FOTA_NeedBackup(void) {
   return (FOTA_ValidImage(APP_START_ADDR) && !FOTA_ValidImage(BKP_START_ADDR));
-}
-
-uint8_t FOTA_InProgress(void) { return (IAP.flag == IFLAG_EEPROM); }
-
-void FOTA_SetFlag(void) {
-  IAP_FLAG flag = IFLAG_EEPROM;
-  IAP_FlagStore(&flag);
-}
-
-void FOTA_ResetFlag(void) {
-  IAP_FLAG flag = IFLAG_RESET;
-  IAP_FlagStore(&flag);
 }
 
 /* Private functions implementation

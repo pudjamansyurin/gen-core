@@ -10,6 +10,9 @@
 #include "App/_iap.h"
 
 #include "Libs/_eeprom.h"
+#if (!APP)
+#include "Drivers/_flasher.h"
+#endif
 
 /* Public variables
  * --------------------------------------------*/
@@ -39,3 +42,25 @@ uint8_t IAP_VersionStore(uint16_t *src) {
 
   return EE_Cmd(VA_IAP_VERSION, src, dst, sizeof(uint16_t));
 }
+
+#if (!APP)
+void IAP_SetAppMeta(uint32_t offset, uint32_t *data) {
+  FLASHER_WriteAppArea((uint8_t *)data, sizeof(uint32_t), offset);
+}
+
+void IAP_SetBootMeta(uint32_t offset, uint32_t *data) {
+  FLASHER_WriteBootArea((uint8_t *)data, sizeof(uint32_t), offset);
+}
+
+void IAP_SetFlag(void) {
+  IAP_FLAG flag = IFLAG_EEPROM;
+  IAP_FlagStore(&flag);
+}
+
+void IAP_ResetFlag(void) {
+  IAP_FLAG flag = IFLAG_RESET;
+  IAP_FlagStore(&flag);
+}
+
+uint8_t IAP_InProgress(void) { return (IAP.flag == IFLAG_EEPROM); }
+#endif

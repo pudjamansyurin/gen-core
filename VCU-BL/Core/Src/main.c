@@ -141,13 +141,13 @@ int main(void) {
     HAL_NVIC_SystemReset();
   }
   /* Jump to application if it exist and FOTA finished */
-  else if (FOTA_ValidImage(APP_START_ADDR) && !FOTA_InProgress()) {
+  else if (FOTA_ValidImage(APP_START_ADDR) && !IAP_InProgress()) {
     printf("Jump to application.\n");
     /* Jump sequence */
     FOTA_JumpToApplication();
   }
   /* Power reset during FOTA, try once more */
-  else if (FOTA_InProgress()) {
+  else if (IAP_InProgress()) {
     if (IAP.type == ITYPE_VCU) {
       printf("FOTA set, do FOTA once more.\n");
       /* Everything went well, boot form new image */
@@ -159,7 +159,7 @@ int main(void) {
       FLASHER_EraseAppArea();
     }
     /* Reset FOTA flag */
-    FOTA_ResetFlag();
+    IAP_ResetFlag();
     HAL_NVIC_SystemReset();
   }
   /* Try to restore the backup */

@@ -97,5 +97,12 @@ extern iap_t IAP;
 uint8_t IAP_TypeStore(IAP_TYPE *src);
 uint8_t IAP_FlagStore(IAP_FLAG *src);
 uint8_t IAP_VersionStore(uint16_t *src);
+#if (!APP)
+void IAP_SetAppMeta(uint32_t offset, uint32_t *data);
+void IAP_SetBootMeta(uint32_t offset, uint32_t *data);
+void IAP_SetFlag(void);
+void IAP_ResetFlag(void);
+uint8_t IAP_InProgress(void);
+#endif
 
 #endif /* INC_APP__IAP_H_ */

@@ -46,28 +46,31 @@ uint8_t EE_Init(void) {
   ok = EEPROM24XX_IsConnected(100);
 
   if (ok) {
-#if (!APP)
-    if (IEEP_VALUE != IEEP_SET) {
-      uint32_t ieep = IEEP_SET;
-      FOTA_SetBootMeta(IEEP_OFFSET, &ieep);
-      SIMCon_SetDefaultStore();
-    }
-#else
+#if (APP)
+    SIMCon_LoadStore();
     AES_KeyStore(NULL);
     HBAR_LoadStore();
 #endif
-    SIMCon_LoadStore();
+
     IAP_VersionStore(NULL);
     IAP_TypeStore(NULL);
+    if (IEEP_VALUE == IEEP_SET) SIMCon_LoadStore();
+
+#if (!APP)
+    if (IEEP_VALUE == IEEP_RESET) {
+      uint32_t ieep = IEEP_SET;
+      IAP_SetBootMeta(IEEP_OFFSET, &ieep);
+      SIMCon_SetDefaultStore();
+    }
+#endif
   }
   unlock();
 
-  if (!ok)
-    printf("EEPROM:Error\n");
+  if (!ok) printf("EEPROM:Error\n");
   return ok;
 }
 
-uint8_t EE_Cmd(EE_VA va, void* src, void *dst, uint16_t size) {
+uint8_t EE_Cmd(EE_VA va, void* src, void* dst, uint16_t size) {
   uint16_t addr = EE_WORD(va);
   uint8_t ok;
 
@@ -75,7 +78,7 @@ uint8_t EE_Cmd(EE_VA va, void* src, void *dst, uint16_t size) {
   if (src == NULL) {
     ok = EEPROM24XX_Load(addr, dst, size);
   } else {
-  	memcpy(dst, src, size);
+    memcpy(dst, src, size);
     ok = EEPROM24XX_Save(addr, src, size);
   }
   unlock();
