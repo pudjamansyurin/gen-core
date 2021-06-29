@@ -2,32 +2,37 @@
  * _bat.c
  *
  *  Created on: Dec 11, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
-/* Includes -----------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_bat.h"
+
 #include "adc.h"
 
-/* External variables -------------------------------------------------------*/
-#if (RTOS_ENABLE)
+/* External variables
+ * --------------------------------------------*/
+#if (APP)
 extern osMutexId_t BatMutexHandle;
 #endif
 
-/* Private variables --------------------------------------------------------*/
+/* Private variables
+ * --------------------------------------------*/
 static bat_t BAT = {
-		.voltage = 0,
-		.buf = {0},
-		.padc = &hadc1,
+    .voltage = 0,
+    .buf = {0},
+    .padc = &hadc1,
 };
 
-/* Private functions declaration
- * ----------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val);
+static uint16_t MovAvg(uint16_t* buf, uint16_t sz, uint16_t val);
 
-/* Public functions implementation ------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void BAT_Init(void) {
   lock();
   MX_ADC1_Init();
@@ -48,8 +53,7 @@ uint16_t BAT_ScanValue(void) {
   lock();
   HAL_ADC_Start(BAT.padc);
   ok = HAL_ADC_PollForConversion(BAT.padc, 5) == HAL_OK;
-  if (ok)
-	  value = HAL_ADC_GetValue(BAT.padc);
+  if (ok) value = HAL_ADC_GetValue(BAT.padc);
   HAL_ADC_Stop(BAT.padc);
 
   if (ok) {
@@ -66,18 +70,18 @@ uint16_t BAT_ScanValue(void) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(BatMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(BatMutexHandle);
 #endif
 }
 
-static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val) {
+static uint16_t MovAvg(uint16_t* buf, uint16_t sz, uint16_t val) {
   static uint32_t sum = 0;
   static uint16_t pos = 0, len = 0;
 
@@ -86,11 +90,9 @@ static uint16_t MovAvg(uint16_t *buf, uint16_t sz, uint16_t val) {
   // Assign the nextNum to the position in the array
   buf[pos] = val;
   // Increment position
-  if (++pos >= sz)
-    pos = 0;
+  if (++pos >= sz) pos = 0;
   // calculate filled array
-  if (len < sz)
-    len++;
+  if (len < sz) len++;
   // return the average
   return sum / len;
 }

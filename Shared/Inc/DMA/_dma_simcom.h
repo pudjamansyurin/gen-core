@@ -2,28 +2,32 @@
  * DMA_Simcom.h
  *
  *  Created on: Aug 14, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
-#ifndef DMA_SIMCOM_H_
-#define DMA_SIMCOM_H_
+#ifndef DMA_SIM_H_
+#define DMA_SIM_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
+#include "App/_common.h"
 
-/* Constants -----------------------------------------------------------------*/
-#define SIMCOM_UART_RX_SZ (uint16_t)(1024 + 512 + 128)
-#define SIMCOM_DMA_RX_SZ (uint16_t)(128)
+/* Exported defines
+ * --------------------------------------------*/
+#define SIM_UART_RX_SZ ((uint16_t)(1024 + 512 + 128))
+#define SIM_DMA_RX_SZ ((uint16_t)128)
 
-/* Exported variables --------------------------------------------------------*/
-extern char SIMCOM_UART_RX[SIMCOM_UART_RX_SZ];
+/* Exported variables
+ * --------------------------------------------*/
+extern char SIM_UART_RX[SIM_UART_RX_SZ];
 
-/* Public functions prototype ------------------------------------------------*/
-void SIMCOM_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma);
-void SIMCOM_DMA_Stop(void);
-void SIMCOM_USART_IrqHandler(void);
-void SIMCOM_DMA_IrqHandler(void);
-void SIMCOM_Reset_Buffer(void);
-uint8_t SIMCOM_Transmit(char *data, uint16_t Size);
+/* Public functions prototype
+ * --------------------------------------------*/
+void SIM_DMA_Start(UART_HandleTypeDef* huart, DMA_HandleTypeDef* hdma);
+void SIM_DMA_Stop(void);
+void SIM_USART_IrqHandler(void);
+void SIM_DMA_IrqHandler(void);
+void SIM_Reset_Buffer(void);
+uint8_t SIM_Transmit(char* data, uint16_t Size);
 
-#endif /* DMA_SIMCOM_H_ */
+#endif /* DMA_SIM_H_ */

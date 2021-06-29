@@ -33,10 +33,12 @@
 #ifndef NMEA_H_
 #define NMEA_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
+#include "App/_common.h"
 
-/* Exported constants --------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 /**
  * @brief           Enables `1` or disables `0` `double precision` for floating
  * point values such as latitude, longitude, altitude.
@@ -118,8 +120,8 @@ typedef double nmea_float_t;
 typedef float nmea_float_t;
 #endif
 
-/* Exported struct
- * ----------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 /**
  * @brief           Satellite descriptor
  */
@@ -250,8 +252,8 @@ typedef struct {
 #define nmea_is_valid(_gh) (0)
 #endif /* NMEA_CFG_STATEMENT_GPRMC || __DOXYGEN__ */
 
-/* Exported enum
- * ----------------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 /**
  * @brief           List of optional speed transformation from NMEA values (in
  * knots)
@@ -281,7 +283,8 @@ typedef enum {
   nmea_speed_smph, /*!< Sea miles per hour */
 } NMEA_SPEED;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 uint8_t nmea_init(nmea_t *gh);
 uint8_t nmea_process(nmea_t *gh, const void *data, size_t len);
 uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los,

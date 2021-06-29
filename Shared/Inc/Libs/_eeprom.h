@@ -2,67 +2,52 @@
  * _flash.h
  *
  *  Created on: Sep 9, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef EEPROM_H_
 #define EEPROM_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
-#if (!BOOTLOADER)
-#include "Libs/_hbar.h"
-#endif
+/* Includes
+ * --------------------------------------------*/
+#include "App/_common.h"
 
-/* Exported macro function ---------------------------------------------------*/
-#define EE_ADDR  			   		((uint16_t)0xA0)
-#define EE_NULL                     ((uint8_t)0)
-#define EE_WORD(ad)             	((uint16_t)(ad*32))
+/* Exported macros
+ * --------------------------------------------*/
+#define EE_ADDR ((uint16_t)0xA0)
+#define EE_WORD(X) ((uint16_t)(X * 32))
 
-/* Exported struct -----------------------------------------------------------*/
-typedef struct {
-    uint32_t FLAG;
-    uint16_t VERSION;
-    IAP_TYPE TYPE;
-} fota_t;
-
-/* Exported enum -------------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 typedef enum {
-	VADDR_RESET,
-	VADDR_UNUSED,
-	VADDR_AES_KEY,
-	VADDR_FOTA_VERSION,
-	VADDR_FOTA_FLAG,
-	VADDR_FOTA_TYPE,
-	VADDR_TRIP_A,
-	VADDR_TRIP_B,
-	VADDR_TRIP_ODO,
-	VADDR_MODE_DRIVE,
-	VADDR_MODE_TRIP,
-	VADDR_MODE_REPORT,
-	VADDR_MODE,
-	VADDR_MAX,
-} EE_VADDR;
+  VA_RESET,
+  VA_UNUSED,
+  VA_AES_KEY,
+  VA_IAP_VERSION,
+  VA_IAP_FLAG,
+  VA_IAP_TYPE,
+  VA_TRIP_A,
+  VA_TRIP_B,
+  VA_TRIP_ODO,
+  VA_MODE_DRIVE,
+  VA_MODE_TRIP,
+  VA_MODE_PREDICTION,
+  VA_MODE,
+  VA_APN_NAME,
+  VA_APN_USER,
+  VA_APN_PASS,
+  VA_FTP_HOST,
+  VA_FTP_USER,
+  VA_FTP_PASS,
+  VA_MQTT_HOST,
+  VA_MQTT_PORT,
+  VA_MQTT_USER,
+  VA_MQTT_PASS,
+  VA_MAX,
+} EE_VA;
 
-typedef enum {
-    EE_CMD_R = 0,
-    EE_CMD_W = 1
-} EE_CMD;
-
-/* Exported variables ---------------------------------------------------------*/
-extern fota_t FOTA;
-
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 uint8_t EE_Init(void);
-#if (!BOOTLOADER)
-void EE_Load(void);
-//uint8_t EE_Reset(EE_CMD cmd, uint16_t value);
-uint8_t EE_AesKey(EE_CMD cmd, uint32_t *value);
-uint8_t EE_TripMeter(EE_CMD cmd, HBAR_MODE_TRIP mTrip, uint16_t value);
-uint8_t EE_SubMode(EE_CMD cmd, HBAR_MODE m, uint8_t value);
-uint8_t EE_Mode(EE_CMD cmd, uint8_t value);
-#endif
-uint8_t EE_FotaType(EE_CMD cmd, IAP_TYPE value);
-uint8_t EE_FotaFlag(EE_CMD cmd, uint32_t value);
-uint8_t EE_FotaVersion(EE_CMD cmd, uint16_t value);
+uint8_t EE_Cmd(EE_VA va, void *src, void *dst, uint16_t size);
 #endif /* EEPROM_H_ */

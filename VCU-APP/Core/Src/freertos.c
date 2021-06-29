@@ -20,12 +20,41 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
-#include "task.h"
-#include "main.h"
+
 #include "cmsis_os.h"
+#include "main.h"
+#include "task.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "App/_command.h"
+#include "App/_exec.h"
+#include "App/_firmware.h"
+#include "App/_ml.h"
+#include "App/_network.h"
+#include "App/_reporter.h"
+#include "App/_state.h"
+#include "App/_task.h"
+#include "DMA/_dma_finger.h"
+#include "DMA/_dma_ublox.h"
+#include "Drivers/_aes.h"
+#include "Drivers/_bat.h"
+#include "Drivers/_canbus.h"
+#include "Drivers/_iwdg.h"
+#include "Drivers/_simcom.h"
+#include "Libs/_audio.h"
+#include "Libs/_eeprom.h"
+#include "Libs/_finger.h"
+#include "Libs/_gps.h"
+#include "Libs/_hbar.h"
+#include "Libs/_mems.h"
+#include "Libs/_mqtt.h"
+#include "Libs/_remote.h"
+#include "Nodes/BMS.h"
+#include "Nodes/HMI1.h"
+#include "Nodes/MCU.h"
+#include "Nodes/NODE.h"
+#include "Nodes/VCU.h"
 #include "adc.h"
 #include "aes.h"
 #include "can.h"
@@ -36,39 +65,6 @@
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
-
-#include "DMA/_dma_finger.h"
-#include "DMA/_dma_ublox.h"
-
-#include "Drivers/_aes.h"
-#include "Drivers/_bat.h"
-#include "Drivers/_canbus.h"
-#include "Drivers/_iwdg.h"
-#include "Drivers/_rtc.h"
-#include "Drivers/_simcom.h"
-
-#include "Libs/_audio.h"
-#include "Libs/_command.h"
-#include "Libs/_eeprom.h"
-#include "Libs/_finger.h"
-#include "Libs/_firmware.h"
-#include "Libs/_gps.h"
-#include "Libs/_mems.h"
-#include "Libs/_hbar.h"
-#include "Libs/_mqtt.h"
-#include "Libs/_remote.h"
-#include "Libs/_reporter.h"
-#include "Libs/_network.h"
-
-#include "Nodes/BMS.h"
-#include "Nodes/HMI1.h"
-#include "Nodes/HMI2.h"
-#include "Nodes/MCU.h"
-#include "Nodes/VCU.h"
-#include "Nodes/NODE.h"
-
-#include "Business/_states.h"
-#include "Business/_exec.h"
 
 /* USER CODE END Includes */
 
@@ -96,391 +92,359 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE END Variables */
 /* Definitions for ManagerTask */
 osThreadId_t ManagerTaskHandle;
-uint32_t ManagerTaskBuffer[ 328 ];
+uint32_t ManagerTaskBuffer[328];
 osStaticThreadDef_t ManagerTaskControlBlock;
 const osThreadAttr_t ManagerTask_attributes = {
-  .name = "ManagerTask",
-  .cb_mem = &ManagerTaskControlBlock,
-  .cb_size = sizeof(ManagerTaskControlBlock),
-  .stack_mem = &ManagerTaskBuffer[0],
-  .stack_size = sizeof(ManagerTaskBuffer),
-  .priority = (osPriority_t) osPriorityRealtime,
+    .name = "ManagerTask",
+    .cb_mem = &ManagerTaskControlBlock,
+    .cb_size = sizeof(ManagerTaskControlBlock),
+    .stack_mem = &ManagerTaskBuffer[0],
+    .stack_size = sizeof(ManagerTaskBuffer),
+    .priority = (osPriority_t)osPriorityRealtime,
 };
 /* Definitions for NetworkTask */
 osThreadId_t NetworkTaskHandle;
-uint32_t NetworkTaskBuffer[ 896 ];
+uint32_t NetworkTaskBuffer[896];
 osStaticThreadDef_t NetworkTaskControlBlock;
 const osThreadAttr_t NetworkTask_attributes = {
-  .name = "NetworkTask",
-  .cb_mem = &NetworkTaskControlBlock,
-  .cb_size = sizeof(NetworkTaskControlBlock),
-  .stack_mem = &NetworkTaskBuffer[0],
-  .stack_size = sizeof(NetworkTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "NetworkTask",
+    .cb_mem = &NetworkTaskControlBlock,
+    .cb_size = sizeof(NetworkTaskControlBlock),
+    .stack_mem = &NetworkTaskBuffer[0],
+    .stack_size = sizeof(NetworkTaskBuffer),
+    .priority = (osPriority_t)osPriorityNormal,
 };
 /* Definitions for ReporterTask */
 osThreadId_t ReporterTaskHandle;
-uint32_t ReporterTaskBuffer[ 304 ];
+uint32_t ReporterTaskBuffer[304];
 osStaticThreadDef_t ReporterTaskControlBlock;
 const osThreadAttr_t ReporterTask_attributes = {
-  .name = "ReporterTask",
-  .cb_mem = &ReporterTaskControlBlock,
-  .cb_size = sizeof(ReporterTaskControlBlock),
-  .stack_mem = &ReporterTaskBuffer[0],
-  .stack_size = sizeof(ReporterTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "ReporterTask",
+    .cb_mem = &ReporterTaskControlBlock,
+    .cb_size = sizeof(ReporterTaskControlBlock),
+    .stack_mem = &ReporterTaskBuffer[0],
+    .stack_size = sizeof(ReporterTaskBuffer),
+    .priority = (osPriority_t)osPriorityNormal,
 };
 /* Definitions for CommandTask */
 osThreadId_t CommandTaskHandle;
-uint32_t CommandTaskBuffer[ 328 ];
+uint32_t CommandTaskBuffer[328];
 osStaticThreadDef_t CommandTaskControlBlock;
 const osThreadAttr_t CommandTask_attributes = {
-  .name = "CommandTask",
-  .cb_mem = &CommandTaskControlBlock,
-  .cb_size = sizeof(CommandTaskControlBlock),
-  .stack_mem = &CommandTaskBuffer[0],
-  .stack_size = sizeof(CommandTaskBuffer),
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
-/* Definitions for GpsTask */
-osThreadId_t GpsTaskHandle;
-uint32_t GpsTaskBuffer[ 256 ];
-osStaticThreadDef_t GpsTaskControlBlock;
-const osThreadAttr_t GpsTask_attributes = {
-  .name = "GpsTask",
-  .cb_mem = &GpsTaskControlBlock,
-  .cb_size = sizeof(GpsTaskControlBlock),
-  .stack_mem = &GpsTaskBuffer[0],
-  .stack_size = sizeof(GpsTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "CommandTask",
+    .cb_mem = &CommandTaskControlBlock,
+    .cb_size = sizeof(CommandTaskControlBlock),
+    .stack_mem = &CommandTaskBuffer[0],
+    .stack_size = sizeof(CommandTaskBuffer),
+    .priority = (osPriority_t)osPriorityAboveNormal,
 };
 /* Definitions for MemsTask */
 osThreadId_t MemsTaskHandle;
-uint32_t MemsTaskBuffer[ 304 ];
+uint32_t MemsTaskBuffer[304];
 osStaticThreadDef_t MemsTaskControlBlock;
 const osThreadAttr_t MemsTask_attributes = {
-  .name = "MemsTask",
-  .cb_mem = &MemsTaskControlBlock,
-  .cb_size = sizeof(MemsTaskControlBlock),
-  .stack_mem = &MemsTaskBuffer[0],
-  .stack_size = sizeof(MemsTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "MemsTask",
+    .cb_mem = &MemsTaskControlBlock,
+    .cb_size = sizeof(MemsTaskControlBlock),
+    .stack_mem = &MemsTaskBuffer[0],
+    .stack_size = sizeof(MemsTaskBuffer),
+    .priority = (osPriority_t)osPriorityNormal,
 };
 /* Definitions for RemoteTask */
 osThreadId_t RemoteTaskHandle;
-uint32_t RemoteTaskBuffer[ 256 ];
+uint32_t RemoteTaskBuffer[256];
 osStaticThreadDef_t RemoteTaskControlBlock;
 const osThreadAttr_t RemoteTask_attributes = {
-  .name = "RemoteTask",
-  .cb_mem = &RemoteTaskControlBlock,
-  .cb_size = sizeof(RemoteTaskControlBlock),
-  .stack_mem = &RemoteTaskBuffer[0],
-  .stack_size = sizeof(RemoteTaskBuffer),
-  .priority = (osPriority_t) osPriorityHigh,
+    .name = "RemoteTask",
+    .cb_mem = &RemoteTaskControlBlock,
+    .cb_size = sizeof(RemoteTaskControlBlock),
+    .stack_mem = &RemoteTaskBuffer[0],
+    .stack_size = sizeof(RemoteTaskBuffer),
+    .priority = (osPriority_t)osPriorityHigh,
 };
 /* Definitions for FingerTask */
 osThreadId_t FingerTaskHandle;
-uint32_t FingerTaskBuffer[ 328 ];
+uint32_t FingerTaskBuffer[328];
 osStaticThreadDef_t FingerTaskControlBlock;
 const osThreadAttr_t FingerTask_attributes = {
-  .name = "FingerTask",
-  .cb_mem = &FingerTaskControlBlock,
-  .cb_size = sizeof(FingerTaskControlBlock),
-  .stack_mem = &FingerTaskBuffer[0],
-  .stack_size = sizeof(FingerTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "FingerTask",
+    .cb_mem = &FingerTaskControlBlock,
+    .cb_size = sizeof(FingerTaskControlBlock),
+    .stack_mem = &FingerTaskBuffer[0],
+    .stack_size = sizeof(FingerTaskBuffer),
+    .priority = (osPriority_t)osPriorityNormal,
 };
 /* Definitions for AudioTask */
 osThreadId_t AudioTaskHandle;
-uint32_t AudioTaskBuffer[ 240 ];
+uint32_t AudioTaskBuffer[240];
 osStaticThreadDef_t AudioTaskControlBlock;
 const osThreadAttr_t AudioTask_attributes = {
-  .name = "AudioTask",
-  .cb_mem = &AudioTaskControlBlock,
-  .cb_size = sizeof(AudioTaskControlBlock),
-  .stack_mem = &AudioTaskBuffer[0],
-  .stack_size = sizeof(AudioTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "AudioTask",
+    .cb_mem = &AudioTaskControlBlock,
+    .cb_size = sizeof(AudioTaskControlBlock),
+    .stack_mem = &AudioTaskBuffer[0],
+    .stack_size = sizeof(AudioTaskBuffer),
+    .priority = (osPriority_t)osPriorityNormal,
 };
 /* Definitions for CanRxTask */
 osThreadId_t CanRxTaskHandle;
-uint32_t CanRxTaskBuffer[ 229 ];
+uint32_t CanRxTaskBuffer[229];
 osStaticThreadDef_t CanRxTaskControlBlock;
 const osThreadAttr_t CanRxTask_attributes = {
-  .name = "CanRxTask",
-  .cb_mem = &CanRxTaskControlBlock,
-  .cb_size = sizeof(CanRxTaskControlBlock),
-  .stack_mem = &CanRxTaskBuffer[0],
-  .stack_size = sizeof(CanRxTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "CanRxTask",
+    .cb_mem = &CanRxTaskControlBlock,
+    .cb_size = sizeof(CanRxTaskControlBlock),
+    .stack_mem = &CanRxTaskBuffer[0],
+    .stack_size = sizeof(CanRxTaskBuffer),
+    .priority = (osPriority_t)osPriorityNormal,
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
-uint32_t CanTxTaskBuffer[ 230 ];
+uint32_t CanTxTaskBuffer[230];
 osStaticThreadDef_t CanTxTaskControlBlock;
 const osThreadAttr_t CanTxTask_attributes = {
-  .name = "CanTxTask",
-  .cb_mem = &CanTxTaskControlBlock,
-  .cb_size = sizeof(CanTxTaskControlBlock),
-  .stack_mem = &CanTxTaskBuffer[0],
-  .stack_size = sizeof(CanTxTaskBuffer),
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
-/* Definitions for Hmi2PowerTask */
-osThreadId_t Hmi2PowerTaskHandle;
-uint32_t Hmi2PowerTaskBuffer[ 176 ];
-osStaticThreadDef_t Hmi2PowerTaskControlBlock;
-const osThreadAttr_t Hmi2PowerTask_attributes = {
-  .name = "Hmi2PowerTask",
-  .cb_mem = &Hmi2PowerTaskControlBlock,
-  .cb_size = sizeof(Hmi2PowerTaskControlBlock),
-  .stack_mem = &Hmi2PowerTaskBuffer[0],
-  .stack_size = sizeof(Hmi2PowerTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "CanTxTask",
+    .cb_mem = &CanTxTaskControlBlock,
+    .cb_size = sizeof(CanTxTaskControlBlock),
+    .stack_mem = &CanTxTaskBuffer[0],
+    .stack_size = sizeof(CanTxTaskBuffer),
+    .priority = (osPriority_t)osPriorityAboveNormal,
 };
 /* Definitions for GateTask */
 osThreadId_t GateTaskHandle;
-uint32_t GateTaskBuffer[ 224 ];
+uint32_t GateTaskBuffer[224];
 osStaticThreadDef_t GateTaskControlBlock;
 const osThreadAttr_t GateTask_attributes = {
-  .name = "GateTask",
-  .cb_mem = &GateTaskControlBlock,
-  .cb_size = sizeof(GateTaskControlBlock),
-  .stack_mem = &GateTaskBuffer[0],
-  .stack_size = sizeof(GateTaskBuffer),
-  .priority = (osPriority_t) osPriorityAboveNormal,
+    .name = "GateTask",
+    .cb_mem = &GateTaskControlBlock,
+    .cb_size = sizeof(GateTaskControlBlock),
+    .stack_mem = &GateTaskBuffer[0],
+    .stack_size = sizeof(GateTaskBuffer),
+    .priority = (osPriority_t)osPriorityAboveNormal,
 };
 /* Definitions for CommandQueue */
 osMessageQueueId_t CommandQueueHandle;
-uint8_t CommandQueueBuffer[ 1 * sizeof( command_t ) ];
+uint8_t CommandQueueBuffer[1 * sizeof(command_t)];
 osStaticMessageQDef_t CommandQueueControlBlock;
 const osMessageQueueAttr_t CommandQueue_attributes = {
-  .name = "CommandQueue",
-  .cb_mem = &CommandQueueControlBlock,
-  .cb_size = sizeof(CommandQueueControlBlock),
-  .mq_mem = &CommandQueueBuffer,
-  .mq_size = sizeof(CommandQueueBuffer)
-};
+    .name = "CommandQueue",
+    .cb_mem = &CommandQueueControlBlock,
+    .cb_size = sizeof(CommandQueueControlBlock),
+    .mq_mem = &CommandQueueBuffer,
+    .mq_size = sizeof(CommandQueueBuffer)};
 /* Definitions for ResponseQueue */
 osMessageQueueId_t ResponseQueueHandle;
-uint8_t ResponseQueueBuffer[ 1 * sizeof( response_t ) ];
+uint8_t ResponseQueueBuffer[1 * sizeof(response_t)];
 osStaticMessageQDef_t ResponseQueueControlBlock;
 const osMessageQueueAttr_t ResponseQueue_attributes = {
-  .name = "ResponseQueue",
-  .cb_mem = &ResponseQueueControlBlock,
-  .cb_size = sizeof(ResponseQueueControlBlock),
-  .mq_mem = &ResponseQueueBuffer,
-  .mq_size = sizeof(ResponseQueueBuffer)
-};
+    .name = "ResponseQueue",
+    .cb_mem = &ResponseQueueControlBlock,
+    .cb_size = sizeof(ResponseQueueControlBlock),
+    .mq_mem = &ResponseQueueBuffer,
+    .mq_size = sizeof(ResponseQueueBuffer)};
 /* Definitions for ReportQueue */
 osMessageQueueId_t ReportQueueHandle;
-uint8_t ReportQueueBuffer[ 10 * sizeof( report_t ) ];
+uint8_t ReportQueueBuffer[10 * sizeof(report_t)];
 osStaticMessageQDef_t ReportQueueControlBlock;
 const osMessageQueueAttr_t ReportQueue_attributes = {
-  .name = "ReportQueue",
-  .cb_mem = &ReportQueueControlBlock,
-  .cb_size = sizeof(ReportQueueControlBlock),
-  .mq_mem = &ReportQueueBuffer,
-  .mq_size = sizeof(ReportQueueBuffer)
-};
+    .name = "ReportQueue",
+    .cb_mem = &ReportQueueControlBlock,
+    .cb_size = sizeof(ReportQueueControlBlock),
+    .mq_mem = &ReportQueueBuffer,
+    .mq_size = sizeof(ReportQueueBuffer)};
 /* Definitions for DriverQueue */
 osMessageQueueId_t DriverQueueHandle;
-uint8_t DriverQueueBuffer[ 1 * sizeof( uint8_t ) ];
+uint8_t DriverQueueBuffer[1 * sizeof(uint8_t)];
 osStaticMessageQDef_t DriverQueueControlBlock;
 const osMessageQueueAttr_t DriverQueue_attributes = {
-  .name = "DriverQueue",
-  .cb_mem = &DriverQueueControlBlock,
-  .cb_size = sizeof(DriverQueueControlBlock),
-  .mq_mem = &DriverQueueBuffer,
-  .mq_size = sizeof(DriverQueueBuffer)
-};
+    .name = "DriverQueue",
+    .cb_mem = &DriverQueueControlBlock,
+    .cb_size = sizeof(DriverQueueControlBlock),
+    .mq_mem = &DriverQueueBuffer,
+    .mq_size = sizeof(DriverQueueBuffer)};
 /* Definitions for CanRxQueue */
 osMessageQueueId_t CanRxQueueHandle;
-uint8_t CanRxQueueBuffer[ 10 * sizeof( can_rx_t ) ];
+uint8_t CanRxQueueBuffer[10 * sizeof(can_rx_t)];
 osStaticMessageQDef_t CanRxQueueControlBlock;
 const osMessageQueueAttr_t CanRxQueue_attributes = {
-  .name = "CanRxQueue",
-  .cb_mem = &CanRxQueueControlBlock,
-  .cb_size = sizeof(CanRxQueueControlBlock),
-  .mq_mem = &CanRxQueueBuffer,
-  .mq_size = sizeof(CanRxQueueBuffer)
-};
+    .name = "CanRxQueue",
+    .cb_mem = &CanRxQueueControlBlock,
+    .cb_size = sizeof(CanRxQueueControlBlock),
+    .mq_mem = &CanRxQueueBuffer,
+    .mq_size = sizeof(CanRxQueueBuffer)};
 /* Definitions for QuotaQueue */
 osMessageQueueId_t QuotaQueueHandle;
-uint8_t QuotaQueueBuffer[ 1 * 200 ];
+uint8_t QuotaQueueBuffer[1 * 200];
 osStaticMessageQDef_t QuotaQueueControlBlock;
 const osMessageQueueAttr_t QuotaQueue_attributes = {
-  .name = "QuotaQueue",
-  .cb_mem = &QuotaQueueControlBlock,
-  .cb_size = sizeof(QuotaQueueControlBlock),
-  .mq_mem = &QuotaQueueBuffer,
-  .mq_size = sizeof(QuotaQueueBuffer)
-};
+    .name = "QuotaQueue",
+    .cb_mem = &QuotaQueueControlBlock,
+    .cb_size = sizeof(QuotaQueueControlBlock),
+    .mq_mem = &QuotaQueueBuffer,
+    .mq_size = sizeof(QuotaQueueBuffer)};
 /* Definitions for UssdQueue */
 osMessageQueueId_t UssdQueueHandle;
-uint8_t UssdQueueBuffer[ 1 * 20 ];
+uint8_t UssdQueueBuffer[1 * 20];
 osStaticMessageQDef_t UssdQueueControlBlock;
 const osMessageQueueAttr_t UssdQueue_attributes = {
-  .name = "UssdQueue",
-  .cb_mem = &UssdQueueControlBlock,
-  .cb_size = sizeof(UssdQueueControlBlock),
-  .mq_mem = &UssdQueueBuffer,
-  .mq_size = sizeof(UssdQueueBuffer)
-};
+    .name = "UssdQueue",
+    .cb_mem = &UssdQueueControlBlock,
+    .cb_size = sizeof(UssdQueueControlBlock),
+    .mq_mem = &UssdQueueBuffer,
+    .mq_size = sizeof(UssdQueueBuffer)};
 /* Definitions for OvdStateQueue */
 osMessageQueueId_t OvdStateQueueHandle;
-uint8_t OvdStateQueueBuffer[ 1 * sizeof( uint8_t ) ];
+uint8_t OvdStateQueueBuffer[1 * sizeof(uint8_t)];
 osStaticMessageQDef_t OvdStateQueueControlBlock;
 const osMessageQueueAttr_t OvdStateQueue_attributes = {
-  .name = "OvdStateQueue",
-  .cb_mem = &OvdStateQueueControlBlock,
-  .cb_size = sizeof(OvdStateQueueControlBlock),
-  .mq_mem = &OvdStateQueueBuffer,
-  .mq_size = sizeof(OvdStateQueueBuffer)
-};
+    .name = "OvdStateQueue",
+    .cb_mem = &OvdStateQueueControlBlock,
+    .cb_size = sizeof(OvdStateQueueControlBlock),
+    .mq_mem = &OvdStateQueueBuffer,
+    .mq_size = sizeof(OvdStateQueueBuffer)};
 /* Definitions for RtcMutex */
 osMutexId_t RtcMutexHandle;
 osStaticMutexDef_t RtcMutexControlBlock;
 const osMutexAttr_t RtcMutex_attributes = {
-  .name = "RtcMutex",
-  .cb_mem = &RtcMutexControlBlock,
-  .cb_size = sizeof(RtcMutexControlBlock),
+    .name = "RtcMutex",
+    .cb_mem = &RtcMutexControlBlock,
+    .cb_size = sizeof(RtcMutexControlBlock),
 };
 /* Definitions for CrcMutex */
 osMutexId_t CrcMutexHandle;
 osStaticMutexDef_t CrcMutexControlBlock;
 const osMutexAttr_t CrcMutex_attributes = {
-  .name = "CrcMutex",
-  .cb_mem = &CrcMutexControlBlock,
-  .cb_size = sizeof(CrcMutexControlBlock),
+    .name = "CrcMutex",
+    .cb_mem = &CrcMutexControlBlock,
+    .cb_size = sizeof(CrcMutexControlBlock),
 };
 /* Definitions for AesMutex */
 osMutexId_t AesMutexHandle;
 osStaticMutexDef_t AesMutexControlBlock;
 const osMutexAttr_t AesMutex_attributes = {
-  .name = "AesMutex",
-  .cb_mem = &AesMutexControlBlock,
-  .cb_size = sizeof(AesMutexControlBlock),
+    .name = "AesMutex",
+    .cb_mem = &AesMutexControlBlock,
+    .cb_size = sizeof(AesMutexControlBlock),
 };
 /* Definitions for RngMutex */
 osMutexId_t RngMutexHandle;
 osStaticMutexDef_t RngMutexControlBlock;
 const osMutexAttr_t RngMutex_attributes = {
-  .name = "RngMutex",
-  .cb_mem = &RngMutexControlBlock,
-  .cb_size = sizeof(RngMutexControlBlock),
+    .name = "RngMutex",
+    .cb_mem = &RngMutexControlBlock,
+    .cb_size = sizeof(RngMutexControlBlock),
 };
 /* Definitions for BatMutex */
 osMutexId_t BatMutexHandle;
 osStaticMutexDef_t BatMutexControlBlock;
 const osMutexAttr_t BatMutex_attributes = {
-  .name = "BatMutex",
-  .cb_mem = &BatMutexControlBlock,
-  .cb_size = sizeof(BatMutexControlBlock),
+    .name = "BatMutex",
+    .cb_mem = &BatMutexControlBlock,
+    .cb_size = sizeof(BatMutexControlBlock),
 };
 /* Definitions for CanTxMutex */
 osMutexId_t CanTxMutexHandle;
 osStaticMutexDef_t CanTxMutexControlBlock;
 const osMutexAttr_t CanTxMutex_attributes = {
-  .name = "CanTxMutex",
-  .cb_mem = &CanTxMutexControlBlock,
-  .cb_size = sizeof(CanTxMutexControlBlock),
+    .name = "CanTxMutex",
+    .cb_mem = &CanTxMutexControlBlock,
+    .cb_size = sizeof(CanTxMutexControlBlock),
 };
 /* Definitions for IwdgMutex */
 osMutexId_t IwdgMutexHandle;
 osStaticMutexDef_t IwdgMutexControlBlock;
 const osMutexAttr_t IwdgMutex_attributes = {
-  .name = "IwdgMutex",
-  .cb_mem = &IwdgMutexControlBlock,
-  .cb_size = sizeof(IwdgMutexControlBlock),
+    .name = "IwdgMutex",
+    .cb_mem = &IwdgMutexControlBlock,
+    .cb_size = sizeof(IwdgMutexControlBlock),
 };
 /* Definitions for BuzzerMutex */
 osMutexId_t BuzzerMutexHandle;
 osStaticMutexDef_t BuzzerMutexControlBlock;
 const osMutexAttr_t BuzzerMutex_attributes = {
-  .name = "BuzzerMutex",
-  .cb_mem = &BuzzerMutexControlBlock,
-  .cb_size = sizeof(BuzzerMutexControlBlock),
+    .name = "BuzzerMutex",
+    .cb_mem = &BuzzerMutexControlBlock,
+    .cb_size = sizeof(BuzzerMutexControlBlock),
 };
 /* Definitions for LogRecMutex */
 osMutexId_t LogRecMutexHandle;
 osStaticMutexDef_t LogRecMutexControlBlock;
 const osMutexAttr_t LogRecMutex_attributes = {
-  .name = "LogRecMutex",
-  .attr_bits = osMutexRecursive,
-  .cb_mem = &LogRecMutexControlBlock,
-  .cb_size = sizeof(LogRecMutexControlBlock),
+    .name = "LogRecMutex",
+    .attr_bits = osMutexRecursive,
+    .cb_mem = &LogRecMutexControlBlock,
+    .cb_size = sizeof(LogRecMutexControlBlock),
 };
 /* Definitions for SimcomRecMutex */
 osMutexId_t SimcomRecMutexHandle;
 osStaticMutexDef_t SimcomRecMutexControlBlock;
 const osMutexAttr_t SimcomRecMutex_attributes = {
-  .name = "SimcomRecMutex",
-  .attr_bits = osMutexRecursive,
-  .cb_mem = &SimcomRecMutexControlBlock,
-  .cb_size = sizeof(SimcomRecMutexControlBlock),
+    .name = "SimcomRecMutex",
+    .attr_bits = osMutexRecursive,
+    .cb_mem = &SimcomRecMutexControlBlock,
+    .cb_size = sizeof(SimcomRecMutexControlBlock),
 };
 /* Definitions for RemoteRecMutex */
 osMutexId_t RemoteRecMutexHandle;
 osStaticMutexDef_t RemoteRecMutexControlBlock;
 const osMutexAttr_t RemoteRecMutex_attributes = {
-  .name = "RemoteRecMutex",
-  .attr_bits = osMutexRecursive,
-  .cb_mem = &RemoteRecMutexControlBlock,
-  .cb_size = sizeof(RemoteRecMutexControlBlock),
+    .name = "RemoteRecMutex",
+    .attr_bits = osMutexRecursive,
+    .cb_mem = &RemoteRecMutexControlBlock,
+    .cb_size = sizeof(RemoteRecMutexControlBlock),
 };
 /* Definitions for FingerRecMutex */
 osMutexId_t FingerRecMutexHandle;
 osStaticMutexDef_t FingerRecMutexControlBlock;
 const osMutexAttr_t FingerRecMutex_attributes = {
-  .name = "FingerRecMutex",
-  .attr_bits = osMutexRecursive,
-  .cb_mem = &FingerRecMutexControlBlock,
-  .cb_size = sizeof(FingerRecMutexControlBlock),
+    .name = "FingerRecMutex",
+    .attr_bits = osMutexRecursive,
+    .cb_mem = &FingerRecMutexControlBlock,
+    .cb_size = sizeof(FingerRecMutexControlBlock),
 };
 /* Definitions for GpsRecMutex */
 osMutexId_t GpsRecMutexHandle;
 osStaticMutexDef_t GpsRecMutexControlBlock;
 const osMutexAttr_t GpsRecMutex_attributes = {
-  .name = "GpsRecMutex",
-  .attr_bits = osMutexRecursive,
-  .cb_mem = &GpsRecMutexControlBlock,
-  .cb_size = sizeof(GpsRecMutexControlBlock),
+    .name = "GpsRecMutex",
+    .attr_bits = osMutexRecursive,
+    .cb_mem = &GpsRecMutexControlBlock,
+    .cb_size = sizeof(GpsRecMutexControlBlock),
 };
 /* Definitions for MemsRecMutex */
 osMutexId_t MemsRecMutexHandle;
 osStaticMutexDef_t MemsRecMutexControlBlock;
 const osMutexAttr_t MemsRecMutex_attributes = {
-  .name = "MemsRecMutex",
-  .attr_bits = osMutexRecursive,
-  .cb_mem = &MemsRecMutexControlBlock,
-  .cb_size = sizeof(MemsRecMutexControlBlock),
+    .name = "MemsRecMutex",
+    .attr_bits = osMutexRecursive,
+    .cb_mem = &MemsRecMutexControlBlock,
+    .cb_size = sizeof(MemsRecMutexControlBlock),
 };
 /* Definitions for AudioRecMutex */
 osMutexId_t AudioRecMutexHandle;
 osStaticMutexDef_t AudioRecMutexControlBlock;
 const osMutexAttr_t AudioRecMutex_attributes = {
-  .name = "AudioRecMutex",
-  .attr_bits = osMutexRecursive,
-  .cb_mem = &AudioRecMutexControlBlock,
-  .cb_size = sizeof(AudioRecMutexControlBlock),
+    .name = "AudioRecMutex",
+    .attr_bits = osMutexRecursive,
+    .cb_mem = &AudioRecMutexControlBlock,
+    .cb_size = sizeof(AudioRecMutexControlBlock),
 };
 /* Definitions for EepromRecMutex */
 osMutexId_t EepromRecMutexHandle;
 osStaticMutexDef_t EepromRecMutexControlBlock;
 const osMutexAttr_t EepromRecMutex_attributes = {
-  .name = "EepromRecMutex",
-  .attr_bits = osMutexRecursive,
-  .cb_mem = &EepromRecMutexControlBlock,
-  .cb_size = sizeof(EepromRecMutexControlBlock),
+    .name = "EepromRecMutex",
+    .attr_bits = osMutexRecursive,
+    .cb_mem = &EepromRecMutexControlBlock,
+    .cb_size = sizeof(EepromRecMutexControlBlock),
 };
 /* Definitions for GlobalEvent */
 osEventFlagsId_t GlobalEventHandle;
 osStaticEventGroupDef_t GlobalEventControlBlock;
 const osEventFlagsAttr_t GlobalEvent_attributes = {
-  .name = "GlobalEvent",
-  .cb_mem = &GlobalEventControlBlock,
-  .cb_size = sizeof(GlobalEventControlBlock),
+    .name = "GlobalEvent",
+    .cb_mem = &GlobalEventControlBlock,
+    .cb_size = sizeof(GlobalEventControlBlock),
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -488,27 +452,25 @@ const osEventFlagsAttr_t GlobalEvent_attributes = {
 
 /* USER CODE END FunctionPrototypes */
 
-void StartManagerTask(void *argument);
-void StartNetworkTask(void *argument);
-void StartReporterTask(void *argument);
-void StartCommandTask(void *argument);
-void StartGpsTask(void *argument);
-void StartMemsTask(void *argument);
-void StartRemoteTask(void *argument);
-void StartFingerTask(void *argument);
-void StartAudioTask(void *argument);
-void StartCanRxTask(void *argument);
-void StartCanTxTask(void *argument);
-void StartHmi2PowerTask(void *argument);
-void StartGateTask(void *argument);
+void StartManagerTask(void* argument);
+void StartNetworkTask(void* argument);
+void StartReporterTask(void* argument);
+void StartCommandTask(void* argument);
+void StartMemsTask(void* argument);
+void StartRemoteTask(void* argument);
+void StartFingerTask(void* argument);
+void StartAudioTask(void* argument);
+void StartCanRxTask(void* argument);
+void StartCanTxTask(void* argument);
+void StartGateTask(void* argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
@@ -564,61 +526,68 @@ void MX_FREERTOS_Init(void) {
   EepromRecMutexHandle = osMutexNew(&EepromRecMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
-	/* add mutexes, ... */
+  /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-	/* add semaphores, ... */
+  /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
-	/* start timers, add new ones, ... */
+  /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
   /* Create the queue(s) */
   /* creation of CommandQueue */
-  CommandQueueHandle = osMessageQueueNew (1, sizeof(command_t), &CommandQueue_attributes);
+  CommandQueueHandle =
+      osMessageQueueNew(1, sizeof(command_t), &CommandQueue_attributes);
 
   /* creation of ResponseQueue */
-  ResponseQueueHandle = osMessageQueueNew (1, sizeof(response_t), &ResponseQueue_attributes);
+  ResponseQueueHandle =
+      osMessageQueueNew(1, sizeof(response_t), &ResponseQueue_attributes);
 
   /* creation of ReportQueue */
-  ReportQueueHandle = osMessageQueueNew (10, sizeof(report_t), &ReportQueue_attributes);
+  ReportQueueHandle =
+      osMessageQueueNew(10, sizeof(report_t), &ReportQueue_attributes);
 
   /* creation of DriverQueue */
-  DriverQueueHandle = osMessageQueueNew (1, sizeof(uint8_t), &DriverQueue_attributes);
+  DriverQueueHandle =
+      osMessageQueueNew(1, sizeof(uint8_t), &DriverQueue_attributes);
 
   /* creation of CanRxQueue */
-  CanRxQueueHandle = osMessageQueueNew (10, sizeof(can_rx_t), &CanRxQueue_attributes);
+  CanRxQueueHandle =
+      osMessageQueueNew(10, sizeof(can_rx_t), &CanRxQueue_attributes);
 
   /* creation of QuotaQueue */
-  QuotaQueueHandle = osMessageQueueNew (1, 200, &QuotaQueue_attributes);
+  QuotaQueueHandle = osMessageQueueNew(1, 200, &QuotaQueue_attributes);
 
   /* creation of UssdQueue */
-  UssdQueueHandle = osMessageQueueNew (1, 20, &UssdQueue_attributes);
+  UssdQueueHandle = osMessageQueueNew(1, 20, &UssdQueue_attributes);
 
   /* creation of OvdStateQueue */
-  OvdStateQueueHandle = osMessageQueueNew (1, sizeof(uint8_t), &OvdStateQueue_attributes);
+  OvdStateQueueHandle =
+      osMessageQueueNew(1, sizeof(uint8_t), &OvdStateQueue_attributes);
 
   /* USER CODE BEGIN RTOS_QUEUES */
-	/* add queues, ... */
+  /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* creation of ManagerTask */
-  ManagerTaskHandle = osThreadNew(StartManagerTask, NULL, &ManagerTask_attributes);
+  ManagerTaskHandle =
+      osThreadNew(StartManagerTask, NULL, &ManagerTask_attributes);
 
   /* creation of NetworkTask */
-  NetworkTaskHandle = osThreadNew(StartNetworkTask, NULL, &NetworkTask_attributes);
+  NetworkTaskHandle =
+      osThreadNew(StartNetworkTask, NULL, &NetworkTask_attributes);
 
   /* creation of ReporterTask */
-  ReporterTaskHandle = osThreadNew(StartReporterTask, NULL, &ReporterTask_attributes);
+  ReporterTaskHandle =
+      osThreadNew(StartReporterTask, NULL, &ReporterTask_attributes);
 
   /* creation of CommandTask */
-  CommandTaskHandle = osThreadNew(StartCommandTask, NULL, &CommandTask_attributes);
-
-  /* creation of GpsTask */
-  GpsTaskHandle = osThreadNew(StartGpsTask, NULL, &GpsTask_attributes);
+  CommandTaskHandle =
+      osThreadNew(StartCommandTask, NULL, &CommandTask_attributes);
 
   /* creation of MemsTask */
   MemsTaskHandle = osThreadNew(StartMemsTask, NULL, &MemsTask_attributes);
@@ -638,23 +607,19 @@ void MX_FREERTOS_Init(void) {
   /* creation of CanTxTask */
   CanTxTaskHandle = osThreadNew(StartCanTxTask, NULL, &CanTxTask_attributes);
 
-  /* creation of Hmi2PowerTask */
-  Hmi2PowerTaskHandle = osThreadNew(StartHmi2PowerTask, NULL, &Hmi2PowerTask_attributes);
-
   /* creation of GateTask */
   GateTaskHandle = osThreadNew(StartGateTask, NULL, &GateTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-	/* add threads, ... */
+  /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* creation of GlobalEvent */
   GlobalEventHandle = osEventFlagsNew(&GlobalEvent_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
-	/* add events, ... */
+  /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
-
 }
 
 /* USER CODE BEGIN Header_StartManagerTask */
@@ -664,52 +629,50 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartManagerTask */
-void StartManagerTask(void *argument)
-{
+void StartManagerTask(void* argument) {
   /* USER CODE BEGIN StartManagerTask */
-	// Initiate, this task get executed first!
-	VCU_Init();
-	NODE_Init();
+  // Initiate, this task get executed first!
+  VCU_Init();
+  NODE_Init();
 
-	// Peripheral Initiate
-	BAT_Init();
-	RTC_Init();
-	EE_Init();
+  // Peripheral Initiate
+  BAT_Init();
+  RTC_Init();
+  EE_Init();
 
-	// Threads management:
-	//		osThreadSuspend(NetworkTaskHandle);
-	//		osThreadSuspend(ReporterTaskHandle);
-	//		osThreadSuspend(CommandTaskHandle);
-	//		osThreadSuspend(GpsTaskHandle);
-	//		osThreadSuspend(MemsTaskHandle);
-	//		osThreadSuspend(RemoteTaskHandle);
-	//		osThreadSuspend(FingerTaskHandle);
-	//		osThreadSuspend(AudioTaskHandle);
-	//		osThreadSuspend(CanRxTaskHandle);
-	//		osThreadSuspend(CanTxTaskHandle);
-	//		osThreadSuspend(GateTaskHandle);
-	osThreadSuspend(Hmi2PowerTaskHandle);
+  // Threads management:
+  //		osThreadSuspend(NetworkTaskHandle);
+  //		osThreadSuspend(ReporterTaskHandle);
+  //		osThreadSuspend(CommandTaskHandle);
+  //		osThreadSuspend(MemsTaskHandle);
+  //		osThreadSuspend(RemoteTaskHandle);
+  //		osThreadSuspend(FingerTaskHandle);
+  //		osThreadSuspend(AudioTaskHandle);
+  //		osThreadSuspend(CanRxTaskHandle);
+  //		osThreadSuspend(CanTxTaskHandle);
+  //		osThreadSuspend(GateTaskHandle);
 
-	// Check thread creation
-	if (!_osCheckRTOS()) return;
+  // Check thread creation
+  if (TASK_KernelFailed()) return;
 
-	// Release threads
-	osEventFlagsSet(GlobalEventHandle, EVENT_READY);
+  // Release threads
+  osEventFlagsSet(GlobalEventHandle, EVENT_READY);
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.manager = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.manager = _GetTickMS();
 
-		_osCheckTasks();
+    TASK_CheckStack();
+    TASK_CheckWakeup();
 
-		VCU_Refresh();
-		NODE_Refresh();
+    VCU_Refresh();
+    NODE_Refresh();
 
-		StatesCheck();
+    STATE_Check();
 
-		IWDG_Refresh();
-		osDelayUntil(TASKS.tick.manager + MANAGER_WAKEUP_MS);
-	}
+    IWDG_Refresh();
+    osDelayUntil(TASKS.tick.manager + MANAGER_WAKEUP_MS);
+  }
   /* USER CODE END StartManagerTask */
 }
 
@@ -720,47 +683,43 @@ void StartManagerTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartNetworkTask */
-void StartNetworkTask(void *argument)
-{
+void StartNetworkTask(void* argument) {
   /* USER CODE BEGIN StartNetworkTask */
-	uint32_t notif;
+  uint32_t notif;
 
-	_osEventManager();
+  TASK_WaitManager();
 
-	// Initiate
-	Simcom_Init();
-	Simcom_SetState(SIM_STATE_SERVER_ON, 0);
+  // Initiate
+  SIM_Init();
+  SIM_SetState(SIM_STATE_SERVER_ON, 0);
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.network = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.network = _GetTickMS();
 
-		if (_osFlagAny(&notif, 100)) {
-			if (notif & (FLAG_NET_READ_SMS | FLAG_NET_SEND_USSD)) {
-				uint8_t ok = 0;
+    if (_osFlagAny(&notif, 100)) {
+      if (notif & (FLAG_NET_READ_SMS | FLAG_NET_SEND_USSD)) {
+        uint8_t ok = 0;
 
-				if (notif & FLAG_NET_SEND_USSD)
-					ok = NET_SendUSSD();
-				else if (notif & FLAG_NET_READ_SMS)
-					ok = NET_ReadSMS();
+        if (notif & FLAG_NET_SEND_USSD)
+          ok = NET_SendUSSD();
+        else if (notif & FLAG_NET_READ_SMS)
+          ok = NET_ReadSMS();
 
-				osThreadFlagsSet(CommandTaskHandle,	ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
-			}
+        osThreadFlagsSet(CommandTaskHandle,
+                         ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
+      }
 
-			if (notif & FLAG_NET_REPORT_DISCARD)
-				RPT.payloads[PAYLOAD_REPORT].pending = 0;
-		}
+      if (notif & FLAG_NET_REPORT_DISCARD)
+        RPT.payloads[PAYLOAD_REPORT].pending = 0;
+    }
 
-		NET_CheckPayload(PAYLOAD_RESPONSE);
-		NET_CheckPayload(PAYLOAD_REPORT);
-		NET_CheckCommand();
+    NET_CheckPayload(PAYLOAD_RESPONSE);
+    NET_CheckPayload(PAYLOAD_REPORT);
 
-		if (RTC_NeedCalibration()) {
-			timestamp_t ts;
-			if (Simcom_FetchTime(&ts))
-				RTC_Calibrate(&ts);
-		}
-	}
+    NET_CheckCommand();
+    NET_CheckClock();
+  }
   /* USER CODE END StartNetworkTask */
 }
 
@@ -771,39 +730,41 @@ void StartNetworkTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReporterTask */
-void StartReporterTask(void *argument)
-{
+void StartReporterTask(void* argument) {
   /* USER CODE BEGIN StartReporterTask */
-	uint32_t notif;
-	report_t report;
+  uint32_t notif;
+  report_t report;
 
-	_osEventManager();
+  TASK_WaitManager();
+  GPS_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.reporter = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.reporter = _GetTickMS();
 
-		if (_osFlagAny(&notif, RPT_IntervalDeciderMS(VCU.d.state))) {
-			if (notif & FLAG_REPORTER_YIELD) {
-				// nothing, just wakeup
-			}
+    if (_osFlagAny(&notif, RPT_IntervalDeciderMS(VCU.d.state))) {
+      if (notif & FLAG_REPORTER_YIELD) {
+        // nothing, just wakeup
+      }
 
-			if (notif & FLAG_REPORTER_FLUSH) {
-				osMessageQueueReset(ReportQueueHandle);
-			}
-		}
+      if (notif & FLAG_REPORTER_FLUSH) {
+        osMessageQueueReset(ReportQueueHandle);
+      }
+    }
 
-		// Put report to log
-		RPT_ReportCapture(RPT_FrameDecider(), &report);
-		while(!_osQueuePut(ReportQueueHandle, &report)) {
-			osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
-			_DelayMS(500);
-		}
+    // Put report to log
+    RPT_ReportCapture(RPT_FrameDecider(), &report);
+    while (!_osQueuePut(ReportQueueHandle, &report)) {
+      osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
+      _DelayMS(100);
+    }
 
-		// reset some events group
-		VCU_SetEvent(EVG_NET_SOFT_RESET, 0);
-		VCU_SetEvent(EVG_NET_HARD_RESET, 0);
-	}
+    // reset some events group
+    EVT_Clr(EVG_NET_SOFT_RESET);
+    EVT_Clr(EVG_NET_HARD_RESET);
+
+    GPS_Refresh();
+  }
   /* USER CODE END StartReporterTask */
 }
 
@@ -814,63 +775,35 @@ void StartReporterTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCommandTask */
-void StartCommandTask(void *argument)
-{
+void StartCommandTask(void* argument) {
   /* USER CODE BEGIN StartCommandTask */
-	command_t cmd;
-	response_t resp;
+  command_t cmd;
+  response_t resp;
 
-	_osEventManager();
+  TASK_WaitManager();
 
-	// Initiate
-	CMD_Init();
+  // Initiate
+  CMD_Init();
 
-	// Handle Post-FOTA
-	if (FW_PostFota(&resp))
-		_osQueuePut(ResponseQueueHandle, &resp);
+  // Handle Post-FOTA
+  if (FW_ValidResponseIAP()) {
+  	FW_CaptureResponseIAP(&resp);
+  	_osQueuePut(ResponseQueueHandle, &resp);
+  }
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.command = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.command = _GetTickMS();
 
-		if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==	osOK) {
-			ExecCommand(&cmd, &resp);
+    if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==
+        osOK) {
+      EXEC_Command(&cmd, &resp);
 
-			RPT_ResponseCapture(&resp);
-			_osQueuePutRst(ResponseQueueHandle, &resp);
-		}
-	}
+      RPT_ResponseCapture(&resp);
+      _osQueuePutRst(ResponseQueueHandle, &resp);
+    }
+  }
   /* USER CODE END StartCommandTask */
-}
-
-/* USER CODE BEGIN Header_StartGpsTask */
-/**
- * @brief Function implementing the GpsTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartGpsTask */
-void StartGpsTask(void *argument)
-{
-  /* USER CODE BEGIN StartGpsTask */
-	uint32_t notif;
-
-	_osEventManager();
-
-	GPS_Init();
-
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.gps = _GetTickMS();
-
-		// Check notifications
-		if (_osFlagOne(&notif, FLAG_GPS_RECEIVED, 1000)) {
-			// nmea ready, do something
-		}
-
-		GPS_Refresh();
-	}
-  /* USER CODE END StartGpsTask */
 }
 
 /* USER CODE BEGIN Header_StartMemsTask */
@@ -880,57 +813,53 @@ void StartGpsTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartMemsTask */
-void StartMemsTask(void *argument)
-{
+void StartMemsTask(void* argument) {
   /* USER CODE BEGIN StartMemsTask */
-	uint32_t notif;
-	uint8_t fallen;
+  uint32_t notif;
+  uint8_t fallen;
 
-	_osEventManager();
-	_osFlagOne(&notif, FLAG_MEMS_TASK_START, osWaitForever);
-	osThreadFlagsClear(FLAG_MASK);
+  TASK_WaitManager();
+  _osFlagOne(&notif, FLAG_MEMS_TASK_START, osWaitForever);
+  osThreadFlagsClear(FLAG_MASK);
 
-	MEMS_Init();
+  MEMS_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.mems = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.mems = _GetTickMS();
 
-		// Check notifications
-		if (_osFlagAny(&notif, 1000)) {
-			if (notif & FLAG_MEMS_TASK_STOP) {
-				VCU_SetEvent(EVG_BIKE_FALLEN, 0);
-				VCU_SetEvent(EVG_BIKE_MOVED, 0);
+    // Check notifications
+    if (_osFlagAny(&notif, 1000)) {
+      if (notif & FLAG_MEMS_TASK_STOP) {
+        EVT_Clr(EVG_BIKE_FALLEN);
+        EVT_Clr(EVG_BIKE_MOVED);
 
-				MEMS_DeInit();
-				_osFlagOne(&notif, FLAG_MEMS_TASK_START, osWaitForever);
-				MEMS_Init();
-			}
+        MEMS_DeInit();
+        _osFlagOne(&notif, FLAG_MEMS_TASK_START, osWaitForever);
+        MEMS_Init();
+      }
 
-			if (notif & FLAG_MEMS_DETECTOR_RESET)
-				MEMS_GetRefDetector();
+      if (notif & FLAG_MEMS_DETECTOR_RESET) MEMS_GetRefDetector();
 
-			if (notif & FLAG_MEMS_DETECTOR_TOGGLE)
-				MEMS.det.active = !MEMS.det.active;
-		}
+      if (notif & FLAG_MEMS_DETECTOR_TOGGLE) MEMS.det.active = !MEMS.det.active;
+    }
 
-		// Read all data
-		if (MEMS_Capture()) {
-			fallen = MEMS_Process();
-			VCU_SetEvent(EVG_BIKE_FALLEN, fallen);
+    // Read all data
+    if (MEMS_Capture()) {
+      fallen = MEMS_Process();
+      EVT_SetVal(EVG_BIKE_FALLEN, fallen);
 
-			// Drag detector
-			if (VCU.d.state == VEHICLE_NORMAL && MEMS.det.active) {
-				if (MEMS_Dragged())
-					VCU_SetEvent(EVG_BIKE_MOVED, 1);
-				if (VCU_GetEvent(EVG_BIKE_MOVED))
-					osThreadFlagsSet(GateTaskHandle, FLAG_GATE_WINK_HORN);
-			} else
-				MEMS_GetRefDetector();
-		}
+      // Drag detector
+      if (MEMS.det.active) {
+        if (MEMS_Dragged()) EVT_Set(EVG_BIKE_MOVED);
+        if (EVT_Get(EVG_BIKE_MOVED))
+          osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
+      } else
+        MEMS_GetRefDetector();
+    }
 
-		MEMS_Refresh();
-	}
+    MEMS_Refresh();
+  }
   /* USER CODE END StartMemsTask */
 }
 
@@ -941,78 +870,79 @@ void StartMemsTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartRemoteTask */
-void StartRemoteTask(void *argument)
-{
+void StartRemoteTask(void* argument) {
   /* USER CODE BEGIN StartRemoteTask */
-	uint32_t notif, lastReset = 0;
-	RMT_CMD command;
+  uint32_t notif, lastReset = 0;
+  RMT_CMD command;
 
-	_osEventManager();
-	_osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
-	osThreadFlagsClear(FLAG_MASK);
+  TASK_WaitManager();
+  _osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
+  osThreadFlagsClear(FLAG_MASK);
 
-	AES_Init();
-	RMT_Init();
+  AES_Init();
+  RMT_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.remote = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.remote = _GetTickMS();
 
-		if (RMT_Ping(VCU.d.state)) {
-			RMT.d.tick.ping = _GetTickMS();
-			RMT.d.duration.tx = RMT.d.tick.ping - TASKS.tick.remote;
-		}
+    if (RMT_Ping(VCU.d.state)) {
+      RMT.d.tick.ping = _GetTickMS();
+      RMT.d.duration.tx = RMT.d.tick.ping - TASKS.tick.remote;
+    }
 
-		if (_osFlagAny(&notif, 5)) {
-			if (notif & FLAG_REMOTE_TASK_STOP) {
-				VCU_SetEvent(EVG_REMOTE_MISSING, 1);
-				RMT_DeInit();
-				_osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
-				RMT_Init();
-			}
+    if (_osFlagAny(&notif, 5)) {
+      if (notif & FLAG_REMOTE_TASK_STOP) {
+        EVT_Set(EVG_REMOTE_MISSING);
+        RMT_DeInit();
+        _osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
+        RMT_Init();
+      }
 
-			if (notif & FLAG_REMOTE_RESET) {
-				if (_GetTickMS() - lastReset > RMT_RESET_GUARD_MS) {
-					lastReset = _GetTickMS();
-					VCU_SetEvent(EVG_REMOTE_MISSING, 1);
-					RMT_DeInit();
-					RMT_Init();
-				}
-			}
+      if (notif & FLAG_REMOTE_RESET) {
+        if (_GetTickMS() - lastReset > RMT_RESET_GUARD_MS) {
+          lastReset = _GetTickMS();
+          EVT_Set(EVG_REMOTE_MISSING);
+          RMT_DeInit();
+          RMT_Init();
+        }
+      }
 
-			if (notif & FLAG_REMOTE_PAIRING)
-				if (RMT_Pairing())
-					printf("NRF:Pairing Sent\n");
+      if (notif & FLAG_REMOTE_PAIRING)
+        if (RMT_Pairing()) printf("NRF:Pairing Sent\n");
 
-			if (notif & FLAG_REMOTE_RX_IT) {
-				if (RMT_ValidateCommand(&command)) {
-					RMT.d.tick.rx = _GetTickMS();
-					RMT.d.duration.rx = RMT.d.tick.rx - TASKS.tick.remote;
+      if (notif & FLAG_REMOTE_RX_IT) {
+        if (RMT_ValidateCommand(&command)) {
+          RMT.d.tick.rx = _GetTickMS();
+          RMT.d.duration.rx = RMT.d.tick.rx - TASKS.tick.remote;
 
-					if (command == RMT_CMD_PING) {
-						if (RMT_GotPairedResponse())
-							osThreadFlagsSet(CommandTaskHandle, FLAG_COMMAND_OK);
-					}
-					else {
-						if (command == RMT_CMD_ANTITHIEF)
-							osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_TOGGLE);
+          if (command == RMT_CMD_PING) {
+            if (RMT_GotPairedResponse())
+              osThreadFlagsSet(CommandTaskHandle, FLAG_COMMAND_OK);
+          } else {
+            if (command == RMT_CMD_ANTITHIEF)
+              osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_TOGGLE);
 
-						else if (command == RMT_CMD_ALARM)
-							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
+            else if (command == RMT_CMD_ALARM) {
+              if (EVT_Get(EVG_BIKE_MOVED))
+                osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
+              else
+                osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);
+            }
 
-						else if (command == RMT_CMD_SEAT)
-							osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
+            else if (command == RMT_CMD_SEAT)
+              osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
 
-						_DelayMS(200);
-						osThreadFlagsClear(FLAG_REMOTE_RX_IT);
-					}
-				}
-			}
-		}
+            _DelayMS(200);
+            osThreadFlagsClear(FLAG_REMOTE_RX_IT);
+          }
+        }
+      }
+    }
 
-		RMT_Refresh(VCU.d.state);
-		RMT.d.duration.full = _GetTickMS() - TASKS.tick.remote;
-	}
+    RMT_Refresh(VCU.d.state);
+    RMT.d.duration.full = _GetTickMS() - TASKS.tick.remote;
+  }
   /* USER CODE END StartRemoteTask */
 }
 
@@ -1023,68 +953,59 @@ void StartRemoteTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartFingerTask */
-void StartFingerTask(void *argument)
-{
+void StartFingerTask(void* argument) {
   /* USER CODE BEGIN StartFingerTask */
-	uint32_t notif;
-	uint8_t id;
+  uint32_t notif;
+  uint8_t id;
 
-	_osEventManager();
-	_osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
-	osThreadFlagsClear(FLAG_MASK);
+  TASK_WaitManager();
+  _osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
+  osThreadFlagsClear(FLAG_MASK);
 
-	FGR_Init();
+  FGR_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.finger = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.finger = _GetTickMS();
 
-		if (_osFlagAny(&notif, 500)) {
-			if (notif & FLAG_FINGER_TASK_STOP) {
-				FGR_DeInit();
-				_osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
-				FGR_Init();
-			}
+    if (_osFlagAny(&notif, 500)) {
+      if (notif & FLAG_FINGER_TASK_STOP) {
+        FGR_DeInit();
+        _osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
+        FGR_Init();
+      }
 
-			if (VCU.d.state == VEHICLE_STANDBY) {
-				if (notif & (FLAG_FINGER_ADD | FLAG_FINGER_DEL | FLAG_FINGER_FETCH | FLAG_FINGER_RST)) {
-					uint8_t ok = 0;
+      if (VCU.d.state == VEHICLE_STANDBY) {
+        if (notif & (FLAG_FINGER_ADD | FLAG_FINGER_DEL | FLAG_FINGER_FETCH |
+                     FLAG_FINGER_RST)) {
+          uint8_t ok = 0;
 
-					if (notif & FLAG_FINGER_ADD) {
-						if (FGR_Enroll(&id, &ok))
-							_osQueuePutRst(DriverQueueHandle, &id);
-						osThreadFlagsClear(FLAG_FINGER_PLACED);
-					}
-					else if (notif & FLAG_FINGER_DEL) {
-						if (_osQueueGet(DriverQueueHandle, &id))
-							ok = FGR_DeleteID(id);
-					}
-					else if (notif & FLAG_FINGER_RST)
-						ok = FGR_ResetDB();
-					else if (notif & FLAG_FINGER_FETCH)
-						ok = FGR_Fetch();
+          if (notif & FLAG_FINGER_ADD) {
+            if (FGR_Enroll(&id, &ok)) _osQueuePutRst(DriverQueueHandle, &id);
+            osThreadFlagsClear(FLAG_FINGER_PLACED);
+          } else if (notif & FLAG_FINGER_DEL) {
+            if (_osQueueGet(DriverQueueHandle, &id)) ok = FGR_DeleteID(id);
+          } else if (notif & FLAG_FINGER_RST)
+            ok = FGR_ResetDB();
+          else if (notif & FLAG_FINGER_FETCH)
+            ok = FGR_Fetch();
 
+          osThreadFlagsSet(CommandTaskHandle,
+                           ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR);
+        }
 
-					osThreadFlagsSet(
-							CommandTaskHandle,
-							ok ? FLAG_COMMAND_OK : FLAG_COMMAND_ERROR
-					);
-				}
+        //				if (notif & FLAG_FINGER_PLACED) {
+        //					FGR_Authenticate();
+        //					osThreadFlagsClear(FLAG_FINGER_PLACED);
+        //				}
+      }
+    }
 
-//				if (notif & FLAG_FINGER_PLACED) {
-//					FGR_Authenticate();
-//					osThreadFlagsClear(FLAG_FINGER_PLACED);
-//				}
-			}
-		}
+    GATE_FingerChipPower(VCU.d.state == VEHICLE_STANDBY);
+    if (VCU.d.state == VEHICLE_STANDBY) FGR_Authenticate();
 
-		GATE_FingerChipPower(VCU.d.state == VEHICLE_STANDBY);
-		if (VCU.d.state == VEHICLE_STANDBY)
-			FGR_Authenticate();
-
-		if (!FGR.d.verified)
-			FGR_Verify();
-	}
+    if (!FGR.d.verified) FGR_Verify();
+  }
   /* USER CODE END StartFingerTask */
 }
 
@@ -1095,43 +1016,42 @@ void StartFingerTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartAudioTask */
-void StartAudioTask(void *argument)
-{
+void StartAudioTask(void* argument) {
   /* USER CODE BEGIN StartAudioTask */
-	uint32_t notif;
+  uint32_t notif;
 
-	_osEventManager();
-	_osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
-	osThreadFlagsClear(FLAG_MASK);
+  TASK_WaitManager();
+  _osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
+  osThreadFlagsClear(FLAG_MASK);
 
-	/* Initiate Wave player (Codec, DMA, I2C) */
-	AUDIO_Init();
+  /* Initiate Wave player (Codec, DMA, I2C) */
+  AUDIO_Init();
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.audio = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.audio = _GetTickMS();
 
-		if (_osFlagAny(&notif, 1000)) {
-			if (notif & FLAG_AUDIO_TASK_STOP) {
-				AUDIO_DeInit();
-				_osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
-				AUDIO_Init();
-			}
+    if (_osFlagAny(&notif, 1000)) {
+      if (notif & FLAG_AUDIO_TASK_STOP) {
+        AUDIO_DeInit();
+        _osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
+        AUDIO_Init();
+      }
 
-			// Beep command
-			if (notif & FLAG_AUDIO_BEEP) {
-				AUDIO_OUT_Pause();
-				AUDIO_OUT_SetVolume(100);
-				AUDIO_OUT_SetMute(0);
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 1000);
-				AUDIO_OUT_Resume();
-			}
-		}
+      // Beep command
+      if (notif & FLAG_AUDIO_BEEP) {
+        AUDIO_OUT_Pause();
+        AUDIO_OUT_SetVolume(100);
+        AUDIO_OUT_SetMute(0);
+        AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 1000);
+        AUDIO_OUT_Resume();
+      }
+    }
 
-		AUDIO_OUT_SetMute(VCU.d.state != VEHICLE_RUN);
-		AUDIO_OUT_SetVolume(MCU_SpeedToVolume());
-		AUDIO_Refresh();
-	}
+    AUDIO_OUT_SetMute(VCU.d.state != VEHICLE_RUN);
+    AUDIO_OUT_SetVolume(MCU_SpeedToVolume());
+    AUDIO_Refresh();
+  }
   /* USER CODE END StartAudioTask */
 }
 
@@ -1142,73 +1062,69 @@ void StartAudioTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanRxTask */
-void StartCanRxTask(void *argument)
-{
+void StartCanRxTask(void* argument) {
   /* USER CODE BEGIN StartCanRxTask */
-	uint32_t notif;
-	can_rx_t Rx;
+  uint32_t notif;
+  can_rx_t Rx;
 
-	_osEventManager();
-	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-	osThreadFlagsClear(FLAG_MASK);
+  TASK_WaitManager();
+  _osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+  osThreadFlagsClear(FLAG_MASK);
 
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.canRx = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.canRx = _GetTickMS();
 
-		// Check notifications
-		if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 0)) {
-			NODE_Init();
-			_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-		}
+    // Check notifications
+    if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 0)) {
+      NODE_Init();
+      _osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+    }
 
-		if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
-			if (Rx.header.IDE == CAN_ID_STD) {
-				switch (Rx.header.StdId) {
-				case CAND_HMI1:
-					HMI1_RX_State(&Rx);
-					break;
-				case CAND_HMI2:
-					HMI2_RX_State(&Rx);
-					break;
-				case CAND_NODE_DEBUG:
-					NODE_RX_Debug(&Rx);
-					break;
-				case CAND_MCU_CURRENT_DC:
-					MCU_RX_CurrentDC(&Rx);
-					break;
-				case CAND_MCU_VOLTAGE_DC:
-					MCU_RX_VoltageDC(&Rx);
-					break;
-				case CAND_MCU_TORQUE_SPEED:
-					MCU_RX_TorqueSpeed(&Rx);
-					break;
-				case CAND_MCU_FAULT_CODE:
-					MCU_RX_FaultCode(&Rx);
-					break;
-				case CAND_MCU_STATE:
-					MCU_RX_State(&Rx);
-					break;
-				case CAND_MCU_TEMPLATE_R:
-					MCU_RX_Template(&Rx);
-					break;
-				default:
-					break;
-				}
-			} else {
-				switch (BMS_CAND(Rx.header.ExtId)) {
-				case BMS_CAND(CAND_BMS_PARAM_1):
-																											BMS_RX_Param1(&Rx);
-				break;
-				case BMS_CAND(CAND_BMS_PARAM_2):
-																											BMS_RX_Param2(&Rx);
-				break;
-				default:
-					break;
-				}
-			}
-		}
-	}
+    if (osMessageQueueGet(CanRxQueueHandle, &Rx, NULL, 1000) == osOK) {
+      if (Rx.header.IDE == CAN_ID_STD) {
+        switch (Rx.header.StdId) {
+          case CAND_HMI1:
+            HMI1_RX_State(&Rx);
+            break;
+          case CAND_NODE_DEBUG:
+            NODE_RX_Debug(&Rx);
+            break;
+          case CAND_MCU_CURRENT_DC:
+            MCU_RX_CurrentDC(&Rx);
+            break;
+          case CAND_MCU_VOLTAGE_DC:
+            MCU_RX_VoltageDC(&Rx);
+            break;
+          case CAND_MCU_TORQUE_SPEED:
+            MCU_RX_TorqueSpeed(&Rx);
+            break;
+          case CAND_MCU_FAULT_CODE:
+            MCU_RX_FaultCode(&Rx);
+            break;
+          case CAND_MCU_STATE:
+            MCU_RX_State(&Rx);
+            break;
+          case CAND_MCU_TEMPLATE_R:
+            MCU_RX_Template(&Rx);
+            break;
+          default:
+            break;
+        }
+      } else {
+        switch (BMS_CAND(Rx.header.ExtId)) {
+          case BMS_CAND(CAND_BMS_PARAM_1):
+            BMS_RX_Param1(&Rx);
+            break;
+          case BMS_CAND(CAND_BMS_PARAM_2):
+            BMS_RX_Param2(&Rx);
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
   /* USER CODE END StartCanRxTask */
 }
 
@@ -1219,109 +1135,63 @@ void StartCanRxTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartCanTxTask */
-void StartCanTxTask(void *argument)
-{
+void StartCanTxTask(void* argument) {
   /* USER CODE BEGIN StartCanTxTask */
-	uint32_t notif, last500ms, last1000ms;
+  uint32_t notif, last100ms, last1000ms;
 
-	_osEventManager();
-	_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-	osThreadFlagsClear(FLAG_MASK);
+  TASK_WaitManager();
+  _osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+  osThreadFlagsClear(FLAG_MASK);
 
-	// initiate
-	CANBUS_Init();
+  // initiate
+  CANBUS_Init();
 
-	/* Infinite loop */
-	last500ms = _GetTickMS();
-	last1000ms = _GetTickMS();
-	for (;;) {
-		TASKS.tick.canTx = _GetTickMS();
+  /* Infinite loop */
+  last100ms = _GetTickMS();
+  last1000ms = _GetTickMS();
+  for (;;) {
+    TASKS.tick.canTx = _GetTickMS();
 
-		// Check notifications
-		if (_osFlagAny(&notif, 20)) {
-			if (notif & FLAG_CAN_TASK_STOP) {
-				HMI2_PowerByCAN(0);
-				MCU_PowerOverCAN(0);
-				BMS_PowerOverCAN(0);
+    // Check notifications
+    if (_osFlagAny(&notif, 20)) {
+      if (notif & FLAG_CAN_TASK_STOP) {
+        MCU_PowerOverCAN(0);
+        BMS_PowerOverCAN(0);
 
-				CANBUS_DeInit();
-				_osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-				CANBUS_Init();
-			}
-		}
+        CANBUS_DeInit();
+        _osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
+        CANBUS_Init();
+      }
+    }
 
-		// send every 20ms
-		if (HMI1.d.active)
-			VCU_TX_SwitchControl();
+    // send every 20ms
+    if (HMI1.d.active) VCU_TX_SwitchControl();
 
-		// send every 500ms
-		if (_GetTickMS() - last500ms > 500) {
-			last500ms = _GetTickMS();
+    // send every 500ms
+    if (_GetTickMS() - last100ms > 100) {
+      last100ms = _GetTickMS();
 
-			HMI2_PowerByCAN(VCU.d.state >= VEHICLE_STANDBY);
+      MCU_PowerOverCAN(VCU.d.state == VEHICLE_RUN && BMS.d.run);
+      BMS_PowerOverCAN(VCU.d.state >= VEHICLE_READY || MCU.d.run);
+    }
 
-			if (VCU.d.state >= VEHICLE_READY)
-				BMS_PowerOverCAN(1);
-			else
-				BMS_PowerOverCAN(MCU.d.run);
+    // send every 1000ms
+    if (_GetTickMS() - last1000ms > 1000) {
+      last1000ms = _GetTickMS();
 
-			if (VCU.d.state == VEHICLE_RUN)
-				MCU_PowerOverCAN(BMS.d.run);
-			else
-				MCU_PowerOverCAN(0);
-		}
+      if (HMI1.d.active) {
+        VCU_TX_Datetime(RTC_Read());
+        VCU_TX_ModeData();
+      }
 
-		// send every 1000ms
-		if (_GetTickMS() - last1000ms > 1000) {
-			last1000ms = _GetTickMS();
+      if (MCU.d.active) MCU_SyncCAN();
 
-			if (HMI1.d.active) {
-				VCU_TX_Datetime(RTC_Read());
-				VCU_TX_ModeData();
-			}
+      if (NODE.d.debug) NODE_DebugCAN();
 
-			if (MCU.d.active)
-				MCU_SyncCAN();
-
-			if (NODE.d.debug)
-				NODE_DebugCAN();
-
-			VCU_TX_Heartbeat();
-		}
-	}
+      VCU_TX_Heartbeat();
+    }
+  }
   /* USER CODE END StartCanTxTask */
-}
-
-/* USER CODE BEGIN Header_StartHmi2PowerTask */
-/**
- * @brief Function implementing the Hmi2PowerTask thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartHmi2PowerTask */
-void StartHmi2PowerTask(void *argument)
-{
-  /* USER CODE BEGIN StartHmi2PowerTask */
-	uint32_t notif;
-
-	_osEventManager();
-
-	/* Infinite loop */
-	for (;;) {
-		TASKS.tick.hmi2Power = _GetTickMS();
-
-		if (_osFlagOne(&notif, FLAG_HMI2POWER_CHANGED, osWaitForever)) {
-
-			if (HMI2.d.powerRequest)
-				while (!HMI2.d.run)
-					HMI2_PowerOn();
-
-			else
-				while (HMI2.d.run)
-					HMI2_PowerOff();
-		}
-	}
-  /* USER CODE END StartHmi2PowerTask */
 }
 
 /* USER CODE BEGIN Header_StartGateTask */
@@ -1331,88 +1201,68 @@ void StartHmi2PowerTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartGateTask */
-void StartGateTask(void *argument)
-{
+void StartGateTask(void* argument) {
   /* USER CODE BEGIN StartGateTask */
-	uint32_t notif, tick1000ms;
+  uint32_t notif;
 
-	_osEventManager();
+  TASK_WaitManager();
 
-	// Initiate
-	HBAR_Init();
-	HBAR_ReadStates();
+  // Initiate
+  HBAR_Init();
+  HBAR_ReadStates();
 
-	/* Infinite loop */
-	tick1000ms = _GetTickMS();
-	for (;;) {
-		TASKS.tick.gate = _GetTickMS();
+  /* Infinite loop */
+  for (;;) {
+    TASKS.tick.gate = _GetTickMS();
 
-		// wait forever
-		if (_osFlagAny(&notif, 10)) {
-			if (notif & FLAG_GATE_HBAR) {
-				_DelayMS(100);
-				osThreadFlagsClear(FLAG_GATE_HBAR);
+    // wait forever
+    if (_osFlagAny(&notif, 10)) {
+      if (notif & FLAG_GATE_HBAR) {
+        _DelayMS(100);
+        osThreadFlagsClear(FLAG_GATE_HBAR);
 
-				HBAR_ReadStarter(VCU.d.state == VEHICLE_NORMAL);
-				if (VCU.d.state >= VEHICLE_STANDBY)
-					HBAR_ReadStates();
-			}
+        HBAR_ReadStarter(VCU.d.state == VEHICLE_NORMAL);
+        if (VCU.d.state >= VEHICLE_STANDBY) HBAR_ReadStates();
+      }
 
-			if (notif & FLAG_GATE_WINK_HORN)
-				GATE_Horn(500);
+      if (notif & FLAG_GATE_ALARM_HORN)
+        if (VCU.d.state == VEHICLE_NORMAL) GATE_Horn(500);
 
-			if (notif & FLAG_GATE_ALARM_HORN) {
-				if (VCU_GetEvent(EVG_BIKE_MOVED))
-					osThreadFlagsSet(MemsTaskHandle, FLAG_MEMS_DETECTOR_RESET);
-				else {
-					GATE_Horn(500);
-					GATE_Horn(500);
-				}
-			}
+      if (notif & FLAG_GATE_OPEN_SEAT)
+        if (VCU.d.state == VEHICLE_NORMAL) GATE_Seat(1000);
+    }
 
-			if (notif & FLAG_GATE_OPEN_SEAT)
-				if (VCU.d.state == VEHICLE_NORMAL)
-					GATE_Seat(1000);
-		}
+    HBAR_RefreshSelectSet();
 
-		HBAR_RefreshSelectSet();
-		if (_GetTickMS() - tick1000ms > 1000) {
-			tick1000ms = _GetTickMS();
-			uint8_t distance = VCU_CalcDistance();
-			HBAR_AddTripMeter(distance);
-			HBAR_SetReport(distance);
-		}
+    ML_PredictRange();
 
-		HMI1_Power(VCU.d.state >= VEHICLE_STANDBY);
-		MCU_Power12v(VCU.d.state >= VEHICLE_READY);
-		GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
-	}
+    HMI1_Power(VCU.d.state >= VEHICLE_STANDBY);
+    MCU_Power12v(VCU.d.state >= VEHICLE_READY);
+    GATE_System12v(VCU.d.state >= VEHICLE_STANDBY);
+  }
   /* USER CODE END StartGateTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (osKernelGetState() != osKernelRunning)
-		return;
+  if (osKernelGetState() != osKernelRunning) return;
 
-	if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY)
-		return;
+  if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY) return;
 
-	if (GPIO_Pin & INT_REMOTE_IRQ_Pin) {
-		if (VCU.d.state >= VEHICLE_NORMAL)
-			RMT_IrqHandler();
-	}
+  if (GPIO_Pin & INT_REMOTE_IRQ_Pin) {
+    if (VCU.d.state >= VEHICLE_NORMAL) RMT_IrqHandler();
+  }
 
-//	if (GPIO_Pin & EXT_FINGER_IRQ_Pin) {
-//		if (VCU.d.state == VEHICLE_STANDBY)
-//			osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_PLACED);
-//	}
+  //	if (GPIO_Pin & EXT_FINGER_IRQ_Pin) {
+  //		if (VCU.d.state == VEHICLE_STANDBY)
+  //			osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_PLACED);
+  //	}
 
-	if (!((GPIO_Pin & INT_REMOTE_IRQ_Pin) || (GPIO_Pin & EXT_FINGER_IRQ_Pin))) {
-		if (VCU.d.state >= VEHICLE_NORMAL)
-			osThreadFlagsSet(GateTaskHandle, FLAG_GATE_HBAR);
-	}
+  if (!((GPIO_Pin & INT_REMOTE_IRQ_Pin) || (GPIO_Pin & EXT_FINGER_IRQ_Pin))) {
+    if (VCU.d.state >= VEHICLE_NORMAL)
+      osThreadFlagsSet(GateTaskHandle, FLAG_GATE_HBAR);
+  }
 }
 
 /* USER CODE END Application */

@@ -31,7 +31,7 @@
 - [x] Edit file database.c data type to structure
 - [x] Move all constant (config variable) to config.h file
 - [x] ~~Increase the baud-rate of all communication protocols~~
-- [x] Pass pointer of chars from Simcom_Resp() to Simcom_Send()
+- [x] Pass pointer of chars from SIM_Resp() to SIM_Send()
 - [x] De-structure "stm32f4_discovery_audio.c" and "stm32f4_discovery.c"
 - [x] Handle AT Command of new SIM5300e
 - [x] SIM5300e TCP communication
@@ -131,7 +131,7 @@
 - [x] Remote: Move RNG to VCU side, not FOB. It act as challenge code.
 - [x] MQTT Protocol with backend server
 - [x] Add BMS kwh & HBAR odometer to CAN debugger
-- [x] Handle _MV define
+- [x] Handle \_MV define
 - [x] Validate select set
 - [x] Refactor select, set & starter timer
 - [x] Validate starter
@@ -149,7 +149,7 @@
 - [x] hazard disturb starter
 - [x] Refactor BMS average soc, and test only 1 bms attached
 - [x] Sometimes mems reports only temperature, other parameters are zeros
-- [x] Add _MS & _S in defines, remove the variable type
+- [x] Add \_MS & \_S in defines, remove the variable type
 - [x] Sometimes keyless still stuck
 - [x] Parse bms can data manually
 - [x] Freeze finger indicator when registering fingerprint
@@ -233,7 +233,7 @@
 - [x] Sync MCU can protocol
 - [x] Handle MCU fault code report
 - [x] Send MCU report
-- [x] Reduce drive mode 
+- [x] Reduce drive mode
 - [x] keep gps speed
 - [x] Increase FOTA CAN address priority
 - [x] handle scripts error correctly
@@ -250,7 +250,7 @@
 - [x] Add mutex to all MX peripheral, iwdg dll
 - [x] GPS cannot lock when HMI is turned on
 - [x] Handle Simcom NoReponse properly, do not for state to down
-- [x] Handle mqtt not receive publish,  using application level ACK
+- [x] Handle mqtt not receive publish, using application level ACK
 - [x] Watchdog triggered ?
 - [x] Overflowed variable size
 - [x] Overflowed sizeof()
@@ -387,35 +387,28 @@
 - [-] Read IPD received data size to determine packet
 - [x] Try to use CIPQSEND "DATA ACCEPT"
 - [x] Horn disturb finger irq
-    "It is disturbed on uController pin side"
+      "It is disturbed on uController pin side"
 - [x] Recheck mems detector horn output
-    "Something wrong with components soldering (too fragile)"
+      "Something wrong with components soldering (too fragile)"
 - [x] Check finger not interruptting
-    "Its caused by unstable power source"
+      "Its caused by unstable power source"
 - [x] use gyro interrupt instead of polling
-    "Solved by reducing sample "
-- [x] Find HardFault (PRECISERR) culprit. 
-    "Solved by increasing GPS buffer"
-    - [-] VCU sometime resets forever on power changes
+      "Solved by reducing sample "
+- [x] Find HardFault (PRECISERR) culprit.
+      "Solved by increasing GPS buffer"
+  - [x] VCU sometime resets forever on power changes
 - [-] CAN Debugging
-    - [ ] NODE add  BMS &CAN timeout flags
-    - [ ] Keyless seat &alarm state, use GetTick() and timeout
-- [ ] Finger IRQ sometimes still interrupted
-- [ ] Sometimes keyless still missing, DC-DC bug?
+  - [ ] NODE add BMS &CAN timeout flags
+  - [ ] Keyless seat &alarm state, use GetTick() and timeout
+- [x] Finger IRQ sometimes still interrupted
+- [x] Sometimes keyless still missing, DC-DC bug?
 - [ ] Range & Energy estimation
 - [ ] Check got command when sending report, for faster mqtt command
 - [ ] Separate files based on functionality
 - [ ] Put BL configuration on EEPROM, &it should updateable by command
-    - [ ] MQTT host
-    - [ ] Simcom APN
+  - [ ] MQTT host
+  - [ ] Simcom APN
 - [ ] Use mpu DMP feature to minimalize error ?
-- [ ] PCB revision
-    - [ ] Check new sim7600e pcb trace
-    - [ ] Change fingerprint Vin &Vtouch from 3.3v to 5v source
-    - [ ] Revert back GATE_ReadPower5v() logic
-    - [ ] 5v irq not triggered (alwasy floating)
-    - [ ] BOOT1 should pulled down
-    - [ ] Change USART1 (SIMCOM) to UART9
 - [ ] Try hmi download again, check error, increase retry
 - [ ] Save global variable to intermediate variable, do not use pointer
 - [ ] SIM5300e SSL communication, maybe MbedTLS can be used.
@@ -550,6 +543,13 @@
   - [x] Add uFL connector for on-board chip like GPS & SIMCOM
   - [x] Change the on-board microstrip antenna to v2
   - [x] Add Solder-Jumper (for next optimization) to switch between uFL or microstrip
+- [ ] PCB revision
+  - [ ] Check new sim7600e pcb trace
+  - [ ] Change fingerprint Vin &Vtouch from 3.3v to 5v source
+  - [ ] Revert back GATE_ReadPower5v() logic
+  - [ ] 5v irq not triggered (alwasy floating)
+  - [ ] BOOT1 should pulled down
+  - [ ] Change USART1 (SIMCOM) to UART9
 
 ## RF PCB Guidelines :
 

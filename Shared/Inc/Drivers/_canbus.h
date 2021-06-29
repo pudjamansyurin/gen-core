@@ -2,20 +2,23 @@
  * _can.h
  *
  *  Created on: Oct 7, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef CANBUS_H_
 #define CANBUS_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
+#include "App/_common.h"
 
-/* Defines -----------------------------------------------------------------*/
-#define CAN_DATA 	UNION64
+/* Exported constants
+ * --------------------------------------------*/
+#define CAN_DATA UNION64
 #define CAN_RX_MS ((uint16_t)1000)
 
-/* Exported defines ----------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 typedef enum {
   CAND_FOCAN_PROGRESS = 0x01A,
   CAND_FOCAN_CRC = 0x01B,
@@ -86,8 +89,8 @@ typedef enum {
 
 } CAN_ADDR;
 
-/* Exported struct
- * ------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
   CAN_TxHeaderTypeDef header;
   UNION64 data;
@@ -99,15 +102,16 @@ typedef struct {
 } can_rx_t;
 
 typedef struct {
-  CAN_HandleTypeDef *pcan;
+  CAN_HandleTypeDef* pcan;
 } can_t;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void CANBUS_Init(void);
 void CANBUS_DeInit(void);
 uint8_t CANBUS_Filter(void);
-uint8_t CANBUS_Write(can_tx_t *Tx, uint32_t address, uint32_t DLC, uint8_t ext);
-uint8_t CANBUS_Read(can_rx_t *Rx);
-uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef *RxHeader);
+uint8_t CANBUS_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC, uint8_t ext);
+uint8_t CANBUS_Read(can_rx_t* Rx);
+uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef* RxHeader);
 
 #endif /* CANBUS_H_ */

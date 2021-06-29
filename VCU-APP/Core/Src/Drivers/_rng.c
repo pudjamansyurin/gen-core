@@ -2,26 +2,32 @@
  * _rng.c
  *
  *  Created on: Mar 8, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_rng.h"
+
 #include "rng.h"
 
-/* External variables -------------------------------------------------------*/
-#if (RTOS_ENABLE)
+/* External variables
+ * --------------------------------------------*/
+#if (APP)
 extern osMutexId_t RngMutexHandle;
 #endif
 
-/* Private variable ----------------------------------------------------------*/
+/* Private variables
+ * --------------------------------------------*/
 static RNG_HandleTypeDef *prng = &hrng;
 
-/* Private functions declaration ---------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
-/* Public functions implementation -------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 uint8_t RNG_Generate32(uint32_t *payload, uint8_t size) {
   uint8_t ok = 1;
 
@@ -37,13 +43,13 @@ uint8_t RNG_Generate32(uint32_t *payload, uint8_t size) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(RngMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(RngMutexHandle);
 #endif
 }

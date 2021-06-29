@@ -2,26 +2,32 @@
  * _iwdg.c
  *
  *  Created on: Mar 14, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_iwdg.h"
+
 #include "iwdg.h"
 
-/* External variables -------------------------------------------------------*/
-#if (RTOS_ENABLE)
+/* External variables
+ * --------------------------------------------*/
+#if (APP)
 extern osMutexId_t IwdgMutexHandle;
 #endif
 
-/* Private variable ----------------------------------------------------------*/
-static IWDG_HandleTypeDef *piwdg = &hiwdg;
+/* Private variables
+ * --------------------------------------------*/
+static IWDG_HandleTypeDef* piwdg = &hiwdg;
 
-/* Private functions declaration ---------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
-/* Public functions implementation -------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 void IWDG_Refresh(void) {
   lock();
   HAL_IWDG_Refresh(piwdg);
@@ -31,13 +37,13 @@ void IWDG_Refresh(void) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(IwdgMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(IwdgMutexHandle);
 #endif
 }

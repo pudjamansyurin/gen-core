@@ -2,35 +2,42 @@
  * _aes.c
  *
  *  Created on: May 12, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_aes.h"
+#include "Libs/_eeprom.h"
 #include "aes.h"
 
-/* External variables -------------------------------------------------------*/
-#if (RTOS_ENABLE)
+/* External variables
+ * --------------------------------------------*/
+#if (APP)
 extern osMutexId_t AesMutexHandle;
 #endif
 
-/* Public variable -----------------------------------------------------------*/
+/* Public variables
+ * --------------------------------------------*/
 __ALIGN_BEGIN uint32_t AES_KEY[4] __ALIGN_END;
 
-/* Private variable ----------------------------------------------------------*/
+/* Private variables
+ * --------------------------------------------*/
 static CRYP_HandleTypeDef *pcryp = &hcryp;
 
-/* Private functions declaration ---------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
-/* Public functions implementation -------------------------------------------*/
+/* Public functions implementation
+ * --------------------------------------------*/
 uint8_t AES_Init(void) {
   uint8_t ok;
 
   do {
     ok = AES_ChangeKey(NULL);
-    _DelayMS(100);
+    if (!ok) _DelayMS(100);
   } while (!ok);
 
   return ok;
@@ -51,36 +58,43 @@ uint8_t AES_ChangeKey(uint32_t *key) {
   return ok;
 }
 
-uint8_t AES_Encrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
+uint8_t AES_Encrypt(uint8_t *dst, uint8_t *src, uint16_t Sz) {
   uint8_t ok;
 
   lock();
-  ok = (HAL_CRYP_Encrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst, 1000) == HAL_OK);
+  ok = (HAL_CRYP_Encrypt(pcryp, (uint32_t *)src, Sz, (uint32_t *)dst, 1000) ==
+        HAL_OK);
   unlock();
 
   return ok;
 }
 
-uint8_t AES_Decrypt(uint8_t *pDst, uint8_t *pSrc, uint16_t Sz) {
+uint8_t AES_Decrypt(uint8_t *dst, uint8_t *src, uint16_t Sz) {
   uint8_t ok;
 
   lock();
-  ok = (HAL_CRYP_Decrypt(pcryp, (uint32_t *)pSrc, Sz, (uint32_t *)pDst, 1000) == HAL_OK);
+  ok = (HAL_CRYP_Decrypt(pcryp, (uint32_t *)src, Sz, (uint32_t *)dst, 1000) ==
+        HAL_OK);
   unlock();
 
   return ok;
 }
+
+uint8_t AES_KeyStore(uint32_t src[4]) {
+  void *dst = AES_KEY;
+
+  return EE_Cmd(VA_AES_KEY, src, dst, sizeof(AES_KEY));}
 
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(AesMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(AesMutexHandle);
 #endif
 }

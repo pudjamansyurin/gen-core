@@ -2,56 +2,58 @@
  * NODE.h
  *
  *  Created on: Mar 23, 2021
- *      Author: pujak
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_NODES_NODE_H_
 #define INC_NODES_NODE_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_canbus.h"
 
-/* Exported defines
- * ---------------------------------------------------------*/
-#define NODE_TIMEOUT_MS	((uint16_t)5000)
-#define NODE_DEBUG_MS	((uint16_t)1000)
+/* Exported constants
+ * --------------------------------------------*/
+#define NODE_TIMEOUT_MS ((uint16_t)5000)
+#define NODE_DEBUG_MS ((uint16_t)1000)
 
+/* Exported macros
+ * --------------------------------------------*/
 #define CDBG_ID(c, dbg) ((c >> dbg) & 0x01)
 
-/* Exported enum
- * ------------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 typedef enum {
-	CDBG_GROUP = 0,
-	CDBG_VCU,
-	CDBG_GPS,
-	CDBG_MEMS,
-	CDBG_RMT,
-	CDBG_TASK,
-	CDBG_MCU,
-	CDBG_BMS,
+  CDBG_GROUP = 0,
+  CDBG_VCU,
+  CDBG_GPS,
+  CDBG_MEMS,
+  CDBG_RMT,
+  CDBG_TASK,
+  CDBG_MCU,
+  CDBG_BMS,
 } CDBG;
 
-/* Exported struct
- * ------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
-	uint8_t error;
-	uint8_t overheat;
-	uint8_t debug;
-	struct {
-		uint32_t dbg;
-	} tick;
+  uint8_t error;
+  uint8_t overheat;
+  uint8_t debug;
+  struct {
+    uint32_t dbg;
+  } tick;
 } node_data_t;
 
 typedef struct {
-	node_data_t d;
+  node_data_t d;
 } node_t;
 
 /* Exported variables
- * ---------------------------------------------------------*/
+ * --------------------------------------------*/
 extern node_t NODE;
 
-/* Public functions implementation
+/* Public functions prototype
  * --------------------------------------------*/
 void NODE_Init(void);
 void NODE_Refresh(void);

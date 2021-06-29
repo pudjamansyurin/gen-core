@@ -19,25 +19,26 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 #include "adc.h"
 #include "can.h"
 #include "crc.h"
 #include "dma.h"
+#include "gpio.h"
 #include "i2c.h"
 #include "iwdg.h"
 #include "usart.h"
-#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "App/_common.h"
+#include "App/_fota.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_canbus.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
-#include "Libs/_fota.h"
-#include "Libs/_utils.h"
 
 /* USER CODE END Includes */
 
@@ -71,17 +72,17 @@ void SystemClock_Config(void);
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
   /* USER CODE BEGIN 1 */
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick.
+   */
   HAL_Init();
 
   /* USER CODE BEGIN Init */
@@ -107,56 +108,58 @@ int main(void)
   MX_UART9_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  GATE_LedWrite(1); HAL_Delay(250);
-  GATE_LedWrite(0); HAL_Delay(500);
+  GATE_LedWrite(1);
+  HAL_Delay(250);
+  GATE_LedWrite(0);
+  HAL_Delay(500);
 
   BAT_Init();
   EE_Init();
   CANBUS_Init();
-  Simcom_Init();
+  SIM_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    /* USER CODE END WHILE */
+  /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+  /* USER CODE BEGIN 3 */
   HAL_IWDG_Refresh(&hiwdg);
   /* IAP flag has been set, initiate firmware download procedure */
-  if (*(uint32_t *)IAP_FLAG_ADDR == IAP_FLAG) {
+  if (*(uint32_t *)IAP_FLAG_ADDR == IFLAG_SRAM) {
     printf("IAP set, do FOTA.\n");
     /* Everything went well */
-    if (FOTA_Upgrade(FOTA.TYPE)) {
+    if (FOTA_Upgrade(IAP.type)) {
       /* Reset IAP flag */
-      *(uint32_t *)IAP_FLAG_ADDR = 0;
+      *(uint32_t *)IAP_FLAG_ADDR = IFLAG_RESET;
       /* Take branching decision on next reboot */
-      FOTA_Reboot(FOTA.TYPE);
+      FOTA_Reboot(IAP.type);
     }
     /* Reset IAP flag */
-    *(uint32_t *)IAP_FLAG_ADDR = 0;
+    *(uint32_t *)IAP_FLAG_ADDR = IFLAG_RESET;
     /* FOTA failed */
     HAL_NVIC_SystemReset();
   }
   /* Jump to application if it exist and FOTA finished */
-  else if (FOTA_ValidImage(APP_START_ADDR) && !FOTA_InProgress()) {
+  else if (FOTA_ValidImage(APP_START_ADDR) && !IAP_InProgress()) {
     printf("Jump to application.\n");
     /* Jump sequence */
     FOTA_JumpToApplication();
   }
   /* Power reset during FOTA, try once more */
-  else if (FOTA_InProgress()) {
-    if (FOTA.TYPE == IAP_VCU) {
+  else if (IAP_InProgress()) {
+    if (IAP.type == ITYPE_VCU) {
       printf("FOTA set, do FOTA once more.\n");
       /* Everything went well, boot form new image */
-      if (FOTA_Upgrade(IAP_VCU)) {
+      if (FOTA_Upgrade(ITYPE_VCU)) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA.TYPE);
+        FOTA_Reboot(IAP.type);
       }
       /* Erase partially programmed application area */
       FLASHER_EraseAppArea();
     }
     /* Reset FOTA flag */
-    FOTA_ResetFlag();
+    IAP_ResetFlag();
     HAL_NVIC_SystemReset();
   }
   /* Try to restore the backup */
@@ -167,14 +170,14 @@ int main(void)
       /* Restore back old image to application area */
       if (FLASHER_RestoreApp()) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA.TYPE);
+        FOTA_Reboot(IAP.type);
       }
     } else {
       printf("No image at all, do FOTA.\n");
       /* Download new firmware for the first time */
-      if (FOTA_Upgrade(IAP_VCU)) {
+      if (FOTA_Upgrade(ITYPE_VCU)) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(FOTA.TYPE);
+        FOTA_Reboot(IAP.type);
       }
     }
     HAL_NVIC_SystemReset();
@@ -185,22 +188,22 @@ int main(void)
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
+ * @brief System Clock Configuration
+ * @retval None
+ */
+void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+   * in the RCC_OscInitTypeDef structure.
+   */
+  RCC_OscInitStruct.OscillatorType =
+      RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -210,21 +213,19 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 2;
   RCC_OscInitStruct.PLL.PLLR = 2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
+                                RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
-  {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
     Error_Handler();
   }
 }
@@ -233,27 +234,25 @@ void SystemClock_Config(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   // _Error("Error Handler");
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t *file, uint32_t line)
-{
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
+void assert_failed(uint8_t *file, uint32_t line) {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line
      number,

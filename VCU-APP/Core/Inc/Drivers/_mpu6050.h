@@ -8,10 +8,12 @@
 #ifndef MPU6050_H_
 #define MPU6050_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
+#include "App/_common.h"
 
-/* Exported constants --------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 /* Default I2C address */
 #define MPU6050_I2C_ADDR 0xD0
 /* Who I am register value */
@@ -72,8 +74,8 @@
 #define MPU6050_DataRate_125Hz 63 /*!< Sample rate set to 125 Hz */
 #define MPU6050_DataRate_100Hz 79 /*!< Sample rate set to 100 Hz */
 
-/* Exported enum
- * ----------------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 /**
  * @brief  MPU6050 can have 2 different slave addresses, depends on it's input
  * AD0 pin This feature allows you to use 2 different sensors with this library
@@ -116,8 +118,8 @@ typedef enum {
   MPU6050_Gyroscope_2000s = 0x03  /*!< Range is +- 2000 degrees/s */
 } MPU6050_Gyroscope;
 
-/* Exported struct
- * ----------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 /**
  * @brief  Main MPU6050 structure
  */
@@ -137,8 +139,8 @@ typedef struct {
   float Temperature;       /*!< Temperature in degrees */
 } MPU6050;
 
-/* Public union
- * ----------------------------------------------------------------*/
+/* Exported unions
+ * --------------------------------------------*/
 /**
  * @brief  Interrupts union and structure
  */
@@ -156,7 +158,8 @@ typedef union {
   uint8_t Status;
 } MPU6050_Interrupt;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 /**
  * @brief  Initializes MPU6050 and I2C peripheral
  * @param  *DataStruct: Pointer to empty @ref MPU6050_t structure
@@ -199,8 +202,8 @@ MPU6050_Result MPU6050_SetGyroscope(MPU6050 *DataStruct,
  * be a value of @ref MPU6050_Accelerometer_t enumeration
  * @retval Member of @ref MPU6050_Result_t enumeration
  */
-MPU6050_Result MPU6050_SetAccelerometer(MPU6050 *DataStruct,
-                         	 	 	 	 	 	 	 MPU6050_Accelerometer AccelerometerSensitivity);
+MPU6050_Result MPU6050_SetAccelerometer(
+    MPU6050 *DataStruct, MPU6050_Accelerometer AccelerometerSensitivity);
 
 /**
  * @brief  Sets output data rate

@@ -2,121 +2,108 @@
  * BMS.h
  *
  *  Created on: May 10, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_NODES_BMS_H_
 #define INC_NODES_BMS_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_canbus.h"
-#include "Libs/_utils.h"
 
-/* Exported constants --------------------------------------------------------*/
-#define BMS_AVG_SZ ((uint8_t)10)
-
+/* Exported constants
+ * --------------------------------------------*/
 #define BMS_COUNT 2
 #define BMS_TIMEOUT_MS ((uint32_t)4000)
 #define BMS_ID_NONE ((uint32_t)0xFFFFFFFF)
 
-#define BMS_CAND(_X_) ((_X_) >> 20)
-#define BMS_ID(_X_) ((_X_)&0xFFFFF)
+/* Exported macros
+ * --------------------------------------------*/
+#define BMS_CAND(X) ((X) >> 20)
+#define BMS_ID(X) ((X)&0xFFFFF)
 
-/* Exported enum
- * ---------------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 typedef enum {
-	BMS_AVG_CAPACITY = 0,
-	BMS_AVG_EFFICIENCY,
-	BMS_AVG_INRANGE,
-	BMS_AVG_DISCHARGE,
-	BMS_AVG_MAX,
+  BMS_AVG_CAPACITY = 0,
+  BMS_AVG_EFFICIENCY,
+  BMS_AVG_INRANGE,
+  BMS_AVG_DISCHARGE,
+  BMS_AVG_MAX,
 } BMS_AVG_TYPE;
 
 typedef enum {
-	BMS_STATE_OFF = -1,
-	BMS_STATE_IDLE = 0,
-	BMS_STATE_DISCHARGE,
-	BMS_STATE_CHARGE,
-	BMS_STATE_FULL = 1
+  BMS_STATE_OFF = -1,
+  BMS_STATE_IDLE = 0,
+  BMS_STATE_DISCHARGE,
+  BMS_STATE_CHARGE,
+  BMS_STATE_FULL = 1
 } BMS_STATE;
 
 typedef enum {
-	BMS_SCALE_15_85 = 0,
-	BMS_SCALE_20_80,
-	BMS_SCALE_10_90,
-	BMS_SCALE_0_100,
+  BMS_SCALE_15_85 = 0,
+  BMS_SCALE_20_80,
+  BMS_SCALE_10_90,
+  BMS_SCALE_0_100,
 } BMS_SCALE;
 
 typedef enum {
-	BMSF_DISCHARGE_OVER_CURRENT = 0,
-	BMSF_CHARGE_OVER_CURRENT,
-	BMSF_SHORT_CIRCUIT,
-	BMSF_DISCHARGE_OVER_TEMPERATURE,
-	BMSF_DISCHARGE_UNDER_TEMPERATURE,
-	BMSF_CHARGE_OVER_TEMPERATURE,
-	BMSF_CHARGE_UNDER_TEMPERATURE,
-	BMSF_UNDER_VOLTAGE,
-	BMSF_OVER_VOLTAGE,
-	BMSF_OVER_DISCHARGE_CAPACITY,
-	BMSF_UNBALANCE,
-	BMSF_SYSTEM_FAILURE,
+  BMSF_DISCHARGE_OVER_CURRENT = 0,
+  BMSF_CHARGE_OVER_CURRENT,
+  BMSF_SHORT_CIRCUIT,
+  BMSF_DISCHARGE_OVER_TEMPERATURE,
+  BMSF_DISCHARGE_UNDER_TEMPERATURE,
+  BMSF_CHARGE_OVER_TEMPERATURE,
+  BMSF_CHARGE_UNDER_TEMPERATURE,
+  BMSF_UNDER_VOLTAGE,
+  BMSF_OVER_VOLTAGE,
+  BMSF_OVER_DISCHARGE_CAPACITY,
+  BMSF_UNBALANCE,
+  BMSF_SYSTEM_FAILURE,
 } BMS_FAULT_BIT;
 
-/* Exported struct
- * -------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
-	uint8_t run;
-	uint8_t active;
-	uint32_t id;
-	float voltage;
-	float current;
-	float soc;
-	float temperature;
-	float capacity;
-	float soh;
-	uint16_t cycle;
-	uint16_t fault;
-	BMS_STATE state;
-	uint32_t tick;
+  uint8_t run;
+  uint8_t active;
+  uint32_t id;
+  float voltage;
+  float current;
+  float soc;
+  float temperature;
+  float capacity;
+  float soh;
+  uint16_t cycle;
+  uint16_t fault;
+  BMS_STATE state;
+  uint32_t tick;
 } bms_pack_t;
 
 typedef struct {
-	float capacity;
-	float efficiency;
-	uint32_t distance;
-} bms_prediction_t;
-
-typedef struct {
-	uint8_t run;
-	uint8_t active;
-	uint8_t overheat;
-	uint16_t fault;
-	uint8_t soc;
+  uint8_t run;
+  uint8_t active;
+  uint8_t overheat;
+  uint16_t fault;
+  uint8_t soc;
 } bms_data_t;
 
 typedef struct {
-	averager_float_t handle[BMS_AVG_MAX];
-	float buffer[BMS_AVG_MAX][BMS_AVG_SZ];
-} bms_avg_t;
-
-typedef struct {
-	bms_data_t d;
-	bms_prediction_t ai;
-	bms_pack_t packs[BMS_COUNT];
-	bms_avg_t avg;
+  bms_data_t d;
+  bms_pack_t packs[BMS_COUNT];
 } bms_t;
 
 /* Exported variables
- * ---------------------------------------------------------*/
+ * --------------------------------------------*/
 extern bms_t BMS;
 
-/* Public functions implementation
+/* Public functions prototype
  * --------------------------------------------*/
 void BMS_Init(void);
 void BMS_PowerOverCAN(uint8_t on);
 void BMS_RefreshIndex(void);
 uint8_t BMS_MinIndex(void);
-void BMS_GetPrediction(uint8_t *eff, uint8_t *km, uint8_t distance);
 
 void BMS_RX_Param1(can_rx_t *Rx);
 void BMS_RX_Param2(can_rx_t *Rx);

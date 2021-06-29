@@ -2,50 +2,52 @@
  * _finger.h
  *
  *  Created on: Aug 28, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef FINGER_H_
 #define FINGER_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
+#include "App/_common.h"
 
-/* Exported constants --------------------------------------------------------*/
+/* Exported constants
+ * --------------------------------------------*/
 #define FINGER_TIMEOUT_MS ((uint16_t)5000)
 #define FINGER_SCAN_MS ((uint16_t)10000)
 
 #define FINGER_CONFIDENCE_MIN_PERCENT ((uint8_t)75)
 #define FINGER_USER_MAX ((uint8_t)5)
 
-
-/* Enums
- * --------------------------------------------------------------------*/
+/* Exported enums
+ * --------------------------------------------*/
 typedef enum {
-	FGR_REG_HIDE = 0,
-	FGR_REG_SHOW,
+  FGR_REG_HIDE = 0,
+  FGR_REG_SHOW,
 } FGR_REG;
 
-/* Structs
- * --------------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
-	uint8_t id;
-	uint8_t verified;
-	uint8_t registering;
-	uint8_t db[FINGER_USER_MAX];
+  uint8_t id;
+  uint8_t verified;
+  uint8_t registering;
+  uint8_t db[FINGER_USER_MAX];
 } finger_data_t;
 
 typedef struct {
-	finger_data_t d;
-	UART_HandleTypeDef *puart;
-	DMA_HandleTypeDef *pdma;
+  finger_data_t d;
+  UART_HandleTypeDef *puart;
+  DMA_HandleTypeDef *pdma;
 } finger_t;
 
 /* Exported variables
- * ----------------------------------------------------------*/
+ * --------------------------------------------*/
 extern finger_t FGR;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 uint8_t FGR_Init(void);
 void FGR_DeInit(void);
 uint8_t FGR_Probe(void);

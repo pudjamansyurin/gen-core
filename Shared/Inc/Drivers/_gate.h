@@ -2,16 +2,18 @@
  * _gate.h
  *
  *  Created on: Dec 13, 2020
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef INC_DRIVERS__GATE_H_
 #define INC_DRIVERS__GATE_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "_defines.h"
+/* Includes
+ * --------------------------------------------*/
+#include "_defs.h"
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void GATE_LedWrite(GPIO_PinState state);
 void GATE_LedToggle(void);
 void GATE_LedBlink(uint32_t time);
@@ -23,7 +25,7 @@ void GATE_CanbusShutdown(void);
 void GATE_CanbusReset(void);
 void GATE_Hmi1Power(GPIO_PinState state);
 
-#if (!BOOTLOADER)
+#if (APP)
 void GATE_System12v(GPIO_PinState state);
 void GATE_McuPower(GPIO_PinState state);
 void GATE_Hmi2Reset(void);

@@ -2,24 +2,26 @@
  * _buzzer.c
  *
  *  Created on: Mar 17, 2021
- *      Author: pudja
+ *      Author: Pudja Mansyurin
  *      Source:
  * https://stm32f4-discovery.net/2014/05/stm32f4-stm32f429-discovery-pwm-tutorial/
  *
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes
+ * --------------------------------------------*/
 #include "Drivers/_buzzer.h"
+
 #include "tim.h"
 
 /* External variables
- * ---------------------------------------------------------*/
-#if (RTOS_ENABLE)
+ * --------------------------------------------*/
+#if (APP)
 extern osMutexId_t BuzzerMutexHandle;
 #endif
 
-/* Private functions declaration
- * ----------------------------------------------*/
+/* Private functions prototype
+ * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
 
@@ -37,13 +39,13 @@ void BUZZER_Write(uint8_t state) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexAcquire(BuzzerMutexHandle, osWaitForever);
 #endif
 }
 
 static void unlock(void) {
-#if (RTOS_ENABLE)
+#if (APP)
   osMutexRelease(BuzzerMutexHandle);
 #endif
 }

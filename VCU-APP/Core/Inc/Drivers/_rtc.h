@@ -2,19 +2,22 @@
  * _rtc.h
  *
  *  Created on: Oct 9, 2019
- *      Author: Puja
+ *      Author: Pudja Mansyurin
  */
 
 #ifndef RTC_H_
 #define RTC_H_
 
-/* Includes ------------------------------------------------------------------*/
-#include "Libs/_utils.h"
+/* Includes
+ * --------------------------------------------*/
+#include "App/_common.h"
 
-/* Defines ------------------------------------------------------------------*/
-#define RTC_CALIBRATION_MINUTES	((uint8_t)60)
+/* Exported constants
+ * --------------------------------------------*/
+#define RTC_CALIBRATION_MINUTES ((uint8_t)60)
 
-/* Typedef -------------------------------------------------------------------*/
+/* Exported structs
+ * --------------------------------------------*/
 typedef struct {
   RTC_TimeTypeDef time;
   RTC_DateTypeDef date;
@@ -31,7 +34,8 @@ typedef struct __attribute__((packed)) {
   uint8_t WeekDay;
 } datetime_t;
 
-/* Public functions prototype ------------------------------------------------*/
+/* Public functions prototype
+ * --------------------------------------------*/
 void RTC_Init(void);
 datetime_t RTC_Read(void);
 void RTC_Write(datetime_t dt);
