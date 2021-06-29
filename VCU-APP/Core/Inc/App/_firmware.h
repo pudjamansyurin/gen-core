@@ -14,7 +14,8 @@
 
 /* Public functions prototype
  * --------------------------------------------*/
+bool FW_ValidResponseIAP(void);
 bool FW_EnterModeIAP(IAP_TYPE type, char *message);
-bool FW_PostFota(response_t *r);
+void FW_CaptureResponseIAP(response_t *r);
 
 #endif /* INC_LIBS__FIRMWARE_H_ */

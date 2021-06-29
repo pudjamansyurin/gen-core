@@ -45,10 +45,10 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
   // default command response
   resp->header.code = code;
   resp->header.sub_code = subCode;
-  resp->data.res_code = RESP_OK;
+  resp->data.res_code = CMDR_OK;
   strcpy(resp->data.message, "");
 
-  if (code == CMD_CODE_GEN) {
+  if (code == CMDC_GEN) {
     switch (subCode) {
       case CMD_GEN_INFO:
         EXEC_GenInfo(rdata);
@@ -79,17 +79,17 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       default:
-        *resCode = RESP_INVALID;
+        *resCode = CMDR_INVALID;
         break;
     }
   }
 
-  else if (code == CMD_CODE_OVD) {
+  else if (code == CMDC_OVD) {
     switch (subCode) {
       case CMD_OVD_STATE:
         if (VCU.d.state < VEHICLE_NORMAL) {
           sprintf(resMsg, "State should >= {%d}.", VEHICLE_NORMAL);
-          *resCode = RESP_ERROR;
+          *resCode = CMDR_ERROR;
         } else
           _osQueuePutRst(OvdStateQueueHandle, (uint8_t *)val);
         break;
@@ -111,15 +111,15 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       default:
-        *resCode = RESP_INVALID;
+        *resCode = CMDR_INVALID;
         break;
     }
   }
 
-  else if (code == CMD_CODE_AUDIO) {
+  else if (code == CMDC_AUDIO) {
     if (VCU.d.state < VEHICLE_NORMAL) {
       sprintf(resMsg, "State should >= {%d}.", VEHICLE_NORMAL);
-      *resCode = RESP_ERROR;
+      *resCode = CMDR_ERROR;
     } else
       switch (subCode) {
         case CMD_AUDIO_BEEP:
@@ -127,15 +127,15 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = RESP_INVALID;
+          *resCode = CMDR_INVALID;
           break;
       }
   }
 
-  else if (code == CMD_CODE_FGR) {
+  else if (code == CMDC_FGR) {
     if (VCU.d.state != VEHICLE_STANDBY) {
       sprintf(resMsg, "State should = {%d}.", VEHICLE_STANDBY);
-      *resCode = RESP_ERROR;
+      *resCode = CMDR_ERROR;
     } else
       switch (subCode) {
         case CMD_FGR_FETCH:
@@ -160,15 +160,15 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = RESP_INVALID;
+          *resCode = CMDR_INVALID;
           break;
       }
   }
 
-  else if (code == CMD_CODE_RMT) {
+  else if (code == CMDC_RMT) {
     if (VCU.d.state < VEHICLE_NORMAL) {
       sprintf(resMsg, "State should >= {%d}.", VEHICLE_NORMAL);
-      *resCode = RESP_ERROR;
+      *resCode = CMDR_ERROR;
     } else
       switch (subCode) {
         case CMD_RMT_PAIRING:
@@ -177,13 +177,13 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = RESP_INVALID;
+          *resCode = CMDR_INVALID;
           break;
       }
   }
 
-  else if (code == CMD_CODE_FOTA) {
-    *resCode = RESP_ERROR;
+  else if (code == CMDC_FOTA) {
+    *resCode = CMDR_ERROR;
 
     if (VCU.d.state == VEHICLE_RUN) {
       sprintf(resMsg, "State should != {%d}.", VEHICLE_RUN);
@@ -198,13 +198,13 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = RESP_INVALID;
+          *resCode = CMDR_INVALID;
           break;
       }
   }
 
-  else if (code == CMD_CODE_NET) {
-    *resCode = RESP_ERROR;
+  else if (code == CMDC_NET) {
+    *resCode = CMDR_ERROR;
 
     switch (subCode) {
       case CMD_NET_SEND_USSD:
@@ -219,12 +219,28 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       default:
-        *resCode = RESP_INVALID;
+        *resCode = CMDR_INVALID;
         break;
     }
   }
 
-  else if (code == CMD_CODE_HBAR) {
+  else if (code == CMDC_CON) {
+    *resCode = CMDR_ERROR;
+
+    switch (subCode) {
+      case CMD_CON_APN:
+      case CMD_CON_FTP:
+      case CMD_CON_MQTT:
+      	memcpy(rdata->message, val, sizeof(rdata->message));
+        break;
+
+      default:
+        *resCode = CMDR_INVALID;
+        break;
+    }
+  }
+
+  else if (code == CMDC_HBAR) {
     uint8_t v = *(uint8_t *)val;
     switch (subCode) {
       case CMD_HBAR_DRIVE:
@@ -244,15 +260,15 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       default:
-        *resCode = RESP_INVALID;
+        *resCode = CMDR_INVALID;
         break;
     }
   }
 
-  else if (code == CMD_CODE_MCU) {
+  else if (code == CMDC_MCU) {
     if (!MCU.d.active || MCU.d.run) {
       sprintf(resMsg, "MCU not ready!");
-      *resCode = RESP_ERROR;
+      *resCode = CMDR_ERROR;
     } else
       switch (subCode) {
         case CMD_MCU_SPEED_MAX:
@@ -264,13 +280,13 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = RESP_INVALID;
+          *resCode = CMDR_INVALID;
           break;
       }
   }
 
   else
-    *resCode = RESP_INVALID;
+    *resCode = CMDR_INVALID;
 }
 
 /* Private functions implementation
@@ -290,12 +306,12 @@ static void EXEC_FingerAdd(response_data_t *rdata) {
   uint32_t notif;
   uint8_t id;
 
-  rdata->res_code = RESP_ERROR;
+  rdata->res_code = CMDR_ERROR;
   if (_osFlagAny(&notif, (FINGER_SCAN_MS * 2) + 5000)) {
     if (notif & FLAG_COMMAND_OK) {
       if (_osQueueGet(DriverQueueHandle, &id)) {
         sprintf(rdata->message, "%u", id);
-        rdata->res_code = RESP_OK;
+        rdata->res_code = CMDR_OK;
       }
     } else {
       if (_osQueueGet(DriverQueueHandle, &id))
@@ -310,9 +326,9 @@ static void EXEC_FingerFetch(response_data_t *rdata) {
   char fingers[3];
 
   memset(FGR.d.db, 0, FINGER_USER_MAX);
-  rdata->res_code = RESP_ERROR;
+  rdata->res_code = CMDR_ERROR;
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) {
-    rdata->res_code = RESP_OK;
+    rdata->res_code = CMDR_OK;
 
     for (uint8_t id = 1; id <= FINGER_USER_MAX; id++) {
       if (FGR.d.db[id - 1]) {
@@ -330,22 +346,22 @@ static void EXEC_FingerFetch(response_data_t *rdata) {
 static void EXEC_Finger(response_data_t *rdata) {
   uint32_t notif;
 
-  rdata->res_code = RESP_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = RESP_OK;
+  rdata->res_code = CMDR_ERROR;
+  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = CMDR_OK;
 }
 
 static void EXEC_RemotePairing(response_data_t *rdata) {
   uint32_t notif;
 
-  rdata->res_code = RESP_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = RESP_OK;
+  rdata->res_code = CMDR_ERROR;
+  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = CMDR_OK;
 }
 
 static void EXEC_NetQuota(response_data_t *rdata) {
   uint32_t notif;
 
-  rdata->res_code = RESP_ERROR;
+  rdata->res_code = CMDR_ERROR;
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 40000))
     if (_osQueueGet(QuotaQueueHandle, rdata->message))
-      rdata->res_code = RESP_OK;
+      rdata->res_code = CMDR_OK;
 }

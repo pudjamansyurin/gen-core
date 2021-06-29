@@ -786,7 +786,10 @@ void StartCommandTask(void* argument) {
   CMD_Init();
 
   // Handle Post-FOTA
-  if (FW_PostFota(&resp)) _osQueuePut(ResponseQueueHandle, &resp);
+  if (FW_ValidResponseIAP()) {
+  	FW_CaptureResponseIAP(&resp);
+  	_osQueuePut(ResponseQueueHandle, &resp);
+  }
 
   /* Infinite loop */
   for (;;) {

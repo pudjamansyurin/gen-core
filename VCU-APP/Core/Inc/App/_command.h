@@ -19,22 +19,23 @@
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
-  RESP_ERROR = 0,
-  RESP_OK,
-  RESP_INVALID,
+  CMDR_ERROR = 0,
+	CMDR_OK,
+	CMDR_INVALID,
 } CMD_RESP;
 
 typedef enum {
-  CMD_CODE_GEN = 0,
-  CMD_CODE_OVD,
-  CMD_CODE_AUDIO,
-  CMD_CODE_FGR,
-  CMD_CODE_RMT,
-  CMD_CODE_FOTA,
-  CMD_CODE_NET,
-  CMD_CODE_HBAR,
-  CMD_CODE_MCU,
-  CMD_CODE_MAX,
+  CMDC_GEN = 0,
+  CMDC_OVD,
+  CMDC_AUDIO,
+  CMDC_FGR,
+  CMDC_RMT,
+  CMDC_FOTA,
+  CMDC_NET,
+	CMDC_CON,
+  CMDC_HBAR,
+  CMDC_MCU,
+  CMDC_MAX,
 } CMD_CODE;
 
 typedef enum {
@@ -86,6 +87,13 @@ typedef enum {
   CMD_NET_READ_SMS,
   CMD_NET_MAX,
 } CMD_SUB_NET;
+
+typedef enum {
+  CMD_CON_APN = 0,
+  CMD_CON_FTP,
+  CMD_CON_MQTT,
+  CMD_CON_MAX,
+} CMD_SUB_CON;
 
 typedef enum {
   CMD_HBAR_DRIVE = 0,
