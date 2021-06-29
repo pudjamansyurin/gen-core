@@ -17,5 +17,6 @@ void EEPROM24XX_SetDevice(I2C_HandleTypeDef* hi2c, uint16_t device);
 uint8_t EEPROM24XX_IsConnected(uint32_t timeout);
 uint8_t EEPROM24XX_Save(uint16_t address, void* data, size_t size);
 uint8_t EEPROM24XX_Load(uint16_t address, void* data, size_t size);
+uint8_t EEPROM24XX_Reset(uint16_t address);
 
 #endif

@@ -422,7 +422,8 @@ static void NetworkRegistration(char* type, SIMR* res, uint32_t tick,
 
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay) {
   if (_TickOut(tick, timeout)) {
-    printf("Simcom:StateTimeout\n");
+	if (timeout)
+	  printf("Simcom:StateTimeout\n");
     return 1;
   }
 

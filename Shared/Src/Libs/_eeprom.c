@@ -47,22 +47,19 @@ uint8_t EE_Init(void) {
 
   if (ok) {
 #if (APP)
-    SIMCon_LoadStore();
     AES_KeyStore(NULL);
     HBAR_LoadStore();
-#endif
-
-    IAP_VersionStore(NULL);
-    IAP_TypeStore(NULL);
-    if (IEEP_VALUE == IEEP_SET) SIMCon_LoadStore();
-
-#if (!APP)
+#else
     if (IEEP_VALUE == IEEP_RESET) {
-      uint32_t ieep = IEEP_SET;
-      IAP_SetBootMeta(IEEP_OFFSET, &ieep);
-      SIMCon_SetDefaultStore();
+      if (SIMCon_SetDefaultStore()) {
+        uint32_t ieep = IEEP_SET;
+        IAP_SetBootMeta(IEEP_OFFSET, &ieep);
+      }
     }
 #endif
+    SIMCon_LoadStore();
+    IAP_VersionStore(NULL);
+    IAP_TypeStore(NULL);
   }
   unlock();
 
@@ -79,6 +76,7 @@ uint8_t EE_Cmd(EE_VA va, void* src, void* dst, uint16_t size) {
     ok = EEPROM24XX_Load(addr, dst, size);
   } else {
     memcpy(dst, src, size);
+    ok = EEPROM24XX_Reset(addr);
     ok = EEPROM24XX_Save(addr, src, size);
   }
   unlock();

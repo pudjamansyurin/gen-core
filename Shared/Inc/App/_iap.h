@@ -52,7 +52,7 @@
 typedef enum { FOCAN_ERROR = 0x00, FOCAN_ACK = 0x79, FOCAN_NACK = 0x1F } FOCAN;
 
 typedef enum {
-  IEEP_RESET = 0,
+  IEEP_RESET = 0xFFFFFFFF,
   IEEP_SET = 0xFEDCBA98,
 } IAP_EEPROM;
 

@@ -40,3 +40,17 @@ uint8_t EEPROM24XX_Load(uint16_t address, void* data, size_t size) {
   return (HAL_I2C_Mem_Read(i2c, DevAddress, address, I2C_MEMADD_SIZE_16BIT,
                            (uint8_t*)data, size, 100) == HAL_OK);
 }
+
+uint8_t EEPROM24XX_Reset(uint16_t address) {
+  size_t size = 32;
+  uint8_t dummy[size];
+
+  memset(dummy, 0, size);
+
+  if (HAL_I2C_Mem_Write(i2c, DevAddress, address, I2C_MEMADD_SIZE_16BIT,
+                        dummy, size, 100) == HAL_OK) {
+    _DelayMS(15);
+    return 1;
+  }
+  return 0;
+}
