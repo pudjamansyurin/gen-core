@@ -1,7 +1,3 @@
 .settings/
 Debug/*
-!Debug/*.bin
-!Debug/*.elf
 Release/*
-!Release/*.bin
-!Release/*.elf
