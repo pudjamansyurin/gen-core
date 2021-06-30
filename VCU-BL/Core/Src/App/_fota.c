@@ -127,8 +127,8 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
       res = FOTA_ValidateCRC(crcNew, len, APP_START_ADDR);
       // Glue related information to new image
       if (res == SIM_OK) {
-        IAP_SetAppMeta(CRC_OFFSET, &crcNew);
-        IAP_SetAppMeta(SIZE_OFFSET, &len);
+        IAP_SetAppMeta(CRC_OFFSET, crcNew);
+        IAP_SetAppMeta(SIZE_OFFSET, len);
       }
     }
 

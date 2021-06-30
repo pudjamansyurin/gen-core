@@ -2,6 +2,7 @@
 Mcu.Family=STM32F4
 ProjectManager.MainLocation=Core/Src
 CAN1.NART=DISABLE
+I2C2.IPParameters=Analog_Filter
 RCC.CortexFreq_Value=100000000
 ProjectManager.KeepUserCode=true
 Mcu.UserName=STM32F423VHTx
@@ -178,6 +179,7 @@ CAN1.BS1=CAN_BS1_8TQ
 ProjectManager.TargetToolchain=STM32CubeIDE
 PB10.GPIO_Label=INT_EEPROM_SCL
 Dma.UART9_RX.1.Mode=DMA_CIRCULAR
+I2C2.Analog_Filter=I2C_ANALOGFILTER_DISABLE
 VP_CRC_VS_CRC.Signal=CRC_VS_CRC
 Dma.USART1_RX.0.Direction=DMA_PERIPH_TO_MEMORY
 PC5.GPIOParameters=PinState,GPIO_PuPd,GPIO_Label

@@ -57,3 +57,4 @@ uint8_t EEPROM24XX_Reset(uint16_t address) {
   }
   return 0;
 }
+

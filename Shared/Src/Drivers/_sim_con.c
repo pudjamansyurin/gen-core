@@ -51,14 +51,13 @@ void SIMCon_LoadStore(void) {
 
 uint8_t SIMCon_SetDefaultStore(void) {
   uint16_t mqtt_port = MQTT_PORT;
-  uint8_t ok;
+  uint8_t ok = 0;
 
-  ok = SIMCon_MqttStore(MQTT_HOST, &mqtt_port, MQTT_USER, MQTT_PASS);
-  if (ok)
-    SIMCon_ApnStore(APN_NAME, APN_USER, APN_PASS);
-  if (ok)
-	SIMCon_FtpStore(FTP_HOST, FTP_USER, FTP_PASS);
-  return ok;
+  ok += SIMCon_MqttStore(MQTT_HOST, &mqtt_port, MQTT_USER, MQTT_PASS);
+  ok += SIMCon_ApnStore(APN_NAME, APN_USER, APN_PASS);
+  ok += SIMCon_FtpStore(FTP_HOST, FTP_USER, FTP_PASS);
+
+  return ok == 3;
 }
 
 uint8_t SIMCon_ApnStore(char* name, char* user, char *pass) {

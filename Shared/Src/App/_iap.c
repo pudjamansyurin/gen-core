@@ -44,12 +44,12 @@ uint8_t IAP_VersionStore(uint16_t *src) {
 }
 
 #if (!APP)
-void IAP_SetAppMeta(uint32_t offset, uint32_t *data) {
-  FLASHER_WriteAppArea((uint8_t *)data, sizeof(uint32_t), offset);
+void IAP_SetAppMeta(uint32_t offset, uint32_t data) {
+  FLASHER_WriteAppArea((uint8_t *)&data, sizeof(uint32_t), offset);
 }
 
-void IAP_SetBootMeta(uint32_t offset, uint32_t *data) {
-  FLASHER_WriteBootArea((uint8_t *)data, sizeof(uint32_t), offset);
+void IAP_SetBootMeta(uint32_t offset, uint32_t data) {
+  FLASHER_WriteBootArea((uint8_t *)&data, sizeof(uint32_t), offset);
 }
 
 void IAP_SetFlag(void) {

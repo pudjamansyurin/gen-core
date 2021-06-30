@@ -77,7 +77,6 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
-void _I2C_ClearBusyFlagErratum(void);
 void _DelayMS(uint32_t ms);
 uint32_t _GetTickMS(void);
 uint8_t _TickOut(uint32_t tick, uint32_t ms);
