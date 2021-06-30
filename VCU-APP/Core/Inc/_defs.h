@@ -17,7 +17,7 @@
 
 /* Exported constants
  * --------------------------------------------*/
-#define VCU_VERSION ((uint16_t)660)
+#define VCU_VERSION ((uint16_t)661)
 //#define EE_RESET ((uint16_t)53)
 
 #define SIM_DEBUG 1

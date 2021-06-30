@@ -9,6 +9,10 @@
  * --------------------------------------------*/
 #include "Drivers/_ee24xx.h"
 
+/* Private constants
+ * --------------------------------------------*/
+#define EEPROM_WIDTH 32
+
 /* Private variables
  * --------------------------------------------*/
 static I2C_HandleTypeDef* i2c;
@@ -26,7 +30,7 @@ uint8_t EEPROM24XX_IsConnected(uint32_t timeout) {
 }
 
 uint8_t EEPROM24XX_Save(uint16_t address, void* data, size_t size) {
-  if (size > 32) return 0;
+  if (size > EEPROM_WIDTH) return 0;
 
   if (HAL_I2C_Mem_Write(i2c, DevAddress, address, I2C_MEMADD_SIZE_16BIT,
                         (uint8_t*)data, size, 100) == HAL_OK) {
@@ -42,13 +46,12 @@ uint8_t EEPROM24XX_Load(uint16_t address, void* data, size_t size) {
 }
 
 uint8_t EEPROM24XX_Reset(uint16_t address) {
-  size_t size = 32;
-  uint8_t dummy[size];
+  uint8_t dummy[EEPROM_WIDTH];
 
-  memset(dummy, 0, size);
+  memset(dummy, 0, EEPROM_WIDTH);
 
   if (HAL_I2C_Mem_Write(i2c, DevAddress, address, I2C_MEMADD_SIZE_16BIT,
-                        dummy, size, 100) == HAL_OK) {
+                        dummy, EEPROM_WIDTH, 100) == HAL_OK) {
     _DelayMS(15);
     return 1;
   }

@@ -142,6 +142,7 @@ typedef struct __attribute__((packed)) {
 void CMD_Init(void);
 bool CMD_ValidateCode(command_t* cmd);
 bool CMD_ValidateContent(void* ptr, uint8_t len);
+uint8_t CMD_GetPayloadSize(command_t *cmd);
 void CMD_Execute(command_t* cmd);
 
 #endif /* INC_LIBS__COMMAND_H_ */

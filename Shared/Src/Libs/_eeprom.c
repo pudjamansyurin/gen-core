@@ -76,7 +76,6 @@ uint8_t EE_Cmd(EE_VA va, void* src, void* dst, uint16_t size) {
     ok = EEPROM24XX_Load(addr, dst, size);
   } else {
     memcpy(dst, src, size);
-    ok = EEPROM24XX_Reset(addr);
     ok = EEPROM24XX_Save(addr, src, size);
   }
   unlock();
@@ -84,6 +83,18 @@ uint8_t EE_Cmd(EE_VA va, void* src, void* dst, uint16_t size) {
   return ok;
 }
 
+uint8_t EE_CmdWithReset(EE_VA va, void* src, void* dst, uint16_t size) {
+  uint8_t ok;
+
+	lock();
+	if (src != NULL) {
+    ok = EEPROM24XX_Reset(EE_WORD(va));
+    ok = EE_Cmd(va, src, dst, size);
+	}
+	unlock();
+
+	return ok;
+}
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {

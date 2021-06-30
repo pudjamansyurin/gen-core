@@ -16,6 +16,7 @@
 #include "Libs/_finger.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
+#include "Drivers/_simcom.h"
 
 /* External variables
  * --------------------------------------------*/
@@ -24,6 +25,7 @@ extern osMessageQueueId_t OvdStateQueueHandle, DriverQueueHandle,
 
 /* Private functions prototype
  * --------------------------------------------*/
+static uint8_t IsReadRequest(command_t *cmd);
 static void EXEC_GenInfo(response_data_t *resp);
 static void EXEC_FingerAdd(response_data_t *rdata);
 static void EXEC_FingerFetch(response_data_t *rdata);
@@ -227,8 +229,14 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
   else if (code == CMDC_CON) {
     *resCode = CMDR_ERROR;
 
+    con_apn_t *apn = &SIM.con.apn;
     switch (subCode) {
       case CMD_CON_APN:
+      	if (IsReadRequest(cmd))
+      		sprintf(rdata->message, "%s,%s,%s", apn->name, apn->user, apn->pass);
+      	else
+        	memcpy(rdata->message, val, sizeof(rdata->message));
+      	break;
       case CMD_CON_FTP:
       case CMD_CON_MQTT:
       	memcpy(rdata->message, val, sizeof(rdata->message));
@@ -291,6 +299,12 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
 
 /* Private functions implementation
  * --------------------------------------------*/
+static uint8_t IsReadRequest(command_t *cmd) {
+	if (CMD_GetPayloadSize(cmd) > 1)
+		return 0;
+	return cmd->data.value[0] == '?';
+}
+
 static void EXEC_GenInfo(response_data_t *rdata) {
   char msg[20];
   sprintf(msg, "VCU v.%d,", VCU_VERSION);

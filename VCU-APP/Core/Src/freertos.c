@@ -795,12 +795,13 @@ void StartCommandTask(void* argument) {
   for (;;) {
     TASKS.tick.command = _GetTickMS();
 
-    if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==
-        osOK) {
+    if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) == osOK) {
       EXEC_Command(&cmd, &resp);
-
       RPT_ResponseCapture(&resp);
+
       _osQueuePutRst(ResponseQueueHandle, &resp);
+      memset(&cmd, 0, sizeof(cmd));
+      memset(&resp, 0, sizeof(resp));
     }
   }
   /* USER CODE END StartCommandTask */

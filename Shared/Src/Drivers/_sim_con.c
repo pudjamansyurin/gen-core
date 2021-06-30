@@ -65,9 +65,9 @@ uint8_t SIMCon_ApnStore(char* name, char* user, char *pass) {
   con_apn_t *dst = &SIM.con.apn;
   uint8_t ok = 0;
 
-  ok += EE_Cmd(VA_APN_NAME, name, &dst->name, len(name, sizeof(dst->name)));
-  ok += EE_Cmd(VA_APN_USER, user, &dst->user, len(user, sizeof(dst->user)));
-  ok += EE_Cmd(VA_APN_PASS, pass, &dst->pass, len(pass, sizeof(dst->pass)));
+  ok += EE_CmdWithReset(VA_APN_NAME, name, &dst->name, len(name, sizeof(dst->name)));
+  ok += EE_CmdWithReset(VA_APN_USER, user, &dst->user, len(user, sizeof(dst->user)));
+  ok += EE_CmdWithReset(VA_APN_PASS, pass, &dst->pass, len(pass, sizeof(dst->pass)));
 
   return ok == 3;
 }
@@ -76,9 +76,9 @@ uint8_t SIMCon_FtpStore(char* host, char* user, char *pass) {
   con_ftp_t* dst = &SIM.con.ftp;
   uint8_t ok = 0;
 
-  ok += EE_Cmd(VA_FTP_HOST, host, dst->host, len(host, sizeof(dst->host)));
-  ok += EE_Cmd(VA_FTP_USER, user, dst->user, len(user, sizeof(dst->user)));
-  ok += EE_Cmd(VA_FTP_PASS, pass, dst->pass, len(pass, sizeof(dst->pass)));
+  ok += EE_CmdWithReset(VA_FTP_HOST, host, dst->host, len(host, sizeof(dst->host)));
+  ok += EE_CmdWithReset(VA_FTP_USER, user, dst->user, len(user, sizeof(dst->user)));
+  ok += EE_CmdWithReset(VA_FTP_PASS, pass, dst->pass, len(pass, sizeof(dst->pass)));
 
   return ok == 3;
 }
@@ -87,10 +87,10 @@ uint8_t SIMCon_MqttStore(char* host, uint16_t *port, char* user, char *pass) {
   con_mqtt_t* dst = &SIM.con.mqtt;
   uint8_t ok = 0;
 
-  ok += EE_Cmd(VA_MQTT_HOST, host, dst->host, len(host, sizeof(dst->host)));
-  ok += EE_Cmd(VA_MQTT_PORT, port, &dst->port, sizeof(dst->port));
-  ok += EE_Cmd(VA_MQTT_USER, user, dst->user, len(user, sizeof(dst->user)));
-  ok += EE_Cmd(VA_MQTT_PASS, pass, dst->pass, len(pass, sizeof(dst->pass)));
+  ok += EE_CmdWithReset(VA_MQTT_HOST, host, dst->host, len(host, sizeof(dst->host)));
+  ok += EE_CmdWithReset(VA_MQTT_PORT, port, &dst->port, sizeof(dst->port));
+  ok += EE_CmdWithReset(VA_MQTT_USER, user, dst->user, len(user, sizeof(dst->user)));
+  ok += EE_CmdWithReset(VA_MQTT_PASS, pass, dst->pass, len(pass, sizeof(dst->pass)));
 
   return ok == 4;
 }
@@ -99,6 +99,6 @@ uint8_t SIMCon_MqttStore(char* host, uint16_t *port, char* user, char *pass) {
  * --------------------------------------------*/
 static uint8_t len(char *src, uint8_t max) {
   if (src != NULL)
-	return strnlen(src, max);
+  	return strnlen(src, max);
   return max;
 }

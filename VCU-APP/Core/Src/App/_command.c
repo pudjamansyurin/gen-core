@@ -25,7 +25,6 @@ static uint8_t SUB_SZ[CMDC_MAX];
 /* Private functions prototypes
  * --------------------------------------------*/
 static void Debugger(command_t *cmd);
-static uint8_t PayloadLen(command_t *cmd);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -89,7 +88,7 @@ bool CMD_ValidateCode(command_t *cmd) {
 
   if (h->code < CMDC_MAX)
     if (h->sub_code < SUB_SZ[h->code])
-      ok = PayloadLen(cmd) <= CMD_SZ[h->code][h->sub_code];
+      ok = CMD_GetPayloadSize(cmd) <= CMD_SZ[h->code][h->sub_code];
 
   return ok;
 }
@@ -102,12 +101,22 @@ bool CMD_ValidateContent(void *ptr, uint8_t len) {
   command_header_t *h = &(cmd->header);
   if (memcmp(h->prefix, PREFIX_COMMAND, 2) != 0) return false;
 
-  uint8_t size = sizeof(h->vin) + sizeof(h->send_time) + sizeof(h->code) +
-                 sizeof(h->sub_code) + sizeof(cmd->data);
-  if (h->size > size) return false;
+  uint8_t size = CMD_GetPayloadSize(cmd);
+  if (size > sizeof(cmd->data)) return false;
   if (h->vin != VIN_VALUE) return false;
 
   return true;
+}
+
+uint8_t CMD_GetPayloadSize(command_t *cmd) {
+  command_header_t *h = &(cmd->header);
+  uint8_t headerSz;
+
+  headerSz = sizeof(command_header_t) - (sizeof(h->prefix) + sizeof(h->size));
+
+  if (h->size >= headerSz)
+  	return h->size - headerSz;
+  return 0;
 }
 
 void CMD_Execute(command_t *cmd) {
@@ -118,23 +127,13 @@ void CMD_Execute(command_t *cmd) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void Debugger(command_t *cmd) {
-  uint8_t len = PayloadLen(cmd);
+  command_header_t *h = &(cmd->header);
+  uint8_t len = CMD_GetPayloadSize(cmd);
 
-  printf("Command:Payload (%u-%u)[%u]", cmd->header.code, cmd->header.sub_code,
-         len);
+  printf("Command:Payload (%u-%u)[%u]", h->code, h->sub_code, len);
   if (len) {
     printf(" = ");
     printf_hex(cmd->data.value, len);
   }
   printf("\n");
-}
-
-static uint8_t PayloadLen(command_t *cmd) {
-  command_header_t *h = &(cmd->header);
-  uint8_t len = h->size;
-
-  len -= sizeof(h->vin) + sizeof(h->send_time) + sizeof(h->code) +
-         sizeof(h->sub_code);
-
-  return len;
 }

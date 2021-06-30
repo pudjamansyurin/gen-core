@@ -50,4 +50,5 @@ typedef enum {
  * --------------------------------------------*/
 uint8_t EE_Init(void);
 uint8_t EE_Cmd(EE_VA va, void *src, void *dst, uint16_t size);
+uint8_t EE_CmdWithReset(EE_VA va, void* src, void* dst, uint16_t size);
 #endif /* EEPROM_H_ */
