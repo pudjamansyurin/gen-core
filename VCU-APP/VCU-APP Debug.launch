@@ -78,7 +78,7 @@
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="4"/>
     </listAttribute>
-    <stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList context=&quot;reserved-for-future-use&quot;&gt;&#13;&#10;    &lt;gdbmemoryBlockExpression address=&quot;536903536&quot; label=&quot;0x20007f70&quot;/&gt;&#13;&#10;&lt;/memoryBlockExpressionList&gt;&#13;&#10;"/>
+    <stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList context=&quot;reserved-for-future-use&quot;&gt;&#13;&#10;    &lt;gdbmemoryBlockExpression address=&quot;536903536&quot; label=&quot;0x20007f70&quot;/&gt;&#13;&#10;    &lt;gdbmemoryBlockExpression address=&quot;536919800&quot; label=&quot;data&quot;/&gt;&#13;&#10;    &lt;gdbmemoryBlockExpression address=&quot;536919800&quot; label=&quot;data&quot;/&gt;&#13;&#10;&lt;/memoryBlockExpressionList&gt;&#13;&#10;"/>
     <stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
     <stringAttribute key="saved_expressions&lt;seperator&gt;Unknown" value="0x20004108,0x20007f70,0x200006b4,0x20000038,SIM_UART_RX,0x2c532c31,0x20007f64,0x200002ec"/>
 </launchConfiguration>

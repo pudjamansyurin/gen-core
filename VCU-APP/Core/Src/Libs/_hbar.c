@@ -172,7 +172,7 @@ uint8_t HBAR_TripMeterStore(HBAR_MODE_TRIP mTrip, uint16_t *src) {
   void *dst = &HBAR.d.trip[mTrip];
   uint8_t ok;
 
-  ok = EE_Cmd(VA_TRIP_A + mTrip, src, dst, sizeof(uint16_t));
+  ok = EE_Cmd(VA_TRIP_A + mTrip, src, dst);
 
   if (mTrip == HBAR_M_TRIP_ODO) HBAR.d.meter = *src * 1000;
 
@@ -183,7 +183,7 @@ uint8_t HBAR_SubModeStore(HBAR_MODE m, uint8_t *src) {
   void *dst = &HBAR.d.mode[m];
   uint8_t ok;
 
-  ok = EE_Cmd(VA_MODE_DRIVE + m, src, dst, sizeof(uint8_t));
+  ok = EE_Cmd(VA_MODE_DRIVE + m, src, dst);
 
   if (HBAR.d.mode[m] > HBAR_SubModeMax(m)) HBAR.d.mode[m] = 0;
 
@@ -194,7 +194,7 @@ uint8_t HBAR_ModeStore(uint8_t *src) {
   void *dst = &HBAR.d.m;
   uint8_t ok;
 
-  ok = EE_Cmd(VA_MODE, src, dst, sizeof(uint8_t));
+  ok = EE_Cmd(VA_MODE, src, dst);
 
   if (HBAR.d.m >= HBAR_M_MAX) HBAR.d.m = 0;
 

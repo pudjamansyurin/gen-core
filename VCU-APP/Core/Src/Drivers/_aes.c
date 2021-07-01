@@ -83,7 +83,8 @@ uint8_t AES_Decrypt(uint8_t *dst, uint8_t *src, uint16_t Sz) {
 uint8_t AES_KeyStore(uint32_t src[4]) {
   void *dst = AES_KEY;
 
-  return EE_Cmd(VA_AES_KEY, src, dst, sizeof(AES_KEY));}
+  return EE_Cmd(VA_AES_KEY, src, dst);
+}
 
 /* Private functions implementation
  * --------------------------------------------*/

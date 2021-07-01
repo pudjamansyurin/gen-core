@@ -30,6 +30,8 @@
 #define CHARISNUM(x) ((x) >= '0' && (x) <= '9')
 #define CHARTONUM(x) ((x) - '0')
 
+#define MIN(a, b) ((a < b) ? a : b)
+
 #define MAX_U8(X) ((X) > UINT8_MAX ? UINT8_MAX : (X))
 #define RAD2DEG(X) ((X)*180.0 / M_PI)
 

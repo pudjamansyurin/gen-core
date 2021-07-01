@@ -49,7 +49,7 @@ MPU6050_Result MPU6050_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DS,
   I2C_HANDLE = I2Cx;
 
   /* Check if device is connected */
-  if (HAL_I2C_IsDeviceReady(I2C_HANDLE, MPU_ADDRESS, 10, 1000) != HAL_OK)
+  if (HAL_I2C_IsDeviceReady(I2C_HANDLE, MPU_ADDRESS, 10, 100) != HAL_OK)
     return MPU6050_Result_Error;
 
   /* Check who am I */

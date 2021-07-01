@@ -508,7 +508,7 @@ SIMR AT_ListMessageSMS(at_cmgl_t* param) {
 SIMR AT_ConfigureAPN(AT_MODE mode, con_apn_t* param) {
   SIMR res = SIM_ERROR;
   uint8_t cnt, len = 0;
-  char *str = NULL, cmd[80];
+  char *str = NULL, cmd[120];
 
   // Copy by value
   con_apn_t tmp = *param;

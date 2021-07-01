@@ -12,16 +12,15 @@
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported macros
+/* Exported constants
  * --------------------------------------------*/
-#define EE_ADDR ((uint16_t)0xA0)
-#define EE_WORD(X) ((uint16_t)(X * 32))
+//#define EE_ADDR ((uint16_t)0xA0)
+#define EE_ADDR ((uint16_t)0xA2)
+#define EE_STR_MAX 30
 
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
-  VA_RESET,
-  VA_UNUSED,
   VA_AES_KEY,
   VA_IAP_VERSION,
   VA_IAP_FLAG,
@@ -49,6 +48,6 @@ typedef enum {
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t EE_Init(void);
-uint8_t EE_Cmd(EE_VA va, void *src, void *dst, uint16_t size);
-uint8_t EE_CmdWithReset(EE_VA va, void* src, void* dst, uint16_t size);
+uint8_t EE_Cmd(EE_VA va, void *src, void *dst);
+uint8_t EE_CmdWithClear(EE_VA va, void* src, void* dst);
 #endif /* EEPROM_H_ */

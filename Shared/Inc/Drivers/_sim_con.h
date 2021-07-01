@@ -11,26 +11,27 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_common.h"
+#include "Libs/_eeprom.h"
 
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
-  char name[20];
-  char user[20];
-  char pass[20];
+  char name[EE_STR_MAX];
+  char user[EE_STR_MAX];
+  char pass[EE_STR_MAX];
 } con_apn_t;
 
 typedef struct {
-  char host[30];
+  char host[EE_STR_MAX];
   uint16_t port;
-  char user[30];
-  char pass[30];
+  char user[EE_STR_MAX];
+  char pass[EE_STR_MAX];
 } con_mqtt_t;
 
 typedef struct {
-  char host[30];
-  char user[30];
-  char pass[30];
+  char host[EE_STR_MAX];
+  char user[EE_STR_MAX];
+  char pass[EE_STR_MAX];
 } con_ftp_t;
 
 typedef struct {
@@ -43,8 +44,8 @@ typedef struct {
  * --------------------------------------------*/
 void SIMCon_LoadStore(void);
 uint8_t SIMCon_SetDefaultStore(void);
-uint8_t SIMCon_ApnStore(char* name, char* user, char *pass);
-uint8_t SIMCon_FtpStore(char* host, char* user, char *pass);
-uint8_t SIMCon_MqttStore(char* host, uint16_t *port, char* user, char *pass);
+uint8_t SIMCon_ApnStore(con_apn_t *s);
+uint8_t SIMCon_FtpStore(con_ftp_t *s);
+uint8_t SIMCon_MqttStore(con_mqtt_t *s);
 
 #endif /* INC_DRIVERS__SIMCon_H_ */

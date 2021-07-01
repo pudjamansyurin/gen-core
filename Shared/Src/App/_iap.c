@@ -24,7 +24,7 @@ uint8_t IAP_TypeStore(IAP_TYPE *src) {
   void *dst = &IAP.type;
   uint8_t ok;
 
-  ok = EE_Cmd(VA_IAP_TYPE, src, dst, sizeof(IAP_TYPE));
+  ok = EE_Cmd(VA_IAP_TYPE, src, dst);
 
   if (!(IAP.type == ITYPE_VCU || IAP.type == ITYPE_HMI)) IAP.type = ITYPE_VCU;
 
@@ -34,13 +34,13 @@ uint8_t IAP_TypeStore(IAP_TYPE *src) {
 uint8_t IAP_FlagStore(IAP_FLAG *src) {
   void *dst = &IAP.flag;
 
-  return EE_Cmd(VA_IAP_FLAG, src, dst, sizeof(uint32_t));
+  return EE_Cmd(VA_IAP_FLAG, src, dst);
 }
 
 uint8_t IAP_VersionStore(uint16_t *src) {
   void *dst = &IAP.version;
 
-  return EE_Cmd(VA_IAP_VERSION, src, dst, sizeof(uint16_t));
+  return EE_Cmd(VA_IAP_VERSION, src, dst);
 }
 
 #if (!APP)

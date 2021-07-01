@@ -10,7 +10,6 @@
  * --------------------------------------------*/
 #include "Drivers/_sim_con.h"
 #include "Drivers/_simcom.h"
-#include "Libs/_eeprom.h"
 
 /* Private constants
  * --------------------------------------------*/
@@ -37,67 +36,70 @@
 #define FTP_USER "fota@garda-energi.com"
 #define FTP_PASS "@2,TUST4W9#O"
 
-/* Private functions prototype
- * --------------------------------------------*/
-static uint8_t len(char *src, uint8_t max);
-
 /* Public functions implementation
  * --------------------------------------------*/
 void SIMCon_LoadStore(void) {
-	SIMCon_ApnStore(NULL, NULL, NULL);
-	SIMCon_FtpStore(NULL, NULL, NULL);
-	SIMCon_MqttStore(NULL, NULL, NULL, NULL);
+	SIMCon_ApnStore(NULL);
+	SIMCon_FtpStore(NULL);
+	SIMCon_MqttStore(NULL);
 }
 
 uint8_t SIMCon_SetDefaultStore(void) {
-  uint16_t mqtt_port = MQTT_PORT;
   uint8_t ok = 0;
+  con_apn_t apn = {
+		  .name = APN_NAME,
+		  .user = APN_USER,
+		  .pass = APN_PASS,
+  };
+  con_ftp_t ftp = {
+		  .host = FTP_HOST,
+		  .user = FTP_USER,
+		  .pass = FTP_PASS,
+  };
+  con_mqtt_t mqtt = {
+		  .host = MQTT_HOST,
+		  .port = MQTT_PORT,
+		  .user = MQTT_USER,
+		  .pass = MQTT_PASS,
+  };
 
-  ok += SIMCon_MqttStore(MQTT_HOST, &mqtt_port, MQTT_USER, MQTT_PASS);
-  ok += SIMCon_ApnStore(APN_NAME, APN_USER, APN_PASS);
-  ok += SIMCon_FtpStore(FTP_HOST, FTP_USER, FTP_PASS);
+  ok += SIMCon_ApnStore(&apn);
+  ok += SIMCon_FtpStore(&ftp);
+  ok += SIMCon_MqttStore(&mqtt);
 
   return ok == 3;
 }
 
-uint8_t SIMCon_ApnStore(char* name, char* user, char *pass) {
-  con_apn_t *dst = &SIM.con.apn;
+uint8_t SIMCon_ApnStore(con_apn_t *s) {
+  con_apn_t *d = &SIM.con.apn;
   uint8_t ok = 0;
 
-  ok += EE_CmdWithReset(VA_APN_NAME, name, &dst->name, len(name, sizeof(dst->name)));
-  ok += EE_CmdWithReset(VA_APN_USER, user, &dst->user, len(user, sizeof(dst->user)));
-  ok += EE_CmdWithReset(VA_APN_PASS, pass, &dst->pass, len(pass, sizeof(dst->pass)));
+  ok += EE_Cmd(VA_APN_NAME, s == NULL ? NULL : s->name, d->name);
+  ok += EE_Cmd(VA_APN_USER, s == NULL ? NULL : s->user, d->user);
+  ok += EE_Cmd(VA_APN_PASS, s == NULL ? NULL : s->pass, d->pass);
 
   return ok == 3;
 }
 
-uint8_t SIMCon_FtpStore(char* host, char* user, char *pass) {
-  con_ftp_t* dst = &SIM.con.ftp;
+uint8_t SIMCon_FtpStore(con_ftp_t *s) {
+  con_ftp_t *d = &SIM.con.ftp;
   uint8_t ok = 0;
 
-  ok += EE_CmdWithReset(VA_FTP_HOST, host, dst->host, len(host, sizeof(dst->host)));
-  ok += EE_CmdWithReset(VA_FTP_USER, user, dst->user, len(user, sizeof(dst->user)));
-  ok += EE_CmdWithReset(VA_FTP_PASS, pass, dst->pass, len(pass, sizeof(dst->pass)));
+  ok += EE_Cmd(VA_FTP_HOST, s == NULL ? NULL : s->host, d->host);
+  ok += EE_Cmd(VA_FTP_USER, s == NULL ? NULL : s->user, d->user);
+  ok += EE_Cmd(VA_FTP_PASS, s == NULL ? NULL : s->pass, d->pass);
 
   return ok == 3;
 }
 
-uint8_t SIMCon_MqttStore(char* host, uint16_t *port, char* user, char *pass) {
-  con_mqtt_t* dst = &SIM.con.mqtt;
+uint8_t SIMCon_MqttStore(con_mqtt_t *s) {
+  con_mqtt_t* d = &SIM.con.mqtt;
   uint8_t ok = 0;
 
-  ok += EE_CmdWithReset(VA_MQTT_HOST, host, dst->host, len(host, sizeof(dst->host)));
-  ok += EE_CmdWithReset(VA_MQTT_PORT, port, &dst->port, sizeof(dst->port));
-  ok += EE_CmdWithReset(VA_MQTT_USER, user, dst->user, len(user, sizeof(dst->user)));
-  ok += EE_CmdWithReset(VA_MQTT_PASS, pass, dst->pass, len(pass, sizeof(dst->pass)));
+  ok += EE_Cmd(VA_MQTT_HOST, s == NULL ? NULL : s->host, d->host);
+  ok += EE_Cmd(VA_MQTT_PORT, s == NULL ? NULL : &s->port, &d->port);
+  ok += EE_Cmd(VA_MQTT_USER, s == NULL ? NULL : s->user, d->user);
+  ok += EE_Cmd(VA_MQTT_PASS, s == NULL ? NULL : s->pass, d->pass);
 
   return ok == 4;
-}
-
-/* Private functions implementation
- * --------------------------------------------*/
-static uint8_t len(char *src, uint8_t max) {
-  if (src != NULL)
-  	return strnlen(src, max);
-  return max;
 }

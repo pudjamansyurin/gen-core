@@ -635,9 +635,9 @@ void StartManagerTask(void *argument)
   NODE_Init();
 
   // Peripheral Initiate
+  EE_Init();
   BAT_Init();
   RTC_Init();
-  EE_Init();
 
   // Threads management:
   //		osThreadSuspend(NetworkTaskHandle);
