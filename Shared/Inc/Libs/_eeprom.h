@@ -14,8 +14,6 @@
 
 /* Exported constants
  * --------------------------------------------*/
-//#define EE_ADDR ((uint16_t)0xA0)
-#define EE_ADDR ((uint16_t)0xA2)
 #define EE_STR_MAX 30
 
 /* Exported enums
@@ -49,5 +47,5 @@ typedef enum {
  * --------------------------------------------*/
 uint8_t EE_Init(void);
 uint8_t EE_Cmd(EE_VA va, void *src, void *dst);
-uint8_t EE_CmdWithClear(EE_VA va, void* src, void* dst);
+//uint8_t EE_CmdWithClear(EE_VA va, void* src, void* dst);
 #endif /* EEPROM_H_ */

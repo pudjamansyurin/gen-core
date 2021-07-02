@@ -45,7 +45,7 @@ uint8_t EE_Init(void) {
 
 	lock();
 	printf("EEPROM:Init\n");
-	AT24C_SetDevice(pi2c, EE_ADDR);
+	AT24C_Init(pi2c);
 	do {
 		ok = AT24C_Probe(100);
 		if (!ok)
@@ -66,7 +66,8 @@ uint8_t EE_Init(void) {
 		if (SIMCon_SetDefaultStore())
 			IAP_SetBootMeta(IEEP_OFFSET, IEEP_SET);
 #endif
-	SIMCon_LoadStore();
+	SIMCon_SetDefaultStore();
+//	SIMCon_LoadStore();
 	IAP_VersionStore(NULL);
 	IAP_TypeStore(NULL);
 	unlock();
@@ -87,17 +88,17 @@ uint8_t EE_Cmd(EE_VA va, void* src, void* dst) {
 	return ok;
 }
 
-uint8_t EE_CmdWithClear(EE_VA va, void* src, void* dst) {
-	uint8_t ok;
-
-	lock();
-	if (src != NULL)
-		ok = AT24C_Clear(Address(va), EE_SZ[va]);
-	ok = EE_Cmd(va, src, dst);
-	unlock();
-
-	return ok;
-}
+//uint8_t EE_CmdWithClear(EE_VA va, void* src, void* dst) {
+//	uint8_t ok;
+//
+//	lock();
+//	if (src != NULL)
+//		ok = AT24C_Clear(Address(va), EE_SZ[va]);
+//	ok = EE_Cmd(va, src, dst);
+//	unlock();
+//
+//	return ok;
+//}
 
 /* Private functions implementation
  * --------------------------------------------*/

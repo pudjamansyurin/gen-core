@@ -11,12 +11,13 @@
 
 /* Private constants
  * --------------------------------------------*/
+//#define DEV_ID ((uint16_t)0xA0)
+#define DEV_ID ((uint16_t)0xA2)
 #define PAGE_SZ 32
 
 /* Private variables
  * --------------------------------------------*/
 static I2C_HandleTypeDef* i2c;
-static uint16_t Dev;
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -25,13 +26,12 @@ static uint8_t save(uint16_t addr, uint8_t* data, uint16_t n);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void AT24C_SetDevice(I2C_HandleTypeDef* hi2c, uint16_t device) {
+void AT24C_Init(I2C_HandleTypeDef* hi2c) {
   i2c = hi2c;
-  Dev = device;
 }
 
 uint8_t AT24C_Probe(uint32_t timeout) {
-  return HAL_I2C_IsDeviceReady(i2c, Dev, 10, timeout) == HAL_OK;
+  return HAL_I2C_IsDeviceReady(i2c, DEV_ID, 10, timeout) == HAL_OK;
 }
 
 
@@ -101,12 +101,12 @@ uint8_t AT24C_Clear(uint16_t addr, uint16_t n) {
 /* Private functions implementation
  * --------------------------------------------*/
 static uint8_t load(uint16_t addr, uint8_t* data, uint16_t n) {
-  return (HAL_I2C_Mem_Read(i2c, Dev, addr, I2C_MEMADD_SIZE_16BIT, data, n, 100) == HAL_OK);
+  return (HAL_I2C_Mem_Read(i2c, DEV_ID, addr, I2C_MEMADD_SIZE_16BIT, data, n, 100) == HAL_OK);
 }
 
 static uint8_t save(uint16_t addr, uint8_t* data, uint16_t n) {
-  if (HAL_I2C_Mem_Write(i2c, Dev, addr, I2C_MEMADD_SIZE_16BIT, data, n, 100) == HAL_OK) {
-    _DelayMS(5);
+  if (HAL_I2C_Mem_Write(i2c, DEV_ID, addr, I2C_MEMADD_SIZE_16BIT, data, n, 100) == HAL_OK) {
+    _DelayMS(15);
     return 1;
   }
   return 0;

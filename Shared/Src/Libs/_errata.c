@@ -32,21 +32,21 @@ static void ResetClockOnly(void) {
 	__HAL_RCC_I2C1_CLK_ENABLE();
 	__HAL_RCC_I2C3_CLK_ENABLE();
 #endif
-	HAL_Delay(5);
+	HAL_Delay(100);
 
 	__HAL_RCC_I2C2_FORCE_RESET();
 #if (APP)
 	__HAL_RCC_I2C1_FORCE_RESET();
 	__HAL_RCC_I2C3_FORCE_RESET();
 #endif
-	HAL_Delay(5);
+	HAL_Delay(100);
 
 	__HAL_RCC_I2C2_RELEASE_RESET();
 #if (APP)
 	__HAL_RCC_I2C1_RELEASE_RESET();
 	__HAL_RCC_I2C3_RELEASE_RESET();
 #endif
-	HAL_Delay(5);
+	HAL_Delay(100);
 }
 
 //static void ResetComplete(void) {
