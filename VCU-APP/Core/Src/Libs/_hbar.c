@@ -160,7 +160,7 @@ void HBAR_SetReport(uint8_t eff, uint8_t km) {
   HBAR.d.prediction[HBAR_M_PREDICTION_RANGE] = km;
 }
 
-void HBAR_LoadStore(void) {
+void HBAR_ReadStore(void) {
   HBAR_ModeStore(NULL);
   for (uint8_t m = 0; m < HBAR_M_MAX; m++)
   	HBAR_SubModeStore(m, NULL);

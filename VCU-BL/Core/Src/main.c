@@ -108,10 +108,8 @@ int main(void)
   MX_UART9_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  GATE_LedWrite(1);
-  HAL_Delay(250);
-  GATE_LedWrite(0);
-  HAL_Delay(500);
+  GATE_LedWrite(1); HAL_Delay(250);
+  GATE_LedWrite(0); HAL_Delay(500);
 
   BAT_Init();
   EE_Init();

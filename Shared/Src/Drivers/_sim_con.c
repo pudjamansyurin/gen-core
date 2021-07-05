@@ -38,13 +38,13 @@
 
 /* Public functions implementation
  * --------------------------------------------*/
-void SIMCon_LoadStore(void) {
+void SIMCon_ReadStore(void) {
 	SIMCon_ApnStore(NULL);
 	SIMCon_FtpStore(NULL);
 	SIMCon_MqttStore(NULL);
 }
 
-uint8_t SIMCon_SetDefaultStore(void) {
+uint8_t SIMCon_WriteStore(void) {
   uint8_t ok = 0;
   con_apn_t apn = {
 		  .name = APN_NAME,

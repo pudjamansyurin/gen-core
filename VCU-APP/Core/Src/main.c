@@ -120,10 +120,8 @@ int main(void)
   MX_TIM10_Init();
   MX_UART9_Init();
   /* USER CODE BEGIN 2 */
-  GATE_LedWrite(1);
-  HAL_Delay(1000);
-  GATE_LedWrite(0);
-  HAL_Delay(500);
+  GATE_LedWrite(1); HAL_Delay(1000);
+  GATE_LedWrite(0); HAL_Delay(500);
   /* USER CODE END 2 */
 
   /* Init scheduler */

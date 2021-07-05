@@ -10,7 +10,6 @@
 #include "Libs/_eeprom.h"
 
 #include "Drivers/_at24c.h"
-#include "i2c.h"
 
 #if (APP)
 #include "Drivers/_aes.h"
@@ -28,7 +27,6 @@ extern osMutexId_t EepromRecMutexHandle;
 
 /* Private variables
  * --------------------------------------------*/
-static I2C_HandleTypeDef* pi2c = &hi2c2;
 static uint8_t EE_SZ[VA_MAX];
 
 /* Private functions prototype
@@ -45,9 +43,8 @@ uint8_t EE_Init(void) {
 
 	lock();
 	printf("EEPROM:Init\n");
-	AT24C_Init(pi2c);
 	do {
-		ok = AT24C_Probe(100);
+		ok = AT24C_Probe();
 		if (!ok)
 			printf("EEPROM:Error\n");
 	} while (!ok);
@@ -55,19 +52,15 @@ uint8_t EE_Init(void) {
 	printf("EEPROM:OK\n");
 	InitializeSize();
 
-//	IAP_TYPE type = ITYPE_HMI;
-//	IAP_TypeStore(&type);
-
 #if (APP)
 	AES_KeyStore(NULL);
-	HBAR_LoadStore();
+	HBAR_ReadStore();
 #else
 	if (IEEP_VALUE == IEEP_RESET)
-		if (SIMCon_SetDefaultStore())
+		if (SIMCon_WriteStore())
 			IAP_SetBootMeta(IEEP_OFFSET, IEEP_SET);
 #endif
-	SIMCon_SetDefaultStore();
-//	SIMCon_LoadStore();
+	SIMCon_ReadStore();
 	IAP_VersionStore(NULL);
 	IAP_TypeStore(NULL);
 	unlock();
@@ -80,25 +73,15 @@ uint8_t EE_Cmd(EE_VA va, void* src, void* dst) {
 	uint8_t ok;
 
 	lock();
-	if (src != NULL)
+	if (src != NULL) {
 		ok = AT24C_Write(addr, src, EE_SZ[va]);
+		//		memcpy(dst, src, EE_SZ[va]);
+	}
 	ok = AT24C_Read(addr, dst, EE_SZ[va]);
 	unlock();
 
 	return ok;
 }
-
-//uint8_t EE_CmdWithClear(EE_VA va, void* src, void* dst) {
-//	uint8_t ok;
-//
-//	lock();
-//	if (src != NULL)
-//		ok = AT24C_Clear(Address(va), EE_SZ[va]);
-//	ok = EE_Cmd(va, src, dst);
-//	unlock();
-//
-//	return ok;
-//}
 
 /* Private functions implementation
  * --------------------------------------------*/

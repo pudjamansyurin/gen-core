@@ -42,8 +42,8 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
-void SIMCon_LoadStore(void);
-uint8_t SIMCon_SetDefaultStore(void);
+void SIMCon_ReadStore(void);
+uint8_t SIMCon_WriteStore(void);
 uint8_t SIMCon_ApnStore(con_apn_t *s);
 uint8_t SIMCon_FtpStore(con_ftp_t *s);
 uint8_t SIMCon_MqttStore(con_mqtt_t *s);
