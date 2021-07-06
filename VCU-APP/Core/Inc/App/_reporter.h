@@ -75,6 +75,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t block;
+	uint8_t counter;
 	struct {
 		uint16_t interval;
 		uint8_t frame;
@@ -92,11 +93,11 @@ FRAME_TYPE RPT_FrameDecider(void);
 uint32_t RPT_IntervalDeciderMS(vehicle_state_t state);
 bool RPT_PayloadPending(PAYLOAD_TYPE type);
 
-void RPT_SetBlock(uint8_t value);
-void RPT_SetOvdFrame(uint8_t value);
-void RPT_SetOvdInterval(uint16_t value);
-void RPT_SetPayloadPending(PAYLOAD_TYPE type, uint8_t value);
-void RPT_PayloadDiscard(void);
+void RPT_IO_SetBlock(uint8_t value);
+void RPT_IO_SetOvdFrame(uint8_t value);
+void RPT_IO_SetOvdInterval(uint16_t value);
+void RPT_IO_SetPayloadPending(PAYLOAD_TYPE type, uint8_t value);
+void RPT_IO_PayloadDiscard(void);
 
-payload_t RPT_GetPayload(PAYLOAD_TYPE type);
+payload_t RPT_IO_GetPayload(PAYLOAD_TYPE type);
 #endif /* INC_APP__REPORTER_H_ */

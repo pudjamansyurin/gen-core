@@ -49,28 +49,33 @@ void TASK_CheckWakeup(void) {
 }
 
 void TASK_CheckStack(void) {
-  TASKS.stack[TASK_MANAGER] = osThreadGetStackSpace(ManagerTaskHandle);
-  TASKS.stack[TASK_NETWORK] = osThreadGetStackSpace(NetworkTaskHandle);
-  TASKS.stack[TASK_REPORTER] = osThreadGetStackSpace(ReporterTaskHandle);
-  TASKS.stack[TASK_COMMAND] = osThreadGetStackSpace(CommandTaskHandle);
-  TASKS.stack[TASK_MEMS] = osThreadGetStackSpace(MemsTaskHandle);
-  TASKS.stack[TASK_REMOTE] = osThreadGetStackSpace(RemoteTaskHandle);
-  TASKS.stack[TASK_FINGER] = osThreadGetStackSpace(FingerTaskHandle);
-  TASKS.stack[TASK_AUDIO] = osThreadGetStackSpace(AudioTaskHandle);
-  TASKS.stack[TASK_GATE] = osThreadGetStackSpace(GateTaskHandle);
-  TASKS.stack[TASK_CANRX] = osThreadGetStackSpace(CanRxTaskHandle);
-  TASKS.stack[TASK_CANTX] = osThreadGetStackSpace(CanTxTaskHandle);
+	osThreadId_t THREAD[TASK_MAX] = {
+			ManagerTaskHandle,
+			NetworkTaskHandle,
+			ReporterTaskHandle,
+			CommandTaskHandle,
+			MemsTaskHandle,
+			RemoteTaskHandle,
+			FingerTaskHandle,
+			AudioTaskHandle,
+			GateTaskHandle,
+			CanRxTaskHandle,
+			CanTxTaskHandle,
+	};
+
+  for (uint8_t task = 0; task < TASK_MAX; task++)
+  	TASKS.stack[task] = osThreadGetStackSpace(THREAD[task]);
 }
 
-uint8_t TASK_GetWakeup(TASK task) {
+uint8_t TASK_IO_GetWakeup(TASK task) {
 	return TASKS.wakeup[task];
 }
 
-uint16_t TASK_GetStack(TASK task) {
+uint16_t TASK_IO_GetStack(TASK task) {
 	return TASKS.stack[task];
 }
 
-void TASK_SetTick(TASK task) {
+void TASK_IO_SetTick(TASK task) {
 	TASKS.tick[task] = _GetTickMS();
 }
 

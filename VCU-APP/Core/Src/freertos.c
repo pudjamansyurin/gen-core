@@ -663,7 +663,7 @@ void StartManagerTask(void *argument) {
   /* Infinite loop */
   for (;;) {
   	tick = _GetTickMS();
-  	TASK_SetTick(TASK_MANAGER);
+  	TASK_IO_SetTick(TASK_MANAGER);
 
     TASK_CheckStack();
     TASK_CheckWakeup();
@@ -699,7 +699,7 @@ void StartNetworkTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-  	TASK_SetTick(TASK_NETWORK);
+  	TASK_IO_SetTick(TASK_NETWORK);
 
     if (_osFlagAny(&notif, 100)) {
       if (notif & (FLAG_NET_READ_SMS | FLAG_NET_SEND_USSD)) {
@@ -715,7 +715,7 @@ void StartNetworkTask(void *argument) {
       }
 
       if (notif & FLAG_NET_REPORT_DISCARD)
-      	RPT_PayloadDiscard();
+      	RPT_IO_PayloadDiscard();
     }
 
     NET_CheckPayload(PAYLOAD_RESPONSE);
@@ -744,7 +744,7 @@ void StartReporterTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-  	TASK_SetTick(TASK_REPORTER);
+  	TASK_IO_SetTick(TASK_REPORTER);
 
     if (_osFlagAny(&notif, RPT_IntervalDeciderMS(VCU.d.state))) {
       if (notif & FLAG_REPORTER_YIELD) {
@@ -797,7 +797,7 @@ void StartCommandTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-  	TASK_SetTick(TASK_COMMAND);
+  	TASK_IO_SetTick(TASK_COMMAND);
 
     if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==
         osOK) {
@@ -832,7 +832,7 @@ void StartMemsTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-  	TASK_SetTick(TASK_MEMS);
+  	TASK_IO_SetTick(TASK_MEMS);
 
     // Check notifications
     if (_osFlagAny(&notif, 1000)) {
@@ -891,7 +891,7 @@ void StartRemoteTask(void *argument) {
   /* Infinite loop */
   for (;;) {
   	tick = _GetTickMS();
-  	TASK_SetTick(TASK_REMOTE);
+  	TASK_IO_SetTick(TASK_REMOTE);
 
     if (RMT_Ping(VCU.d.state)) {
       RMT.d.tick.ping = _GetTickMS();
@@ -973,7 +973,7 @@ void StartFingerTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-  	TASK_SetTick(TASK_FINGER);
+  	TASK_IO_SetTick(TASK_FINGER);
 
     if (_osFlagAny(&notif, 500)) {
       if (notif & FLAG_FINGER_TASK_STOP) {
@@ -1036,7 +1036,7 @@ void StartAudioTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-  	TASK_SetTick(TASK_AUDIO);
+  	TASK_IO_SetTick(TASK_AUDIO);
 
     if (_osFlagAny(&notif, 1000)) {
       if (notif & FLAG_AUDIO_TASK_STOP) {
@@ -1080,7 +1080,7 @@ void StartCanRxTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-  	TASK_SetTick(TASK_CANRX);
+  	TASK_IO_SetTick(TASK_CANRX);
 
     // Check notifications
     if (_osFlagOne(&notif, FLAG_CAN_TASK_STOP, 0)) {
@@ -1157,7 +1157,7 @@ void StartCanTxTask(void *argument) {
   tick100ms = _GetTickMS();
   tick1000ms = _GetTickMS();
   for (;;) {
-  	TASK_SetTick(TASK_CANTX);
+  	TASK_IO_SetTick(TASK_CANTX);
 
     // Check notifications
     if (_osFlagAny(&notif, 20)) {
@@ -1220,7 +1220,7 @@ void StartGateTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-  	TASK_SetTick(TASK_GATE);
+  	TASK_IO_SetTick(TASK_GATE);
 
     // wait forever
     if (_osFlagAny(&notif, 10)) {

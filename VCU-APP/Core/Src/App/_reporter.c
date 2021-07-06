@@ -24,6 +24,7 @@ extern osMessageQueueId_t ResponseQueueHandle, ReportQueueHandle;
  * --------------------------------------------*/
 static reporter_t RPT = {
 		.block = 0,
+		.counter = 0,
 		.ovd = {0},
 };
 
@@ -95,20 +96,19 @@ void RPT_ResponseCapture(response_t *response) {
 }
 
 FRAME_TYPE RPT_FrameDecider(void) {
-	static uint8_t counter = 0;
 	FRAME_TYPE frame = FR_FULL;
 	uint8_t ovd = RPT.ovd.frame;
 	uint8_t simpleCnt = (RPT_FRAME_FULL_S / RPT_INTERVAL_NORMAL_S);
 
 	if (!GATE_ReadPower5v()) {
 		frame = FR_FULL;
-		counter = 0;
+		RPT.counter = 0;
 	} else {
-		if (++counter < simpleCnt)
+		if (++RPT.counter < simpleCnt)
 			frame = FR_SIMPLE;
 		else {
 			frame = FR_FULL;
-			counter = 0;
+			RPT.counter = 0;
 		}
 	}
 
@@ -157,26 +157,26 @@ bool RPT_PayloadPending(PAYLOAD_TYPE type) {
 	return payload->pending;
 }
 
-void RPT_SetBlock(uint8_t value) {
+void RPT_IO_SetBlock(uint8_t value) {
 	RPT.block = value;
 }
 
-void RPT_SetOvdFrame(uint8_t value) {
+void RPT_IO_SetOvdFrame(uint8_t value) {
 	RPT.ovd.frame = value;
 }
 
-void RPT_SetOvdInterval(uint16_t value) {
+void RPT_IO_SetOvdInterval(uint16_t value) {
 	RPT.ovd.interval = value;
 }
 
-void RPT_SetPayloadPending(PAYLOAD_TYPE type, uint8_t value) {
+void RPT_IO_SetPayloadPending(PAYLOAD_TYPE type, uint8_t value) {
 	PAYS[type].pending = value;
 }
 
-void RPT_PayloadDiscard(void) {
+void RPT_IO_PayloadDiscard(void) {
 	PAYS[PAYLOAD_REPORT].pending = 0;
 }
 
-payload_t RPT_GetPayload(PAYLOAD_TYPE type) {
+payload_t RPT_IO_GetPayload(PAYLOAD_TYPE type) {
 	return PAYS[type];
 }

@@ -44,6 +44,6 @@ typedef struct {
  * --------------------------------------------*/
 void ML_BMS_Init(void);
 void ML_PredictRange(void);
-bms_prediction_t ML_GetDataBMS(void);
+bms_prediction_t ML_IO_GetDataBMS(void);
 
 #endif /* INC_APP__ML_H_ */

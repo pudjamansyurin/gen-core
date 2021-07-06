@@ -118,7 +118,7 @@ bool TASK_KernelFailed(void);
 void TASK_CheckWakeup(void);
 void TASK_CheckStack(void);
 
-uint8_t TASK_GetWakeup(TASK task);
-uint16_t TASK_GetStack(TASK task);
-void TASK_SetTick(TASK task);
+uint8_t TASK_IO_GetWakeup(TASK task);
+uint16_t TASK_IO_GetStack(TASK task);
+void TASK_IO_SetTick(TASK task);
 #endif /* INC_APP__TASK_H_ */

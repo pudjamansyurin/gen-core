@@ -149,7 +149,7 @@ void DBG_GetMCU(mcu_dbg_t *mcu) {
 
 void DBG_GetTasks(tasks_dbg_t *tasks) {
 	for (uint8_t task = 0; task < TASK_MAX; task++) {
-		tasks->stack[task] = TASK_GetStack(task);
-		tasks->wakeup[task] = TASK_GetWakeup(task);
+		tasks->stack[task] = TASK_IO_GetStack(task);
+		tasks->wakeup[task] = TASK_IO_GetWakeup(task);
 	}
 }

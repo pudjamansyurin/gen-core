@@ -50,7 +50,7 @@ void ML_PredictRange(void) {
     tick = _GetTickMS();
 }
 
-bms_prediction_t ML_GetDataBMS(void) {
+bms_prediction_t ML_IO_GetDataBMS(void) {
 	return ML.bms.d;
 }
 

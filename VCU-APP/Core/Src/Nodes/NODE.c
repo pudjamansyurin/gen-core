@@ -205,38 +205,38 @@ void NODE_TX_DebugTASK(void) {
   tasks_dbg_t t;
   DBG_GetTasks(&t);
 
-  d->u16[0] = TASK_GetStack(TASK_MANAGER);
-  d->u16[1] = TASK_GetStack(TASK_NETWORK);
-  d->u16[2] = TASK_GetStack(TASK_REPORTER);
-  d->u16[3] = TASK_GetStack(TASK_COMMAND);
+  d->u16[0] = TASK_IO_GetStack(TASK_MANAGER);
+  d->u16[1] = TASK_IO_GetStack(TASK_NETWORK);
+  d->u16[2] = TASK_IO_GetStack(TASK_REPORTER);
+  d->u16[3] = TASK_IO_GetStack(TASK_COMMAND);
   CANBUS_Write(&Tx, CAND_DBG_TASK_1, 8, 0);
 
   d->u16[0] = 0;
-  d->u16[1] = TASK_GetStack(TASK_MEMS);
-  d->u16[2] = TASK_GetStack(TASK_REMOTE);
-  d->u16[3] = TASK_GetStack(TASK_FINGER);
+  d->u16[1] = TASK_IO_GetStack(TASK_MEMS);
+  d->u16[2] = TASK_IO_GetStack(TASK_REMOTE);
+  d->u16[3] = TASK_IO_GetStack(TASK_FINGER);
   CANBUS_Write(&Tx, CAND_DBG_TASK_2, 8, 0);
 
-  d->u16[0] = TASK_GetStack(TASK_AUDIO);
-  d->u16[1] = TASK_GetStack(TASK_GATE);
-  d->u16[2] = TASK_GetStack(TASK_CANRX);
-  d->u16[3] = TASK_GetStack(TASK_CANTX);
+  d->u16[0] = TASK_IO_GetStack(TASK_AUDIO);
+  d->u16[1] = TASK_IO_GetStack(TASK_GATE);
+  d->u16[2] = TASK_IO_GetStack(TASK_CANRX);
+  d->u16[3] = TASK_IO_GetStack(TASK_CANTX);
   CANBUS_Write(&Tx, CAND_DBG_TASK_3, 8, 0);
 
-  d->u8[0] = TASK_GetWakeup(TASK_MANAGER);
-  d->u8[1] = TASK_GetWakeup(TASK_NETWORK);
-  d->u8[2] = TASK_GetWakeup(TASK_REPORTER);
-  d->u8[3] = TASK_GetWakeup(TASK_COMMAND);
+  d->u8[0] = TASK_IO_GetWakeup(TASK_MANAGER);
+  d->u8[1] = TASK_IO_GetWakeup(TASK_NETWORK);
+  d->u8[2] = TASK_IO_GetWakeup(TASK_REPORTER);
+  d->u8[3] = TASK_IO_GetWakeup(TASK_COMMAND);
   d->u8[4] = 0;
-  d->u8[5] = TASK_GetWakeup(TASK_MEMS);
-  d->u8[6] = TASK_GetWakeup(TASK_REMOTE);
-  d->u8[7] = TASK_GetWakeup(TASK_FINGER);
+  d->u8[5] = TASK_IO_GetWakeup(TASK_MEMS);
+  d->u8[6] = TASK_IO_GetWakeup(TASK_REMOTE);
+  d->u8[7] = TASK_IO_GetWakeup(TASK_FINGER);
   CANBUS_Write(&Tx, CAND_DBG_TASK_4, 8, 0);
 
-  d->u8[0] = TASK_GetWakeup(TASK_AUDIO);
-  d->u8[1] = TASK_GetWakeup(TASK_GATE);
-  d->u8[2] = TASK_GetWakeup(TASK_CANRX);
-  d->u8[3] = TASK_GetWakeup(TASK_CANTX);
+  d->u8[0] = TASK_IO_GetWakeup(TASK_AUDIO);
+  d->u8[1] = TASK_IO_GetWakeup(TASK_GATE);
+  d->u8[2] = TASK_IO_GetWakeup(TASK_CANRX);
+  d->u8[3] = TASK_IO_GetWakeup(TASK_CANTX);
 
   vcu_dbg_t vcu;
   DBG_GetVCU(&vcu);
@@ -280,7 +280,7 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
 
-  bms_prediction_t pre = ML_GetDataBMS();
+  bms_prediction_t pre = ML_IO_GetDataBMS();
   d->u16[1] = pre.capacity * 10;
   d->u16[2] = pre.efficiency * 10;
   d->u16[3] = pre.distance * 10;

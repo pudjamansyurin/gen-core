@@ -78,7 +78,7 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       case CMD_GEN_RPT_BLOCK:
-      	RPT_SetBlock(*(uint8_t *)val);
+      	RPT_IO_SetBlock(*(uint8_t *)val);
         break;
 
       default:
@@ -98,11 +98,11 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       case CMD_OVD_RPT_INTERVAL:
-      	RPT_SetOvdInterval(*(uint16_t *)val);
+      	RPT_IO_SetOvdInterval(*(uint16_t *)val);
         break;
 
       case CMD_OVD_RPT_FRAME:
-      	RPT_SetOvdFrame(*(uint8_t *)val);
+      	RPT_IO_SetOvdFrame(*(uint8_t *)val);
         break;
 
       case CMD_OVD_RMT_SEAT:
