@@ -30,8 +30,8 @@
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  */
-#ifndef NMEA_H_
-#define NMEA_H_
+#ifndef INC_LIBS__NMEA_H_
+#define INC_LIBS__NMEA_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -292,4 +292,4 @@ uint8_t nmea_distance_bearing(nmea_float_t las, nmea_float_t los,
                               nmea_float_t *d, nmea_float_t *b);
 nmea_float_t nmea_to_speed(nmea_float_t sik, NMEA_SPEED ts);
 
-#endif /* NMEA_H_ */
+#endif /* INC_LIBS__NMEA_H_ */

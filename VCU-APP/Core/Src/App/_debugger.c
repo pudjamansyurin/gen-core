@@ -91,8 +91,10 @@ void DBG_GetRMT(remote_dbg_t *rmt) {
 }
 
 void DBG_GetFGR(finger_dbg_t *fgr) {
-  fgr->verified = FGR.d.verified;
-  fgr->driver_id = FGR.d.id;
+	finger_data_t finger = FGR_IO_GetData();
+
+  fgr->verified = finger.verified;
+  fgr->driver_id = finger.id;
 }
 
 void DBG_GetAudio(audio_dbg_t *audio) {

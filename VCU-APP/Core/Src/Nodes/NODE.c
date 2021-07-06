@@ -89,7 +89,7 @@ void NODE_TX_DebugGroup(void) {
   DBG_GetFGR(&fgr);
   d->u8[2] = (fgr.verified & 0x01);
   d->u8[2] |= (fgr.driver_id & 0x07) << 1;
-  d->u8[2] |= (FGR.d.registering & 0x01) << 4;
+//  d->u8[2] |= (FGR.d.registering & 0x01) << 4;
 
   audio_dbg_t audio;
   DBG_GetAudio(&audio);

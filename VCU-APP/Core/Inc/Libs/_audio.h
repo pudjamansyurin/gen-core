@@ -37,8 +37,8 @@
 
 /* Define to prevent recursive inclusion
  * --------------------------------------------*/
-#ifndef AUDIO_H_
-#define AUDIO_H_
+#ifndef INC_LIBS__AUDIO_H_
+#define INC_LIBS__AUDIO_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -129,6 +129,6 @@ void AUDIO_OUT_Error_CallBack(void);
 void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq,
                            void *Params);
 
-#endif /* AUDIO_H_ */
+#endif /* INC_LIBS__AUDIO_H_ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

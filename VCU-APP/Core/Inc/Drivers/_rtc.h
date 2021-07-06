@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef RTC_H_
-#define RTC_H_
+#ifndef INC_DRIVERS__RTC_H_
+#define INC_DRIVERS__RTC_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -43,4 +43,4 @@ uint8_t RTC_NeedCalibration(void);
 void RTC_Calibrate(timestamp_t *ts);
 uint8_t RTC_Daylight(void);
 
-#endif /* RTC_H_ */
+#endif /* INC_DRIVERS__RTC_H_ */

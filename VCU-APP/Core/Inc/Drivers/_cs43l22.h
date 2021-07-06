@@ -37,8 +37,8 @@
 
 /* Define to prevent recursive inclusion
  * --------------------------------------------*/
-#ifndef CS43L22_H_
-#define CS43L22_H_
+#ifndef INC_DRIVERS__CS43L22_H_
+#define INC_DRIVERS__CS43L22_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -231,6 +231,6 @@ uint32_t cs43l22_SetBeep(uint16_t DeviceAddr, uint8_t Frequency, uint8_t OnTime,
                          uint8_t OffTime);
 uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix);
 
-#endif /* CS43L22_H_ */
+#endif /* INC_DRIVERS__CS43L22_H_ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

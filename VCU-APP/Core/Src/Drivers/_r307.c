@@ -20,7 +20,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/_fz3387.h"
+#include "Drivers/_r307.h"
 
 #include "DMA/_dma_finger.h"
 
@@ -30,7 +30,7 @@ static packet_t PKT;
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t FINGER_IO_WRITE(uint8_t *data, uint8_t len);
+static uint8_t ioWrite(uint8_t *data, uint8_t len);
 static uint8_t writeStructuredPacket(void);
 static uint8_t getStructuredPacket(void);
 static uint8_t sendCmdPacket(uint8_t *data, uint8_t size);
@@ -45,33 +45,33 @@ static void setPacket(uint8_t type, uint16_t length, uint8_t *data);
  @returns True if password is correct
  */
 /**************************************************************************/
-uint8_t fz3387_checkPassword(void) {
-  uint8_t data[] = {FINGERPRINT_VERIFYPASSWORD,
-                    (uint8_t)(FINGERPRINT_PASSWORD >> 24),
-                    (uint8_t)(FINGERPRINT_PASSWORD >> 16),
-                    (uint8_t)(FINGERPRINT_PASSWORD >> 8),
-                    (uint8_t)(FINGERPRINT_PASSWORD & 0xFF)};
+uint8_t R307_checkPassword(void) {
+  uint8_t data[] = {FP_VERIFYPASSWORD,
+                    (uint8_t)(FP_PASSWORD >> 24),
+                    (uint8_t)(FP_PASSWORD >> 16),
+                    (uint8_t)(FP_PASSWORD >> 8),
+                    (uint8_t)(FP_PASSWORD & 0xFF)};
 
-  if (sendCmdPacket(data, sizeof(data)) != FINGERPRINT_OK)
-    return FINGERPRINT_PACKETRECIEVEERR;
+  if (sendCmdPacket(data, sizeof(data)) != FP_OK)
+    return FP_PACKETRECIEVEERR;
 
-  if (PKT.data[0] == FINGERPRINT_OK)
-    return FINGERPRINT_OK;
+  if (PKT.data[0] == FP_OK)
+    return FP_OK;
   else
-    return FINGERPRINT_PACKETRECIEVEERR;
+    return FP_PACKETRECIEVEERR;
 }
 
 /**************************************************************************/
 /*!
  @brief   Ask the sensor to take an image of the finger pressed on surface
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_NOFINGER</code> if no finger detected
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
- @returns <code>FINGERPRINT_IMAGEFAIL</code> on imaging error
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_NOFINGER</code> if no finger detected
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_IMAGEFAIL</code> on imaging error
  */
 /**************************************************************************/
-uint8_t fz3387_getImage(void) {
-  uint8_t data[] = {FINGERPRINT_GETIMAGE};
+uint8_t R307_getImage(void) {
+  uint8_t data[] = {FP_GETIMAGE};
   return sendCmdPacket(data, sizeof(data));
 }
 
@@ -80,28 +80,28 @@ uint8_t fz3387_getImage(void) {
  @brief   Ask the sensor to convert image to feature template
  @param slot Location to place feature template (put one in 1 and another in 2
  for verification to create model)
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_IMAGEMESS</code> if image is too messy
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
- @returns <code>FINGERPRINT_FEATUREFAIL</code> on failure to identify
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_IMAGEMESS</code> if image is too messy
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_FEATUREFAIL</code> on failure to identify
  fingerprint features
- @returns <code>FINGERPRINT_INVALIDIMAGE</code> on failure to identify
+ @returns <code>FP_INVALIDIMAGE</code> on failure to identify
  fingerprint features
  */
-uint8_t fz3387_image2Tz(uint8_t slot) {
-  uint8_t data[] = {FINGERPRINT_IMAGE2TZ, slot};
+uint8_t R307_image2Tz(uint8_t slot) {
+  uint8_t data[] = {FP_IMAGE2TZ, slot};
   return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
 /*!
  @brief   Ask the sensor to take two print feature template and create a model
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
- @returns <code>FINGERPRINT_ENROLLMISMATCH</code> on mismatch of fingerprints
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_ENROLLMISMATCH</code> on mismatch of fingerprints
  */
-uint8_t fz3387_createModel(void) {
-  uint8_t data[] = {FINGERPRINT_REGMODEL};
+uint8_t R307_createModel(void) {
+  uint8_t data[] = {FP_REGMODEL};
   return sendCmdPacket(data, sizeof(data));
 }
 
@@ -109,14 +109,14 @@ uint8_t fz3387_createModel(void) {
 /*!
  @brief   Ask the sensor to store the calculated model for later matching
  @param   location The model location #
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_BADLOCATION</code> if the location is invalid
- @returns <code>FINGERPRINT_FLASHERR</code> if the model couldn't be written to
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_BADLOCATION</code> if the location is invalid
+ @returns <code>FP_FLASHERR</code> if the model couldn't be written to
  flash memory
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
-uint8_t fz3387_storeModel(uint16_t location) {
-  uint8_t data[] = {FINGERPRINT_STORE, 0x01, (uint8_t)(location >> 8),
+uint8_t R307_storeModel(uint16_t location) {
+  uint8_t data[] = {FP_STORE, 0x01, (uint8_t)(location >> 8),
                     (uint8_t)(location & 0xFF)};
   return sendCmdPacket(data, sizeof(data));
 }
@@ -125,12 +125,12 @@ uint8_t fz3387_storeModel(uint16_t location) {
 /*!
  @brief   Ask the sensor to load a fingerprint model from flash into buffer 1
  @param   location The model location #
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_BADLOCATION</code> if the location is invalid
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_BADLOCATION</code> if the location is invalid
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
-uint8_t fz3387_loadModel(uint16_t location) {
-  uint8_t data[] = {FINGERPRINT_LOAD, 0x01, (uint8_t)(location >> 8),
+uint8_t R307_loadModel(uint16_t location) {
+  uint8_t data[] = {FP_LOAD, 0x01, (uint8_t)(location >> 8),
                     (uint8_t)(location & 0xFF)};
   return sendCmdPacket(data, sizeof(data));
 }
@@ -139,11 +139,11 @@ uint8_t fz3387_loadModel(uint16_t location) {
 /*!
  @brief   Ask the sensor to transfer 256-byte fingerprint template from the
  buffer to the UART
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
-uint8_t fz3387_getModel(void) {
-  uint8_t data[] = {FINGERPRINT_UPLOAD, 0x01};
+uint8_t R307_getModel(void) {
+  uint8_t data[] = {FP_UPLOAD, 0x01};
   return sendCmdPacket(data, sizeof(data));
 }
 
@@ -151,14 +151,14 @@ uint8_t fz3387_getModel(void) {
 /*!
  @brief   Ask the sensor to delete a model in memory
  @param   location The model location #
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_BADLOCATION</code> if the location is invalid
- @returns <code>FINGERPRINT_FLASHERR</code> if the model couldn't be written to
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_BADLOCATION</code> if the location is invalid
+ @returns <code>FP_FLASHERR</code> if the model couldn't be written to
  flash memory
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
-uint8_t fz3387_deleteModel(uint16_t location) {
-  uint8_t data[] = {FINGERPRINT_DELETE, (uint8_t)(location >> 8),
+uint8_t R307_deleteModel(uint16_t location) {
+  uint8_t data[] = {FP_DELETE, (uint8_t)(location >> 8),
                     (uint8_t)(location & 0xFF), 0x00, 0x01};
   return sendCmdPacket(data, sizeof(data));
 }
@@ -166,14 +166,14 @@ uint8_t fz3387_deleteModel(uint16_t location) {
 /**************************************************************************/
 /*!
  @brief   Ask the sensor to delete ALL models in memory
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_BADLOCATION</code> if the location is invalid
- @returns <code>FINGERPRINT_FLASHERR</code> if the model couldn't be written to
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_BADLOCATION</code> if the location is invalid
+ @returns <code>FP_FLASHERR</code> if the model couldn't be written to
  flash memory
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
-uint8_t fz3387_emptyDatabase(void) {
-  uint8_t data[] = {FINGERPRINT_EMPTY};
+uint8_t R307_emptyDatabase(void) {
+  uint8_t data[] = {FP_EMPTY};
   return sendCmdPacket(data, sizeof(data));
 }
 
@@ -182,13 +182,13 @@ uint8_t fz3387_emptyDatabase(void) {
  @brief   Ask the sensor to search the current slot 1 fingerprint features to
  match saved templates. The matching location is stored in <b>fingerID</b> and
  the matching fingerConfidence in <b>fingerConfidence</b>
- @returns <code>FINGERPRINT_OK</code> on fingerprint match success
- @returns <code>FINGERPRINT_NOTFOUND</code> no match made
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_OK</code> on fingerprint match success
+ @returns <code>FP_NOTFOUND</code> no match made
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
 /**************************************************************************/
-uint8_t fz3387_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
-  uint8_t data[] = {FINGERPRINT_HISPEEDSEARCH, 0x01, 0x00, 0x00, 0x00, 0xA3};
+uint8_t R307_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
+  uint8_t data[] = {FP_HISPEEDSEARCH, 0x01, 0x00, 0x00, 0x00, 0xA3};
 
   // high speed search of slot #1 starting at page 0x0000 and page #0x00A3
   sendCmdPacket(data, sizeof(data));
@@ -210,12 +210,12 @@ uint8_t fz3387_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
 /*!
  @brief   Ask the sensor for the number of templates stored in memory. The
  number is stored in <b>fingerTemplateCount</b> on success.
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
 /**************************************************************************/
-uint8_t fz3387_getTemplateCount(uint16_t *templateCount) {
-  uint8_t data[] = {FINGERPRINT_TEMPLATECOUNT};
+uint8_t R307_getTemplateCount(uint16_t *templateCount) {
+  uint8_t data[] = {FP_TEMPLATECOUNT};
   sendCmdPacket(data, sizeof(data));
 
   *templateCount = PKT.data[1];
@@ -230,12 +230,12 @@ uint8_t fz3387_getTemplateCount(uint16_t *templateCount) {
  @brief   Set the password on the sensor (future communication will require
  password verification so don't forget it!!!)
  @param   password 32-bit password code
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_PACKETRECIEVEERR</code> on communication error
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
 /**************************************************************************/
-uint8_t fz3387_setPassword(uint32_t password) {
-  uint8_t data[] = {FINGERPRINT_SETPASSWORD, (password >> 24), (password >> 16),
+uint8_t R307_setPassword(uint32_t password) {
+  uint8_t data[] = {FP_SETPASSWORD, (password >> 24), (password >> 16),
                     (password >> 8), password};
   return sendCmdPacket(data, sizeof(data));
 }
@@ -272,7 +272,7 @@ static uint8_t writeStructuredPacket(void) {
   buf[i++] = (sum >> 8);
   buf[i++] = (sum & 0xFF);
 
-  return FINGER_IO_WRITE(buf, i);
+  return ioWrite(buf, i);
 }
 
 /**************************************************************************/
@@ -281,8 +281,8 @@ static uint8_t writeStructuredPacket(void) {
  it into a packet
  @param   packet A structure containing the bytes received
  @param   timeout how many milliseconds we're willing to wait
- @returns <code>FINGERPRINT_OK</code> on success
- @returns <code>FINGERPRINT_TIMEOUT</code> or <code>FINGERPRINT_BADPACKET</code>
+ @returns <code>FP_OK</code> on success
+ @returns <code>FP_TIMEOUT</code> or <code>FP_BADPACKET</code>
  on failure
  */
 /**************************************************************************/
@@ -295,15 +295,15 @@ static uint8_t getStructuredPacket(void) {
 
     switch (idx) {
       case 0:
-        if (byte != (FINGERPRINT_STARTCODE >> 8)) {
-          return FINGERPRINT_BADPACKET;
+        if (byte != (FP_STARTCODE >> 8)) {
+          return FP_BADPACKET;
         }
         PKT.start_code = (uint16_t)byte << 8;
         break;
       case 1:
         PKT.start_code |= byte;
-        if (PKT.start_code != FINGERPRINT_STARTCODE) {
-          return FINGERPRINT_BADPACKET;
+        if (PKT.start_code != FP_STARTCODE) {
+          return FP_BADPACKET;
         }
         break;
       case 2:
@@ -323,12 +323,12 @@ static uint8_t getStructuredPacket(void) {
         break;
       default:
         if ((idx - 8) > sizeof(PKT.data)) {
-          return FINGERPRINT_BADPACKET;
+          return FP_BADPACKET;
         }
 
         PKT.data[idx - 9] = byte;
         if ((idx - 8) == PKT.length) {
-          return FINGERPRINT_OK;
+          return FP_OK;
         }
         break;
     }
@@ -336,7 +336,7 @@ static uint8_t getStructuredPacket(void) {
   }
 
   // Shouldn't get here so...
-  return FINGERPRINT_BADPACKET;
+  return FP_BADPACKET;
 }
 
 /**************************************************************************/
@@ -346,19 +346,19 @@ static uint8_t getStructuredPacket(void) {
 /**************************************************************************/
 static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
   memset(&PKT, 0, sizeof(PKT));
-  setPacket(FINGERPRINT_COMMANDPACKET, size, data);
+  setPacket(FP_COMMANDPACKET, size, data);
 
   FINGER_Reset_Buffer();
   if (!writeStructuredPacket()) {
-    return FINGERPRINT_PACKETRECIEVEERR;
+    return FP_PACKETRECIEVEERR;
   }
 
   memset(&PKT, 0, sizeof(PKT));
-  if (getStructuredPacket() != FINGERPRINT_OK) {
-    return FINGERPRINT_PACKETRECIEVEERR;
+  if (getStructuredPacket() != FP_OK) {
+    return FP_PACKETRECIEVEERR;
   }
-  if (PKT.type != FINGERPRINT_ACKPACKET) {
-    return FINGERPRINT_PACKETRECIEVEERR;
+  if (PKT.type != FP_ACKPACKET) {
+    return FP_PACKETRECIEVEERR;
   }
   return PKT.data[0];
 }
@@ -369,18 +369,18 @@ static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
  */
 /**************************************************************************/
 static void setPacket(uint8_t type, uint16_t length, uint8_t *data) {
-  PKT.start_code = FINGERPRINT_STARTCODE;
+  PKT.start_code = FP_STARTCODE;
   PKT.type = type;
   PKT.length = length;
-  PKT.address[0] = (uint8_t)(FINGERPRINT_ADDRESS >> 24);
-  PKT.address[1] = (uint8_t)(FINGERPRINT_ADDRESS >> 16);
-  PKT.address[2] = (uint8_t)(FINGERPRINT_ADDRESS >> 8);
-  PKT.address[3] = (uint8_t)(FINGERPRINT_ADDRESS & 0xFF);
+  PKT.address[0] = (uint8_t)(FP_ADDRESS >> 24);
+  PKT.address[1] = (uint8_t)(FP_ADDRESS >> 16);
+  PKT.address[2] = (uint8_t)(FP_ADDRESS >> 8);
+  PKT.address[3] = (uint8_t)(FP_ADDRESS & 0xFF);
 
   memcpy(PKT.data, data, (length < 64) ? length : 64);
 }
 
-static uint8_t FINGER_IO_WRITE(uint8_t *data, uint8_t len) {
+static uint8_t ioWrite(uint8_t *data, uint8_t len) {
   uint8_t ok;
   uint32_t tick;
 
@@ -396,7 +396,7 @@ static uint8_t FINGER_IO_WRITE(uint8_t *data, uint8_t len) {
     tick = _GetTickMS();
     do {
       ok = FINGER_Received();
-    } while (!ok && _TickIn(tick, FINGERPRINT_RECEIVING_MS));
+    } while (!ok && _TickIn(tick, FP_RECEIVING_MS));
   }
 
   return ok;

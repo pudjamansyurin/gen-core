@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef LIBS__HBAR_H_
-#define LIBS__HBAR_H_
+#ifndef INC_LIBS__HBAR_H_
+#define INC_LIBS__HBAR_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -123,4 +123,4 @@ void HBAR_EE_WriteDeffered(void);
 uint8_t HBAR_EE_Mode(uint8_t *src);
 uint8_t HBAR_EE_SubMode(HBAR_MODE m, uint8_t *src);
 uint8_t HBAR_EE_TripMeter(HBAR_MODE_TRIP mTrip, uint16_t *src);
-#endif /* LIBS__HBAR_H_ */
+#endif /* INC_LIBS__HBAR_H_ */

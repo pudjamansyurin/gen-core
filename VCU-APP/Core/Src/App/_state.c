@@ -106,12 +106,12 @@ void STATE_Check(void) {
         if (LAST_STATE != VEHICLE_STANDBY) {
           LAST_STATE = VEHICLE_STANDBY;
           start = 0;
-          FGR.d.id = 0;
+          FGR_IO_ClearID();
         }
 
         if (!GATE_ReadPower5v() || shutdown)
           VCU.d.state--;
-        else if (FGR.d.id)
+        else if (FGR_IO_GetID())
           VCU.d.state++;
         break;
 

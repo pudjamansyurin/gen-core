@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_LIBS__AES_H_
-#define INC_LIBS__AES_H_
+#ifndef INC_DRIVERS__AES_H_
+#define INC_DRIVERS__AES_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -28,4 +28,4 @@ uint8_t AES_Encrypt(uint8_t *dst, uint8_t *src, uint16_t Sz);
 uint8_t AES_Decrypt(uint8_t *dst, uint8_t *src, uint16_t Sz);
 uint8_t AES_EE_Key(aes_key_t);
 
-#endif /* INC_LIBS__AES_H_ */
+#endif /* INC_DRIVERS__AES_H_ */

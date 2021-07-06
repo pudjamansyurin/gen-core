@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef GPS_H_
-#define GPS_H_
+#ifndef INC_LIBS__GPS_H_
+#define INC_LIBS__GPS_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -43,4 +43,4 @@ void GPS_Refresh(void);
 void GPS_Flush(void);
 void GPS_ReceiveCallback(void *ptr, size_t len);
 
-#endif /* GPS_H_ */
+#endif /* INC_LIBS__GPS_H_ */

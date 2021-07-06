@@ -335,13 +335,13 @@ static void EXEC_FingerFetch(response_data_t *rdata) {
   uint32_t notif, len;
   char fingers[3];
 
-  memset(FGR.d.db, 0, FINGER_USER_MAX);
+  FGR_IO_ClearDB();
   rdata->res_code = CMDR_ERROR;
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) {
     rdata->res_code = CMDR_OK;
 
     for (uint8_t id = 1; id <= FINGER_USER_MAX; id++) {
-      if (FGR.d.db[id - 1]) {
+      if (FGR_IO_GetDB(id - 1)) {
         sprintf(fingers, "%1d,", id);
         strcat(rdata->message, fingers);
       }

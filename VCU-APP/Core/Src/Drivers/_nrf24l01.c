@@ -18,12 +18,12 @@ static void csn_set(void);
 static void csn_reset(void);
 static void ce_set(void);
 static void ce_reset(void);
-static NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
+static NRFR nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
                                    uint8_t *rx, uint8_t len);
-static NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data);
-static NRF_RESULT nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len);
-static NRF_RESULT nrf_write_register(uint8_t reg, uint8_t *data);
-static NRF_RESULT nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len);
+static NRFR nrf_read_register(uint8_t reg, uint8_t *data);
+static NRFR nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len);
+static NRFR nrf_write_register(uint8_t reg, uint8_t *data);
+static NRFR nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -44,7 +44,7 @@ void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
 }
 
 // Checks the presence of the nRF24L01
-NRF_RESULT nrf_check(void) {
+NRFR nrf_check(void) {
   char *nRF24_TEST_ADDR = "nRF24";
   uint8_t buflen = strlen(nRF24_TEST_ADDR);
   uint8_t *txbuf = (uint8_t *)nRF24_TEST_ADDR;
@@ -59,7 +59,7 @@ NRF_RESULT nrf_check(void) {
   return (memcmp(rxbuf, txbuf, buflen) == 0) ? NRF_OK : NRF_ERROR;
 }
 
-NRF_RESULT nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address,
+NRFR nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address,
                            uint8_t payload_width) {
   ce_reset();
   nrf_set_tx_address(tx_address);
@@ -70,7 +70,7 @@ NRF_RESULT nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address,
   return NRF_OK;
 }
 
-NRF_RESULT nrf_configure(void) {
+NRFR nrf_configure(void) {
   nrf24l01_config *c = &(NRF.config);
   uint8_t config_reg = 0;
 
@@ -127,7 +127,7 @@ NRF_RESULT nrf_configure(void) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_read_rx_payload(uint8_t *data) {
+NRFR nrf_read_rx_payload(uint8_t *data) {
   uint8_t len = NRF.config.payload_length;
   uint8_t tx[len];
 
@@ -138,7 +138,7 @@ NRF_RESULT nrf_read_rx_payload(uint8_t *data) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_write_tx_payload(const uint8_t *data) {
+NRFR nrf_write_tx_payload(const uint8_t *data) {
   uint8_t len = NRF.config.payload_length;
   uint8_t rx[len];
 
@@ -149,7 +149,7 @@ NRF_RESULT nrf_write_tx_payload(const uint8_t *data) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_write_tx_payload_noack(const uint8_t *data) {
+NRFR nrf_write_tx_payload_noack(const uint8_t *data) {
   uint8_t len = NRF.config.payload_length;
   uint8_t rx[len];
 
@@ -160,7 +160,7 @@ NRF_RESULT nrf_write_tx_payload_noack(const uint8_t *data) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_flush_tx(void) {
+NRFR nrf_flush_tx(void) {
   uint8_t rx = 0;
   uint8_t tx = 0;
 
@@ -171,7 +171,7 @@ NRF_RESULT nrf_flush_tx(void) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_flush_rx(void) {
+NRFR nrf_flush_rx(void) {
   uint8_t rx = 0;
   uint8_t tx = 0;
 
@@ -182,7 +182,7 @@ NRF_RESULT nrf_flush_rx(void) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_data_rate(NRF_DATA_RATE rate) {
+NRFR nrf_set_data_rate(NRF_DATA_RATE rate) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_RF_SETUP, &reg) != NRF_OK) {
@@ -213,7 +213,7 @@ NRF_RESULT nrf_set_data_rate(NRF_DATA_RATE rate) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_tx_power(NRF_TX_PWR pwr) {
+NRFR nrf_set_tx_power(NRF_TX_PWR pwr) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_RF_SETUP, &reg) != NRF_OK) {
@@ -230,7 +230,7 @@ NRF_RESULT nrf_set_tx_power(NRF_TX_PWR pwr) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_ccw(uint8_t activate) {
+NRFR nrf_set_ccw(uint8_t activate) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_RF_SETUP, &reg) != NRF_OK) {
@@ -250,7 +250,7 @@ NRF_RESULT nrf_set_ccw(uint8_t activate) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_read_carrier_detect(uint8_t *reg) {
+NRFR nrf_read_carrier_detect(uint8_t *reg) {
   if (nrf_read_register(NRF_CD, reg) != NRF_OK) {
     return NRF_ERROR;
   }
@@ -258,7 +258,7 @@ NRF_RESULT nrf_read_carrier_detect(uint8_t *reg) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_clear_interrupts(void) {
+NRFR nrf_clear_interrupts(void) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_STATUS, &reg) != NRF_OK) {
@@ -274,7 +274,7 @@ NRF_RESULT nrf_clear_interrupts(void) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_rf_channel(uint8_t ch) {
+NRFR nrf_set_rf_channel(uint8_t ch) {
   uint8_t reg = 0;
 
   ch &= 0x7F;
@@ -291,7 +291,7 @@ NRF_RESULT nrf_set_rf_channel(uint8_t ch) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_retransmittion_count(uint8_t count) {
+NRFR nrf_set_retransmittion_count(uint8_t count) {
   uint8_t reg = 0;
 
   count &= 0x0F;
@@ -310,7 +310,7 @@ NRF_RESULT nrf_set_retransmittion_count(uint8_t count) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_retransmittion_delay(uint8_t delay) {
+NRFR nrf_set_retransmittion_delay(uint8_t delay) {
   uint8_t reg = 0;
   delay &= 0x0F;
 
@@ -329,7 +329,7 @@ NRF_RESULT nrf_set_retransmittion_delay(uint8_t delay) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_address_width(NRF_ADDR_WIDTH width) {
+NRFR nrf_set_address_width(NRF_ADDR_WIDTH width) {
   uint8_t reg = 0;
   if (nrf_read_register(NRF_SETUP_AW, &reg) != NRF_OK) {
     return NRF_ERROR;
@@ -346,7 +346,7 @@ NRF_RESULT nrf_set_address_width(NRF_ADDR_WIDTH width) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_rx_pipes(uint8_t pipes) {
+NRFR nrf_set_rx_pipes(uint8_t pipes) {
   if (nrf_write_register(NRF_EN_RXADDR, &pipes) != NRF_OK) {
     return NRF_ERROR;
   }
@@ -354,7 +354,7 @@ NRF_RESULT nrf_set_rx_pipes(uint8_t pipes) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_disable_auto_ack(void) {
+NRFR nrf_disable_auto_ack(void) {
   if (nrf_write_register(NRF_EN_AA, 0x00) != NRF_OK) {
     return NRF_ERROR;
   }
@@ -362,7 +362,7 @@ NRF_RESULT nrf_disable_auto_ack(void) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_auto_ack(uint8_t pipe) {
+NRFR nrf_enable_auto_ack(uint8_t pipe) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_EN_AA, &reg) != NRF_OK) {
@@ -378,7 +378,7 @@ NRF_RESULT nrf_enable_auto_ack(uint8_t pipe) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_crc(uint8_t activate) {
+NRFR nrf_enable_crc(uint8_t activate) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_CONFIG, &reg) != NRF_OK) {
@@ -398,7 +398,7 @@ NRF_RESULT nrf_enable_crc(uint8_t activate) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_crc_width(NRF_CRC_WIDTH width) {
+NRFR nrf_set_crc_width(NRF_CRC_WIDTH width) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_CONFIG, &reg) != NRF_OK) {
@@ -419,7 +419,7 @@ NRF_RESULT nrf_set_crc_width(NRF_CRC_WIDTH width) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_power_up(uint8_t power_up) {
+NRFR nrf_power_up(uint8_t power_up) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_CONFIG, &reg) != NRF_OK) {
@@ -439,7 +439,7 @@ NRF_RESULT nrf_power_up(uint8_t power_up) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_rx_tx_control(NRF_TXRX_STATE rx) {
+NRFR nrf_rx_tx_control(NRF_TXRX_STATE rx) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_CONFIG, &reg) != NRF_OK) {
@@ -460,7 +460,7 @@ NRF_RESULT nrf_rx_tx_control(NRF_TXRX_STATE rx) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_rx_data_ready_irq(uint8_t activate) {
+NRFR nrf_enable_rx_data_ready_irq(uint8_t activate) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_CONFIG, &reg) != NRF_OK) {
@@ -480,7 +480,7 @@ NRF_RESULT nrf_enable_rx_data_ready_irq(uint8_t activate) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_tx_data_sent_irq(uint8_t activate) {
+NRFR nrf_enable_tx_data_sent_irq(uint8_t activate) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_CONFIG, &reg) != NRF_OK) {
@@ -500,7 +500,7 @@ NRF_RESULT nrf_enable_tx_data_sent_irq(uint8_t activate) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_enable_max_retransmit_irq(uint8_t activate) {
+NRFR nrf_enable_max_retransmit_irq(uint8_t activate) {
   uint8_t reg = 0;
 
   if (nrf_read_register(NRF_CONFIG, &reg) != NRF_OK) {
@@ -520,7 +520,7 @@ NRF_RESULT nrf_enable_max_retransmit_irq(uint8_t activate) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_rx_address_p0(const uint8_t *address) {
+NRFR nrf_set_rx_address_p0(const uint8_t *address) {
   uint8_t rx[5];
 
   if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_RX_ADDR_P0, address, rx, 5) !=
@@ -532,7 +532,7 @@ NRF_RESULT nrf_set_rx_address_p0(const uint8_t *address) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_rx_address_p1(const uint8_t *address) {
+NRFR nrf_set_rx_address_p1(const uint8_t *address) {
   uint8_t rx[5];
 
   if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_RX_ADDR_P1, address, rx, 5) !=
@@ -544,7 +544,7 @@ NRF_RESULT nrf_set_rx_address_p1(const uint8_t *address) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_tx_address(const uint8_t *address) {
+NRFR nrf_set_tx_address(const uint8_t *address) {
   uint8_t rx[5];
   if (nrf_send_command(NRF_CMD_W_REGISTER | NRF_TX_ADDR, address, rx, 5) !=
       NRF_OK) {
@@ -555,7 +555,7 @@ NRF_RESULT nrf_set_tx_address(const uint8_t *address) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_rx_payload_width_p0(uint8_t width) {
+NRFR nrf_set_rx_payload_width_p0(uint8_t width) {
   width &= 0x3F;
   if (nrf_write_register(NRF_RX_PW_P0, &width) != NRF_OK) {
     NRF.config.payload_length = 0;
@@ -566,7 +566,7 @@ NRF_RESULT nrf_set_rx_payload_width_p0(uint8_t width) {
   return NRF_OK;
 }
 
-NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width) {
+NRFR nrf_set_rx_payload_width_p1(uint8_t width) {
   width &= 0x3F;
   if (nrf_write_register(NRF_RX_PW_P1, &width) != NRF_OK) {
     NRF.config.payload_length = 0;
@@ -577,7 +577,7 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width) {
   return NRF_OK;
 }
 
-// NRF_RESULT nrf_send_packet(const uint8_t *data) {
+// NRFR nrf_send_packet(const uint8_t *data) {
 //	NRF.tx_busy = 1;
 //
 //	ce_reset();
@@ -597,8 +597,8 @@ NRF_RESULT nrf_set_rx_payload_width_p1(uint8_t width) {
 //	return NRF.tx_result;
 //}
 
-NRF_RESULT nrf_send_packet_noack(const uint8_t *data) {
-  NRF_RESULT res;
+NRFR nrf_send_packet_noack(const uint8_t *data) {
+  NRFR res;
 
   ce_reset();
   nrf_clear_pending_irq();
@@ -614,8 +614,8 @@ NRF_RESULT nrf_send_packet_noack(const uint8_t *data) {
 
 uint8_t nrf_tx_busy(void) { return NRF.tx_busy; }
 
-// NRF_RESULT nrf_push_packet(const uint8_t *data) {
-//	NRF_RESULT res;
+// NRFR nrf_push_packet(const uint8_t *data) {
+//	NRFR res;
 //
 //	if (NRF.tx_busy == 1) {
 //		nrf_flush_tx();
@@ -632,7 +632,7 @@ uint8_t nrf_tx_busy(void) { return NRF.tx_busy; }
 //	return res;
 //}
 
-// NRF_RESULT nrf_receive_packet(uint8_t *data, uint16_t ms) {
+// NRFR nrf_receive_packet(uint8_t *data, uint16_t ms) {
 //	NRF.rx_busy = 1;
 //
 //	ce_reset();
@@ -727,7 +727,7 @@ static void ce_set(void) { GATE_RemoteCE(GPIO_PIN_SET); }
 
 static void ce_reset(void) { GATE_RemoteCE(GPIO_PIN_RESET); }
 
-static NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
+static NRFR nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
                                    uint8_t *rx, uint8_t len) {
   uint8_t ok;
   uint8_t myTX[len + 1];
@@ -758,7 +758,7 @@ static NRF_RESULT nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
   return ok ? NRF_OK : NRF_ERROR;
 }
 
-static NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data) {
+static NRFR nrf_read_register(uint8_t reg, uint8_t *data) {
   uint8_t tx = 0;
 
   if (nrf_send_command(NRF_CMD_R_REGISTER | reg, &tx, data, 1) != NRF_OK) {
@@ -768,7 +768,7 @@ static NRF_RESULT nrf_read_register(uint8_t reg, uint8_t *data) {
   return NRF_OK;
 }
 
-static NRF_RESULT nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len) {
+static NRFR nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len) {
   uint8_t tx[len];
 
   for (uint8_t i = 0; i < len; i++) {
@@ -782,7 +782,7 @@ static NRF_RESULT nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len) {
   return NRF_OK;
 }
 
-static NRF_RESULT nrf_write_register(uint8_t reg, uint8_t *data) {
+static NRFR nrf_write_register(uint8_t reg, uint8_t *data) {
   uint8_t rx = 0;
 
   if (nrf_send_command(NRF_CMD_W_REGISTER | reg, data, &rx, 1) != NRF_OK) {
@@ -792,7 +792,7 @@ static NRF_RESULT nrf_write_register(uint8_t reg, uint8_t *data) {
   return NRF_OK;
 }
 
-static NRF_RESULT nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len) {
+static NRFR nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len) {
   uint8_t rx[len];
 
   if (nrf_send_command(NRF_CMD_W_REGISTER | reg, data, rx, len) != NRF_OK) {

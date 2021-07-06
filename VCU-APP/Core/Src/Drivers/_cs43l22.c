@@ -50,7 +50,7 @@ static cs43l22_t cs43l22 = {
 
 /* Private functions prototype
  * --------------------------------------------*/
-static uint8_t VOLUME_CONVERT(uint8_t Volume);
+static uint8_t VOL_CONVERT(uint8_t Volume);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -277,8 +277,8 @@ uint32_t cs43l22_SetVolume(uint16_t DeviceAddr, uint8_t Volume) {
     regB = CS43L22_REG_HEADPHONE_B_VOL;
   }
 
-  counter += CODEC_Write(regA, VOLUME_CONVERT(Volume));
-  counter += CODEC_Write(regB, VOLUME_CONVERT(Volume));
+  counter += CODEC_Write(regA, VOL_CONVERT(Volume));
+  counter += CODEC_Write(regB, VOL_CONVERT(Volume));
 
   cs43l22.volume = Volume;
   return counter;
@@ -323,8 +323,8 @@ uint32_t cs43l22_SetMute(uint16_t DeviceAddr, uint32_t Cmd) {
   /* AUDIO_MUTE_OFF Disable the Mute */
   else {
     // set to max
-    counter += CODEC_Write(regA, VOLUME_CONVERT(cs43l22.volume));
-    counter += CODEC_Write(regB, VOLUME_CONVERT(cs43l22.volume));
+    counter += CODEC_Write(regA, VOL_CONVERT(cs43l22.volume));
+    counter += CODEC_Write(regB, VOL_CONVERT(cs43l22.volume));
     counter += CODEC_Write(CS43L22_REG_POWER_CTL2, cs43l22.outputDev);
   }
   return counter;
@@ -409,7 +409,7 @@ uint32_t cs43l22_Beep(uint16_t DeviceAddr, uint8_t Mode, uint8_t Mix) {
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t VOLUME_CONVERT(uint8_t Volume) {
+static uint8_t VOL_CONVERT(uint8_t Volume) {
   uint64_t Vol, Multiplier = pow(10, 10);
   uint8_t Log, Result;
 

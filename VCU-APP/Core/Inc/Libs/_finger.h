@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef FINGER_H_
-#define FINGER_H_
+#ifndef INC_LIBS__FINGER_H_
+#define INC_LIBS__FINGER_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -27,24 +27,24 @@ typedef enum {
   FGR_REG_SHOW,
 } FGR_REG;
 
+/* Exported types
+ * --------------------------------------------*/
+typedef uint8_t finger_db_t[FINGER_USER_MAX];
+
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
   uint8_t id;
   uint8_t verified;
   uint8_t registering;
-  uint8_t db[FINGER_USER_MAX];
 } finger_data_t;
 
 typedef struct {
   finger_data_t d;
+  finger_db_t db;
   UART_HandleTypeDef *puart;
   DMA_HandleTypeDef *pdma;
 } finger_t;
-
-/* Exported variables
- * --------------------------------------------*/
-extern finger_t FGR;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -60,4 +60,9 @@ uint8_t FGR_ResetDB(void);
 uint8_t FGR_SetPassword(uint32_t password);
 void FGR_Authenticate(void);
 
-#endif /* FINGER_H_ */
+finger_data_t FGR_IO_GetData(void);
+uint8_t FGR_IO_GetID(void);
+void FGR_IO_ClearID(void);
+void FGR_IO_ClearDB(void);
+uint8_t FGR_IO_GetDB(uint8_t idx);
+#endif /* INC_LIBS__FINGER_H_ */

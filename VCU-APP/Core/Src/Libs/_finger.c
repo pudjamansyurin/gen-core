@@ -10,7 +10,7 @@
 #include "Libs/_finger.h"
 
 #include "DMA/_dma_finger.h"
-#include "Drivers/_fz3387.h"
+#include "Drivers/_r307.h"
 #include "usart.h"
 
 /* External variables
@@ -19,9 +19,13 @@
 extern osMutexId_t FingerRecMutexHandle;
 #endif
 
-/* Public variables
+/* Private variables
  * --------------------------------------------*/
-finger_t FGR = {.d = {0}, .puart = &huart4, .pdma = &hdma_uart4_rx};
+static finger_t FGR = {
+		.d = {0},
+		.puart = &huart4,
+		.pdma = &hdma_uart4_rx
+};
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -75,7 +79,7 @@ uint8_t FGR_Probe(void) {
 
   lock();
   GATE_FingerChipPower(1);
-  ok = fz3387_checkPassword() == FINGERPRINT_OK;
+  ok = R307_checkPassword() == FP_OK;
   GATE_FingerChipPower(0);
   unlock();
 
@@ -83,6 +87,8 @@ uint8_t FGR_Probe(void) {
 }
 
 void FGR_Verify(void) {
+	if (FGR.d.verified) return;
+
   lock();
   FGR.d.verified = FGR_Probe();
   if (!FGR.d.verified) {
@@ -104,12 +110,12 @@ uint8_t FGR_Fetch(void) {
   uint8_t res;
 
   lock();
-  res = fz3387_getTemplateCount(&templateCount);
+  res = R307_getTemplateCount(&templateCount);
   for (uint8_t id = 1; id <= FINGER_USER_MAX; id++)
-    FGR.d.db[id - 1] = (fz3387_loadModel(id) == FINGERPRINT_OK);
+    FGR.db[id - 1] = (R307_loadModel(id) == FP_OK);
   unlock();
 
-  return res == FINGERPRINT_OK;
+  return res == FP_OK;
 }
 
 uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
@@ -118,7 +124,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
   lock();
   res = GenerateID(id);
 
-  *ok = (res == FINGERPRINT_OK && *id > 0);
+  *ok = (res == FP_OK && *id > 0);
 
   if (*ok) {
     IndicatorShow(1);
@@ -129,7 +135,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
 
   if (*ok) {
     IndicatorHide();
-    while (fz3387_getImage() != FINGERPRINT_NOFINGER) {
+    while (R307_getImage() != FP_NOFINGER) {
       _DelayMS(50);
     }
 
@@ -141,21 +147,21 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
 
   IndicatorHide();
   if (*ok) {
-    while (fz3387_getImage() != FINGERPRINT_NOFINGER) {
+    while (R307_getImage() != FP_NOFINGER) {
       _DelayMS(50);
     }
 
     printf("FGR:Creating model for #%u\n", *id);
-    res = fz3387_createModel();
+    res = R307_createModel();
     DebugResponse(res, "Prints matched!");
-    *ok = (res == FINGERPRINT_OK);
+    *ok = (res == FP_OK);
   }
 
   if (*ok) {
     printf("FGR:ID #%u\n", *id);
-    res = fz3387_storeModel(*id);
+    res = R307_storeModel(*id);
     DebugResponse(res, "Stored!");
-    *ok = (res == FINGERPRINT_OK);
+    *ok = (res == FP_OK);
   }
   unlock();
 
@@ -163,40 +169,40 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
   _DelayMS(250);
   IndicatorHide();
 
-  return (res == FINGERPRINT_OK);
+  return (res == FP_OK);
 }
 
 uint8_t FGR_DeleteID(uint8_t id) {
   uint8_t res;
 
   lock();
-  res = fz3387_deleteModel(id);
+  res = R307_deleteModel(id);
   DebugResponse(res, "Deleted!");
   unlock();
 
-  return (res == FINGERPRINT_OK);
+  return (res == FP_OK);
 }
 
 uint8_t FGR_ResetDB(void) {
   uint8_t res;
 
   lock();
-  res = fz3387_emptyDatabase();
+  res = R307_emptyDatabase();
   DebugResponse(res, "Reseted!");
   unlock();
 
-  return (res == FINGERPRINT_OK);
+  return (res == FP_OK);
 }
 
 uint8_t FGR_SetPassword(uint32_t password) {
   uint8_t res;
 
   lock();
-  res = fz3387_setPassword(password);
+  res = R307_setPassword(password);
   DebugResponse(res, "Password applied!");
   unlock();
 
-  return (res == FINGERPRINT_OK);
+  return (res == FP_OK);
 }
 
 void FGR_Authenticate(void) {
@@ -214,6 +220,28 @@ void FGR_Authenticate(void) {
   }
   unlock();
 }
+
+
+finger_data_t FGR_IO_GetData(void) {
+	return FGR.d;
+}
+
+uint8_t FGR_IO_GetID(void) {
+	return FGR.d.id;
+}
+
+void FGR_IO_ClearID(void) {
+	FGR.d.id = 0;
+}
+
+void FGR_IO_ClearDB(void) {
+  memset(FGR.db, 0, FINGER_USER_MAX);
+}
+
+uint8_t FGR_IO_GetDB(uint8_t idx) {
+	return FGR.db[idx];
+}
+
 
 /* Private functions implementation
  * --------------------------------------------*/
@@ -235,8 +263,8 @@ static uint8_t AuthFast(void) {
   uint16_t id = 0, confidence;
 
   lock();
-  if (fz3387_image2Tz(1) == FINGERPRINT_OK) {
-    if (fz3387_fingerFastSearch(&id, &confidence) == FINGERPRINT_OK) {
+  if (R307_image2Tz(1) == FP_OK) {
+    if (R307_fingerFastSearch(&id, &confidence) == FP_OK) {
       if (confidence < FINGER_CONFIDENCE_MIN_PERCENT) id = 0;
     } else
       id = 0;
@@ -258,10 +286,10 @@ static uint8_t GetImage(uint32_t timeout) {
 
   tick = _GetTickMS();
   do {
-    res = fz3387_getImage();
-    ok = res == FINGERPRINT_OK;
+    res = R307_getImage();
+    ok = res == FP_OK;
 
-    if (res == FINGERPRINT_NOFINGER)
+    if (res == FP_NOFINGER)
       printf(".\n");
     else
       DebugResponse(res, "Image taken");
@@ -275,10 +303,10 @@ static uint8_t GetImage(uint32_t timeout) {
 static uint8_t ConvertImage(uint8_t slot) {
   uint8_t res;
 
-  res = fz3387_image2Tz(slot);
+  res = R307_image2Tz(slot);
   DebugResponse(res, "Image converted");
 
-  return (res == FINGERPRINT_OK);
+  return (res == FP_OK);
 }
 
 static uint8_t GenerateID(uint8_t *theId) {
@@ -287,13 +315,13 @@ static uint8_t GenerateID(uint8_t *theId) {
 
   *theId = 0;
 
-  res = fz3387_getTemplateCount(&templateCount);
-  if (res == FINGERPRINT_OK) {
+  res = R307_getTemplateCount(&templateCount);
+  if (res == FP_OK) {
     printf("FGR:TemplateCount = %u\n", templateCount);
 
     if (templateCount <= FINGER_USER_MAX) {
       for (uint8_t id = 1; id <= FINGER_USER_MAX; id++)
-        if (fz3387_loadModel(id) != FINGERPRINT_OK) {
+        if (R307_loadModel(id) != FP_OK) {
           *theId = id;
           break;
         }
@@ -306,37 +334,37 @@ static uint8_t GenerateID(uint8_t *theId) {
 static void DebugResponse(uint8_t res, char *msg) {
 #if FINGER_DEBUG
   switch (res) {
-    case FINGERPRINT_OK:
+    case FP_OK:
       printf("FGR:%s\n", msg);
       break;
-    case FINGERPRINT_NOFINGER:
+    case FP_NOFINGER:
       printf("FGR:No finger detected\n");
       break;
-    case FINGERPRINT_NOTFOUND:
+    case FP_NOTFOUND:
       printf("FGR:Did not find a match\n");
       break;
-    case FINGERPRINT_PACKETRECIEVEERR:
+    case FP_PACKETRECIEVEERR:
       printf("FGR:Communication error\n");
       break;
-    case FINGERPRINT_ENROLLMISMATCH:
+    case FP_ENROLLMISMATCH:
       printf("FGR:Fingerprints did not match\n");
       break;
-    case FINGERPRINT_IMAGEMESS:
+    case FP_IMAGEMESS:
       printf("FGR:Image too messy\n");
       break;
-    case FINGERPRINT_IMAGEFAIL:
+    case FP_IMAGEFAIL:
       printf("FGR:Imaging error\n");
       break;
-    case FINGERPRINT_FEATUREFAIL:
+    case FP_FEATUREFAIL:
       printf("FGR:Could not find finger print features fail\n");
       break;
-    case FINGERPRINT_INVALIDIMAGE:
+    case FP_INVALIDIMAGE:
       printf("FGR:Could not find finger print features invalid\n");
       break;
-    case FINGERPRINT_BADLOCATION:
+    case FP_BADLOCATION:
       printf("FGR:Could not execute in that location\n");
       break;
-    case FINGERPRINT_FLASHERR:
+    case FP_FLASHERR:
       printf("FGR:Error writing to flash\n");
       break;
     default:

@@ -259,7 +259,7 @@ static void ChangeMode(RMT_MODE mode) {
     // Set Address (pairing mode)
     memset(RMT.t.address, 0x00, sizeof(uint32_t));
     memset(RMT.r.address, 0x00, sizeof(uint32_t));
-    payload_width = NRF_DATA_PAIR_LENGTH;
+    payload_width = NRF_PAIR_LENGTH;
   }
 
   // Set NRF Config (pairing mode)

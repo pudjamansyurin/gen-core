@@ -5,8 +5,8 @@
  *      Author: Sina Darvishi
  */
 
-#ifndef MPU6050_H_
-#define MPU6050_H_
+#ifndef INC_DRIVERS__MPU6050_H_
+#define INC_DRIVERS__MPU6050_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -18,6 +18,7 @@
 #define MPU6050_I2C_ADDR 0xD0
 /* Who I am register value */
 #define MPU6050_I_AM 0x68
+
 /* MPU6050 registers */
 #define MPU6050_AUX_VDDIO 0x01
 #define MPU6050_SMPLRT_DIV 0x19
@@ -276,4 +277,4 @@ MPU6050_Result MPU6050_DisableInterrupts(void);
  */
 MPU6050_Result MPU6050_ReadInterrupts(MPU6050_Interrupt *InterruptsStruct);
 
-#endif /* MPU6050_H_ */
+#endif /* INC_DRIVERS__MPU6050_H_ */

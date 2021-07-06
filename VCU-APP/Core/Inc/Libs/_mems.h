@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef MEMS_H_
-#define MEMS_H_
+#ifndef INC_LIBS__MEMS_H_
+#define INC_LIBS__MEMS_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -101,4 +101,4 @@ uint8_t MEMS_Process(void);
 void MEMS_GetRefDetector(void);
 uint8_t MEMS_Dragged(void);
 
-#endif /* MEMS_H_ */
+#endif /* INC_LIBS__MEMS_H_ */

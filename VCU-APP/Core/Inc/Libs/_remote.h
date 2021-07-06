@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef REMOTE_H_
-#define REMOTE_H_
+#ifndef INC_LIBS__REMOTE_H_
+#define INC_LIBS__REMOTE_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -60,7 +60,7 @@ typedef struct {
 
 typedef struct {
   uint8_t address[NRF_ADDR_LENGTH];
-  uint8_t payload[NRF_DATA_PAIR_LENGTH];
+  uint8_t payload[NRF_PAIR_LENGTH];
 } remote_packet_t;
 
 typedef struct {
@@ -88,4 +88,4 @@ uint8_t RMT_GotPairedResponse(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
 void RMT_IrqHandler(void);
 
-#endif /* REMOTE_H_ */
+#endif /* INC_LIBS__REMOTE_H_ */
