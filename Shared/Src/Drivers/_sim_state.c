@@ -329,8 +329,7 @@ void SIMSta_ServerOn(void) {
   AT_ConnectionStatus(&(SIM.d.ipstatus));
   if (SIM.d.ipstatus == CIPSTAT_CONNECT_OK)
     if (MQTT_Connect())
-      if (MQTT_PublishWill(1))
-        ok = MQTT_Subscribe();
+      if (MQTT_PublishWill(1)) ok = MQTT_Subscribe();
 
   // upgrade simcom state
   if (ok)
@@ -390,8 +389,7 @@ static SIMR Reset(uint8_t hard) {
 #endif
 
     _DelayMS(100);
-  } while (SIM.d.state == SIM_STATE_DOWN &&
-           (_GetTickMS() - tick) < NET_BOOT_MS);
+  } while (SIM.d.state == SIM_STATE_DOWN && _TickIn(tick, NET_BOOT_MS));
 
   return SIM_Cmd(SIM_CMD_BOOT, SIM_RSP_READY, 1000);
 }
@@ -422,8 +420,7 @@ static void NetworkRegistration(char* type, SIMR* res, uint32_t tick,
 
 static uint8_t TimeoutReached(uint32_t tick, uint32_t timeout, uint32_t delay) {
   if (_TickOut(tick, timeout)) {
-	if (timeout)
-	  printf("Simcom:StateTimeout\n");
+    if (timeout) printf("Simcom:StateTimeout\n");
     return 1;
   }
 

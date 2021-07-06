@@ -641,7 +641,7 @@ uint8_t nrf_tx_busy(void) { return NRF.tx_busy; }
 //
 //	// wait for reception
 //	uint32_t tick = _GetTickMS();
-//	while (_GetTickMS() - tick < ms && NRF.rx_busy)
+//	while (_TickIn(tick, ms) && NRF.rx_busy)
 //		_DelayMS(1);
 //
 //	return !NRF.rx_busy;

@@ -12,10 +12,6 @@
  * --------------------------------------------*/
 #include "Drivers/_rtc.h"
 
-/* Exported constants
- * --------------------------------------------*/
-#define CMD_SUB_MAX ((uint8_t)10)
-
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {

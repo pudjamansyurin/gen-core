@@ -25,6 +25,10 @@
 extern osMutexId_t EepromRecMutexHandle;
 #endif
 
+/* Public variables
+ * --------------------------------------------*/
+eeprom_t EEPROM = {0};
+
 /* Private variables
  * --------------------------------------------*/
 static uint8_t EE_SZ[VA_MAX];
@@ -35,6 +39,7 @@ static void lock(void);
 static void unlock(void);
 static void InitializeSize(void);
 static uint16_t Address(EE_VA va);
+static uint8_t GetUsedSpace(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -43,41 +48,48 @@ uint8_t EE_Init(void) {
 
 	lock();
 	printf("EEPROM:Init\n");
-	do {
-		ok = AT24C_Probe();
-		if (!ok)
-			printf("EEPROM:Error\n");
-	} while (!ok);
+	ok = AT24C_Probe();
+	if (ok) printf("EEPROM:OK\n");
+	else printf("EEPROM:Error\n");
 
-	printf("EEPROM:OK\n");
 	InitializeSize();
+	IAP_Init();
 
-#if (APP)
-	AES_KeyStore(NULL);
-	HBAR_ReadStore();
-#else
-	if (IEEP_VALUE == IEEP_RESET)
-		if (SIMCon_WriteStore())
-			IAP_SetBootMeta(IEEP_OFFSET, IEEP_SET);
+#if (!APP)
+	if (IEEP_VALUE == IEEP_RESET) {
+		SIMCon_WriteStore();
+
+		IAP_SetBootMeta(IEEP_OFFSET, IEEP_SET);
+	}
 #endif
-	SIMCon_ReadStore();
-	IAP_VersionStore(NULL);
-	IAP_TypeStore(NULL);
+
+	EEPROM.active = ok;
 	unlock();
 
 	return ok;
 }
 
+void EE_Refresh(void) {
+	if (!_TickIn(EEPROM.tick, EE_CHECK_MS)) {
+		EEPROM.tick = _GetTickMS();
+		EEPROM.active = AT24C_Probe();
+	}
+}
+
 uint8_t EE_Cmd(EE_VA va, void* src, void* dst) {
 	uint16_t addr = Address(va);
-	uint8_t ok;
+	uint8_t ok = 1;
 
 	lock();
-	if (src != NULL) {
+	if (src != NULL)
 		ok = AT24C_Write(addr, src, EE_SZ[va]);
-		//		memcpy(dst, src, EE_SZ[va]);
-	}
-	ok = AT24C_Read(addr, dst, EE_SZ[va]);
+
+	if (ok)
+		ok = AT24C_Read(addr, dst, EE_SZ[va]);
+	else
+		memcpy(dst, src, EE_SZ[va]);
+
+	EEPROM.active = ok;
 	unlock();
 
 	return ok;
@@ -119,6 +131,18 @@ static void InitializeSize(void) {
 	EE_SZ[VA_MQTT_PORT] = EE_STR_MAX;
 	EE_SZ[VA_MQTT_USER] = EE_STR_MAX;
 	EE_SZ[VA_MQTT_PASS] = EE_STR_MAX;
+
+	EEPROM.used = GetUsedSpace();
+}
+
+static uint8_t GetUsedSpace(void) {
+	const uint16_t capacity = 4096;
+	uint16_t used = 0;
+
+	for (uint8_t v = 0; v < VA_MAX; v++)
+		used += EE_SZ[v];
+
+	return (used * 100) / capacity;
 }
 
 static uint16_t Address(EE_VA va) {

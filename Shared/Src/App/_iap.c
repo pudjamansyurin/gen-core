@@ -20,6 +20,11 @@ iap_t IAP = {0};
 
 /* Public functions implementation
  * --------------------------------------------*/
+void IAP_Init(void) {
+	IAP_TypeStore(NULL);
+	IAP_VersionStore(NULL);
+}
+
 uint8_t IAP_TypeStore(IAP_TYPE *src) {
   void *dst = &IAP.type;
   uint8_t ok;

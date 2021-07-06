@@ -30,10 +30,7 @@ typedef struct {
 } bms_avg_t;
 
 typedef struct {
-  struct {
-    bms_prediction_t d;
-    bms_avg_t avg;
-  } bms;
+	bms_prediction_t bms;
 } ml_t;
 
 /* Exported variables

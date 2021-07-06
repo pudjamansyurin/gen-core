@@ -32,6 +32,7 @@ static void EXEC_FingerFetch(response_data_t *rdata);
 static void EXEC_Finger(response_data_t *rdata);
 static void EXEC_RemotePairing(response_data_t *rdata);
 static void EXEC_NetQuota(response_data_t *rdata);
+static void EXEC_ConApn(command_t *cmd, char *rMsg);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -41,8 +42,8 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
   void *val = cmd->data.value;
 
   response_data_t *rdata = &(resp->data);
-  uint8_t *resCode = &(rdata->res_code);
-  char *resMsg = rdata->message;
+  uint8_t *rCode = &(rdata->res_code);
+  char *rMsg = rdata->message;
 
   // default command response
   resp->header.code = code;
@@ -77,11 +78,11 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       case CMD_GEN_RPT_BLOCK:
-        RPT.block = *(uint8_t *)val;
+      	RPT_SetBlock(*(uint8_t *)val);
         break;
 
       default:
-        *resCode = CMDR_INVALID;
+        *rCode = CMDR_INVALID;
         break;
     }
   }
@@ -90,18 +91,18 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
     switch (subCode) {
       case CMD_OVD_STATE:
         if (VCU.d.state < VEHICLE_NORMAL) {
-          sprintf(resMsg, "State should >= {%d}.", VEHICLE_NORMAL);
-          *resCode = CMDR_ERROR;
+          sprintf(rMsg, "State should >= {%d}.", VEHICLE_NORMAL);
+          *rCode = CMDR_ERROR;
         } else
           _osQueuePutRst(OvdStateQueueHandle, (uint8_t *)val);
         break;
 
       case CMD_OVD_RPT_INTERVAL:
-        RPT.override.interval = *(uint16_t *)val;
+      	RPT_SetOvdInterval(*(uint16_t *)val);
         break;
 
       case CMD_OVD_RPT_FRAME:
-        RPT.override.frame = *(uint8_t *)val;
+      	RPT_SetOvdFrame(*(uint8_t *)val);
         break;
 
       case CMD_OVD_RMT_SEAT:
@@ -113,15 +114,15 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       default:
-        *resCode = CMDR_INVALID;
+        *rCode = CMDR_INVALID;
         break;
     }
   }
 
   else if (code == CMDC_AUDIO) {
     if (VCU.d.state < VEHICLE_NORMAL) {
-      sprintf(resMsg, "State should >= {%d}.", VEHICLE_NORMAL);
-      *resCode = CMDR_ERROR;
+      sprintf(rMsg, "State should >= {%d}.", VEHICLE_NORMAL);
+      *rCode = CMDR_ERROR;
     } else
       switch (subCode) {
         case CMD_AUDIO_BEEP:
@@ -129,15 +130,15 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = CMDR_INVALID;
+          *rCode = CMDR_INVALID;
           break;
       }
   }
 
   else if (code == CMDC_FGR) {
     if (VCU.d.state != VEHICLE_STANDBY) {
-      sprintf(resMsg, "State should = {%d}.", VEHICLE_STANDBY);
-      *resCode = CMDR_ERROR;
+      sprintf(rMsg, "State should = {%d}.", VEHICLE_STANDBY);
+      *rCode = CMDR_ERROR;
     } else
       switch (subCode) {
         case CMD_FGR_FETCH:
@@ -162,15 +163,15 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = CMDR_INVALID;
+          *rCode = CMDR_INVALID;
           break;
       }
   }
 
   else if (code == CMDC_RMT) {
     if (VCU.d.state < VEHICLE_NORMAL) {
-      sprintf(resMsg, "State should >= {%d}.", VEHICLE_NORMAL);
-      *resCode = CMDR_ERROR;
+      sprintf(rMsg, "State should >= {%d}.", VEHICLE_NORMAL);
+      *rCode = CMDR_ERROR;
     } else
       switch (subCode) {
         case CMD_RMT_PAIRING:
@@ -179,34 +180,34 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = CMDR_INVALID;
+          *rCode = CMDR_INVALID;
           break;
       }
   }
 
   else if (code == CMDC_FOTA) {
-    *resCode = CMDR_ERROR;
+    *rCode = CMDR_ERROR;
 
     if (VCU.d.state == VEHICLE_RUN) {
-      sprintf(resMsg, "State should != {%d}.", VEHICLE_RUN);
+      sprintf(rMsg, "State should != {%d}.", VEHICLE_RUN);
     } else
       switch (subCode) {
         case CMD_FOTA_VCU:
-          FW_EnterModeIAP(ITYPE_VCU, resMsg);
+          FW_EnterModeIAP(ITYPE_VCU, rMsg);
           break;
 
         case CMD_FOTA_HMI:
-          FW_EnterModeIAP(ITYPE_HMI, resMsg);
+          FW_EnterModeIAP(ITYPE_HMI, rMsg);
           break;
 
         default:
-          *resCode = CMDR_INVALID;
+          *rCode = CMDR_INVALID;
           break;
       }
   }
 
   else if (code == CMDC_NET) {
-    *resCode = CMDR_ERROR;
+    *rCode = CMDR_ERROR;
 
     switch (subCode) {
       case CMD_NET_SEND_USSD:
@@ -221,21 +222,17 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       default:
-        *resCode = CMDR_INVALID;
+        *rCode = CMDR_INVALID;
         break;
     }
   }
 
   else if (code == CMDC_CON) {
-    *resCode = CMDR_ERROR;
+    *rCode = CMDR_ERROR;
 
-    con_apn_t *apn = &SIM.con.apn;
     switch (subCode) {
       case CMD_CON_APN:
-      	if (IsReadRequest(cmd))
-      		sprintf(rdata->message, "%s,%s,%s", apn->name, apn->user, apn->pass);
-      	else
-        	memcpy(rdata->message, val, sizeof(rdata->message));
+      	EXEC_ConApn(cmd, rMsg);
       	break;
       case CMD_CON_FTP:
       case CMD_CON_MQTT:
@@ -243,7 +240,7 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       default:
-        *resCode = CMDR_INVALID;
+        *rCode = CMDR_INVALID;
         break;
     }
   }
@@ -268,15 +265,15 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       default:
-        *resCode = CMDR_INVALID;
+        *rCode = CMDR_INVALID;
         break;
     }
   }
 
   else if (code == CMDC_MCU) {
     if (!MCU.d.active || MCU.d.run) {
-      sprintf(resMsg, "MCU not ready!");
-      *resCode = CMDR_ERROR;
+      sprintf(rMsg, "MCU not ready!");
+      *rCode = CMDR_ERROR;
     } else
       switch (subCode) {
         case CMD_MCU_SPEED_MAX:
@@ -288,13 +285,13 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
           break;
 
         default:
-          *resCode = CMDR_INVALID;
+          *rCode = CMDR_INVALID;
           break;
       }
   }
 
   else
-    *resCode = CMDR_INVALID;
+    *rCode = CMDR_INVALID;
 }
 
 /* Private functions implementation
@@ -378,4 +375,23 @@ static void EXEC_NetQuota(response_data_t *rdata) {
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 40000))
     if (_osQueueGet(QuotaQueueHandle, rdata->message))
       rdata->res_code = CMDR_OK;
+}
+
+static void EXEC_ConApn(command_t *cmd, char *rMsg) {
+	con_apn_t apn;
+
+	if (IsReadRequest(cmd))
+	  apn = SIM.con.apn;
+	else {
+    char *token, *rest;
+
+    if ((token = strtok_r(rMsg, ";", &rest)))
+    	strncpy(apn.name, token, sizeof(apn.name));
+    if ((token = strtok_r(NULL, ";", &rest)))
+    	strncpy(apn.user, token, sizeof(apn.user));
+    if ((token = strtok_r(NULL, ";", &rest)))
+    	strncpy(apn.pass, token, sizeof(apn.pass));
+	}
+
+	sprintf(rMsg, "%s,%s,%s", apn.name, apn.user, apn.pass);
 }

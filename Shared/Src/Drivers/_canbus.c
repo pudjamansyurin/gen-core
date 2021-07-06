@@ -95,7 +95,7 @@ uint8_t CANBUS_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC,
   lock();
   Header(&(Tx->header), address, DLC, ext);
   tick = _GetTickMS();
-  while (_GetTickMS() - tick < CAN_RX_MS &&
+  while (_TickIn(tick, CAN_RX_MS) &&
          HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0) {
   };
 

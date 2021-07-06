@@ -44,11 +44,12 @@ void NET_CheckCommand(void) {
 }
 
 void NET_CheckPayload(PAYLOAD_TYPE type) {
-  payload_t *payload = &(RPT.payloads[type]);
-
-  if (RPT_PayloadPending(payload))
-    if (SIM_SetState(SIM_STATE_MQTT_ON, 0))
-      payload->pending = !MQTT_Publish(payload);
+  if (RPT_PayloadPending(type))
+    if (SIM_SetState(SIM_STATE_MQTT_ON, 0)) {
+    	payload_t pay = RPT_GetPayload(type);
+      uint8_t pending = !MQTT_Publish(&pay);
+      RPT_SetPayloadPending(type, pending);
+    }
 }
 
 bool NET_SendUSSD(void) {

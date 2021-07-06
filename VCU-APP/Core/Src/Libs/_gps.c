@@ -50,7 +50,7 @@ uint8_t GPS_Init(void) {
   GATE_GpsReset();
 
   tick = _GetTickMS();
-  while (_GetTickMS() - tick < GPS_TIMEOUT_MS)
+  while (_TickIn(tick, GPS_TIMEOUT_MS))
     if (GPS.d.tick) break;
 
   ok = GPS.d.tick > 0;

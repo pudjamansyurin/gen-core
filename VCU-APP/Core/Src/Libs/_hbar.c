@@ -12,6 +12,7 @@
 #include "Libs/_eeprom.h"
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
+#include "Nodes/VCU.h"
 
 /* Public variables
  * --------------------------------------------*/
@@ -23,6 +24,7 @@ static uint32_t Timer(uint8_t key);
 static uint8_t Reversed(void);
 static void RunSelect(void);
 static void RunSet(void);
+static uint8_t Deffered(void *src);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -33,6 +35,10 @@ void HBAR_Init(void) {
   HBAR.ctl.session = 0;
   HBAR.ctl.tick.session = 0;
 
+  HBAR.d.prediction[HBAR_M_PREDICTION_RANGE] = 0;
+  HBAR.d.prediction[HBAR_M_PREDICTION_EFFICIENCY] = 0;
+
+  HBAR_ReadStore();
   //	HBAR.d.m = HBAR_M_DRIVE;
   //	HBAR.d.mode[HBAR_M_DRIVE] = HBAR_M_DRIVE_STANDARD;
   //	HBAR.d.mode[HBAR_M_TRIP] = HBAR_M_TRIP_ODO;
@@ -41,9 +47,6 @@ void HBAR_Init(void) {
   //	HBAR.d.trip[HBAR_M_TRIP_A] = 0;
   //	HBAR.d.trip[HBAR_M_TRIP_B] = 0;
   //	HBAR.d.trip[HBAR_M_TRIP_ODO] = 0;
-
-  HBAR.d.prediction[HBAR_M_PREDICTION_RANGE] = 0;
-  HBAR.d.prediction[HBAR_M_PREDICTION_EFFICIENCY] = 0;
 }
 
 uint8_t HBAR_SubModeMax(HBAR_MODE m) {
@@ -77,6 +80,16 @@ void HBAR_ReadStarter(uint8_t normalState) {
   }
 }
 
+void HBAR_CheckStarter(uint8_t *start, uint8_t *shutdown) {
+  HBAR_STARTER starter = HBAR.ctl.starter;
+
+  if (starter != HBAR_STARTER_UNKNOWN) {
+    HBAR.ctl.starter = HBAR_STARTER_UNKNOWN;
+    *shutdown = starter == HBAR_STARTER_OFF;
+    *start = starter == HBAR_STARTER_ON;
+  }
+}
+
 void HBAR_ReadStates(void) {
   HBAR.d.pin[HBAR_K_SELECT] = GATE_ReadSelect();
   HBAR.d.pin[HBAR_K_SET] = GATE_ReadSet();
@@ -103,8 +116,7 @@ void HBAR_ReadStates(void) {
 
 void HBAR_RefreshSelectSet(void) {
   if (HBAR.ctl.session) {
-    if ((_GetTickMS() - HBAR.ctl.tick.session) >= MODE_SESSION_MS ||
-        Reversed()) {
+    if (!_TickIn(HBAR.ctl.tick.session, MODE_SESSION_MS) || Reversed()) {
       HBAR.ctl.session = 0;
       memset(&(HBAR.tim[HBAR_K_SELECT]), 0, sizeof(hbar_timer_t));
       memset(&(HBAR.tim[HBAR_K_SET]), 0, sizeof(hbar_timer_t));
@@ -115,7 +127,7 @@ void HBAR_RefreshSelectSet(void) {
 void HBAR_RefreshSein(void) {
   hbar_sein_t *sein = &(HBAR.ctl.sein);
 
-  if ((_GetTickMS() - HBAR.ctl.tick.sein) >= 250) {
+  if (!_TickIn(HBAR.ctl.tick.sein, 250)) {
     if (HBAR.d.pin[HBAR_K_SEIN_L] || HBAR.d.pin[HBAR_K_SEIN_R])
       HBAR.ctl.tick.sein = _GetTickMS();
 
@@ -162,41 +174,71 @@ void HBAR_SetReport(uint8_t eff, uint8_t km) {
 
 void HBAR_ReadStore(void) {
   HBAR_ModeStore(NULL);
-  for (uint8_t m = 0; m < HBAR_M_MAX; m++)
-  	HBAR_SubModeStore(m, NULL);
+  for (uint8_t m = 0; m < HBAR_M_MAX; m++) HBAR_SubModeStore(m, NULL);
   for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++)
-  	HBAR_TripMeterStore(mTrip, NULL);
+    HBAR_TripMeterStore(mTrip, NULL);
 }
 
-uint8_t HBAR_TripMeterStore(HBAR_MODE_TRIP mTrip, uint16_t *src) {
-  void *dst = &HBAR.d.trip[mTrip];
-  uint8_t ok;
+void HBAR_WriteDefferedStore(void) {
+  uint8_t dummy;
 
-  ok = EE_Cmd(VA_TRIP_A + mTrip, src, dst);
+  if (!Deffered(&dummy)) {
+    // Mode
+    HBAR_MODE mode = HBAR.d.m;
+    HBAR_ModeStore(&mode);
+    // Sub Mode
+    for (uint8_t m = 0; m < HBAR_M_MAX; m++) {
+      uint8_t subMode = HBAR.d.mode[m];
+      HBAR_SubModeStore(m, &subMode);
+    }
+    // Trip (Non-ODO)
+    for (uint8_t mTrip = 0; mTrip < HBAR_M_TRIP_MAX; mTrip++) {
+      if (mTrip != HBAR_M_TRIP_ODO) {
+        uint16_t trip = HBAR.d.trip[mTrip];
+        HBAR_TripMeterStore(mTrip, &trip);
+      }
+    }
+  }
+}
 
-  if (mTrip == HBAR_M_TRIP_ODO) HBAR.d.meter = *src * 1000;
+uint8_t HBAR_ModeStore(uint8_t *src) {
+  void *dst = &HBAR.d.m;
+  uint8_t ok = 1;
+
+  if (Deffered(src))
+    memcpy(dst, src, sizeof(uint8_t));
+  else
+    ok = EE_Cmd(VA_MODE, src, dst);
+
+  if (HBAR.d.m >= HBAR_M_MAX) HBAR.d.m = 0;
 
   return ok;
 }
 
 uint8_t HBAR_SubModeStore(HBAR_MODE m, uint8_t *src) {
   void *dst = &HBAR.d.mode[m];
-  uint8_t ok;
+  uint8_t ok = 1;
 
-  ok = EE_Cmd(VA_MODE_DRIVE + m, src, dst);
+  if (Deffered(src))
+    memcpy(dst, src, sizeof(uint8_t));
+  else
+    ok = EE_Cmd(VA_MODE_DRIVE + m, src, dst);
 
   if (HBAR.d.mode[m] > HBAR_SubModeMax(m)) HBAR.d.mode[m] = 0;
 
   return ok;
 }
 
-uint8_t HBAR_ModeStore(uint8_t *src) {
-  void *dst = &HBAR.d.m;
-  uint8_t ok;
+uint8_t HBAR_TripMeterStore(HBAR_MODE_TRIP mTrip, uint16_t *src) {
+  void *dst = &HBAR.d.trip[mTrip];
+  uint8_t ok = 1;
 
-  ok = EE_Cmd(VA_MODE, src, dst);
+  if (Deffered(src) && mTrip != HBAR_M_TRIP_ODO)
+    memcpy(dst, src, sizeof(uint16_t));
+  else
+    ok = EE_Cmd(VA_TRIP_A + mTrip, src, dst);
 
-  if (HBAR.d.m >= HBAR_M_MAX) HBAR.d.m = 0;
+  if (mTrip == HBAR_M_TRIP_ODO) HBAR.d.meter = *src * 1000;
 
   return ok;
 }
@@ -248,4 +290,8 @@ static void RunSet(void) {
     if (HBAR.d.mode[m] < (HBAR_SubModeMax(m) - 1)) mode = HBAR.d.mode[m] + 1;
     HBAR_SubModeStore(m, &mode);
   }
+}
+
+static uint8_t Deffered(void *src) {
+  return (src != NULL && VCU.d.state > VEHICLE_NORMAL);
 }

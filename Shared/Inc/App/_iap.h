@@ -94,6 +94,7 @@ extern iap_t IAP;
 
 /* Public functions prototype
  * --------------------------------------------*/
+void IAP_Init(void);
 uint8_t IAP_TypeStore(IAP_TYPE *src);
 uint8_t IAP_FlagStore(IAP_FLAG *src);
 uint8_t IAP_VersionStore(uint16_t *src);

@@ -49,8 +49,8 @@
 #define AUDIO_TIMEOUT_MS ((uint16_t)5000)
 #define AUDIO_BUFFER_SIZE 4096
 #define AUDIO_I2C_ADDRESS 0x94
+#define AUDIO_PLL_CNT 8
 
-/* I2S peripheral configuration defines */
 #define DMA_MAX_SZE 0xFFFF
 #define AUDIO_DATA_SZ 2 /* 16-bits audio data size */
 
@@ -64,7 +64,6 @@
 
 /* Exported structs
  * --------------------------------------------*/
-
 typedef struct {
   uint16_t played;
   uint32_t remaining;
@@ -75,20 +74,24 @@ typedef struct {
   uint8_t active;
   uint8_t mute;
   uint8_t volume;
-  audio_size_t size;
 } audio_data_t;
 
 typedef struct {
+	uint32_t freq[AUDIO_PLL_CNT];
+	uint32_t plln[AUDIO_PLL_CNT];
+	uint32_t pllr[AUDIO_PLL_CNT];
+} audio_i2s_t;
+
+typedef struct {
   audio_data_t d;
+  audio_size_t sz;
+  audio_i2s_t i2s;
   I2S_HandleTypeDef *pi2s;
 } audio_t;
 
-/* Exported variables
- * --------------------------------------------*/
-extern audio_t AUDIO;
-
 /* Public functions prototype
  * --------------------------------------------*/
+audio_data_t AUDIO_GetData(void);
 uint8_t AUDIO_Init(void);
 void AUDIO_DeInit(void);
 uint8_t AUDIO_Probe(void);

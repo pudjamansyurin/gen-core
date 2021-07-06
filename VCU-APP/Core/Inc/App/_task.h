@@ -58,54 +58,33 @@
 #define FLAG_GATE_OPEN_SEAT BIT(1)
 #define FLAG_GATE_ALARM_HORN BIT(2)
 
+/* Exported enums
+ * --------------------------------------------*/
+typedef enum {
+	TASK_MANAGER,
+	TASK_NETWORK,
+	TASK_REPORTER,
+	TASK_COMMAND,
+	TASK_MEMS,
+	TASK_REMOTE,
+	TASK_FINGER,
+	TASK_AUDIO,
+	TASK_GATE,
+	TASK_CANRX,
+	TASK_CANTX,
+	TASK_MAX,
+} TASK;
+
 /* Exported structs
  * --------------------------------------------*/
-typedef struct __attribute__((packed)) {
-  TickType_t manager;
-  TickType_t network;
-  TickType_t reporter;
-  TickType_t command;
-  TickType_t mems;
-  TickType_t remote;
-  TickType_t finger;
-  TickType_t audio;
-  TickType_t gate;
-  TickType_t canRx;
-  TickType_t canTx;
-} tasks_tick_t;
+typedef uint32_t tasks_tick_t[TASK_MAX];
+typedef uint16_t tasks_stack_t[TASK_MAX];
+typedef uint8_t tasks_wakeup_t[TASK_MAX];
 
 typedef struct __attribute__((packed)) {
-  uint16_t manager;
-  uint16_t network;
-  uint16_t reporter;
-  uint16_t command;
-  uint16_t mems;
-  uint16_t remote;
-  uint16_t finger;
-  uint16_t audio;
-  uint16_t gate;
-  uint16_t canRx;
-  uint16_t canTx;
-} tasks_stack_t;
-
-typedef struct __attribute__((packed)) {
-  uint8_t manager;
-  uint8_t network;
-  uint8_t reporter;
-  uint8_t command;
-  uint8_t mems;
-  uint8_t remote;
-  uint8_t finger;
-  uint8_t audio;
-  uint8_t gate;
-  uint8_t canRx;
-  uint8_t canTx;
-} tasks_wakeup_t;
-
-typedef struct __attribute__((packed)) {
-  tasks_tick_t tick;
-  tasks_stack_t stack;
-  tasks_wakeup_t wakeup;
+	tasks_tick_t tick;
+	tasks_stack_t stack;
+	tasks_wakeup_t wakeup;
 } tasks_t;
 
 /* External variables
@@ -124,7 +103,7 @@ extern osThreadId_t CanTxTaskHandle;
 
 /* Exported variables
  * --------------------------------------------*/
-extern tasks_t TASKS;
+//extern tasks_t TASKS;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -133,4 +112,7 @@ bool TASK_KernelFailed(void);
 void TASK_CheckWakeup(void);
 void TASK_CheckStack(void);
 
+uint8_t TASK_GetWakeup(TASK task);
+uint16_t TASK_GetStack(TASK task);
+void TASK_SetTick(TASK task);
 #endif /* INC_APP__TASK_H_ */

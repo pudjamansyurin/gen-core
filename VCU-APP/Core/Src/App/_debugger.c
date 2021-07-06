@@ -15,6 +15,7 @@
 #include "Libs/_finger.h"
 #include "Libs/_hbar.h"
 #include "Libs/_remote.h"
+#include "Libs/_eeprom.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
@@ -27,6 +28,11 @@ void DBG_GetVCU(vcu_dbg_t *vcu) {
   vcu->uptime = (VCU.d.uptime * MANAGER_WAKEUP_MS) / 1000;
   vcu->buffered = VCU.d.buffered;
   vcu->battery = BAT_ScanValue() / 18;
+}
+
+void DBG_GetEEPROM(ee_dbg_t *ee) {
+	ee->active = EEPROM.active;
+	ee->used = EEPROM.used;
 }
 
 void DBG_GetHBAR(hbar_dbg_t *hbar) {
@@ -90,9 +96,10 @@ void DBG_GetFGR(finger_dbg_t *fgr) {
 }
 
 void DBG_GetAudio(audio_dbg_t *audio) {
-  audio->active = AUDIO.d.active;
-  audio->mute = AUDIO.d.mute;
-  audio->volume = AUDIO.d.volume;
+	audio_data_t d = AUDIO_GetData();
+  audio->active = d.active;
+  audio->mute = d.mute;
+  audio->volume = d.volume;
 }
 
 void DBG_GetHMI1(hmi1_dbg_t *hmi1) { hmi1->active = HMI1.d.active; }
@@ -141,6 +148,8 @@ void DBG_GetMCU(mcu_dbg_t *mcu) {
 }
 
 void DBG_GetTasks(tasks_dbg_t *tasks) {
-  memcpy(&(tasks->stack), &(TASKS.stack), sizeof(tasks_stack_t));
-  memcpy(&(tasks->wakeup), &(TASKS.wakeup), sizeof(tasks_wakeup_t));
+	for (uint8_t task = 0; task < TASK_MAX; task++) {
+		tasks->stack[task] = TASK_GetStack(task);
+		tasks->wakeup[task] = TASK_GetWakeup(task);
+	}
 }

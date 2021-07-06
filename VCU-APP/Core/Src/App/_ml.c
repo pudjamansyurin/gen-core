@@ -14,11 +14,12 @@
 /* Public variables
  * --------------------------------------------*/
 ml_t ML = {
-    .bms =
-        {
-            .d = {0},
-        },
+    .bms = {0}
 };
+
+/* Private variables
+ * --------------------------------------------*/
+static bms_avg_t BMS_AVG;
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -31,7 +32,9 @@ static float BMS_AddSample(BMS_AVG_TYPE type, float val);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void ML_BMS_Init(void) { memset(&(ML.bms.avg), 0, sizeof(bms_avg_t)); }
+void ML_BMS_Init(void) {
+	memset(&BMS_AVG, 0, sizeof(bms_avg_t));
+}
 
 void ML_PredictRange(void) {
   static uint32_t tick = 0;
@@ -62,7 +65,7 @@ static uint8_t CalculateRange(uint32_t dms) {
 }
 
 static void BMS_GetPrediction(uint8_t *eff, uint8_t *km, uint8_t d) {
-  bms_prediction_t *pre = &(ML.bms.d);
+  bms_prediction_t *pre = &(ML.bms);
 
   pre->capacity = BMS_GetTotalCapacity();
   pre->efficiency = BMS_GetEfficiency(d);
@@ -91,7 +94,7 @@ static float BMS_GetEfficiency(uint8_t d) {
 
         _wh = wh;
       } else
-        mwh = ML.bms.d.efficiency;
+        mwh = ML.bms.efficiency;
     }
   }
   tick = _GetTickMS();
@@ -122,6 +125,6 @@ static float BMS_GetDischargeCapacity(uint32_t duration) {
 }
 
 static float BMS_AddSample(BMS_AVG_TYPE type, float val) {
-  return _MovAvgFloat(&ML.bms.avg.handle[type], ML.bms.avg.buffer[type],
+  return _MovAvgFloat(&BMS_AVG.handle[type], BMS_AVG.buffer[type],
                       BMS_AVG_SZ, val);
 }

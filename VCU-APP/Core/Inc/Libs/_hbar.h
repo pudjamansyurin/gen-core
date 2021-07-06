@@ -111,6 +111,7 @@ extern hbar_t HBAR;
 void HBAR_Init(void);
 uint8_t HBAR_SubModeMax(HBAR_MODE m);
 void HBAR_ReadStarter(uint8_t normalState);
+void HBAR_CheckStarter(uint8_t *start, uint8_t *shutdown);
 void HBAR_ReadStates(void);
 void HBAR_RefreshSelectSet(void);
 void HBAR_RefreshSein(void);
@@ -118,7 +119,8 @@ void HBAR_AddTripMeter(uint8_t m);
 void HBAR_SetReport(uint8_t eff, uint8_t km);
 
 void HBAR_ReadStore(void);
-uint8_t HBAR_TripMeterStore(HBAR_MODE_TRIP mTrip, uint16_t *src);
-uint8_t HBAR_SubModeStore(HBAR_MODE m, uint8_t *src);
+void HBAR_WriteDefferedStore(void);
 uint8_t HBAR_ModeStore(uint8_t *src);
+uint8_t HBAR_SubModeStore(HBAR_MODE m, uint8_t *src);
+uint8_t HBAR_TripMeterStore(HBAR_MODE_TRIP mTrip, uint16_t *src);
 #endif /* LIBS__HBAR_H_ */

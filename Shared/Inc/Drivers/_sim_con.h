@@ -42,6 +42,7 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
+void SIMCon_Init(void);
 void SIMCon_ReadStore(void);
 uint8_t SIMCon_WriteStore(void);
 uint8_t SIMCon_ApnStore(con_apn_t *s);

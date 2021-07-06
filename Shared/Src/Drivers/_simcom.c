@@ -41,7 +41,8 @@ sim_t SIM = {.d =
 /* Private functions prototype
  * --------------------------------------------*/
 static SIMR SIM_CmdRaw(char* data, uint16_t size, char* reply, uint32_t ms);
-static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply);
+static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms,
+                            char* reply);
 #if (APP)
 static uint8_t SIM_ProcessResponse(void);
 #endif
@@ -61,6 +62,7 @@ void SIM_Unlock(void) {
 }
 
 void SIM_Init(void) {
+  SIMCon_Init();
   MX_USART1_UART_Init();
   SIM_DMA_Start(SIM.puart, SIM.pdma);
 }
@@ -298,7 +300,8 @@ static SIMR SIM_CmdRaw(char* data, uint16_t size, char* reply, uint32_t ms) {
   return res;
 }
 
-static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply) {
+static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms,
+                            char* reply) {
   SIMR res = SIM_ERROR;
   uint32_t tick;
 
@@ -316,7 +319,7 @@ static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply)
 #if (APP)
         || SIM_Resp(SIM_RSP_IPD, NULL)
 #endif
-        || (_GetTickMS() - tick) > ms) {
+        || _TickOut(tick, ms)) {
 
       // check response
       if (SIM_Resp(reply, NULL)) res = SIM_OK;
@@ -351,7 +354,7 @@ static SIMR SIM_TransmitCmd(char* data, uint16_t size, uint32_t ms, char* reply)
         }
 
         // exception for timeout
-        else if ((_GetTickMS() - tick) > ms) {
+        else if (_TickOut(tick, ms)) {
           printf("Simcom:Timeout\n");
           res = SIM_TIMEOUT;
         }

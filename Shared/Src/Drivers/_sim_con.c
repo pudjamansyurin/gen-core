@@ -10,6 +10,7 @@
  * --------------------------------------------*/
 #include "Drivers/_sim_con.h"
 #include "Drivers/_simcom.h"
+#include "Libs/_eeprom.h"
 
 /* Private constants
  * --------------------------------------------*/
@@ -38,6 +39,12 @@
 
 /* Public functions implementation
  * --------------------------------------------*/
+void SIMCon_Init(void) {
+	if (EEPROM.active)
+		SIMCon_ReadStore();
+	else SIMCon_WriteStore();
+}
+
 void SIMCon_ReadStore(void) {
 	SIMCon_ApnStore(NULL);
 	SIMCon_FtpStore(NULL);

@@ -29,18 +29,13 @@ static vehicle_state_t LAST_STATE = VEHICLE_UNKNOWN;
 /* Public functions implementation
  * --------------------------------------------*/
 void STATE_Check(void) {
-  uint8_t ovdState, normalize = 0, start = 0;
-  HBAR_STARTER starter = HBAR.ctl.starter;
+  uint8_t ovdState, shutdown = 0, start = 0;
   vehicle_state_t initialState;
 
   if (_osQueueGet(OvdStateQueueHandle, &ovdState))
     VCU.d.state = (int8_t)ovdState;
 
-  if (starter != HBAR_STARTER_UNKNOWN) {
-    HBAR.ctl.starter = HBAR_STARTER_UNKNOWN;
-    normalize = starter == HBAR_STARTER_OFF;
-    start = starter == HBAR_STARTER_ON;
-  }
+  HBAR_CheckStarter(&start, &shutdown);
 
   do {
     initialState = VCU.d.state;
@@ -70,7 +65,7 @@ void STATE_Check(void) {
           EVT_Set(EVG_REMOTE_MISSING);
         }
 
-        if ((_GetTickMS() - VCU.d.tick.independent) > (VCU_LOST_MODE_S * 1000))
+        if (_TickOut(VCU.d.tick.independent, VCU_LOST_MODE_S * 1000))
           VCU.d.state--;
         else if (GATE_ReadPower5v())
           VCU.d.state++;
@@ -78,7 +73,9 @@ void STATE_Check(void) {
 
       case VEHICLE_NORMAL:
         if (LAST_STATE != VEHICLE_NORMAL) {
+          if (LAST_STATE > VEHICLE_NORMAL) HBAR_WriteDefferedStore();
           LAST_STATE = VEHICLE_NORMAL;
+
           osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
           osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_TASK_START);
           osThreadFlagsSet(AudioTaskHandle, FLAG_AUDIO_TASK_START);
@@ -91,7 +88,7 @@ void STATE_Check(void) {
           BMS_Init();
           MCU_Init();
           _DelayMS(500);
-          normalize = 0;
+          shutdown = 0;
           start = 0;
         }
 
@@ -112,7 +109,7 @@ void STATE_Check(void) {
           FGR.d.id = 0;
         }
 
-        if (!GATE_ReadPower5v() || normalize)
+        if (!GATE_ReadPower5v() || shutdown)
           VCU.d.state--;
         else if (FGR.d.id)
           VCU.d.state++;
@@ -125,7 +122,7 @@ void STATE_Check(void) {
           VCU.d.tick.ready = _GetTickMS();
         }
 
-        if (!GATE_ReadPower5v() || normalize)
+        if (!GATE_ReadPower5v() || shutdown)
           VCU.d.state--;
         else if (!NODE.d.error && (start))
           VCU.d.state++;
@@ -137,7 +134,7 @@ void STATE_Check(void) {
           start = 0;
         }
 
-        if (!GATE_ReadPower5v() || (start && !MCU_Running()) || normalize ||
+        if (!GATE_ReadPower5v() || (start && !MCU_Running()) || shutdown ||
             NODE.d.error)
           VCU.d.state--;
         break;

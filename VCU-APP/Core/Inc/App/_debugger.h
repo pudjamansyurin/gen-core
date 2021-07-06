@@ -24,6 +24,11 @@ typedef struct __attribute__((packed)) {
 } vcu_dbg_t;
 
 typedef struct __attribute__((packed)) {
+	uint8_t active;
+	uint8_t used;
+} ee_dbg_t;
+
+typedef struct __attribute__((packed)) {
   uint8_t reverse;
   struct __attribute__((packed)) {
     uint8_t drive;
@@ -159,6 +164,7 @@ typedef struct __attribute__((packed)) {
 /* Public functions prototype
  * --------------------------------------------*/
 void DBG_GetVCU(vcu_dbg_t* vcu);
+void DBG_GetEEPROM(ee_dbg_t *ee);
 void DBG_GetNET(net_dbg_t* net);
 void DBG_GetGPS(gps_dbg_t* gps);
 void DBG_GetMEMS(mems_dbg_t* mems);

@@ -107,7 +107,7 @@ uint8_t MQTT_Ping(void) {
   unsigned char buf[2];
   int len, buflen = sizeof(buf);
 
-  if ((_GetTickMS() - MQTT.tick) <= (MQTT_KEEPALIVE_S * 1000)) return 1;
+  if (!_TickOut(MQTT.tick, MQTT_KEEPALIVE_S * 1000)) return 1;
 
   len = MQTTSerialize_pingreq(buf, buflen);
 

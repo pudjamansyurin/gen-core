@@ -12,16 +12,6 @@
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported constants
- * --------------------------------------------*/
-/* Maximum Timeout values for flags waiting loops. These timeouts are not based
- // on accurate values, they just guarantee that the application will not remain
- // stuck if the SPI communication is corrupted.
- // You may modify these timeout values depending on CPU frequency and
- // application conditions (interrupts routines ...). */
-#define I2Cx_TIMEOUT_MAX 0x1000
-#define VERIFY_WRITTENDATA 0
-
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t CODEC_Init(uint8_t Addr);

@@ -17,6 +17,7 @@
 #define RMT_TIMEOUT_MS ((uint16_t)3000)
 #define RMT_BEAT_MS ((uint16_t)5000)
 #define RMT_BEAT_RUN_MS ((uint16_t)15000)
+#define RMT_GUARD_RUN_MS (RMT_BEAT_RUN_MS - RMT_TIMEOUT_MS)
 #define RMT_PAIRING_MS ((uint16_t)5000)
 #define RMT_RESET_GUARD_MS ((uint16_t)7000)
 

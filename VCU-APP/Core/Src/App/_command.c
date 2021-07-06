@@ -11,6 +11,10 @@
 
 #include "App/_reporter.h"
 
+/* Private constants
+ * --------------------------------------------*/
+#define CMD_SUB_MAX ((uint8_t)10)
+
 /* External variables
  * --------------------------------------------*/
 #if (APP)

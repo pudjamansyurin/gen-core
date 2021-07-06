@@ -205,38 +205,38 @@ void NODE_TX_DebugTASK(void) {
   tasks_dbg_t t;
   DBG_GetTasks(&t);
 
-  d->u16[0] = t.stack.manager;
-  d->u16[1] = t.stack.network;
-  d->u16[2] = t.stack.reporter;
-  d->u16[3] = t.stack.command;
+  d->u16[0] = TASK_GetStack(TASK_MANAGER);
+  d->u16[1] = TASK_GetStack(TASK_NETWORK);
+  d->u16[2] = TASK_GetStack(TASK_REPORTER);
+  d->u16[3] = TASK_GetStack(TASK_COMMAND);
   CANBUS_Write(&Tx, CAND_DBG_TASK_1, 8, 0);
 
   d->u16[0] = 0;
-  d->u16[1] = t.stack.mems;
-  d->u16[2] = t.stack.remote;
-  d->u16[3] = t.stack.finger;
+  d->u16[1] = TASK_GetStack(TASK_MEMS);
+  d->u16[2] = TASK_GetStack(TASK_REMOTE);
+  d->u16[3] = TASK_GetStack(TASK_FINGER);
   CANBUS_Write(&Tx, CAND_DBG_TASK_2, 8, 0);
 
-  d->u16[0] = t.stack.audio;
-  d->u16[1] = t.stack.gate;
-  d->u16[2] = t.stack.canRx;
-  d->u16[3] = t.stack.canTx;
+  d->u16[0] = TASK_GetStack(TASK_AUDIO);
+  d->u16[1] = TASK_GetStack(TASK_GATE);
+  d->u16[2] = TASK_GetStack(TASK_CANRX);
+  d->u16[3] = TASK_GetStack(TASK_CANTX);
   CANBUS_Write(&Tx, CAND_DBG_TASK_3, 8, 0);
 
-  d->u8[0] = t.wakeup.manager;
-  d->u8[1] = t.wakeup.network;
-  d->u8[2] = t.wakeup.reporter;
-  d->u8[3] = t.wakeup.command;
+  d->u8[0] = TASK_GetWakeup(TASK_MANAGER);
+  d->u8[1] = TASK_GetWakeup(TASK_NETWORK);
+  d->u8[2] = TASK_GetWakeup(TASK_REPORTER);
+  d->u8[3] = TASK_GetWakeup(TASK_COMMAND);
   d->u8[4] = 0;
-  d->u8[5] = t.wakeup.mems;
-  d->u8[6] = t.wakeup.remote;
-  d->u8[7] = t.wakeup.finger;
+  d->u8[5] = TASK_GetWakeup(TASK_MEMS);
+  d->u8[6] = TASK_GetWakeup(TASK_REMOTE);
+  d->u8[7] = TASK_GetWakeup(TASK_FINGER);
   CANBUS_Write(&Tx, CAND_DBG_TASK_4, 8, 0);
 
-  d->u8[0] = t.wakeup.audio;
-  d->u8[1] = t.wakeup.gate;
-  d->u8[2] = t.wakeup.canRx;
-  d->u8[3] = t.wakeup.canTx;
+  d->u8[0] = TASK_GetWakeup(TASK_AUDIO);
+  d->u8[1] = TASK_GetWakeup(TASK_GATE);
+  d->u8[2] = TASK_GetWakeup(TASK_CANRX);
+  d->u8[3] = TASK_GetWakeup(TASK_CANTX);
 
   vcu_dbg_t vcu;
   DBG_GetVCU(&vcu);
@@ -279,9 +279,9 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] = (bms.active & 0x01);
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
-  d->u16[1] = ML.bms.d.capacity * 10;
-  d->u16[2] = ML.bms.d.efficiency * 10;
-  d->u16[3] = ML.bms.d.distance * 10;
+  d->u16[1] = ML.bms.capacity * 10;
+  d->u16[2] = ML.bms.efficiency * 10;
+  d->u16[3] = ML.bms.distance * 10;
 
   CANBUS_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

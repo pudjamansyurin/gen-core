@@ -13,7 +13,6 @@
 #include "Nodes/VCU.h"
 #include "i2c.h"
 
-
 /* External variables
  * --------------------------------------------*/
 #if (APP)
@@ -63,7 +62,7 @@ uint8_t MEMS_Init(void) {
                       MPU6050_Accelerometer_16G,
                       MPU6050_Gyroscope_2000s) == MPU6050_Result_Ok;
     if (!ok) _DelayMS(500);
-  } while (!ok && _GetTickMS() - tick < MEMS_TIMEOUT_MS);
+  } while (!ok && _TickIn(tick, MEMS_TIMEOUT_MS));
 
   if (ok) MEMS.d.tick = _GetTickMS();
   unlock();

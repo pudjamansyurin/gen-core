@@ -35,6 +35,8 @@ static void unlock(void);
 uint8_t AES_Init(void) {
   uint8_t ok;
 
+	AES_KeyStore(NULL);
+
   do {
     ok = AES_ChangeKey(NULL);
     if (!ok) _DelayMS(100);
@@ -51,7 +53,7 @@ uint8_t AES_ChangeKey(uint32_t *key) {
   ok = HAL_CRYP_GetConfig(pcryp, &config) == HAL_OK;
   if (ok) {
     config.pKey = (key == NULL) ? AES_KEY : key;
-    HAL_CRYP_SetConfig(pcryp, &config);
+    ok = HAL_CRYP_SetConfig(pcryp, &config) == HAL_OK;
   }
   unlock();
 

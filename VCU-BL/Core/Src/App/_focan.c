@@ -190,7 +190,7 @@ static uint8_t WaitResponse(uint32_t addr, uint32_t timeout) {
     }
     // reset watchdog
     IWDG_Refresh();
-  } while (_GetTickMS() - tick < timeout);
+  } while (_TickIn(tick, timeout));
 
   return response;
 }
@@ -224,7 +224,7 @@ static uint8_t WaitSqueezed(uint32_t addr, CAN_DATA* RxData, uint32_t timeout) {
     }
     // reset watchdog
     IWDG_Refresh();
-  } while ((step < reply) && (_GetTickMS() - tick < timeout));
+  } while ((step < reply) && _TickIn(tick, timeout));
 
   return (step == reply);
 }

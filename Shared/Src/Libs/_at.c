@@ -383,7 +383,7 @@ uint8_t AT_WaitMessageSMS(at_cmti_t* param, uint32_t timeout) {
   tick = _GetTickMS();
   do {
     str = SIM_Resp(prefix, NULL);
-  } while (_GetTickMS() - tick < timeout && str == NULL);
+  } while (_TickIn(tick, timeout) && str == NULL);
 
   if (str != NULL) {
     str += strlen(prefix);
@@ -526,8 +526,8 @@ SIMR AT_ConfigureAPN(AT_MODE mode, con_apn_t* param) {
     // Write
     if (mode == ATW) {
       if (memcmp(&tmp, param, sizeof(tmp)) != 0) {
-        sprintf(cmd, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", param->name,
-                param->user, param->pass);
+        sprintf(cmd, "AT+CSTT=\"%s\",\"%s\",\"%s\"\r", param->name, param->user,
+                param->pass);
         res = CmdWrite(cmd, SIM_RSP_OK, 1000);
       }
     } else
@@ -553,7 +553,7 @@ SIMR AT_GetLocalIpAddress(at_cifsr_t* param) {
   return res;
 }
 
-SIMR AT_StartConnection(con_mqtt_t *param) {
+SIMR AT_StartConnection(con_mqtt_t* param) {
   SIMR res = SIM_ERROR;
   char cmd[80];
 
@@ -656,13 +656,11 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
         sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", param->apn.name);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmp.apn.user, param->apn.user,
-                 sizeof(param->apn.user)) != 0) {
+      if (memcmp(tmp.apn.user, param->apn.user, sizeof(param->apn.user)) != 0) {
         sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->apn.user);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmp.apn.pass, param->apn.pass,
-                 sizeof(param->apn.pass)) != 0) {
+      if (memcmp(tmp.apn.pass, param->apn.pass, sizeof(param->apn.pass)) != 0) {
         sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->apn.pass);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
@@ -680,7 +678,7 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
   return res;
 }
 
-SIMR AT_FtpInitialize(at_ftp_t* param, con_ftp_t *ftp) {
+SIMR AT_FtpInitialize(at_ftp_t* param, con_ftp_t* ftp) {
   SIMR res;
   int32_t cid = 1;
 
@@ -762,10 +760,10 @@ SIMR AT_FtpDownload(at_ftpget_t* param) {
       param->ptr = &str[len];
 
       // wait until data transferred (got OK)
-      tick = _GetTickMS();
       resp = &str[len + param->cnflength + 2];
+      tick = _GetTickMS();
       while (strncmp(resp, SIM_RSP_OK, strlen(SIM_RSP_OK)) != 0) {
-        if (_GetTickMS() - tick > (10 * 1000)) {
+        if (_TickOut(tick, 10 * 1000)) {
           res = SIM_ERROR;
           break;
         };
