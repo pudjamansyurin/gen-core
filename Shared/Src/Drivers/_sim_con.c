@@ -5,10 +5,10 @@
  *      Author: pudja
  */
 
-
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_sim_con.h"
+
 #include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
 
@@ -40,44 +40,45 @@
 /* Public functions implementation
  * --------------------------------------------*/
 void SIMCon_Init(void) {
-	if (EEPROM.active)
-		SIMCon_ReadStore();
-	else SIMCon_WriteStore();
+  if (EEPROM.active)
+    SIMCon_EE_Read();
+  else
+    SIMCon_EE_Write();
 }
 
-void SIMCon_ReadStore(void) {
-	SIMCon_ApnStore(NULL);
-	SIMCon_FtpStore(NULL);
-	SIMCon_MqttStore(NULL);
+void SIMCon_EE_Read(void) {
+  SIMCon_EE_Apn(NULL);
+  SIMCon_EE_Ftp(NULL);
+  SIMCon_EE_Mqtt(NULL);
 }
 
-uint8_t SIMCon_WriteStore(void) {
+uint8_t SIMCon_EE_Write(void) {
   uint8_t ok = 0;
   con_apn_t apn = {
-		  .name = APN_NAME,
-		  .user = APN_USER,
-		  .pass = APN_PASS,
+      .name = APN_NAME,
+      .user = APN_USER,
+      .pass = APN_PASS,
   };
   con_ftp_t ftp = {
-		  .host = FTP_HOST,
-		  .user = FTP_USER,
-		  .pass = FTP_PASS,
+      .host = FTP_HOST,
+      .user = FTP_USER,
+      .pass = FTP_PASS,
   };
   con_mqtt_t mqtt = {
-		  .host = MQTT_HOST,
-		  .port = MQTT_PORT,
-		  .user = MQTT_USER,
-		  .pass = MQTT_PASS,
+      .host = MQTT_HOST,
+      .port = MQTT_PORT,
+      .user = MQTT_USER,
+      .pass = MQTT_PASS,
   };
 
-  ok += SIMCon_ApnStore(&apn);
-  ok += SIMCon_FtpStore(&ftp);
-  ok += SIMCon_MqttStore(&mqtt);
+  ok += SIMCon_EE_Apn(&apn);
+  ok += SIMCon_EE_Ftp(&ftp);
+  ok += SIMCon_EE_Mqtt(&mqtt);
 
   return ok == 3;
 }
 
-uint8_t SIMCon_ApnStore(con_apn_t *s) {
+uint8_t SIMCon_EE_Apn(con_apn_t *s) {
   con_apn_t *d = &SIM.con.apn;
   uint8_t ok = 0;
 
@@ -88,7 +89,7 @@ uint8_t SIMCon_ApnStore(con_apn_t *s) {
   return ok == 3;
 }
 
-uint8_t SIMCon_FtpStore(con_ftp_t *s) {
+uint8_t SIMCon_EE_Ftp(con_ftp_t *s) {
   con_ftp_t *d = &SIM.con.ftp;
   uint8_t ok = 0;
 
@@ -99,8 +100,8 @@ uint8_t SIMCon_FtpStore(con_ftp_t *s) {
   return ok == 3;
 }
 
-uint8_t SIMCon_MqttStore(con_mqtt_t *s) {
-  con_mqtt_t* d = &SIM.con.mqtt;
+uint8_t SIMCon_EE_Mqtt(con_mqtt_t *s) {
+  con_mqtt_t *d = &SIM.con.mqtt;
   uint8_t ok = 0;
 
   ok += EE_Cmd(VA_MQTT_HOST, s == NULL ? NULL : s->host, d->host);

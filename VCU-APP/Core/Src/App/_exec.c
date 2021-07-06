@@ -12,11 +12,11 @@
 #include "App/_firmware.h"
 #include "App/_reporter.h"
 #include "App/_task.h"
+#include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
-#include "Drivers/_simcom.h"
 
 /* External variables
  * --------------------------------------------*/
@@ -66,7 +66,7 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       case CMD_GEN_ODOM:
-        HBAR_TripMeterStore(HBAR_M_TRIP_ODO, (uint16_t *)val);
+        HBAR_EE_TripMeter(HBAR_M_TRIP_ODO, (uint16_t *)val);
         break;
 
       case CMD_GEN_ANTITHIEF:
@@ -78,7 +78,7 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       case CMD_GEN_RPT_BLOCK:
-      	RPT_IO_SetBlock(*(uint8_t *)val);
+        RPT_IO_SetBlock(*(uint8_t *)val);
         break;
 
       default:
@@ -98,11 +98,11 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       case CMD_OVD_RPT_INTERVAL:
-      	RPT_IO_SetOvdInterval(*(uint16_t *)val);
+        RPT_IO_SetOvdInterval(*(uint16_t *)val);
         break;
 
       case CMD_OVD_RPT_FRAME:
-      	RPT_IO_SetOvdFrame(*(uint8_t *)val);
+        RPT_IO_SetOvdFrame(*(uint8_t *)val);
         break;
 
       case CMD_OVD_RMT_SEAT:
@@ -232,11 +232,11 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
 
     switch (subCode) {
       case CMD_CON_APN:
-      	EXEC_ConApn(cmd, rMsg);
-      	break;
+        EXEC_ConApn(cmd, rMsg);
+        break;
       case CMD_CON_FTP:
       case CMD_CON_MQTT:
-      	memcpy(rdata->message, val, sizeof(rdata->message));
+        memcpy(rdata->message, val, sizeof(rdata->message));
         break;
 
       default:
@@ -297,9 +297,8 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
 /* Private functions implementation
  * --------------------------------------------*/
 static uint8_t IsReadRequest(command_t *cmd) {
-	if (CMD_GetPayloadSize(cmd) > 1)
-		return 0;
-	return cmd->data.value[0] == '?';
+  if (CMD_GetPayloadSize(cmd) > 1) return 0;
+  return cmd->data.value[0] == '?';
 }
 
 static void EXEC_GenInfo(response_data_t *rdata) {
@@ -378,20 +377,20 @@ static void EXEC_NetQuota(response_data_t *rdata) {
 }
 
 static void EXEC_ConApn(command_t *cmd, char *rMsg) {
-	con_apn_t apn;
+  con_apn_t apn;
 
-	if (IsReadRequest(cmd))
-	  apn = SIM.con.apn;
-	else {
+  if (IsReadRequest(cmd))
+    apn = SIM.con.apn;
+  else {
     char *token, *rest;
 
     if ((token = strtok_r(rMsg, ";", &rest)))
-    	strncpy(apn.name, token, sizeof(apn.name));
+      strncpy(apn.name, token, sizeof(apn.name));
     if ((token = strtok_r(NULL, ";", &rest)))
-    	strncpy(apn.user, token, sizeof(apn.user));
+      strncpy(apn.user, token, sizeof(apn.user));
     if ((token = strtok_r(NULL, ";", &rest)))
-    	strncpy(apn.pass, token, sizeof(apn.pass));
-	}
+      strncpy(apn.pass, token, sizeof(apn.pass));
+  }
 
-	sprintf(rMsg, "%s,%s,%s", apn.name, apn.user, apn.pass);
+  sprintf(rMsg, "%s,%s,%s", apn.name, apn.user, apn.pass);
 }

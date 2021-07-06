@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_aes.h"
+
 #include "Libs/_eeprom.h"
 #include "aes.h"
 
@@ -19,7 +20,7 @@ extern osMutexId_t AesMutexHandle;
 
 /* Public variables
  * --------------------------------------------*/
-__ALIGN_BEGIN uint32_t AES_KEY[4] __ALIGN_END;
+__ALIGN_BEGIN aes_key_t AES_KEY __ALIGN_END;
 
 /* Private variables
  * --------------------------------------------*/
@@ -35,7 +36,7 @@ static void unlock(void);
 uint8_t AES_Init(void) {
   uint8_t ok;
 
-	AES_KeyStore(NULL);
+  AES_EE_Key(NULL);
 
   do {
     ok = AES_ChangeKey(NULL);
@@ -82,7 +83,7 @@ uint8_t AES_Decrypt(uint8_t *dst, uint8_t *src, uint16_t Sz) {
   return ok;
 }
 
-uint8_t AES_KeyStore(uint32_t src[4]) {
+uint8_t AES_EE_Key(aes_key_t src) {
   void *dst = AES_KEY;
 
   return EE_Cmd(VA_AES_KEY, src, dst);

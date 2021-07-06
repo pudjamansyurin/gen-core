@@ -95,9 +95,9 @@ extern iap_t IAP;
 /* Public functions prototype
  * --------------------------------------------*/
 void IAP_Init(void);
-uint8_t IAP_TypeStore(IAP_TYPE *src);
-uint8_t IAP_FlagStore(IAP_FLAG *src);
-uint8_t IAP_VersionStore(uint16_t *src);
+uint8_t IAP_EE_Type(IAP_TYPE *src);
+uint8_t IAP_EE_Flag(IAP_FLAG *src);
+uint8_t IAP_EE_Version(uint16_t *src);
 #if (!APP)
 void IAP_SetAppMeta(uint32_t offset, uint32_t data);
 void IAP_SetBootMeta(uint32_t offset, uint32_t data);

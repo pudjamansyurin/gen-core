@@ -11,6 +11,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_nrf24l01.h"
+#include "Drivers/_aes.h"
 
 /* Exported constants
  * --------------------------------------------*/
@@ -52,7 +53,7 @@ typedef struct {
 typedef struct {
   uint8_t active;
   uint8_t nearby;
-  uint32_t pairing_aes[4];
+  aes_key_t pairing_aes;
   remote_tick_t tick;
   remote_duration_t duration;
 } remote_data_t;

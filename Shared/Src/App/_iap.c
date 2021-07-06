@@ -21,11 +21,11 @@ iap_t IAP = {0};
 /* Public functions implementation
  * --------------------------------------------*/
 void IAP_Init(void) {
-	IAP_TypeStore(NULL);
-	IAP_VersionStore(NULL);
+  IAP_EE_Type(NULL);
+  IAP_EE_Version(NULL);
 }
 
-uint8_t IAP_TypeStore(IAP_TYPE *src) {
+uint8_t IAP_EE_Type(IAP_TYPE *src) {
   void *dst = &IAP.type;
   uint8_t ok;
 
@@ -36,13 +36,13 @@ uint8_t IAP_TypeStore(IAP_TYPE *src) {
   return ok;
 }
 
-uint8_t IAP_FlagStore(IAP_FLAG *src) {
+uint8_t IAP_EE_Flag(IAP_FLAG *src) {
   void *dst = &IAP.flag;
 
   return EE_Cmd(VA_IAP_FLAG, src, dst);
 }
 
-uint8_t IAP_VersionStore(uint16_t *src) {
+uint8_t IAP_EE_Version(uint16_t *src) {
   void *dst = &IAP.version;
 
   return EE_Cmd(VA_IAP_VERSION, src, dst);
@@ -59,12 +59,12 @@ void IAP_SetBootMeta(uint32_t offset, uint32_t data) {
 
 void IAP_SetFlag(void) {
   IAP_FLAG flag = IFLAG_EEPROM;
-  IAP_FlagStore(&flag);
+  IAP_EE_Flag(&flag);
 }
 
 void IAP_ResetFlag(void) {
   IAP_FLAG flag = IFLAG_RESET;
-  IAP_FlagStore(&flag);
+  IAP_EE_Flag(&flag);
 }
 
 uint8_t IAP_InProgress(void) { return (IAP.flag == IFLAG_EEPROM); }

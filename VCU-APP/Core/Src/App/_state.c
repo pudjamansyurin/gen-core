@@ -73,7 +73,7 @@ void STATE_Check(void) {
 
       case VEHICLE_NORMAL:
         if (LAST_STATE != VEHICLE_NORMAL) {
-          if (LAST_STATE > VEHICLE_NORMAL) HBAR_WriteDefferedStore();
+          if (LAST_STATE > VEHICLE_NORMAL) HBAR_EE_WriteDeffered();
           LAST_STATE = VEHICLE_NORMAL;
 
           osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);

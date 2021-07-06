@@ -51,8 +51,8 @@ bool FW_EnterModeIAP(IAP_TYPE type, char *message) {
   uint16_t version = (type == ITYPE_HMI) ? HMI1.d.version : VCU_VERSION;
 
   /* Retain FOTA */
-  IAP_TypeStore(&type);
-  IAP_VersionStore(&version);
+  IAP_EE_Type(&type);
+  IAP_EE_Version(&version);
 
   /* Set flag to SRAM */
   *(uint32_t *)IAP_FLAG_ADDR = IFLAG_SRAM;
@@ -111,10 +111,10 @@ void FW_CaptureResponseIAP(response_t *r) {
 
   /* Reset after FOTA */
   IAP_TYPE d = ITYPE_RESET;
-  IAP_TypeStore(&d);
+  IAP_EE_Type(&d);
 
   uint16_t v = 0;
-  IAP_VersionStore(&v);
+  IAP_EE_Version(&v);
 
   *(uint32_t *)IAP_RESP_ADDR = 0;
 }
