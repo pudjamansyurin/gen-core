@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_LIBS__COMMAND_H_
-#define INC_LIBS__COMMAND_H_
+#ifndef INC_APP__COMMAND_H_
+#define INC_APP__COMMAND_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -141,4 +141,4 @@ bool CMD_ValidateContent(void* ptr, uint8_t len);
 uint8_t CMD_GetPayloadSize(command_t *cmd);
 void CMD_Execute(command_t* cmd);
 
-#endif /* INC_LIBS__COMMAND_H_ */
+#endif /* INC_APP__COMMAND_H_ */

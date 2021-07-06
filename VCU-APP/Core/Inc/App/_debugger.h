@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_LIBS__DEBUGGER_H_
-#define INC_LIBS__DEBUGGER_H_
+#ifndef INC_APP__DEBUGGER_H_
+#define INC_APP__DEBUGGER_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -177,4 +177,4 @@ void DBG_GetBMS(bms_dbg_t* bms);
 void DBG_GetMCU(mcu_dbg_t* mcu);
 void DBG_GetTasks(tasks_dbg_t* tasks);
 
-#endif /* INC_LIBS__DEBUGGER_H_ */
+#endif /* INC_APP__DEBUGGER_H_ */

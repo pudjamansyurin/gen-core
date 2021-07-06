@@ -279,9 +279,11 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] = (bms.active & 0x01);
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
-  d->u16[1] = ML.bms.capacity * 10;
-  d->u16[2] = ML.bms.efficiency * 10;
-  d->u16[3] = ML.bms.distance * 10;
+
+  bms_prediction_t pre = ML_GetDataBMS();
+  d->u16[1] = pre.capacity * 10;
+  d->u16[2] = pre.efficiency * 10;
+  d->u16[3] = pre.distance * 10;
 
   CANBUS_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

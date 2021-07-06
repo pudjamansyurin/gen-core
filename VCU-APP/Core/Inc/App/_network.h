@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_LIBS__NETWORK_H_
-#define INC_LIBS__NETWORK_H_
+#ifndef INC_APP__NETWORK_H_
+#define INC_APP__NETWORK_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -20,4 +20,4 @@ void NET_CheckPayload(PAYLOAD_TYPE type);
 bool NET_SendUSSD(void);
 bool NET_ReadSMS(void);
 
-#endif /* INC_LIBS__NETWORK_H_ */
+#endif /* INC_APP__NETWORK_H_ */

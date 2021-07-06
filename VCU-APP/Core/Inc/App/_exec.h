@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_BUSINESS__EXEC_H_
-#define INC_BUSINESS__EXEC_H_
+#ifndef INC_APP__EXEC_H_
+#define INC_APP__EXEC_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -16,4 +16,4 @@
  * --------------------------------------------*/
 void EXEC_Command(command_t *cmd, response_t *resp);
 
-#endif /* INC_BUSINESS__EXEC_H_ */
+#endif /* INC_APP__EXEC_H_ */

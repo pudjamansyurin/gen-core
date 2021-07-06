@@ -75,6 +75,12 @@ typedef enum {
 	TASK_MAX,
 } TASK;
 
+/* Exported types
+ * --------------------------------------------*/
+typedef uint32_t tasks_tick_t[TASK_MAX];
+typedef uint16_t tasks_stack_t[TASK_MAX];
+typedef uint8_t tasks_wakeup_t[TASK_MAX];
+
 /* Exported structs
  * --------------------------------------------*/
 typedef uint32_t tasks_tick_t[TASK_MAX];

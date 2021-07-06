@@ -71,6 +71,6 @@ uint16_t TASK_GetStack(TASK task) {
 }
 
 void TASK_SetTick(TASK task) {
-	return TASKS.tick[task] = _GetTickMS();
+	TASKS.tick[task] = _GetTickMS();
 }
 

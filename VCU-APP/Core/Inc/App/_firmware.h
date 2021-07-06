@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_LIBS__FIRMWARE_H_
-#define INC_LIBS__FIRMWARE_H_
+#ifndef INC_APP__FIRMWARE_H_
+#define INC_APP__FIRMWARE_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -18,4 +18,4 @@ bool FW_ValidResponseIAP(void);
 bool FW_EnterModeIAP(IAP_TYPE type, char *message);
 void FW_CaptureResponseIAP(response_t *r);
 
-#endif /* INC_LIBS__FIRMWARE_H_ */
+#endif /* INC_APP__FIRMWARE_H_ */

@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef REPORTER_H_
-#define REPORTER_H_
+#ifndef INC_APP__REPORTER_H_
+#define INC_APP__REPORTER_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -99,4 +99,4 @@ void RPT_SetPayloadPending(PAYLOAD_TYPE type, uint8_t value);
 void RPT_PayloadDiscard(void);
 
 payload_t RPT_GetPayload(PAYLOAD_TYPE type);
-#endif /* REPORTER_H_ */
+#endif /* INC_APP__REPORTER_H_ */
