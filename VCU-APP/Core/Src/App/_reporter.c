@@ -9,6 +9,10 @@
  * --------------------------------------------*/
 #include "App/_reporter.h"
 
+/* External variables
+ * --------------------------------------------*/
+extern osMessageQueueId_t ResponseQueueHandle, ReportQueueHandle;
+
 /* Private constants
  * --------------------------------------------*/
 #define RPT_FRAME_FULL_S ((uint8_t)20)
@@ -16,9 +20,18 @@
 #define RPT_INTERVAL_BACKUP_S ((uint8_t)20)
 #define RPT_INTERVAL_LOST_S ((uint8_t)60)
 
-/* External variables
+/* Private types
  * --------------------------------------------*/
-extern osMessageQueueId_t ResponseQueueHandle, ReportQueueHandle;
+typedef struct {
+	uint8_t block;
+	uint8_t counter;
+	struct {
+		uint16_t interval;
+		uint8_t frame;
+	} ovd;
+	report_t report;
+	response_t response;
+} reporter_t;
 
 /* Private variables
  * --------------------------------------------*/

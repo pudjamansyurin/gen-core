@@ -27,8 +27,16 @@ typedef enum {
 	FR_FULL = 2,
 } FRAME_TYPE;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
+typedef struct {
+	PAYLOAD_TYPE type;
+	osMessageQueueId_t *queue;
+	void *data;
+	bool pending;
+	uint8_t size;
+} payload_t;
+
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {
 	char prefix[2];
@@ -64,25 +72,6 @@ typedef struct __attribute__((packed)) {
 	report_header_t header;
 	report_data_t data;
 } report_t;
-
-typedef struct {
-	PAYLOAD_TYPE type;
-	osMessageQueueId_t *queue;
-	void *data;
-	bool pending;
-	uint8_t size;
-} payload_t;
-
-typedef struct {
-	uint8_t block;
-	uint8_t counter;
-	struct {
-		uint16_t interval;
-		uint8_t frame;
-	} ovd;
-	report_t report;
-	response_t response;
-} reporter_t;
 
 
 /* Public functions prototype
