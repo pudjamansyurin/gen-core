@@ -12,13 +12,9 @@
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported typedef
+/* Exported types
  * --------------------------------------------*/
 typedef uint32_t aes_key_t[4];
-
-/* Exported variables
- * --------------------------------------------*/
-extern aes_key_t AES_KEY;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -28,4 +24,5 @@ uint8_t AES_Encrypt(uint8_t *dst, uint8_t *src, uint16_t Sz);
 uint8_t AES_Decrypt(uint8_t *dst, uint8_t *src, uint16_t Sz);
 uint8_t AES_EE_Key(aes_key_t);
 
+uint32_t AES_IO_GetQuarterKey(void);
 #endif /* INC_DRIVERS__AES_H_ */

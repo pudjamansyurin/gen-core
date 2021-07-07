@@ -89,6 +89,9 @@ uint8_t AES_EE_Key(aes_key_t src) {
   return EE_Cmd(VA_AES_KEY, src, dst);
 }
 
+uint32_t AES_IO_GetQuarterKey(void) {
+	return AES_KEY[0];
+}
 /* Private functions implementation
  * --------------------------------------------*/
 static void lock(void) {

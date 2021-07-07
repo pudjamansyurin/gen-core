@@ -101,8 +101,7 @@ typedef enum {
 
 /* Public functions prototype
  * --------------------------------------------*/
-uint32_t cs43l22_Init(uint16_t OutputDevice,
-                      uint8_t Vol, uint32_t AudioFreq);
+uint32_t cs43l22_Init(uint16_t OutputDevice, uint8_t Vol, uint32_t AudioFreq);
 void cs43l22_DeInit(void);
 uint8_t cs43l22_Probe(void);
 uint32_t cs43l22_ReadID(void);
@@ -115,8 +114,7 @@ uint32_t cs43l22_SetFrequency(uint32_t AudioFreq);
 uint32_t cs43l22_SetMute(uint32_t Cmd);
 uint32_t cs43l22_SetOutputMode(uint8_t Output);
 uint32_t cs43l22_Reset(void);
-uint32_t cs43l22_SetBeep(uint8_t Frequency, uint8_t OnTime,
-                         uint8_t OffTime);
+uint32_t cs43l22_SetBeep(uint8_t Frequency, uint8_t OnTime, uint8_t OffTime);
 uint32_t cs43l22_Beep(uint8_t Mode, uint8_t Mix);
 
 #endif /* INC_DRIVERS__CS43L22_H_ */

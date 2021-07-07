@@ -12,13 +12,6 @@
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported structs
- * --------------------------------------------*/
-typedef struct {
-	I2C_HandleTypeDef *pi2c;
-	uint8_t address;
-} codec_t;
-
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t CODEC_Init(uint8_t Addr);

@@ -190,7 +190,7 @@ void NODE_TX_DebugRMT(void) {
   d->u8[1] = RMT.d.duration.tx;
   d->u8[2] = RMT.d.duration.rx;
   d->u8[3] = RMT.d.duration.full;
-  d->u32[1] = AES_KEY[0];
+  d->u32[1] = AES_IO_GetQuarterKey();
   CANBUS_Write(&Tx, CAND_DBG_RMT_1, 8, 0);
 
   d->u32[0] = RMT.d.tick.ping;

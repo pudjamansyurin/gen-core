@@ -21,6 +21,13 @@
 #define I2Cx_TIMEOUT_MAX 0x1000
 #define VERIFY_WRITTENDATA 0
 
+/* Private structs
+ * --------------------------------------------*/
+typedef struct {
+	uint8_t address;
+	I2C_HandleTypeDef *pi2c;
+} codec_t;
+
 /* Private variables
  * --------------------------------------------*/
 static codec_t CODEC = {
