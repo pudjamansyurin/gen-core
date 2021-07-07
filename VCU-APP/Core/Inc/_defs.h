@@ -20,11 +20,11 @@
 #define VCU_VERSION ((uint16_t)662)
 
 #define SIM_DEBUG 1
-#define CAN_DEBUG 0
-#define GPS_DEBUG 0
-#define MEMS_DEBUG 0
-#define REMOTE_DEBUG 0
-#define FINGER_DEBUG 0
+#define CAN_DEBUG 1
+#define GPS_DEBUG 1
+#define MEMS_DEBUG 1
+#define REMOTE_DEBUG 1
+#define FINGER_DEBUG 1
 
 #define AT_USE_CLK 1
 #define AT_USE_SMS 1

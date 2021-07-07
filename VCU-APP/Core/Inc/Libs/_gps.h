@@ -12,11 +12,6 @@
  * --------------------------------------------*/
 #include "Libs/_nmea.h"
 
-/* Exported constants
- * --------------------------------------------*/
-#define GPS_TIMEOUT_MS ((uint16_t)5000)
-#define GPS_LENGTH_MIN ((uint8_t)100)
-
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
@@ -24,16 +19,6 @@ typedef struct {
   uint32_t tick;
   nmea_t nmea;
 } gps_data_t;
-
-typedef struct {
-  gps_data_t d;
-  UART_HandleTypeDef *puart;
-  DMA_HandleTypeDef *pdma;
-} gps_t;
-
-/* Exported variables
- * --------------------------------------------*/
-extern gps_t GPS;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -43,4 +28,5 @@ void GPS_Refresh(void);
 void GPS_Flush(void);
 void GPS_ReceiveCallback(void *ptr, size_t len);
 
+gps_data_t GPS_IO_GetData(void);
 #endif /* INC_LIBS__GPS_H_ */

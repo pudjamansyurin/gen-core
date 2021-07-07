@@ -29,12 +29,12 @@ static void unlock(void);
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t RNG_Generate32(uint32_t *payload, uint8_t size) {
-  uint8_t ok = 1;
+  uint8_t ok;
 
   lock();
-  while (ok && size--) {
+  do {
     ok = HAL_RNG_GenerateRandomNumber(prng, payload++) == HAL_OK;
-  }
+  } while (ok && --size);
   unlock();
 
   return ok;

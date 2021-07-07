@@ -18,57 +18,13 @@
 #define NRF_ADDR_LENGTH ((uint8_t)5)   // Range 3:5
 #define NRF_PAIR_LENGTH (NRF_DATA_LENGTH + NRF_ADDR_LENGTH)
 
-#define NRF_RX_DR (1 << 6)
-#define NRF_TX_DS (1 << 5)
-#define NRF_MAX_RT (1 << 4)
-
 /* Exported enums
  * --------------------------------------------*/
-/* Registers */
 typedef enum {
-  NRF_CONFIG = 0x00,
-  NRF_EN_AA = 0x01,
-  NRF_EN_RXADDR = 0x02,
-  NRF_SETUP_AW = 0x03,
-  NRF_SETUP_RETR = 0x04,
-  NRF_RF_CH = 0x05,
-  NRF_RF_SETUP = 0x06,
-  NRF_STATUS = 0x07,
-  NRF_OBSERVE_TX = 0x08,
-  NRF_CD = 0x09,
-  NRF_RX_ADDR_P0 = 0x0A,
-  NRF_RX_ADDR_P1 = 0x0B,
-  NRF_RX_ADDR_P2 = 0x0C,
-  NRF_RX_ADDR_P3 = 0x0D,
-  NRF_RX_ADDR_P4 = 0x0E,
-  NRF_RX_ADDR_P5 = 0x0F,
-  NRF_TX_ADDR = 0x10,
-  NRF_RX_PW_P0 = 0x11,
-  NRF_RX_PW_P1 = 0x12,
-  NRF_RX_PW_P2 = 0x13,
-  NRF_RX_PW_P3 = 0x14,
-  NRF_RX_PW_P4 = 0x15,
-  NRF_RX_PW_P5 = 0x16,
-  NRF_FIFO_STATUS = 0x17,
-  NRF_DYNPD = 0x1C,
-  NRF_FEATURE = 0x1D
-} NRF_REGISTER;
-
-/* Commands */
-typedef enum {
-  NRF_CMD_R_REGISTER = 0x00,
-  NRF_CMD_W_REGISTER = 0x20,
-  NRF_CMD_R_RX_PAYLOAD = 0x61,
-  NRF_CMD_W_TX_PAYLOAD = 0xA0,
-  NRF_CMD_FLUSH_TX = 0xE1,
-  NRF_CMD_FLUSH_RX = 0xE2,
-  NRF_CMD_REUSE_TX_PL = 0xE3,
-  NRF_CMD_ACTIVATE = 0x50,
-  NRF_CMD_R_RX_PL_WID = 0x60,
-  NRF_CMD_W_ACK_PAYLOAD = 0xA8,
-  NRF_CMD_W_TX_PAYLOAD_NOACK = 0xB0,
-  NRF_CMD_NOP = 0xFF
-} NRF_COMMAND;
+	NRF_OK,
+	NRF_ERROR,
+	NRF_INVALID_ARGUMENT
+} NRFR;
 
 typedef enum {
   NRF_DATA_RATE_250KBPS = 1,
@@ -89,62 +45,69 @@ typedef enum {
   NRF_ADDR_WIDTH_5 = 3
 } NRF_ADDR_WIDTH;
 
-typedef enum { NRF_CRC_WIDTH_1B = 0, NRF_CRC_WIDTH_2B = 1 } NRF_CRC_WIDTH;
+typedef enum {
+	NRF_CRC_WIDTH_1B = 0,
+	NRF_CRC_WIDTH_2B = 1
+} NRF_CRC_WIDTH;
 
-typedef enum { NRF_STATE_RX = 1, NRF_STATE_TX = 0 } NRF_TXRX_STATE;
+typedef enum {
+	NRF_STATE_RX = 1,
+	NRF_STATE_TX = 0
+} NRF_TXRX_STATE;
 
-typedef enum { NRF_OK, NRF_ERROR, NRF_INVALID_ARGUMENT } NRFR;
-
-/* Exported structs
+/* Public functions prototype
  * --------------------------------------------*/
-typedef struct {
-  NRF_DATA_RATE data_rate;
-  NRF_TX_PWR tx_power;
-  NRF_CRC_WIDTH crc_width;
-  NRF_ADDR_WIDTH addr_width;
-
-  uint8_t payload_length;
-  uint8_t retransmit_count;
-  uint8_t retransmit_delay;
-  uint8_t rf_channel;
-  const uint8_t *rx_address;
-  const uint8_t *tx_address;
-
-  /* Must be sufficient size according to payload_length */
-  uint8_t *rx_buffer;
-
-  SPI_HandleTypeDef *spi;
-  uint32_t spi_timeout;
-} nrf24l01_config;
-
-typedef struct {
-  nrf24l01_config config;
-
-  volatile uint8_t tx_busy;
-  volatile NRFR tx_result;
-  volatile uint8_t rx_busy;
-  volatile NRF_TXRX_STATE state;
-
-} nrf24l01;
-
-/* Initialization routine */
 void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer);
 NRFR nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address,
                            uint8_t payload_width);
 NRFR nrf_configure(void);
 NRFR nrf_check(void);
+
+/* CMD */
+NRFR nrf_read_rx_payload(uint8_t *data);
+NRFR nrf_write_tx_payload(const uint8_t *data);
+NRFR nrf_write_tx_payload_noack(const uint8_t *data);
+NRFR nrf_flush_rx(void);
+NRFR nrf_flush_tx(void);
+NRFR nrf_set_data_rate(NRF_DATA_RATE rate);
+NRFR nrf_set_tx_power(NRF_TX_PWR pwr);
+NRFR nrf_set_ccw(uint8_t activate);
+NRFR nrf_read_carrier_detect(uint8_t *reg);
+NRFR nrf_clear_interrupts(void);
+NRFR nrf_set_rf_channel(uint8_t ch);
+NRFR nrf_set_retransmittion_count(uint8_t count);
+NRFR nrf_set_retransmittion_delay(uint8_t delay);
+NRFR nrf_set_address_width(NRF_ADDR_WIDTH width);
+NRFR nrf_set_rx_pipes(uint8_t pipes);
+NRFR nrf_disable_auto_ack(void);
+NRFR nrf_enable_auto_ack(uint8_t pipe);
+NRFR nrf_enable_crc(uint8_t activate);
+NRFR nrf_set_crc_width(NRF_CRC_WIDTH width);
+NRFR nrf_power_up(uint8_t power_up);
+NRFR nrf_rx_tx_control(NRF_TXRX_STATE rx);
+NRFR nrf_enable_rx_data_ready_irq(uint8_t activate);
+NRFR nrf_enable_tx_data_sent_irq(uint8_t activate);
+NRFR nrf_enable_max_retransmit_irq(uint8_t activate);
+NRFR nrf_set_rx_address_p0(const uint8_t *address);  // 5bytes of address
+NRFR nrf_set_rx_address_p1(const uint8_t *address);  // 5bytes of address
+NRFR nrf_set_tx_address(const uint8_t *address);  // 5bytes of address
+NRFR nrf_set_rx_payload_width_p0(uint8_t width);
+NRFR nrf_set_rx_payload_width_p1(uint8_t width);
+
 /* EXTI Interrupt Handler
  *
  * You must call this function on Falling edge trigger detection interrupt
  * handler, typically, from HAL_GPIO_EXTI_Callback  */
 uint8_t nrf_irq_handler(void);
 void nrf_clear_pending_irq(void);
+
 /* Blocking Data Receiving
  *
  * Blocks until the data has arrived, then returns a pointer to received data.
  * Please note, once nrf_packet_received_callback routine is overridden, this
  * one will stop working. */
 // NRFR nrf_receive_packet(uint8_t *data, uint16_t ms);
+
 /* Blocking Data Sending
  *
  * If the AA is enabled (default), this method will return:
@@ -153,58 +116,14 @@ void nrf_clear_pending_irq(void);
  * occurred) If the AA is disabled, returns NRF_OK once the data has been
  * transmitted (with no guarantee the data was actually received). */
 // NRFR nrf_send_packet(const uint8_t *data);
+
 /* Blocking Data Sending, with NO_ACK flag
  *
  * Disables the AA for this packet, thus this method always returns NRF_OK */
 NRFR nrf_send_packet_noack(const uint8_t *data);
 uint8_t nrf_tx_busy(void);
+
 /* Non-Blocking Data Sending */
 // NRFR nrf_push_packet(const uint8_t *data);
-
-/* CMD */
-NRFR nrf_read_rx_payload(uint8_t *data);
-NRFR nrf_write_tx_payload(const uint8_t *data);
-NRFR nrf_write_tx_payload_noack(const uint8_t *data);
-NRFR nrf_flush_rx(void);
-NRFR nrf_flush_tx(void);
-/* RF_SETUP */
-NRFR nrf_set_data_rate(NRF_DATA_RATE rate);
-NRFR nrf_set_tx_power(NRF_TX_PWR pwr);
-NRFR nrf_set_ccw(uint8_t activate);
-NRFR nrf_read_carrier_detect(uint8_t *reg);
-/* STATUS */
-NRFR nrf_clear_interrupts(void);
-/* RF_CH */
-NRFR nrf_set_rf_channel(uint8_t ch);
-/* SETUP_RETR */
-NRFR nrf_set_retransmittion_count(uint8_t count);
-NRFR nrf_set_retransmittion_delay(uint8_t delay);
-/* SETUP_AW */
-NRFR nrf_set_address_width(NRF_ADDR_WIDTH width);
-/* EN_RXADDR */
-NRFR nrf_set_rx_pipes(uint8_t pipes);
-/* EN_AA */
-NRFR nrf_disable_auto_ack(void);
-NRFR nrf_enable_auto_ack(uint8_t pipe);
-// TODO disable AA?
-
-/* CONFIG */
-NRFR nrf_enable_crc(uint8_t activate);
-NRFR nrf_set_crc_width(NRF_CRC_WIDTH width);
-NRFR nrf_power_up(uint8_t power_up);
-NRFR nrf_rx_tx_control(NRF_TXRX_STATE rx);
-NRFR nrf_enable_rx_data_ready_irq(uint8_t activate);
-NRFR nrf_enable_tx_data_sent_irq(uint8_t activate);
-NRFR nrf_enable_max_retransmit_irq(uint8_t activate);
-/* RX_ADDR_P0 */
-NRFR nrf_set_rx_address_p0(const uint8_t *address);  // 5bytes of address
-/* RX_ADDR_P1 */
-NRFR nrf_set_rx_address_p1(const uint8_t *address);  // 5bytes of address
-/* TX_ADDR */
-NRFR nrf_set_tx_address(const uint8_t *address);  // 5bytes of address
-/* RX_PW_P0 */
-NRFR nrf_set_rx_payload_width_p0(uint8_t width);
-/* RX_PW_P1 */
-NRFR nrf_set_rx_payload_width_p1(uint8_t width);
 
 #endif /* INC_DRIVERS__NRF24L01_H_ */

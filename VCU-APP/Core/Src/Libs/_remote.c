@@ -228,7 +228,6 @@ void RMT_IrqHandler(void) {
     osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RX_IT);
 #if REMOTE_DEBUG
     RawDebugger();
-    Debugger();
 #endif
   }
 }

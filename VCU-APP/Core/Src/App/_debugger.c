@@ -54,15 +54,16 @@ void DBG_GetNET(net_dbg_t *net) {
 }
 
 void DBG_GetGPS(gps_dbg_t *gps) {
-  gps->active = GPS.d.active;
-  gps->sat_in_use = (uint8_t)GPS.d.nmea.sats_in_use;
-  gps->hdop = (uint8_t)(GPS.d.nmea.dop_h * 10);
-  gps->vdop = (uint8_t)(GPS.d.nmea.dop_v * 10);
-  gps->speed = (uint8_t)nmea_to_speed(GPS.d.nmea.speed, nmea_speed_kph);
-  gps->heading = (uint8_t)(GPS.d.nmea.coarse / 2);
-  gps->latitude = (int32_t)(GPS.d.nmea.latitude * 10000000);
-  gps->longitude = (int32_t)(GPS.d.nmea.longitude * 10000000);
-  gps->altitude = (uint16_t)GPS.d.nmea.altitude;
+	gps_data_t d = GPS_IO_GetData();
+  gps->active = d.active;
+  gps->sat_in_use = (uint8_t)d.nmea.sats_in_use;
+  gps->hdop = (uint8_t)(d.nmea.dop_h * 10);
+  gps->vdop = (uint8_t)(d.nmea.dop_v * 10);
+  gps->speed = (uint8_t)nmea_to_speed(d.nmea.speed, nmea_speed_kph);
+  gps->heading = (uint8_t)(d.nmea.coarse / 2);
+  gps->latitude = (int32_t)(d.nmea.latitude * 10000000);
+  gps->longitude = (int32_t)(d.nmea.longitude * 10000000);
+  gps->altitude = (uint16_t)d.nmea.altitude;
 }
 
 void DBG_GetMEMS(mems_dbg_t *mems) {

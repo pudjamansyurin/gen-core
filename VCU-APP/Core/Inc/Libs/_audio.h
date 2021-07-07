@@ -44,50 +44,14 @@
  * --------------------------------------------*/
 #include "Drivers/_cs43l22.h"
 
-/* Exported constants
- * --------------------------------------------*/
-#define AUDIO_TIMEOUT_MS ((uint16_t)5000)
-#define AUDIO_BUFFER_SIZE 4096
-#define AUDIO_I2C_ADDRESS 0x94
-#define AUDIO_PLL_CNT 8
-
-#define DMA_MAX_SZE 0xFFFF
-#define AUDIO_DATA_SZ 2 /* 16-bits audio data size */
-
-/* Audio status definition */
-#define AUDIO_OK 0
-#define AUDIO_ERROR 1
-
-/* Exported macros
- * --------------------------------------------*/
-#define DMA_MAX(X) (((X) <= DMA_MAX_SZE) ? (X) : DMA_MAX_SZE)
-
 /* Exported structs
  * --------------------------------------------*/
-typedef struct {
-  uint16_t played;
-  uint32_t remaining;
-} audio_size_t;
-
 typedef struct {
   uint32_t tick;
   uint8_t active;
   uint8_t mute;
   uint8_t volume;
 } audio_data_t;
-
-typedef struct {
-	uint32_t freq[AUDIO_PLL_CNT];
-	uint32_t plln[AUDIO_PLL_CNT];
-	uint32_t pllr[AUDIO_PLL_CNT];
-} audio_i2s_t;
-
-typedef struct {
-  audio_data_t d;
-  audio_size_t sz;
-  audio_i2s_t i2s;
-  I2S_HandleTypeDef *pi2s;
-} audio_t;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -113,19 +77,11 @@ uint8_t AUDIO_OUT_SetMute(uint32_t Cmd);
 void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params);
 void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params);
 void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size);
-/* User Callbacks: user has to implement these functions in his code if they are
- * needed. */
-/* This function is called when the requested data has been completely
- * transferred. */
+
 void AUDIO_OUT_TransferComplete_CallBack(void);
-/* This function is called when half of the requested buffer has been
- * transferred. */
 void AUDIO_OUT_HalfTransfer_CallBack(void);
-/* This function is called when an Interrupt due to transfer error on or
- peripheral error occurs. */
 void AUDIO_OUT_Error_CallBack(void);
-/* These function can be modified in case the current settings (e.g. DMA stream)
- need to be changed for specific application needs */
+
 void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq,
                            void *Params);
 

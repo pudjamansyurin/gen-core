@@ -60,8 +60,8 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 	d->req.log_time = RTC_Read();
 
 	DBG_GetVCU(&(d->req.vcu));
-	DBG_GetGPS(&(d->req.gps));
 	DBG_GetEEPROM(&(d->req.eeprom));
+	DBG_GetGPS(&(d->req.gps));
 
 	// Optional data
 	if (frame == FR_FULL) {

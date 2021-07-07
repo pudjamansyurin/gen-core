@@ -11,16 +11,29 @@
 
 #include "rtc.h"
 
+/* Exported constants
+ * --------------------------------------------*/
+#define RTC_CALIBRATION_MINUTES ((uint8_t)60)
+
 /* External variables
  * --------------------------------------------*/
 #if (APP)
 extern osMutexId_t RtcMutexHandle;
 #endif
 
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+	uint32_t calibrationTick;
+	RTC_HandleTypeDef *prtc;
+} rtc_t;
+
 /* Private variables
  * --------------------------------------------*/
-static uint32_t lastCalibrationTick = 0;
-static RTC_HandleTypeDef *prtc = &hrtc;
+static rtc_t _RTC = {
+		.calibrationTick = 0,
+		.prtc = &hrtc,
+};
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -52,12 +65,12 @@ void RTC_Write(datetime_t dt) {
 }
 
 uint8_t RTC_NeedCalibration(void) {
-  return !_TickIn(lastCalibrationTick, RTC_CALIBRATION_MINUTES * 60 * 1000);
+  return !_TickIn(_RTC.calibrationTick, RTC_CALIBRATION_MINUTES * 60 * 1000);
 }
 
 void RTC_Calibrate(timestamp_t *ts) {
   RTC_WriteRaw(ts);
-  lastCalibrationTick = _GetTickMS();
+  _RTC.calibrationTick = _GetTickMS();
 }
 
 uint8_t RTC_Daylight() {
@@ -83,8 +96,8 @@ static void unlock(void) {
 
 static void RTC_ReadRaw(timestamp_t *timestamp) {
   lock();
-  HAL_RTC_GetTime(prtc, &timestamp->time, RTC_FORMAT_BIN);
-  HAL_RTC_GetDate(prtc, &timestamp->date, RTC_FORMAT_BIN);
+  HAL_RTC_GetTime(_RTC.prtc, &timestamp->time, RTC_FORMAT_BIN);
+  HAL_RTC_GetDate(_RTC.prtc, &timestamp->date, RTC_FORMAT_BIN);
   timestamp->tzQuarterHour = 0;
   unlock();
 }
@@ -96,8 +109,8 @@ static void RTC_WriteRaw(timestamp_t *timestamp) {
 
   // set the RTC
   lock();
-  HAL_RTC_SetTime(prtc, &timestamp->time, RTC_FORMAT_BIN);
-  HAL_RTC_SetDate(prtc, &timestamp->date, RTC_FORMAT_BIN);
+  HAL_RTC_SetTime(_RTC.prtc, &timestamp->time, RTC_FORMAT_BIN);
+  HAL_RTC_SetDate(_RTC.prtc, &timestamp->date, RTC_FORMAT_BIN);
   unlock();
 }
 

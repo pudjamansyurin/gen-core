@@ -50,6 +50,45 @@ extern uint32_t SOUND_FREQ;
 extern uint32_t SOUND_SIZE;
 extern uint16_t SOUND_SAMPLE[];
 
+/* Private constants
+ * --------------------------------------------*/
+#define AUDIO_TIMEOUT_MS ((uint16_t)5000)
+#define AUDIO_BUFFER_SIZE 4096
+#define AUDIO_I2C_ADDRESS 0x94
+#define AUDIO_PLL_CNT 8
+/* 16-bits audio data size */
+#define AUDIO_DATA_SZ 2
+#define DMA_MAX_SZE 0xFFFF
+/* Audio status definition */
+#define AUDIO_OK 0
+#define AUDIO_ERROR 1
+
+/* Private macros
+ * --------------------------------------------*/
+#define DMA_MAX(X) (((X) <= DMA_MAX_SZE) ? (X) : DMA_MAX_SZE)
+
+/* Exported types
+ * -------------------------------------------*/
+typedef uint32_t audio_pll_t[AUDIO_PLL_CNT];
+
+typedef struct {
+  uint16_t played;
+  uint32_t remaining;
+} audio_size_t;
+
+typedef struct {
+	audio_pll_t freq;
+	audio_pll_t plln;
+	audio_pll_t pllr;
+} audio_i2s_t;
+
+typedef struct {
+  audio_data_t d;
+  audio_size_t sz;
+  audio_i2s_t i2s;
+  I2S_HandleTypeDef *pi2s;
+} audio_t;
+
 /* Private variables
  * --------------------------------------------*/
 static audio_t AUDIO = {

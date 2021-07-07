@@ -19,6 +19,28 @@
 extern osMutexId_t FingerRecMutexHandle;
 #endif
 
+/* Private constants
+ * --------------------------------------------*/
+#define FINGER_TIMEOUT_MS ((uint16_t)5000)
+#define FINGER_CONFIDENCE_MIN_PERCENT ((uint8_t)75)
+#define FINGER_USER_MAX ((uint8_t)5)
+
+/* Private enums
+ * --------------------------------------------*/
+typedef enum {
+  FGR_REG_HIDE = 0,
+  FGR_REG_SHOW,
+} FGR_REG;
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+  finger_data_t d;
+  finger_db_t db;
+  UART_HandleTypeDef *puart;
+  DMA_HandleTypeDef *pdma;
+} finger_t;
+
 /* Private variables
  * --------------------------------------------*/
 static finger_t FGR = {

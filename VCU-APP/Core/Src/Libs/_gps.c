@@ -1,5 +1,5 @@
 /*
- * _ublox.c
+ * _gps.c
  *
  *  Created on: Mar 4, 2020
  *      Author: Pudja Mansyurin
@@ -19,9 +19,22 @@ extern osThreadId_t GpsTaskHandle;
 extern osMutexId_t GpsRecMutexHandle;
 #endif
 
-/* Public variables
+/* Private constants
  * --------------------------------------------*/
-gps_t GPS = {
+#define GPS_TIMEOUT_MS ((uint16_t)5000)
+#define GPS_LENGTH_MIN ((uint8_t)100)
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+  gps_data_t d;
+  UART_HandleTypeDef *puart;
+  DMA_HandleTypeDef *pdma;
+} gps_t;
+
+/* Private variables
+ * --------------------------------------------*/
+static gps_t GPS = {
     .d = {0},
     .puart = &huart2,
     .pdma = &hdma_usart2_rx,
@@ -91,6 +104,10 @@ void GPS_ReceiveCallback(void *ptr, size_t len) {
   Debugger(ptr, len);
 #endif
   if (nmea_process(&(GPS.d.nmea), (char *)ptr, len)) GPS.d.tick = _GetTickMS();
+}
+
+gps_data_t GPS_IO_GetData(void) {
+	return GPS.d;
 }
 
 /* Private functions implementation

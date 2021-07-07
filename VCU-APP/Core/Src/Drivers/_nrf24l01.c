@@ -8,9 +8,92 @@
  * --------------------------------------------*/
 #include "Drivers/_nrf24l01.h"
 
+/* Private constants
+ * --------------------------------------------*/
+#define NRF_RX_DR (1 << 6)
+#define NRF_TX_DS (1 << 5)
+#define NRF_MAX_RT (1 << 4)
+
+/* Private enums
+ * --------------------------------------------*/
+/* Registers */
+typedef enum {
+  NRF_CONFIG = 0x00,
+  NRF_EN_AA = 0x01,
+  NRF_EN_RXADDR = 0x02,
+  NRF_SETUP_AW = 0x03,
+  NRF_SETUP_RETR = 0x04,
+  NRF_RF_CH = 0x05,
+  NRF_RF_SETUP = 0x06,
+  NRF_STATUS = 0x07,
+  NRF_OBSERVE_TX = 0x08,
+  NRF_CD = 0x09,
+  NRF_RX_ADDR_P0 = 0x0A,
+  NRF_RX_ADDR_P1 = 0x0B,
+  NRF_RX_ADDR_P2 = 0x0C,
+  NRF_RX_ADDR_P3 = 0x0D,
+  NRF_RX_ADDR_P4 = 0x0E,
+  NRF_RX_ADDR_P5 = 0x0F,
+  NRF_TX_ADDR = 0x10,
+  NRF_RX_PW_P0 = 0x11,
+  NRF_RX_PW_P1 = 0x12,
+  NRF_RX_PW_P2 = 0x13,
+  NRF_RX_PW_P3 = 0x14,
+  NRF_RX_PW_P4 = 0x15,
+  NRF_RX_PW_P5 = 0x16,
+  NRF_FIFO_STATUS = 0x17,
+  NRF_DYNPD = 0x1C,
+  NRF_FEATURE = 0x1D
+} NRF_REGISTER;
+
+/* Commands */
+typedef enum {
+  NRF_CMD_R_REGISTER = 0x00,
+  NRF_CMD_W_REGISTER = 0x20,
+  NRF_CMD_R_RX_PAYLOAD = 0x61,
+  NRF_CMD_W_TX_PAYLOAD = 0xA0,
+  NRF_CMD_FLUSH_TX = 0xE1,
+  NRF_CMD_FLUSH_RX = 0xE2,
+  NRF_CMD_REUSE_TX_PL = 0xE3,
+  NRF_CMD_ACTIVATE = 0x50,
+  NRF_CMD_R_RX_PL_WID = 0x60,
+  NRF_CMD_W_ACK_PAYLOAD = 0xA8,
+  NRF_CMD_W_TX_PAYLOAD_NOACK = 0xB0,
+  NRF_CMD_NOP = 0xFF
+} NRF_COMMAND;
+
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+  NRF_DATA_RATE data_rate;
+  NRF_TX_PWR tx_power;
+  NRF_CRC_WIDTH crc_width;
+  NRF_ADDR_WIDTH addr_width;
+  uint8_t payload_length;
+  uint8_t retransmit_count;
+  uint8_t retransmit_delay;
+  uint8_t rf_channel;
+  const uint8_t *rx_address;
+  const uint8_t *tx_address;
+  /* Must be sufficient size according to payload_length */
+  uint8_t *rx_buffer;
+  SPI_HandleTypeDef *spi;
+  uint32_t spi_timeout;
+} nrf24l01_config_t;
+
+typedef struct {
+  nrf24l01_config_t config;
+  volatile uint8_t tx_busy;
+  volatile NRFR tx_result;
+  volatile uint8_t rx_busy;
+  volatile NRF_TXRX_STATE state;
+} nrf24l01_t;
+
+
 /* Private variables
  * --------------------------------------------*/
-static nrf24l01 NRF;
+static nrf24l01_t NRF;
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -28,7 +111,7 @@ static NRFR nrf_write_registers(uint8_t reg, uint8_t *data, uint8_t len);
 /* Public functions implementation
  * --------------------------------------------*/
 void nrf_param(SPI_HandleTypeDef *hspi, uint8_t *rx_buffer) {
-  nrf24l01_config *c = &(NRF.config);
+  nrf24l01_config_t *c = &(NRF.config);
 
   c->addr_width = NRF_ADDR_WIDTH_5;
   c->payload_length = NRF_DATA_LENGTH;
@@ -71,7 +154,7 @@ NRFR nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address,
 }
 
 NRFR nrf_configure(void) {
-  nrf24l01_config *c = &(NRF.config);
+  nrf24l01_config_t *c = &(NRF.config);
   uint8_t config_reg = 0;
 
   // enter standby I mode

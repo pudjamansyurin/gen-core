@@ -1,5 +1,5 @@
 /*
- * _finger_ada.c
+ * _r307.c
  *
  *  Created on: Aug 28, 2019
  *      Author: Pudja Mansyurin
@@ -23,6 +23,69 @@
 #include "Drivers/_r307.h"
 
 #include "DMA/_dma_finger.h"
+
+/* Exported constants
+ * --------------------------------------------*/
+#define FP_RECEIVING_MS ((uint16_t)1000)
+
+#define FP_OK 0x00
+#define FP_PACKETRECIEVEERR 0x01
+#define FP_NOFINGER 0x02
+#define FP_IMAGEFAIL 0x03
+#define FP_IMAGEMESS 0x06
+#define FP_FEATUREFAIL 0x07
+#define FP_NOMATCH 0x08
+#define FP_NOTFOUND 0x09
+#define FP_ENROLLMISMATCH 0x0A
+#define FP_BADLOCATION 0x0B
+#define FP_DBRANGEFAIL 0x0C
+#define FP_UPLOADFEATUREFAIL 0x0D
+#define FP_PACKETRESPONSEFAIL 0x0E
+#define FP_UPLOADFAIL 0x0F
+#define FP_DELETEFAIL 0x10
+#define FP_DBCLEARFAIL 0x11
+#define FP_PASSFAIL 0x13
+#define FP_INVALIDIMAGE 0x15
+#define FP_FLASHERR 0x18
+#define FP_INVALIDREG 0x1A
+#define FP_ADDRCODE 0x20
+#define FP_PASSVERIFY 0x21
+
+#define FP_STARTCODE 0xEF01
+
+#define FP_COMMANDPACKET 0x1
+#define FP_DATAPACKET 0x2
+#define FP_ACKPACKET 0x7
+#define FP_ENDDATAPACKET 0x8
+
+#define FP_TIMEOUT 0xFF
+#define FP_BADPACKET 0xFE
+
+#define FP_GETIMAGE 0x01
+#define FP_IMAGE2TZ 0x02
+#define FP_REGMODEL 0x05
+#define FP_STORE 0x06
+#define FP_LOAD 0x07
+#define FP_UPLOAD 0x08
+#define FP_DELETE 0x0C
+#define FP_EMPTY 0x0D
+#define FP_SETPASSWORD 0x12
+#define FP_VERIFYPASSWORD 0x13
+#define FP_HISPEEDSEARCH 0x1B
+#define FP_TEMPLATECOUNT 0x1D
+
+#define FP_PASSWORD 0x0000000
+#define FP_ADDRESS 0xFFFFFFFF
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+  uint16_t start_code;  ///< "Wakeup" code for packet detection
+  uint8_t address[4];   ///< 32-bit Fingerprint sensor address
+  uint8_t type;         ///< Type of packet
+  uint16_t length;      ///< Length of packet
+  uint8_t data[64];     ///< The raw buffer for packet payload
+} packet_t;
 
 /* Private variables
  * --------------------------------------------*/

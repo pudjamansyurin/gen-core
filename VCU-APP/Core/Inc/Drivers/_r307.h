@@ -26,8 +26,6 @@
 
 /* Exported constants
  * --------------------------------------------*/
-#define FP_RECEIVING_MS ((uint16_t)1000)
-
 #define FP_OK 0x00
 #define FP_PACKETRECIEVEERR 0x01
 #define FP_NOFINGER 0x02
@@ -50,42 +48,6 @@
 #define FP_INVALIDREG 0x1A
 #define FP_ADDRCODE 0x20
 #define FP_PASSVERIFY 0x21
-
-#define FP_STARTCODE 0xEF01
-
-#define FP_COMMANDPACKET 0x1
-#define FP_DATAPACKET 0x2
-#define FP_ACKPACKET 0x7
-#define FP_ENDDATAPACKET 0x8
-
-#define FP_TIMEOUT 0xFF
-#define FP_BADPACKET 0xFE
-
-#define FP_GETIMAGE 0x01
-#define FP_IMAGE2TZ 0x02
-#define FP_REGMODEL 0x05
-#define FP_STORE 0x06
-#define FP_LOAD 0x07
-#define FP_UPLOAD 0x08
-#define FP_DELETE 0x0C
-#define FP_EMPTY 0x0D
-#define FP_SETPASSWORD 0x12
-#define FP_VERIFYPASSWORD 0x13
-#define FP_HISPEEDSEARCH 0x1B
-#define FP_TEMPLATECOUNT 0x1D
-
-#define FP_PASSWORD 0x0000000
-#define FP_ADDRESS 0xFFFFFFFF
-
-/* Exported structs
- * --------------------------------------------*/
-typedef struct {
-  uint16_t start_code;  ///< "Wakeup" code for packet detection
-  uint8_t address[4];   ///< 32-bit Fingerprint sensor address
-  uint8_t type;         ///< Type of packet
-  uint16_t length;      ///< Length of packet
-  uint8_t data[64];     ///< The raw buffer for packet payload
-} packet_t;
 
 /* Public functions prototype
  * --------------------------------------------*/

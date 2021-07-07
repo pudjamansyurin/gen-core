@@ -14,21 +14,11 @@
 
 /* Exported constants
  * --------------------------------------------*/
-#define FINGER_TIMEOUT_MS ((uint16_t)5000)
 #define FINGER_SCAN_MS ((uint16_t)10000)
-
-#define FINGER_CONFIDENCE_MIN_PERCENT ((uint8_t)75)
 #define FINGER_USER_MAX ((uint8_t)5)
 
-/* Exported enums
- * --------------------------------------------*/
-typedef enum {
-  FGR_REG_HIDE = 0,
-  FGR_REG_SHOW,
-} FGR_REG;
-
 /* Exported types
- * --------------------------------------------*/
+ * -------------------------------------------*/
 typedef uint8_t finger_db_t[FINGER_USER_MAX];
 
 /* Exported structs
@@ -38,13 +28,6 @@ typedef struct {
   uint8_t verified;
   uint8_t registering;
 } finger_data_t;
-
-typedef struct {
-  finger_data_t d;
-  finger_db_t db;
-  UART_HandleTypeDef *puart;
-  DMA_HandleTypeDef *pdma;
-} finger_t;
 
 /* Public functions prototype
  * --------------------------------------------*/

@@ -43,8 +43,8 @@ typedef struct __attribute__((packed)) {
 		uint8_t frame_id;
 		datetime_t log_time;
 		vcu_dbg_t vcu;
-		gps_dbg_t gps;
 		ee_dbg_t eeprom;
+		gps_dbg_t gps;
 	} req;
 	struct __attribute__((packed)) {
 		hbar_dbg_t hbar;

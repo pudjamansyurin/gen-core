@@ -12,10 +12,6 @@
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported constants
- * --------------------------------------------*/
-#define RTC_CALIBRATION_MINUTES ((uint8_t)60)
-
 /* Exported structs
  * --------------------------------------------*/
 typedef struct {
