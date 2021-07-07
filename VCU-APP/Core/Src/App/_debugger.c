@@ -67,23 +67,27 @@ void DBG_GetGPS(gps_dbg_t *gps) {
 }
 
 void DBG_GetMEMS(mems_dbg_t *mems) {
-  mems->active = MEMS.d.active;
-  mems->det_active = MEMS.det.active;
-  mems->accel.x = MEMS.d.raw.accel.x * 100;
-  mems->accel.y = MEMS.d.raw.accel.y * 100;
-  mems->accel.z = MEMS.d.raw.accel.z * 100;
+	mems_raw_t raw = MEMS_IO_GetRaw();
+	mems_total_t total = MEMS_IO_GetTotal();
+	mems_tilt_t tilt = MEMS_IO_GetTilt(MTILT_NOW);
 
-  mems->gyro.x = MEMS.d.raw.gyro.x * 10;
-  mems->gyro.y = MEMS.d.raw.gyro.y * 10;
-  mems->gyro.z = MEMS.d.raw.gyro.z * 10;
+  mems->active = MEMS_IO_GetActive();
+  mems->motion_active = MEMS_IO_GetMotionActive();
+  mems->accel.x = raw.accel.x * 100;
+  mems->accel.y = raw.accel.y * 100;
+  mems->accel.z = raw.accel.z * 100;
 
-  mems->tilt.pitch = MEMS.det.tilt.cur.pitch * 10;
-  mems->tilt.roll = MEMS.det.tilt.cur.roll * 10;
+  mems->gyro.x = raw.gyro.x * 10;
+  mems->gyro.y = raw.gyro.y * 10;
+  mems->gyro.z = raw.gyro.z * 10;
 
-  mems->total.accel = MEMS.d.tot.accel * 100;
-  mems->total.gyro = MEMS.d.tot.gyro * 10;
-  mems->total.tilt = MEMS.d.tot.tilt * 10;
-  mems->total.temp = MEMS.d.raw.temp * 10;
+  mems->tilt.pitch = tilt.pitch * 10;
+  mems->tilt.roll = tilt.roll * 10;
+
+  mems->total.accel = total.accel * 100;
+  mems->total.gyro = total.gyro * 10;
+  mems->total.tilt = total.tilt * 10;
+  mems->total.temp = raw.temp * 10;
 }
 
 void DBG_GetRMT(remote_dbg_t *rmt) {

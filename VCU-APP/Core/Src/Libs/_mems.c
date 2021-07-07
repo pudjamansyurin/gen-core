@@ -19,17 +19,59 @@
 extern osMutexId_t MemsRecMutexHandle;
 #endif
 
+/* Private constants
+ * --------------------------------------------*/
+#define MEMS_SAMPLE_SZ ((uint8_t)10)
+#define MEMS_TIMEOUT_MS ((uint16_t)5000)
+
+#define DRAGGED_LIMIT ((uint8_t)5)
+#define FALL_LIMIT ((uint8_t)60)
+#define CRASH_LIMIT ((uint8_t)20)
+
+/* Private enums
+ * --------------------------------------------*/
+typedef enum {
+  MSAMPLE_ACCEL = 0,
+  MSAMPLE_GYRO,
+  MSAMPLE_TILT,
+  MSAMPLE_MAX,
+} MEMS_SAMPLE;
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+  uint8_t active;
+  uint8_t offset;
+  mems_tilt_t tilt[MTILT_MAX];
+} mems_motion_t;
+
+typedef struct {
+  uint8_t active;
+  uint32_t tick;
+  uint8_t effect[MEFFECT_MAX];
+  mems_raw_t raw;
+  mems_total_t total;
+} mems_data_t;
+
+typedef struct {
+  sample_float_t handle[MSAMPLE_MAX];
+  float buffer[MSAMPLE_MAX][MEMS_SAMPLE_SZ];
+} mems_sample_t;
+
+typedef struct {
+  mems_data_t d;
+  mems_sample_t sample;
+  mems_motion_t motion;
+
+  MPU6050 dev;
+  I2C_HandleTypeDef *pi2c;
+} mems_t;
+
 /* Public variables
  * --------------------------------------------*/
-mems_t MEMS = {
+static mems_t MEMS = {
     .d = {0},
-    .det = {.active = 0,
-            .offset = 0,
-            .tilt =
-                {
-                    .cur = {0},
-                    .ref = {0},
-                }},
+    .motion = {0},
     .pi2c = &hi2c3,
 };
 
@@ -41,7 +83,7 @@ static uint8_t Capture(mems_raw_t *raw);
 static void ConvertAccel(mems_tilt_t *tilt, mems_axis_t *axis);
 static uint8_t OnlyGotTemp(void);
 #if MEMS_DEBUG
-static void Debugger(mems_total_t *tot);
+static void Debugger(mems_total_t *total);
 static void RawDebugger(mems_raw_t *raw);
 #endif
 
@@ -97,7 +139,7 @@ void MEMS_Flush(void) {
   lock();
   memset(&(MEMS.d), 0, sizeof(mems_data_t));
   memset(&(MEMS.sample), 0, sizeof(mems_sample_t));
-  memset(&(MEMS.det), 0, sizeof(mems_detector_t));
+  memset(&(MEMS.motion), 0, sizeof(mems_motion_t));
   unlock();
 }
 
@@ -121,53 +163,51 @@ uint8_t MEMS_Capture(void) {
 
 uint8_t MEMS_Process(void) {
   mems_raw_t *raw = &(MEMS.d.raw);
-  mems_tilt_t *tilt = &(MEMS.det.tilt.cur);
+  mems_tilt_t *t = &(MEMS.motion.tilt[MTILT_NOW]);
   mems_sample_t *s = &(MEMS.sample);
+  uint8_t *effect = MEMS.d.effect;
 
   lock();
-  ConvertAccel(tilt, &(raw->accel));
+  ConvertAccel(t, &(raw->accel));
 
-  MEMS.d.tot.accel = _SamplingFloat(
-      &s->handle[MEMS_SAMPLE_ACCEL], s->buffer[MEMS_SAMPLE_ACCEL],
-      MEMS_SAMPLE_SZ,
+  MEMS.d.total.accel = _SamplingFloat(
+      &s->handle[MSAMPLE_ACCEL], s->buffer[MSAMPLE_ACCEL], MEMS_SAMPLE_SZ,
       sqrt(pow(raw->accel.x, 2) + pow(raw->accel.y, 2) + pow(raw->accel.z, 2)));
-  MEMS.d.tot.gyro = _SamplingFloat(
-      &s->handle[MEMS_SAMPLE_GYRO], s->buffer[MEMS_SAMPLE_GYRO], MEMS_SAMPLE_SZ,
+  MEMS.d.total.gyro = _SamplingFloat(
+      &s->handle[MSAMPLE_GYRO], s->buffer[MSAMPLE_GYRO], MEMS_SAMPLE_SZ,
       sqrt(pow(raw->gyro.x, 2) + pow(raw->gyro.y, 2) + pow(raw->gyro.z, 2)));
-  MEMS.d.tot.tilt = _SamplingFloat(
-      &s->handle[MEMS_SAMPLE_TILT], s->buffer[MEMS_SAMPLE_TILT], MEMS_SAMPLE_SZ,
-      sqrt(pow(tilt->roll, 2) + pow(tilt->pitch, 2)));
+  MEMS.d.total.tilt =
+      _SamplingFloat(&s->handle[MSAMPLE_TILT], s->buffer[MSAMPLE_TILT],
+                     MEMS_SAMPLE_SZ, sqrt(pow(t->roll, 2) + pow(t->pitch, 2)));
 
-  MEMS.d.crash = MEMS.d.tot.accel > CRASH_LIMIT;
-  MEMS.d.fall = MEMS.d.tot.tilt > FALL_LIMIT;
+  effect[MEFFECT_CRASH] = MEMS.d.total.accel > CRASH_LIMIT;
+  effect[MEFFECT_FALL] = MEMS.d.total.tilt > FALL_LIMIT;
 
 #if MEMS_DEBUG
-  Debugger(&(MEMS.d.tot));
+  Debugger(&(MEMS.d.total));
 #endif
   unlock();
 
-  return (MEMS.d.crash || MEMS.d.fall);
+  return (effect[MEFFECT_CRASH] || effect[MEFFECT_FALL]);
 }
 
-void MEMS_GetRefDetector(void) {
-  mems_tilt_t *cur = &(MEMS.det.tilt.cur);
-  mems_tilt_t *ref = &(MEMS.det.tilt.ref);
+void MEMS_CaptureMotion(void) {
+  mems_tilt_t *t = MEMS.motion.tilt;
 
   lock();
   EVT_Clr(EVG_BIKE_MOVED);
-  memcpy(ref, cur, sizeof(mems_tilt_t));
+  memcpy(&t[MTILT_REFF], &t[MTILT_NOW], sizeof(mems_tilt_t));
   unlock();
 }
 
 uint8_t MEMS_Dragged(void) {
-  mems_tilt_t *cur = &(MEMS.det.tilt.cur);
-  mems_tilt_t *ref = &(MEMS.det.tilt.ref);
   uint8_t euclidean, dragged;
+  mems_tilt_t *t = MEMS.motion.tilt;
 
   lock();
-  euclidean =
-      sqrt(pow(ref->roll - cur->roll, 2) + pow(ref->pitch - cur->pitch, 2));
-  MEMS.det.offset = euclidean;
+  euclidean = sqrt(pow(t[MTILT_REFF].roll - t[MTILT_NOW].roll, 2) +
+                   pow(t[MTILT_REFF].pitch - t[MTILT_NOW].pitch, 2));
+  MEMS.motion.offset = euclidean;
   unlock();
 
   dragged = euclidean > DRAGGED_LIMIT;
@@ -176,6 +216,22 @@ uint8_t MEMS_Dragged(void) {
 #endif
   return dragged;
 }
+
+void MEMS_ToggleMotion(void) { MEMS.motion.active = !MEMS.motion.active; }
+
+uint8_t MEMS_IO_GetActive(void) { return MEMS.d.active; }
+
+uint8_t MEMS_IO_GetMotionActive(void) { return MEMS.motion.active; }
+
+uint8_t MEMS_IO_GetMotionOffset(void) { return MEMS.motion.offset; }
+
+mems_raw_t MEMS_IO_GetRaw(void) { return MEMS.d.raw; }
+
+mems_total_t MEMS_IO_GetTotal(void) { return MEMS.d.total; }
+
+uint8_t MEMS_IO_GetEffect(MEMS_EFFECT key) { return MEMS.d.effect[key] & 0x01; }
+
+mems_tilt_t MEMS_IO_GetTilt(MEMS_TILT key) { return MEMS.motion.tilt[key]; }
 
 /* Private functions implementation
  * --------------------------------------------*/
@@ -236,12 +292,12 @@ static uint8_t OnlyGotTemp(void) {
 }
 
 #if MEMS_DEBUG
-static void Debugger(mems_total_t *tot) {
+static void Debugger(mems_total_t *total) {
   printf("MEMS:Accel[%lu %%] = %lu / %u\n",
-         (uint32_t)(tot->accel * 100 / CRASH_LIMIT), (uint32_t)tot->accel,
+         (uint32_t)(total->accel * 100 / CRASH_LIMIT), (uint32_t)total->accel,
          (uint8_t)CRASH_LIMIT);
   printf("MEMS:Gyros[%lu %%] = %lu / %u\n",
-         (uint32_t)(tot->tilt * 100 / FALL_LIMIT), (uint32_t)tot->tilt,
+         (uint32_t)(total->tilt * 100 / FALL_LIMIT), (uint32_t)total->tilt,
          (uint8_t)FALL_LIMIT);
 }
 

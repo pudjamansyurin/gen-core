@@ -153,10 +153,10 @@ void NODE_TX_DebugMEMS(void) {
   DBG_GetMEMS(&mems);
 
   d->u8[0] = (mems.active & 0x01);
-  d->u8[0] |= (mems.det_active & 0x01) << 1;
-  d->u8[0] |= (MEMS.d.fall & 0x01) << 2;
-  d->u8[0] |= (MEMS.d.crash & 0x01) << 3;
-  d->u8[1] = MEMS.det.offset;
+  d->u8[0] |= (mems.motion_active & 0x01) << 1;
+  d->u8[0] |= MEMS_IO_GetEffect(MEFFECT_FALL) << 2;
+  d->u8[0] |= MEMS_IO_GetEffect(MEFFECT_CRASH) << 3;
+  d->u8[1] = MEMS_IO_GetMotionOffset();
   CANBUS_Write(&Tx, CAND_DBG_MEMS_1, 2, 0);
 
   d->s16[0] = mems.accel.x;

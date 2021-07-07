@@ -12,42 +12,32 @@
  * --------------------------------------------*/
 #include "Drivers/_mpu6050.h"
 
-/* Exported constants
- * --------------------------------------------*/
-#define MEMS_SAMPLE_SZ ((uint8_t)10)
-#define MEMS_TIMEOUT_MS ((uint16_t)5000)
-
-#define DRAGGED_LIMIT ((uint8_t)5)
-#define FALL_LIMIT ((uint8_t)60)
-#define CRASH_LIMIT ((uint8_t)20)
-
-/* Exported enums
+/* Private enums
  * --------------------------------------------*/
 typedef enum {
-  MEMS_SAMPLE_ACCEL = 0,
-  MEMS_SAMPLE_GYRO,
-  MEMS_SAMPLE_TILT,
-  MEMS_SAMPLE_MAX,
-} MEMS_SAMPLE_TYPE;
+  MTILT_NOW,
+  MTILT_REFF,
+  MTILT_MAX,
+} MEMS_TILT;
 
-/* Exported structs
+typedef enum {
+  MEFFECT_FALL,
+  MEFFECT_CRASH,
+  MEFFECT_MAX,
+} MEMS_EFFECT;
+
+/* Exported types
  * --------------------------------------------*/
-typedef struct {
-  float x;
-  float y;
-  float z;
-} mems_axis_t;
-
 typedef struct __attribute__((packed)) {
   float pitch;
   float roll;
 } mems_tilt_t;
 
 typedef struct {
-  mems_axis_t accel;
-  mems_axis_t gyro;
-  float temp;
-} mems_raw_t;
+  float x;
+  float y;
+  float z;
+} mems_axis_t;
 
 typedef struct {
   float accel;
@@ -56,39 +46,14 @@ typedef struct {
 } mems_total_t;
 
 typedef struct {
-  uint8_t active;
-  uint8_t offset;
-  struct {
-    mems_tilt_t cur;
-    mems_tilt_t ref;
-  } tilt;
-} mems_detector_t;
-
-typedef struct {
-  uint8_t active;
-  uint32_t tick;
-  uint8_t fall;
-  uint8_t crash;
-  mems_raw_t raw;
-  mems_total_t tot;
-} mems_data_t;
-
-typedef struct {
-  sample_float_t handle[MEMS_SAMPLE_MAX];
-  float buffer[MEMS_SAMPLE_MAX][MEMS_SAMPLE_SZ];
-} mems_sample_t;
-
-typedef struct {
-  mems_data_t d;
-  mems_detector_t det;
-  mems_sample_t sample;
-  MPU6050 dev;
-  I2C_HandleTypeDef *pi2c;
-} mems_t;
+  mems_axis_t accel;
+  mems_axis_t gyro;
+  float temp;
+} mems_raw_t;
 
 /* Exported variables
  * --------------------------------------------*/
-extern mems_t MEMS;
+// extern mems_t MEMS;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -98,7 +63,15 @@ void MEMS_Refresh(void);
 void MEMS_Flush(void);
 uint8_t MEMS_Capture(void);
 uint8_t MEMS_Process(void);
-void MEMS_GetRefDetector(void);
+void MEMS_CaptureMotion(void);
 uint8_t MEMS_Dragged(void);
+void MEMS_ToggleMotion(void);
 
+uint8_t MEMS_IO_GetActive(void);
+uint8_t MEMS_IO_GetMotionActive(void);
+uint8_t MEMS_IO_GetMotionOffset(void);
+mems_raw_t MEMS_IO_GetRaw(void);
+mems_total_t MEMS_IO_GetTotal(void);
+uint8_t MEMS_IO_GetEffect(MEMS_EFFECT key);
+mems_tilt_t MEMS_IO_GetTilt(MEMS_TILT key);
 #endif /* INC_LIBS__MEMS_H_ */
