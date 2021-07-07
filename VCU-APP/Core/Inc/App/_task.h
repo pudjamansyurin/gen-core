@@ -21,24 +21,19 @@
 #define FLAG_NET_REPORT_DISCARD BIT(0)
 #define FLAG_NET_SEND_USSD BIT(1)
 #define FLAG_NET_READ_SMS BIT(2)
-
 #define FLAG_REPORTER_YIELD BIT(0)
 #define FLAG_REPORTER_FLUSH BIT(1)
-
 #define FLAG_COMMAND_ERROR BIT(0)
 #define FLAG_COMMAND_OK BIT(1)
-
 #define FLAG_MEMS_TASK_START BIT(0)
 #define FLAG_MEMS_TASK_STOP BIT(1)
 #define FLAG_MEMS_DETECTOR_RESET BIT(2)
 #define FLAG_MEMS_DETECTOR_TOGGLE BIT(3)
-
 #define FLAG_REMOTE_TASK_START BIT(0)
 #define FLAG_REMOTE_TASK_STOP BIT(1)
 #define FLAG_REMOTE_RESET BIT(2)
 #define FLAG_REMOTE_RX_IT BIT(3)
 #define FLAG_REMOTE_PAIRING BIT(4)
-
 #define FLAG_FINGER_TASK_START BIT(0)
 #define FLAG_FINGER_TASK_STOP BIT(1)
 #define FLAG_FINGER_PLACED BIT(2)
@@ -46,14 +41,11 @@
 #define FLAG_FINGER_ADD BIT(4)
 #define FLAG_FINGER_DEL BIT(5)
 #define FLAG_FINGER_RST BIT(6)
-
 #define FLAG_AUDIO_TASK_START BIT(0)
 #define FLAG_AUDIO_TASK_STOP BIT(1)
 #define FLAG_AUDIO_BEEP BIT(2)
-
 #define FLAG_CAN_TASK_START BIT(0)
 #define FLAG_CAN_TASK_STOP BIT(1)
-
 #define FLAG_GATE_HBAR BIT(0)
 #define FLAG_GATE_OPEN_SEAT BIT(1)
 #define FLAG_GATE_ALARM_HORN BIT(2)
@@ -77,21 +69,8 @@ typedef enum {
 
 /* Exported types
  * --------------------------------------------*/
-typedef uint32_t tasks_tick_t[TASK_MAX];
 typedef uint16_t tasks_stack_t[TASK_MAX];
 typedef uint8_t tasks_wakeup_t[TASK_MAX];
-
-/* Exported structs
- * --------------------------------------------*/
-typedef uint32_t tasks_tick_t[TASK_MAX];
-typedef uint16_t tasks_stack_t[TASK_MAX];
-typedef uint8_t tasks_wakeup_t[TASK_MAX];
-
-typedef struct __attribute__((packed)) {
-	tasks_tick_t tick;
-	tasks_stack_t stack;
-	tasks_wakeup_t wakeup;
-} tasks_t;
 
 /* External variables
  * --------------------------------------------*/

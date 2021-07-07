@@ -9,13 +9,23 @@
  * --------------------------------------------*/
 #include "App/_task.h"
 
+/* External variables
+ * --------------------------------------------*/
+extern osEventFlagsId_t GlobalEventHandle;
+
 /* Private macros
  * --------------------------------------------*/
 #define WAKEUP(cur, prev) (MAX_U8((cur - prev) / 1000))
 
-/* External variables
+/* Exported types
  * --------------------------------------------*/
-extern osEventFlagsId_t GlobalEventHandle;
+typedef uint32_t tasks_tick_t[TASK_MAX];
+
+typedef struct {
+	tasks_tick_t tick;
+	tasks_stack_t stack;
+	tasks_wakeup_t wakeup;
+} tasks_t;
 
 /* Private variables
  * --------------------------------------------*/
