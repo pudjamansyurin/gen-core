@@ -126,12 +126,12 @@ typedef struct __attribute__((packed)) {
 } mcu_template_t;
 
 typedef struct __attribute__((packed)) {
-  mcu_template_t tpl[HBAR_M_DRIVE_MAX];
+  mcu_template_t tpl[HBMS_DRIVE_MAX];
 } mcu_templates_t;
 
 typedef struct {
   int16_t rpm_max;
-  mcu_template_t tpl[HBAR_M_DRIVE_MAX];
+  mcu_template_t tpl[HBMS_DRIVE_MAX];
 } mcu_param_t;
 
 typedef struct {
@@ -141,7 +141,7 @@ typedef struct {
   uint8_t active;
   uint8_t run;
   uint8_t reverse;
-  HBAR_MODE_DRIVE drive_mode;
+  HBMS_DRIVE drive_mode;
   int16_t rpm;
   float temperature;
   struct {

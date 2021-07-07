@@ -1215,8 +1215,8 @@ void StartGateTask(void *argument) {
 	TASK_WaitManager();
 
 	// Initiate
-	HBAR_Init();
-	HBAR_ReadStates();
+	HB_Init();
+	HB_ReadStates();
 
 	/* Infinite loop */
 	for (;;) {
@@ -1228,8 +1228,8 @@ void StartGateTask(void *argument) {
 				_DelayMS(100);
 				osThreadFlagsClear(FLAG_GATE_HBAR);
 
-				HBAR_ReadStarter(VCU.d.state == VEHICLE_NORMAL);
-				if (VCU.d.state >= VEHICLE_STANDBY) HBAR_ReadStates();
+				HB_ReadStarter(VCU.d.state == VEHICLE_NORMAL);
+				if (VCU.d.state >= VEHICLE_STANDBY) HB_ReadStates();
 			}
 
 			if (notif & FLAG_GATE_ALARM_HORN)
@@ -1239,7 +1239,7 @@ void StartGateTask(void *argument) {
 				if (VCU.d.state == VEHICLE_NORMAL) GATE_Seat(1000);
 		}
 
-		HBAR_RefreshSelectSet();
+		HB_RefreshSelectSet();
 
 		ML_PredictRange();
 

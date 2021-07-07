@@ -12,10 +12,10 @@
 #include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_audio.h"
+#include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
 #include "Libs/_hbar.h"
 #include "Libs/_remote.h"
-#include "Libs/_eeprom.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
@@ -31,20 +31,20 @@ void DBG_GetVCU(vcu_dbg_t *vcu) {
 }
 
 void DBG_GetEEPROM(ee_dbg_t *ee) {
-	ee->active = EEPROM.active;
-	ee->used = EEPROM.used;
+  ee->active = EEPROM.active;
+  ee->used = EEPROM.used;
 }
 
 void DBG_GetHBAR(hbar_dbg_t *hbar) {
-  hbar->reverse = HBAR.d.pin[HBAR_K_REVERSE];
-  hbar->mode.drive = HBAR.d.mode[HBAR_M_DRIVE];
-  hbar->mode.trip = HBAR.d.mode[HBAR_M_TRIP];
-  hbar->mode.prediction = HBAR.d.mode[HBAR_M_PREDICTION];
-  hbar->trip.a = HBAR.d.trip[HBAR_M_TRIP_A];
-  hbar->trip.b = HBAR.d.trip[HBAR_M_TRIP_B];
-  hbar->trip.odometer = HBAR.d.trip[HBAR_M_TRIP_ODO];
-  hbar->prediction.range = HBAR.d.prediction[HBAR_M_PREDICTION_RANGE];
-  hbar->prediction.efficiency = HBAR.d.prediction[HBAR_M_PREDICTION_EFFICIENCY];
+  hbar->reverse = HB_IO_GetPin(HBP_REVERSE);
+  hbar->mode.drive = HB_IO_GetSub(HBM_DRIVE);
+  hbar->mode.trip = HB_IO_GetSub(HBM_TRIP);
+  hbar->mode.avg = HB_IO_GetSub(HBM_AVG);
+  hbar->trip.a = HB_IO_GetTrip(HBMS_TRIP_A);
+  hbar->trip.b = HB_IO_GetTrip(HBMS_TRIP_B);
+  hbar->trip.odometer = HB_IO_GetTrip(HBMS_TRIP_ODO);
+  hbar->avg.range = HB_IO_GetAverage(HBMS_AVG_RANGE);
+  hbar->avg.efficiency = HB_IO_GetAverage(HBMS_AVG_EFFICIENCY);
 }
 
 void DBG_GetNET(net_dbg_t *net) {
@@ -54,7 +54,7 @@ void DBG_GetNET(net_dbg_t *net) {
 }
 
 void DBG_GetGPS(gps_dbg_t *gps) {
-	gps_data_t d = GPS_IO_GetData();
+  gps_data_t d = GPS_IO_GetData();
   gps->active = d.active;
   gps->sat_in_use = (uint8_t)d.nmea.sats_in_use;
   gps->hdop = (uint8_t)(d.nmea.dop_h * 10);
@@ -92,14 +92,14 @@ void DBG_GetRMT(remote_dbg_t *rmt) {
 }
 
 void DBG_GetFGR(finger_dbg_t *fgr) {
-	finger_data_t finger = FGR_IO_GetData();
+  finger_data_t finger = FGR_IO_GetData();
 
   fgr->verified = finger.verified;
   fgr->driver_id = finger.id;
 }
 
 void DBG_GetAudio(audio_dbg_t *audio) {
-	audio_data_t d = AUDIO_GetData();
+  audio_data_t d = AUDIO_GetData();
   audio->active = d.active;
   audio->mute = d.mute;
   audio->volume = d.volume;
@@ -144,15 +144,15 @@ void DBG_GetMCU(mcu_dbg_t *mcu) {
 
   mcu->par.rpm_max = MCU.d.par.rpm_max;
   mcu->par.speed_max = MCU_RpmToSpeed(MCU.d.par.rpm_max);
-  for (uint8_t m = 0; m < HBAR_M_DRIVE_MAX; m++) {
+  for (uint8_t m = 0; m < HBMS_DRIVE_MAX; m++) {
     mcu->par.tpl[m].discur_max = MCU.d.par.tpl[m].discur_max;
     mcu->par.tpl[m].torque_max = MCU.d.par.tpl[m].torque_max * 10;
   }
 }
 
 void DBG_GetTasks(tasks_dbg_t *tasks) {
-	for (uint8_t task = 0; task < TASK_MAX; task++) {
-		tasks->stack[task] = TASK_IO_GetStack(task);
-		tasks->wakeup[task] = TASK_IO_GetWakeup(task);
-	}
+  for (uint8_t task = 0; task < TASK_MAX; task++) {
+    tasks->stack[task] = TASK_IO_GetStack(task);
+    tasks->wakeup[task] = TASK_IO_GetWakeup(task);
+  }
 }

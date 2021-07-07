@@ -14,7 +14,7 @@
 
 /* Exported constants
  * --------------------------------------------*/
-#define MEMS_AVG_SZ ((uint8_t)10)
+#define MEMS_SAMPLE_SZ ((uint8_t)10)
 #define MEMS_TIMEOUT_MS ((uint16_t)5000)
 
 #define DRAGGED_LIMIT ((uint8_t)5)
@@ -24,11 +24,11 @@
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
-  MEMS_AVG_ACCEL = 0,
-  MEMS_AVG_GYRO,
-  MEMS_AVG_TILT,
-  MEMS_AVG_MAX,
-} MEMS_AVG_TYPE;
+  MEMS_SAMPLE_ACCEL = 0,
+  MEMS_SAMPLE_GYRO,
+  MEMS_SAMPLE_TILT,
+  MEMS_SAMPLE_MAX,
+} MEMS_SAMPLE_TYPE;
 
 /* Exported structs
  * --------------------------------------------*/
@@ -74,14 +74,14 @@ typedef struct {
 } mems_data_t;
 
 typedef struct {
-  avg_float_t handle[MEMS_AVG_MAX];
-  float buffer[MEMS_AVG_MAX][MEMS_AVG_SZ];
-} mems_avg_t;
+  sample_float_t handle[MEMS_SAMPLE_MAX];
+  float buffer[MEMS_SAMPLE_MAX][MEMS_SAMPLE_SZ];
+} mems_sample_t;
 
 typedef struct {
   mems_data_t d;
   mems_detector_t det;
-  mems_avg_t avg;
+  mems_sample_t sample;
   MPU6050 dev;
   I2C_HandleTypeDef *pi2c;
 } mems_t;

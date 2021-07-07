@@ -59,8 +59,8 @@ uint8_t VCU_TX_SwitchControl(void) {
 
   finger_data_t finger = FGR_IO_GetData();
 
-  d->u8[0] = HBAR.d.pin[HBAR_K_ABS];
-  d->u8[0] |= HBAR.d.pin[HBAR_K_LAMP] << 2;
+  d->u8[0] = HB_IO_GetPin(HBP_ABS);
+  d->u8[0] |= HB_IO_GetPin(HBP_LAMP) << 2;
   d->u8[0] |= NODE.d.error << 3;
   d->u8[0] |= NODE.d.overheat << 4;
   d->u8[0] |= !finger.id << 5;
@@ -68,22 +68,23 @@ uint8_t VCU_TX_SwitchControl(void) {
   d->u8[0] |= RTC_Daylight() << 7;
 
   // sein value
-  HBAR_RefreshSein();
-  d->u8[1] = HBAR.ctl.sein.left;
-  d->u8[1] |= HBAR.ctl.sein.right << 1;
-  //	d->u8[1] |= HBAR.d.pin[HBAR_K_REVERSE] << 2;
+  HB_RefreshSein();
+
+  d->u8[1] = HB_IO_GetSein(HB_SEIN_LEFT);
+  d->u8[1] |= HB_IO_GetSein(HB_SEIN_RIGHT) << 1;
+  //	d->u8[1] |= HB_IO_GetPin(HBP_REVERSE) << 2;
   d->u8[1] |= MCU_Reversed() << 2;
   d->u8[1] |= BMS.d.run << 3;
   d->u8[1] |= MCU.d.run << 4;
   d->u8[1] |= (finger.registering & 0x03) << 5;
 
   // mode
-  d->u8[2] = HBAR.d.mode[HBAR_M_DRIVE];
+  d->u8[2] = HB_IO_GetSub(HBM_DRIVE);
   //	d->u8[2] = MCU.d.drive_mode;
-  d->u8[2] |= HBAR.d.mode[HBAR_M_TRIP] << 2;
-  d->u8[2] |= HBAR.d.mode[HBAR_M_PREDICTION] << 4;
-  d->u8[2] |= HBAR.d.m << 5;
-  d->u8[2] |= (HBAR.ctl.session > 0) << 7;
+  d->u8[2] |= HB_IO_GetSub(HBM_TRIP) << 2;
+  d->u8[2] |= HB_IO_GetSub(HBM_AVG) << 4;
+  d->u8[2] |= HB_IO_GetMode() << 5;
+  d->u8[2] |= HB_HasSession() << 7;
 
   // others
   d->u8[3] = MCU_RpmToSpeed(MCU.d.rpm);
@@ -118,11 +119,11 @@ uint8_t VCU_TX_ModeData(void) {
   can_tx_t Tx = {0};
   UNION64 *d = &(Tx.data);
 
-  d->u16[0] = HBAR.d.trip[HBAR_M_TRIP_A];
-  d->u16[1] = HBAR.d.trip[HBAR_M_TRIP_B];
-  d->u16[2] = HBAR.d.trip[HBAR_M_TRIP_ODO];
-  d->u8[6] = HBAR.d.prediction[HBAR_M_PREDICTION_RANGE];
-  d->u8[7] = HBAR.d.prediction[HBAR_M_PREDICTION_EFFICIENCY];
+  d->u16[0] = HB_IO_GetTrip(HBMS_TRIP_A);
+  d->u16[1] = HB_IO_GetTrip(HBMS_TRIP_B);
+  d->u16[2] = HB_IO_GetTrip(HBMS_TRIP_ODO);
+  d->u8[6] = HB_IO_GetAverage(HBMS_AVG_RANGE);
+  d->u8[7] = HB_IO_GetAverage(HBMS_AVG_EFFICIENCY);
 
   return CANBUS_Write(&Tx, CAND_VCU_MODE_DATA, 8, 0);
 }

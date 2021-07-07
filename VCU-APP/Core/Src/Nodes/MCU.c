@@ -9,9 +9,10 @@
  * --------------------------------------------*/
 #include "Nodes/MCU.h"
 
+#include <stdlib.h>
+
 #include "Nodes/BMS.h"
 #include "Nodes/VCU.h"
-#include <stdlib.h>
 
 /* Public variables
  * --------------------------------------------*/
@@ -23,7 +24,7 @@ mcu_t MCU = {
 
 /* Private variables
  * --------------------------------------------*/
-static mcu_template_addr_t tplAddr[HBAR_M_DRIVE_MAX];
+static mcu_template_addr_t tplAddr[HBMS_DRIVE_MAX];
 
 /* Private functions prototypes
  * --------------------------------------------*/
@@ -60,7 +61,7 @@ void MCU_Power12v(uint8_t on) {
 }
 
 void MCU_PowerOverCAN(uint8_t on) {
-  uint8_t R = HBAR.d.pin[HBAR_K_REVERSE];
+  uint8_t R = HB_IO_GetPin(HBP_REVERSE);
 
   if (on) {
     if (MCU.d.inv.lockout) {
@@ -199,7 +200,7 @@ void MCU_RX_Template(can_rx_t *Rx) {
     return;
   }
 
-  for (uint8_t m = 0; m < HBAR_M_DRIVE_MAX; m++) {
+  for (uint8_t m = 0; m < HBMS_DRIVE_MAX; m++) {
     if (param == tplAddr[m].discur_max) {
       MCU.d.par.tpl[m].discur_max = data;
       return;
@@ -224,7 +225,7 @@ uint8_t MCU_TX_Setting(uint8_t on, uint8_t reverse) {
   d->u8[4] = reverse;
   d->u8[5] = on & 0x01;
   d->u8[5] |= (0 & 0x01) << 1;
-  d->u8[5] |= (HBAR.d.mode[HBAR_M_DRIVE] & 0x03) << 2;
+  d->u8[5] |= HB_IO_GetSub(HBM_DRIVE) << 2;
 
   // send message
   return CANBUS_Write(&Tx, CAND_MCU_SETTING, 6, 0);
@@ -251,7 +252,7 @@ uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
  * --------------------------------------------*/
 static void Reset(void) {
   memset(&(MCU.d), 0, sizeof(mcu_data_t));
-  MCU.d.drive_mode = HBAR_M_DRIVE_STANDARD;
+  MCU.d.drive_mode = HBMS_DRIVE_STANDARD;
   MCU.d.inv.discharge = INV_DISCHARGE_DISABLED;
 }
 
@@ -268,7 +269,7 @@ static void ResetFault(void) {
 }
 
 static void SetTemplateAddr(void) {
-  for (uint8_t m = 0; m < HBAR_M_DRIVE_MAX; m++) {
+  for (uint8_t m = 0; m < HBMS_DRIVE_MAX; m++) {
     tplAddr[m].discur_max = (m * 3) + MTP_1_DISCUR_MAX;
     tplAddr[m].torque_max = (m * 3) + MTP_1_TORQUE_MAX;
     //		tplAddr[m].rbs_switch = (m*3) + MTP_1_RBS_SWITCH;
@@ -313,7 +314,7 @@ static void SetRpmMaxCAN(uint8_t write) {
 }
 
 static void SetTemplatesCAN(uint8_t write) {
-  for (uint8_t m = 0; m < HBAR_M_DRIVE_MAX; m++) {
+  for (uint8_t m = 0; m < HBMS_DRIVE_MAX; m++) {
     MCU_TX_Template(tplAddr[m].discur_max, write,
                     write ? MCU.set.par.tpl[m].discur_max : 0);
     MCU_TX_Template(tplAddr[m].torque_max, write,

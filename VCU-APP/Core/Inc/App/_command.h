@@ -94,7 +94,7 @@ typedef enum {
 typedef enum {
   CMD_HBAR_DRIVE = 0,
   CMD_HBAR_TRIP,
-  CMD_HBAR_PREDICTION,
+  CMD_HBAR_AVG,
   CMD_HBAR_REVERSE,
   CMD_HBAR_MAX,
 } CMD_SUB_HBAR;

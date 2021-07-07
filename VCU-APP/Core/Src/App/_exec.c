@@ -66,7 +66,7 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
         break;
 
       case CMD_GEN_ODOM:
-        HBAR_EE_TripMeter(HBAR_M_TRIP_ODO, (uint16_t *)val);
+        HB_EE_Trip(HBMS_TRIP_ODO, (uint16_t *)val);
         break;
 
       case CMD_GEN_ANTITHIEF:
@@ -249,19 +249,19 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
     uint8_t v = *(uint8_t *)val;
     switch (subCode) {
       case CMD_HBAR_DRIVE:
-        HBAR.d.mode[HBAR_M_DRIVE] = v;
+        HB_IO_SetSub(HBM_DRIVE, v);
         break;
 
       case CMD_HBAR_TRIP:
-        HBAR.d.mode[HBAR_M_TRIP] = v;
+        HB_IO_SetSub(HBM_TRIP, v);
         break;
 
-      case CMD_HBAR_PREDICTION:
-        HBAR.d.mode[HBAR_M_PREDICTION] = v;
+      case CMD_HBAR_AVG:
+        HB_IO_SetSub(HBM_AVG, v);
         break;
 
       case CMD_HBAR_REVERSE:
-        HBAR.d.pin[HBAR_K_REVERSE] = v;
+        HB_IO_SetPin(HBP_REVERSE, v);
         break;
 
       default:

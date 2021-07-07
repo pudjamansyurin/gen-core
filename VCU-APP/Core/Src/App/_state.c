@@ -35,7 +35,7 @@ void STATE_Check(void) {
   if (_osQueueGet(OvdStateQueueHandle, &ovdState))
     VCU.d.state = (int8_t)ovdState;
 
-  HBAR_CheckStarter(&start, &shutdown);
+  HB_CheckStarter(&start, &shutdown);
 
   do {
     initialState = VCU.d.state;
@@ -73,7 +73,7 @@ void STATE_Check(void) {
 
       case VEHICLE_NORMAL:
         if (LAST_STATE != VEHICLE_NORMAL) {
-          if (LAST_STATE > VEHICLE_NORMAL) HBAR_EE_WriteDeffered();
+          if (LAST_STATE > VEHICLE_NORMAL) HB_EE_WriteDeffered();
           LAST_STATE = VEHICLE_NORMAL;
 
           osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
@@ -84,7 +84,7 @@ void STATE_Check(void) {
           osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_START);
           osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_START);
 
-          HBAR_Init();
+          HB_Init();
           BMS_Init();
           MCU_Init();
           _DelayMS(500);

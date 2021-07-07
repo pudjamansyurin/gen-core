@@ -29,7 +29,7 @@ static bat_t BAT = {
  * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint16_t MovAvg(uint16_t* buf, uint16_t sz, uint16_t val);
+static uint16_t Sampling(uint16_t* buf, uint16_t sz, uint16_t val);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -58,7 +58,7 @@ uint16_t BAT_ScanValue(void) {
 
   if (ok) {
     value = (value * BAT_MAX_MV) / ADC_MAX_VALUE;
-    value = MovAvg(BAT.buf, BAT_AVG_SZ, value);
+    value = Sampling(BAT.buf, BAT_SAMPLE_SZ, value);
   }
 
   BAT.voltage = value;
@@ -81,7 +81,7 @@ static void unlock(void) {
 #endif
 }
 
-static uint16_t MovAvg(uint16_t* buf, uint16_t sz, uint16_t val) {
+static uint16_t Sampling(uint16_t* buf, uint16_t sz, uint16_t val) {
   static uint32_t sum = 0;
   static uint16_t pos = 0, len = 0;
 

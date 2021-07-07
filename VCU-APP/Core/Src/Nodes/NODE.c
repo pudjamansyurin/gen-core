@@ -89,7 +89,7 @@ void NODE_TX_DebugGroup(void) {
   DBG_GetFGR(&fgr);
   d->u8[2] = (fgr.verified & 0x01);
   d->u8[2] |= (fgr.driver_id & 0x07) << 1;
-//  d->u8[2] |= (FGR.d.registering & 0x01) << 4;
+  //  d->u8[2] |= (FGR.d.registering & 0x01) << 4;
 
   audio_dbg_t audio;
   DBG_GetAudio(&audio);
@@ -97,14 +97,14 @@ void NODE_TX_DebugGroup(void) {
   d->u8[3] |= (audio.mute & 0x01) << 1;
   d->u8[4] = audio.volume;
 
-  d->u8[5] = (HBAR.d.pin[HBAR_K_SELECT] & 0x01);
-  d->u8[5] |= (HBAR.d.pin[HBAR_K_SET] & 0x01) << 1;
-  d->u8[5] |= (HBAR.d.pin[HBAR_K_STARTER] & 0x01) << 2;
-  d->u8[5] |= (HBAR.d.pin[HBAR_K_SEIN_L] & 0x01) << 3;
-  d->u8[5] |= (HBAR.d.pin[HBAR_K_SEIN_R] & 0x01) << 4;
-  d->u8[5] |= (HBAR.d.pin[HBAR_K_REVERSE] & 0x01) << 5;
-  d->u8[5] |= (HBAR.d.pin[HBAR_K_LAMP] & 0x01) << 6;
-  d->u8[5] |= (HBAR.d.pin[HBAR_K_ABS] & 0x01) << 7;
+  d->u8[5] = HB_IO_GetPin(HBP_SELECT);
+  d->u8[5] |= HB_IO_GetPin(HBP_SET) << 1;
+  d->u8[5] |= HB_IO_GetPin(HBP_STARTER) << 2;
+  d->u8[5] |= HB_IO_GetPin(HBP_SEIN_L) << 3;
+  d->u8[5] |= HB_IO_GetPin(HBP_SEIN_R) << 4;
+  d->u8[5] |= HB_IO_GetPin(HBP_REVERSE) << 5;
+  d->u8[5] |= HB_IO_GetPin(HBP_LAMP) << 6;
+  d->u8[5] |= HB_IO_GetPin(HBP_ABS) << 7;
 
   CANBUS_Write(&Tx, CAND_DBG_GROUP, 6, 0);
 }
@@ -119,7 +119,7 @@ void NODE_TX_DebugVCU(void) {
   d->u16[0] = vcu.events;
   d->u8[2] = vcu.buffered;
   d->u8[3] = vcu.battery;
-  d->u32[1] = HBAR.d.meter;
+  d->u32[1] = HB_IO_GetMeter();
 
   CANBUS_Write(&Tx, CAND_DBG_VCU, 8, 0);
 }
@@ -280,10 +280,10 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
 
-  bms_prediction_t pre = ML_IO_GetDataBMS();
-  d->u16[1] = pre.capacity * 10;
-  d->u16[2] = pre.efficiency * 10;
-  d->u16[3] = pre.distance * 10;
+  bms_avg_t avg = ML_IO_GetDataBMS();
+  d->u16[1] = avg.capacity * 10;
+  d->u16[2] = avg.efficiency * 10;
+  d->u16[3] = avg.distance * 10;
 
   CANBUS_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

@@ -5,122 +5,81 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_LIBS__HBAR_H_
-#define INC_LIBS__HBAR_H_
+#ifndef INC_LIBS__HB_H_
+#define INC_LIBS__HB_H_
 
 /* Includes
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported constants
- * --------------------------------------------*/
-#define MODE_SESSION_MS ((uint16_t)4000)
-#define MODE_RESET_MS ((uint16_t)1500)
-#define STARTER_LONG_PRESS_MS ((uint16_t)1000)
-
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
-  HBAR_K_SELECT = 0,
-  HBAR_K_SET,
-  HBAR_K_STARTER,
-  HBAR_K_SEIN_L,
-  HBAR_K_SEIN_R,
-  HBAR_K_REVERSE,
-  HBAR_K_LAMP,
-  HBAR_K_ABS,
-  HBAR_K_MAX = 8
-} HBAR_KEY;
+  HB_SEIN_LEFT,
+  HB_SEIN_RIGHT,
+  HB_SEIN_MAX,
+} HB_SEIN;
 
 typedef enum {
-  HBAR_M_DRIVE = 0,
-  HBAR_M_TRIP,
-  HBAR_M_PREDICTION,
-  HBAR_M_MAX = 3
-} HBAR_MODE;
+  HBP_SELECT = 0,
+  HBP_SET,
+  HBP_STARTER,
+  HBP_SEIN_L,
+  HBP_SEIN_R,
+  HBP_REVERSE,
+  HBP_LAMP,
+  HBP_ABS,
+  HBP_MAX = 8
+} HBP;
+
+typedef enum { HBM_DRIVE = 0, HBM_TRIP, HBM_AVG, HBM_MAX = 3 } HBM;
 
 typedef enum {
-  HBAR_M_DRIVE_ECONOMY = 0,
-  HBAR_M_DRIVE_STANDARD,
-  HBAR_M_DRIVE_SPORT,
-  HBAR_M_DRIVE_MAX = 3
-} HBAR_MODE_DRIVE;
+  HBMS_DRIVE_ECONOMY = 0,
+  HBMS_DRIVE_STANDARD,
+  HBMS_DRIVE_SPORT,
+  HBMS_DRIVE_MAX = 3
+} HBMS_DRIVE;
 
 typedef enum {
-  HBAR_M_TRIP_A = 0,
-  HBAR_M_TRIP_B,
-  HBAR_M_TRIP_ODO,
-  HBAR_M_TRIP_MAX = 3
-} HBAR_MODE_TRIP;
+  HBMS_TRIP_A = 0,
+  HBMS_TRIP_B,
+  HBMS_TRIP_ODO,
+  HBMS_TRIP_MAX = 3
+} HBMS_TRIP;
 
 typedef enum {
-  HBAR_M_PREDICTION_RANGE = 0,
-  HBAR_M_PREDICTION_EFFICIENCY,
-  HBAR_M_PREDICTION_MAX = 2
-} HBAR_MODE_PREDICTION;
-
-typedef enum {
-  HBAR_STARTER_UNKNOWN = 0,
-  HBAR_STARTER_ON,
-  HBAR_STARTER_OFF
-} HBAR_STARTER;
-
-/* Exported structs
- * --------------------------------------------*/
-typedef struct {
-  uint8_t left;
-  uint8_t right;
-} hbar_sein_t;
-
-typedef struct {
-  HBAR_STARTER starter;
-  hbar_sein_t sein;
-  uint8_t session;
-  struct {
-    uint32_t sein;
-    uint32_t session;
-  } tick;
-} hbar_ctl_t;
-
-typedef struct {
-  uint32_t meter;
-  uint8_t pin[HBAR_K_MAX];
-  HBAR_MODE m;
-  uint8_t mode[HBAR_M_MAX];
-  uint8_t prediction[HBAR_M_PREDICTION_MAX];
-  uint16_t trip[HBAR_M_TRIP_MAX];
-} hbar_data_t;
-
-typedef struct {
-  uint32_t start;
-  uint32_t time;
-} hbar_timer_t;
-
-typedef struct {
-  hbar_data_t d;
-  hbar_ctl_t ctl;
-  hbar_timer_t tim[3];
-} hbar_t;
-
-/* Exported variables
- * --------------------------------------------*/
-extern hbar_t HBAR;
+  HBMS_AVG_RANGE = 0,
+  HBMS_AVG_EFFICIENCY,
+  HBMS_AVG_MAX = 2
+} HBMS_AVG;
 
 /* Public functions prototype
  * --------------------------------------------*/
-void HBAR_Init(void);
-uint8_t HBAR_SubModeMax(HBAR_MODE m);
-void HBAR_ReadStarter(uint8_t normalState);
-void HBAR_CheckStarter(uint8_t *start, uint8_t *shutdown);
-void HBAR_ReadStates(void);
-void HBAR_RefreshSelectSet(void);
-void HBAR_RefreshSein(void);
-void HBAR_AddTripMeter(uint8_t m);
-void HBAR_SetReport(uint8_t eff, uint8_t km);
+void HB_Init(void);
+uint8_t HB_SubMax(HBM m);
+void HB_ReadStarter(uint8_t normalState);
+void HB_CheckStarter(uint8_t *start, uint8_t *shutdown);
+void HB_ReadStates(void);
+void HB_RefreshSelectSet(void);
+void HB_RefreshSein(void);
+void HB_AddTrip(uint8_t m);
+uint8_t HB_HasSession(void);
 
-void HBAR_EE_Read(void);
-void HBAR_EE_WriteDeffered(void);
-uint8_t HBAR_EE_Mode(uint8_t *src);
-uint8_t HBAR_EE_SubMode(HBAR_MODE m, uint8_t *src);
-uint8_t HBAR_EE_TripMeter(HBAR_MODE_TRIP mTrip, uint16_t *src);
-#endif /* INC_LIBS__HBAR_H_ */
+void HB_EE_Read(void);
+void HB_EE_WriteDeffered(void);
+uint8_t HB_EE_Mode(uint8_t *src);
+uint8_t HB_EE_Sub(HBM m, uint8_t *src);
+uint8_t HB_EE_Trip(HBMS_TRIP mTrip, uint16_t *src);
+
+uint32_t HB_IO_GetMeter(void);
+uint8_t HB_IO_GetPin(HBP key);
+uint8_t HB_IO_GetMode(void);
+uint8_t HB_IO_GetSub(HBM mode);
+uint8_t HB_IO_GetSein(HB_SEIN side);
+uint16_t HB_IO_GetTrip(HBMS_TRIP key);
+uint8_t HB_IO_GetAverage(HBMS_AVG key);
+void HB_IO_SetPin(HBP key, uint8_t value);
+void HB_IO_SetSub(HBM mode, uint8_t value);
+void HB_IO_SetAverage(HBMS_AVG key, uint8_t value);
+#endif /* INC_LIBS__HB_H_ */

@@ -26,12 +26,12 @@
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
-  BMS_AVG_CAPACITY = 0,
-  BMS_AVG_EFFICIENCY,
-  BMS_AVG_INRANGE,
-  BMS_AVG_DISCHARGE,
-  BMS_AVG_MAX,
-} BMS_AVG_TYPE;
+  BMS_SAMPLE_CAPACITY = 0,
+  BMS_SAMPLE_EFFICIENCY,
+  BMS_SAMPLE_INRANGE,
+  BMS_SAMPLE_DISCHARGE,
+  BMS_SAMPLE_MAX,
+} BMS_SAMPLE_TYPE;
 
 typedef enum {
   BMS_STATE_OFF = -1,

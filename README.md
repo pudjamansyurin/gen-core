@@ -137,7 +137,7 @@
 - [x] Validate starter
 - [x] Validate sein
 - [x] Add bms min pack
-- [x] Handle range prediction
+- [x] Handle range average
 - [x] Sometimes Setting MUC parameter caused node.error
 - [x] Debug by CAN, disable swo
 - [x] Add MCU template & rpm max debugger

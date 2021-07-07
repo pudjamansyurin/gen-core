@@ -15,15 +15,15 @@
 /* Exported types
  * --------------------------------------------*/
 typedef struct {
-	float capacity;
-	float efficiency;
-	uint32_t distance;
-} bms_prediction_t;
+  float capacity;
+  float efficiency;
+  uint32_t distance;
+} bms_avg_t;
 
 /* Public functions prototype
  * --------------------------------------------*/
 void ML_BMS_Init(void);
 void ML_PredictRange(void);
-bms_prediction_t ML_IO_GetDataBMS(void);
+bms_avg_t ML_IO_GetDataBMS(void);
 
 #endif /* INC_APP__ML_H_ */

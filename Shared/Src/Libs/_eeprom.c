@@ -120,7 +120,7 @@ static void InitializeSize(void) {
   EE_SZ[VA_TRIP_ODO] = sizeof(uint16_t);
   EE_SZ[VA_MODE_DRIVE] = sizeof(uint8_t);
   EE_SZ[VA_MODE_TRIP] = sizeof(uint8_t);
-  EE_SZ[VA_MODE_PREDICTION] = sizeof(uint8_t);
+  EE_SZ[VA_MODE_AVG] = sizeof(uint8_t);
   EE_SZ[VA_MODE] = sizeof(uint8_t);
   EE_SZ[VA_APN_NAME] = EE_STR_MAX;
   EE_SZ[VA_APN_USER] = EE_STR_MAX;
