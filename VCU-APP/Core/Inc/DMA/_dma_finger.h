@@ -15,7 +15,6 @@
 /* Exported constants
  * --------------------------------------------*/
 #define FINGER_UART_RX_SZ ((uint16_t)256)
-#define FINGER_DMA_RX_SZ ((uint16_t)64)
 
 /* Exported variables
  * --------------------------------------------*/

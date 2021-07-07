@@ -18,12 +18,9 @@
 extern osMutexId_t AesMutexHandle;
 #endif
 
-/* Public variables
- * --------------------------------------------*/
-__ALIGN_BEGIN aes_key_t AES_KEY __ALIGN_END;
-
 /* Private variables
  * --------------------------------------------*/
+static __ALIGN_BEGIN aes_key_t AES_KEY __ALIGN_END;
 static CRYP_HandleTypeDef *pcryp = &hcryp;
 
 /* Private functions prototype

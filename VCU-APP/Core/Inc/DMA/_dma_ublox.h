@@ -15,7 +15,6 @@
 /* Exported constants
  * --------------------------------------------*/
 #define UBLOX_UART_RX_SZ ((uint16_t)1024)
-#define UBLOX_DMA_RX_SZ ((uint16_t)128)
 
 /* Exported variables
  * --------------------------------------------*/
