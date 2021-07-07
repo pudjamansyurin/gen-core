@@ -11,20 +11,26 @@
 
 #include "App/_reporter.h"
 
-/* Private constants
- * --------------------------------------------*/
-#define CMD_SUB_MAX ((uint8_t)10)
-
 /* External variables
  * --------------------------------------------*/
 #if (APP)
 extern osMessageQueueId_t CommandQueueHandle;
 #endif
 
+/* Private constants
+ * --------------------------------------------*/
+#define CMD_SUB_MAX ((uint8_t)10)
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+	uint8_t cmd[CMDC_MAX][CMD_SUB_MAX];
+	uint8_t sub[CMDC_MAX];
+} cmd_size_t;
+
 /* Private variables
  * --------------------------------------------*/
-static uint8_t CMD_SZ[CMDC_MAX][CMD_SUB_MAX];
-static uint8_t SUB_SZ[CMDC_MAX];
+static cmd_size_t SZ;
 
 /* Private functions prototypes
  * --------------------------------------------*/
@@ -33,57 +39,57 @@ static void Debugger(command_t *cmd);
 /* Public functions implementation
  * --------------------------------------------*/
 void CMD_Init(void) {
-  memset(CMD_SZ, 0, sizeof(CMD_SZ));
-  SUB_SZ[CMDC_GEN] = CMD_GEN_MAX;
-  CMD_SZ[CMDC_GEN][CMD_GEN_INFO] = 0;
-  CMD_SZ[CMDC_GEN][CMD_GEN_LED] = 1;
-  CMD_SZ[CMDC_GEN][CMD_GEN_RTC] = 7;
-  CMD_SZ[CMDC_GEN][CMD_GEN_ODOM] = 2;
-  CMD_SZ[CMDC_GEN][CMD_GEN_ANTITHIEF] = 0;
-  CMD_SZ[CMDC_GEN][CMD_GEN_RPT_FLUSH] = 0;
-  CMD_SZ[CMDC_GEN][CMD_GEN_RPT_BLOCK] = 1;
+  memset(SZ.cmd, 0, sizeof(SZ.cmd));
+  SZ.sub[CMDC_GEN] = CMD_GEN_MAX;
+  SZ.cmd[CMDC_GEN][CMD_GEN_INFO] = 0;
+  SZ.cmd[CMDC_GEN][CMD_GEN_LED] = 1;
+  SZ.cmd[CMDC_GEN][CMD_GEN_RTC] = 7;
+  SZ.cmd[CMDC_GEN][CMD_GEN_ODOM] = 2;
+  SZ.cmd[CMDC_GEN][CMD_GEN_ANTITHIEF] = 0;
+  SZ.cmd[CMDC_GEN][CMD_GEN_RPT_FLUSH] = 0;
+  SZ.cmd[CMDC_GEN][CMD_GEN_RPT_BLOCK] = 1;
 
-  SUB_SZ[CMDC_OVD] = CMD_OVD_MAX;
-  CMD_SZ[CMDC_OVD][CMD_OVD_STATE] = 1;
-  CMD_SZ[CMDC_OVD][CMD_OVD_RPT_INTERVAL] = 2;
-  CMD_SZ[CMDC_OVD][CMD_OVD_RPT_FRAME] = 1;
-  CMD_SZ[CMDC_OVD][CMD_OVD_RMT_SEAT] = 0;
-  CMD_SZ[CMDC_OVD][CMD_OVD_RMT_ALARM] = 0;
+  SZ.sub[CMDC_OVD] = CMD_OVD_MAX;
+  SZ.cmd[CMDC_OVD][CMD_OVD_STATE] = 1;
+  SZ.cmd[CMDC_OVD][CMD_OVD_RPT_INTERVAL] = 2;
+  SZ.cmd[CMDC_OVD][CMD_OVD_RPT_FRAME] = 1;
+  SZ.cmd[CMDC_OVD][CMD_OVD_RMT_SEAT] = 0;
+  SZ.cmd[CMDC_OVD][CMD_OVD_RMT_ALARM] = 0;
 
-  SUB_SZ[CMDC_AUDIO] = CMD_AUDIO_MAX;
-  CMD_SZ[CMDC_AUDIO][CMD_AUDIO_BEEP] = 0;
+  SZ.sub[CMDC_AUDIO] = CMD_AUDIO_MAX;
+  SZ.cmd[CMDC_AUDIO][CMD_AUDIO_BEEP] = 0;
 
-  SUB_SZ[CMDC_FGR] = CMD_FGR_MAX;
-  CMD_SZ[CMDC_FGR][CMD_FGR_FETCH] = 0;
-  CMD_SZ[CMDC_FGR][CMD_FGR_ADD] = 0;
-  CMD_SZ[CMDC_FGR][CMD_FGR_DEL] = 1;
-  CMD_SZ[CMDC_FGR][CMD_FGR_RST] = 0;
+  SZ.sub[CMDC_FGR] = CMD_FGR_MAX;
+  SZ.cmd[CMDC_FGR][CMD_FGR_FETCH] = 0;
+  SZ.cmd[CMDC_FGR][CMD_FGR_ADD] = 0;
+  SZ.cmd[CMDC_FGR][CMD_FGR_DEL] = 1;
+  SZ.cmd[CMDC_FGR][CMD_FGR_RST] = 0;
 
-  SUB_SZ[CMDC_RMT] = CMD_RMT_MAX;
-  CMD_SZ[CMDC_RMT][CMD_RMT_PAIRING] = 0;
+  SZ.sub[CMDC_RMT] = CMD_RMT_MAX;
+  SZ.cmd[CMDC_RMT][CMD_RMT_PAIRING] = 0;
 
-  SUB_SZ[CMDC_FOTA] = CMD_FOTA_MAX;
-  CMD_SZ[CMDC_FOTA][CMD_FOTA_VCU] = 0;
-  CMD_SZ[CMDC_FOTA][CMD_FOTA_HMI] = 0;
+  SZ.sub[CMDC_FOTA] = CMD_FOTA_MAX;
+  SZ.cmd[CMDC_FOTA][CMD_FOTA_VCU] = 0;
+  SZ.cmd[CMDC_FOTA][CMD_FOTA_HMI] = 0;
 
-  SUB_SZ[CMDC_NET] = CMD_NET_MAX;
-  CMD_SZ[CMDC_NET][CMD_NET_SEND_USSD] = 20;
-  CMD_SZ[CMDC_NET][CMD_NET_READ_SMS] = 0;
+  SZ.sub[CMDC_NET] = CMD_NET_MAX;
+  SZ.cmd[CMDC_NET][CMD_NET_SEND_USSD] = 20;
+  SZ.cmd[CMDC_NET][CMD_NET_READ_SMS] = 0;
 
-  SUB_SZ[CMDC_CON] = CMD_CON_MAX;
-  CMD_SZ[CMDC_CON][CMD_CON_APN] = 3*30;
-  CMD_SZ[CMDC_CON][CMD_CON_FTP] = 3*30;
-  CMD_SZ[CMDC_CON][CMD_CON_MQTT] = 4*30;
+  SZ.sub[CMDC_CON] = CMD_CON_MAX;
+  SZ.cmd[CMDC_CON][CMD_CON_APN] = 3*30;
+  SZ.cmd[CMDC_CON][CMD_CON_FTP] = 3*30;
+  SZ.cmd[CMDC_CON][CMD_CON_MQTT] = 4*30;
 
-  SUB_SZ[CMDC_HBAR] = CMD_HBAR_MAX;
-  CMD_SZ[CMDC_HBAR][CMD_HBAR_DRIVE] = 1;
-  CMD_SZ[CMDC_HBAR][CMD_HBAR_TRIP] = 1;
-  CMD_SZ[CMDC_HBAR][CMD_HBAR_PREDICTION] = 1;
-  CMD_SZ[CMDC_HBAR][CMD_HBAR_REVERSE] = 1;
+  SZ.sub[CMDC_HBAR] = CMD_HBAR_MAX;
+  SZ.cmd[CMDC_HBAR][CMD_HBAR_DRIVE] = 1;
+  SZ.cmd[CMDC_HBAR][CMD_HBAR_TRIP] = 1;
+  SZ.cmd[CMDC_HBAR][CMD_HBAR_PREDICTION] = 1;
+  SZ.cmd[CMDC_HBAR][CMD_HBAR_REVERSE] = 1;
 
-  SUB_SZ[CMDC_MCU] = CMD_MCU_MAX;
-  CMD_SZ[CMDC_MCU][CMD_MCU_SPEED_MAX] = 1;
-  CMD_SZ[CMDC_MCU][CMD_MCU_TEMPLATES] = 4 * 3;
+  SZ.sub[CMDC_MCU] = CMD_MCU_MAX;
+  SZ.cmd[CMDC_MCU][CMD_MCU_SPEED_MAX] = 1;
+  SZ.cmd[CMDC_MCU][CMD_MCU_TEMPLATES] = 4 * 3;
 }
 
 bool CMD_ValidateCode(command_t *cmd) {
@@ -91,8 +97,8 @@ bool CMD_ValidateCode(command_t *cmd) {
   bool ok = false;
 
   if (h->code < CMDC_MAX)
-    if (h->sub_code < SUB_SZ[h->code])
-      ok = CMD_GetPayloadSize(cmd) <= CMD_SZ[h->code][h->sub_code];
+    if (h->sub_code < SZ.sub[h->code])
+      ok = CMD_GetPayloadSize(cmd) <= SZ.cmd[h->code][h->sub_code];
 
   return ok;
 }
