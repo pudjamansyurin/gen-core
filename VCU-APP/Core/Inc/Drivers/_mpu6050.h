@@ -112,7 +112,7 @@ typedef struct {
  *            - MPUR_t: Everything OK
  *            - Other member: in other cases
  */
-MPUR MPU_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
+MPUR MPU_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DS,
                             MPU_Device DeviceNumber,
                             MPU_Accel AccelSensitivity,
                             MPU_Gyro GyroSensitivity);
@@ -125,7 +125,7 @@ MPUR MPU_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DataStruct,
  * value of @ref MPU_Gyro_t enumeration
  * @retval Member of @ref MPUR_t enumeration
  */
-MPUR MPU_SetGyro(MPU6050 *DataStruct,
+MPUR MPU_SetGyro(MPU6050 *DS,
                                     MPU_Gyro GyroSensitivity);
 
 /**
@@ -136,8 +136,7 @@ MPUR MPU_SetGyro(MPU6050 *DataStruct,
  * be a value of @ref MPU_Accel_t enumeration
  * @retval Member of @ref MPUR_t enumeration
  */
-MPUR MPU_SetAccel(
-    MPU6050 *DataStruct, MPU_Accel AccelSensitivity);
+MPUR MPU_SetAccel(MPU6050 *DS, MPU_Accel AccelSensitivity);
 
 /**
  * @brief  Sets output data rate
@@ -155,7 +154,7 @@ MPUR MPU_SetDataRate(uint8_t rate);
  *            - MPUR_Ok: everything is OK
  *            - Other: in other cases
  */
-MPUR MPU_ReadAll(MPU6050 *DataStruct);
+MPUR MPU_ReadAll(MPU6050 *DS);
 
 /**
  * @brief  Reads accelerometer data from sensor
@@ -164,7 +163,7 @@ MPUR MPU_ReadAll(MPU6050 *DataStruct);
  *            - MPUR_Ok: everything is OK
  *            - Other: in other cases
  */
-MPUR MPU_ReadAccel(MPU6050 *DataStruct);
+MPUR MPU_ReadAccel(MPU6050 *DS);
 
 /**
  * @brief  Reads gyroscope data from sensor
@@ -173,7 +172,7 @@ MPUR MPU_ReadAccel(MPU6050 *DataStruct);
  *            - MPUR_Ok: everything is OK
  *            - Other: in other cases
  */
-MPUR MPU_ReadGyro(MPU6050 *DataStruct);
+MPUR MPU_ReadGyro(MPU6050 *DS);
 
 /**
  * @brief  Reads temperature data from sensor
@@ -182,7 +181,7 @@ MPUR MPU_ReadGyro(MPU6050 *DataStruct);
  *            - MPUR_Ok: everything is OK
  *            - Other: in other cases
  */
-MPUR MPU_ReadTemp(MPU6050 *DataStruct);
+MPUR MPU_ReadTemp(MPU6050 *DS);
 
 /**
  * @brief  Enables interrupts

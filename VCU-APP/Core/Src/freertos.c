@@ -1050,7 +1050,7 @@ void StartAudioTask(void *argument) {
 				AUDIO_OUT_Pause();
 				AUDIO_OUT_SetVolume(100);
 				AUDIO_OUT_SetMute(0);
-				AUDIO_BeepPlay(BEEP_FREQ_2000_HZ, 1000);
+				AUDIO_BeepPlay(CS_BEEP_FREQ_2000_HZ, 1000);
 				AUDIO_OUT_Resume();
 			}
 		}

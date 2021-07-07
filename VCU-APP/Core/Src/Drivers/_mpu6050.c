@@ -26,12 +26,10 @@
  * --------------------------------------------*/
 #include "Drivers/_mpu6050.h"
 
-/* Exported constants
+/* Private constants
  * --------------------------------------------*/
-/* Default I2C address */
-#define MPU_I2C_ADDR 0xD0
-/* Who I am register value */
-#define MPU_I_AM 0x68
+#define MPU_I2C_ADDR 0xD0 	/* Default I2C address */
+#define MPU_I_AM 0x68 			/* Who I am register value */
 
 /* MPU6050 registers */
 #define MPU_AUX_VDDIO 0x01
