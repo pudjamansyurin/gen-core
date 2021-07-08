@@ -57,33 +57,33 @@ uint8_t VCU_TX_SwitchControl(void) {
   can_tx_t Tx = {0};
   UNION64 *d = &(Tx.data);
 
-  const finger_data_t *finger = FGR_IO_GetData();
+  const finger_data_t *finger = FGR_IO_Data();
 
-  d->u8[0] = HB_IO_GetPin(HBP_ABS);
-  d->u8[0] |= HB_IO_GetPin(HBP_LAMP) << 2;
+  d->u8[0] = HB_IO_Pin(HBP_ABS);
+  d->u8[0] |= HB_IO_Pin(HBP_LAMP) << 2;
   d->u8[0] |= NODE.d.error << 3;
   d->u8[0] |= NODE.d.overheat << 4;
   d->u8[0] |= !finger->id << 5;
-  d->u8[0] |= !RMT_IO_GetNearby() << 6;
+  d->u8[0] |= !RMT_IO_Nearby() << 6;
   d->u8[0] |= RTC_Daylight() << 7;
 
   // sein value
   HB_RefreshSein();
 
-  d->u8[1] = HB_IO_GetSein(HB_SEIN_LEFT);
-  d->u8[1] |= HB_IO_GetSein(HB_SEIN_RIGHT) << 1;
-  //	d->u8[1] |= HB_IO_GetPin(HBP_REVERSE) << 2;
+  d->u8[1] = HB_IO_Sein(HB_SEIN_LEFT);
+  d->u8[1] |= HB_IO_Sein(HB_SEIN_RIGHT) << 1;
+  //	d->u8[1] |= HB_IO_Pin(HBP_REVERSE) << 2;
   d->u8[1] |= MCU_Reversed() << 2;
   d->u8[1] |= BMS.d.run << 3;
   d->u8[1] |= MCU.d.run << 4;
   d->u8[1] |= (finger->registering & 0x03) << 5;
 
   // mode
-  d->u8[2] = HB_IO_GetSub(HBM_DRIVE);
+  d->u8[2] = HB_IO_Sub(HBM_DRIVE);
   //	d->u8[2] = MCU.d.drive_mode;
-  d->u8[2] |= HB_IO_GetSub(HBM_TRIP) << 2;
-  d->u8[2] |= HB_IO_GetSub(HBM_AVG) << 4;
-  d->u8[2] |= HB_IO_GetMode() << 5;
+  d->u8[2] |= HB_IO_Sub(HBM_TRIP) << 2;
+  d->u8[2] |= HB_IO_Sub(HBM_AVG) << 4;
+  d->u8[2] |= HB_IO_Mode() << 5;
   d->u8[2] |= HB_HasSession() << 7;
 
   // others
@@ -119,11 +119,11 @@ uint8_t VCU_TX_ModeData(void) {
   can_tx_t Tx = {0};
   UNION64 *d = &(Tx.data);
 
-  d->u16[0] = HB_IO_GetTrip(HBMS_TRIP_A);
-  d->u16[1] = HB_IO_GetTrip(HBMS_TRIP_B);
-  d->u16[2] = HB_IO_GetTrip(HBMS_TRIP_ODO);
-  d->u8[6] = HB_IO_GetAverage(HBMS_AVG_RANGE);
-  d->u8[7] = HB_IO_GetAverage(HBMS_AVG_EFFICIENCY);
+  d->u16[0] = HB_IO_Trip(HBMS_TRIP_A);
+  d->u16[1] = HB_IO_Trip(HBMS_TRIP_B);
+  d->u16[2] = HB_IO_Trip(HBMS_TRIP_ODO);
+  d->u8[6] = HB_IO_Average(HBMS_AVG_RANGE);
+  d->u8[7] = HB_IO_Average(HBMS_AVG_EFFICIENCY);
 
   return CANBUS_Write(&Tx, CAND_VCU_MODE_DATA, 8, 0);
 }

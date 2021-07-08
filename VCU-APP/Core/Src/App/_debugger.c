@@ -36,15 +36,15 @@ void DBG_GetEEPROM(ee_dbg_t *ee) {
 }
 
 void DBG_GetHBAR(hbar_dbg_t *hbar) {
-  hbar->reverse = HB_IO_GetPin(HBP_REVERSE);
-  hbar->mode.drive = HB_IO_GetSub(HBM_DRIVE);
-  hbar->mode.trip = HB_IO_GetSub(HBM_TRIP);
-  hbar->mode.avg = HB_IO_GetSub(HBM_AVG);
-  hbar->trip.a = HB_IO_GetTrip(HBMS_TRIP_A);
-  hbar->trip.b = HB_IO_GetTrip(HBMS_TRIP_B);
-  hbar->trip.odometer = HB_IO_GetTrip(HBMS_TRIP_ODO);
-  hbar->avg.range = HB_IO_GetAverage(HBMS_AVG_RANGE);
-  hbar->avg.efficiency = HB_IO_GetAverage(HBMS_AVG_EFFICIENCY);
+  hbar->reverse = HB_IO_Pin(HBP_REVERSE);
+  hbar->mode.drive = HB_IO_Sub(HBM_DRIVE);
+  hbar->mode.trip = HB_IO_Sub(HBM_TRIP);
+  hbar->mode.avg = HB_IO_Sub(HBM_AVG);
+  hbar->trip.a = HB_IO_Trip(HBMS_TRIP_A);
+  hbar->trip.b = HB_IO_Trip(HBMS_TRIP_B);
+  hbar->trip.odometer = HB_IO_Trip(HBMS_TRIP_ODO);
+  hbar->avg.range = HB_IO_Average(HBMS_AVG_RANGE);
+  hbar->avg.efficiency = HB_IO_Average(HBMS_AVG_EFFICIENCY);
 }
 
 void DBG_GetNET(net_dbg_t *net) {
@@ -54,7 +54,7 @@ void DBG_GetNET(net_dbg_t *net) {
 }
 
 void DBG_GetGPS(gps_dbg_t *gps) {
-  const gps_data_t *d = GPS_IO_GetData();
+  const gps_data_t *d = GPS_IO_Data();
 
   gps->active = d->active;
   gps->sat_in_use = (uint8_t)d->nmea.sats_in_use;
@@ -68,12 +68,12 @@ void DBG_GetGPS(gps_dbg_t *gps) {
 }
 
 void DBG_GetMEMS(mems_dbg_t *mems) {
-  const mems_raw_t *raw = MEMS_IO_GetRaw();
-  const mems_total_t *total = MEMS_IO_GetTotal();
-  const mems_tilt_t *tilt = MEMS_IO_GetTilt(MTILT_NOW);
+  const mems_raw_t *raw = MEMS_IO_Raw();
+  const mems_total_t *total = MEMS_IO_Total();
+  const mems_tilt_t *tilt = MEMS_IO_Tilt(MTILT_NOW);
 
-  mems->active = MEMS_IO_GetActive();
-  mems->motion_active = MEMS_IO_GetMotionActive();
+  mems->active = MEMS_IO_Active();
+  mems->motion_active = MEMS_IO_MotionActive();
   mems->accel.x = raw->accel.x * 100;
   mems->accel.y = raw->accel.y * 100;
   mems->accel.z = raw->accel.z * 100;
@@ -92,12 +92,12 @@ void DBG_GetMEMS(mems_dbg_t *mems) {
 }
 
 void DBG_GetRMT(remote_dbg_t *rmt) {
-  rmt->active = RMT_IO_GetActive();
-  rmt->nearby = RMT_IO_GetNearby();
+  rmt->active = RMT_IO_Active();
+  rmt->nearby = RMT_IO_Nearby();
 }
 
 void DBG_GetFGR(finger_dbg_t *fgr) {
-  const finger_data_t *finger = FGR_IO_GetData();
+  const finger_data_t *finger = FGR_IO_Data();
 
   fgr->verified = finger->verified;
   fgr->driver_id = finger->id;
@@ -157,7 +157,7 @@ void DBG_GetMCU(mcu_dbg_t *mcu) {
 
 void DBG_GetTasks(tasks_dbg_t *tasks) {
   for (uint8_t task = 0; task < TASK_MAX; task++) {
-    tasks->stack[task] = TASK_IO_GetStack(task);
-    tasks->wakeup[task] = TASK_IO_GetWakeup(task);
+    tasks->stack[task] = TASK_IO_Stack(task);
+    tasks->wakeup[task] = TASK_IO_Wakeup(task);
   }
 }

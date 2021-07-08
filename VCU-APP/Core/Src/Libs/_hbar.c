@@ -289,26 +289,24 @@ uint8_t HB_EE_Trip(HBMS_TRIP mTrip, uint16_t *src) {
   return ok;
 }
 
-uint32_t HB_IO_GetMeter(void) { return HBAR.d.meter; }
+uint32_t HB_IO_Meter(void) { return HBAR.d.meter; }
 
-uint8_t HB_IO_GetPin(HBP key) { return HBAR.d.pin[key] & 0x01; }
+uint8_t HB_IO_Pin(HBP key) { return HBAR.d.pin[key] & 0x01; }
 
-uint8_t HB_IO_GetMode(void) { return HBAR.d.mode; }
+uint8_t HB_IO_Mode(void) { return HBAR.d.mode; }
 
-uint8_t HB_IO_GetSub(HBM mode) {
-	return HBAR.d.sub[mode] & SubMask(mode);
-}
+uint8_t HB_IO_Sub(HBM mode) { return HBAR.d.sub[mode] & SubMask(mode); }
 
-uint8_t HB_IO_GetSein(HB_SEIN side) { return HBAR.d.sein[side]; }
+uint8_t HB_IO_Sein(HB_SEIN side) { return HBAR.d.sein[side]; }
 
-uint16_t HB_IO_GetTrip(HBMS_TRIP key) { return HBAR.d.trip[key]; }
+uint16_t HB_IO_Trip(HBMS_TRIP key) { return HBAR.d.trip[key]; }
 
-uint8_t HB_IO_GetAverage(HBMS_AVG key) { return HBAR.d.avg[key]; }
+uint8_t HB_IO_Average(HBMS_AVG key) { return HBAR.d.avg[key]; }
 
 void HB_IO_SetPin(HBP key, uint8_t value) { HBAR.d.pin[key] = value & 0x01; }
 
 void HB_IO_SetSub(HBM mode, uint8_t value) {
-	HBAR.d.sub[mode] = value & SubMask(mode);
+  HBAR.d.sub[mode] = value & SubMask(mode);
 }
 
 void HB_IO_SetAverage(HBMS_AVG key, uint8_t value) { HBAR.d.avg[key] = value; }
@@ -366,8 +364,7 @@ static uint8_t Deffered(const void *src) {
 }
 
 static uint8_t SubMask(HBM mode) {
-	uint8_t MASK = 0x01;
-	if (HB_SubMax(mode) > 2)
-		MASK = 0x03;
-	return MASK;
+  uint8_t MASK = 0x01;
+  if (HB_SubMax(mode) > 2) MASK = 0x03;
+  return MASK;
 }

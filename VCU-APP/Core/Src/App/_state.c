@@ -95,7 +95,7 @@ void STATE_Check(void) {
         if (!GATE_ReadPower5v())
           VCU.d.vehicle--;
         else if (start) {
-          if (RMT_IO_GetNearby())
+          if (RMT_IO_Nearby())
             VCU.d.vehicle++;
           else
             osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RESET);
@@ -111,7 +111,7 @@ void STATE_Check(void) {
 
         if (!GATE_ReadPower5v() || shutdown)
           VCU.d.vehicle--;
-        else if (FGR_IO_GetID())
+        else if (FGR_IO_ID())
           VCU.d.vehicle++;
         break;
 

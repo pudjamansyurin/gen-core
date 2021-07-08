@@ -24,5 +24,5 @@ uint8_t AES_Encrypt(uint8_t *dst, const uint8_t *src, uint16_t Sz);
 uint8_t AES_Decrypt(uint8_t *dst, const uint8_t *src, uint16_t Sz);
 uint8_t AES_EE_Key(const aes_key_t);
 
-uint32_t AES_IO_GetQuarterKey(void);
+uint32_t AES_IO_QuarterKey(void);
 #endif /* INC_DRIVERS__AES_H_ */

@@ -43,11 +43,7 @@ typedef struct {
 
 /* Private variables
  * --------------------------------------------*/
-static finger_t FGR = {
-		.d = {0},
-		.puart = &huart4,
-		.pdma = &hdma_uart4_rx
-};
+static finger_t FGR = {.d = {0}, .puart = &huart4, .pdma = &hdma_uart4_rx};
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -109,7 +105,7 @@ uint8_t FGR_Probe(void) {
 }
 
 void FGR_Verify(void) {
-	if (FGR.d.verified) return;
+  if (FGR.d.verified) return;
 
   lock();
   FGR.d.verified = FGR_Probe();
@@ -243,27 +239,15 @@ void FGR_Authenticate(void) {
   unlock();
 }
 
+const finger_data_t *FGR_IO_Data(void) { return &(FGR.d); }
 
-const finger_data_t* FGR_IO_GetData(void) {
-	return &(FGR.d);
-}
+uint8_t FGR_IO_ID(void) { return FGR.d.id; }
 
-uint8_t FGR_IO_GetID(void) {
-	return FGR.d.id;
-}
+void FGR_IO_ClearID(void) { FGR.d.id = 0; }
 
-void FGR_IO_ClearID(void) {
-	FGR.d.id = 0;
-}
+void FGR_IO_ClearDB(void) { memset(FGR.db, 0, FINGER_USER_MAX); }
 
-void FGR_IO_ClearDB(void) {
-  memset(FGR.db, 0, FINGER_USER_MAX);
-}
-
-uint8_t FGR_IO_GetDB(uint8_t idx) {
-	return FGR.db[idx];
-}
-
+uint8_t FGR_IO_DB(uint8_t idx) { return FGR.db[idx]; }
 
 /* Private functions implementation
  * --------------------------------------------*/

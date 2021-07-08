@@ -24,6 +24,6 @@ typedef struct {
  * --------------------------------------------*/
 void ML_BMS_Init(void);
 void ML_PredictRange(void);
-const bms_avg_t* ML_IO_GetDataBMS(void);
+const bms_avg_t* ML_IO_DataBMS(void);
 
 #endif /* INC_APP__ML_H_ */

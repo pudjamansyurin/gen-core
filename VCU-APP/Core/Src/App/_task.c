@@ -22,9 +22,9 @@ extern osEventFlagsId_t GlobalEventHandle;
 typedef uint32_t tasks_tick_t[TASK_MAX];
 
 typedef struct {
-	tasks_tick_t tick;
-	tasks_stack_t stack;
-	tasks_wakeup_t wakeup;
+  tasks_tick_t tick;
+  tasks_stack_t stack;
+  tasks_wakeup_t wakeup;
 } tasks_t;
 
 /* Private variables
@@ -59,33 +59,19 @@ void TASK_CheckWakeup(void) {
 }
 
 void TASK_CheckStack(void) {
-	osThreadId_t THREAD[TASK_MAX] = {
-			ManagerTaskHandle,
-			NetworkTaskHandle,
-			ReporterTaskHandle,
-			CommandTaskHandle,
-			MemsTaskHandle,
-			RemoteTaskHandle,
-			FingerTaskHandle,
-			AudioTaskHandle,
-			GateTaskHandle,
-			CanRxTaskHandle,
-			CanTxTaskHandle,
-	};
+  osThreadId_t THREAD[TASK_MAX] = {
+      ManagerTaskHandle, NetworkTaskHandle, ReporterTaskHandle,
+      CommandTaskHandle, MemsTaskHandle,    RemoteTaskHandle,
+      FingerTaskHandle,  AudioTaskHandle,   GateTaskHandle,
+      CanRxTaskHandle,   CanTxTaskHandle,
+  };
 
   for (uint8_t task = 0; task < TASK_MAX; task++)
-  	TASKS.stack[task] = osThreadGetStackSpace(THREAD[task]);
+    TASKS.stack[task] = osThreadGetStackSpace(THREAD[task]);
 }
 
-uint8_t TASK_IO_GetWakeup(TASK task) {
-	return TASKS.wakeup[task];
-}
+uint8_t TASK_IO_Wakeup(TASK task) { return TASKS.wakeup[task]; }
 
-uint16_t TASK_IO_GetStack(TASK task) {
-	return TASKS.stack[task];
-}
+uint16_t TASK_IO_Stack(TASK task) { return TASKS.stack[task]; }
 
-void TASK_IO_SetTick(TASK task) {
-	TASKS.tick[task] = _GetTickMS();
-}
-
+void TASK_IO_SetTick(TASK task) { TASKS.tick[task] = _GetTickMS(); }

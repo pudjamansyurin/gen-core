@@ -341,7 +341,7 @@ static void EXEC_FingerFetch(response_data_t *rdata) {
     rdata->res_code = CMDR_OK;
 
     for (uint8_t id = 1; id <= FINGER_USER_MAX; id++) {
-      if (FGR_IO_GetDB(id - 1)) {
+      if (FGR_IO_DB(id - 1)) {
         sprintf(fingers, "%1d,", id);
         strcat(rdata->message, fingers);
       }

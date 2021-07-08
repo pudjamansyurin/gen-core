@@ -66,11 +66,11 @@ bool FW_EnterModeIAP(IAP_TYPE type) {
 void FW_CaptureResponseIAP(response_t *r) {
   char node[4];
 
-  sprintf(node, IAP.type == ITYPE_HMI ? "HMI" : "VCU");
+  sprintf(node, IAP_IO_Type() == ITYPE_HMI ? "HMI" : "VCU");
 
   // set default value
   r->header.code = CMDC_FOTA;
-  r->header.sub_code = IAP.type == ITYPE_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
+  r->header.sub_code = IAP_IO_Type() == ITYPE_HMI ? CMD_FOTA_HMI : CMD_FOTA_VCU;
   r->data.res_code = CMDR_ERROR;
   sprintf(r->data.message, "%s Failed", node);
 
@@ -122,10 +122,10 @@ void FW_CaptureResponseIAP(response_t *r) {
 /* Private functions implementation
  * --------------------------------------------*/
 static void FW_MakeResponseIAP(char *message, const char *node) {
-  uint16_t vNew = VCU_VERSION, vOld = IAP.version;
+  uint16_t vNew = VCU_VERSION, vOld = IAP_IO_Version();
   uint32_t tick;
 
-  if (IAP.type == ITYPE_HMI) {
+  if (IAP_IO_Type() == ITYPE_HMI) {
     tick = _GetTickMS();
     do {
       vNew = HMI1.d.version;

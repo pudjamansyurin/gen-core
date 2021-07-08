@@ -11,6 +11,14 @@
 
 /* Public functions implementation
  * --------------------------------------------*/
+void _Error(const char* msg) {
+#if (APP)
+  if (osKernelGetState() == osKernelRunning) printf(msg);
+#else
+  printf(msg);
+#endif
+}
+
 void _DelayMS(uint32_t ms) {
 #if (APP)
   osDelay(ms);
@@ -33,14 +41,6 @@ uint8_t _TickOut(uint32_t tick, uint32_t ms) {
 
 uint8_t _TickIn(uint32_t tick, uint32_t ms) {
   return (tick && (_GetTickMS() - tick) < ms);
-}
-
-void _Error(char msg[50]) {
-#if (APP)
-  if (osKernelGetState() == osKernelRunning) printf(msg);
-#else
-  printf(msg);
-#endif
 }
 
 uint32_t _ByteSwap32(uint32_t x) {

@@ -87,5 +87,5 @@ void RPT_IO_SetOvdInterval(uint16_t value);
 void RPT_IO_SetPayloadPending(PAYLOAD_TYPE type, uint8_t value);
 void RPT_IO_PayloadDiscard(void);
 
-const payload_t *RPT_IO_GetPayload(PAYLOAD_TYPE type);
+const payload_t *RPT_IO_Payload(PAYLOAD_TYPE type);
 #endif /* INC_APP__REPORTER_H_ */

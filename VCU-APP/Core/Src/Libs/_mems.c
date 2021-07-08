@@ -99,8 +99,8 @@ uint8_t MEMS_Init(void) {
     MX_I2C3_Init();
     GATE_MemsReset();
 
-    ok = MPU_Init(MEMS.pi2c, MPU_Device_0, MPU_Accel_16G,
-                  MPU_Gyro_2000s) == MPUR_Ok;
+    ok = MPU_Init(MEMS.pi2c, MPU_Device_0, MPU_Accel_16G, MPU_Gyro_2000s) ==
+         MPUR_Ok;
     if (!ok) _DelayMS(500);
   } while (!ok && _TickIn(tick, MEMS_TIMEOUT_MS));
 
@@ -217,21 +217,21 @@ uint8_t MEMS_Dragged(void) {
 
 void MEMS_ToggleMotion(void) { MEMS.motion.active = !MEMS.motion.active; }
 
-uint8_t MEMS_IO_GetActive(void) { return MEMS.d.active; }
+uint8_t MEMS_IO_Active(void) { return MEMS.d.active; }
 
-uint8_t MEMS_IO_GetMotionActive(void) { return MEMS.motion.active; }
+uint8_t MEMS_IO_MotionActive(void) { return MEMS.motion.active; }
 
-uint8_t MEMS_IO_GetMotionOffset(void) { return MEMS.motion.offset; }
+uint8_t MEMS_IO_MotionOffset(void) { return MEMS.motion.offset; }
 
-const mems_raw_t *MEMS_IO_GetRaw(void) { return &(MEMS.d.raw); }
+const mems_raw_t *MEMS_IO_Raw(void) { return &(MEMS.d.raw); }
 
-const mems_total_t *MEMS_IO_GetTotal(void) { return &(MEMS.d.total); }
+const mems_total_t *MEMS_IO_Total(void) { return &(MEMS.d.total); }
 
-const mems_tilt_t *MEMS_IO_GetTilt(MEMS_TILT key) {
+const mems_tilt_t *MEMS_IO_Tilt(MEMS_TILT key) {
   return &(MEMS.motion.tilt[key]);
 }
 
-uint8_t MEMS_IO_GetEffect(MEMS_EFFECT key) { return MEMS.d.effect[key] & 0x01; }
+uint8_t MEMS_IO_Effect(MEMS_EFFECT key) { return MEMS.d.effect[key] & 0x01; }
 
 /* Private functions implementation
  * --------------------------------------------*/
@@ -272,7 +272,7 @@ static uint8_t Capture(void) {
 }
 
 static void ConvertAccel(void) {
-	mems_axis_t *axis = &(MEMS.d.raw.accel);
+  mems_axis_t *axis = &(MEMS.d.raw.accel);
   mems_tilt_t *tilt = &(MEMS.motion.tilt[MTILT_NOW]);
 
   float pitch, roll;
@@ -297,7 +297,7 @@ static uint8_t OnlyGotTemp(void) {
 
 #if MEMS_DEBUG
 static void Debugger(void) {
-	mems_total_t *total = &(MEMS.d.total);
+  mems_total_t *total = &(MEMS.d.total);
 
   printf("MEMS:Accel[%lu %%] = %lu / %u\n",
          (uint32_t)(total->accel * 100 / CRASH_LIMIT), (uint32_t)total->accel,

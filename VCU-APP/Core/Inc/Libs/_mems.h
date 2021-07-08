@@ -63,11 +63,11 @@ void MEMS_CaptureMotion(void);
 uint8_t MEMS_Dragged(void);
 void MEMS_ToggleMotion(void);
 
-uint8_t MEMS_IO_GetActive(void);
-uint8_t MEMS_IO_GetMotionActive(void);
-uint8_t MEMS_IO_GetMotionOffset(void);
-const mems_raw_t* MEMS_IO_GetRaw(void);
-const mems_total_t* MEMS_IO_GetTotal(void);
-const mems_tilt_t* MEMS_IO_GetTilt(MEMS_TILT key);
-uint8_t MEMS_IO_GetEffect(MEMS_EFFECT key);
+uint8_t MEMS_IO_Active(void);
+uint8_t MEMS_IO_MotionActive(void);
+uint8_t MEMS_IO_MotionOffset(void);
+const mems_raw_t* MEMS_IO_Raw(void);
+const mems_total_t* MEMS_IO_Total(void);
+const mems_tilt_t* MEMS_IO_Tilt(MEMS_TILT key);
+uint8_t MEMS_IO_Effect(MEMS_EFFECT key);
 #endif /* INC_LIBS__MEMS_H_ */

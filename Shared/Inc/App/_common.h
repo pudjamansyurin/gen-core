@@ -22,15 +22,15 @@
 
 /* Exported macros
  * --------------------------------------------*/
-#define BIT(x) (1ULL << x)
-#define BV(var, x) (var |= (1ULL << x))
-#define BC(var, x) (var &= ~(1ULL << x))
-#define BT(var, x) (var ^= (1ULL << x))
+#define BIT(X) (1ULL << X)
+#define BV(V, X) (V |= (1ULL << X))
+#define BC(V, X) (V &= ~(1ULL << X))
+#define BT(V, X) (V ^= (1ULL << X))
 
-#define CHARISNUM(x) ((x) >= '0' && (x) <= '9')
-#define CHARTONUM(x) ((x) - '0')
+#define CHARISNUM(X) ((X) >= '0' && (X) <= '9')
+#define CHARTONUM(X) ((X) - '0')
 
-#define MIN(a, b) ((a < b) ? a : b)
+#define MIN(A, B) ((A < B) ? A : B)
 
 #define MAX_U8(X) ((X) > UINT8_MAX ? UINT8_MAX : (X))
 #define RAD2DEG(X) ((X)*180.0 / M_PI)
@@ -79,11 +79,11 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
+void _Error(const char* msg);
 void _DelayMS(uint32_t ms);
 uint32_t _GetTickMS(void);
 uint8_t _TickOut(uint32_t tick, uint32_t ms);
 uint8_t _TickIn(uint32_t tick, uint32_t ms);
-void _Error(char msg[50]);
 uint32_t _ByteSwap32(uint32_t x);
 float _SamplingFloat(sample_float_t* m, float* buf, uint16_t sz, float val);
 #endif /* UTILS_H_ */

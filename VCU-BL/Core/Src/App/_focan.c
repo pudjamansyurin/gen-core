@@ -13,6 +13,14 @@
 #include "Drivers/_iwdg.h"
 #include "iwdg.h"
 
+/* Private enums
+ * --------------------------------------------*/
+typedef enum {
+	FOCAN_ERROR = 0x00,
+	FOCAN_ACK = 0x79,
+	FOCAN_NACK = 0x1F
+} FOCAN;
+
 /* Private functions prototypes
  * --------------------------------------------*/
 static uint8_t WriteAndWaitResponse(can_tx_t* Tx, uint32_t addr, uint32_t DLC,

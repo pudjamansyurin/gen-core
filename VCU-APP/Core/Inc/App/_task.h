@@ -53,18 +53,18 @@
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
-	TASK_MANAGER,
-	TASK_NETWORK,
-	TASK_REPORTER,
-	TASK_COMMAND,
-	TASK_MEMS,
-	TASK_REMOTE,
-	TASK_FINGER,
-	TASK_AUDIO,
-	TASK_GATE,
-	TASK_CANRX,
-	TASK_CANTX,
-	TASK_MAX,
+  TASK_MANAGER,
+  TASK_NETWORK,
+  TASK_REPORTER,
+  TASK_COMMAND,
+  TASK_MEMS,
+  TASK_REMOTE,
+  TASK_FINGER,
+  TASK_AUDIO,
+  TASK_GATE,
+  TASK_CANRX,
+  TASK_CANTX,
+  TASK_MAX,
 } TASK;
 
 /* Exported types
@@ -88,7 +88,7 @@ extern osThreadId_t CanTxTaskHandle;
 
 /* Exported variables
  * --------------------------------------------*/
-//extern tasks_t TASKS;
+// extern tasks_t TASKS;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -97,7 +97,7 @@ bool TASK_KernelFailed(void);
 void TASK_CheckWakeup(void);
 void TASK_CheckStack(void);
 
-uint8_t TASK_IO_GetWakeup(TASK task);
-uint16_t TASK_IO_GetStack(TASK task);
+uint8_t TASK_IO_Wakeup(TASK task);
+uint16_t TASK_IO_Stack(TASK task);
 void TASK_IO_SetTick(TASK task);
 #endif /* INC_APP__TASK_H_ */

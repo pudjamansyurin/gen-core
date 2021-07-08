@@ -41,9 +41,9 @@ uint8_t FGR_ResetDB(void);
 uint8_t FGR_SetPassword(uint32_t password);
 void FGR_Authenticate(void);
 
-const finger_data_t *FGR_IO_GetData(void);
-uint8_t FGR_IO_GetID(void);
+const finger_data_t *FGR_IO_Data(void);
+uint8_t FGR_IO_ID(void);
 void FGR_IO_ClearID(void);
 void FGR_IO_ClearDB(void);
-uint8_t FGR_IO_GetDB(uint8_t idx);
+uint8_t FGR_IO_DB(uint8_t idx);
 #endif /* INC_LIBS__FINGER_H_ */

@@ -61,7 +61,7 @@ void MCU_Power12v(uint8_t on) {
 }
 
 void MCU_PowerOverCAN(uint8_t on) {
-  uint8_t R = HB_IO_GetPin(HBP_REVERSE);
+  uint8_t R = HB_IO_Pin(HBP_REVERSE);
 
   if (on) {
     if (MCU.d.inv.lockout) {
@@ -225,7 +225,7 @@ uint8_t MCU_TX_Setting(uint8_t on, uint8_t reverse) {
   d->u8[4] = reverse;
   d->u8[5] = on & 0x01;
   d->u8[5] |= (0 & 0x01) << 1;
-  d->u8[5] |= HB_IO_GetSub(HBM_DRIVE) << 2;
+  d->u8[5] |= HB_IO_Sub(HBM_DRIVE) << 2;
 
   // send message
   return CANBUS_Write(&Tx, CAND_MCU_SETTING, 6, 0);

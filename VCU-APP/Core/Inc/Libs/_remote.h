@@ -39,7 +39,7 @@ typedef enum {
   RMT_CMD_ALARM,
   RMT_CMD_SEAT,
   RMT_CMD_ANTITHIEF,
-	RMT_CMD_MAX,
+  RMT_CMD_MAX,
 } RMT_CMD;
 
 /* Public functions prototype
@@ -56,10 +56,10 @@ uint8_t RMT_GotPairedResponse(void);
 uint8_t RMT_ValidateCommand(RMT_CMD *cmd);
 void RMT_IrqHandler(void);
 
-uint8_t RMT_IO_GetActive(void);
-uint8_t RMT_IO_GetNearby(void);
-uint32_t RMT_IO_GetTick(RMT_TICK key);
-uint8_t RMT_IO_GetDuration(RMT_DURATION key);
+uint8_t RMT_IO_Active(void);
+uint8_t RMT_IO_Nearby(void);
+uint32_t RMT_IO_Tick(RMT_TICK key);
+uint8_t RMT_IO_Duration(RMT_DURATION key);
 void RMT_IO_SetTick(RMT_TICK key);
 void RMT_IO_SetDuration(RMT_DURATION key, uint32_t tick);
 #endif /* INC_LIBS__REMOTE_H_ */

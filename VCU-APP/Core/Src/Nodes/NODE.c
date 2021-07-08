@@ -97,14 +97,14 @@ void NODE_TX_DebugGroup(void) {
   d->u8[3] |= (audio.mute & 0x01) << 1;
   d->u8[4] = audio.volume;
 
-  d->u8[5] = HB_IO_GetPin(HBP_SELECT);
-  d->u8[5] |= HB_IO_GetPin(HBP_SET) << 1;
-  d->u8[5] |= HB_IO_GetPin(HBP_STARTER) << 2;
-  d->u8[5] |= HB_IO_GetPin(HBP_SEIN_L) << 3;
-  d->u8[5] |= HB_IO_GetPin(HBP_SEIN_R) << 4;
-  d->u8[5] |= HB_IO_GetPin(HBP_REVERSE) << 5;
-  d->u8[5] |= HB_IO_GetPin(HBP_LAMP) << 6;
-  d->u8[5] |= HB_IO_GetPin(HBP_ABS) << 7;
+  d->u8[5] = HB_IO_Pin(HBP_SELECT);
+  d->u8[5] |= HB_IO_Pin(HBP_SET) << 1;
+  d->u8[5] |= HB_IO_Pin(HBP_STARTER) << 2;
+  d->u8[5] |= HB_IO_Pin(HBP_SEIN_L) << 3;
+  d->u8[5] |= HB_IO_Pin(HBP_SEIN_R) << 4;
+  d->u8[5] |= HB_IO_Pin(HBP_REVERSE) << 5;
+  d->u8[5] |= HB_IO_Pin(HBP_LAMP) << 6;
+  d->u8[5] |= HB_IO_Pin(HBP_ABS) << 7;
 
   CANBUS_Write(&Tx, CAND_DBG_GROUP, 6, 0);
 }
@@ -119,7 +119,7 @@ void NODE_TX_DebugVCU(void) {
   d->u16[0] = vcu.events;
   d->u8[2] = vcu.buffered;
   d->u8[3] = vcu.battery;
-  d->u32[1] = HB_IO_GetMeter();
+  d->u32[1] = HB_IO_Meter();
 
   CANBUS_Write(&Tx, CAND_DBG_VCU, 8, 0);
 }
@@ -154,9 +154,9 @@ void NODE_TX_DebugMEMS(void) {
 
   d->u8[0] = (mems.active & 0x01);
   d->u8[0] |= (mems.motion_active & 0x01) << 1;
-  d->u8[0] |= MEMS_IO_GetEffect(MEFFECT_FALL) << 2;
-  d->u8[0] |= MEMS_IO_GetEffect(MEFFECT_CRASH) << 3;
-  d->u8[1] = MEMS_IO_GetMotionOffset();
+  d->u8[0] |= MEMS_IO_Effect(MEFFECT_FALL) << 2;
+  d->u8[0] |= MEMS_IO_Effect(MEFFECT_CRASH) << 3;
+  d->u8[1] = MEMS_IO_MotionOffset();
   CANBUS_Write(&Tx, CAND_DBG_MEMS_1, 2, 0);
 
   d->s16[0] = mems.accel.x;
@@ -187,14 +187,14 @@ void NODE_TX_DebugRMT(void) {
 
   d->u8[0] = (rmt.active & 0x01);
   d->u8[0] |= (rmt.nearby & 0x01) << 1;
-  d->u8[1] = RMT_IO_GetDuration(RMT_DUR_TX);
-  d->u8[2] = RMT_IO_GetDuration(RMT_DUR_RX);
-  d->u8[3] = RMT_IO_GetDuration(RMT_DUR_FULL);
-  d->u32[1] = AES_IO_GetQuarterKey();
+  d->u8[1] = RMT_IO_Duration(RMT_DUR_TX);
+  d->u8[2] = RMT_IO_Duration(RMT_DUR_RX);
+  d->u8[3] = RMT_IO_Duration(RMT_DUR_FULL);
+  d->u32[1] = AES_IO_QuarterKey();
   CANBUS_Write(&Tx, CAND_DBG_RMT_1, 8, 0);
 
-  d->u32[0] = RMT_IO_GetTick(RMT_TICK_PING);
-  d->u32[1] = RMT_IO_GetTick(RMT_TICK_HBEAT);
+  d->u32[0] = RMT_IO_Tick(RMT_TICK_PING);
+  d->u32[1] = RMT_IO_Tick(RMT_TICK_HBEAT);
   CANBUS_Write(&Tx, CAND_DBG_RMT_2, 8, 0);
 }
 
@@ -205,38 +205,38 @@ void NODE_TX_DebugTASK(void) {
   tasks_dbg_t t;
   DBG_GetTasks(&t);
 
-  d->u16[0] = TASK_IO_GetStack(TASK_MANAGER);
-  d->u16[1] = TASK_IO_GetStack(TASK_NETWORK);
-  d->u16[2] = TASK_IO_GetStack(TASK_REPORTER);
-  d->u16[3] = TASK_IO_GetStack(TASK_COMMAND);
+  d->u16[0] = TASK_IO_Stack(TASK_MANAGER);
+  d->u16[1] = TASK_IO_Stack(TASK_NETWORK);
+  d->u16[2] = TASK_IO_Stack(TASK_REPORTER);
+  d->u16[3] = TASK_IO_Stack(TASK_COMMAND);
   CANBUS_Write(&Tx, CAND_DBG_TASK_1, 8, 0);
 
   d->u16[0] = 0;
-  d->u16[1] = TASK_IO_GetStack(TASK_MEMS);
-  d->u16[2] = TASK_IO_GetStack(TASK_REMOTE);
-  d->u16[3] = TASK_IO_GetStack(TASK_FINGER);
+  d->u16[1] = TASK_IO_Stack(TASK_MEMS);
+  d->u16[2] = TASK_IO_Stack(TASK_REMOTE);
+  d->u16[3] = TASK_IO_Stack(TASK_FINGER);
   CANBUS_Write(&Tx, CAND_DBG_TASK_2, 8, 0);
 
-  d->u16[0] = TASK_IO_GetStack(TASK_AUDIO);
-  d->u16[1] = TASK_IO_GetStack(TASK_GATE);
-  d->u16[2] = TASK_IO_GetStack(TASK_CANRX);
-  d->u16[3] = TASK_IO_GetStack(TASK_CANTX);
+  d->u16[0] = TASK_IO_Stack(TASK_AUDIO);
+  d->u16[1] = TASK_IO_Stack(TASK_GATE);
+  d->u16[2] = TASK_IO_Stack(TASK_CANRX);
+  d->u16[3] = TASK_IO_Stack(TASK_CANTX);
   CANBUS_Write(&Tx, CAND_DBG_TASK_3, 8, 0);
 
-  d->u8[0] = TASK_IO_GetWakeup(TASK_MANAGER);
-  d->u8[1] = TASK_IO_GetWakeup(TASK_NETWORK);
-  d->u8[2] = TASK_IO_GetWakeup(TASK_REPORTER);
-  d->u8[3] = TASK_IO_GetWakeup(TASK_COMMAND);
+  d->u8[0] = TASK_IO_Wakeup(TASK_MANAGER);
+  d->u8[1] = TASK_IO_Wakeup(TASK_NETWORK);
+  d->u8[2] = TASK_IO_Wakeup(TASK_REPORTER);
+  d->u8[3] = TASK_IO_Wakeup(TASK_COMMAND);
   d->u8[4] = 0;
-  d->u8[5] = TASK_IO_GetWakeup(TASK_MEMS);
-  d->u8[6] = TASK_IO_GetWakeup(TASK_REMOTE);
-  d->u8[7] = TASK_IO_GetWakeup(TASK_FINGER);
+  d->u8[5] = TASK_IO_Wakeup(TASK_MEMS);
+  d->u8[6] = TASK_IO_Wakeup(TASK_REMOTE);
+  d->u8[7] = TASK_IO_Wakeup(TASK_FINGER);
   CANBUS_Write(&Tx, CAND_DBG_TASK_4, 8, 0);
 
-  d->u8[0] = TASK_IO_GetWakeup(TASK_AUDIO);
-  d->u8[1] = TASK_IO_GetWakeup(TASK_GATE);
-  d->u8[2] = TASK_IO_GetWakeup(TASK_CANRX);
-  d->u8[3] = TASK_IO_GetWakeup(TASK_CANTX);
+  d->u8[0] = TASK_IO_Wakeup(TASK_AUDIO);
+  d->u8[1] = TASK_IO_Wakeup(TASK_GATE);
+  d->u8[2] = TASK_IO_Wakeup(TASK_CANRX);
+  d->u8[3] = TASK_IO_Wakeup(TASK_CANTX);
 
   vcu_dbg_t vcu;
   DBG_GetVCU(&vcu);
@@ -280,7 +280,7 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
 
-  const bms_avg_t *avg = ML_IO_GetDataBMS();
+  const bms_avg_t *avg = ML_IO_DataBMS();
   d->u16[1] = avg->capacity * 10;
   d->u16[2] = avg->efficiency * 10;
   d->u16[3] = avg->distance * 10;

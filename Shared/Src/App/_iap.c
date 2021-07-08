@@ -14,9 +14,17 @@
 #include "Drivers/_flasher.h"
 #endif
 
-/* Public variables
+/* Private types
  * --------------------------------------------*/
-iap_t IAP = {0};
+typedef struct {
+	uint32_t flag;
+	uint16_t version;
+	IAP_TYPE type;
+} iap_t;
+
+/* Private variables
+ * --------------------------------------------*/
+static iap_t IAP = {0};
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -24,6 +32,28 @@ void IAP_Init(void) {
   IAP_EE_Type(NULL);
   IAP_EE_Version(NULL);
 }
+
+#if (!APP)
+void IAP_SetAppMeta(uint32_t offset, uint32_t data) {
+  FLASHER_WriteAppArea((uint8_t *)&data, sizeof(uint32_t), offset);
+}
+
+void IAP_SetBootMeta(uint32_t offset, uint32_t data) {
+  FLASHER_WriteBootArea((uint8_t *)&data, sizeof(uint32_t), offset);
+}
+
+void IAP_SetFlag(void) {
+  IAP_FLAG flag = IFLAG_EEPROM;
+  IAP_EE_Flag(&flag);
+}
+
+void IAP_ResetFlag(void) {
+  IAP_FLAG flag = IFLAG_RESET;
+  IAP_EE_Flag(&flag);
+}
+
+uint8_t IAP_InProgress(void) { return (IAP.flag == IFLAG_EEPROM); }
+#endif
 
 uint8_t IAP_EE_Type(IAP_TYPE *src) {
   void *dst = &IAP.type;
@@ -48,24 +78,10 @@ uint8_t IAP_EE_Version(uint16_t *src) {
   return EE_Cmd(VA_IAP_VERSION, src, dst);
 }
 
-#if (!APP)
-void IAP_SetAppMeta(uint32_t offset, uint32_t data) {
-  FLASHER_WriteAppArea((uint8_t *)&data, sizeof(uint32_t), offset);
+IAP_TYPE IAP_IO_Type(void) {
+	return IAP.type;
 }
 
-void IAP_SetBootMeta(uint32_t offset, uint32_t data) {
-  FLASHER_WriteBootArea((uint8_t *)&data, sizeof(uint32_t), offset);
+uint16_t IAP_IO_Version(void) {
+	return IAP.version;
 }
-
-void IAP_SetFlag(void) {
-  IAP_FLAG flag = IFLAG_EEPROM;
-  IAP_EE_Flag(&flag);
-}
-
-void IAP_ResetFlag(void) {
-  IAP_FLAG flag = IFLAG_RESET;
-  IAP_EE_Flag(&flag);
-}
-
-uint8_t IAP_InProgress(void) { return (IAP.flag == IFLAG_EEPROM); }
-#endif

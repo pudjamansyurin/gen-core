@@ -127,11 +127,11 @@ int main(void)
   if (*(uint32_t *)IAP_FLAG_ADDR == IFLAG_SRAM) {
     printf("IAP set, do FOTA.\n");
     /* Everything went well */
-    if (FOTA_Upgrade(IAP.type)) {
+    if (FOTA_Upgrade(IAP_IO_Type())) {
       /* Reset IAP flag */
       *(uint32_t *)IAP_FLAG_ADDR = IFLAG_RESET;
       /* Take branching decision on next reboot */
-      FOTA_Reboot(IAP.type);
+      FOTA_Reboot();
     }
     /* Reset IAP flag */
     *(uint32_t *)IAP_FLAG_ADDR = IFLAG_RESET;
@@ -146,12 +146,12 @@ int main(void)
   }
   /* Power reset during FOTA, try once more */
   else if (IAP_InProgress()) {
-    if (IAP.type == ITYPE_VCU) {
+    if (IAP_IO_Type() == ITYPE_VCU) {
       printf("FOTA set, do FOTA once more.\n");
       /* Everything went well, boot form new image */
       if (FOTA_Upgrade(ITYPE_VCU)) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(IAP.type);
+        FOTA_Reboot();
       }
       /* Erase partially programmed application area */
       FLASHER_EraseAppArea();
@@ -168,14 +168,14 @@ int main(void)
       /* Restore back old image to application area */
       if (FLASHER_RestoreApp()) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(IAP.type);
+        FOTA_Reboot();
       }
     } else {
       printf("No image at all, do FOTA.\n");
       /* Download new firmware for the first time */
       if (FOTA_Upgrade(ITYPE_VCU)) {
         /* Take branching decision on next reboot */
-        FOTA_Reboot(IAP.type);
+        FOTA_Reboot();
       }
     }
     HAL_NVIC_SystemReset();

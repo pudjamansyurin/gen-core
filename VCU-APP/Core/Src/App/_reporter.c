@@ -176,4 +176,4 @@ void RPT_IO_SetPayloadPending(PAYLOAD_TYPE type, uint8_t value) {
 
 void RPT_IO_PayloadDiscard(void) { PAYS[PAYLOAD_REPORT].pending = 0; }
 
-const payload_t *RPT_IO_GetPayload(PAYLOAD_TYPE type) { return &(PAYS[type]); }
+const payload_t *RPT_IO_Payload(PAYLOAD_TYPE type) { return &(PAYS[type]); }

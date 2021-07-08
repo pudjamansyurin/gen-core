@@ -64,7 +64,7 @@ void ML_PredictRange(void) {
     tick = _GetTickMS();
 }
 
-const bms_avg_t* ML_IO_GetDataBMS(void) { return &(ML.bms.d); }
+const bms_avg_t *ML_IO_DataBMS(void) { return &(ML.bms.d); }
 
 /* Private functions implementation
  * --------------------------------------------*/

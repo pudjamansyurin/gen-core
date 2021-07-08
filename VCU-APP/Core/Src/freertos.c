@@ -25,7 +25,6 @@
 #include "main.h"
 #include "task.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "App/_command.h"
@@ -856,7 +855,7 @@ void StartMemsTask(void *argument) {
       EVT_SetVal(EVG_BIKE_FALLEN, fallen);
 
       // Drag detector
-      if (MEMS_IO_GetMotionActive()) {
+      if (MEMS_IO_MotionActive()) {
         if (MEMS_Dragged()) EVT_Set(EVG_BIKE_MOVED);
         if (EVT_Get(EVG_BIKE_MOVED))
           osThreadFlagsSet(GateTaskHandle, FLAG_GATE_ALARM_HORN);

@@ -28,5 +28,5 @@ void GPS_Refresh(void);
 void GPS_Flush(void);
 void GPS_ReceiveCallback(const void* ptr, size_t len);
 
-const gps_data_t* GPS_IO_GetData(void);
+const gps_data_t* GPS_IO_Data(void);
 #endif /* INC_LIBS__GPS_H_ */
