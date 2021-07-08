@@ -78,7 +78,7 @@ typedef struct __attribute__((packed)) {
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report);
 void RPT_ResponseCapture(response_t *response);
 FRAME_TYPE RPT_FrameDecider(void);
-uint32_t RPT_IntervalDeciderMS(vehicle_state_t state);
+uint32_t RPT_IntervalDeciderMS(vehicle_t vehicle);
 bool RPT_PayloadPending(PAYLOAD_TYPE type);
 
 void RPT_IO_SetBlock(uint8_t value);

@@ -362,7 +362,7 @@ static void RunSet(void) {
 }
 
 static uint8_t Deffered(const void *src) {
-  return (src != NULL && VCU.d.state > VEHICLE_NORMAL);
+  return (src != NULL && VCU.d.vehicle > VEHICLE_NORMAL);
 }
 
 static uint8_t SubMask(HBM mode) {

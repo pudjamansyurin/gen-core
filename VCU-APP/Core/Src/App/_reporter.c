@@ -124,15 +124,15 @@ FRAME_TYPE RPT_FrameDecider(void) {
   return frame;
 }
 
-uint32_t RPT_IntervalDeciderMS(vehicle_state_t state) {
+uint32_t RPT_IntervalDeciderMS(vehicle_t vehicle) {
   uint8_t ovd = RPT.ovd.interval;
   uint16_t interval = RPT_INTERVAL_NORMAL_S;
 
-  if (state >= VEHICLE_NORMAL)
+  if (vehicle >= VEHICLE_NORMAL)
     interval = RPT_INTERVAL_NORMAL_S;
-  else if (state >= VEHICLE_BACKUP)
+  else if (vehicle >= VEHICLE_BACKUP)
     interval = RPT_INTERVAL_BACKUP_S;
-  else if (state >= VEHICLE_LOST)
+  else if (vehicle >= VEHICLE_LOST)
     interval = RPT_INTERVAL_LOST_S;
 
   if (ovd) interval = ovd;

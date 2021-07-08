@@ -61,7 +61,7 @@ typedef enum {
   VEHICLE_STANDBY = 1,
   VEHICLE_READY = 2,
   VEHICLE_RUN = 3,
-} vehicle_state_t;
+} vehicle_t;
 
 typedef enum {
   PAYLOAD_RESPONSE = 0,

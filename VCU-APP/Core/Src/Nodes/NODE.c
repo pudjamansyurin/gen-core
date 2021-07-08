@@ -37,7 +37,7 @@ void NODE_Refresh(void) {
   uint8_t eBMS = BMS.d.fault > 0;
   uint8_t eMCU = (MCU.d.fault.post | MCU.d.fault.run) > 0;
 
-  if (VCU.d.state >= VEHICLE_READY) {
+  if (VCU.d.vehicle >= VEHICLE_READY) {
     if (_TickOut(VCU.d.tick.ready, NODE_TIMEOUT_MS)) {
       eBMS |= !BMS.d.active;
       eMCU |= !MCU.d.active;
@@ -187,14 +187,14 @@ void NODE_TX_DebugRMT(void) {
 
   d->u8[0] = (rmt.active & 0x01);
   d->u8[0] |= (rmt.nearby & 0x01) << 1;
-  d->u8[1] = RMT.d.duration.tx;
-  d->u8[2] = RMT.d.duration.rx;
-  d->u8[3] = RMT.d.duration.full;
+  d->u8[1] = RMT_IO_GetDuration(RMT_DUR_TX);
+  d->u8[2] = RMT_IO_GetDuration(RMT_DUR_RX);
+  d->u8[3] = RMT_IO_GetDuration(RMT_DUR_FULL);
   d->u32[1] = AES_IO_GetQuarterKey();
   CANBUS_Write(&Tx, CAND_DBG_RMT_1, 8, 0);
 
-  d->u32[0] = RMT.d.tick.ping;
-  d->u32[1] = RMT.d.tick.heartbeat;
+  d->u32[0] = RMT_IO_GetTick(RMT_TICK_PING);
+  d->u32[1] = RMT_IO_GetTick(RMT_TICK_HBEAT);
   CANBUS_Write(&Tx, CAND_DBG_RMT_2, 8, 0);
 }
 
@@ -280,7 +280,7 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
 
-  const bms_avg_t* avg = ML_IO_GetDataBMS();
+  const bms_avg_t *avg = ML_IO_GetDataBMS();
   d->u16[1] = avg->capacity * 10;
   d->u16[2] = avg->efficiency * 10;
   d->u16[3] = avg->distance * 10;

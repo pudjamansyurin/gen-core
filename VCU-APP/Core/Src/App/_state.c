@@ -24,30 +24,30 @@ extern osMessageQueueId_t OvdStateQueueHandle;
 
 /* Private variables
  * --------------------------------------------*/
-static vehicle_state_t LAST_STATE = VEHICLE_UNKNOWN;
+static vehicle_t LAST_STATE = VEHICLE_UNKNOWN;
 
 /* Public functions implementation
  * --------------------------------------------*/
 void STATE_Check(void) {
   uint8_t ovdState, shutdown = 0, start = 0;
-  vehicle_state_t initialState;
+  vehicle_t initialState;
 
   if (_osQueueGet(OvdStateQueueHandle, &ovdState))
-    VCU.d.state = (int8_t)ovdState;
+    VCU.d.vehicle = (int8_t)ovdState;
 
   HB_CheckStarter(&start, &shutdown);
 
   do {
-    initialState = VCU.d.state;
+    initialState = VCU.d.vehicle;
 
-    switch (VCU.d.state) {
+    switch (VCU.d.vehicle) {
       case VEHICLE_LOST:
         if (LAST_STATE != VEHICLE_LOST) {
           LAST_STATE = VEHICLE_LOST;
           osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
         }
 
-        if (GATE_ReadPower5v()) VCU.d.state += 2;
+        if (GATE_ReadPower5v()) VCU.d.vehicle += 2;
         break;
 
       case VEHICLE_BACKUP:
@@ -66,9 +66,9 @@ void STATE_Check(void) {
         }
 
         if (_TickOut(VCU.d.tick.independent, VCU_LOST_MODE_S * 1000))
-          VCU.d.state--;
+          VCU.d.vehicle--;
         else if (GATE_ReadPower5v())
-          VCU.d.state++;
+          VCU.d.vehicle++;
         break;
 
       case VEHICLE_NORMAL:
@@ -93,10 +93,10 @@ void STATE_Check(void) {
         }
 
         if (!GATE_ReadPower5v())
-          VCU.d.state--;
+          VCU.d.vehicle--;
         else if (start) {
-          if (RMT.d.nearby)
-            VCU.d.state++;
+          if (RMT_IO_GetNearby())
+            VCU.d.vehicle++;
           else
             osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RESET);
         }
@@ -110,9 +110,9 @@ void STATE_Check(void) {
         }
 
         if (!GATE_ReadPower5v() || shutdown)
-          VCU.d.state--;
+          VCU.d.vehicle--;
         else if (FGR_IO_GetID())
-          VCU.d.state++;
+          VCU.d.vehicle++;
         break;
 
       case VEHICLE_READY:
@@ -123,9 +123,9 @@ void STATE_Check(void) {
         }
 
         if (!GATE_ReadPower5v() || shutdown)
-          VCU.d.state--;
+          VCU.d.vehicle--;
         else if (!NODE.d.error && (start))
-          VCU.d.state++;
+          VCU.d.vehicle++;
         break;
 
       case VEHICLE_RUN:
@@ -136,12 +136,12 @@ void STATE_Check(void) {
 
         if (!GATE_ReadPower5v() || (start && !MCU_Running()) || shutdown ||
             NODE.d.error)
-          VCU.d.state--;
+          VCU.d.vehicle--;
         break;
 
       default:
         break;
     }
     _DelayMS(100);
-  } while (initialState != VCU.d.state);
+  } while (initialState != VCU.d.vehicle);
 }

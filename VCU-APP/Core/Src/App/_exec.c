@@ -90,7 +90,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
   else if (code == CMDC_OVD) {
     switch (subCode) {
       case CMD_OVD_STATE:
-        if (VCU.d.state < VEHICLE_NORMAL) {
+        if (VCU.d.vehicle < VEHICLE_NORMAL) {
           sprintf(rMsg, "State should >= {%d}.", VEHICLE_NORMAL);
           *rCode = CMDR_ERROR;
         } else
@@ -120,7 +120,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
   }
 
   else if (code == CMDC_AUDIO) {
-    if (VCU.d.state < VEHICLE_NORMAL) {
+    if (VCU.d.vehicle < VEHICLE_NORMAL) {
       sprintf(rMsg, "State should >= {%d}.", VEHICLE_NORMAL);
       *rCode = CMDR_ERROR;
     } else
@@ -136,7 +136,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
   }
 
   else if (code == CMDC_FGR) {
-    if (VCU.d.state != VEHICLE_STANDBY) {
+    if (VCU.d.vehicle != VEHICLE_STANDBY) {
       sprintf(rMsg, "State should = {%d}.", VEHICLE_STANDBY);
       *rCode = CMDR_ERROR;
     } else
@@ -169,7 +169,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
   }
 
   else if (code == CMDC_RMT) {
-    if (VCU.d.state < VEHICLE_NORMAL) {
+    if (VCU.d.vehicle < VEHICLE_NORMAL) {
       sprintf(rMsg, "State should >= {%d}.", VEHICLE_NORMAL);
       *rCode = CMDR_ERROR;
     } else
@@ -188,7 +188,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
   else if (code == CMDC_FOTA) {
     *rCode = CMDR_ERROR;
 
-    if (VCU.d.state == VEHICLE_RUN) {
+    if (VCU.d.vehicle == VEHICLE_RUN) {
       sprintf(rMsg, "State should != {%d}.", VEHICLE_RUN);
     } else
       switch (subCode) {

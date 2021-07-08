@@ -31,7 +31,7 @@ extern osMessageQueueId_t ReportQueueHandle;
  * --------------------------------------------*/
 void VCU_Init(void) {
   memset(&(VCU.d), 0, sizeof(vcu_data_t));
-  VCU.d.state = VEHICLE_BACKUP;
+  VCU.d.vehicle = VEHICLE_BACKUP;
 }
 
 void VCU_Refresh(void) {
@@ -57,14 +57,14 @@ uint8_t VCU_TX_SwitchControl(void) {
   can_tx_t Tx = {0};
   UNION64 *d = &(Tx.data);
 
-  const finger_data_t* finger = FGR_IO_GetData();
+  const finger_data_t *finger = FGR_IO_GetData();
 
   d->u8[0] = HB_IO_GetPin(HBP_ABS);
   d->u8[0] |= HB_IO_GetPin(HBP_LAMP) << 2;
   d->u8[0] |= NODE.d.error << 3;
   d->u8[0] |= NODE.d.overheat << 4;
   d->u8[0] |= !finger->id << 5;
-  d->u8[0] |= !RMT.d.nearby << 6;
+  d->u8[0] |= !RMT_IO_GetNearby() << 6;
   d->u8[0] |= RTC_Daylight() << 7;
 
   // sein value
@@ -91,7 +91,7 @@ uint8_t VCU_TX_SwitchControl(void) {
   d->u8[4] = (uint8_t)MCU.d.dcbus.current;
   d->u8[5] = BMS.d.soc;
   d->u8[6] = SIM.d.signal;
-  d->u8[7] = (int8_t)VCU.d.state;
+  d->u8[7] = (int8_t)VCU.d.vehicle;
 
   // send message
   return CANBUS_Write(&Tx, CAND_VCU_SWITCH_CTL, 8, 0);
@@ -101,7 +101,7 @@ uint8_t VCU_TX_Datetime(datetime_t dt) {
   can_tx_t Tx = {0};
   UNION64 *d = &(Tx.data);
 
-  uint8_t hmi2shutdown = VCU.d.state < VEHICLE_STANDBY;
+  uint8_t hmi2shutdown = VCU.d.vehicle < VEHICLE_STANDBY;
 
   d->u8[0] = dt.Seconds;
   d->u8[1] = dt.Minutes;

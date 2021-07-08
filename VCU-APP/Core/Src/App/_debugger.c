@@ -24,7 +24,7 @@
  * --------------------------------------------*/
 void DBG_GetVCU(vcu_dbg_t *vcu) {
   vcu->events = EVT_Val();
-  vcu->state = (int8_t)VCU.d.state;
+  vcu->state = (int8_t)VCU.d.vehicle;
   vcu->uptime = (VCU.d.uptime * MANAGER_WAKEUP_MS) / 1000;
   vcu->buffered = VCU.d.buffered;
   vcu->battery = BAT_ScanValue() / 18;
@@ -54,7 +54,7 @@ void DBG_GetNET(net_dbg_t *net) {
 }
 
 void DBG_GetGPS(gps_dbg_t *gps) {
-  const gps_data_t* d = GPS_IO_GetData();
+  const gps_data_t *d = GPS_IO_GetData();
 
   gps->active = d->active;
   gps->sat_in_use = (uint8_t)d->nmea.sats_in_use;
@@ -68,9 +68,9 @@ void DBG_GetGPS(gps_dbg_t *gps) {
 }
 
 void DBG_GetMEMS(mems_dbg_t *mems) {
-	const mems_raw_t* raw = MEMS_IO_GetRaw();
-	const mems_total_t* total = MEMS_IO_GetTotal();
-	const mems_tilt_t* tilt = MEMS_IO_GetTilt(MTILT_NOW);
+  const mems_raw_t *raw = MEMS_IO_GetRaw();
+  const mems_total_t *total = MEMS_IO_GetTotal();
+  const mems_tilt_t *tilt = MEMS_IO_GetTilt(MTILT_NOW);
 
   mems->active = MEMS_IO_GetActive();
   mems->motion_active = MEMS_IO_GetMotionActive();
@@ -92,12 +92,12 @@ void DBG_GetMEMS(mems_dbg_t *mems) {
 }
 
 void DBG_GetRMT(remote_dbg_t *rmt) {
-  rmt->active = RMT.d.active;
-  rmt->nearby = RMT.d.nearby;
+  rmt->active = RMT_IO_GetActive();
+  rmt->nearby = RMT_IO_GetNearby();
 }
 
 void DBG_GetFGR(finger_dbg_t *fgr) {
-  const finger_data_t* finger = FGR_IO_GetData();
+  const finger_data_t *finger = FGR_IO_GetData();
 
   fgr->verified = finger->verified;
   fgr->driver_id = finger->id;
