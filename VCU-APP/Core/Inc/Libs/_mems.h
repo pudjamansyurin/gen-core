@@ -51,10 +51,6 @@ typedef struct {
   float temp;
 } mems_raw_t;
 
-/* Exported variables
- * --------------------------------------------*/
-// extern mems_t MEMS;
-
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t MEMS_Init(void);

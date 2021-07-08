@@ -199,7 +199,7 @@ const osThreadAttr_t CanRxTask_attributes = {
 };
 /* Definitions for CanTxTask */
 osThreadId_t CanTxTaskHandle;
-uint32_t CanTxTaskBuffer[ 230 ];
+uint32_t CanTxTaskBuffer[ 320 ];
 osStaticThreadDef_t CanTxTaskControlBlock;
 const osThreadAttr_t CanTxTask_attributes = {
   .name = "CanTxTask",

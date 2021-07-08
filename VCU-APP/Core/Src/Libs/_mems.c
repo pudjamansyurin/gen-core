@@ -66,7 +66,7 @@ typedef struct {
   I2C_HandleTypeDef *pi2c;
 } mems_t;
 
-/* Public variables
+/* Private variables
  * --------------------------------------------*/
 static mems_t MEMS = {
     .d = {0},

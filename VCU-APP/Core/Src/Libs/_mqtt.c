@@ -12,6 +12,58 @@
 #include "Drivers/_simcom.h"
 #include "MQTTPacket.h"
 
+/* Private constants
+ * --------------------------------------------*/
+#define MQTT_PERSIST_SESSION 0
+#define MQTT_KEEPALIVE_S ((uint8_t)30)
+#define MQTT_UPLOAD_MS ((uint16_t)10000)
+
+/* Private types
+ * --------------------------------------------*/
+typedef char topic_t[20];
+
+typedef struct {
+	topic_t topic;
+  unsigned short packetid;
+  unsigned char dup;
+  unsigned char retained;
+  unsigned char packettype;
+  int qos;
+} mqtt_handler_t;
+
+typedef struct {
+  uint8_t pending;
+  command_t command;
+  mqtt_handler_t d;
+} mqtt_rx_t;
+
+typedef struct {
+	topic_t command;
+	topic_t response;
+	topic_t report;
+	topic_t will;
+} mqtt_topic_t;
+
+typedef struct {
+  int will;
+  int command;
+  int response;
+  struct {
+    int simple;
+    int full;
+  } report;
+} mqtt_qos_t;
+
+typedef struct {
+  unsigned short packetid;
+  uint8_t subscribed;
+  uint8_t willed;
+  uint32_t tick;
+  mqtt_topic_t topic;
+  mqtt_qos_t qos;
+  mqtt_rx_t rx;
+} mqtt_t;
+
 /* Private variables
  * --------------------------------------------*/
 static mqtt_t MQTT = {.tick = 0,
