@@ -826,7 +826,7 @@ void StartMemsTask(void *argument) {
 
   TASK_WaitManager();
   _osFlagOne(&notif, FLAG_MEMS_TASK_START, osWaitForever);
-  osThreadFlagsClear(FLAG_MASK);
+  _osFlagClear();
 
   MEMS_Init();
 
@@ -883,7 +883,7 @@ void StartRemoteTask(void *argument) {
 
   TASK_WaitManager();
   _osFlagOne(&notif, FLAG_REMOTE_TASK_START, osWaitForever);
-  osThreadFlagsClear(FLAG_MASK);
+  _osFlagClear();
 
   AES_Init();
   RMT_Init();
@@ -967,7 +967,7 @@ void StartFingerTask(void *argument) {
 
   TASK_WaitManager();
   _osFlagOne(&notif, FLAG_FINGER_TASK_START, osWaitForever);
-  osThreadFlagsClear(FLAG_MASK);
+  _osFlagClear();
 
   FGR_Init();
 
@@ -1029,7 +1029,7 @@ void StartAudioTask(void *argument) {
 
   TASK_WaitManager();
   _osFlagOne(&notif, FLAG_AUDIO_TASK_START, osWaitForever);
-  osThreadFlagsClear(FLAG_MASK);
+  _osFlagClear();
 
   /* Initiate Wave player (Codec, DMA, I2C) */
   AUDIO_Init();
@@ -1076,7 +1076,7 @@ void StartCanRxTask(void *argument) {
 
   TASK_WaitManager();
   _osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-  osThreadFlagsClear(FLAG_MASK);
+  _osFlagClear();
 
   /* Infinite loop */
   for (;;) {
@@ -1148,7 +1148,7 @@ void StartCanTxTask(void *argument) {
 
   TASK_WaitManager();
   _osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-  osThreadFlagsClear(FLAG_MASK);
+  _osFlagClear();
 
   // initiate
   CANBUS_Init();
