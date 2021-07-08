@@ -80,7 +80,7 @@ typedef enum {
   IRESP_RESPONSE_COUNT = 8
 } IAP_RESPONSE;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint32_t flag;

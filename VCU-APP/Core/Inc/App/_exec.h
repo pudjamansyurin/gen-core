@@ -14,6 +14,6 @@
 
 /* Public functions prototype
  * --------------------------------------------*/
-void EXEC_Command(command_t *cmd, response_t *resp);
+void EXEC_Command(const command_t *cmd, response_t *resp);
 
 #endif /* INC_APP__EXEC_H_ */

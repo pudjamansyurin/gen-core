@@ -12,7 +12,7 @@
  * --------------------------------------------*/
 #include "Libs/_nmea.h"
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint8_t active;
@@ -26,7 +26,7 @@ uint8_t GPS_Init(void);
 void GPS_DeInit(void);
 void GPS_Refresh(void);
 void GPS_Flush(void);
-void GPS_ReceiveCallback(void *ptr, size_t len);
+void GPS_ReceiveCallback(const void* ptr, size_t len);
 
-gps_data_t GPS_IO_GetData(void);
+const gps_data_t* GPS_IO_GetData(void);
 #endif /* INC_LIBS__GPS_H_ */

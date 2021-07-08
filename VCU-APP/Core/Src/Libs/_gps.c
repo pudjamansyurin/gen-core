@@ -45,7 +45,7 @@ static gps_t GPS = {
 static void lock(void);
 static void unlock(void);
 #if GPS_DEBUG
-static void Debugger(char *ptr, size_t len);
+static void Debugger(const char *ptr, size_t len);
 #endif
 
 /* Public functions implementation
@@ -99,15 +99,17 @@ void GPS_Flush(void) {
   unlock();
 }
 
-void GPS_ReceiveCallback(void *ptr, size_t len) {
+void GPS_ReceiveCallback(const void *ptr, size_t len) {
+  if (nmea_process(&(GPS.d.nmea), (char *)ptr, len))
+  	GPS.d.tick = _GetTickMS();
+
 #if GPS_DEBUG
   Debugger(ptr, len);
 #endif
-  if (nmea_process(&(GPS.d.nmea), (char *)ptr, len)) GPS.d.tick = _GetTickMS();
 }
 
-gps_data_t GPS_IO_GetData(void) {
-	return GPS.d;
+const gps_data_t* GPS_IO_GetData(void) {
+	return &(GPS.d);
 }
 
 /* Private functions implementation
@@ -125,5 +127,5 @@ static void unlock(void) {
 }
 
 #if GPS_DEBUG
-static void Debugger(char *ptr, size_t len) { printf("\n%.*s\n", len, ptr); }
+static void Debugger(const char *ptr, size_t len) { printf("\n%.*s\n", len, ptr); }
 #endif

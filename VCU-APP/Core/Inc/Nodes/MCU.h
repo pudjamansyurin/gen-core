@@ -111,7 +111,7 @@ typedef enum {
   MRF_INV_DISCHARGE,
 } MCU_RUN_FAULT_BIT;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint16_t discur_max;

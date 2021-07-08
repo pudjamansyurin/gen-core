@@ -34,7 +34,7 @@ static cmd_size_t SZ;
 
 /* Private functions prototypes
  * --------------------------------------------*/
-static void Debugger(command_t *cmd);
+static void Debugger(const command_t *cmd);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -92,8 +92,8 @@ void CMD_Init(void) {
   SZ.cmd[CMDC_MCU][CMD_MCU_TEMPLATES] = 4 * 3;
 }
 
-bool CMD_ValidateCode(command_t *cmd) {
-  command_header_t *h = &(cmd->header);
+bool CMD_ValidateCode(const command_t *cmd) {
+	const command_header_t *h = &(cmd->header);
   bool ok = false;
 
   if (h->code < CMDC_MAX)
@@ -103,12 +103,12 @@ bool CMD_ValidateCode(command_t *cmd) {
   return ok;
 }
 
-bool CMD_ValidateContent(void *ptr, uint8_t len) {
+bool CMD_ValidateContent(const void *ptr, uint8_t len) {
   if (len > sizeof(command_t)) return false;
   if (len < sizeof(command_header_t)) return false;
 
-  command_t *cmd = ptr;
-  command_header_t *h = &(cmd->header);
+  const command_t *cmd = ptr;
+  const command_header_t *h = &(cmd->header);
   if (memcmp(h->prefix, PREFIX_COMMAND, 2) != 0) return false;
 
   uint8_t size = CMD_GetPayloadSize(cmd);
@@ -118,8 +118,8 @@ bool CMD_ValidateContent(void *ptr, uint8_t len) {
   return true;
 }
 
-uint8_t CMD_GetPayloadSize(command_t *cmd) {
-  command_header_t *h = &(cmd->header);
+uint8_t CMD_GetPayloadSize(const command_t *cmd) {
+  const command_header_t *h = &(cmd->header);
   uint8_t headerSz;
 
   headerSz = sizeof(command_header_t) - (sizeof(h->prefix) + sizeof(h->size));
@@ -129,15 +129,15 @@ uint8_t CMD_GetPayloadSize(command_t *cmd) {
   return 0;
 }
 
-void CMD_Execute(command_t *cmd) {
+void CMD_Execute(const command_t *cmd) {
   _osQueuePutRst(CommandQueueHandle, cmd);
   Debugger(cmd);
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void Debugger(command_t *cmd) {
-  command_header_t *h = &(cmd->header);
+static void Debugger(const command_t *cmd) {
+	const command_header_t *h = &(cmd->header);
   uint8_t len = CMD_GetPayloadSize(cmd);
 
   printf("Command:Payload (%u-%u)[%u]", h->code, h->sub_code, len);

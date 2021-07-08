@@ -105,7 +105,7 @@ uint32_t cs43l22_Init(uint16_t OutputDevice, uint8_t Vol, uint32_t AudioFreq);
 void cs43l22_DeInit(void);
 uint8_t cs43l22_Probe(void);
 uint32_t cs43l22_ReadID(void);
-uint32_t cs43l22_Play(uint16_t *pBuffer, uint16_t Size);
+uint32_t cs43l22_Play(void);
 uint32_t cs43l22_Pause(void);
 uint32_t cs43l22_Resume(void);
 uint32_t cs43l22_Stop(uint32_t Cmd);

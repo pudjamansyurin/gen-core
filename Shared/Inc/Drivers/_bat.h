@@ -20,7 +20,7 @@
 #define BAT_MAX_MV ((float)4150.0)
 #define BAT_OFFSET_MV ((float)0.0)
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint16_t voltage;

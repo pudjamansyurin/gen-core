@@ -80,11 +80,11 @@
 /* Private types
  * --------------------------------------------*/
 typedef struct {
-  uint16_t start_code;  ///< "Wakeup" code for packet detection
-  uint8_t address[4];   ///< 32-bit Fingerprint sensor address
-  uint8_t type;         ///< Type of packet
-  uint16_t length;      ///< Length of packet
-  uint8_t data[64];     ///< The raw buffer for packet payload
+	uint16_t start_code;  ///< "Wakeup" code for packet detection
+	uint8_t address[4];   ///< 32-bit Fingerprint sensor address
+	uint8_t type;         ///< Type of packet
+	uint16_t length;      ///< Length of packet
+	uint8_t data[64];     ///< The raw buffer for packet payload
 } packet_t;
 
 /* Private variables
@@ -93,9 +93,9 @@ static packet_t PKT;
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t ioWrite(uint8_t *data, uint8_t len);
 static uint8_t writeStructuredPacket(void);
 static uint8_t getStructuredPacket(void);
+static uint8_t ioWrite(uint8_t *data, uint8_t len);
 static uint8_t sendCmdPacket(uint8_t *data, uint8_t size);
 static void setPacket(uint8_t type, uint16_t length, uint8_t *data);
 
@@ -109,19 +109,19 @@ static void setPacket(uint8_t type, uint16_t length, uint8_t *data);
  */
 /**************************************************************************/
 uint8_t R307_checkPassword(void) {
-  uint8_t data[] = {FP_VERIFYPASSWORD,
-                    (uint8_t)(FP_PASSWORD >> 24),
-                    (uint8_t)(FP_PASSWORD >> 16),
-                    (uint8_t)(FP_PASSWORD >> 8),
-                    (uint8_t)(FP_PASSWORD & 0xFF)};
+	uint8_t data[] = {FP_VERIFYPASSWORD,
+			(uint8_t)(FP_PASSWORD >> 24),
+			(uint8_t)(FP_PASSWORD >> 16),
+			(uint8_t)(FP_PASSWORD >> 8),
+			(uint8_t)(FP_PASSWORD & 0xFF)};
 
-  if (sendCmdPacket(data, sizeof(data)) != FP_OK)
-    return FP_PACKETRECIEVEERR;
+	if (sendCmdPacket(data, sizeof(data)) != FP_OK)
+		return FP_PACKETRECIEVEERR;
 
-  if (PKT.data[0] == FP_OK)
-    return FP_OK;
-  else
-    return FP_PACKETRECIEVEERR;
+	if (PKT.data[0] == FP_OK)
+		return FP_OK;
+	else
+		return FP_PACKETRECIEVEERR;
 }
 
 /**************************************************************************/
@@ -134,8 +134,8 @@ uint8_t R307_checkPassword(void) {
  */
 /**************************************************************************/
 uint8_t R307_getImage(void) {
-  uint8_t data[] = {FP_GETIMAGE};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_GETIMAGE};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -152,8 +152,8 @@ uint8_t R307_getImage(void) {
  fingerprint features
  */
 uint8_t R307_image2Tz(uint8_t slot) {
-  uint8_t data[] = {FP_IMAGE2TZ, slot};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_IMAGE2TZ, slot};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -164,8 +164,8 @@ uint8_t R307_image2Tz(uint8_t slot) {
  @returns <code>FP_ENROLLMISMATCH</code> on mismatch of fingerprints
  */
 uint8_t R307_createModel(void) {
-  uint8_t data[] = {FP_REGMODEL};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_REGMODEL};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -179,9 +179,9 @@ uint8_t R307_createModel(void) {
  @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t R307_storeModel(uint16_t location) {
-  uint8_t data[] = {FP_STORE, 0x01, (uint8_t)(location >> 8),
-                    (uint8_t)(location & 0xFF)};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_STORE, 0x01, (uint8_t)(location >> 8),
+			(uint8_t)(location & 0xFF)};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -193,9 +193,9 @@ uint8_t R307_storeModel(uint16_t location) {
  @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t R307_loadModel(uint16_t location) {
-  uint8_t data[] = {FP_LOAD, 0x01, (uint8_t)(location >> 8),
-                    (uint8_t)(location & 0xFF)};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_LOAD, 0x01, (uint8_t)(location >> 8),
+			(uint8_t)(location & 0xFF)};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -206,8 +206,8 @@ uint8_t R307_loadModel(uint16_t location) {
  @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t R307_getModel(void) {
-  uint8_t data[] = {FP_UPLOAD, 0x01};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_UPLOAD, 0x01};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -221,9 +221,9 @@ uint8_t R307_getModel(void) {
  @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t R307_deleteModel(uint16_t location) {
-  uint8_t data[] = {FP_DELETE, (uint8_t)(location >> 8),
-                    (uint8_t)(location & 0xFF), 0x00, 0x01};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_DELETE, (uint8_t)(location >> 8),
+			(uint8_t)(location & 0xFF), 0x00, 0x01};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -236,8 +236,8 @@ uint8_t R307_deleteModel(uint16_t location) {
  @returns <code>FP_PACKETRECIEVEERR</code> on communication error
  */
 uint8_t R307_emptyDatabase(void) {
-  uint8_t data[] = {FP_EMPTY};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_EMPTY};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -251,22 +251,22 @@ uint8_t R307_emptyDatabase(void) {
  */
 /**************************************************************************/
 uint8_t R307_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
-  uint8_t data[] = {FP_HISPEEDSEARCH, 0x01, 0x00, 0x00, 0x00, 0xA3};
+	uint8_t data[] = {FP_HISPEEDSEARCH, 0x01, 0x00, 0x00, 0x00, 0xA3};
 
-  // high speed search of slot #1 starting at page 0x0000 and page #0x00A3
-  sendCmdPacket(data, sizeof(data));
-  *id = 0xFFFF;
-  *confidence = 0xFFFF;
+	// high speed search of slot #1 starting at page 0x0000 and page #0x00A3
+	sendCmdPacket(data, sizeof(data));
+	*id = 0xFFFF;
+	*confidence = 0xFFFF;
 
-  *id = PKT.data[1];
-  *id <<= 8;
-  *id |= PKT.data[2];
+	*id = PKT.data[1];
+	*id <<= 8;
+	*id |= PKT.data[2];
 
-  *confidence = PKT.data[3];
-  *confidence <<= 8;
-  *confidence |= PKT.data[4];
+	*confidence = PKT.data[3];
+	*confidence <<= 8;
+	*confidence |= PKT.data[4];
 
-  return PKT.data[0];
+	return PKT.data[0];
 }
 
 /**************************************************************************/
@@ -278,14 +278,14 @@ uint8_t R307_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
  */
 /**************************************************************************/
 uint8_t R307_getTemplateCount(uint16_t *templateCount) {
-  uint8_t data[] = {FP_TEMPLATECOUNT};
-  sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_TEMPLATECOUNT};
+	sendCmdPacket(data, sizeof(data));
 
-  *templateCount = PKT.data[1];
-  *templateCount <<= 8;
-  *templateCount |= PKT.data[2];
+	*templateCount = PKT.data[1];
+	*templateCount <<= 8;
+	*templateCount |= PKT.data[2];
 
-  return PKT.data[0];
+	return PKT.data[0];
 }
 
 /**************************************************************************/
@@ -298,9 +298,9 @@ uint8_t R307_getTemplateCount(uint16_t *templateCount) {
  */
 /**************************************************************************/
 uint8_t R307_setPassword(uint32_t password) {
-  uint8_t data[] = {FP_SETPASSWORD, (password >> 24), (password >> 16),
-                    (password >> 8), password};
-  return sendCmdPacket(data, sizeof(data));
+	uint8_t data[] = {FP_SETPASSWORD, (password >> 24), (password >> 16),
+			(password >> 8), password};
+	return sendCmdPacket(data, sizeof(data));
 }
 
 /* Private functions implementation
@@ -313,29 +313,29 @@ uint8_t R307_setPassword(uint32_t password) {
  */
 /**************************************************************************/
 static uint8_t writeStructuredPacket(void) {
-  uint8_t buf[128], i = 0;
+	uint8_t buf[128], i = 0;
 
-  buf[i++] = (PKT.start_code >> 8);
-  buf[i++] = (PKT.start_code & 0xFF);
-  buf[i++] = (PKT.address[0]);
-  buf[i++] = (PKT.address[1]);
-  buf[i++] = (PKT.address[2]);
-  buf[i++] = (PKT.address[3]);
-  buf[i++] = (PKT.type);
+	buf[i++] = (PKT.start_code >> 8);
+	buf[i++] = (PKT.start_code & 0xFF);
+	buf[i++] = (PKT.address[0]);
+	buf[i++] = (PKT.address[1]);
+	buf[i++] = (PKT.address[2]);
+	buf[i++] = (PKT.address[3]);
+	buf[i++] = (PKT.type);
 
-  uint16_t wire_length = PKT.length + 2;
-  buf[i++] = (wire_length >> 8);
-  buf[i++] = (wire_length & 0xFF);
+	uint16_t wire_length = PKT.length + 2;
+	buf[i++] = (wire_length >> 8);
+	buf[i++] = (wire_length & 0xFF);
 
-  uint16_t sum = ((wire_length) >> 8) + ((wire_length)&0xFF) + PKT.type;
-  for (uint8_t j = 0; j < PKT.length; j++) {
-    buf[i++] = PKT.data[j];
-    sum += PKT.data[j];
-  }
-  buf[i++] = (sum >> 8);
-  buf[i++] = (sum & 0xFF);
+	uint16_t sum = ((wire_length) >> 8) + ((wire_length)&0xFF) + PKT.type;
+	for (uint8_t j = 0; j < PKT.length; j++) {
+		buf[i++] = PKT.data[j];
+		sum += PKT.data[j];
+	}
+	buf[i++] = (sum >> 8);
+	buf[i++] = (sum & 0xFF);
 
-  return ioWrite(buf, i);
+	return ioWrite(buf, i);
 }
 
 /**************************************************************************/
@@ -350,56 +350,56 @@ static uint8_t writeStructuredPacket(void) {
  */
 /**************************************************************************/
 static uint8_t getStructuredPacket(void) {
-  uint8_t byte;
-  uint16_t idx = 0;
+	uint8_t byte;
+	uint16_t idx = 0;
 
-  while (1) {
-    byte = FINGER_UART_RX[idx];
+	while (1) {
+		byte = FINGER_UART_RX[idx];
 
-    switch (idx) {
-      case 0:
-        if (byte != (FP_STARTCODE >> 8)) {
-          return FP_BADPACKET;
-        }
-        PKT.start_code = (uint16_t)byte << 8;
-        break;
-      case 1:
-        PKT.start_code |= byte;
-        if (PKT.start_code != FP_STARTCODE) {
-          return FP_BADPACKET;
-        }
-        break;
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-        PKT.address[idx - 2] = byte;
-        break;
-      case 6:
-        PKT.type = byte;
-        break;
-      case 7:
-        PKT.length = (uint16_t)byte << 8;
-        break;
-      case 8:
-        PKT.length |= byte;
-        break;
-      default:
-        if ((idx - 8) > sizeof(PKT.data)) {
-          return FP_BADPACKET;
-        }
+		switch (idx) {
+			case 0:
+				if (byte != (FP_STARTCODE >> 8)) {
+					return FP_BADPACKET;
+				}
+				PKT.start_code = (uint16_t)byte << 8;
+				break;
+			case 1:
+				PKT.start_code |= byte;
+				if (PKT.start_code != FP_STARTCODE) {
+					return FP_BADPACKET;
+				}
+				break;
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+				PKT.address[idx - 2] = byte;
+				break;
+			case 6:
+				PKT.type = byte;
+				break;
+			case 7:
+				PKT.length = (uint16_t)byte << 8;
+				break;
+			case 8:
+				PKT.length |= byte;
+				break;
+			default:
+				if ((idx - 8) > sizeof(PKT.data)) {
+					return FP_BADPACKET;
+				}
 
-        PKT.data[idx - 9] = byte;
-        if ((idx - 8) == PKT.length) {
-          return FP_OK;
-        }
-        break;
-    }
-    idx++;
-  }
+				PKT.data[idx - 9] = byte;
+				if ((idx - 8) == PKT.length) {
+					return FP_OK;
+				}
+				break;
+		}
+		idx++;
+	}
 
-  // Shouldn't get here so...
-  return FP_BADPACKET;
+	// Shouldn't get here so...
+	return FP_BADPACKET;
 }
 
 /**************************************************************************/
@@ -408,22 +408,22 @@ static uint8_t getStructuredPacket(void) {
  */
 /**************************************************************************/
 static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
-  memset(&PKT, 0, sizeof(PKT));
-  setPacket(FP_COMMANDPACKET, size, data);
+	memset(&PKT, 0, sizeof(PKT));
+	setPacket(FP_COMMANDPACKET, size, data);
 
-  FINGER_Reset_Buffer();
-  if (!writeStructuredPacket()) {
-    return FP_PACKETRECIEVEERR;
-  }
+	FINGER_Reset_Buffer();
+	if (!writeStructuredPacket()) {
+		return FP_PACKETRECIEVEERR;
+	}
 
-  memset(&PKT, 0, sizeof(PKT));
-  if (getStructuredPacket() != FP_OK) {
-    return FP_PACKETRECIEVEERR;
-  }
-  if (PKT.type != FP_ACKPACKET) {
-    return FP_PACKETRECIEVEERR;
-  }
-  return PKT.data[0];
+	memset(&PKT, 0, sizeof(PKT));
+	if (getStructuredPacket() != FP_OK) {
+		return FP_PACKETRECIEVEERR;
+	}
+	if (PKT.type != FP_ACKPACKET) {
+		return FP_PACKETRECIEVEERR;
+	}
+	return PKT.data[0];
 }
 
 /**************************************************************************/
@@ -432,35 +432,35 @@ static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
  */
 /**************************************************************************/
 static void setPacket(uint8_t type, uint16_t length, uint8_t *data) {
-  PKT.start_code = FP_STARTCODE;
-  PKT.type = type;
-  PKT.length = length;
-  PKT.address[0] = (uint8_t)(FP_ADDRESS >> 24);
-  PKT.address[1] = (uint8_t)(FP_ADDRESS >> 16);
-  PKT.address[2] = (uint8_t)(FP_ADDRESS >> 8);
-  PKT.address[3] = (uint8_t)(FP_ADDRESS & 0xFF);
+	PKT.start_code = FP_STARTCODE;
+	PKT.type = type;
+	PKT.length = length;
+	PKT.address[0] = (uint8_t)(FP_ADDRESS >> 24);
+	PKT.address[1] = (uint8_t)(FP_ADDRESS >> 16);
+	PKT.address[2] = (uint8_t)(FP_ADDRESS >> 8);
+	PKT.address[3] = (uint8_t)(FP_ADDRESS & 0xFF);
 
-  memcpy(PKT.data, data, (length < 64) ? length : 64);
+	memcpy(PKT.data, data, (length < 64) ? length : 64);
 }
 
 static uint8_t ioWrite(uint8_t *data, uint8_t len) {
-  uint8_t ok;
-  uint32_t tick;
+	uint8_t ok;
+	uint32_t tick;
 
-  //#if FINGER_DEBUG
-  //	printf("FGR: TX => ");
-  //	printf_hex((char *)data, len);
-  //	printf("\n");
-  //#endif
+#if FINGER_DEBUG
+	printf("FGR: TX => ");
+	printf_hex((char *)data, len);
+	printf("\n");
+#endif
 
-  ok = FINGER_Transmit(data, len);
+	ok = FINGER_Transmit(data, len);
 
-  if (ok) {
-    tick = _GetTickMS();
-    do {
-      ok = FINGER_Received();
-    } while (!ok && _TickIn(tick, FP_RECEIVING_MS));
-  }
+	if (ok) {
+		tick = _GetTickMS();
+		do {
+			ok = FINGER_Received();
+		} while (!ok && _TickIn(tick, FP_RECEIVING_MS));
+	}
 
-  return ok;
+	return ok;
 }

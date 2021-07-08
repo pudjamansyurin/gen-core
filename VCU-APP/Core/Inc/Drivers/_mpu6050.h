@@ -31,7 +31,7 @@ typedef enum {
   MPUR_Ok = 0x00,          /*!< Everything OK */
   MPUR_Error,              /*!< Unknown error */
   MPUR_DeviceNotConnected, /*!< There is no device with valid slave address */
-  MPUR_DeviceInvalid 			 /*!< Connected device with address is not MPU6050*/
+  MPUR_DeviceInvalid       /*!< Connected device with address is not MPU6050*/
 } MPUR;
 
 /**
@@ -64,7 +64,8 @@ typedef union {
     uint8_t DataReady : 1;    /*!< Data ready interrupt */
     uint8_t reserved2 : 2;    /*!< Reserved bits */
     uint8_t Master : 1;       /*!< Master interrupt. Not enabled with library */
-    uint8_t FifoOverflow : 1; /*!< FIFO overflow interrupt. Not enabled with library */
+    uint8_t FifoOverflow : 1; /*!< FIFO overflow interrupt. Not enabled with
+                                 library */
     uint8_t reserved1 : 1;    /*!< Reserved bit */
     uint8_t MotionDetection : 1; /*!< Motion detected interrupt */
     uint8_t reserved0 : 1;       /*!< Reserved bit */
@@ -72,25 +73,26 @@ typedef union {
   uint8_t Status;
 } MPU_Interrupt;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 /**
  * @brief  Main MPU6050 structure
  */
 typedef struct {
   /* Private */
-  float Gyro_Mult; /*!< Gyro corrector from raw data to "degrees/s". Only for private use */
-  float Acce_Mult; /*!< Accel corrector from raw data to "g". Only for private use */
+  float Gyro_Mult; /*!< Gyro corrector from raw data to "degrees/s". Only for
+                      private use */
+  float Acce_Mult; /*!< Accel corrector from raw data to "g". Only for private
+                      use */
   /* Public */
   int16_t Accel_X; /*!< Accel value X axis */
   int16_t Accel_Y; /*!< Accel value Y axis */
   int16_t Accel_Z; /*!< Accel value Z axis */
-  int16_t Gyro_X;     /*!< Gyro value X axis */
-  int16_t Gyro_Y;     /*!< Gyro value Y axis */
-  int16_t Gyro_Z;     /*!< Gyro value Z axis */
-  float Temp;       /*!< Temp in degrees */
-} MPU6050;
-
+  int16_t Gyro_X;  /*!< Gyro value X axis */
+  int16_t Gyro_Y;  /*!< Gyro value Y axis */
+  int16_t Gyro_Z;  /*!< Gyro value Z axis */
+  float Temp;      /*!< Temp in degrees */
+} MPU_Dev;
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -112,10 +114,8 @@ typedef struct {
  *            - MPUR_t: Everything OK
  *            - Other member: in other cases
  */
-MPUR MPU_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DS,
-                            MPU_Device DeviceNumber,
-                            MPU_Accel AccelSensitivity,
-                            MPU_Gyro GyroSensitivity);
+MPUR MPU_Init(I2C_HandleTypeDef *I2Cx, MPU_Device DeviceNumber,
+              MPU_Accel AccelSensitivity, MPU_Gyro GyroSensitivity);
 
 /**
  * @brief  Sets gyroscope sensitivity
@@ -125,8 +125,7 @@ MPUR MPU_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DS,
  * value of @ref MPU_Gyro_t enumeration
  * @retval Member of @ref MPUR_t enumeration
  */
-MPUR MPU_SetGyro(MPU6050 *DS,
-                                    MPU_Gyro GyroSensitivity);
+MPUR MPU_SetGyro(MPU_Gyro GyroSensitivity);
 
 /**
  * @brief  Sets accelerometer sensitivity
@@ -136,7 +135,7 @@ MPUR MPU_SetGyro(MPU6050 *DS,
  * be a value of @ref MPU_Accel_t enumeration
  * @retval Member of @ref MPUR_t enumeration
  */
-MPUR MPU_SetAccel(MPU6050 *DS, MPU_Accel AccelSensitivity);
+MPUR MPU_SetAccel(MPU_Accel AccelSensitivity);
 
 /**
  * @brief  Sets output data rate
@@ -154,7 +153,7 @@ MPUR MPU_SetDataRate(uint8_t rate);
  *            - MPUR_Ok: everything is OK
  *            - Other: in other cases
  */
-MPUR MPU_ReadAll(MPU6050 *DS);
+MPUR MPU_ReadAll(MPU_Dev *mpu);
 
 /**
  * @brief  Reads accelerometer data from sensor
@@ -163,7 +162,7 @@ MPUR MPU_ReadAll(MPU6050 *DS);
  *            - MPUR_Ok: everything is OK
  *            - Other: in other cases
  */
-MPUR MPU_ReadAccel(MPU6050 *DS);
+MPUR MPU_ReadAccel(void);
 
 /**
  * @brief  Reads gyroscope data from sensor
@@ -172,7 +171,7 @@ MPUR MPU_ReadAccel(MPU6050 *DS);
  *            - MPUR_Ok: everything is OK
  *            - Other: in other cases
  */
-MPUR MPU_ReadGyro(MPU6050 *DS);
+MPUR MPU_ReadGyro(void);
 
 /**
  * @brief  Reads temperature data from sensor
@@ -181,7 +180,7 @@ MPUR MPU_ReadGyro(MPU6050 *DS);
  *            - MPUR_Ok: everything is OK
  *            - Other: in other cases
  */
-MPUR MPU_ReadTemp(MPU6050 *DS);
+MPUR MPU_ReadTemp(void);
 
 /**
  * @brief  Enables interrupts

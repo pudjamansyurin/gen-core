@@ -12,8 +12,9 @@
  * --------------------------------------------*/
 #include "App/_common.h"
 #include "DMA/_dma_simcom.h"
-#include "Drivers/_sim_state.h"
 #include "Drivers/_sim_con.h"
+#include "Drivers/_sim_state.h"
+
 
 #if (APP)
 #include "Drivers/_rtc.h"
@@ -24,7 +25,7 @@
 #define NET_BOOT_MS ((uint16_t)8000)
 #define NET_GUARD_MS ((uint16_t)1000)
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint8_t signal;

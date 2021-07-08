@@ -63,7 +63,6 @@ typedef struct {
   mems_sample_t sample;
   mems_motion_t motion;
 
-  MPU6050 dev;
   I2C_HandleTypeDef *pi2c;
 } mems_t;
 
@@ -79,12 +78,12 @@ static mems_t MEMS = {
  * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint8_t Capture(mems_raw_t *raw);
-static void ConvertAccel(mems_tilt_t *tilt, mems_axis_t *axis);
+static uint8_t Capture(void);
+static void ConvertAccel(void);
 static uint8_t OnlyGotTemp(void);
 #if MEMS_DEBUG
-static void Debugger(mems_total_t *total);
-static void RawDebugger(mems_raw_t *raw);
+static void Debugger(void);
+static void RawDebugger(void);
 #endif
 
 /* Public functions implementation
@@ -100,7 +99,7 @@ uint8_t MEMS_Init(void) {
     MX_I2C3_Init();
     GATE_MemsReset();
 
-    ok = MPU_Init(MEMS.pi2c, &(MEMS.dev), MPU_Device_0, MPU_Accel_16G,
+    ok = MPU_Init(MEMS.pi2c, MPU_Device_0, MPU_Accel_16G,
                   MPU_Gyro_2000s) == MPUR_Ok;
     if (!ok) _DelayMS(500);
   } while (!ok && _TickIn(tick, MEMS_TIMEOUT_MS));
@@ -144,16 +143,15 @@ void MEMS_Flush(void) {
 }
 
 uint8_t MEMS_Capture(void) {
-  mems_raw_t *raw = &(MEMS.d.raw);
   uint8_t ok;
 
   lock();
-  ok = Capture(raw);
+  ok = Capture();
 
   if (ok) {
     MEMS.d.tick = _GetTickMS();
 #if MEMS_DEBUG
-    RawDebugger(raw);
+    RawDebugger();
 #endif
   }
   unlock();
@@ -168,7 +166,7 @@ uint8_t MEMS_Process(void) {
   uint8_t *effect = MEMS.d.effect;
 
   lock();
-  ConvertAccel(t, &(raw->accel));
+  ConvertAccel();
 
   MEMS.d.total.accel = _SamplingFloat(
       &s->handle[MSAMPLE_ACCEL], s->buffer[MSAMPLE_ACCEL], MEMS_SAMPLE_SZ,
@@ -184,7 +182,7 @@ uint8_t MEMS_Process(void) {
   effect[MEFFECT_FALL] = MEMS.d.total.tilt > FALL_LIMIT;
 
 #if MEMS_DEBUG
-  Debugger(&(MEMS.d.total));
+  Debugger();
 #endif
   unlock();
 
@@ -225,13 +223,15 @@ uint8_t MEMS_IO_GetMotionActive(void) { return MEMS.motion.active; }
 
 uint8_t MEMS_IO_GetMotionOffset(void) { return MEMS.motion.offset; }
 
-mems_raw_t MEMS_IO_GetRaw(void) { return MEMS.d.raw; }
+const mems_raw_t *MEMS_IO_GetRaw(void) { return &(MEMS.d.raw); }
 
-mems_total_t MEMS_IO_GetTotal(void) { return MEMS.d.total; }
+const mems_total_t *MEMS_IO_GetTotal(void) { return &(MEMS.d.total); }
+
+const mems_tilt_t *MEMS_IO_GetTilt(MEMS_TILT key) {
+  return &(MEMS.motion.tilt[key]);
+}
 
 uint8_t MEMS_IO_GetEffect(MEMS_EFFECT key) { return MEMS.d.effect[key] & 0x01; }
-
-mems_tilt_t MEMS_IO_GetTilt(MEMS_TILT key) { return MEMS.motion.tilt[key]; }
 
 /* Private functions implementation
  * --------------------------------------------*/
@@ -247,30 +247,34 @@ static void unlock(void) {
 #endif
 }
 
-static uint8_t Capture(mems_raw_t *raw) {
-  MPU6050 *dev = &(MEMS.dev);
+static uint8_t Capture(void) {
+  mems_raw_t *raw = &(MEMS.d.raw);
+  MPU_Dev dev;
   uint8_t ok;
 
   // read sensor
-  ok = MPU_ReadAll(dev) == MPUR_Ok;
+  ok = MPU_ReadAll(&dev) == MPUR_Ok;
 
   if (ok) {
     // convert the RAW values into acceleration in 'g'
-    raw->accel.x = dev->Accel_X * dev->Acce_Mult;
-    raw->accel.y = dev->Accel_Y * dev->Acce_Mult;
-    raw->accel.z = dev->Accel_Z * dev->Acce_Mult;
+    raw->accel.x = dev.Accel_X * dev.Acce_Mult;
+    raw->accel.y = dev.Accel_Y * dev.Acce_Mult;
+    raw->accel.z = dev.Accel_Z * dev.Acce_Mult;
     // convert the RAW values into dps (deg/s)
-    raw->gyro.x = dev->Gyro_X * dev->Gyro_Mult;
-    raw->gyro.y = dev->Gyro_Y * dev->Gyro_Mult;  // reverse Yaw & Roll
-    raw->gyro.z = dev->Gyro_Z * dev->Gyro_Mult;  // reverse Yaw & Roll
+    raw->gyro.x = dev.Gyro_X * dev.Gyro_Mult;
+    raw->gyro.y = dev.Gyro_Y * dev.Gyro_Mult;  // reverse Yaw & Roll
+    raw->gyro.z = dev.Gyro_Z * dev.Gyro_Mult;  // reverse Yaw & Roll
     // temperature
-    raw->temp = dev->Temp;
+    raw->temp = dev.Temp;
   }
 
   return ok;
 }
 
-static void ConvertAccel(mems_tilt_t *tilt, mems_axis_t *axis) {
+static void ConvertAccel(void) {
+	mems_axis_t *axis = &(MEMS.d.raw.accel);
+  mems_tilt_t *tilt = &(MEMS.motion.tilt[MTILT_NOW]);
+
   float pitch, roll;
 
   roll = sqrt(pow(axis->x, 2) + pow(axis->z, 2));
@@ -292,7 +296,9 @@ static uint8_t OnlyGotTemp(void) {
 }
 
 #if MEMS_DEBUG
-static void Debugger(mems_total_t *total) {
+static void Debugger(void) {
+	mems_total_t *total = &(MEMS.d.total);
+
   printf("MEMS:Accel[%lu %%] = %lu / %u\n",
          (uint32_t)(total->accel * 100 / CRASH_LIMIT), (uint32_t)total->accel,
          (uint8_t)CRASH_LIMIT);
@@ -301,7 +307,9 @@ static void Debugger(mems_total_t *total) {
          (uint8_t)FALL_LIMIT);
 }
 
-static void RawDebugger(mems_raw_t *raw) {
+static void RawDebugger(void) {
+  mems_raw_t *raw = &(MEMS.d.raw);
+
   printf(
       "Acce:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"
       "Gyro:\n- X:%ld\n- Y:%ld\n- Z:%ld\n"

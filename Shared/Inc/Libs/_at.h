@@ -213,7 +213,7 @@ typedef enum {
   AT_ForceEnumSize = MAX_ENUM_SIZE
 } AT_BOOL;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint8_t rssi;
@@ -358,7 +358,7 @@ SIMR AT_DataTransmitMode(AT_MODE mode, AT_CIPQSEND* state);
 #if AT_USE_FTP
 SIMR AT_BearerInitialize(void);
 SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param);
-SIMR AT_FtpInitialize(at_ftp_t* param, con_ftp_t *ftp);
+SIMR AT_FtpInitialize(at_ftp_t* param, con_ftp_t* ftp);
 SIMR AT_FtpFileSize(at_ftp_t* param);
 SIMR AT_FtpDownload(at_ftpget_t* param);
 SIMR AT_FtpCurrentState(AT_FTP_STATE* state);

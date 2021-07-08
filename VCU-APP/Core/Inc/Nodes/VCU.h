@@ -26,7 +26,7 @@ typedef enum {
   EVG_MCU_ERROR
 } EVENTS_GROUP_BIT;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint8_t error;

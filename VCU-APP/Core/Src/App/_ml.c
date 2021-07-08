@@ -50,7 +50,7 @@ void ML_BMS_Init(void) { memset(&ML.bms.sample, 0, sizeof(bms_sample_t)); }
 
 void ML_PredictRange(void) {
   static uint32_t tick = 0;
-  uint8_t d, eff, km;
+  uint8_t eff, km, d;
 
   if (_TickOut(tick, 1000)) {
     d = CalculateRange(_GetTickMS() - tick);
@@ -64,7 +64,7 @@ void ML_PredictRange(void) {
     tick = _GetTickMS();
 }
 
-bms_avg_t ML_IO_GetDataBMS(void) { return ML.bms.d; }
+const bms_avg_t* ML_IO_GetDataBMS(void) { return &(ML.bms.d); }
 
 /* Private functions implementation
  * --------------------------------------------*/

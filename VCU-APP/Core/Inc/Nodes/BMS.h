@@ -63,7 +63,7 @@ typedef enum {
   BMSF_SYSTEM_FAILURE,
 } BMS_FAULT_BIT;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint8_t run;

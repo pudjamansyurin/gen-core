@@ -186,7 +186,7 @@ uint8_t MQTT_Unsubscribe(void) {
   return 1;
 }
 
-uint8_t MQTT_Publish(payload_t *payload) {
+uint8_t MQTT_Publish(const payload_t *payload) {
   uint8_t retained = 1;
   char *topic;
   int qos;

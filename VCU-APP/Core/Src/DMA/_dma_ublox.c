@@ -39,16 +39,15 @@ static usart_ring_t GPS_RING = {
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void (*BufferCallback)(void *ptr, size_t len);
+static buffer_func BufferCallback;
 static void IdleHandler(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void UBLOX_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma,
-		void (*BufferHandler)(void *ptr, size_t len)) {
+void UBLOX_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma, buffer_func callback) {
 	GPS_RING.huart = huart;
 	GPS_RING.hdma = hdma;
-	BufferCallback = BufferHandler;
+	BufferCallback = callback;
 	GPS_RING.IdleCallback = IdleHandler;
 
 	USART_DMA_Start(&GPS_RING);

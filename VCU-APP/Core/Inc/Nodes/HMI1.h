@@ -16,7 +16,7 @@
  * --------------------------------------------*/
 #define HMI1_TIMEOUT_MS ((uint32_t)10000)
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint8_t active;

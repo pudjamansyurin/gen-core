@@ -120,7 +120,7 @@ typedef double nmea_float_t;
 typedef float nmea_float_t;
 #endif
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 /**
  * @brief           Satellite descriptor

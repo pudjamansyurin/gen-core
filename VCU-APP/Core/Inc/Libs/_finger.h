@@ -21,8 +21,6 @@
  * -------------------------------------------*/
 typedef uint8_t finger_db_t[FINGER_USER_MAX];
 
-/* Exported structs
- * --------------------------------------------*/
 typedef struct {
   uint8_t id;
   uint8_t verified;
@@ -43,7 +41,7 @@ uint8_t FGR_ResetDB(void);
 uint8_t FGR_SetPassword(uint32_t password);
 void FGR_Authenticate(void);
 
-finger_data_t FGR_IO_GetData(void);
+const finger_data_t *FGR_IO_GetData(void);
 uint8_t FGR_IO_GetID(void);
 void FGR_IO_ClearID(void);
 void FGR_IO_ClearDB(void);

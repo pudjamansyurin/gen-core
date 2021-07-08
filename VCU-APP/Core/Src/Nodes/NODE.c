@@ -280,10 +280,10 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
 
-  bms_avg_t avg = ML_IO_GetDataBMS();
-  d->u16[1] = avg.capacity * 10;
-  d->u16[2] = avg.efficiency * 10;
-  d->u16[3] = avg.distance * 10;
+  const bms_avg_t* avg = ML_IO_GetDataBMS();
+  d->u16[1] = avg->capacity * 10;
+  d->u16[2] = avg->efficiency * 10;
+  d->u16[3] = avg->distance * 10;
 
   CANBUS_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

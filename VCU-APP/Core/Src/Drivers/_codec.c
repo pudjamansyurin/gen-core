@@ -21,17 +21,17 @@
 #define I2Cx_TIMEOUT_MAX 0x1000
 #define VERIFY_WRITTENDATA 0
 
-/* Private structs
+/* Private types
  * --------------------------------------------*/
 typedef struct {
-	uint8_t address;
-	I2C_HandleTypeDef *pi2c;
+  uint8_t address;
+  I2C_HandleTypeDef *pi2c;
 } codec_t;
 
 /* Private variables
  * --------------------------------------------*/
 static codec_t CODEC = {
-		.pi2c = &hi2c1,
+    .pi2c = &hi2c1,
 };
 
 /* Private functions prototype
@@ -72,8 +72,9 @@ void CODEC_DeInit(void) {
 uint8_t CODEC_Write(uint8_t Reg, uint8_t Value) {
   uint8_t ok, result = 0;
 
-  ok = HAL_I2C_Mem_Write(CODEC.pi2c, CODEC.address, (uint16_t)Reg, I2C_MEMADD_SIZE_8BIT,
-                         &Value, 1, I2Cx_TIMEOUT_MAX) == HAL_OK;
+  ok = HAL_I2C_Mem_Write(CODEC.pi2c, CODEC.address, (uint16_t)Reg,
+                         I2C_MEMADD_SIZE_8BIT, &Value, 1,
+                         I2Cx_TIMEOUT_MAX) == HAL_OK;
 
   /* Check the communication status */
   if (!ok) /* Execute user timeout callback */
@@ -96,8 +97,9 @@ uint8_t CODEC_Write(uint8_t Reg, uint8_t Value) {
 uint8_t CODEC_Read(uint8_t Reg) {
   uint8_t ok, value = 0;
 
-  ok = HAL_I2C_Mem_Read(CODEC.pi2c, CODEC.address, (uint16_t)Reg, I2C_MEMADD_SIZE_8BIT,
-                        &value, 1, I2Cx_TIMEOUT_MAX) == HAL_OK;
+  ok = HAL_I2C_Mem_Read(CODEC.pi2c, CODEC.address, (uint16_t)Reg,
+                        I2C_MEMADD_SIZE_8BIT, &value, 1,
+                        I2Cx_TIMEOUT_MAX) == HAL_OK;
 
   /* Check the communication status */
   if (!ok) /* Execute user timeout callback */

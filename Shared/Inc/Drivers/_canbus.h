@@ -89,7 +89,7 @@ typedef enum {
 
 } CAN_ADDR;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   CAN_TxHeaderTypeDef header;

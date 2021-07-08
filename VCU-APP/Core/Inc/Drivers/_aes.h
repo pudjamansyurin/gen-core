@@ -19,10 +19,10 @@ typedef uint32_t aes_key_t[4];
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t AES_Init(void);
-uint8_t AES_ChangeKey(uint32_t *key);
-uint8_t AES_Encrypt(uint8_t *dst, uint8_t *src, uint16_t Sz);
-uint8_t AES_Decrypt(uint8_t *dst, uint8_t *src, uint16_t Sz);
-uint8_t AES_EE_Key(aes_key_t);
+uint8_t AES_ChangeKey(uint32_t *src);
+uint8_t AES_Encrypt(uint8_t *dst, const uint8_t *src, uint16_t Sz);
+uint8_t AES_Decrypt(uint8_t *dst, const uint8_t *src, uint16_t Sz);
+uint8_t AES_EE_Key(const aes_key_t);
 
 uint32_t AES_IO_GetQuarterKey(void);
 #endif /* INC_DRIVERS__AES_H_ */

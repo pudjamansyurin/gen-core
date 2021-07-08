@@ -91,6 +91,7 @@
  * --------------------------------------------*/
 typedef struct {
 	uint8_t address;
+	MPU_Dev dev;
 	I2C_HandleTypeDef *pi2c;
 } mpu6050_t;
 
@@ -105,229 +106,228 @@ static uint8_t I2C_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size);
 
 /* Public functions implementation
  * --------------------------------------------*/
-MPUR MPU_Init(I2C_HandleTypeDef *I2Cx, MPU6050 *DS,
-                            MPU_Device DeviceNumber,
-                            MPU_Accel AccelSensitivity,
-                            MPU_Gyro GyroSensitivity) {
-  uint8_t data, temp;
+MPUR MPU_Init(I2C_HandleTypeDef *I2Cx,
+		MPU_Device DeviceNumber,
+		MPU_Accel AccelSensitivity,
+		MPU_Gyro GyroSensitivity) {
+	uint8_t data, temp;
 
-  /* Format I2C address */
-  _MPU.address = MPU_I2C_ADDR | (uint8_t)DeviceNumber;
-  _MPU.pi2c = I2Cx;
+	/* Format I2C address */
+	_MPU.address = MPU_I2C_ADDR | (uint8_t)DeviceNumber;
+	_MPU.pi2c = I2Cx;
 
-  /* Check if device is connected */
-  if (HAL_I2C_IsDeviceReady(_MPU.pi2c, _MPU.address, 10, 100) != HAL_OK)
-    return MPUR_Error;
+	/* Check if device is connected */
+	if (HAL_I2C_IsDeviceReady(_MPU.pi2c, _MPU.address, 10, 100) != HAL_OK)
+		return MPUR_Error;
 
-  /* Check who am I */
-  /* Send address */
-  if (!I2C_Read(MPU_WHO_AM_I, &temp, 1)) return MPUR_Error;
+	/* Check who am I */
+	/* Send address */
+	if (!I2C_Read(MPU_WHO_AM_I, &temp, 1)) return MPUR_Error;
 
-  /* Checking */
-  if (temp != MPU_I_AM) return MPUR_DeviceInvalid;
+	/* Checking */
+	if (temp != MPU_I_AM) return MPUR_DeviceInvalid;
 
-  /* Wakeup MPU6050 */
-  data = 0x01;
-  if (!I2C_Write(MPU_PWR_MGMT_1, &data)) return MPUR_Error;
+	/* Wakeup MPU6050 */
+	data = 0x01;
+	if (!I2C_Write(MPU_PWR_MGMT_1, &data)) return MPUR_Error;
 
-  /* Set sample rate to 1kHz */
-  if (MPU_SetDataRate(MPU_DataRate_8KHz) != MPUR_Ok)
-    return MPUR_Error;
+	/* Set sample rate to 1kHz */
+	if (MPU_SetDataRate(MPU_DataRate_8KHz) != MPUR_Ok)
+		return MPUR_Error;
 
-  /* Config accelerometer */
-  if (MPU_SetAccel(DS, AccelSensitivity) !=
-      MPUR_Ok)
-    return MPUR_Error;
+	/* Config accelerometer */
+	if (MPU_SetAccel(AccelSensitivity) !=
+			MPUR_Ok)
+		return MPUR_Error;
 
-  /* Config Gyro */
-  if (MPU_SetGyro(DS, GyroSensitivity) != MPUR_Ok)
-    return MPUR_Error;
+	/* Config Gyro */
+	if (MPU_SetGyro(GyroSensitivity) != MPUR_Ok)
+		return MPUR_Error;
 
-  /* Return OK */
-  return MPUR_Ok;
+	/* Return OK */
+	return MPUR_Ok;
 }
 
 MPUR MPU_SetDataRate(uint8_t rate) {
-  if (!I2C_Write(MPU_SMPLRT_DIV, &rate)) return MPUR_Error;
-  return MPUR_Ok;
+	if (!I2C_Write(MPU_SMPLRT_DIV, &rate)) return MPUR_Error;
+	return MPUR_Ok;
 }
 
-MPUR MPU_SetAccel(
-    MPU6050 *DS, MPU_Accel AccelSensitivity) {
-  uint8_t data;
+MPUR MPU_SetAccel(MPU_Accel AccelSensitivity) {
+	uint8_t data;
 
-  /* Config accelerometer */
-  if (!I2C_Read(MPU_ACCEL_CONFIG, &data, 1)) return MPUR_Error;
+	/* Config accelerometer */
+	if (!I2C_Read(MPU_ACCEL_CONFIG, &data, 1)) return MPUR_Error;
 
-  data = (data & 0xE7) | (uint8_t)AccelSensitivity << 3;
-  if (!I2C_Write(MPU_ACCEL_CONFIG, &data)) return MPUR_Error;
+	data = (data & 0xE7) | (uint8_t)AccelSensitivity << 3;
+	if (!I2C_Write(MPU_ACCEL_CONFIG, &data)) return MPUR_Error;
 
-  /* Set sensitivities for multiplying gyro and accelerometer data */
-  switch (AccelSensitivity) {
-    case MPU_Accel_2G:
-      DS->Acce_Mult = (float)1 / MPU_ACCE_SENS_2;
-      break;
-    case MPU_Accel_4G:
-      DS->Acce_Mult = (float)1 / MPU_ACCE_SENS_4;
-      break;
-    case MPU_Accel_8G:
-      DS->Acce_Mult = (float)1 / MPU_ACCE_SENS_8;
-      break;
-    case MPU_Accel_16G:
-      DS->Acce_Mult = (float)1 / MPU_ACCE_SENS_16;
-      break;
-    default:
-      break;
-  }
+	/* Set sensitivities for multiplying gyro and accelerometer data */
+	switch (AccelSensitivity) {
+		case MPU_Accel_2G:
+			_MPU.dev.Acce_Mult = (float)1 / MPU_ACCE_SENS_2;
+			break;
+		case MPU_Accel_4G:
+			_MPU.dev.Acce_Mult = (float)1 / MPU_ACCE_SENS_4;
+			break;
+		case MPU_Accel_8G:
+			_MPU.dev.Acce_Mult = (float)1 / MPU_ACCE_SENS_8;
+			break;
+		case MPU_Accel_16G:
+			_MPU.dev.Acce_Mult = (float)1 / MPU_ACCE_SENS_16;
+			break;
+		default:
+			break;
+	}
 
-  return MPUR_Ok;
+	return MPUR_Ok;
 }
 
-MPUR MPU_SetGyro(MPU6050 *DS,
-                                    MPU_Gyro GyroSensitivity) {
-  uint8_t data;
+MPUR MPU_SetGyro(MPU_Gyro GyroSensitivity) {
+	uint8_t data;
 
-  /* Config gyroscope */
-  if (!I2C_Read(MPU_GYRO_CONFIG, &data, 1)) return MPUR_Error;
+	/* Config gyroscope */
+	if (!I2C_Read(MPU_GYRO_CONFIG, &data, 1)) return MPUR_Error;
 
-  data = (data & 0xE7) | (uint8_t)GyroSensitivity << 3;
-  if (!I2C_Write(MPU_GYRO_CONFIG, &data)) return MPUR_Error;
+	data = (data & 0xE7) | (uint8_t)GyroSensitivity << 3;
+	if (!I2C_Write(MPU_GYRO_CONFIG, &data)) return MPUR_Error;
 
-  switch (GyroSensitivity) {
-    case MPU_Gyro_250s:
-      DS->Gyro_Mult = (float)1 / MPU_GYRO_SENS_250;
-      break;
-    case MPU_Gyro_500s:
-      DS->Gyro_Mult = (float)1 / MPU_GYRO_SENS_500;
-      break;
-    case MPU_Gyro_1000s:
-      DS->Gyro_Mult = (float)1 / MPU_GYRO_SENS_1000;
-      break;
-    case MPU_Gyro_2000s:
-      DS->Gyro_Mult = (float)1 / MPU_GYRO_SENS_2000;
-      break;
-    default:
-      break;
-  }
+	switch (GyroSensitivity) {
+		case MPU_Gyro_250s:
+			_MPU.dev.Gyro_Mult = (float)1 / MPU_GYRO_SENS_250;
+			break;
+		case MPU_Gyro_500s:
+			_MPU.dev.Gyro_Mult = (float)1 / MPU_GYRO_SENS_500;
+			break;
+		case MPU_Gyro_1000s:
+			_MPU.dev.Gyro_Mult = (float)1 / MPU_GYRO_SENS_1000;
+			break;
+		case MPU_Gyro_2000s:
+			_MPU.dev.Gyro_Mult = (float)1 / MPU_GYRO_SENS_2000;
+			break;
+		default:
+			break;
+	}
 
-  return MPUR_Ok;
+	return MPUR_Ok;
 }
 
-MPUR MPU_ReadAll(MPU6050 *DS) {
-  uint8_t data[14];
-  int16_t temp;
+MPUR MPU_ReadAll(MPU_Dev *mpu) {
+	uint8_t data[14];
+	int16_t temp;
 
-  /* Read full raw data, 14bytes */
-  if (!I2C_Read(MPU_ACCEL_XOUT_H, data, 14)) return MPUR_Error;
+	/* Read full raw data, 14bytes */
+	if (!I2C_Read(MPU_ACCEL_XOUT_H, data, 14)) return MPUR_Error;
 
-  /* Format accelerometer data */
-  DS->Accel_X = (int16_t)(data[0] << 8 | data[1]);
-  DS->Accel_Y = (int16_t)(data[2] << 8 | data[3]);
-  DS->Accel_Z = (int16_t)(data[4] << 8 | data[5]);
+	/* Format accelerometer data */
+	_MPU.dev.Accel_X = (int16_t)(data[0] << 8 | data[1]);
+	_MPU.dev.Accel_Y = (int16_t)(data[2] << 8 | data[3]);
+	_MPU.dev.Accel_Z = (int16_t)(data[4] << 8 | data[5]);
 
-  /* Format temperature */
-  temp = (data[6] << 8 | data[7]);
-  DS->Temp =
-      (float)((float)((int16_t)temp) / (float)340.0 + (float)36.53);
+	/* Format temperature */
+	temp = (data[6] << 8 | data[7]);
+	_MPU.dev.Temp =
+			(float)((float)((int16_t)temp) / (float)340.0 + (float)36.53);
 
-  /* Format gyroscope data */
-  DS->Gyro_X = (int16_t)(data[8] << 8 | data[9]);
-  DS->Gyro_Y = (int16_t)(data[10] << 8 | data[11]);
-  DS->Gyro_Z = (int16_t)(data[12] << 8 | data[13]);
+	/* Format gyroscope data */
+	_MPU.dev.Gyro_X = (int16_t)(data[8] << 8 | data[9]);
+	_MPU.dev.Gyro_Y = (int16_t)(data[10] << 8 | data[11]);
+	_MPU.dev.Gyro_Z = (int16_t)(data[12] << 8 | data[13]);
 
-  return MPUR_Ok;
+	memcpy(mpu, &(_MPU.dev), sizeof(MPU_Dev));
+	return MPUR_Ok;
 }
 
-MPUR MPU_ReadAccel(MPU6050 *DS) {
-  uint8_t data[6];
+MPUR MPU_ReadAccel(void) {
+	uint8_t data[6];
 
-  /* Read accelerometer data */
-  if (!I2C_Read(MPU_ACCEL_XOUT_H, data, 6)) return MPUR_Error;
+	/* Read accelerometer data */
+	if (!I2C_Read(MPU_ACCEL_XOUT_H, data, 6)) return MPUR_Error;
 
-  /* Format */
-  DS->Accel_X = (int16_t)(data[0] << 8 | data[1]);
-  DS->Accel_Y = (int16_t)(data[2] << 8 | data[3]);
-  DS->Accel_Z = (int16_t)(data[4] << 8 | data[5]);
+	/* Format */
+	_MPU.dev.Accel_X = (int16_t)(data[0] << 8 | data[1]);
+	_MPU.dev.Accel_Y = (int16_t)(data[2] << 8 | data[3]);
+	_MPU.dev.Accel_Z = (int16_t)(data[4] << 8 | data[5]);
 
-  return MPUR_Ok;
+	return MPUR_Ok;
 }
 
-MPUR MPU_ReadGyro(MPU6050 *DS) {
-  uint8_t data[6];
+MPUR MPU_ReadGyro(void) {
+	uint8_t data[6];
 
-  /* Read gyroscope data */
-  if (!I2C_Read(MPU_GYRO_XOUT_H, data, 6)) return MPUR_Error;
+	/* Read gyroscope data */
+	if (!I2C_Read(MPU_GYRO_XOUT_H, data, 6)) return MPUR_Error;
 
-  /* Format */
-  DS->Gyro_X = (int16_t)(data[0] << 8 | data[1]);
-  DS->Gyro_Y = (int16_t)(data[2] << 8 | data[3]);
-  DS->Gyro_Z = (int16_t)(data[4] << 8 | data[5]);
+	/* Format */
+	_MPU.dev.Gyro_X = (int16_t)(data[0] << 8 | data[1]);
+	_MPU.dev.Gyro_Y = (int16_t)(data[2] << 8 | data[3]);
+	_MPU.dev.Gyro_Z = (int16_t)(data[4] << 8 | data[5]);
 
-  return MPUR_Ok;
+	return MPUR_Ok;
 }
 
-MPUR MPU_ReadTemp(MPU6050 *DS) {
-  uint8_t data[2];
-  int16_t temp;
+MPUR MPU_ReadTemp(void) {
+	uint8_t data[2];
+	int16_t temp;
 
-  /* Read temperature */
-  if (!I2C_Read(MPU_TEMP_OUT_H, data, 2)) return MPUR_Error;
+	/* Read temperature */
+	if (!I2C_Read(MPU_TEMP_OUT_H, data, 2)) return MPUR_Error;
 
-  /* Format temperature */
-  temp = (data[0] << 8 | data[1]);
-  DS->Temp = (float)((int16_t)temp / (float)340.0 + (float)36.53);
+	/* Format temperature */
+	temp = (data[0] << 8 | data[1]);
+	_MPU.dev.Temp = (float)((int16_t)temp / (float)340.0 + (float)36.53);
 
-  return MPUR_Ok;
+	return MPUR_Ok;
 }
 
 MPUR MPU_EnableInterrupts(void) {
-  uint8_t temp, data;
+	uint8_t temp, data;
 
-  /* Enable interrupts for data ready and motion detect */
-  data = 0x21;
-  if (!I2C_Write(MPU_INT_ENABLE, &data)) return MPUR_Error;
+	/* Enable interrupts for data ready and motion detect */
+	data = 0x21;
+	if (!I2C_Write(MPU_INT_ENABLE, &data)) return MPUR_Error;
 
-  /* Clear IRQ flag on any read operation */
-  if (!I2C_Read(MPU_INT_PIN_CFG, &temp, 14)) return MPUR_Error;
+	/* Clear IRQ flag on any read operation */
+	if (!I2C_Read(MPU_INT_PIN_CFG, &temp, 14)) return MPUR_Error;
 
-  temp |= 0x10;
-  if (!I2C_Write(MPU_INT_PIN_CFG, &temp)) return MPUR_Error;
+	temp |= 0x10;
+	if (!I2C_Write(MPU_INT_PIN_CFG, &temp)) return MPUR_Error;
 
-  return MPUR_Ok;
+	return MPUR_Ok;
 }
 
 MPUR MPU_DisableInterrupts(void) {
-  uint8_t data;
+	uint8_t data;
 
-  /* Disable interrupts */
-  data = 0x00;
-  if (!I2C_Write(MPU_INT_ENABLE, &data)) return MPUR_Error;
+	/* Disable interrupts */
+	data = 0x00;
+	if (!I2C_Write(MPU_INT_ENABLE, &data)) return MPUR_Error;
 
-  return MPUR_Ok;
+	return MPUR_Ok;
 }
 
 MPUR MPU_ReadInterrupts(MPU_Interrupt *InterruptsStruct) {
-  uint8_t data;
+	uint8_t data;
 
-  /* Reset structure */
-  InterruptsStruct->Status = 0;
+	/* Reset structure */
+	InterruptsStruct->Status = 0;
 
-  if (!I2C_Read(MPU_INT_STATUS, &data, 14)) return MPUR_Error;
+	if (!I2C_Read(MPU_INT_STATUS, &data, 14)) return MPUR_Error;
 
-  /* Fill value */
-  InterruptsStruct->Status = data;
+	/* Fill value */
+	InterruptsStruct->Status = data;
 
-  return MPUR_Ok;
+	return MPUR_Ok;
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
 static uint8_t I2C_Write(uint16_t MemAddress, uint8_t *pData) {
-  return (HAL_I2C_Mem_Write(_MPU.pi2c, _MPU.address, MemAddress, 1, pData, 1,
-                            1000) == HAL_OK);
+	return (HAL_I2C_Mem_Write(_MPU.pi2c, _MPU.address, MemAddress, 1, pData, 1,
+			1000) == HAL_OK);
 }
 
 static uint8_t I2C_Read(uint16_t MemAddress, uint8_t *pData, uint16_t Size) {
-  return (HAL_I2C_Mem_Read(_MPU.pi2c, _MPU.address, MemAddress, 1, pData, Size,
-                           1000) == HAL_OK);
+	return (HAL_I2C_Mem_Read(_MPU.pi2c, _MPU.address, MemAddress, 1, pData, Size,
+			1000) == HAL_OK);
 }

@@ -27,7 +27,7 @@ static I2C_HandleTypeDef* pi2c = &hi2c2;
 /* Private functions prototype
  * --------------------------------------------*/
 static uint8_t load(uint16_t addr, uint8_t* data, uint16_t n);
-static uint8_t save(uint16_t addr, uint8_t* data, uint16_t n);
+static uint8_t save(uint16_t addr, const uint8_t* data, uint16_t n);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -66,7 +66,7 @@ uint8_t AT24C_Read(uint16_t addr, uint8_t *data, uint16_t n) {
 /**
  * Write sequence of n bytes
  */
-uint8_t AT24C_Write(uint16_t addr, uint8_t *data, uint16_t n) {
+uint8_t AT24C_Write(uint16_t addr, const uint8_t *data, uint16_t n) {
 	// status quo
 	uint16_t c = n;						// bytes left to write
 	uint8_t offD = 0;					// current offset in data pointer
@@ -105,8 +105,11 @@ static uint8_t load(uint16_t addr, uint8_t* data, uint16_t n) {
   return (HAL_I2C_Mem_Read(pi2c, DEV_ADDR(DEV_ID), addr, I2C_MEMADD_SIZE_16BIT, data, n, 100) == HAL_OK);
 }
 
-static uint8_t save(uint16_t addr, uint8_t* data, uint16_t n) {
-  if (HAL_I2C_Mem_Write(pi2c, DEV_ADDR(DEV_ID), addr, I2C_MEMADD_SIZE_16BIT, data, n, 100) == HAL_OK) {
+static uint8_t save(uint16_t addr, const uint8_t* data, uint16_t n) {
+	uint8_t dummy[n];
+	memcpy(dummy, data, n);
+
+  if (HAL_I2C_Mem_Write(pi2c, DEV_ADDR(DEV_ID), addr, I2C_MEMADD_SIZE_16BIT, dummy, n, 100) == HAL_OK) {
     _DelayMS(15);
     return 1;
   }

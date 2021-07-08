@@ -54,40 +54,41 @@ void DBG_GetNET(net_dbg_t *net) {
 }
 
 void DBG_GetGPS(gps_dbg_t *gps) {
-  gps_data_t d = GPS_IO_GetData();
-  gps->active = d.active;
-  gps->sat_in_use = (uint8_t)d.nmea.sats_in_use;
-  gps->hdop = (uint8_t)(d.nmea.dop_h * 10);
-  gps->vdop = (uint8_t)(d.nmea.dop_v * 10);
-  gps->speed = (uint8_t)nmea_to_speed(d.nmea.speed, nmea_speed_kph);
-  gps->heading = (uint8_t)(d.nmea.coarse / 2);
-  gps->latitude = (int32_t)(d.nmea.latitude * 10000000);
-  gps->longitude = (int32_t)(d.nmea.longitude * 10000000);
-  gps->altitude = (uint16_t)d.nmea.altitude;
+  const gps_data_t* d = GPS_IO_GetData();
+
+  gps->active = d->active;
+  gps->sat_in_use = (uint8_t)d->nmea.sats_in_use;
+  gps->hdop = (uint8_t)(d->nmea.dop_h * 10);
+  gps->vdop = (uint8_t)(d->nmea.dop_v * 10);
+  gps->speed = (uint8_t)nmea_to_speed(d->nmea.speed, nmea_speed_kph);
+  gps->heading = (uint8_t)(d->nmea.coarse / 2);
+  gps->latitude = (int32_t)(d->nmea.latitude * 10000000);
+  gps->longitude = (int32_t)(d->nmea.longitude * 10000000);
+  gps->altitude = (uint16_t)d->nmea.altitude;
 }
 
 void DBG_GetMEMS(mems_dbg_t *mems) {
-	mems_raw_t raw = MEMS_IO_GetRaw();
-	mems_total_t total = MEMS_IO_GetTotal();
-	mems_tilt_t tilt = MEMS_IO_GetTilt(MTILT_NOW);
+	const mems_raw_t* raw = MEMS_IO_GetRaw();
+	const mems_total_t* total = MEMS_IO_GetTotal();
+	const mems_tilt_t* tilt = MEMS_IO_GetTilt(MTILT_NOW);
 
   mems->active = MEMS_IO_GetActive();
   mems->motion_active = MEMS_IO_GetMotionActive();
-  mems->accel.x = raw.accel.x * 100;
-  mems->accel.y = raw.accel.y * 100;
-  mems->accel.z = raw.accel.z * 100;
+  mems->accel.x = raw->accel.x * 100;
+  mems->accel.y = raw->accel.y * 100;
+  mems->accel.z = raw->accel.z * 100;
 
-  mems->gyro.x = raw.gyro.x * 10;
-  mems->gyro.y = raw.gyro.y * 10;
-  mems->gyro.z = raw.gyro.z * 10;
+  mems->gyro.x = raw->gyro.x * 10;
+  mems->gyro.y = raw->gyro.y * 10;
+  mems->gyro.z = raw->gyro.z * 10;
 
-  mems->tilt.pitch = tilt.pitch * 10;
-  mems->tilt.roll = tilt.roll * 10;
+  mems->tilt.pitch = tilt->pitch * 10;
+  mems->tilt.roll = tilt->roll * 10;
 
-  mems->total.accel = total.accel * 100;
-  mems->total.gyro = total.gyro * 10;
-  mems->total.tilt = total.tilt * 10;
-  mems->total.temp = raw.temp * 10;
+  mems->total.accel = total->accel * 100;
+  mems->total.gyro = total->gyro * 10;
+  mems->total.tilt = total->tilt * 10;
+  mems->total.temp = raw->temp * 10;
 }
 
 void DBG_GetRMT(remote_dbg_t *rmt) {
@@ -96,10 +97,10 @@ void DBG_GetRMT(remote_dbg_t *rmt) {
 }
 
 void DBG_GetFGR(finger_dbg_t *fgr) {
-  finger_data_t finger = FGR_IO_GetData();
+  const finger_data_t* finger = FGR_IO_GetData();
 
-  fgr->verified = finger.verified;
-  fgr->driver_id = finger.id;
+  fgr->verified = finger->verified;
+  fgr->driver_id = finger->id;
 }
 
 void DBG_GetAudio(audio_dbg_t *audio) {

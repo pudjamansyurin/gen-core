@@ -12,7 +12,7 @@
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   UART_HandleTypeDef* huart;

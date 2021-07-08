@@ -25,21 +25,21 @@ extern osMessageQueueId_t OvdStateQueueHandle, DriverQueueHandle,
 
 /* Private functions prototype
  * --------------------------------------------*/
-static uint8_t IsReadRequest(command_t *cmd);
+static uint8_t IsReadRequest(const command_t *cmd);
 static void EXEC_GenInfo(response_data_t *resp);
 static void EXEC_FingerAdd(response_data_t *rdata);
 static void EXEC_FingerFetch(response_data_t *rdata);
 static void EXEC_Finger(response_data_t *rdata);
 static void EXEC_RemotePairing(response_data_t *rdata);
 static void EXEC_NetQuota(response_data_t *rdata);
-static void EXEC_ConApn(command_t *cmd, char *rMsg);
+static void EXEC_ConApn(const command_t *cmd, char *rMsg);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void EXEC_Command(command_t *cmd, response_t *resp) {
+void EXEC_Command(const command_t *cmd, response_t *resp) {
   uint8_t code = cmd->header.code;
   uint8_t subCode = cmd->header.sub_code;
-  void *val = cmd->data.value;
+  const void *val = cmd->data.value;
 
   response_data_t *rdata = &(resp->data);
   uint8_t *rCode = &(rdata->res_code);
@@ -193,11 +193,11 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
     } else
       switch (subCode) {
         case CMD_FOTA_VCU:
-          FW_EnterModeIAP(ITYPE_VCU, rMsg);
+          FW_EnterModeIAP(ITYPE_VCU);
           break;
 
         case CMD_FOTA_HMI:
-          FW_EnterModeIAP(ITYPE_HMI, rMsg);
+          FW_EnterModeIAP(ITYPE_HMI);
           break;
 
         default:
@@ -296,7 +296,7 @@ void EXEC_Command(command_t *cmd, response_t *resp) {
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t IsReadRequest(command_t *cmd) {
+static uint8_t IsReadRequest(const command_t *cmd) {
   if (CMD_GetPayloadSize(cmd) > 1) return 0;
   return cmd->data.value[0] == '?';
 }
@@ -376,7 +376,7 @@ static void EXEC_NetQuota(response_data_t *rdata) {
       rdata->res_code = CMDR_OK;
 }
 
-static void EXEC_ConApn(command_t *cmd, char *rMsg) {
+static void EXEC_ConApn(const command_t *cmd, char *rMsg) {
   con_apn_t apn;
 
   if (IsReadRequest(cmd))

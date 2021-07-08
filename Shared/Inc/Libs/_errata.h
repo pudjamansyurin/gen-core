@@ -8,23 +8,22 @@
 #ifndef INC_LIBS__ERRATA_H_
 #define INC_LIBS__ERRATA_H_
 
-
 /* Includes
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
-	GPIO_TypeDef* gpio;
-	uint32_t alt;
-	uint32_t pin;
+  GPIO_TypeDef* gpio;
+  uint32_t alt;
+  uint32_t pin;
 } i2c_type_t;
 
 typedef struct {
-	I2C_HandleTypeDef *hi2c;
-	i2c_type_t sda;
-	i2c_type_t scl;
+  I2C_HandleTypeDef* hi2c;
+  i2c_type_t sda;
+  i2c_type_t scl;
 } i2c_errata_t;
 
 /* Public functions prototype

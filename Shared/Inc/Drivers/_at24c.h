@@ -15,6 +15,6 @@
  * --------------------------------------------*/
 uint8_t AT24C_Probe(void);
 uint8_t AT24C_Read(uint16_t addr, uint8_t *data, uint16_t n);
-uint8_t AT24C_Write(uint16_t addr, uint8_t *data, uint16_t n);
+uint8_t AT24C_Write(uint16_t addr, const uint8_t *data, uint16_t n);
 uint8_t AT24C_Clear(uint16_t addr, uint16_t n);
 #endif

@@ -57,13 +57,13 @@ uint8_t VCU_TX_SwitchControl(void) {
   can_tx_t Tx = {0};
   UNION64 *d = &(Tx.data);
 
-  finger_data_t finger = FGR_IO_GetData();
+  const finger_data_t* finger = FGR_IO_GetData();
 
   d->u8[0] = HB_IO_GetPin(HBP_ABS);
   d->u8[0] |= HB_IO_GetPin(HBP_LAMP) << 2;
   d->u8[0] |= NODE.d.error << 3;
   d->u8[0] |= NODE.d.overheat << 4;
-  d->u8[0] |= !finger.id << 5;
+  d->u8[0] |= !finger->id << 5;
   d->u8[0] |= !RMT.d.nearby << 6;
   d->u8[0] |= RTC_Daylight() << 7;
 
@@ -76,7 +76,7 @@ uint8_t VCU_TX_SwitchControl(void) {
   d->u8[1] |= MCU_Reversed() << 2;
   d->u8[1] |= BMS.d.run << 3;
   d->u8[1] |= MCU.d.run << 4;
-  d->u8[1] |= (finger.registering & 0x03) << 5;
+  d->u8[1] |= (finger->registering & 0x03) << 5;
 
   // mode
   d->u8[2] = HB_IO_GetSub(HBM_DRIVE);

@@ -19,7 +19,7 @@
 #define MQTT_KEEPALIVE_S ((uint8_t)30)
 #define MQTT_UPLOAD_MS ((uint16_t)10000)
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   char topic[20];
@@ -68,7 +68,7 @@ uint8_t MQTT_Ping(void);
 uint8_t MQTT_Subscribe(void);
 uint8_t MQTT_Unsubscribe(void);
 
-uint8_t MQTT_Publish(payload_t *payload);
+uint8_t MQTT_Publish(const payload_t *payload);
 uint8_t MQTT_PublishWill(uint8_t on);
 
 uint8_t MQTT_GotPublish(void);

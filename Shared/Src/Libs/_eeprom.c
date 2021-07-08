@@ -78,7 +78,7 @@ void EE_Refresh(void) {
   }
 }
 
-uint8_t EE_Cmd(EE_VA va, void* src, void* dst) {
+uint8_t EE_Cmd(EE_VA va, const void* src, void* dst) {
   uint16_t addr = Address(va);
   uint8_t ok = 1;
 

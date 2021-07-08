@@ -13,7 +13,7 @@
 #include "App/_common.h"
 #include "Libs/_eeprom.h"
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   char name[EE_STR_MAX];

@@ -59,7 +59,7 @@ static uint8_t AuthFast(void);
 static uint8_t GenerateID(uint8_t *theId);
 static uint8_t ConvertImage(uint8_t slot);
 static uint8_t GetImage(uint32_t timeout);
-static void DebugResponse(uint8_t res, char *msg);
+static void DebugResponse(uint8_t res, const char *msg);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -244,8 +244,8 @@ void FGR_Authenticate(void) {
 }
 
 
-finger_data_t FGR_IO_GetData(void) {
-	return FGR.d;
+const finger_data_t* FGR_IO_GetData(void) {
+	return &(FGR.d);
 }
 
 uint8_t FGR_IO_GetID(void) {
@@ -353,7 +353,7 @@ static uint8_t GenerateID(uint8_t *theId) {
   return res;
 }
 
-static void DebugResponse(uint8_t res, char *msg) {
+static void DebugResponse(uint8_t res, const char *msg) {
 #if FINGER_DEBUG
   switch (res) {
     case FP_OK:

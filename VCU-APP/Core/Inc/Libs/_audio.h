@@ -44,7 +44,7 @@
  * --------------------------------------------*/
 #include "Drivers/_cs43l22.h"
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint32_t tick;

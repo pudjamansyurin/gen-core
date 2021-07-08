@@ -34,7 +34,7 @@ typedef enum {
   CDBG_BMS,
 } CDBG;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint8_t error;

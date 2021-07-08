@@ -43,14 +43,14 @@ uint8_t AES_Init(void) {
   return ok;
 }
 
-uint8_t AES_ChangeKey(uint32_t *key) {
+uint8_t AES_ChangeKey(uint32_t *src) {
   CRYP_ConfigTypeDef config;
   uint8_t ok;
 
   lock();
   ok = HAL_CRYP_GetConfig(pcryp, &config) == HAL_OK;
   if (ok) {
-    config.pKey = (key == NULL) ? AES_KEY : key;
+    config.pKey = (src == NULL) ? AES_KEY : src;
     ok = HAL_CRYP_SetConfig(pcryp, &config) == HAL_OK;
   }
   unlock();
@@ -58,7 +58,7 @@ uint8_t AES_ChangeKey(uint32_t *key) {
   return ok;
 }
 
-uint8_t AES_Encrypt(uint8_t *dst, uint8_t *src, uint16_t Sz) {
+uint8_t AES_Encrypt(uint8_t *dst, const uint8_t *src, uint16_t Sz) {
   uint8_t ok;
 
   lock();
@@ -69,7 +69,7 @@ uint8_t AES_Encrypt(uint8_t *dst, uint8_t *src, uint16_t Sz) {
   return ok;
 }
 
-uint8_t AES_Decrypt(uint8_t *dst, uint8_t *src, uint16_t Sz) {
+uint8_t AES_Decrypt(uint8_t *dst, const uint8_t *src, uint16_t Sz) {
   uint8_t ok;
 
   lock();
@@ -80,7 +80,7 @@ uint8_t AES_Decrypt(uint8_t *dst, uint8_t *src, uint16_t Sz) {
   return ok;
 }
 
-uint8_t AES_EE_Key(aes_key_t src) {
+uint8_t AES_EE_Key(const aes_key_t src) {
   void *dst = AES_KEY;
 
   return EE_Cmd(VA_AES_KEY, src, dst);

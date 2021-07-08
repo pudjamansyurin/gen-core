@@ -70,7 +70,7 @@ static uint32_t Timer(uint8_t key);
 static uint8_t Reversed(void);
 static void RunSelect(void);
 static void RunSet(void);
-static uint8_t Deffered(void *src);
+static uint8_t Deffered(const void *src);
 static uint8_t SubMask(HBM mode);
 
 /* Public functions implementation
@@ -361,7 +361,7 @@ static void RunSet(void) {
   }
 }
 
-static uint8_t Deffered(void *src) {
+static uint8_t Deffered(const void *src) {
   return (src != NULL && VCU.d.state > VEHICLE_NORMAL);
 }
 

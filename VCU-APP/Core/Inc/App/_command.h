@@ -16,8 +16,8 @@
  * --------------------------------------------*/
 typedef enum {
   CMDR_ERROR = 0,
-	CMDR_OK,
-	CMDR_INVALID,
+  CMDR_OK,
+  CMDR_INVALID,
 } CMD_RESP;
 
 typedef enum {
@@ -28,7 +28,7 @@ typedef enum {
   CMDC_RMT,
   CMDC_FOTA,
   CMDC_NET,
-	CMDC_CON,
+  CMDC_CON,
   CMDC_HBAR,
   CMDC_MCU,
   CMDC_MAX,
@@ -105,7 +105,7 @@ typedef enum {
   CMD_MCU_MAX,
 } CMD_SUB_MCU;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct __attribute__((packed)) {
   char prefix[2];
@@ -136,9 +136,9 @@ typedef struct __attribute__((packed)) {
 /* Public functions prototype
  * --------------------------------------------*/
 void CMD_Init(void);
-bool CMD_ValidateCode(command_t* cmd);
-bool CMD_ValidateContent(void* ptr, uint8_t len);
-uint8_t CMD_GetPayloadSize(command_t *cmd);
-void CMD_Execute(command_t* cmd);
+bool CMD_ValidateCode(const command_t* cmd);
+bool CMD_ValidateContent(const void* ptr, uint8_t len);
+uint8_t CMD_GetPayloadSize(const command_t* cmd);
+void CMD_Execute(const command_t* cmd);
 
 #endif /* INC_APP__COMMAND_H_ */

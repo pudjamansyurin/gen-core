@@ -44,11 +44,11 @@ typedef enum {
   VA_MAX,
 } EE_VA;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
-	uint8_t active;
-	uint8_t used;
+  uint8_t active;
+  uint8_t used;
   uint32_t tick;
 } eeprom_t;
 
@@ -60,5 +60,5 @@ extern eeprom_t EEPROM;
  * --------------------------------------------*/
 uint8_t EE_Init(void);
 void EE_Refresh(void);
-uint8_t EE_Cmd(EE_VA va, void *src, void *dst);
+uint8_t EE_Cmd(EE_VA va, const void *src, void *dst);
 #endif /* EEPROM_H_ */

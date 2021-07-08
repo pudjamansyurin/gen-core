@@ -17,7 +17,7 @@
 
 /* Private functions prototypes
  * --------------------------------------------*/
-static void FW_MakeResponseIAP(char *message, char *node);
+static void FW_MakeResponseIAP(char *message, const char *node);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -47,7 +47,7 @@ bool FW_ValidResponseIAP(void) {
   return ok;
 }
 
-bool FW_EnterModeIAP(IAP_TYPE type, char *message) {
+bool FW_EnterModeIAP(IAP_TYPE type) {
   uint16_t version = (type == ITYPE_HMI) ? HMI1.d.version : VCU_VERSION;
 
   /* Retain FOTA */
@@ -121,7 +121,7 @@ void FW_CaptureResponseIAP(response_t *r) {
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void FW_MakeResponseIAP(char *message, char *node) {
+static void FW_MakeResponseIAP(char *message, const char *node) {
   uint16_t vNew = VCU_VERSION, vOld = IAP.version;
   uint32_t tick;
 

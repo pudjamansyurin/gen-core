@@ -10,8 +10,8 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/_nrf24l01.h"
 #include "Drivers/_aes.h"
+#include "Drivers/_nrf24l01.h"
 
 /* Exported constants
  * --------------------------------------------*/
@@ -35,7 +35,7 @@ typedef enum { RMT_ACTION_R = 0, RMT_ACTION_W } RMT_ACTION;
 
 typedef enum { RMT_MODE_NORMAL = 0, RMT_MODE_PAIRING } RMT_MODE;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   uint32_t ping;

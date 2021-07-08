@@ -46,8 +46,7 @@
 #if (APP)
 extern osMutexId_t AudioRecMutexHandle;
 #endif
-extern uint32_t SOUND_FREQ;
-extern uint32_t SOUND_SIZE;
+extern uint32_t SOUND_FREQ, SOUND_SIZE;
 extern uint16_t SOUND_SAMPLE[];
 
 /* Private constants
@@ -108,7 +107,7 @@ static uint8_t I2S_Init(uint32_t AudioFreq);
 static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume,
 		uint32_t AudioFreq);
 static void AUDIO_OUT_DeInit(void);
-static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size);
+static uint8_t AUDIO_OUT_Play(uint16_t *Buffer, uint32_t Size);
 static void lock(void);
 static void unlock(void);
 
@@ -544,16 +543,16 @@ static void AUDIO_OUT_DeInit(void) {
 
 /**
  * @brief  Starts playing audio stream from a data buffer for a determined size.
- * @param  pBuffer: Pointer to the buffer
+ * @param  Buffer: Pointer to the buffer
  * @param  Size: Number of audio data BYTES.
  * @retval AUDIO_OK if correct communication, else wrong communication
  */
-static uint8_t AUDIO_OUT_Play(uint16_t *pBuffer, uint32_t Size) {
+static uint8_t AUDIO_OUT_Play(uint16_t *Buffer, uint32_t Size) {
 	/* Call the audio Codec Play function */
-	if (cs43l22_Play(pBuffer, Size) != 0) return AUDIO_ERROR;
+	if (cs43l22_Play() != 0) return AUDIO_ERROR;
 
 	/* Update the Media layer and enable it for play */
-	if (HAL_I2S_Transmit_DMA(AUDIO.pi2s, pBuffer,
+	if (HAL_I2S_Transmit_DMA(AUDIO.pi2s, Buffer,
 			DMA_MAX(Size / AUDIO_DATA_SZ)) != HAL_OK)
 		return AUDIO_ERROR;
 	else

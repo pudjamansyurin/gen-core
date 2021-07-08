@@ -13,7 +13,7 @@
 #include "App/_task.h"
 #include "Nodes/MCU.h"
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct __attribute__((packed)) {
   int8_t state;

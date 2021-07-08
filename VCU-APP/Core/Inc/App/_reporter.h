@@ -23,56 +23,55 @@
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
-	FR_SIMPLE = 1,
-	FR_FULL = 2,
+  FR_SIMPLE = 1,
+  FR_FULL = 2,
 } FRAME_TYPE;
 
 /* Exported types
  * --------------------------------------------*/
 typedef struct {
-	PAYLOAD_TYPE type;
-	osMessageQueueId_t *queue;
-	void *data;
-	bool pending;
-	uint8_t size;
+  PAYLOAD_TYPE type;
+  osMessageQueueId_t *queue;
+  void *data;
+  bool pending;
+  uint8_t size;
 } payload_t;
 
 // header frame (for report & response)
 typedef struct __attribute__((packed)) {
-	char prefix[2];
-	uint8_t size;
-	uint32_t vin;
-	datetime_t send_time;
+  char prefix[2];
+  uint8_t size;
+  uint32_t vin;
+  datetime_t send_time;
 } report_header_t;
 
 // report frame
 typedef struct __attribute__((packed)) {
-	struct __attribute__((packed)) {
-		uint8_t frame_id;
-		datetime_t log_time;
-		vcu_dbg_t vcu;
-		ee_dbg_t eeprom;
-		gps_dbg_t gps;
-	} req;
-	struct __attribute__((packed)) {
-		hbar_dbg_t hbar;
-		net_dbg_t net;
-		mems_dbg_t mems;
-		remote_dbg_t rmt;
-		finger_dbg_t fgr;
-		audio_dbg_t audio;
-		hmi1_dbg_t hmi1;
-		bms_dbg_t bms;
-		mcu_dbg_t mcu;
-		tasks_dbg_t task;
-	} opt;
+  struct __attribute__((packed)) {
+    uint8_t frame_id;
+    datetime_t log_time;
+    vcu_dbg_t vcu;
+    ee_dbg_t eeprom;
+    gps_dbg_t gps;
+  } req;
+  struct __attribute__((packed)) {
+    hbar_dbg_t hbar;
+    net_dbg_t net;
+    mems_dbg_t mems;
+    remote_dbg_t rmt;
+    finger_dbg_t fgr;
+    audio_dbg_t audio;
+    hmi1_dbg_t hmi1;
+    bms_dbg_t bms;
+    mcu_dbg_t mcu;
+    tasks_dbg_t task;
+  } opt;
 } report_data_t;
 
 typedef struct __attribute__((packed)) {
-	report_header_t header;
-	report_data_t data;
+  report_header_t header;
+  report_data_t data;
 } report_t;
-
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -88,5 +87,5 @@ void RPT_IO_SetOvdInterval(uint16_t value);
 void RPT_IO_SetPayloadPending(PAYLOAD_TYPE type, uint8_t value);
 void RPT_IO_PayloadDiscard(void);
 
-payload_t RPT_IO_GetPayload(PAYLOAD_TYPE type);
+const payload_t *RPT_IO_GetPayload(PAYLOAD_TYPE type);
 #endif /* INC_APP__REPORTER_H_ */

@@ -70,8 +70,8 @@ void MEMS_ToggleMotion(void);
 uint8_t MEMS_IO_GetActive(void);
 uint8_t MEMS_IO_GetMotionActive(void);
 uint8_t MEMS_IO_GetMotionOffset(void);
-mems_raw_t MEMS_IO_GetRaw(void);
-mems_total_t MEMS_IO_GetTotal(void);
+const mems_raw_t* MEMS_IO_GetRaw(void);
+const mems_total_t* MEMS_IO_GetTotal(void);
+const mems_tilt_t* MEMS_IO_GetTilt(MEMS_TILT key);
 uint8_t MEMS_IO_GetEffect(MEMS_EFFECT key);
-mems_tilt_t MEMS_IO_GetTilt(MEMS_TILT key);
 #endif /* INC_LIBS__MEMS_H_ */

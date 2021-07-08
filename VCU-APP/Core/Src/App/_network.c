@@ -44,13 +44,13 @@ void NET_CheckCommand(void) {
 }
 
 void NET_CheckPayload(PAYLOAD_TYPE type) {
-	payload_t pay;
+	const payload_t* pay;
 	uint8_t pending;
 
   if (RPT_PayloadPending(type))
     if (SIM_SetState(SIM_STATE_MQTT_ON, 0)) {
     	pay = RPT_IO_GetPayload(type);
-      pending = !MQTT_Publish(&pay);
+      pending = !MQTT_Publish(pay);
       RPT_IO_SetPayloadPending(type, pending);
     }
 }

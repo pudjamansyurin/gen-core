@@ -69,7 +69,7 @@ typedef enum {
   PAYLOAD_MAX = 2,
 } PAYLOAD_TYPE;
 
-/* Exported structs
+/* Exported types
  * --------------------------------------------*/
 typedef struct {
   double sum;
