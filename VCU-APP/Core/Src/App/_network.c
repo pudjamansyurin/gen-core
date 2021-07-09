@@ -71,7 +71,7 @@ bool NET_ReadSMS(void) {
   bool ok = false;
 
   memset(NET_BUF, 0, sizeof(NET_BUF));
-  if (SIM_ReadNewSMS(NET_BUF, sizeof(NET_BUF)))
+  if (SIM_ReadLastSMS(NET_BUF, sizeof(NET_BUF)))
     ok = _osQueuePutRst(QuotaQueueHandle, NET_BUF);
 
   return ok;

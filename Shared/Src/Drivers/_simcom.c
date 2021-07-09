@@ -25,33 +25,6 @@
 #if (APP)
 extern osMutexId_t SimcomRecMutexHandle;
 #endif
-/*
- * simcom.c
- *
- *  Created on: Aug 14, 2019
- *      Author: Pudja Mansyurin
- */
-
-/* Includes
- * --------------------------------------------*/
-#include "Drivers/_simcom.h"
-
-#include "Libs/_at.h"
-#include "usart.h"
-
-#if (APP)
-#include "Libs/_mqtt.h"
-#include "Nodes/VCU.h"
-
-#else
-#include "Drivers/_iwdg.h"
-#endif
-
-/* External variables
- * --------------------------------------------*/
-#if (APP)
-extern osMutexId_t SimcomRecMutexHandle;
-#endif
 
 /* Private constants
  * --------------------------------------------*/
@@ -208,12 +181,13 @@ uint8_t SIM_FetchTime(timestamp_t* ts) {
 	uint8_t ok = 0;
 
 	if (SIM_SetState(SIM_STATE_READY, 0))
-		if (AT_Clock(ATR, ts) == SIM_OK) ok = (ts->date.Year >= VCU_BUILD_YEAR);
+		if (AT_Clock(ATR, ts) == SIM_OK)
+			ok = (ts->date.Year >= VCU_BUILD_YEAR);
 
 	return ok;
 }
 
-uint8_t SIM_SendUSSD(char* ussd, char* buf, uint8_t buflen) {
+uint8_t SIM_SendUSSD(const char* ussd, char* buf, uint8_t buflen) {
 	SIMR res;
 
 	if (!SIM_SetState(SIM_STATE_NETWORK_ON, 0)) return 0;
@@ -238,7 +212,7 @@ uint8_t SIM_SendUSSD(char* ussd, char* buf, uint8_t buflen) {
 	return res == SIM_OK;
 }
 
-uint8_t SIM_ReadNewSMS(char* buf, uint8_t buflen) {
+uint8_t SIM_ReadLastSMS(char* buf, uint8_t buflen) {
 	SIMR res;
 
 	if (!SIM_SetState(SIM_STATE_NETWORK_ON, 0)) return 0;
@@ -257,7 +231,7 @@ uint8_t SIM_ReadNewSMS(char* buf, uint8_t buflen) {
 	return res == SIM_OK;
 }
 
-uint8_t SIM_Upload(void* payload, uint16_t size) {
+uint8_t SIM_Upload(const void* payload, uint16_t size) {
 	SIMR res;
 	char cmd[20];
 
