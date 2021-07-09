@@ -34,6 +34,7 @@ static usart_ring_t SIM_RING = {
     }
 };
 
+
 /* Public functions implementation
  * --------------------------------------------*/
 void SIM_DMA_Start(UART_HandleTypeDef* huart, DMA_HandleTypeDef* hdma) {

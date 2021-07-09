@@ -62,7 +62,6 @@ typedef enum {
   NRF_CMD_NOP = 0xFF
 } NRF_COMMAND;
 
-
 /* Private types
  * --------------------------------------------*/
 typedef struct {
@@ -90,7 +89,6 @@ typedef struct {
   volatile NRF_TXRX_STATE state;
 } nrf24l01_t;
 
-
 /* Private variables
  * --------------------------------------------*/
 static nrf24l01_t NRF;
@@ -101,8 +99,8 @@ static void csn_set(void);
 static void csn_reset(void);
 static void ce_set(void);
 static void ce_reset(void);
-static NRFR nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
-                                   uint8_t *rx, uint8_t len);
+static NRFR nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *rx,
+                             uint8_t len);
 static NRFR nrf_read_register(uint8_t reg, uint8_t *data);
 static NRFR nrf_read_registers(uint8_t reg, uint8_t *data, uint8_t len);
 static NRFR nrf_write_register(uint8_t reg, uint8_t *data);
@@ -143,7 +141,7 @@ NRFR nrf_check(void) {
 }
 
 NRFR nrf_change_mode(const uint8_t *tx_address, const uint8_t *rx_address,
-                           uint8_t payload_width) {
+                     uint8_t payload_width) {
   ce_reset();
   nrf_set_tx_address(tx_address);
   nrf_set_rx_address_p0(rx_address);
@@ -670,7 +668,7 @@ NRFR nrf_set_rx_payload_width_p1(uint8_t width) {
 //
 //	// wait for end of transmition
 //	while (NRF.tx_busy) {
-//		_DelayMS(1);
+//		delayMs(1);
 //	};
 //
 //	ce_reset();
@@ -723,9 +721,9 @@ uint8_t nrf_tx_busy(void) { return NRF.tx_busy; }
 //	ce_set();
 //
 //	// wait for reception
-//	uint32_t tick = _GetTickMS();
-//	while (_TickIn(tick, ms) && NRF.rx_busy)
-//		_DelayMS(1);
+//	uint32_t tick = tickMs();
+//	while (tickIn(tick, ms) && NRF.rx_busy)
+//		delayMs(1);
 //
 //	return !NRF.rx_busy;
 //}
@@ -810,8 +808,8 @@ static void ce_set(void) { GATE_RemoteCE(GPIO_PIN_SET); }
 
 static void ce_reset(void) { GATE_RemoteCE(GPIO_PIN_RESET); }
 
-static NRFR nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx,
-                                   uint8_t *rx, uint8_t len) {
+static NRFR nrf_send_command(NRF_COMMAND cmd, const uint8_t *tx, uint8_t *rx,
+                             uint8_t len) {
   uint8_t ok;
   uint8_t myTX[len + 1];
   uint8_t myRX[len + 1];

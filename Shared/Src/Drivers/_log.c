@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_log.h"
+
 #include "App/_common.h"
 
 /* External variables
@@ -22,8 +23,8 @@ extern osMutexId_t LogRecMutexHandle;
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void lock(void);
-static void unlock(void);
+static void Lock(void);
+static void UnLock(void);
 static void SendITM(char ch);
 
 /* Public functions implementation
@@ -36,9 +37,9 @@ int __io_putchar(int ch) {
 int _write(int file, char* ptr, int len) {
   int DataIdx;
 
-  lock();
+  Lock();
   for (DataIdx = 0; DataIdx < len; DataIdx++) __io_putchar(*ptr++);
-  unlock();
+  UnLock();
 
   return len;
 }
@@ -46,20 +47,20 @@ int _write(int file, char* ptr, int len) {
 void printf_init(void) { setvbuf(stdout, NULL, _IONBF, 0); }
 
 void printf_hex(const char* data, uint16_t size) {
-  lock();
+  Lock();
   for (uint32_t i = 0; i < size; i++) printf("%02X", *(data + i));
-  unlock();
+  UnLock();
 }
 
 /* Private functions implementations
  * --------------------------------------------*/
-static void lock(void) {
+static void Lock(void) {
 #if (APP)
   osMutexAcquire(LogRecMutexHandle, osWaitForever);
 #endif
 }
 
-static void unlock(void) {
+static void UnLock(void) {
 #if (APP)
   osMutexRelease(LogRecMutexHandle);
 #endif
@@ -70,10 +71,9 @@ static void SendITM(char ch) {
   uint32_t tick;
 
   // wait if busy
-  tick = _GetTickMS();
-  while (_TickIn(tick, LOG_TIMEOUT_MS)) {
-  	if (ITM->PORT[0].u32 != 0)
-  		break;
+  tick = tickMs();
+  while (tickIn(tick, LOG_TIMEOUT_MS)) {
+    if (ITM->PORT[0].u32 != 0) break;
   };
 
   ITM->PORT[0].u8 = (uint8_t)ch;

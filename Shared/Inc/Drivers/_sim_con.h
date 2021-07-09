@@ -45,11 +45,7 @@ typedef struct {
 /* Public functions prototype
  * --------------------------------------------*/
 void SIMCon_Init(void);
-void SIMCon_EE_Read(void);
 uint8_t SIMCon_EE_Write(void);
-uint8_t SIMCon_EE_Apn(con_apn_t *s);
-uint8_t SIMCon_EE_Ftp(con_ftp_t *s);
-uint8_t SIMCon_EE_Mqtt(con_mqtt_t *s);
 
 const con_ftp_t* SIMCon_IO_Ftp(void);
 const con_mqtt_t* SIMCon_IO_Mqtt(void);

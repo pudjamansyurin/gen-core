@@ -62,8 +62,8 @@ uint8_t GPS_Init(void) {
   UBLOX_DMA_Start(GPS.puart, GPS.pdma, GPS_ReceiveCallback);
   GATE_GpsReset();
 
-  tick = _GetTickMS();
-  while (_TickIn(tick, GPS_TIMEOUT_MS))
+  tick = tickMs();
+  while (tickIn(tick, GPS_TIMEOUT_MS))
     if (GPS.d.tick) break;
 
   ok = GPS.d.tick > 0;
@@ -84,10 +84,10 @@ void GPS_DeInit(void) {
 
 void GPS_Refresh(void) {
   lock();
-  GPS.d.active = _TickIn(GPS.d.tick, GPS_TIMEOUT_MS);
+  GPS.d.active = tickIn(GPS.d.tick, GPS_TIMEOUT_MS);
   if (!GPS.d.active) {
     GPS_DeInit();
-    _DelayMS(500);
+    delayMs(500);
     GPS_Init();
   }
   unlock();
@@ -100,7 +100,7 @@ void GPS_Flush(void) {
 }
 
 void GPS_ReceiveCallback(const void *ptr, size_t len) {
-  if (nmea_process(&(GPS.d.nmea), (char *)ptr, len)) GPS.d.tick = _GetTickMS();
+  if (nmea_process(&(GPS.d.nmea), (char *)ptr, len)) GPS.d.tick = tickMs();
 
 #if GPS_DEBUG
   Debugger(ptr, len);

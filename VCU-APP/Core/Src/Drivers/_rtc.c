@@ -24,15 +24,15 @@ extern osMutexId_t RtcMutexHandle;
 /* Private types
  * --------------------------------------------*/
 typedef struct {
-	uint32_t calibrationTick;
-	RTC_HandleTypeDef *prtc;
+  uint32_t calibrationTick;
+  RTC_HandleTypeDef *prtc;
 } rtc_t;
 
 /* Private variables
  * --------------------------------------------*/
 static rtc_t _RTC = {
-		.calibrationTick = 0,
-		.prtc = &hrtc,
+    .calibrationTick = 0,
+    .prtc = &hrtc,
 };
 
 /* Private functions prototype
@@ -65,12 +65,12 @@ void RTC_Write(datetime_t dt) {
 }
 
 uint8_t RTC_NeedCalibration(void) {
-  return !_TickIn(_RTC.calibrationTick, RTC_CALIBRATION_MINUTES * 60 * 1000);
+  return !tickIn(_RTC.calibrationTick, RTC_CALIBRATION_MINUTES * 60 * 1000);
 }
 
 void RTC_Calibrate(timestamp_t *ts) {
   RTC_WriteRaw(ts);
-  _RTC.calibrationTick = _GetTickMS();
+  _RTC.calibrationTick = tickMs();
 }
 
 uint8_t RTC_Daylight() {

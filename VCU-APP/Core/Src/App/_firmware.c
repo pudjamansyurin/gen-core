@@ -128,11 +128,11 @@ static void FW_MakeResponseIAP(char *message, const char *node) {
   uint32_t tick;
 
   if (IAP_IO_Type() == ITYPE_HMI) {
-    tick = _GetTickMS();
+    tick = tickMs();
     do {
       vNew = HMI1.d.version;
-      _DelayMS(100);
-    } while (!vNew && _TickIn(tick, HMI_FOTA_MS));
+      delayMs(100);
+    } while (!vNew && tickIn(tick, HMI_FOTA_MS));
 
     /* Handle empty firmware */
     if (vOld == 0xFFFF) vOld = 0x0000;

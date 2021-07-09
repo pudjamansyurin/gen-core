@@ -11,7 +11,7 @@
 
 /* Public functions implementation
  * --------------------------------------------*/
-void _Error(const char* msg) {
+void logError(const char* msg) {
 #if (APP)
   if (osKernelGetState() == osKernelRunning) printf(msg);
 #else
@@ -19,7 +19,7 @@ void _Error(const char* msg) {
 #endif
 }
 
-void _DelayMS(uint32_t ms) {
+void delayMs(uint32_t ms) {
 #if (APP)
   osDelay(ms);
 #else
@@ -27,7 +27,7 @@ void _DelayMS(uint32_t ms) {
 #endif
 }
 
-uint32_t _GetTickMS(void) {
+uint32_t tickMs(void) {
 #if (APP)
   return osKernelGetTickCount();
 #else
@@ -35,15 +35,15 @@ uint32_t _GetTickMS(void) {
 #endif
 }
 
-uint8_t _TickOut(uint32_t tick, uint32_t ms) {
-  return (tick && (_GetTickMS() - tick) > ms);
+uint8_t tickOut(uint32_t tick, uint32_t ms) {
+  return (tick && (tickMs() - tick) > ms);
 }
 
-uint8_t _TickIn(uint32_t tick, uint32_t ms) {
-  return (tick && (_GetTickMS() - tick) < ms);
+uint8_t tickIn(uint32_t tick, uint32_t ms) {
+  return (tick && (tickMs() - tick) < ms);
 }
 
-uint32_t _ByteSwap32(uint32_t x) {
+uint32_t swap32(uint32_t x) {
   uint32_t y = (x >> 24) & 0xff;
   y |= ((x >> 16) & 0xff) << 8;
   y |= ((x >> 8) & 0xff) << 16;
@@ -52,7 +52,7 @@ uint32_t _ByteSwap32(uint32_t x) {
   return y;
 }
 
-float _SamplingFloat(sample_float_t* m, float* buf, uint16_t sz, float val) {
+float samplingFloat(sample_float_t* m, float* buf, uint16_t sz, float val) {
   // Subtract the oldest number from the prev sum, add the new number
   m->sum = m->sum - buf[m->pos] + val;
   // Assign the nextNum to the position in the array

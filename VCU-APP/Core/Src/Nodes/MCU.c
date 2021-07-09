@@ -66,13 +66,13 @@ void MCU_PowerOverCAN(uint8_t on) {
   if (on) {
     if (MCU.d.inv.lockout) {
       MCU_TX_Setting(0, R);
-      _DelayMS(100);
+      delayMs(100);
     } else {
       if (R != MCU.d.reverse) {
         MCU_TX_Setting(0, !R);
-        _DelayMS(100);
+        delayMs(100);
         MCU_TX_Setting(0, R);
-        _DelayMS(100);
+        delayMs(100);
       }
       MCU_TX_Setting(1, R);
     }
@@ -82,7 +82,7 @@ void MCU_PowerOverCAN(uint8_t on) {
 }
 
 void MCU_Refresh(void) {
-  MCU.d.active = _TickIn(MCU.d.tick, MCU_TIMEOUT_MS);
+  MCU.d.active = tickIn(MCU.d.tick, MCU_TIMEOUT_MS);
   if (MCU.d.active) {
     if (MCU.set.rpm_max && SyncedSpeedMax()) {
       MCU.set.rpm_max = 0;
@@ -144,7 +144,7 @@ void MCU_RX_CurrentDC(can_rx_t *Rx) {
 
   MCU.d.dcbus.current = d->s16[3] * 0.1;
 
-  MCU.d.tick = _GetTickMS();
+  MCU.d.tick = tickMs();
 }
 
 void MCU_RX_VoltageDC(can_rx_t *Rx) {
@@ -152,7 +152,7 @@ void MCU_RX_VoltageDC(can_rx_t *Rx) {
 
   MCU.d.dcbus.voltage = d->s16[1] * 0.1;
 
-  MCU.d.tick = _GetTickMS();
+  MCU.d.tick = tickMs();
 }
 
 void MCU_RX_TorqueSpeed(can_rx_t *Rx) {
@@ -163,7 +163,7 @@ void MCU_RX_TorqueSpeed(can_rx_t *Rx) {
   MCU.d.torque.commanded = d->s16[2] * 0.1;
   MCU.d.torque.feedback = d->s16[3] * 0.1;
 
-  MCU.d.tick = _GetTickMS();
+  MCU.d.tick = tickMs();
 }
 
 void MCU_RX_FaultCode(can_rx_t *Rx) {
@@ -172,7 +172,7 @@ void MCU_RX_FaultCode(can_rx_t *Rx) {
   MCU.d.fault.post = d->u32[0];
   MCU.d.fault.run = d->u32[1];
 
-  MCU.d.tick = _GetTickMS();
+  MCU.d.tick = tickMs();
 }
 
 void MCU_RX_State(can_rx_t *Rx) {
@@ -185,7 +185,7 @@ void MCU_RX_State(can_rx_t *Rx) {
   MCU.d.inv.lockout = (d->u8[6] >> 7) & 0x01;
   MCU.d.reverse = d->u8[7] & 0x01;
 
-  MCU.d.tick = _GetTickMS();
+  MCU.d.tick = tickMs();
 }
 
 void MCU_RX_Template(can_rx_t *Rx) {
@@ -243,7 +243,7 @@ uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
 
   // send message
   ok = CAN_Write(&Tx, CAND_MCU_TEMPLATE_W, 6, 0);
-  _DelayMS(100);
+  delayMs(100);
 
   return ok;
 }
@@ -258,9 +258,9 @@ static void Reset(void) {
 
 static void ResetPower(void) {
   GATE_McuPower(0);
-  _DelayMS(100);
+  delayMs(100);
   GATE_McuPower(1);
-  _DelayMS(500);
+  delayMs(500);
 }
 
 static void ResetFault(void) {

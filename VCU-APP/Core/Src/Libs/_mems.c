@@ -94,17 +94,17 @@ uint8_t MEMS_Init(void) {
 
   lock();
   printf("MEMS:Init\n");
-  tick = _GetTickMS();
+  tick = tickMs();
   do {
     MX_I2C3_Init();
     GATE_MemsReset();
 
     ok = MPU_Init(MEMS.pi2c, MPU_Device_0, MPU_Accel_16G, MPU_Gyro_2000s) ==
          MPUR_Ok;
-    if (!ok) _DelayMS(500);
-  } while (!ok && _TickIn(tick, MEMS_TIMEOUT_MS));
+    if (!ok) delayMs(500);
+  } while (!ok && tickIn(tick, MEMS_TIMEOUT_MS));
 
-  if (ok) MEMS.d.tick = _GetTickMS();
+  if (ok) MEMS.d.tick = tickMs();
   unlock();
 
   printf("MEMS:%s\n", ok ? "OK" : "Error");
@@ -121,14 +121,14 @@ void MEMS_DeInit(void) {
 
 void MEMS_Refresh(void) {
   lock();
-  MEMS.d.active = _TickIn(MEMS.d.tick, MEMS_TIMEOUT_MS);
+  MEMS.d.active = tickIn(MEMS.d.tick, MEMS_TIMEOUT_MS);
 
   // handle bug, when only got temperature
   if (MEMS.d.active) MEMS.d.active = !OnlyGotTemp();
 
   if (!MEMS.d.active) {
     MEMS_DeInit();
-    _DelayMS(500);
+    delayMs(500);
     MEMS_Init();
   }
   unlock();
@@ -149,7 +149,7 @@ uint8_t MEMS_Capture(void) {
   ok = Capture();
 
   if (ok) {
-    MEMS.d.tick = _GetTickMS();
+    MEMS.d.tick = tickMs();
 #if MEMS_DEBUG
     RawDebugger();
 #endif
@@ -168,15 +168,15 @@ uint8_t MEMS_Process(void) {
   lock();
   ConvertAccel();
 
-  MEMS.d.total.accel = _SamplingFloat(
+  MEMS.d.total.accel = samplingFloat(
       &s->handle[MSAMPLE_ACCEL], s->buffer[MSAMPLE_ACCEL], MEMS_SAMPLE_SZ,
       sqrt(pow(raw->accel.x, 2) + pow(raw->accel.y, 2) + pow(raw->accel.z, 2)));
-  MEMS.d.total.gyro = _SamplingFloat(
+  MEMS.d.total.gyro = samplingFloat(
       &s->handle[MSAMPLE_GYRO], s->buffer[MSAMPLE_GYRO], MEMS_SAMPLE_SZ,
       sqrt(pow(raw->gyro.x, 2) + pow(raw->gyro.y, 2) + pow(raw->gyro.z, 2)));
   MEMS.d.total.tilt =
-      _SamplingFloat(&s->handle[MSAMPLE_TILT], s->buffer[MSAMPLE_TILT],
-                     MEMS_SAMPLE_SZ, sqrt(pow(t->roll, 2) + pow(t->pitch, 2)));
+      samplingFloat(&s->handle[MSAMPLE_TILT], s->buffer[MSAMPLE_TILT],
+                    MEMS_SAMPLE_SZ, sqrt(pow(t->roll, 2) + pow(t->pitch, 2)));
 
   effect[MEFFECT_CRASH] = MEMS.d.total.accel > CRASH_LIMIT;
   effect[MEFFECT_FALL] = MEMS.d.total.tilt > FALL_LIMIT;

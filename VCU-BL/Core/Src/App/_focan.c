@@ -20,21 +20,16 @@
 
 /* Private enums
  * --------------------------------------------*/
-typedef enum {
-	FOCAN_ERROR = 0x00,
-	FOCAN_ACK = 0x79,
-	FOCAN_NACK = 0x1F
-} FOCAN;
+typedef enum { FOCAN_ERROR = 0x00, FOCAN_ACK = 0x79, FOCAN_NACK = 0x1F } FOCAN;
 
 /* Private functions prototypes
  * --------------------------------------------*/
 static uint8_t SendWaitResp(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
-                                    uint8_t response, uint32_t timeout,
-                                    uint32_t retry);
+                            uint8_t response, uint32_t timeout, uint32_t retry);
 static uint8_t WaitResp(uint32_t addr, uint32_t timeout);
 static uint8_t SendWaitRespAcked(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
-                                    CAN_DATA* RxData, uint32_t timeout,
-                                    uint32_t retry);
+                                 CAN_DATA* RxData, uint32_t timeout,
+                                 uint32_t retry);
 static uint8_t WaitRespAcked(uint32_t addr, CAN_DATA* RxData, uint32_t timeout);
 static uint8_t FlashBlock(const uint8_t* ptr, const uint32_t* tmpBlk);
 
@@ -62,8 +57,7 @@ uint8_t FOCAN_GetCRC(uint32_t* crc) {
 
   p = SendWaitRespAcked(&Tx, CAND_FOCAN_CRC, 0, &RxData, 20000, 1);
 
-  if (p)
-  	*crc = RxData.u32[0];
+  if (p) *crc = RxData.u32[0];
 
   return p;
 }
@@ -79,7 +73,8 @@ uint8_t FOCAN_Hook(uint32_t addr, uint32_t* data) {
   return p;
 }
 
-uint8_t FOCAN_Flash(uint8_t* ptr, uint32_t size, uint32_t offset, uint32_t len) {
+uint8_t FOCAN_Flash(uint8_t* ptr, uint32_t size, uint32_t offset,
+                    uint32_t len) {
   uint32_t pendingBlk, tmpBlk;
   can_tx_t Tx = {0};
   float percent;
@@ -146,8 +141,8 @@ static uint8_t FlashBlock(const uint8_t* ptr, const uint32_t* tmpBlk) {
 }
 
 static uint8_t SendWaitResp(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
-                                    uint8_t response, uint32_t timeout,
-                                    uint32_t retry) {
+                            uint8_t response, uint32_t timeout,
+                            uint32_t retry) {
   uint8_t p;
 
   do {
@@ -168,7 +163,7 @@ static uint8_t WaitResp(uint32_t addr, uint32_t timeout) {
   uint32_t tick;
 
   // wait response
-  tick = _GetTickMS();
+  tick = tickMs();
   do {
     if (CAN_Read(&Rx)) {
       if (CAN_ReadID(&(Rx.header)) == addr) {
@@ -178,15 +173,14 @@ static uint8_t WaitResp(uint32_t addr, uint32_t timeout) {
     }
 
     IWDG_Refresh();
-  } while (_TickIn(tick, timeout));
+  } while (tickIn(tick, timeout));
 
   return response;
 }
 
-
 static uint8_t SendWaitRespAcked(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
-                                    CAN_DATA* RxData, uint32_t timeout,
-                                    uint32_t retry) {
+                                 CAN_DATA* RxData, uint32_t timeout,
+                                 uint32_t retry) {
   uint8_t p;
 
   do {
@@ -201,13 +195,14 @@ static uint8_t SendWaitRespAcked(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
   return p;
 }
 
-static uint8_t WaitRespAcked(uint32_t addr, CAN_DATA* RxData, uint32_t timeout) {
+static uint8_t WaitRespAcked(uint32_t addr, CAN_DATA* RxData,
+                             uint32_t timeout) {
   uint8_t step = 0, reply = 3;
   can_rx_t Rx = {0};
   uint32_t tick;
 
   // wait response
-  tick = _GetTickMS();
+  tick = tickMs();
   do {
     // read
     if (CAN_Read(&Rx)) {
@@ -229,7 +224,7 @@ static uint8_t WaitRespAcked(uint32_t addr, CAN_DATA* RxData, uint32_t timeout) 
       }
     }
     IWDG_Refresh();
-  } while ((step < reply) && _TickIn(tick, timeout));
+  } while ((step < reply) && tickIn(tick, timeout));
 
   return (step == reply);
 }

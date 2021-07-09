@@ -35,7 +35,7 @@ void VCU_Init(void) {
 }
 
 void VCU_Refresh(void) {
-  BAT_ScanValue();
+	BAT_ScanVoltage();
 
   VCU.d.uptime++;
   VCU.d.buffered = osMessageQueueGetCount(ReportQueueHandle);

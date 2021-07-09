@@ -65,11 +65,11 @@ void STATE_Check(void) {
           osThreadFlagsSet(CanTxTaskHandle, FLAG_CAN_TASK_STOP);
           osThreadFlagsSet(CanRxTaskHandle, FLAG_CAN_TASK_STOP);
 
-          VCU.d.tick.independent = _GetTickMS();
+          VCU.d.tick.independent = tickMs();
           EVT_Set(EVG_REMOTE_MISSING);
         }
 
-        if (_TickOut(VCU.d.tick.independent, VCU_LOST_MODE_S * 1000))
+        if (tickOut(VCU.d.tick.independent, VCU_LOST_MODE_S * 1000))
           VCU.d.vehicle--;
         else if (GATE_ReadPower5v())
           VCU.d.vehicle++;
@@ -91,7 +91,7 @@ void STATE_Check(void) {
           HB_Init();
           BMS_Init();
           MCU_Init();
-          _DelayMS(500);
+          delayMs(500);
           shutdown = 0;
           start = 0;
         }
@@ -123,7 +123,7 @@ void STATE_Check(void) {
         if (LAST_STATE != VEHICLE_READY) {
           LAST_STATE = VEHICLE_READY;
           start = 0;
-          VCU.d.tick.ready = _GetTickMS();
+          VCU.d.tick.ready = tickMs();
         }
 
         if (!GATE_ReadPower5v() || shutdown)
@@ -146,6 +146,6 @@ void STATE_Check(void) {
       default:
         break;
     }
-    _DelayMS(100);
+    delayMs(100);
   } while (initialState != VCU.d.vehicle);
 }

@@ -37,7 +37,7 @@ uint8_t AES_Init(void) {
 
   do {
     ok = AES_ChangeKey(NULL);
-    if (!ok) _DelayMS(100);
+    if (!ok) delayMs(100);
   } while (!ok);
 
   return ok;

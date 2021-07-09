@@ -27,7 +27,7 @@ void DBG_GetVCU(vcu_dbg_t *vcu) {
   vcu->state = (int8_t)VCU.d.vehicle;
   vcu->uptime = (VCU.d.uptime * MANAGER_WAKEUP_MS) / 1000;
   vcu->buffered = VCU.d.buffered;
-  vcu->battery = BAT_ScanValue() / 18;
+  vcu->battery = BAT_IO_Voltage() / 18;
 }
 
 void DBG_GetEEPROM(ee_dbg_t *ee) {

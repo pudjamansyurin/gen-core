@@ -82,8 +82,8 @@ uint8_t EE_Init(void) {
 }
 
 void EE_Refresh(void) {
-  if (!_TickIn(EEPROM.tick, EE_CHECK_MS)) {
-    EEPROM.tick = _GetTickMS();
+  if (!tickIn(EEPROM.tick, EE_CHECK_MS)) {
+    EEPROM.tick = tickMs();
     EEPROM.active = AT24C_Probe();
   }
 }
@@ -106,13 +106,9 @@ uint8_t EE_Cmd(EE_VA va, const void* src, void* dst) {
   return ok;
 }
 
-uint8_t EE_IO_Active(void) {
-	return EEPROM.active;
-}
+uint8_t EE_IO_Active(void) { return EEPROM.active; }
 
-uint8_t EE_IO_Used(void) {
-	return EEPROM.used;
-}
+uint8_t EE_IO_Used(void) { return EEPROM.used; }
 
 /* Private functions implementation
  * --------------------------------------------*/

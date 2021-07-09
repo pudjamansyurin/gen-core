@@ -70,24 +70,7 @@ typedef enum {
 
 /* Public functions prototype
  * --------------------------------------------*/
-uint8_t SIMSta_StateTimeout(SIMR res, uint32_t* tick, uint32_t timeout);
-uint8_t SIMSta_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry);
-uint8_t SIMSta_StatePoorSignal(void);
-
-void SIMSta_Down(SIMR* res);
-void SIMSta_Ready(SIMR* res);
-void SIMSta_Configured(SIMR* res, uint32_t tick, uint32_t timeout);
-void SIMSta_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout);
-void SIMSta_NetworkOn(SIMR* res, uint32_t tick, uint32_t timeout);
-void SIMSta_GprsOn(SIMR* res, uint32_t tick, uint32_t timeout);
-#if (!APP)
-void SIMSta_PdpOn(SIMR* res);
-#else
-void SIMSta_PdpOn(SIMR* res);
-void SIMSta_InternetOn(SIMR* res, uint32_t tick, uint32_t timeout);
-void SIMSta_ServerOn(void);
-void SIMSta_MqttOn(void);
-#endif
+uint8_t SIMSta_SetState(SIM_STATE state, uint32_t timeout);
 
 SIM_IP SIMSta_IO_Ip(void);
 uint8_t SIMSta_IO_Signal(void);

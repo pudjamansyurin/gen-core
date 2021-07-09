@@ -13,8 +13,8 @@
 #include "Drivers/_can.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_flasher.h"
-#include "Libs/_eeprom.h"
 #include "Libs/_at.h"
+#include "Libs/_eeprom.h"
 #include "adc.h"
 #include "can.h"
 #include "crc.h"
@@ -24,13 +24,14 @@
 
 /* Private constants
  * --------------------------------------------*/
-#define FOTA_TIMEOUT_MS (60*1000)
+#define FOTA_TIMEOUT_MS (60 * 1000)
 
 /* Private functions prototypes
  * --------------------------------------------*/
 static void GetCRC(uint32_t *crc);
 static uint8_t FetchCRC(at_ftpget_t *ftpGET, uint32_t *crc);
-static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len, IAP_TYPE type);
+static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
+                       IAP_TYPE type);
 static uint8_t ValidCRC(uint32_t crc, uint32_t len, uint32_t address);
 static SIMR PrepareFTP(at_ftp_t *ftp);
 static SIMR OpenFTP(at_ftpget_t *ftpGET);
@@ -51,7 +52,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   // Turn ON HMI-Primary.
   if (res == SIM_OK) {
     GATE_Hmi1Power(1);
-    _DelayMS(1000);
+    delayMs(1000);
 
     /* Set FTP directory */
     sprintf(ftp.path, "/%s/", (type == ITYPE_HMI) ? "HMI" : "VCU");
@@ -60,7 +61,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     *(uint32_t *)IAP_RESP_ADDR = IRESP_FOTA_ERROR;
     FOCAN_SetProgress(type, 0.0f);
 
-    SIM_SetState(SIM_STATE_READY, 0);
+    SIMSta_SetState(SIM_STATE_READY, 0);
   }
 
   /* Backup if needed */
@@ -143,7 +144,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     if (res <= 0)
       *(uint32_t *)IAP_RESP_ADDR = IRESP_CRC_INVALID;
     else
-      _DelayMS(2000);
+      delayMs(2000);
   }
 
   // Reset FOTA flag only when FOTA success
@@ -156,7 +157,6 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 
   return (res == SIM_OK);
 }
-
 
 void FOTA_JumpToApp(void) {
   /* Set MSP & Reset address */
@@ -194,8 +194,7 @@ void FOTA_JumpToApp(void) {
 
 void FOTA_Reboot(void) {
   /* Clear backup area */
-  if (IAP_IO_Type() == ITYPE_VCU)
-  	FLASHER_EraseBkpArea();
+  if (IAP_IO_Type() == ITYPE_VCU) FLASHER_EraseBkpArea();
 
   IAP_ResetFlag();
   HAL_NVIC_SystemReset();
@@ -255,7 +254,7 @@ static uint8_t FetchCRC(at_ftpget_t *ftpGET, uint32_t *crc) {
 }
 
 static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
-                              IAP_TYPE type) {
+                       IAP_TYPE type) {
   SIMR res = SIM_OK;
   AT_FTP_STATE state;
   uint32_t timer;
@@ -271,7 +270,7 @@ static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
   if (res == SIM_OK) {
     // Prepare, start timer
     printf("FOTA:Start\n");
-    timer = _GetTickMS();
+    timer = tickMs();
 
     // Copy chunk by chunk
     do {
@@ -283,8 +282,8 @@ static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
       // Copy buffer to flash
       if (res == SIM_OK && ftpGET->cnflength) {
         if (type == ITYPE_HMI)
-          res = FOCAN_Flash((uint8_t *)ftpGET->ptr, ftpGET->cnflength,
-                                    *len, ftp->size);
+          res = FOCAN_Flash((uint8_t *)ftpGET->ptr, ftpGET->cnflength, *len,
+                            ftp->size);
         else
           res = FLASHER_WriteAppArea((uint8_t *)ftpGET->ptr, ftpGET->cnflength,
                                      *len);
@@ -315,7 +314,7 @@ static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 
     // Check, stop timer
     if (*len >= ftp->size)
-      printf("FOTA:End = %lu ms\n", _GetTickMS() - timer);
+      printf("FOTA:End = %lu ms\n", tickMs() - timer);
     else {
       printf("FOTA:Failed\n");
       res = SIM_ERROR;
@@ -339,7 +338,7 @@ static uint8_t ValidCRC(uint32_t crc, uint32_t len, uint32_t address) {
     printf("FOTA:CRC = DIFF (0x%08X != 0x%08X)\n", (unsigned int)crc,
            (unsigned int)crcVal);
 
-  _DelayMS(1000);
+  delayMs(1000);
 
   return (crc == crcVal);
 }
@@ -347,7 +346,7 @@ static uint8_t ValidCRC(uint32_t crc, uint32_t len, uint32_t address) {
 static SIMR PrepareFTP(at_ftp_t *ftp) {
   SIMR res;
 
-  res = SIM_SetState(SIM_STATE_BEARER_ON, FOTA_TIMEOUT_MS);
+  res = SIMSta_SetState(SIM_STATE_BEARER_ON, FOTA_TIMEOUT_MS);
   if (res == SIM_OK) res = AT_FtpInitialize(ftp);
 
   return res;

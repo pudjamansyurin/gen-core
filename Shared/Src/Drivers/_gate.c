@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_gate.h"
+
 #include "App/_common.h"
 
 /* Public functions implementation
@@ -22,19 +23,19 @@ void GATE_LedToggle(void) {
 
 void GATE_LedBlink(uint32_t time) {
   GATE_LedWrite(1);
-  _DelayMS(time);
+  delayMs(time);
   GATE_LedWrite(0);
 }
 
 void GATE_SimcomShutdown(void) {
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(20000);
+  delayMs(20000);
 }
 
 void GATE_SimcomReset(void) {
   GATE_SimcomShutdown();
   HAL_GPIO_WritePin(INT_NET_PWR_GPIO_Port, INT_NET_PWR_Pin, GPIO_PIN_RESET);
-  _DelayMS(50);
+  delayMs(50);
 }
 
 void GATE_SimcomSoftReset(void) {
@@ -45,18 +46,18 @@ void GATE_SimcomSoftReset(void) {
 
 void GATE_CanbusShutdown(void) {
   HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, GPIO_PIN_RESET);
-  _DelayMS(50);
+  delayMs(50);
 }
 
 void GATE_CanbusReset(void) {
   GATE_CanbusShutdown();
   HAL_GPIO_WritePin(INT_CAN_PWR_GPIO_Port, INT_CAN_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(50);
+  delayMs(50);
 }
 
 void GATE_SimcomSleep(GPIO_PinState state) {
   HAL_GPIO_WritePin(INT_NET_DTR_GPIO_Port, INT_NET_DTR_Pin, state);
-  _DelayMS(50);
+  delayMs(50);
 }
 
 void GATE_Hmi1Power(GPIO_PinState state) {
@@ -74,36 +75,36 @@ void GATE_McuPower(GPIO_PinState state) {
 
 void GATE_MemsShutdown(void) {
   HAL_GPIO_WritePin(INT_MEMS_PWR_GPIO_Port, INT_MEMS_PWR_Pin, GPIO_PIN_RESET);
-  _DelayMS(500);
+  delayMs(500);
 }
 
 void GATE_MemsReset(void) {
   GATE_MemsShutdown();
   HAL_GPIO_WritePin(INT_MEMS_PWR_GPIO_Port, INT_MEMS_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(500);
+  delayMs(500);
 }
 
 void GATE_GpsShutdown(void) {
   HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_RESET);
-  _DelayMS(500);
+  delayMs(500);
 }
 
 void GATE_GpsReset(void) {
   GATE_GpsShutdown();
   HAL_GPIO_WritePin(INT_GPS_PWR_GPIO_Port, INT_GPS_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(50);
+  delayMs(50);
 }
 
 void GATE_RemoteShutdown(void) {
   HAL_GPIO_WritePin(INT_REMOTE_PWR_GPIO_Port, INT_REMOTE_PWR_Pin,
                     GPIO_PIN_RESET);
-  _DelayMS(1000);
+  delayMs(1000);
 }
 
 void GATE_RemoteReset(void) {
   GATE_RemoteShutdown();
   HAL_GPIO_WritePin(INT_REMOTE_PWR_GPIO_Port, INT_REMOTE_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(1000);
+  delayMs(1000);
 }
 
 void GATE_RemoteCSN(GPIO_PinState state) {
@@ -117,54 +118,54 @@ void GATE_RemoteCE(GPIO_PinState state) {
 void GATE_FingerShutdown(void) {
   HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port,
                     EXT_FINGER_SENSING_PWR_Pin, GPIO_PIN_RESET);
-  _DelayMS(500);
+  delayMs(500);
 }
 void GATE_FingerReset(void) {
   GATE_FingerShutdown();
   HAL_GPIO_WritePin(EXT_FINGER_SENSING_PWR_GPIO_Port,
                     EXT_FINGER_SENSING_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(500);
+  delayMs(500);
 }
 
 void GATE_FingerChipPower(GPIO_PinState state) {
   // HAL_GPIO_WritePin(EXT_FINGER_MCU_PWR_GPIO_Port, EXT_FINGER_MCU_PWR_Pin,
   // !state);
   HAL_GPIO_WritePin(EXT_HMI1_PWR_GPIO_Port, EXT_HMI1_PWR_Pin, state);
-  _DelayMS(200);
+  delayMs(200);
 }
 
 void GATE_AudioShutdown(void) {
   HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, GPIO_PIN_RESET);
-  _DelayMS(1000);
+  delayMs(1000);
 }
 
 void GATE_AudioReset(void) {
   GATE_AudioShutdown();
   HAL_GPIO_WritePin(INT_AUDIO_PWR_GPIO_Port, INT_AUDIO_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(1000);
+  delayMs(1000);
 }
 
 void GATE_AudioCodecStop(void) {
   HAL_GPIO_WritePin(INT_AUDIO_RST_GPIO_Port, INT_AUDIO_RST_Pin, GPIO_PIN_RESET);
-  _DelayMS(500);
+  delayMs(500);
 }
 
 void GATE_AudioCodecReset(void) {
   GATE_AudioCodecStop();
   HAL_GPIO_WritePin(INT_AUDIO_RST_GPIO_Port, INT_AUDIO_RST_Pin, GPIO_PIN_SET);
-  _DelayMS(500);
+  delayMs(500);
 }
 
 void GATE_Horn(uint32_t ms) {
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(ms);
+  delayMs(ms);
   HAL_GPIO_WritePin(EXT_HORN_PWR_GPIO_Port, EXT_HORN_PWR_Pin, GPIO_PIN_RESET);
-  _DelayMS(ms);
+  delayMs(ms);
 }
 
 void GATE_Seat(uint32_t ms) {
   HAL_GPIO_WritePin(EXT_SEAT_PWR_GPIO_Port, EXT_SEAT_PWR_Pin, GPIO_PIN_SET);
-  _DelayMS(ms);
+  delayMs(ms);
   HAL_GPIO_WritePin(EXT_SEAT_PWR_GPIO_Port, EXT_SEAT_PWR_Pin, GPIO_PIN_RESET);
 }
 

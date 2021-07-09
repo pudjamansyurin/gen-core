@@ -26,7 +26,6 @@ void SIM_DeInit(void);
 uint8_t SIM_BatSufficient(void);
 void SIM_Lock(void);
 void SIM_Unlock(void);
-uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout);
 char* SIM_Resp(const char* keyword, const char* from);
 SIMR SIM_Cmd(const char* command, char* reply, uint32_t ms);
 #if (APP)

@@ -108,14 +108,14 @@ uint8_t RMT_ReInit(void) {
   lock();
   printf("NRF:Init\n");
 
-  tick = _GetTickMS();
+  tick = tickMs();
   do {
     MX_SPI1_Init();
     GATE_RemoteReset();
 
     ok = RMT_Probe();
-    if (!ok) _DelayMS(500);
-  } while (!ok && _TickIn(tick, RMT_TIMEOUT_MS));
+    if (!ok) delayMs(500);
+  } while (!ok && tickIn(tick, RMT_TIMEOUT_MS));
 
   if (ok) {
     nrf_configure();
@@ -157,17 +157,17 @@ void RMT_Refresh(vehicle_t vehicle) {
 
   lock();
   timeout = vehicle == VEHICLE_RUN ? RMT_BEAT_RUN_MS : RMT_BEAT_MS;
-  RMT.d.nearby = _TickIn(tick[RMT_TICK_HBEAT], timeout);
+  RMT.d.nearby = tickIn(tick[RMT_TICK_HBEAT], timeout);
   EVT_SetVal(EVG_REMOTE_MISSING, !RMT.d.nearby);
 
-  RMT.d.active = _TickIn(tick[RMT_TICK_PING], RMT_TIMEOUT_MS) || RMT.d.nearby;
+  RMT.d.active = tickIn(tick[RMT_TICK_PING], RMT_TIMEOUT_MS) || RMT.d.nearby;
   if (!RMT.d.active) {
     RMT_DeInit();
-    _DelayMS(500);
+    delayMs(500);
     RMT_Init();
   }
 
-  if (_TickOut(tick[RMT_TICK_PAIR], RMT_PAIRING_MS)) {
+  if (tickOut(tick[RMT_TICK_PAIR], RMT_PAIRING_MS)) {
     tick[RMT_TICK_PAIR] = 0;
     AES_ChangeKey(NULL);
   }
@@ -179,7 +179,7 @@ uint8_t RMT_Ping(vehicle_t vehicle) {
   uint8_t ok;
 
   //	if (vehicle == VEHICLE_RUN && RMT.d.nearby)
-  //		if (!_TickOut(RMT.d.tick.heartbeat, RMT_GUARD_RUN_MS))
+  //		if (!tickOut(RMT.d.tick.heartbeat, RMT_GUARD_RUN_MS))
   //        return 1;
 
   lock();
@@ -195,12 +195,12 @@ uint8_t RMT_Pairing(void) {
   uint8_t ok;
 
   lock();
-  RMT.d.tick[RMT_TICK_PAIR] = _GetTickMS();
+  RMT.d.tick[RMT_TICK_PAIR] = tickMs();
   RNG_Generate32(RMT.d.pairing_key, 4);
   AES_ChangeKey(RMT.d.pairing_key);
 
   // Insert to payload
-  for (uint8_t i = 0; i < 4; i++) aes[i] = _ByteSwap32(RMT.d.pairing_key[i]);
+  for (uint8_t i = 0; i < 4; i++) aes[i] = swap32(RMT.d.pairing_key[i]);
   memcpy(&RMT.tx.payload[0], aes, NRF_DATA_LENGTH);
   memcpy(&RMT.tx.payload[NRF_DATA_LENGTH], RMT.tx.address, NRF_ADDR_LENGTH);
 
@@ -247,7 +247,7 @@ uint8_t RMT_ValidateCommand(RMT_CMD *cmd) {
     if (*cmd == RMT_CMD_PING || *cmd == RMT_CMD_SEAT)
       ok = (memcmp(&plain[rng], &RMT.tx.payload[rng], rng) == 0);
 
-  if (ok) RMT.d.tick[RMT_TICK_HBEAT] = _GetTickMS();
+  if (ok) RMT.d.tick[RMT_TICK_HBEAT] = tickMs();
   unlock();
 
 #if REMOTE_DEBUG
@@ -274,10 +274,10 @@ uint32_t RMT_IO_Tick(RMT_TICK key) { return RMT.d.tick[key]; }
 
 uint8_t RMT_IO_Duration(RMT_DURATION key) { return RMT.d.duration[key]; }
 
-void RMT_IO_SetTick(RMT_TICK key) { RMT.d.tick[key] = _GetTickMS(); }
+void RMT_IO_SetTick(RMT_TICK key) { RMT.d.tick[key] = tickMs(); }
 
 void RMT_IO_SetDuration(RMT_DURATION key, uint32_t tick) {
-  RMT.d.duration[key] = _GetTickMS() - tick;
+  RMT.d.duration[key] = tickMs() - tick;
 }
 /* Private functions implementation
  * --------------------------------------------*/
@@ -321,8 +321,8 @@ static uint8_t Transmit(const uint8_t *data) {
   uint32_t tick;
 
   nrf_send_packet_noack(data);
-  tick = _GetTickMS();
-  while (nrf_tx_busy() && _TickIn(tick, 3)) {
+  tick = tickMs();
+  while (nrf_tx_busy() && tickIn(tick, 3)) {
   };
 
   return !nrf_tx_busy();

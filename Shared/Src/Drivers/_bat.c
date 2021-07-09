@@ -62,7 +62,7 @@ void BAT_DeInit(void) {
   unlock();
 }
 
-uint16_t BAT_ScanValue(void) {
+uint16_t BAT_ScanVoltage(void) {
   uint16_t value = 0;
   uint8_t ok;
 
@@ -81,6 +81,10 @@ uint16_t BAT_ScanValue(void) {
   unlock();
 
   return value;
+}
+
+uint16_t BAT_IO_Voltage(void) {
+	return BAT.voltage;
 }
 
 /* Private functions implementation

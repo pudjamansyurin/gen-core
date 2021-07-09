@@ -23,7 +23,7 @@
 typedef char topic_t[20];
 
 typedef struct {
-	topic_t topic;
+  topic_t topic;
   unsigned short packetid;
   unsigned char dup;
   unsigned char retained;
@@ -38,10 +38,10 @@ typedef struct {
 } mqtt_rx_t;
 
 typedef struct {
-	topic_t command;
-	topic_t response;
-	topic_t report;
-	topic_t will;
+  topic_t command;
+  topic_t response;
+  topic_t report;
+  topic_t will;
 } mqtt_topic_t;
 
 typedef struct {
@@ -142,7 +142,7 @@ uint8_t MQTT_Connect(void) {
   if (sessionPresent) MQTT.subscribed = 1;
 
   printf("MQTT:Connected\n");
-  MQTT.tick = _GetTickMS();
+  MQTT.tick = tickMs();
   return 1;
 }
 
@@ -155,7 +155,7 @@ uint8_t MQTT_Disconnect(void) {
   if (!Upload(buf, len, 0, 0)) return 0;
 
   printf("MQTT:Disconnected\n");
-  MQTT.tick = _GetTickMS();
+  MQTT.tick = tickMs();
   return 1;
 }
 
@@ -163,14 +163,14 @@ uint8_t MQTT_Ping(void) {
   unsigned char buf[2];
   int len, buflen = sizeof(buf);
 
-  if (!_TickOut(MQTT.tick, MQTT_KEEPALIVE_S * 1000)) return 1;
+  if (!tickOut(MQTT.tick, MQTT_KEEPALIVE_S * 1000)) return 1;
 
   len = MQTTSerialize_pingreq(buf, buflen);
 
   if (!Upload(buf, len, PINGRESP, MQTT_UPLOAD_MS)) return 0;
 
   printf("MQTT:Pinged\n");
-  MQTT.tick = _GetTickMS();
+  MQTT.tick = tickMs();
   return 1;
 }
 
@@ -209,7 +209,7 @@ uint8_t MQTT_Subscribe(void) {
   MQTT.subscribed = 1;
 
   printf("MQTT:Subscribed\n");
-  MQTT.tick = _GetTickMS();
+  MQTT.tick = tickMs();
   return 1;
 }
 
@@ -238,7 +238,7 @@ uint8_t MQTT_Unsubscribe(void) {
   printf("MQTT:UNSUBACK\n");
 
   printf("MQTT:Unsubscribed\n");
-  MQTT.tick = _GetTickMS();
+  MQTT.tick = tickMs();
   return 1;
 }
 
@@ -293,7 +293,7 @@ uint8_t MQTT_GotPublish(void) {
   if (!CMD_ValidateContent(dst, len)) return 0;
 
   memcpy(&(MQTT.rx.command), dst, len);
-  _DelayMS(2);
+  delayMs(2);
   MQTT.rx.pending = 1;
   return 1;
 }
@@ -333,7 +333,7 @@ uint8_t MQTT_AckPublish(command_t *cmd) {
   if (!CMD_ValidateCode(&(MQTT.rx.command))) return 0;
 
   memcpy(cmd, &(MQTT.rx.command), sizeof(command_t));
-  _DelayMS(2);
+  delayMs(2);
   MQTT.rx.pending = 0;
   return 1;
 }
@@ -402,7 +402,7 @@ static uint8_t Publish(void *payload, uint16_t payloadlen, char *topic, int qos,
   }
 
   printf("MQTT:Published\n");
-  MQTT.tick = _GetTickMS();
+  MQTT.tick = tickMs();
   return 1;
 }
 

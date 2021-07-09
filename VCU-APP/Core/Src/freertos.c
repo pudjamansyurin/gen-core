@@ -652,7 +652,7 @@ void StartManagerTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-    tick = _GetTickMS();
+    tick = tickMs();
     TASK_IO_SetTick(TASK_MANAGER);
 
     TASK_CheckStack();
@@ -685,7 +685,7 @@ void StartNetworkTask(void *argument) {
 
   // Initiate
   SIM_Init();
-  SIM_SetState(SIM_STATE_SERVER_ON, 0);
+  SIMSta_SetState(SIM_STATE_SERVER_ON, 0);
 
   /* Infinite loop */
   for (;;) {
@@ -749,7 +749,7 @@ void StartReporterTask(void *argument) {
     RPT_ReportCapture(RPT_FrameDecider(), &report);
     while (!_osQueuePut(ReportQueueHandle, &report)) {
       osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
-      _DelayMS(100);
+      delayMs(100);
     }
 
     // reset some events group
@@ -879,7 +879,7 @@ void StartRemoteTask(void *argument) {
 
   /* Infinite loop */
   for (;;) {
-    tick = _GetTickMS();
+    tick = tickMs();
     TASK_IO_SetTick(TASK_REMOTE);
 
     if (RMT_Ping(VCU.d.vehicle)) {
@@ -896,8 +896,8 @@ void StartRemoteTask(void *argument) {
       }
 
       if (notif & FLAG_REMOTE_RESET) {
-        if (!_TickIn(resetTick, RMT_RESET_GUARD_MS)) {
-          resetTick = _GetTickMS();
+        if (!tickIn(resetTick, RMT_RESET_GUARD_MS)) {
+          resetTick = tickMs();
           EVT_Set(EVG_REMOTE_MISSING);
           RMT_DeInit();
           RMT_Init();
@@ -929,7 +929,7 @@ void StartRemoteTask(void *argument) {
             else if (command == RMT_CMD_SEAT)
               osThreadFlagsSet(GateTaskHandle, FLAG_GATE_OPEN_SEAT);
 
-            _DelayMS(200);
+            delayMs(200);
             osThreadFlagsClear(FLAG_REMOTE_RX_IT);
           }
         }
@@ -1143,8 +1143,8 @@ void StartCanTxTask(void *argument) {
   CAN_Init();
 
   /* Infinite loop */
-  tick100ms = _GetTickMS();
-  tick1000ms = _GetTickMS();
+  tick100ms = tickMs();
+  tick1000ms = tickMs();
   for (;;) {
     TASK_IO_SetTick(TASK_CANTX);
 
@@ -1164,16 +1164,16 @@ void StartCanTxTask(void *argument) {
     if (HMI1.d.active) VCU_TX_SwitchControl();
 
     // send every 500ms
-    if (_TickOut(tick100ms, 100)) {
-      tick100ms = _GetTickMS();
+    if (tickOut(tick100ms, 100)) {
+      tick100ms = tickMs();
 
       MCU_PowerOverCAN(VCU.d.vehicle == VEHICLE_RUN && BMS.d.run);
       BMS_PowerOverCAN(VCU.d.vehicle >= VEHICLE_READY || MCU.d.run);
     }
 
     // send every 1000ms
-    if (_TickOut(tick1000ms, 1000)) {
-      tick1000ms = _GetTickMS();
+    if (tickOut(tick1000ms, 1000)) {
+      tick1000ms = tickMs();
 
       if (HMI1.d.active) {
         VCU_TX_Datetime(RTC_Read());
@@ -1214,7 +1214,7 @@ void StartGateTask(void *argument) {
     // wait forever
     if (_osFlagAny(&notif, 10)) {
       if (notif & FLAG_GATE_HBAR) {
-        _DelayMS(100);
+        delayMs(100);
         osThreadFlagsClear(FLAG_GATE_HBAR);
 
         HB_ReadStarter(VCU.d.vehicle == VEHICLE_NORMAL);

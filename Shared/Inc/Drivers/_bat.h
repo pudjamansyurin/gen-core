@@ -16,6 +16,7 @@
  * --------------------------------------------*/
 void BAT_Init(void);
 void BAT_DeInit(void);
-uint16_t BAT_ScanValue(void);
+uint16_t BAT_ScanVoltage(void);
+uint16_t BAT_IO_Voltage(void);
 
 #endif /* INC_DRIVERS__BAT_H_ */

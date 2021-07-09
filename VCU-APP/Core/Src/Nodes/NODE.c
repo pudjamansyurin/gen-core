@@ -38,7 +38,7 @@ void NODE_Refresh(void) {
   uint8_t eMCU = (MCU.d.fault.post | MCU.d.fault.run) > 0;
 
   if (VCU.d.vehicle >= VEHICLE_READY) {
-    if (_TickOut(VCU.d.tick.ready, NODE_TIMEOUT_MS)) {
+    if (tickOut(VCU.d.tick.ready, NODE_TIMEOUT_MS)) {
       eBMS |= !BMS.d.active;
       eMCU |= !MCU.d.active;
     }
@@ -46,7 +46,7 @@ void NODE_Refresh(void) {
 
   NODE.d.overheat = BMS.d.overheat || MCU.d.overheat;
   NODE.d.error = VCU.d.error || eBMS || eMCU;
-  if (!_TickIn(NODE.d.tick.dbg, NODE_DEBUG_MS)) NODE.d.debug = 0;
+  if (!tickIn(NODE.d.tick.dbg, NODE_DEBUG_MS)) NODE.d.debug = 0;
 
   BMS_RefreshIndex();
   MCU_Refresh();
@@ -71,7 +71,7 @@ void NODE_RX_Debug(can_rx_t *Rx) {
 
   NODE.d.debug = d->u8[0];
 
-  NODE.d.tick.dbg = _GetTickMS();
+  NODE.d.tick.dbg = tickMs();
 }
 
 /* CAN TX

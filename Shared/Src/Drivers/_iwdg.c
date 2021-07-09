@@ -23,26 +23,26 @@ static IWDG_HandleTypeDef* piwdg = &hiwdg;
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void lock(void);
-static void unlock(void);
+static void Lock(void);
+static void UnLock(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
 void IWDG_Refresh(void) {
-  lock();
+  Lock();
   HAL_IWDG_Refresh(piwdg);
-  unlock();
+  UnLock();
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void lock(void) {
+static void Lock(void) {
 #if (APP)
   osMutexAcquire(IwdgMutexHandle, osWaitForever);
 #endif
 }
 
-static void unlock(void) {
+static void UnLock(void) {
 #if (APP)
   osMutexRelease(IwdgMutexHandle);
 #endif

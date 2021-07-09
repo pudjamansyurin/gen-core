@@ -32,15 +32,15 @@ CAN_HandleTypeDef* pcan = &hcan1;
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void lock(void);
-static void unlock(void);
+static void Lock(void);
+static void UnLock(void);
 static void Reset(void);
 static uint8_t Filter(void);
 static void Header(CAN_TxHeaderTypeDef* header, uint32_t address, uint32_t DLC,
                    uint8_t ext);
 #if CAN_DEBUG
-static void TxDebugger(CAN_TxHeaderTypeDef* TxHeader, CAN_DATA* TxData);
-static void RxDebugger(CAN_RxHeaderTypeDef* RxHeader, CAN_DATA* RxData);
+static void TxDebug(CAN_TxHeaderTypeDef* TxHeader, CAN_DATA* TxData);
+static void RxDebug(CAN_RxHeaderTypeDef* RxHeader, CAN_DATA* RxData);
 #endif
 
 /* Public functions implementation
@@ -71,15 +71,14 @@ void CAN_DeInit(void) {
   GATE_CanbusShutdown();
 }
 
-uint8_t CAN_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC,
-                     uint8_t ext) {
+uint8_t CAN_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC, uint8_t ext) {
   HAL_StatusTypeDef status;
   uint32_t tick;
 
-  lock();
+  Lock();
   Header(&(Tx->header), address, DLC, ext);
-  tick = _GetTickMS();
-  while (_TickIn(tick, CAN_RX_MS) &&
+  tick = tickMs();
+  while (tickIn(tick, CAN_RX_MS) &&
          HAL_CAN_GetTxMailboxesFreeLevel(pcan) == 0) {
   };
 
@@ -87,11 +86,11 @@ uint8_t CAN_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC,
   status = HAL_CAN_AddTxMessage(pcan, &(Tx->header), Tx->data.u8, NULL);
 
 #if CAN_DEBUG
-  if (status == HAL_OK) TxDebugger(&(Tx->header), &(Tx->data));
+  if (status == HAL_OK) TxDebug(&(Tx->header), &(Tx->data));
 #endif
   if (status != HAL_OK) Reset();
 
-  unlock();
+  UnLock();
   return (status == HAL_OK);
 }
 
@@ -100,18 +99,18 @@ uint8_t CAN_Read(can_rx_t* Rx) {
 
   memset(Rx, 0x00, sizeof(can_rx_t));
 
-  lock();
+  Lock();
   if (HAL_CAN_GetRxFifoFillLevel(pcan, CAN_RX_FIFO0)) {
-    status = HAL_CAN_GetRxMessage(pcan, CAN_RX_FIFO0, &(Rx->header),
-                                  Rx->data.u8);
+    status =
+        HAL_CAN_GetRxMessage(pcan, CAN_RX_FIFO0, &(Rx->header), Rx->data.u8);
 
 #if CAN_DEBUG
-    if (status == HAL_OK) RxDebugger(&(Rx->header), &(Rx->data));
+    if (status == HAL_OK) RxDebug(&(Rx->header), &(Rx->data));
 #endif
     if (status != HAL_OK) Reset();
   }
 
-  unlock();
+  UnLock();
 
   return (status == HAL_OK);
 }
@@ -133,13 +132,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan) {
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void lock(void) {
+static void Lock(void) {
 #if (APP)
   osMutexAcquire(CanTxMutexHandle, osWaitForever);
 #endif
 }
 
-static void unlock(void) {
+static void UnLock(void) {
 #if (APP)
   osMutexRelease(CanTxMutexHandle);
 #endif
@@ -171,7 +170,6 @@ static uint8_t Filter(void) {
   return (HAL_CAN_ConfigFilter(pcan, &sFilterConfig) == HAL_OK);
 }
 
-
 static void Header(CAN_TxHeaderTypeDef* header, uint32_t address, uint32_t DLC,
                    uint8_t ext) {
   if (ext) {
@@ -187,7 +185,7 @@ static void Header(CAN_TxHeaderTypeDef* header, uint32_t address, uint32_t DLC,
 }
 
 #if CAN_DEBUG
-static void TxDebugger(CAN_TxHeaderTypeDef* TxHeader, CAN_DATA* TxData) {
+static void TxDebug(CAN_TxHeaderTypeDef* TxHeader, CAN_DATA* TxData) {
   printf("CAN:[TX] 0x%08X => %.*s\n",
          (unsigned int)((TxHeader->IDE == CAN_ID_STD) ? TxHeader->StdId
                                                       : TxHeader->ExtId),
@@ -195,7 +193,7 @@ static void TxDebugger(CAN_TxHeaderTypeDef* TxHeader, CAN_DATA* TxData) {
          (TxHeader->RTR == CAN_RTR_DATA) ? TxData->CHAR : "RTR");
 }
 
-static void RxDebugger(CAN_RxHeaderTypeDef* RxHeader, CAN_DATA* RxData) {
+static void RxDebug(CAN_RxHeaderTypeDef* RxHeader, CAN_DATA* RxData) {
   printf("CAN:[RX] 0x%08X <=  %.*s\n", (unsigned int)CAN_ReadID(RxHeader),
          (RxHeader->RTR == CAN_RTR_DATA) ? (int)RxHeader->DLC : strlen("RTR"),
          (RxHeader->RTR == CAN_RTR_DATA) ? RxData->CHAR : "RTR");

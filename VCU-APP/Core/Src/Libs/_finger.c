@@ -66,15 +66,15 @@ uint8_t FGR_Init(void) {
   lock();
   printf("FGR:Init\n");
 
-  tick = _GetTickMS();
+  tick = tickMs();
   do {
     MX_UART4_Init();
     FINGER_DMA_Start(FGR.puart, FGR.pdma);
     GATE_FingerReset();
 
     ok = FGR_Probe();
-    if (!ok) _DelayMS(500);
-  } while (!ok && _TickIn(tick, FINGER_TIMEOUT_MS));
+    if (!ok) delayMs(500);
+  } while (!ok && tickIn(tick, FINGER_TIMEOUT_MS));
 
   FGR.d.verified = ok;
   unlock();
@@ -111,7 +111,7 @@ void FGR_Verify(void) {
   FGR.d.verified = FGR_Probe();
   if (!FGR.d.verified) {
     FGR_DeInit();
-    _DelayMS(500);
+    delayMs(500);
     FGR_Init();
   }
   unlock();
@@ -154,7 +154,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
   if (*ok) {
     IndicatorHide();
     while (R307_getImage() != FP_NOFINGER) {
-      _DelayMS(50);
+      delayMs(50);
     }
 
     IndicatorShow(1);
@@ -166,7 +166,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
   IndicatorHide();
   if (*ok) {
     while (R307_getImage() != FP_NOFINGER) {
-      _DelayMS(50);
+      delayMs(50);
     }
 
     printf("FGR:Creating model for #%u\n", *id);
@@ -184,7 +184,7 @@ uint8_t FGR_Enroll(uint8_t *id, uint8_t *ok) {
   unlock();
 
   IndicatorShow(*ok);
-  _DelayMS(250);
+  delayMs(250);
   IndicatorHide();
 
   return (res == FP_OK);
@@ -233,7 +233,7 @@ void FGR_Authenticate(void) {
     if (ok) FGR.d.id = FGR.d.id ? 0 : id;
 
     IndicatorShow(ok);
-    _DelayMS(250);
+    delayMs(250);
     IndicatorHide();
   }
   unlock();
@@ -290,7 +290,7 @@ static uint8_t GetImage(uint32_t timeout) {
   uint8_t ok, res;
   uint32_t tick;
 
-  tick = _GetTickMS();
+  tick = tickMs();
   do {
     res = R307_getImage();
     ok = res == FP_OK;
@@ -300,8 +300,8 @@ static uint8_t GetImage(uint32_t timeout) {
     else
       DebugResponse(res, "Image taken");
 
-    _DelayMS(50);
-  } while (!ok && _TickIn(tick, timeout));
+    delayMs(50);
+  } while (!ok && tickIn(tick, timeout));
 
   return ok;
 }

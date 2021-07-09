@@ -379,10 +379,10 @@ uint8_t AT_WaitMessageSMS(at_cmti_t* param, uint32_t timeout) {
   uint32_t tick;
 
   // get message index
-  tick = _GetTickMS();
+  tick = tickMs();
   do {
     str = SIM_Resp(prefix, NULL);
-  } while (_TickIn(tick, timeout) && str == NULL);
+  } while (tickIn(tick, timeout) && str == NULL);
 
   if (str != NULL) {
     str += strlen(prefix);
@@ -766,13 +766,13 @@ SIMR AT_FtpDownload(at_ftpget_t* param) {
 
       // wait until data transferred (got OK)
       resp = &str[len + param->cnflength + 2];
-      tick = _GetTickMS();
+      tick = tickMs();
       while (strncmp(resp, SIM_RSP_OK, strlen(SIM_RSP_OK)) != 0) {
-        if (_TickOut(tick, 10 * 1000)) {
+        if (tickOut(tick, 10 * 1000)) {
           res = SIM_ERROR;
           break;
         };
-        _DelayMS(1);
+        delayMs(1);
       };
     }
   }

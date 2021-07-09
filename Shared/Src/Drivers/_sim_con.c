@@ -41,19 +41,20 @@
  * --------------------------------------------*/
 static sim_con_t SimCon;
 
+/* Private functions prototype
+ * --------------------------------------------*/
+static void EE_Read(void);
+static uint8_t EE_Apn(con_apn_t *s);
+static uint8_t EE_Ftp(con_ftp_t *s);
+static uint8_t EE_Mqtt(con_mqtt_t *s);
+
 /* Public functions implementation
  * --------------------------------------------*/
 void SIMCon_Init(void) {
   if (EE_IO_Active())
-    SIMCon_EE_Read();
+    EE_Read();
   else
     SIMCon_EE_Write();
-}
-
-void SIMCon_EE_Read(void) {
-  SIMCon_EE_Apn(NULL);
-  SIMCon_EE_Ftp(NULL);
-  SIMCon_EE_Mqtt(NULL);
 }
 
 uint8_t SIMCon_EE_Write(void) {
@@ -75,45 +76,11 @@ uint8_t SIMCon_EE_Write(void) {
       .pass = MQTT_PASS,
   };
 
-  ok += SIMCon_EE_Apn(&apn);
-  ok += SIMCon_EE_Ftp(&ftp);
-  ok += SIMCon_EE_Mqtt(&mqtt);
+  ok += EE_Apn(&apn);
+  ok += EE_Ftp(&ftp);
+  ok += EE_Mqtt(&mqtt);
 
   return ok == 3;
-}
-
-uint8_t SIMCon_EE_Apn(con_apn_t *s) {
-  con_apn_t *d = &SimCon.apn;
-  uint8_t ok = 0;
-
-  ok += EE_Cmd(VA_APN_NAME, s == NULL ? NULL : s->name, d->name);
-  ok += EE_Cmd(VA_APN_USER, s == NULL ? NULL : s->user, d->user);
-  ok += EE_Cmd(VA_APN_PASS, s == NULL ? NULL : s->pass, d->pass);
-
-  return ok == 3;
-}
-
-uint8_t SIMCon_EE_Ftp(con_ftp_t *s) {
-  con_ftp_t *d = &SimCon.ftp;
-  uint8_t ok = 0;
-
-  ok += EE_Cmd(VA_FTP_HOST, s == NULL ? NULL : s->host, d->host);
-  ok += EE_Cmd(VA_FTP_USER, s == NULL ? NULL : s->user, d->user);
-  ok += EE_Cmd(VA_FTP_PASS, s == NULL ? NULL : s->pass, d->pass);
-
-  return ok == 3;
-}
-
-uint8_t SIMCon_EE_Mqtt(con_mqtt_t *s) {
-  con_mqtt_t *d = &SimCon.mqtt;
-  uint8_t ok = 0;
-
-  ok += EE_Cmd(VA_MQTT_HOST, s == NULL ? NULL : s->host, d->host);
-  ok += EE_Cmd(VA_MQTT_PORT, s == NULL ? NULL : &s->port, &d->port);
-  ok += EE_Cmd(VA_MQTT_USER, s == NULL ? NULL : s->user, d->user);
-  ok += EE_Cmd(VA_MQTT_PASS, s == NULL ? NULL : s->pass, d->pass);
-
-  return ok == 4;
 }
 
 const con_ftp_t* SIMCon_IO_Ftp(void) {
@@ -130,4 +97,46 @@ const con_apn_t* SIMCon_IO_Apn(void) {
 
 void SIMCon_IO_SetApn(const con_apn_t *apn) {
 	memcpy(&SimCon.apn, apn, sizeof(con_apn_t));
+}
+
+/* Private functions implementation
+ * --------------------------------------------*/
+static void EE_Read(void) {
+  EE_Apn(NULL);
+  EE_Ftp(NULL);
+  EE_Mqtt(NULL);
+}
+
+static uint8_t EE_Apn(con_apn_t *s) {
+  con_apn_t *d = &SimCon.apn;
+  uint8_t ok = 0;
+
+  ok += EE_Cmd(VA_APN_NAME, s == NULL ? NULL : s->name, d->name);
+  ok += EE_Cmd(VA_APN_USER, s == NULL ? NULL : s->user, d->user);
+  ok += EE_Cmd(VA_APN_PASS, s == NULL ? NULL : s->pass, d->pass);
+
+  return ok == 3;
+}
+
+static uint8_t EE_Ftp(con_ftp_t *s) {
+  con_ftp_t *d = &SimCon.ftp;
+  uint8_t ok = 0;
+
+  ok += EE_Cmd(VA_FTP_HOST, s == NULL ? NULL : s->host, d->host);
+  ok += EE_Cmd(VA_FTP_USER, s == NULL ? NULL : s->user, d->user);
+  ok += EE_Cmd(VA_FTP_PASS, s == NULL ? NULL : s->pass, d->pass);
+
+  return ok == 3;
+}
+
+static uint8_t EE_Mqtt(con_mqtt_t *s) {
+  con_mqtt_t *d = &SimCon.mqtt;
+  uint8_t ok = 0;
+
+  ok += EE_Cmd(VA_MQTT_HOST, s == NULL ? NULL : s->host, d->host);
+  ok += EE_Cmd(VA_MQTT_PORT, s == NULL ? NULL : &s->port, &d->port);
+  ok += EE_Cmd(VA_MQTT_USER, s == NULL ? NULL : s->user, d->user);
+  ok += EE_Cmd(VA_MQTT_PASS, s == NULL ? NULL : s->pass, d->pass);
+
+  return ok == 4;
 }

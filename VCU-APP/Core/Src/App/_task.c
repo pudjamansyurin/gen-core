@@ -74,4 +74,4 @@ uint8_t TASK_IO_Wakeup(TASK task) { return TASKS.wakeup[task]; }
 
 uint16_t TASK_IO_Stack(TASK task) { return TASKS.stack[task]; }
 
-void TASK_IO_SetTick(TASK task) { TASKS.tick[task] = _GetTickMS(); }
+void TASK_IO_SetTick(TASK task) { TASKS.tick[task] = tickMs(); }

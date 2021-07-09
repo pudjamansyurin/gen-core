@@ -33,7 +33,7 @@ void NET_CheckClock(void) {
 void NET_CheckCommand(void) {
   command_t cmd;
 
-  if (SIM_SetState(SIM_STATE_MQTT_ON, 0)) {
+  if (SIMSta_SetState(SIM_STATE_MQTT_ON, 0)) {
     if (MQTT_GotCommand()) {
       if (MQTT_AckPublish(&cmd))
         CMD_Execute(&cmd);
@@ -48,7 +48,7 @@ void NET_CheckPayload(PAYLOAD_TYPE type) {
   uint8_t pending;
 
   if (RPT_PayloadPending(type))
-    if (SIM_SetState(SIM_STATE_MQTT_ON, 0)) {
+    if (SIMSta_SetState(SIM_STATE_MQTT_ON, 0)) {
       pay = RPT_IO_Payload(type);
       pending = !MQTT_Publish(pay);
       RPT_IO_SetPayloadPending(type, pending);

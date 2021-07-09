@@ -79,11 +79,11 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
-void _Error(const char* msg);
-void _DelayMS(uint32_t ms);
-uint32_t _GetTickMS(void);
-uint8_t _TickOut(uint32_t tick, uint32_t ms);
-uint8_t _TickIn(uint32_t tick, uint32_t ms);
-uint32_t _ByteSwap32(uint32_t x);
-float _SamplingFloat(sample_float_t* m, float* buf, uint16_t sz, float val);
+void logError(const char* msg);
+void delayMs(uint32_t ms);
+uint32_t tickMs(void);
+uint8_t tickOut(uint32_t tick, uint32_t ms);
+uint8_t tickIn(uint32_t tick, uint32_t ms);
+uint32_t swap32(uint32_t x);
+float samplingFloat(sample_float_t* m, float* buf, uint16_t sz, float val);
 #endif /* UTILS_H_ */

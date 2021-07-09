@@ -20,8 +20,8 @@ extern osMutexId_t CrcMutexHandle;
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void lock(void);
-static void unlock(void);
+static void Lock(void);
+static void UnLock(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -29,18 +29,18 @@ uint32_t CRC_Calculate8(uint8_t* arr, uint32_t count, uint8_t swapped) {
   uint32_t cnt, result, value = 0;
   uint8_t index = 0, remaining[4] = {0};
 
-  lock();
+  Lock();
   /* Reset generator */
   __HAL_CRC_DR_RESET(&hcrc);
 
-  /* Calculate number of 32-bit blocks */
+  /* Calculate number of 32-bit bLocks */
   cnt = count >> 2;
 
   /* Calculate */
   while (cnt--) {
     value = *(uint32_t*)arr;
     /* Set new value */
-    hcrc.Instance->DR = swapped ? _ByteSwap32(value) : value;
+    hcrc.Instance->DR = swapped ? swap32(value) : value;
 
     /* Increase by 4 */
     arr += 4;
@@ -54,10 +54,10 @@ uint32_t CRC_Calculate8(uint8_t* arr, uint32_t count, uint8_t swapped) {
     while (cnt--) remaining[index++] = *arr++;
     /* Set new value */
     value = *(uint32_t*)remaining;
-    hcrc.Instance->DR = swapped ? _ByteSwap32(value) : value;
+    hcrc.Instance->DR = swapped ? swap32(value) : value;
   }
   result = hcrc.Instance->DR;
-  unlock();
+  UnLock();
 
   return result;
 }
@@ -65,22 +65,22 @@ uint32_t CRC_Calculate8(uint8_t* arr, uint32_t count, uint8_t swapped) {
 uint32_t CRC_Calculate32(uint32_t* arr, uint32_t count) {
   uint32_t result;
 
-  lock();
+  Lock();
   result = HAL_CRC_Calculate(&hcrc, arr, count);
-  unlock();
+  UnLock();
 
   return result;
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void lock(void) {
+static void Lock(void) {
 #if (APP)
   osMutexAcquire(CrcMutexHandle, osWaitForever);
 #endif
 }
 
-static void unlock(void) {
+static void UnLock(void) {
 #if (APP)
   osMutexRelease(CrcMutexHandle);
 #endif

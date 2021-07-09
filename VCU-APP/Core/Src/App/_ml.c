@@ -52,16 +52,16 @@ void ML_PredictRange(void) {
   static uint32_t tick = 0;
   uint8_t eff, km, d;
 
-  if (_TickOut(tick, 1000)) {
-    d = CalculateRange(_GetTickMS() - tick);
-    tick = _GetTickMS();
+  if (tickOut(tick, 1000)) {
+    d = CalculateRange(tickMs() - tick);
+    tick = tickMs();
 
     BMS_GetAverage(&eff, &km, d);
     HB_IO_SetAverage(HBMS_AVG_EFFICIENCY, eff);
     HB_IO_SetAverage(HBMS_AVG_RANGE, km);
     HB_AddTrip(d);
   } else if (tick == 0)
-    tick = _GetTickMS();
+    tick = tickMs();
 }
 
 const bms_avg_t *ML_IO_DataBMS(void) { return &(ML.bms.d); }
@@ -99,7 +99,7 @@ static float BMS_GetEfficiency(uint8_t d) {
     _on = BMS.d.active;
     _wh = 0;
   } else if (BMS.d.active) {
-    wh = BMS_GetDischargeCapacity(_GetTickMS() - tick);
+    wh = BMS_GetDischargeCapacity(tickMs() - tick);
 
     if (d) {
       if (wh != _wh) {
@@ -111,7 +111,7 @@ static float BMS_GetEfficiency(uint8_t d) {
         mwh = ML.bms.d.efficiency;
     }
   }
-  tick = _GetTickMS();
+  tick = tickMs();
 
   return BMS_AddSample(BMS_SAMPLE_EFFICIENCY, mwh);
 }
@@ -141,6 +141,6 @@ static float BMS_GetDischargeCapacity(uint32_t duration) {
 static float BMS_AddSample(BMS_SAMPLE_TYPE type, float val) {
   bms_sample_t *sample = &ML.bms.sample;
 
-  return _SamplingFloat(&(sample->handle[type]), sample->buffer[type],
-                        BMS_SAMPLE_SZ, val);
+  return samplingFloat(&(sample->handle[type]), sample->buffer[type],
+                       BMS_SAMPLE_SZ, val);
 }
