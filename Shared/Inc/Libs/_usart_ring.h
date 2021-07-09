@@ -1,5 +1,5 @@
 /*
- * _user_ring_buffer.h
+ * _user_ring.h
  *
  *  Created on: Oct 22, 2020
  *      Author: Pudja Mansyurin
@@ -35,12 +35,12 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
-void USART_DMA_Start(usart_ring_t* ring);
-void USART_DMA_Stop(usart_ring_t* ring);
-void USART_DMA_IrqHandler(usart_ring_t* ring);
-void USART_IrqHandler(usart_ring_t* ring);
-void USART_Check_Buffer(usart_ring_t* ring);
-void USART_Fill_Buffer(usart_ring_t* ring, size_t start, size_t len);
-void USART_Reset_Buffer(usart_ring_t* ring);
+void USART_DMA_Start(usart_ring_t* r);
+void USART_DMA_Stop(usart_ring_t* r);
+void USART_DMA_IrqHandler(usart_ring_t* r);
+void USART_IrqHandler(usart_ring_t* r);
+void USART_Check_Buffer(usart_ring_t* r);
+void USART_Fill_Buffer(usart_ring_t* r, size_t start, size_t len);
+void USART_Reset_Buffer(usart_ring_t* r);
 
 #endif /* INC_LIBS__USART_RING_H_ */
