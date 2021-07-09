@@ -65,7 +65,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
         RTC_Write(*(datetime_t *)val);
         break;
 
-      case CMD_GEN_ODOM:
+      case CMD_GEN_ODO:
         HB_EE_Trip(HBMS_TRIP_ODO, (uint16_t *)val);
         break;
 

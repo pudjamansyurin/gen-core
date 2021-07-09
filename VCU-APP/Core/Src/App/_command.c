@@ -44,7 +44,7 @@ void CMD_Init(void) {
   SZ.cmd[CMDC_GEN][CMD_GEN_INFO] = 0;
   SZ.cmd[CMDC_GEN][CMD_GEN_LED] = 1;
   SZ.cmd[CMDC_GEN][CMD_GEN_RTC] = 7;
-  SZ.cmd[CMDC_GEN][CMD_GEN_ODOM] = 2;
+  SZ.cmd[CMDC_GEN][CMD_GEN_ODO] = 2;
   SZ.cmd[CMDC_GEN][CMD_GEN_ANTITHIEF] = 0;
   SZ.cmd[CMDC_GEN][CMD_GEN_RPT_FLUSH] = 0;
   SZ.cmd[CMDC_GEN][CMD_GEN_RPT_BLOCK] = 1;
