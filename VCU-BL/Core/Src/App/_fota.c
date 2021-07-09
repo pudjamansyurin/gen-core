@@ -11,7 +11,7 @@
 
 #include "App/_focan.h"
 #include "Drivers/_bat.h"
-#include "Drivers/_canbus.h"
+#include "Drivers/_can.h"
 #include "Drivers/_crc.h"
 #include "Drivers/_flasher.h"
 #include "Libs/_eeprom.h"
@@ -123,7 +123,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
     res = FetchFW(&ftp, &ftpget, &len, type);
 
     if (res <= 0)
-      if ((*(uint32_t *)IAP_RESP_ADDR) != IRESP_CANBUS_FAILED)
+      if ((*(uint32_t *)IAP_RESP_ADDR) != IRESP_CAN_FAILED)
         *(uint32_t *)IAP_RESP_ADDR = IRESP_DOWNLOAD_ERROR;
   }
 

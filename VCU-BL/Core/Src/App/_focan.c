@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "App/_focan.h"
 
-#include "Drivers/_canbus.h"
+#include "Drivers/_can.h"
 #include "Drivers/_iwdg.h"
 #include "iwdg.h"
 
@@ -45,7 +45,7 @@ uint8_t FOCAN_SetProgress(IAP_TYPE type, float percent) {
   Tx.data.FLOAT[1] = percent;
   // send message
   do {
-    p = CANBUS_Write(&Tx, CAND_FOCAN_PROGRESS, 8, 0);
+    p = CAN_Write(&Tx, CAND_FOCAN_PROGRESS, 8, 0);
   } while (!p && --retry);
 
   return p;
@@ -152,13 +152,13 @@ static uint8_t WriteAndWaitResponse(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
 
   do {
     // send message
-    p = CANBUS_Write(Tx, addr, DLC, 0);
+    p = CAN_Write(Tx, addr, DLC, 0);
     // wait response
     if (p) p = (WaitResponse(addr, timeout) == response);
   } while (!p && --retry);
 
   // handle error
-  if (!p) *(uint32_t*)IAP_RESP_ADDR = IRESP_CANBUS_FAILED;
+  if (!p) *(uint32_t*)IAP_RESP_ADDR = IRESP_CAN_FAILED;
 
   return p;
 }
@@ -170,13 +170,13 @@ static uint8_t WriteAndWaitSqueezed(can_tx_t* Tx, uint32_t addr, uint32_t DLC,
 
   do {
     // send message
-    p = CANBUS_Write(Tx, addr, DLC, 0);
+    p = CAN_Write(Tx, addr, DLC, 0);
     // wait response
     if (p) p = WaitSqueezed(addr, RxData, timeout);
   } while (!p && --retry);
 
   // handle error
-  if (!p) *(uint32_t*)IAP_RESP_ADDR = IRESP_CANBUS_FAILED;
+  if (!p) *(uint32_t*)IAP_RESP_ADDR = IRESP_CAN_FAILED;
 
   return p;
 }
@@ -190,8 +190,8 @@ static uint8_t WaitResponse(uint32_t addr, uint32_t timeout) {
   tick = _GetTickMS();
   do {
     // read
-    if (CANBUS_Read(&Rx)) {
-      if (CANBUS_ReadID(&(Rx.header)) == addr) {
+    if (CAN_Read(&Rx)) {
+      if (CAN_ReadID(&(Rx.header)) == addr) {
         response = Rx.data.u8[0];
         break;
       }
@@ -212,8 +212,8 @@ static uint8_t WaitSqueezed(uint32_t addr, CAN_DATA* RxData, uint32_t timeout) {
   tick = _GetTickMS();
   do {
     // read
-    if (CANBUS_Read(&Rx)) {
-      if (CANBUS_ReadID(&(Rx.header)) == addr) {
+    if (CAN_Read(&Rx)) {
+      if (CAN_ReadID(&(Rx.header)) == addr) {
         switch (step) {
           case 0:  // ack
             step += (Rx.data.u8[0] == FOCAN_ACK);

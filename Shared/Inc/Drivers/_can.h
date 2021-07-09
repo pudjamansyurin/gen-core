@@ -1,12 +1,12 @@
 /*
- * _canbus.h
+ * _can.h
  *
  *  Created on: Oct 7, 2019
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_DRIVERS__CANBUS_H_
-#define INC_DRIVERS__CANBUS_H_
+#ifndef INC_DRIVERS__CAN_H_
+#define INC_DRIVERS__CAN_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -100,10 +100,10 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
-void CANBUS_Init(void);
-void CANBUS_DeInit(void);
-uint8_t CANBUS_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC, uint8_t ext);
-uint8_t CANBUS_Read(can_rx_t* Rx);
-uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef* RxHeader);
+void CAN_Init(void);
+void CAN_DeInit(void);
+uint8_t CAN_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC, uint8_t ext);
+uint8_t CAN_Read(can_rx_t* Rx);
+uint32_t CAN_ReadID(CAN_RxHeaderTypeDef* RxHeader);
 
-#endif /* INC_DRIVERS__CANBUS_H_ */
+#endif /* INC_DRIVERS__CAN_H_ */

@@ -228,7 +228,7 @@ uint8_t MCU_TX_Setting(uint8_t on, uint8_t reverse) {
   d->u8[5] |= HB_IO_Sub(HBM_DRIVE) << 2;
 
   // send message
-  return CANBUS_Write(&Tx, CAND_MCU_SETTING, 6, 0);
+  return CAN_Write(&Tx, CAND_MCU_SETTING, 6, 0);
 }
 
 uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
@@ -242,7 +242,7 @@ uint8_t MCU_TX_Template(uint16_t param, uint8_t write, int16_t data) {
   d->s16[2] = data;
 
   // send message
-  ok = CANBUS_Write(&Tx, CAND_MCU_TEMPLATE_W, 6, 0);
+  ok = CAN_Write(&Tx, CAND_MCU_TEMPLATE_W, 6, 0);
   _DelayMS(100);
 
   return ok;

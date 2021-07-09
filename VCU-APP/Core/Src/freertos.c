@@ -39,7 +39,7 @@
 #include "DMA/_dma_ublox.h"
 #include "Drivers/_aes.h"
 #include "Drivers/_bat.h"
-#include "Drivers/_canbus.h"
+#include "Drivers/_can.h"
 #include "Drivers/_iwdg.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_audio.h"
@@ -1150,7 +1150,7 @@ void StartCanTxTask(void *argument) {
   _osFlagClear();
 
   // initiate
-  CANBUS_Init();
+  CAN_Init();
 
   /* Infinite loop */
   tick100ms = _GetTickMS();
@@ -1164,9 +1164,9 @@ void StartCanTxTask(void *argument) {
         MCU_PowerOverCAN(0);
         BMS_PowerOverCAN(0);
 
-        CANBUS_DeInit();
+        CAN_DeInit();
         _osFlagOne(&notif, FLAG_CAN_TASK_START, osWaitForever);
-        CANBUS_Init();
+        CAN_Init();
       }
     }
 

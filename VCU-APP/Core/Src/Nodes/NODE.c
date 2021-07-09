@@ -106,7 +106,7 @@ void NODE_TX_DebugGroup(void) {
   d->u8[5] |= HB_IO_Pin(HBP_LAMP) << 6;
   d->u8[5] |= HB_IO_Pin(HBP_ABS) << 7;
 
-  CANBUS_Write(&Tx, CAND_DBG_GROUP, 6, 0);
+  CAN_Write(&Tx, CAND_DBG_GROUP, 6, 0);
 }
 
 void NODE_TX_DebugVCU(void) {
@@ -121,7 +121,7 @@ void NODE_TX_DebugVCU(void) {
   d->u8[3] = vcu.battery;
   d->u32[1] = HB_IO_Meter();
 
-  CANBUS_Write(&Tx, CAND_DBG_VCU, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_VCU, 8, 0);
 }
 
 void NODE_TX_DebugGPS(void) {
@@ -138,11 +138,11 @@ void NODE_TX_DebugGPS(void) {
   d->u8[4] = gps.speed;
   d->u8[5] = gps.heading;
   d->u16[3] = gps.altitude;
-  CANBUS_Write(&Tx, CAND_DBG_GPS_1, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_GPS_1, 8, 0);
 
   d->s32[0] = gps.longitude;
   d->s32[1] = gps.latitude;
-  CANBUS_Write(&Tx, CAND_DBG_GPS_2, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_GPS_2, 8, 0);
 }
 
 void NODE_TX_DebugMEMS(void) {
@@ -157,25 +157,25 @@ void NODE_TX_DebugMEMS(void) {
   d->u8[0] |= MEMS_IO_Effect(MEFFECT_FALL) << 2;
   d->u8[0] |= MEMS_IO_Effect(MEFFECT_CRASH) << 3;
   d->u8[1] = MEMS_IO_MotionOffset();
-  CANBUS_Write(&Tx, CAND_DBG_MEMS_1, 2, 0);
+  CAN_Write(&Tx, CAND_DBG_MEMS_1, 2, 0);
 
   d->s16[0] = mems.accel.x;
   d->s16[1] = mems.accel.y;
   d->s16[2] = mems.accel.z;
   d->u16[3] = mems.total.accel;
-  CANBUS_Write(&Tx, CAND_DBG_MEMS_2, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_MEMS_2, 8, 0);
 
   d->s16[0] = mems.gyro.x;
   d->s16[1] = mems.gyro.y;
   d->s16[2] = mems.gyro.z;
   d->u16[3] = mems.total.gyro;
-  CANBUS_Write(&Tx, CAND_DBG_MEMS_3, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_MEMS_3, 8, 0);
 
   d->s16[0] = mems.tilt.pitch;
   d->s16[1] = mems.tilt.roll;
   d->u16[2] = mems.total.tilt;
   d->u16[3] = mems.total.temp;
-  CANBUS_Write(&Tx, CAND_DBG_MEMS_4, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_MEMS_4, 8, 0);
 }
 
 void NODE_TX_DebugRMT(void) {
@@ -191,11 +191,11 @@ void NODE_TX_DebugRMT(void) {
   d->u8[2] = RMT_IO_Duration(RMT_DUR_RX);
   d->u8[3] = RMT_IO_Duration(RMT_DUR_FULL);
   d->u32[1] = AES_IO_QuarterKey();
-  CANBUS_Write(&Tx, CAND_DBG_RMT_1, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_RMT_1, 8, 0);
 
   d->u32[0] = RMT_IO_Tick(RMT_TICK_PING);
   d->u32[1] = RMT_IO_Tick(RMT_TICK_HBEAT);
-  CANBUS_Write(&Tx, CAND_DBG_RMT_2, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_RMT_2, 8, 0);
 }
 
 void NODE_TX_DebugTASK(void) {
@@ -209,19 +209,19 @@ void NODE_TX_DebugTASK(void) {
   d->u16[1] = TASK_IO_Stack(TASK_NETWORK);
   d->u16[2] = TASK_IO_Stack(TASK_REPORTER);
   d->u16[3] = TASK_IO_Stack(TASK_COMMAND);
-  CANBUS_Write(&Tx, CAND_DBG_TASK_1, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_TASK_1, 8, 0);
 
   d->u16[0] = 0;
   d->u16[1] = TASK_IO_Stack(TASK_MEMS);
   d->u16[2] = TASK_IO_Stack(TASK_REMOTE);
   d->u16[3] = TASK_IO_Stack(TASK_FINGER);
-  CANBUS_Write(&Tx, CAND_DBG_TASK_2, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_TASK_2, 8, 0);
 
   d->u16[0] = TASK_IO_Stack(TASK_AUDIO);
   d->u16[1] = TASK_IO_Stack(TASK_GATE);
   d->u16[2] = TASK_IO_Stack(TASK_CANRX);
   d->u16[3] = TASK_IO_Stack(TASK_CANTX);
-  CANBUS_Write(&Tx, CAND_DBG_TASK_3, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_TASK_3, 8, 0);
 
   d->u8[0] = TASK_IO_Wakeup(TASK_MANAGER);
   d->u8[1] = TASK_IO_Wakeup(TASK_NETWORK);
@@ -231,7 +231,7 @@ void NODE_TX_DebugTASK(void) {
   d->u8[5] = TASK_IO_Wakeup(TASK_MEMS);
   d->u8[6] = TASK_IO_Wakeup(TASK_REMOTE);
   d->u8[7] = TASK_IO_Wakeup(TASK_FINGER);
-  CANBUS_Write(&Tx, CAND_DBG_TASK_4, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_TASK_4, 8, 0);
 
   d->u8[0] = TASK_IO_Wakeup(TASK_AUDIO);
   d->u8[1] = TASK_IO_Wakeup(TASK_GATE);
@@ -241,7 +241,7 @@ void NODE_TX_DebugTASK(void) {
   vcu_dbg_t vcu;
   DBG_GetVCU(&vcu);
   d->u32[1] = vcu.uptime;
-  CANBUS_Write(&Tx, CAND_DBG_TASK_5, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_TASK_5, 8, 0);
 }
 
 void NODE_TX_DebugMCU(void) {
@@ -261,13 +261,13 @@ void NODE_TX_DebugMCU(void) {
   d->s16[1] = mcu.par.tpl[0].discur_max;
   d->s16[2] = mcu.par.tpl[1].discur_max;
   d->s16[3] = mcu.par.tpl[2].discur_max;
-  CANBUS_Write(&Tx, CAND_DBG_MCU_1, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_MCU_1, 8, 0);
 
   d->s16[0] = mcu.par.rpm_max;
   d->s16[1] = mcu.par.tpl[0].torque_max;
   d->s16[2] = mcu.par.tpl[1].torque_max;
   d->s16[3] = mcu.par.tpl[2].torque_max;
-  CANBUS_Write(&Tx, CAND_DBG_MCU_2, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_MCU_2, 8, 0);
 }
 
 void NODE_TX_DebugBMS(void) {
@@ -285,5 +285,5 @@ void NODE_TX_DebugBMS(void) {
   d->u16[2] = avg->efficiency * 10;
   d->u16[3] = avg->distance * 10;
 
-  CANBUS_Write(&Tx, CAND_DBG_BMS, 8, 0);
+  CAN_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

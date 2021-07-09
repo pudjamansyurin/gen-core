@@ -33,7 +33,7 @@ bool FW_ValidResponseIAP(void) {
       break;
     case IRESP_CRC_INVALID:
       break;
-    case IRESP_CANBUS_FAILED:
+    case IRESP_CAN_FAILED:
       break;
     case IRESP_FOTA_ERROR:
       break;
@@ -92,8 +92,8 @@ void FW_CaptureResponseIAP(response_t *r) {
     case IRESP_CRC_INVALID:
       sprintf(r->data.message, "%s CRC Invalid", node);
       break;
-    case IRESP_CANBUS_FAILED:
-      sprintf(r->data.message, "%s Canbus Failed", node);
+    case IRESP_CAN_FAILED:
+      sprintf(r->data.message, "%s CAN-bus Failed", node);
       break;
     case IRESP_FOTA_ERROR:
       sprintf(r->data.message, "%s FOTA Error", node);

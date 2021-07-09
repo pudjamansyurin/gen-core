@@ -34,7 +34,7 @@
 #include "App/_fota.h"
 #include "DMA/_dma_simcom.h"
 #include "Drivers/_bat.h"
-#include "Drivers/_canbus.h"
+#include "Drivers/_can.h"
 #include "Drivers/_flasher.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
@@ -113,7 +113,7 @@ int main(void)
 
   BAT_Init();
   EE_Init();
-  CANBUS_Init();
+  CAN_Init();
   SIM_Init();
   /* USER CODE END 2 */
 

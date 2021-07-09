@@ -122,7 +122,7 @@ uint8_t BMS_TX_Setting(BMS_STATE state, uint8_t sc) {
   d->u8[2] = BMS_SCALE_15_85 & 0x03;
 
   // send message
-  return CANBUS_Write(&Tx, CAND_BMS_SETTING, 8, 1);
+  return CAN_Write(&Tx, CAND_BMS_SETTING, 8, 1);
 }
 
 /* Private functions implementation

@@ -50,7 +50,7 @@ uint8_t VCU_TX_Heartbeat(void) {
 
   d->u16[0] = VCU_VERSION;
 
-  return CANBUS_Write(&Tx, CAND_VCU, 2, 0);
+  return CAN_Write(&Tx, CAND_VCU, 2, 0);
 }
 
 uint8_t VCU_TX_SwitchControl(void) {
@@ -94,7 +94,7 @@ uint8_t VCU_TX_SwitchControl(void) {
   d->u8[7] = (int8_t)VCU.d.vehicle;
 
   // send message
-  return CANBUS_Write(&Tx, CAND_VCU_SWITCH_CTL, 8, 0);
+  return CAN_Write(&Tx, CAND_VCU_SWITCH_CTL, 8, 0);
 }
 
 uint8_t VCU_TX_Datetime(datetime_t dt) {
@@ -112,7 +112,7 @@ uint8_t VCU_TX_Datetime(datetime_t dt) {
   d->u8[6] = dt.WeekDay;
   d->u8[7] = hmi2shutdown;
 
-  return CANBUS_Write(&Tx, CAND_VCU_DATETIME, 8, 0);
+  return CAN_Write(&Tx, CAND_VCU_DATETIME, 8, 0);
 }
 
 uint8_t VCU_TX_ModeData(void) {
@@ -125,5 +125,5 @@ uint8_t VCU_TX_ModeData(void) {
   d->u8[6] = HB_IO_Average(HBMS_AVG_RANGE);
   d->u8[7] = HB_IO_Average(HBMS_AVG_EFFICIENCY);
 
-  return CANBUS_Write(&Tx, CAND_VCU_MODE_DATA, 8, 0);
+  return CAN_Write(&Tx, CAND_VCU_MODE_DATA, 8, 0);
 }

@@ -10,7 +10,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/_canbus.h"
+#include "Drivers/_can.h"
 
 /* Exported constants
  * --------------------------------------------*/
