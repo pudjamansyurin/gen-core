@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef CRC_H_
-#define CRC_H_
+#ifndef INC_DRIVERS__CRC_H_
+#define INC_DRIVERS__CRC_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -30,4 +30,4 @@ uint32_t CRC_Calculate8(uint8_t* arr, uint32_t count, uint8_t swapped);
  */
 uint32_t CRC_Calculate32(uint32_t* arr, uint32_t count);
 
-#endif /* CRC_H_ */
+#endif /* INC_DRIVERS__CRC_H_ */

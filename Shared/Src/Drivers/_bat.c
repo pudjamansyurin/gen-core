@@ -17,6 +17,22 @@
 extern osMutexId_t BatMutexHandle;
 #endif
 
+/* Private constants
+ * --------------------------------------------*/
+#define BAT_SAMPLE_SZ ((uint8_t)100)
+#define ADC_MAX_VALUE ((float)4095.0)  // 12 bit
+#define REF_MAX_MV ((float)3300.0)
+#define BAT_MAX_MV ((float)4150.0)
+#define BAT_OFFSET_MV ((float)0.0)
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+  uint16_t voltage;
+  uint16_t buf[BAT_SAMPLE_SZ];
+  ADC_HandleTypeDef* padc;
+} bat_t;
+
 /* Private variables
  * --------------------------------------------*/
 static bat_t BAT = {
@@ -29,7 +45,7 @@ static bat_t BAT = {
  * --------------------------------------------*/
 static void lock(void);
 static void unlock(void);
-static uint16_t Sampling(uint16_t* buf, uint16_t sz, uint16_t val);
+static uint16_t Sampling(uint16_t val);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -58,7 +74,7 @@ uint16_t BAT_ScanValue(void) {
 
   if (ok) {
     value = (value * BAT_MAX_MV) / ADC_MAX_VALUE;
-    value = Sampling(BAT.buf, BAT_SAMPLE_SZ, value);
+    value = Sampling(value);
   }
 
   BAT.voltage = value;
@@ -81,9 +97,11 @@ static void unlock(void) {
 #endif
 }
 
-static uint16_t Sampling(uint16_t* buf, uint16_t sz, uint16_t val) {
+static uint16_t Sampling(uint16_t val) {
   static uint32_t sum = 0;
   static uint16_t pos = 0, len = 0;
+	uint16_t* buf = BAT.buf;
+	uint16_t sz = BAT_SAMPLE_SZ;
 
   // Subtract the oldest number from the prev sum, add the new number
   sum = sum - buf[pos] + val;

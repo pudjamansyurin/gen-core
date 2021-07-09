@@ -86,6 +86,7 @@ typedef enum {
 /* Public functions prototype
  * --------------------------------------------*/
 void IAP_Init(void);
+
 #if (!APP)
 void IAP_SetAppMeta(uint32_t offset, uint32_t data);
 void IAP_SetBootMeta(uint32_t offset, uint32_t data);

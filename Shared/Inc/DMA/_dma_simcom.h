@@ -5,17 +5,16 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef DMA_SIM_H_
-#define DMA_SIM_H_
+#ifndef DMA_SIMCOM_H_
+#define DMA_SIMCOM_H_
 
 /* Includes
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported defines
+/* Exported constants
  * --------------------------------------------*/
 #define SIM_UART_RX_SZ ((uint16_t)(1024 + 512 + 128))
-#define SIM_DMA_RX_SZ ((uint16_t)128)
 
 /* Exported variables
  * --------------------------------------------*/
@@ -30,4 +29,4 @@ void SIM_DMA_IrqHandler(void);
 void SIM_Reset_Buffer(void);
 uint8_t SIM_Transmit(char* data, uint16_t Size);
 
-#endif /* DMA_SIM_H_ */
+#endif /* DMA_SIMCOM_H_ */

@@ -1,5 +1,5 @@
 /*
- * DMA_Simcom.c
+ * _dma_simcom.c
  *
  *  Created on: Aug 14, 2019
  *      Author: Pudja Mansyurin
@@ -12,6 +12,10 @@
 #include "DMA/_dma_simcom.h"
 
 #include "Libs/_usart_ring.h"
+
+/* Private constants
+ * --------------------------------------------*/
+#define SIM_DMA_RX_SZ ((uint16_t)128)
 
 /* Public variables
  * --------------------------------------------*/
@@ -27,7 +31,8 @@ static usart_ring_t SIM_RING = {
     .tmp = {
         .idle = 1,
         .old_pos = 0,
-    }};
+    }
+};
 
 /* Public functions implementation
  * --------------------------------------------*/

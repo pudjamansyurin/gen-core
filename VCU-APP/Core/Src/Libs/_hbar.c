@@ -345,8 +345,8 @@ static void RunSelect(void) {
 }
 
 static void RunSet(void) {
-	HBMS_TRIP mTrip = HBAR.d.sub[HBM_TRIP];
 	HBM m = HBAR.d.mode;
+	HBMS_TRIP mTrip = HBAR.d.sub[HBM_TRIP];
 	uint16_t meter = 0;
 	uint8_t mode = 0;
 
@@ -367,6 +367,7 @@ static uint8_t DefferMode(void) {
 
 static uint8_t SubMask(HBM mode) {
 	uint8_t MASK = 0x01;
+
 	if (HB_SubMax(mode) > 2) MASK = 0x03;
 	return MASK;
 }

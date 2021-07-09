@@ -4,8 +4,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef _AT24C_H
-#define _AT24C_H
+#ifndef INC_DRIVERS__AT24C_H
+#define INC_DRIVERS__AT24C_H
 
 /* Includes
  * --------------------------------------------*/

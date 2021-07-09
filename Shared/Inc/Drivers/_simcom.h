@@ -5,8 +5,8 @@
  *      Author: Pudja Mansyurin
  */
 
-#ifndef SIM_H_
-#define SIM_H_
+#ifndef INC_DRIVERS__SIMCOM_H_
+#define INC_DRIVERS__SIMCOM_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -64,4 +64,4 @@ int SIM_GetData(unsigned char* buf, int count);
 uint8_t SIM_GotResponse(uint32_t timeout);
 #endif
 
-#endif /* SIM_H_ */
+#endif /* INC_DRIVERS__SIMCOM_H_ */
