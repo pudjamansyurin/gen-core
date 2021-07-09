@@ -48,9 +48,9 @@ void DBG_GetHBAR(hbar_dbg_t *hbar) {
 }
 
 void DBG_GetNET(net_dbg_t *net) {
-  net->signal = SIM.d.signal;
-  net->state = SIM.d.state;
-  net->ipstatus = SIM.d.ipstatus;
+  net->signal = SIMSta_IO_Signal();
+  net->state = SIMSta_IO_State();
+  net->ipstatus = SIMSta_IO_Ip();
 }
 
 void DBG_GetGPS(gps_dbg_t *gps) {

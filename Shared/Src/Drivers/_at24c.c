@@ -106,10 +106,7 @@ static uint8_t load(uint16_t addr, uint8_t* data, uint16_t n) {
 }
 
 static uint8_t save(uint16_t addr, const uint8_t* data, uint16_t n) {
-	uint8_t unConstData[n];
-	memcpy(unConstData, data, n);
-
-  if (HAL_I2C_Mem_Write(pi2c, DEV_ADDR(DEV_ID), addr, I2C_MEMADD_SIZE_16BIT, unConstData, n, 100) == HAL_OK) {
+  if (HAL_I2C_Mem_Write(pi2c, DEV_ADDR(DEV_ID), addr, I2C_MEMADD_SIZE_16BIT, (uint8_t*) data, n, 100) == HAL_OK) {
     _DelayMS(15);
     return 1;
   }

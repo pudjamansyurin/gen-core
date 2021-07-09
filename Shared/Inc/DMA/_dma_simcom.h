@@ -27,6 +27,6 @@ void SIM_DMA_Stop(void);
 void SIM_USART_IrqHandler(void);
 void SIM_DMA_IrqHandler(void);
 void SIM_Reset_Buffer(void);
-uint8_t SIM_Transmit(char* data, uint16_t Size);
+uint8_t SIM_Transmit(const char* data, uint16_t Size);
 
 #endif /* DMA_SIMCOM_H_ */

@@ -53,15 +53,15 @@ static payload_t PAYS[PAYLOAD_MAX] = {{.type = PAYLOAD_RESPONSE,
 /* Public functions implementation
  * --------------------------------------------*/
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
-  report_header_t *header = (report_header_t *)report;
+  report_header_t *h = (report_header_t *)report;
   report_data_t *d = &(report->data);
 
-  memcpy(header->prefix, PREFIX_REPORT, 2);
-  header->size = sizeof(header->vin) + sizeof(header->send_time);
-  header->vin = VIN_VALUE;
+  memcpy(h->prefix, PREFIX_REPORT, 2);
+  h->size = sizeof(h->vin) + sizeof(h->send_time);
+  h->vin = VIN_VALUE;
 
   // Required data
-  header->size += sizeof(d->req);
+  h->size += sizeof(d->req);
 
   d->req.frame_id = frame;
   d->req.log_time = RTC_Read();
@@ -72,7 +72,7 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 
   // Optional data
   if (frame == FR_FULL) {
-    header->size += sizeof(d->opt);
+    h->size += sizeof(d->opt);
 
     DBG_GetHBAR(&(d->opt.hbar));
     DBG_GetNET(&(d->opt.net));
@@ -90,16 +90,15 @@ void RPT_ReportCapture(FRAME_TYPE frame, report_t *report) {
 }
 
 void RPT_ResponseCapture(response_t *response) {
-  report_header_t *header = (report_header_t *)response;
+  report_header_t *h = (report_header_t *)response;
 
-  memcpy(header->prefix, PREFIX_RESPONSE, 2);
-  header->size = sizeof(header->vin) + sizeof(header->send_time);
-  header->vin = VIN_VALUE;
+  memcpy(h->prefix, PREFIX_RESPONSE, 2);
+  h->size = sizeof(h->vin) + sizeof(h->send_time);
+  h->vin = VIN_VALUE;
 
-  header->size +=
-      sizeof(response->header.code) + sizeof(response->header.sub_code) +
-      sizeof(response->data.res_code) +
-      strnlen(response->data.message, sizeof(response->data.message));
+  h->size += sizeof(response->header.code) + sizeof(response->header.sub_code) +
+             sizeof(response->data.res_code) +
+             strnlen(response->data.message, sizeof(response->data.message));
 }
 
 FRAME_TYPE RPT_FrameDecider(void) {
@@ -142,23 +141,22 @@ uint32_t RPT_IntervalDeciderMS(vehicle_t vehicle) {
 
 bool RPT_PayloadPending(PAYLOAD_TYPE type) {
   payload_t *payload = &(PAYS[type]);
-  report_header_t *header = NULL;
+  report_header_t *h = NULL;
 
   if (RPT.block && payload->type == PAYLOAD_REPORT) return false;
 
   if (!payload->pending) {
     if (_osQueueGet(*(payload->queue), payload->data)) {
-      header = (report_header_t *)(payload->data);
+      h = (report_header_t *)(payload->data);
 
-      payload->size =
-          sizeof(header->prefix) + sizeof(header->size) + header->size;
+      payload->size = sizeof(h->prefix) + sizeof(h->size) + h->size;
       payload->pending = true;
     }
   }
 
   if (payload->pending) {
-    header = (report_header_t *)(payload->data);
-    header->send_time = RTC_Read();
+    h = (report_header_t *)(payload->data);
+    h->send_time = RTC_Read();
   }
 
   return payload->pending;

@@ -90,7 +90,7 @@ uint8_t VCU_TX_SwitchControl(void) {
   d->u8[3] = MCU_RpmToSpeed(MCU.d.rpm);
   d->u8[4] = (uint8_t)MCU.d.dcbus.current;
   d->u8[5] = BMS.d.soc;
-  d->u8[6] = SIM.d.signal;
+  d->u8[6] = SIMSta_IO_Signal();
   d->u8[7] = (int8_t)VCU.d.vehicle;
 
   // send message

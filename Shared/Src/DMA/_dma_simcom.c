@@ -50,7 +50,7 @@ void SIM_USART_IrqHandler(void) { USART_IrqHandler(&SIM_RING); }
 
 void SIM_Reset_Buffer(void) { USART_Reset_Buffer(&SIM_RING); }
 
-uint8_t SIM_Transmit(char* data, uint16_t Size) {
+uint8_t SIM_Transmit(const char* data, uint16_t Size) {
   SIM_Reset_Buffer();
 
   return (HAL_UART_Transmit(SIM_RING.huart, (uint8_t*)data, Size,

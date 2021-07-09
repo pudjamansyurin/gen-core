@@ -101,6 +101,10 @@ uint8_t MQTT_Connect(void) {
   unsigned char buf[256];
   int len, buflen = sizeof(buf);
 
+  con_string_t user, pass;
+  strncpy(user, SIMCon_IO_Mqtt()->user, sizeof(con_string_t));
+  strncpy(pass, SIMCon_IO_Mqtt()->pass, sizeof(con_string_t));
+
   MQTT.subscribed = 0;
   MQTT.willed = 0;
 
@@ -115,8 +119,8 @@ uint8_t MQTT_Connect(void) {
   data.clientID.cstring = clientId;
   data.cleansession = !MQTT_PERSIST_SESSION;
   data.keepAliveInterval = MQTT_KEEPALIVE_S;
-  data.username.cstring = SIM.con.mqtt.user;
-  data.password.cstring = SIM.con.mqtt.pass;
+  data.username.cstring = user;
+  data.password.cstring = pass;
 
   data.willFlag = 1;
   data.will.retained = 1;

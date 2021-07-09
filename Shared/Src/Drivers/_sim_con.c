@@ -37,6 +37,10 @@
 #define FTP_USER "fota@garda-energi.com"
 #define FTP_PASS "@2,TUST4W9#O"
 
+/* Private variables
+ * --------------------------------------------*/
+static sim_con_t SimCon;
+
 /* Public functions implementation
  * --------------------------------------------*/
 void SIMCon_Init(void) {
@@ -79,7 +83,7 @@ uint8_t SIMCon_EE_Write(void) {
 }
 
 uint8_t SIMCon_EE_Apn(con_apn_t *s) {
-  con_apn_t *d = &SIM.con.apn;
+  con_apn_t *d = &SimCon.apn;
   uint8_t ok = 0;
 
   ok += EE_Cmd(VA_APN_NAME, s == NULL ? NULL : s->name, d->name);
@@ -90,7 +94,7 @@ uint8_t SIMCon_EE_Apn(con_apn_t *s) {
 }
 
 uint8_t SIMCon_EE_Ftp(con_ftp_t *s) {
-  con_ftp_t *d = &SIM.con.ftp;
+  con_ftp_t *d = &SimCon.ftp;
   uint8_t ok = 0;
 
   ok += EE_Cmd(VA_FTP_HOST, s == NULL ? NULL : s->host, d->host);
@@ -101,7 +105,7 @@ uint8_t SIMCon_EE_Ftp(con_ftp_t *s) {
 }
 
 uint8_t SIMCon_EE_Mqtt(con_mqtt_t *s) {
-  con_mqtt_t *d = &SIM.con.mqtt;
+  con_mqtt_t *d = &SimCon.mqtt;
   uint8_t ok = 0;
 
   ok += EE_Cmd(VA_MQTT_HOST, s == NULL ? NULL : s->host, d->host);
@@ -110,4 +114,20 @@ uint8_t SIMCon_EE_Mqtt(con_mqtt_t *s) {
   ok += EE_Cmd(VA_MQTT_PASS, s == NULL ? NULL : s->pass, d->pass);
 
   return ok == 4;
+}
+
+const con_ftp_t* SIMCon_IO_Ftp(void) {
+	return &SimCon.ftp;
+}
+
+const con_mqtt_t* SIMCon_IO_Mqtt(void) {
+	return &SimCon.mqtt;
+}
+
+const con_apn_t* SIMCon_IO_Apn(void) {
+	return &SimCon.apn;
+}
+
+void SIMCon_IO_SetApn(const con_apn_t *apn) {
+	memcpy(&SimCon.apn, apn, sizeof(con_apn_t));
 }

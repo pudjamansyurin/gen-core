@@ -15,23 +15,25 @@
 
 /* Exported types
  * --------------------------------------------*/
+typedef char con_string_t[EE_STR_MAX];
+
 typedef struct {
-  char name[EE_STR_MAX];
-  char user[EE_STR_MAX];
-  char pass[EE_STR_MAX];
+	con_string_t name;
+	con_string_t user;
+	con_string_t pass;
 } con_apn_t;
 
 typedef struct {
-  char host[EE_STR_MAX];
+	con_string_t host;
   uint16_t port;
-  char user[EE_STR_MAX];
-  char pass[EE_STR_MAX];
+	con_string_t user;
+	con_string_t pass;
 } con_mqtt_t;
 
 typedef struct {
-  char host[EE_STR_MAX];
-  char user[EE_STR_MAX];
-  char pass[EE_STR_MAX];
+	con_string_t host;
+	con_string_t user;
+	con_string_t pass;
 } con_ftp_t;
 
 typedef struct {
@@ -49,4 +51,8 @@ uint8_t SIMCon_EE_Apn(con_apn_t *s);
 uint8_t SIMCon_EE_Ftp(con_ftp_t *s);
 uint8_t SIMCon_EE_Mqtt(con_mqtt_t *s);
 
+const con_ftp_t* SIMCon_IO_Ftp(void);
+const con_mqtt_t* SIMCon_IO_Mqtt(void);
+const con_apn_t* SIMCon_IO_Apn(void);
+void SIMCon_IO_SetApn(const con_apn_t *apn);
 #endif /* INC_DRIVERS__SIMCon_H_ */

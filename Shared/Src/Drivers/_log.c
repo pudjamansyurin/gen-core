@@ -16,6 +16,10 @@
 extern osMutexId_t LogRecMutexHandle;
 #endif
 
+/* Private constants
+ * --------------------------------------------*/
+#define LOG_TIMEOUT_MS ((uint16_t)2)
+
 /* Private functions prototype
  * --------------------------------------------*/
 static void lock(void);
@@ -47,15 +51,6 @@ void printf_hex(const char* data, uint16_t size) {
   unlock();
 }
 
-// void Log(const char *fmt, ...) {
-//   va_list args;
-//   lock();
-//   va_start(args, fmt);
-//   vprintf(fmt, args);
-//   va_end(args);
-//   unlock();
-// }
-
 /* Private functions implementations
  * --------------------------------------------*/
 static void lock(void) {
@@ -76,7 +71,10 @@ static void SendITM(char ch) {
 
   // wait if busy
   tick = _GetTickMS();
-  while (_TickIn(tick, LOG_TIMEOUT_MS) && ITM->PORT[0].u32 == 0) {};
+  while (_TickIn(tick, LOG_TIMEOUT_MS)) {
+  	if (ITM->PORT[0].u32 != 0)
+  		break;
+  };
 
   ITM->PORT[0].u8 = (uint8_t)ch;
 #endif

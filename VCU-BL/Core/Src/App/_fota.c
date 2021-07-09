@@ -348,7 +348,7 @@ static SIMR PrepareFTP(at_ftp_t *ftp) {
   SIMR res;
 
   res = SIM_SetState(SIM_STATE_BEARER_ON, FOTA_TIMEOUT_MS);
-  if (res == SIM_OK) res = AT_FtpInitialize(ftp, &SIM.con.ftp);
+  if (res == SIM_OK) res = AT_FtpInitialize(ftp);
 
   return res;
 }

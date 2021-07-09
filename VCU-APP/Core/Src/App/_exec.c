@@ -380,7 +380,7 @@ static void EXEC_ConApn(const command_t *cmd, char *rMsg) {
   con_apn_t apn;
 
   if (IsReadRequest(cmd))
-    apn = SIM.con.apn;
+  	memcpy(&apn, SIMCon_IO_Apn(), sizeof(con_apn_t));
   else {
     char *token, *rest;
 

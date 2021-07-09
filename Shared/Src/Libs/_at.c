@@ -94,7 +94,7 @@ SIMR AT_SignalQualityReport(at_csq_t* signal) {
   return res;
 }
 
-SIMR AT_ConnectionStatus(AT_CIPSTATUS* state) {
+SIMR AT_ConnectionStatus(SIM_IP* state) {
   SIMR res = SIM_ERROR;
   char status[20], *str = NULL;
   uint8_t len;
@@ -107,34 +107,34 @@ SIMR AT_ConnectionStatus(AT_CIPSTATUS* state) {
     len = strnlen(status, sizeof(status));
     // decide
     if (!strncmp(status, "IP INITIAL", len)) {
-      *state = CIPSTAT_IP_INITIAL;
+      *state = SIM_IP_INITIAL;
     } else if (!strncmp(status, "IP START", len)) {
-      *state = CIPSTAT_IP_START;
+      *state = SIM_IP_START;
     } else if (!strncmp(status, "IP CONFIG", len)) {
-      *state = CIPSTAT_IP_CONFIG;
+      *state = SIM_IP_CONFIG;
     } else if (!strncmp(status, "IP GPRSACT", len)) {
-      *state = CIPSTAT_IP_GPRSACT;
+      *state = SIM_IP_GPRSACT;
     } else if (!strncmp(status, "IP STATUS", len)) {
-      *state = CIPSTAT_IP_STATUS;
+      *state = SIM_IP_STATUS;
     } else if (!strncmp(status, "TCP CONNECTING", len) ||
                !strncmp(status, "UDP CONNECTING", len) ||
                !strncmp(status, "SERVER LISTENING", len)) {
-      *state = CIPSTAT_CONNECTING;
+      *state = SIM_IP_CONNECTING;
     } else if (!strncmp(status, "CONNECT OK", len)) {
-      *state = CIPSTAT_CONNECT_OK;
+      *state = SIM_IP_CONNECT_OK;
     } else if (!strncmp(status, "TCP CLOSING", len) ||
                !strncmp(status, "UDP CLOSING", len)) {
-      *state = CIPSTAT_CLOSING;
+      *state = SIM_IP_CLOSING;
     } else if (!strncmp(status, "TCP CLOSED", len) ||
                !strncmp(status, "UDP CLOSED", len)) {
-      *state = CIPSTAT_CLOSED;
+      *state = SIM_IP_CLOSED;
     } else if (!strncmp(status, "PDP DEACT", len)) {
-      *state = CIPSTAT_PDP_DEACT;
+      *state = SIM_IP_PDP_DEACT;
     } else {
-      *state = CIPSTAT_UNKNOWN;
+      *state = SIM_IP_UNKNOWN;
     }
   } else
-    *state = CIPSTAT_UNKNOWN;
+    *state = SIM_IP_UNKNOWN;
   SIM_Unlock();
 
   return res;
@@ -553,7 +553,7 @@ SIMR AT_GetLocalIpAddress(at_cifsr_t* param) {
   return res;
 }
 
-SIMR AT_StartConnection(con_mqtt_t* param) {
+SIMR AT_StartConnection(const con_mqtt_t* param) {
   SIMR res = SIM_ERROR;
   char cmd[80];
 
@@ -606,7 +606,6 @@ SIMR AT_BearerInitialize(void) {
   at_sapbr_t getBEARER, setBEARER = {
                             .cmd_type = SAPBR_BEARER_OPEN,
                             .status = SAPBR_CONNECTED,
-                            .apn = SIM.con.apn,
                         };
 
   // BEARER attach
@@ -627,6 +626,7 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
 
   // Copy by value
   at_sapbr_t tmp = *param;
+  con_apn_t tmpApn;
 
   SIM_Lock();
   // Read
@@ -641,27 +641,29 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
     res = CmdRead("AT+SAPBR=4,1\r", "+SAPBR:", 500, &str);
     if (res == SIM_OK) {
       if (FindInBuffer("APN: ", &str))
-        ParseText(&str[0], NULL, tmp.apn.name, sizeof(tmp.apn.name));
+        ParseText(&str[0], NULL, tmpApn.name, sizeof(tmpApn.name));
 
       if (FindInBuffer("USER: ", &str))
-        ParseText(&str[0], NULL, tmp.apn.user, sizeof(tmp.apn.user));
+        ParseText(&str[0], NULL, tmpApn.user, sizeof(tmpApn.user));
 
       if (FindInBuffer("PWD: ", &str))
-        ParseText(&str[0], NULL, tmp.apn.pass, sizeof(tmp.apn.pass));
+        ParseText(&str[0], NULL, tmpApn.pass, sizeof(tmpApn.pass));
     }
 
     // Write
     if (mode == ATW) {
-      if (memcmp(tmp.apn.name, param->apn.name, sizeof(param->apn.name)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", param->apn.name);
+      const con_apn_t* parApn = SIMCon_IO_Apn();
+
+      if (memcmp(tmpApn.name, parApn->name, sizeof(tmpApn.name)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"APN\",\"%s\"\r", parApn->name);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmp.apn.user, param->apn.user, sizeof(param->apn.user)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", param->apn.user);
+      if (memcmp(tmpApn.user, parApn->user, sizeof(tmpApn.user)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"USER\",\"%s\"\r", parApn->user);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
-      if (memcmp(tmp.apn.pass, param->apn.pass, sizeof(param->apn.pass)) != 0) {
-        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", param->apn.pass);
+      if (memcmp(tmpApn.pass, parApn->pass, sizeof(tmpApn.pass)) != 0) {
+        sprintf(cmd, "AT+SAPBR=3,1,\"PWD\",\"%s\"\r", parApn->pass);
         res = CmdWrite(cmd, SIM_RSP_OK, 500);
       }
 
@@ -670,17 +672,21 @@ SIMR AT_BearerSettings(AT_MODE mode, at_sapbr_t* param) {
         sprintf(cmd, "AT+SAPBR=%d,1\r", param->cmd_type);
         res = CmdWrite(cmd, SIM_RSP_OK, 30000);
       }
-    } else
+    } else {
       *param = tmp;
+      SIMCon_IO_SetApn(&tmpApn);
+    }
   }
   SIM_Unlock();
 
   return res;
 }
 
-SIMR AT_FtpInitialize(at_ftp_t* param, con_ftp_t* ftp) {
+SIMR AT_FtpInitialize(at_ftp_t* param) {
   SIMR res;
   int32_t cid = 1;
+
+  con_ftp_t* ftp = (con_ftp_t*)SIMCon_IO_Ftp();
 
   SIM_Lock();
   res = SingleInteger("FTPCID", ATW, &cid, 0);
@@ -803,7 +809,7 @@ static SIMR SingleString(char* command, AT_MODE mode, char* string,
   char *str = NULL, cmd[20], reply[20], tmp[size];
 
   // Copy by vale
-  memcpy(tmp, string, size);
+  // memcpy(tmp, string, size);
 
   SIM_Lock();
   // Read
@@ -860,7 +866,7 @@ static SIMR SingleInteger(char* command, AT_MODE mode, int32_t* value,
 static SIMR CmdWrite(char* cmd, char* reply, uint32_t ms) {
   SIMR res = SIM_ERROR;
 
-  if (SIM.d.state >= SIM_STATE_READY) res = SIM_Cmd(cmd, reply, ms);
+  if (SIMSta_IO_State() >= SIM_STATE_READY) res = SIM_Cmd(cmd, reply, ms);
 
   return res;
 }
@@ -868,7 +874,7 @@ static SIMR CmdWrite(char* cmd, char* reply, uint32_t ms) {
 static SIMR CmdRead(char* cmd, char* reply, uint32_t ms, char** str) {
   SIMR res = SIM_ERROR;
 
-  if (SIM.d.state >= SIM_STATE_READY) {
+  if (SIMSta_IO_State() >= SIM_STATE_READY) {
     res = SIM_Cmd(cmd, reply, ms);
 
     if (res == SIM_OK) {

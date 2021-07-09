@@ -19,23 +19,22 @@
 
 #define SIM_RSP_NONE "\r\n"
 #define SIM_RSP_SEND ">"
-//#define SIM_RSP_SENT                 "SEND OK\r"
 #define SIM_RSP_ACCEPT "DATA ACCEPT:"
 #define SIM_RSP_OK "OK\r"
 #define SIM_RSP_ERROR "ERROR"
 #define SIM_RSP_READY "RDY"
 #define SIM_RSP_IPD "+IPD,"
 
-#define MAX_ENUM_SIZE (uint32_t)0xFFFFFFFF
+#define MAX_ENUM_SIZE ((uint32_t)0xFFFFFFFF)
 
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
   SIM_RESTARTED = -3,
-  SIM_NORESPONSE = -2,
-  SIM_TIMEOUT = -1,
+  SIM_NORESPONSE,
+  SIM_TIMEOUT,
   SIM_ERROR = 0,
-  SIM_OK = 1,
+  SIM_OK,
 } SIMR;
 
 typedef enum {
@@ -55,23 +54,23 @@ typedef enum {
 } SIM_STATE;
 
 typedef enum {
-  CIPSTAT_UNKNOWN = -1,
-  CIPSTAT_IP_INITIAL = 0,
-  CIPSTAT_IP_START,
-  CIPSTAT_IP_CONFIG,
-  CIPSTAT_IP_GPRSACT,
-  CIPSTAT_IP_STATUS,
-  CIPSTAT_CONNECTING,
-  CIPSTAT_CONNECT_OK,
-  CIPSTAT_CLOSING,
-  CIPSTAT_CLOSED,
-  CIPSTAT_PDP_DEACT,
-  CIPSTAT_ForceEnumSize = MAX_ENUM_SIZE
-} AT_CIPSTATUS;
+  SIM_IP_UNKNOWN = -1,
+  SIM_IP_INITIAL = 0,
+  SIM_IP_START,
+  SIM_IP_CONFIG,
+  SIM_IP_GPRSACT,
+  SIM_IP_STATUS,
+  SIM_IP_CONNECTING,
+  SIM_IP_CONNECT_OK,
+  SIM_IP_CLOSING,
+  SIM_IP_CLOSED,
+  SIM_IP_PDP_DEACT,
+  SIM_IP_ForceEnumSize = MAX_ENUM_SIZE
+} SIM_IP;
 
 /* Public functions prototype
  * --------------------------------------------*/
-uint8_t SIMSta_StateTimeout(uint32_t* tick, uint32_t timeout, SIMR res);
+uint8_t SIMSta_StateTimeout(SIMR res, uint32_t* tick, uint32_t timeout);
 uint8_t SIMSta_StateLockedLoop(SIM_STATE* lastState, uint8_t* retry);
 uint8_t SIMSta_StatePoorSignal(void);
 
@@ -90,4 +89,8 @@ void SIMSta_ServerOn(void);
 void SIMSta_MqttOn(void);
 #endif
 
+SIM_IP SIMSta_IO_Ip(void);
+uint8_t SIMSta_IO_Signal(void);
+SIM_STATE SIMSta_IO_State(void);
+void SIMSta_IO_SetState(SIM_STATE value);
 #endif /* INC_DRIVERS__SIM_STATE_H_ */
