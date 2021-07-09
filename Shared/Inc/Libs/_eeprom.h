@@ -1,12 +1,12 @@
 /*
- * _flash.h
+ * _eeprom.h
  *
  *  Created on: Sep 9, 2019
  *      Author: Pudja Mansyurin
  */
 
-#ifndef EEPROM_H_
-#define EEPROM_H_
+#ifndef INC_LIBS__EEPROM_H
+#define INC_LIBS__EEPROM_H
 
 /* Includes
  * --------------------------------------------*/
@@ -50,4 +50,4 @@ void EE_Refresh(void);
 uint8_t EE_Cmd(EE_VA va, const void *src, void *dst);
 uint8_t EE_IO_Active(void);
 uint8_t EE_IO_Used(void);
-#endif /* EEPROM_H_ */
+#endif /* INC_LIBS__EEPROM_H */
