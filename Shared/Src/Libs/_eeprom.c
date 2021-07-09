@@ -25,13 +25,23 @@
 extern osMutexId_t EepromRecMutexHandle;
 #endif
 
-/* Public variables
+/* Private constants
  * --------------------------------------------*/
-eeprom_t EEPROM = {0};
+#define EE_CHECK_MS (60000)
+#define EE_CAPACITY_B (4096)
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+  uint8_t active;
+  uint8_t used;
+  uint32_t tick;
+  uint8_t size[VA_MAX];
+} eeprom_t;
 
 /* Private variables
  * --------------------------------------------*/
-static uint8_t EE_SZ[VA_MAX];
+static eeprom_t EEPROM = {0};
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -83,17 +93,25 @@ uint8_t EE_Cmd(EE_VA va, const void* src, void* dst) {
   uint8_t ok = 1;
 
   lock();
-  if (src != NULL) ok = AT24C_Write(addr, src, EE_SZ[va]);
+  if (src != NULL) ok = AT24C_Write(addr, src, EEPROM.size[va]);
 
   if (ok)
-    ok = AT24C_Read(addr, dst, EE_SZ[va]);
+    ok = AT24C_Read(addr, dst, EEPROM.size[va]);
   else
-    memcpy(dst, src, EE_SZ[va]);
+    memcpy(dst, src, EEPROM.size[va]);
 
   EEPROM.active = ok;
   unlock();
 
   return ok;
+}
+
+uint8_t EE_IO_Active(void) {
+	return EEPROM.active;
+}
+
+uint8_t EE_IO_Used(void) {
+	return EEPROM.used;
 }
 
 /* Private functions implementation
@@ -111,38 +129,37 @@ static void unlock(void) {
 }
 
 static void InitializeSize(void) {
-  EE_SZ[VA_AES_KEY] = 4 * sizeof(uint32_t);
-  EE_SZ[VA_IAP_VERSION] = sizeof(uint16_t);
-  EE_SZ[VA_IAP_FLAG] = sizeof(uint32_t);
-  EE_SZ[VA_IAP_TYPE] = sizeof(uint32_t);
-  EE_SZ[VA_TRIP_A] = sizeof(uint16_t);
-  EE_SZ[VA_TRIP_B] = sizeof(uint16_t);
-  EE_SZ[VA_TRIP_ODO] = sizeof(uint16_t);
-  EE_SZ[VA_MODE_DRIVE] = sizeof(uint8_t);
-  EE_SZ[VA_MODE_TRIP] = sizeof(uint8_t);
-  EE_SZ[VA_MODE_AVG] = sizeof(uint8_t);
-  EE_SZ[VA_MODE] = sizeof(uint8_t);
-  EE_SZ[VA_APN_NAME] = EE_STR_MAX;
-  EE_SZ[VA_APN_USER] = EE_STR_MAX;
-  EE_SZ[VA_APN_PASS] = EE_STR_MAX;
-  EE_SZ[VA_FTP_HOST] = EE_STR_MAX;
-  EE_SZ[VA_FTP_USER] = EE_STR_MAX;
-  EE_SZ[VA_FTP_PASS] = EE_STR_MAX;
-  EE_SZ[VA_MQTT_HOST] = EE_STR_MAX;
-  EE_SZ[VA_MQTT_PORT] = EE_STR_MAX;
-  EE_SZ[VA_MQTT_USER] = EE_STR_MAX;
-  EE_SZ[VA_MQTT_PASS] = EE_STR_MAX;
+  EEPROM.size[VA_AES_KEY] = 4 * sizeof(uint32_t);
+  EEPROM.size[VA_IAP_VERSION] = sizeof(uint16_t);
+  EEPROM.size[VA_IAP_FLAG] = sizeof(uint32_t);
+  EEPROM.size[VA_IAP_TYPE] = sizeof(uint32_t);
+  EEPROM.size[VA_TRIP_A] = sizeof(uint16_t);
+  EEPROM.size[VA_TRIP_B] = sizeof(uint16_t);
+  EEPROM.size[VA_TRIP_ODO] = sizeof(uint16_t);
+  EEPROM.size[VA_MODE_DRIVE] = sizeof(uint8_t);
+  EEPROM.size[VA_MODE_TRIP] = sizeof(uint8_t);
+  EEPROM.size[VA_MODE_AVG] = sizeof(uint8_t);
+  EEPROM.size[VA_MODE] = sizeof(uint8_t);
+  EEPROM.size[VA_APN_NAME] = EE_STR_MAX;
+  EEPROM.size[VA_APN_USER] = EE_STR_MAX;
+  EEPROM.size[VA_APN_PASS] = EE_STR_MAX;
+  EEPROM.size[VA_FTP_HOST] = EE_STR_MAX;
+  EEPROM.size[VA_FTP_USER] = EE_STR_MAX;
+  EEPROM.size[VA_FTP_PASS] = EE_STR_MAX;
+  EEPROM.size[VA_MQTT_HOST] = EE_STR_MAX;
+  EEPROM.size[VA_MQTT_PORT] = EE_STR_MAX;
+  EEPROM.size[VA_MQTT_USER] = EE_STR_MAX;
+  EEPROM.size[VA_MQTT_PASS] = EE_STR_MAX;
 
   EEPROM.used = GetUsedSpace();
 }
 
 static uint8_t GetUsedSpace(void) {
-  const uint16_t capacity = 4096;
   uint16_t used = 0;
 
-  for (uint8_t v = 0; v < VA_MAX; v++) used += EE_SZ[v];
+  for (uint8_t v = 0; v < VA_MAX; v++) used += EEPROM.size[v];
 
-  return (used * 100) / capacity;
+  return (used * 100) / EE_CAPACITY_B;
 }
 
 static uint16_t Address(EE_VA va) {
@@ -150,7 +167,7 @@ static uint16_t Address(EE_VA va) {
 
   for (uint8_t v = 0; v < VA_MAX; v++) {
     if (v == va) break;
-    reg += EE_SZ[v];
+    reg += EEPROM.size[v];
   }
 
   return reg;

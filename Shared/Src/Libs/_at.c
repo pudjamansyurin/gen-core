@@ -24,7 +24,6 @@ static SIMR CmdWrite(char* cmd, char* reply, uint32_t ms);
 static SIMR CmdRead(char* cmd, char* reply, uint32_t ms, char** str);
 static void ParseText(const char* ptr, uint8_t* cnt, char* text, uint8_t size);
 static int32_t ParseNumber(const char* ptr, uint8_t* cnt);
-// static float AT_ParseFloat(const char *ptr, uint8_t *cnt);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -210,7 +209,7 @@ SIMR AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t* param) {
   return res;
 }
 
-SIMR AT_NetworkRegistration(char command[20], AT_MODE mode,
+SIMR AT_NetworkRegistration(const char* command, AT_MODE mode,
                             at_c_greg_t* param) {
   SIMR res = SIM_ERROR;
   uint8_t cnt, len = 0;
@@ -942,28 +941,3 @@ static int32_t ParseNumber(const char* ptr, uint8_t* cnt) {
 
   return sum; /* Return number */
 }
-
-// static float AT_ParseFloat(const char *ptr, uint8_t *cnt) {
-//  uint8_t i = 0, j = 0;
-//  float sum = 0.0f;
-//
-//  sum = (float) ParseNumber(ptr, &i); /* Parse number */
-//  j += i;
-//  ptr += i;
-//  if (*ptr == '.') { /* Check decimals */
-//      float dec;
-//      dec = (float) ParseNumber(ptr + 1, &i);
-//      dec /= (float) pow(10, i);
-//      if (sum >= 0) {
-//          sum += dec;
-//      } else {
-//          sum -= dec;
-//      }
-//      j += i + 1;
-//  }
-//
-//  if (cnt != NULL) { /* Save number of characters used for number */
-//      *cnt = j;
-//  }
-//  return sum; /* Return number */
-//}

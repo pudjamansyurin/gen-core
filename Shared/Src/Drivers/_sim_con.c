@@ -44,7 +44,7 @@ static sim_con_t SimCon;
 /* Public functions implementation
  * --------------------------------------------*/
 void SIMCon_Init(void) {
-  if (EEPROM.active)
+  if (EE_IO_Active())
     SIMCon_EE_Read();
   else
     SIMCon_EE_Write();

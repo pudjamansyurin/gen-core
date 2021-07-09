@@ -318,7 +318,7 @@ SIMR AT_SignalQualityReport(at_csq_t* signal);
 SIMR AT_ConnectionStatus(SIM_IP* state);
 SIMR AT_RadioAccessTechnology(AT_MODE mode, at_cnmp_t* param);
 SIMR AT_NetworkAttachedStatus(AT_MODE mode, at_csact_t* param);
-SIMR AT_NetworkRegistration(char command[20], AT_MODE mode, at_c_greg_t* param);
+SIMR AT_NetworkRegistration(const char* command, AT_MODE mode, at_c_greg_t* param);
 SIMR AT_ConfigureSlowClock(AT_MODE mode, AT_CSCLK* state);
 SIMR AT_ReportMobileEquipmentError(AT_MODE mode, AT_CMEE* state);
 SIMR AT_FixedLocalRate(AT_MODE mode, uint32_t* rate);

@@ -31,8 +31,8 @@ void DBG_GetVCU(vcu_dbg_t *vcu) {
 }
 
 void DBG_GetEEPROM(ee_dbg_t *ee) {
-  ee->active = EEPROM.active;
-  ee->used = EEPROM.used;
+  ee->active = EE_IO_Active();
+  ee->used = EE_IO_Used();
 }
 
 void DBG_GetHBAR(hbar_dbg_t *hbar) {

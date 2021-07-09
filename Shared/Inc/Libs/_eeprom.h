@@ -15,7 +15,6 @@
 /* Exported constants
  * --------------------------------------------*/
 #define EE_STR_MAX (30)
-#define EE_CHECK_MS (60000)
 
 /* Exported enums
  * --------------------------------------------*/
@@ -44,21 +43,11 @@ typedef enum {
   VA_MAX,
 } EE_VA;
 
-/* Exported types
- * --------------------------------------------*/
-typedef struct {
-  uint8_t active;
-  uint8_t used;
-  uint32_t tick;
-} eeprom_t;
-
-/* Exported variables
- * --------------------------------------------*/
-extern eeprom_t EEPROM;
-
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t EE_Init(void);
 void EE_Refresh(void);
 uint8_t EE_Cmd(EE_VA va, const void *src, void *dst);
+uint8_t EE_IO_Active(void);
+uint8_t EE_IO_Used(void);
 #endif /* EEPROM_H_ */
