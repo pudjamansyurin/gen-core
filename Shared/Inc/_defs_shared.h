@@ -1,12 +1,12 @@
 /*
- * _database.h
+ * _defs_shared.h
  *
  *  Created on: Oct 11, 2019
  *      Author: Puja
  */
 
-#ifndef DEFINES_SHARED_H_
-#define DEFINES_SHARED_H_
+#ifndef DEFS_SHARED_H_
+#define DEFS_SHARED_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -21,4 +21,4 @@
 #include "cmsis_os.h"
 #endif
 
-#endif /* DEFINES_SHARED_H_ */
+#endif /* DEFS_SHARED_H_ */

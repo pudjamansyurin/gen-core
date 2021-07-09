@@ -9,6 +9,7 @@
  * --------------------------------------------*/
 #include "Drivers/_simcom.h"
 
+#include "Drivers/_bat.h"
 #include "Libs/_at.h"
 #include "usart.h"
 
@@ -28,7 +29,7 @@ extern osMutexId_t SimcomRecMutexHandle;
 
 /* Private constants
  * --------------------------------------------*/
-#define NET_GUARD_MS ((uint16_t)1000)
+#define SIM_GUARD_MS ((uint16_t)1000)
 
 /* Private types
  * --------------------------------------------*/
@@ -79,6 +80,10 @@ void SIM_DeInit(void) {
 	GATE_SimcomShutdown();
 	SIM_DMA_Stop();
 	HAL_UART_DeInit(SIM.puart);
+}
+
+uint8_t SIM_BatSufficient(void) {
+	return BAT_ScanValue() > SIM_BAT_MIN_MV;
 }
 
 uint8_t SIM_SetState(SIM_STATE state, uint32_t timeout) {
@@ -324,7 +329,7 @@ static SIMR TransmitCmd(const char* data, uint16_t size, uint32_t ms,
 	SIM_Transmit(data, size);
 
 	// wait response from SIMCOM
-	ms += NET_GUARD_MS;
+	ms += SIM_GUARD_MS;
 	tick = _GetTickMS();
 	while (1) {
 		if (SIM_Resp(reply, NULL) || SIM_Resp(SIM_RSP_ERROR, NULL) ||

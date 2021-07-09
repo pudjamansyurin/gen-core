@@ -22,6 +22,10 @@
  * --------------------------------------------*/
 extern osMessageQueueId_t OvdStateQueueHandle;
 
+/* Private constants
+ * --------------------------------------------*/
+#define VCU_LOST_MODE_S ((uint16_t)(5 * 60))
+
 /* Private variables
  * --------------------------------------------*/
 static vehicle_t LAST_STATE = VEHICLE_UNKNOWN;

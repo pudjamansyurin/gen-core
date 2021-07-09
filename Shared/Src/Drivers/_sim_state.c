@@ -9,7 +9,6 @@
  * --------------------------------------------*/
 #include "Drivers/_sim_state.h"
 
-#include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_at.h"
 
@@ -22,7 +21,7 @@
 
 /* Private constants
  * --------------------------------------------*/
-#define NET_BOOT_MS ((uint16_t)8000)
+#define SIM_BOOT_MS ((uint16_t)8000)
 
 /* Private types
  * --------------------------------------------*/
@@ -393,7 +392,7 @@ static SIMR PowerUp(void) {
 
   res = Reset(0);
   if (res != SIM_OK)
-    if (BAT_ScanValue() > SIM_MIN_MV) return Reset(1);
+    if (SIM_BatSufficient()) return Reset(1);
 
   return res;
 }
@@ -423,7 +422,7 @@ static SIMR Reset(uint8_t hard) {
 #endif
 
     _DelayMS(100);
-  } while (STA.state == SIM_STATE_DOWN && _TickIn(tick, NET_BOOT_MS));
+  } while (STA.state == SIM_STATE_DOWN && _TickIn(tick, SIM_BOOT_MS));
 
   return SIM_Cmd(SIM_CMD_BOOT, SIM_RSP_READY, 1000);
 }

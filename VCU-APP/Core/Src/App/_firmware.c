@@ -11,9 +11,12 @@
 
 #include "App/_command.h"
 #include "App/_reporter.h"
-#include "Drivers/_bat.h"
 #include "Libs/_eeprom.h"
 #include "Nodes/HMI1.h"
+
+/* Private constants
+ * --------------------------------------------*/
+#define HMI_FOTA_MS ((uint32_t)20000)
 
 /* Private functions prototypes
  * --------------------------------------------*/
@@ -77,8 +80,7 @@ void FW_CaptureResponseIAP(response_t *r) {
   // check fota response
   switch (*(uint32_t *)IAP_RESP_ADDR) {
     case IRESP_BATTERY_LOW:
-      sprintf(r->data.message, "%s Battery Low (-%u mV)", node,
-              SIM_MIN_MV - BAT_ScanValue());
+      sprintf(r->data.message, "%s Battery Low", node);
       break;
     case IRESP_SIM_TIMEOUT:
       sprintf(r->data.message, "%s Internet Timeout", node);
