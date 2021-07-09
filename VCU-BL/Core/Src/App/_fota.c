@@ -14,6 +14,7 @@
 #include "Drivers/_crc.h"
 #include "Drivers/_flasher.h"
 #include "Libs/_eeprom.h"
+#include "Libs/_at.h"
 #include "adc.h"
 #include "can.h"
 #include "crc.h"
@@ -129,7 +130,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
   // Buffer filled, compare the crc
   if (res == SIM_OK) {
     if (type == ITYPE_HMI)
-      res = FOCAN_DownloadHook(CAND_FOCAN_PASCA, &crcNew);
+      res = FOCAN_Hook(CAND_FOCAN_PASCA, &crcNew);
     else {
       res = ValidCRC(crcNew, len, APP_START_ADDR);
       // Glue related information to new image
@@ -157,7 +158,7 @@ uint8_t FOTA_Upgrade(IAP_TYPE type) {
 }
 
 
-void FOTA_JumpToApplication(void) {
+void FOTA_JumpToApp(void) {
   /* Set MSP & Reset address */
   uint32_t appStack = *(__IO uint32_t *)APP_START_ADDR;
   uint32_t appEntry = *(__IO uint32_t *)(APP_START_ADDR + 4);
@@ -262,7 +263,7 @@ static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
 
   // Backup and prepare the area
   if (type == ITYPE_HMI)
-    res = FOCAN_DownloadHook(CAND_FOCAN_PRA, &(ftp->size));
+    res = FOCAN_Hook(CAND_FOCAN_PRA, &(ftp->size));
   else
     FLASHER_BackupApp();
 
@@ -282,7 +283,7 @@ static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
       // Copy buffer to flash
       if (res == SIM_OK && ftpGET->cnflength) {
         if (type == ITYPE_HMI)
-          res = FOCAN_DownloadFlash((uint8_t *)ftpGET->ptr, ftpGET->cnflength,
+          res = FOCAN_Flash((uint8_t *)ftpGET->ptr, ftpGET->cnflength,
                                     *len, ftp->size);
         else
           res = FLASHER_WriteAppArea((uint8_t *)ftpGET->ptr, ftpGET->cnflength,

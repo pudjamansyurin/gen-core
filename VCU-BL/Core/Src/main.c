@@ -142,7 +142,7 @@ int main(void)
   else if (FOTA_ValidImage(APP_START_ADDR) && !IAP_InProgress()) {
     printf("Jump to application.\n");
     /* Jump sequence */
-    FOTA_JumpToApplication();
+    FOTA_JumpToApp();
   }
   /* Power reset during FOTA, try once more */
   else if (IAP_InProgress()) {
