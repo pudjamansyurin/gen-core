@@ -22,6 +22,16 @@ extern osMessageQueueId_t CanRxQueueHandle;
 extern osMutexId_t CanTxMutexHandle;
 #endif
 
+/* Private constants
+ * --------------------------------------------*/
+#define CAN_RX_MS ((uint16_t)1000)
+
+/* Private types
+ * --------------------------------------------*/
+typedef struct {
+  CAN_HandleTypeDef* pcan;
+} can_t;
+
 /* Private variables
  * --------------------------------------------*/
 static can_t can = {.pcan = &hcan1};
@@ -31,6 +41,7 @@ static can_t can = {.pcan = &hcan1};
 static void lock(void);
 static void unlock(void);
 static void Reset(void);
+static uint8_t Filter(void);
 static void Header(CAN_TxHeaderTypeDef* header, uint32_t address, uint32_t DLC,
                    uint8_t ext);
 #if CAN_DEBUG
@@ -46,7 +57,7 @@ void CANBUS_Init(void) {
   GATE_CanbusReset();
   MX_CAN1_Init();
 
-  e = (!CANBUS_Filter());
+  e = !Filter();
 
   if (!e) e = (HAL_CAN_Start(can.pcan) != HAL_OK);
 
@@ -64,27 +75,6 @@ void CANBUS_DeInit(void) {
   HAL_CAN_Stop(can.pcan);
   HAL_CAN_DeInit(can.pcan);
   GATE_CanbusShutdown();
-}
-
-uint8_t CANBUS_Filter(void) {
-  CAN_FilterTypeDef sFilterConfig;
-
-  /* Configure the CAN Filter */
-  sFilterConfig.FilterBank = 0;
-  // set filter to mask mode (not id_list mode)
-  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
-  // set 32-bit scale configuration
-  sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-  sFilterConfig.FilterIdHigh = 0x0000;
-  sFilterConfig.FilterIdLow = 0x0000;
-  sFilterConfig.FilterMaskIdHigh = 0x0000;
-  sFilterConfig.FilterMaskIdLow = 0x0000;
-  // assign filter to FIFO 0
-  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-  // activate filter
-  sFilterConfig.FilterActivation = ENABLE;
-
-  return (HAL_CAN_ConfigFilter(can.pcan, &sFilterConfig) == HAL_OK);
 }
 
 uint8_t CANBUS_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC,
@@ -165,6 +155,28 @@ static void Reset(void) {
   CANBUS_DeInit();
   CANBUS_Init();
 }
+
+static uint8_t Filter(void) {
+  CAN_FilterTypeDef sFilterConfig;
+
+  /* Configure the CAN Filter */
+  sFilterConfig.FilterBank = 0;
+  // set filter to mask mode (not id_list mode)
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+  // set 32-bit scale configuration
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+  sFilterConfig.FilterIdHigh = 0x0000;
+  sFilterConfig.FilterIdLow = 0x0000;
+  sFilterConfig.FilterMaskIdHigh = 0x0000;
+  sFilterConfig.FilterMaskIdLow = 0x0000;
+  // assign filter to FIFO 0
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  // activate filter
+  sFilterConfig.FilterActivation = ENABLE;
+
+  return (HAL_CAN_ConfigFilter(can.pcan, &sFilterConfig) == HAL_OK);
+}
+
 
 static void Header(CAN_TxHeaderTypeDef* header, uint32_t address, uint32_t DLC,
                    uint8_t ext) {

@@ -12,11 +12,6 @@
  * --------------------------------------------*/
 #include "App/_common.h"
 
-/* Exported constants
- * --------------------------------------------*/
-#define CAN_DATA UNION64
-#define CAN_RX_MS ((uint16_t)1000)
-
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
@@ -91,25 +86,22 @@ typedef enum {
 
 /* Exported types
  * --------------------------------------------*/
+typedef UNION64 CAN_DATA;
+
 typedef struct {
   CAN_TxHeaderTypeDef header;
-  UNION64 data;
+  CAN_DATA data;
 } can_tx_t;
 
 typedef struct {
   CAN_RxHeaderTypeDef header;
-  UNION64 data;
+  CAN_DATA data;
 } can_rx_t;
-
-typedef struct {
-  CAN_HandleTypeDef* pcan;
-} can_t;
 
 /* Public functions prototype
  * --------------------------------------------*/
 void CANBUS_Init(void);
 void CANBUS_DeInit(void);
-uint8_t CANBUS_Filter(void);
 uint8_t CANBUS_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC, uint8_t ext);
 uint8_t CANBUS_Read(can_rx_t* Rx);
 uint32_t CANBUS_ReadID(CAN_RxHeaderTypeDef* RxHeader);
