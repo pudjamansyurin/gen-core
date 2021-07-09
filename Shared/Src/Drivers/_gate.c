@@ -72,18 +72,6 @@ void GATE_McuPower(GPIO_PinState state) {
   HAL_GPIO_WritePin(EXT_BMS_FAN_PWR_GPIO_Port, EXT_BMS_FAN_PWR_Pin, state);
 }
 
-void GATE_Hmi2Stop(void) {
-  //	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin,
-  // GPIO_PIN_SET);
-}
-
-void GATE_Hmi2Reset(void) {
-  //	GATE_Hmi2Stop();
-  //	_DelayMS(100);
-  //	HAL_GPIO_WritePin(EXT_HMI2_PWR_GPIO_Port, EXT_HMI2_PWR_Pin,
-  // GPIO_PIN_RESET);
-}
-
 void GATE_MemsShutdown(void) {
   HAL_GPIO_WritePin(INT_MEMS_PWR_GPIO_Port, INT_MEMS_PWR_Pin, GPIO_PIN_RESET);
   _DelayMS(500);

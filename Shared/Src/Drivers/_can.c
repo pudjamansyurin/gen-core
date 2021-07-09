@@ -26,15 +26,9 @@ extern osMutexId_t CanTxMutexHandle;
  * --------------------------------------------*/
 #define CAN_RX_MS ((uint16_t)1000)
 
-/* Private types
- * --------------------------------------------*/
-typedef struct {
-  CAN_HandleTypeDef* pcan;
-} can_t;
-
 /* Private variables
  * --------------------------------------------*/
-static can_t can = {.pcan = &hcan1};
+CAN_HandleTypeDef* pcan = &hcan1;
 
 /* Private functions prototype
  * --------------------------------------------*/
@@ -59,11 +53,11 @@ void CAN_Init(void) {
 
   e = !Filter();
 
-  if (!e) e = (HAL_CAN_Start(can.pcan) != HAL_OK);
+  if (!e) e = (HAL_CAN_Start(pcan) != HAL_OK);
 
 #if (APP)
   if (!e)
-    e = (HAL_CAN_ActivateNotification(can.pcan, CAN_IT_RX_FIFO0_MSG_PENDING) !=
+    e = (HAL_CAN_ActivateNotification(pcan, CAN_IT_RX_FIFO0_MSG_PENDING) !=
          HAL_OK);
 #endif
 
@@ -71,9 +65,9 @@ void CAN_Init(void) {
 }
 
 void CAN_DeInit(void) {
-  HAL_CAN_DeactivateNotification(can.pcan, CAN_IT_RX_FIFO0_MSG_PENDING);
-  HAL_CAN_Stop(can.pcan);
-  HAL_CAN_DeInit(can.pcan);
+  HAL_CAN_DeactivateNotification(pcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+  HAL_CAN_Stop(pcan);
+  HAL_CAN_DeInit(pcan);
   GATE_CanbusShutdown();
 }
 
@@ -86,11 +80,11 @@ uint8_t CAN_Write(can_tx_t* Tx, uint32_t address, uint32_t DLC,
   Header(&(Tx->header), address, DLC, ext);
   tick = _GetTickMS();
   while (_TickIn(tick, CAN_RX_MS) &&
-         HAL_CAN_GetTxMailboxesFreeLevel(can.pcan) == 0) {
+         HAL_CAN_GetTxMailboxesFreeLevel(pcan) == 0) {
   };
 
   /* Start the Transmission process */
-  status = HAL_CAN_AddTxMessage(can.pcan, &(Tx->header), Tx->data.u8, NULL);
+  status = HAL_CAN_AddTxMessage(pcan, &(Tx->header), Tx->data.u8, NULL);
 
 #if CAN_DEBUG
   if (status == HAL_OK) TxDebugger(&(Tx->header), &(Tx->data));
@@ -107,8 +101,8 @@ uint8_t CAN_Read(can_rx_t* Rx) {
   memset(Rx, 0x00, sizeof(can_rx_t));
 
   lock();
-  if (HAL_CAN_GetRxFifoFillLevel(can.pcan, CAN_RX_FIFO0)) {
-    status = HAL_CAN_GetRxMessage(can.pcan, CAN_RX_FIFO0, &(Rx->header),
+  if (HAL_CAN_GetRxFifoFillLevel(pcan, CAN_RX_FIFO0)) {
+    status = HAL_CAN_GetRxMessage(pcan, CAN_RX_FIFO0, &(Rx->header),
                                   Rx->data.u8);
 
 #if CAN_DEBUG
@@ -174,7 +168,7 @@ static uint8_t Filter(void) {
   // activate filter
   sFilterConfig.FilterActivation = ENABLE;
 
-  return (HAL_CAN_ConfigFilter(can.pcan, &sFilterConfig) == HAL_OK);
+  return (HAL_CAN_ConfigFilter(pcan, &sFilterConfig) == HAL_OK);
 }
 
 

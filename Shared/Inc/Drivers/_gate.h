@@ -28,8 +28,6 @@ void GATE_Hmi1Power(GPIO_PinState state);
 #if (APP)
 void GATE_System12v(GPIO_PinState state);
 void GATE_McuPower(GPIO_PinState state);
-void GATE_Hmi2Reset(void);
-void GATE_Hmi2Stop(void);
 void GATE_MemsShutdown(void);
 void GATE_MemsReset(void);
 void GATE_GpsShutdown(void);
