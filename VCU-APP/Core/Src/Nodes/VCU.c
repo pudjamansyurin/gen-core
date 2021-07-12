@@ -9,11 +9,11 @@
  * --------------------------------------------*/
 #include "Nodes/VCU.h"
 
-#include "App/_vehicle.h"
-#include "Drivers/_bat.h"
-#include "Drivers/_simcom.h"
-#include "Libs/_finger.h"
-#include "Libs/_remote.h"
+#include "App/vehicle.h"
+#include "Drivers/bat.h"
+#include "Drivers/simcom.h"
+#include "Libs/finger.h"
+#include "Libs/remote.h"
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
 #include "Nodes/NODE.h"

@@ -10,8 +10,8 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/_can.h"
-#include "Libs/_hbar.h"
+#include "Drivers/can.h"
+#include "Libs/hbar.h"
 
 /* Exported constants
  * --------------------------------------------*/

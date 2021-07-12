@@ -31,15 +31,15 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "App/_common.h"
-#include "App/_fota.h"
-#include "DMA/_dma_simcom.h"
-#include "Drivers/_bat.h"
-#include "Drivers/_can.h"
-#include "Drivers/_flasher.h"
-#include "Drivers/_simcom.h"
-#include "Libs/_eeprom.h"
-#include "Libs/_errata.h"
+#include "App/common.h"
+#include "App/fota.h"
+#include "DMA/dma_simcom.h"
+#include "Drivers/bat.h"
+#include "Drivers/can.h"
+#include "Drivers/flasher.h"
+#include "Drivers/simcom.h"
+#include "Libs/eeprom.h"
+#include "Libs/errata.h"
 
 /* USER CODE END Includes */
 

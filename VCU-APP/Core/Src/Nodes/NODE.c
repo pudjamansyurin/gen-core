@@ -9,12 +9,12 @@
  * --------------------------------------------*/
 #include "Nodes/NODE.h"
 
-#include "App/_debugger.h"
-#include "App/_vehicle.h"
-#include "App/_predictor.h"
-#include "Drivers/_aes.h"
-#include "Libs/_finger.h"
-#include "Libs/_remote.h"
+#include "App/debugger.h"
+#include "App/predictor.h"
+#include "App/vehicle.h"
+#include "Drivers/aes.h"
+#include "Libs/finger.h"
+#include "Libs/remote.h"
 #include "Nodes/BMS.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/MCU.h"

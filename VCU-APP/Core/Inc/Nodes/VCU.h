@@ -10,9 +10,9 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/_rtc.h"
-#include "Libs/_gps.h"
-#include "Libs/_mems.h"
+#include "Drivers/rtc.h"
+#include "Libs/gps.h"
+#include "Libs/mems.h"
 
 /* Exported enums
  * --------------------------------------------*/
