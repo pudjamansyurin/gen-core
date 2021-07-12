@@ -9,8 +9,8 @@
  * --------------------------------------------*/
 #include "App/_command.h"
 
-#include "App/_reporter.h"
 #include "App/_iap.h"
+#include "App/_reporter.h"
 
 /* External variables
  * --------------------------------------------*/
@@ -25,8 +25,8 @@ extern osMessageQueueId_t CommandQueueHandle;
 /* Private types
  * --------------------------------------------*/
 typedef struct {
-	uint8_t cmd[CMDC_MAX][CMD_SUB_MAX];
-	uint8_t sub[CMDC_MAX];
+  uint8_t cmd[CMDC_MAX][CMD_SUB_MAX];
+  uint8_t sub[CMDC_MAX];
 } cmd_size_t;
 
 /* Private variables
@@ -78,9 +78,9 @@ void CMD_Init(void) {
   SZ.cmd[CMDC_NET][CMD_NET_READ_SMS] = 0;
 
   SZ.sub[CMDC_CON] = CMD_CON_MAX;
-  SZ.cmd[CMDC_CON][CMD_CON_APN] = 3*30;
-  SZ.cmd[CMDC_CON][CMD_CON_FTP] = 3*30;
-  SZ.cmd[CMDC_CON][CMD_CON_MQTT] = 4*30;
+  SZ.cmd[CMDC_CON][CMD_CON_APN] = 3 * 30;
+  SZ.cmd[CMDC_CON][CMD_CON_FTP] = 3 * 30;
+  SZ.cmd[CMDC_CON][CMD_CON_MQTT] = 4 * 30;
 
   SZ.sub[CMDC_HBAR] = CMD_HBAR_MAX;
   SZ.cmd[CMDC_HBAR][CMD_HBAR_DRIVE] = 1;
@@ -94,7 +94,7 @@ void CMD_Init(void) {
 }
 
 bool CMD_ValidateCode(const command_t *cmd) {
-	const command_header_t *h = &(cmd->header);
+  const command_header_t *h = &(cmd->header);
   bool ok = false;
 
   if (h->code < CMDC_MAX)
@@ -125,20 +125,19 @@ uint8_t CMD_GetPayloadSize(const command_t *cmd) {
 
   headerSz = sizeof(command_header_t) - (sizeof(h->prefix) + sizeof(h->size));
 
-  if (h->size >= headerSz)
-  	return h->size - headerSz;
+  if (h->size >= headerSz) return h->size - headerSz;
   return 0;
 }
 
 void CMD_Execute(const command_t *cmd) {
-  _osQueuePutRst(CommandQueueHandle, cmd);
+  OS_QueuePutRst(CommandQueueHandle, cmd);
   Debugger(cmd);
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
 static void Debugger(const command_t *cmd) {
-	const command_header_t *h = &(cmd->header);
+  const command_header_t *h = &(cmd->header);
   uint8_t len = CMD_GetPayloadSize(cmd);
 
   printf("Command:Payload (%u-%u)[%u]", h->code, h->sub_code, len);

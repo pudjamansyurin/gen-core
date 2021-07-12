@@ -16,39 +16,39 @@
 
 /* Private functions prototype
  * --------------------------------------------*/
-static uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options,
+static uint8_t OS_Flag(uint32_t *notif, uint32_t flags, uint32_t options,
                        uint32_t timeout);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t _osFlagOne(uint32_t *notif, uint32_t flag, uint32_t timeout) {
-  return _osFlag(notif, flag, osFlagsWaitAny, timeout);
+uint8_t OS_FlagOne(uint32_t *notif, uint32_t flag, uint32_t timeout) {
+  return OS_Flag(notif, flag, osFlagsWaitAny, timeout);
 }
 
-uint8_t _osFlagAny(uint32_t *notif, uint32_t timeout) {
-  return _osFlag(notif, FLAG_MASK, osFlagsWaitAny, timeout);
+uint8_t OS_FlagAny(uint32_t *notif, uint32_t timeout) {
+  return OS_Flag(notif, FLAG_MASK, osFlagsWaitAny, timeout);
 }
 
-uint8_t _osFlagClear(void) {
+uint8_t OS_FlagClear(void) {
 	return osThreadFlagsClear(FLAG_MASK) == osOK;
 }
 
-uint8_t _osQueueGet(osMessageQueueId_t mq_id, void *msg_ptr) {
+uint8_t OS_QueueGet(osMessageQueueId_t mq_id, void *msg_ptr) {
   return osMessageQueueGet(mq_id, msg_ptr, NULL, 0U) == osOK;
 }
 
-uint8_t _osQueuePut(osMessageQueueId_t mq_id, const void *msg_ptr) {
+uint8_t OS_QueuePut(osMessageQueueId_t mq_id, const void *msg_ptr) {
   return osMessageQueuePut(mq_id, msg_ptr, 0U, 0U) == osOK;
 }
 
-uint8_t _osQueuePutRst(osMessageQueueId_t mq_id, const void *msg_ptr) {
+uint8_t OS_QueuePutRst(osMessageQueueId_t mq_id, const void *msg_ptr) {
   osMessageQueueReset(mq_id);
-  return _osQueuePut(mq_id, msg_ptr);
+  return OS_QueuePut(mq_id, msg_ptr);
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t _osFlag(uint32_t *notif, uint32_t flags, uint32_t options,
+static uint8_t OS_Flag(uint32_t *notif, uint32_t flags, uint32_t options,
                        uint32_t timeout) {
   *notif = osThreadFlagsWait(flags, options, timeout);
 

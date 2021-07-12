@@ -37,7 +37,7 @@ void VHC_CheckState(void) {
   uint8_t ovdState, shutdown = 0, start = 0;
   vehicle_t initialState;
 
-  if (_osQueueGet(OvdStateQueueHandle, &ovdState))
+  if (OS_QueueGet(OvdStateQueueHandle, &ovdState))
     CURR_STATE = (int8_t)ovdState;
 
   HB_CheckStarter(&start, &shutdown);
@@ -151,6 +151,4 @@ void VHC_CheckState(void) {
   } while (initialState != CURR_STATE);
 }
 
-vehicle_t VHC_IO_State(void) {
-	return CURR_STATE;
-}
+vehicle_t VHC_IO_State(void) { return CURR_STATE; }

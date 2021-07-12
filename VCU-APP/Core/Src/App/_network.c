@@ -60,9 +60,9 @@ bool NET_SendUSSD(void) {
   char ussd[20];
 
   memset(NET_BUF, 0, sizeof(NET_BUF));
-  if (_osQueueGet(UssdQueueHandle, ussd))
+  if (OS_QueueGet(UssdQueueHandle, ussd))
     if (SIM_SendUSSD(ussd, NET_BUF, sizeof(NET_BUF)))
-      ok = _osQueuePutRst(QuotaQueueHandle, NET_BUF);
+      ok = OS_QueuePutRst(QuotaQueueHandle, NET_BUF);
 
   return ok;
 }
@@ -72,7 +72,7 @@ bool NET_ReadSMS(void) {
 
   memset(NET_BUF, 0, sizeof(NET_BUF));
   if (SIM_ReadLastSMS(NET_BUF, sizeof(NET_BUF)))
-    ok = _osQueuePutRst(QuotaQueueHandle, NET_BUF);
+    ok = OS_QueuePutRst(QuotaQueueHandle, NET_BUF);
 
   return ok;
 }

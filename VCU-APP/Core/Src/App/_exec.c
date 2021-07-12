@@ -9,10 +9,10 @@
  * --------------------------------------------*/
 #include "App/_exec.h"
 
-#include "App/_vehicle.h"
 #include "App/_iap.h"
 #include "App/_reporter.h"
 #include "App/_task.h"
+#include "App/_vehicle.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_eeprom.h"
 #include "Libs/_finger.h"
@@ -97,7 +97,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
           sprintf(rMsg, "State should >= {%d}.", VEHICLE_NORMAL);
           *rCode = CMDR_ERROR;
         } else
-          _osQueuePutRst(OvdStateQueueHandle, (uint8_t *)val);
+          OS_QueuePutRst(OvdStateQueueHandle, (uint8_t *)val);
         break;
 
       case CMD_OVD_RPT_INTERVAL:
@@ -155,7 +155,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
           break;
 
         case CMD_FGR_DEL:
-          _osQueuePutRst(DriverQueueHandle, (uint8_t *)val);
+          OS_QueuePutRst(DriverQueueHandle, (uint8_t *)val);
           osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_DEL);
           DoFinger(rdata);
           break;
@@ -214,7 +214,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
 
     switch (subCode) {
       case CMD_NET_SEND_USSD:
-        _osQueuePutRst(UssdQueueHandle, val);
+        OS_QueuePutRst(UssdQueueHandle, val);
         osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_SEND_USSD);
         DoNetQuota(rdata);
         break;
@@ -320,14 +320,14 @@ static void DoFingerAdd(response_data_t *rdata) {
   uint8_t id;
 
   rdata->res_code = CMDR_ERROR;
-  if (_osFlagAny(&notif, (FINGER_SCAN_MS * 2) + 5000)) {
+  if (OS_FlagAny(&notif, (FINGER_SCAN_MS * 2) + 5000)) {
     if (notif & FLAG_COMMAND_OK) {
-      if (_osQueueGet(DriverQueueHandle, &id)) {
+      if (OS_QueueGet(DriverQueueHandle, &id)) {
         sprintf(rdata->message, "%u", id);
         rdata->res_code = CMDR_OK;
       }
     } else {
-      if (_osQueueGet(DriverQueueHandle, &id))
+      if (OS_QueueGet(DriverQueueHandle, &id))
         if (id == 0)
           sprintf(rdata->message, "Max. reached : %u", FINGER_USER_MAX);
     }
@@ -340,7 +340,7 @@ static void DoFingerFetch(response_data_t *rdata) {
 
   FGR_IO_ClearDB();
   rdata->res_code = CMDR_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) {
+  if (OS_FlagOne(&notif, FLAG_COMMAND_OK, 5000)) {
     rdata->res_code = CMDR_OK;
 
     for (uint8_t id = 1; id <= FINGER_USER_MAX; id++) {
@@ -360,22 +360,22 @@ static void DoFinger(response_data_t *rdata) {
   uint32_t notif;
 
   rdata->res_code = CMDR_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = CMDR_OK;
+  if (OS_FlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = CMDR_OK;
 }
 
 static void DoRemotePairing(response_data_t *rdata) {
   uint32_t notif;
 
   rdata->res_code = CMDR_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = CMDR_OK;
+  if (OS_FlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = CMDR_OK;
 }
 
 static void DoNetQuota(response_data_t *rdata) {
   uint32_t notif;
 
   rdata->res_code = CMDR_ERROR;
-  if (_osFlagOne(&notif, FLAG_COMMAND_OK, 40000))
-    if (_osQueueGet(QuotaQueueHandle, rdata->message))
+  if (OS_FlagOne(&notif, FLAG_COMMAND_OK, 40000))
+    if (OS_QueueGet(QuotaQueueHandle, rdata->message))
       rdata->res_code = CMDR_OK;
 }
 

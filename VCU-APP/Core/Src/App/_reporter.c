@@ -148,7 +148,7 @@ bool RPT_PayloadPending(PAYLOAD_TYPE type) {
   if (RPT.block && pld->type == PAYLOAD_REPORT) return false;
 
   if (!pld->pending) {
-    if (_osQueueGet(*(pld->queue), pld->data)) {
+    if (OS_QueueGet(*(pld->queue), pld->data)) {
       h = (report_header_t *)(pld->data);
 
       pld->size = sizeof(h->prefix) + sizeof(h->size) + h->size;
