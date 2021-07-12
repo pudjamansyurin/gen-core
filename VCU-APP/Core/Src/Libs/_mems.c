@@ -76,8 +76,8 @@ static mems_t MEMS = {
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void lock(void);
-static void unlock(void);
+static void Lock(void);
+static void UnLock(void);
 static uint8_t Capture(void);
 static void ConvertAccel(void);
 static uint8_t OnlyGotTemp(void);
@@ -92,7 +92,7 @@ uint8_t MEMS_Init(void) {
   uint8_t ok;
   uint32_t tick;
 
-  lock();
+  Lock();
   printf("MEMS:Init\n");
   tick = tickMs();
   do {
@@ -105,22 +105,22 @@ uint8_t MEMS_Init(void) {
   } while (!ok && tickIn(tick, MEMS_TIMEOUT_MS));
 
   if (ok) MEMS.d.tick = tickMs();
-  unlock();
+  UnLock();
 
   printf("MEMS:%s\n", ok ? "OK" : "Error");
   return ok;
 }
 
 void MEMS_DeInit(void) {
-  lock();
+  Lock();
   MEMS_Flush();
   GATE_MemsShutdown();
   HAL_I2C_DeInit(MEMS.pi2c);
-  unlock();
+  UnLock();
 }
 
 void MEMS_Refresh(void) {
-  lock();
+  Lock();
   MEMS.d.active = tickIn(MEMS.d.tick, MEMS_TIMEOUT_MS);
 
   // handle bug, when only got temperature
@@ -131,21 +131,21 @@ void MEMS_Refresh(void) {
     delayMs(500);
     MEMS_Init();
   }
-  unlock();
+  UnLock();
 }
 
 void MEMS_Flush(void) {
-  lock();
+  Lock();
   memset(&(MEMS.d), 0, sizeof(mems_data_t));
   memset(&(MEMS.sample), 0, sizeof(mems_sample_t));
   memset(&(MEMS.motion), 0, sizeof(mems_motion_t));
-  unlock();
+  UnLock();
 }
 
 uint8_t MEMS_Capture(void) {
   uint8_t ok;
 
-  lock();
+  Lock();
   ok = Capture();
 
   if (ok) {
@@ -154,7 +154,7 @@ uint8_t MEMS_Capture(void) {
     RawDebugger();
 #endif
   }
-  unlock();
+  UnLock();
 
   return ok;
 }
@@ -165,7 +165,7 @@ uint8_t MEMS_Process(void) {
   mems_sample_t *s = &(MEMS.sample);
   uint8_t *effect = MEMS.d.effect;
 
-  lock();
+  Lock();
   ConvertAccel();
 
   MEMS.d.total.accel = samplingFloat(
@@ -184,7 +184,7 @@ uint8_t MEMS_Process(void) {
 #if MEMS_DEBUG
   Debugger();
 #endif
-  unlock();
+  UnLock();
 
   return (effect[MEFFECT_CRASH] || effect[MEFFECT_FALL]);
 }
@@ -192,21 +192,21 @@ uint8_t MEMS_Process(void) {
 void MEMS_CaptureMotion(void) {
   mems_tilt_t *t = MEMS.motion.tilt;
 
-  lock();
+  Lock();
   EVT_Clr(EVG_BIKE_MOVED);
   memcpy(&t[MTILT_REFF], &t[MTILT_NOW], sizeof(mems_tilt_t));
-  unlock();
+  UnLock();
 }
 
 uint8_t MEMS_Dragged(void) {
   uint8_t euclidean, dragged;
   mems_tilt_t *t = MEMS.motion.tilt;
 
-  lock();
+  Lock();
   euclidean = sqrt(pow(t[MTILT_REFF].roll - t[MTILT_NOW].roll, 2) +
                    pow(t[MTILT_REFF].pitch - t[MTILT_NOW].pitch, 2));
   MEMS.motion.offset = euclidean;
-  unlock();
+  UnLock();
 
   dragged = euclidean > DRAGGED_LIMIT;
 #if MEMS_DEBUG
@@ -235,13 +235,13 @@ uint8_t MEMS_IO_Effect(MEMS_EFFECT key) { return MEMS.d.effect[key] & 0x01; }
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void lock(void) {
+static void Lock(void) {
 #if (APP)
   osMutexAcquire(MemsRecMutexHandle, osWaitForever);
 #endif
 }
 
-static void unlock(void) {
+static void UnLock(void) {
 #if (APP)
   osMutexRelease(MemsRecMutexHandle);
 #endif

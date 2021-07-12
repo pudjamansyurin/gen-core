@@ -208,11 +208,23 @@ uint8_t AUDIO_Play(void) {
 }
 
 uint8_t AUDIO_Pause(void) {
-	return OUT_Pause();
+	uint8_t res;
+
+  Lock();
+	res = OUT_Pause();
+	UnLock();
+
+	return res;
 }
 
 uint8_t AUDIO_Resume(void) {
-	return OUT_Resume();
+	uint8_t res;
+
+  Lock();
+	res = OUT_Resume();
+	UnLock();
+
+	return res;
 }
 
 
@@ -237,11 +249,23 @@ void AUDIO_BeepStop(void) {
 }
 
 uint8_t AUDIO_Mute(uint8_t mute) {
-  return OUT_SetMute(mute ? CS_AUDIO_MUTE_ON : CS_AUDIO_MUTE_OFF);
+	uint8_t res;
+
+  Lock();
+  res = OUT_SetMute(mute ? CS_AUDIO_MUTE_ON : CS_AUDIO_MUTE_OFF);
+	UnLock();
+
+	return res;
 }
 
 uint8_t AUDIO_SetVolume(uint8_t Volume) {
-	return OUT_SetVolume(Volume);
+	uint8_t res;
+
+  Lock();
+	res = OUT_SetVolume(Volume);
+	UnLock();
+
+	return res;
 }
 
 const audio_data_t* AUDIO_IO_Data(void) {
