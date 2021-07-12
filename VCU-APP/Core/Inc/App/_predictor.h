@@ -1,12 +1,12 @@
 /*
- * _ml.h
+ * _predictor.h
  *
  *  Created on: Jun 21, 2021
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_APP__ML_H_
-#define INC_APP__ML_H_
+#ifndef INC_APP__PREDICTOR_H_
+#define INC_APP__PREDICTOR_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -17,13 +17,13 @@
 typedef struct {
   float capacity;
   float efficiency;
-  uint32_t distance;
+  uint32_t range;
 } bms_avg_t;
 
 /* Public functions prototype
  * --------------------------------------------*/
-void ML_BMS_Init(void);
-void ML_PredictRange(void);
-const bms_avg_t* ML_IO_DataBMS(void);
+void PR_Init(void);
+void PR_EstimateRange(void);
+const bms_avg_t* PR_IO_Avg(void);
 
-#endif /* INC_APP__ML_H_ */
+#endif /* INC_APP__PREDICTOR_H_ */

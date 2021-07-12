@@ -10,7 +10,7 @@
 #include "Nodes/NODE.h"
 
 #include "App/_debugger.h"
-#include "App/_ml.h"
+#include "App/_predictor.h"
 #include "Drivers/_aes.h"
 #include "Libs/_finger.h"
 #include "Libs/_remote.h"
@@ -70,7 +70,6 @@ void NODE_RX_Debug(can_rx_t *Rx) {
   UNION64 *d = &(Rx->data);
 
   NODE.d.debug = d->u8[0];
-
   NODE.d.tick.dbg = tickMs();
 }
 
@@ -280,10 +279,9 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
 
-  const bms_avg_t *avg = ML_IO_DataBMS();
-  d->u16[1] = avg->capacity * 10;
-  d->u16[2] = avg->efficiency * 10;
-  d->u16[3] = avg->distance * 10;
+  d->u16[1] = PR_IO_Avg()->capacity * 10;
+  d->u16[2] = PR_IO_Avg()->efficiency * 10;
+  d->u16[3] = PR_IO_Avg()->range * 10;
 
   CAN_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

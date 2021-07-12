@@ -30,11 +30,12 @@
 //#include "App/_command.h"
 #include "App/_exec.h"
 #include "App/_iap.h"
-#include "App/_ml.h"
 #include "App/_network.h"
+#include "App/_predictor.h"
 #include "App/_reporter.h"
 #include "App/_state.h"
 #include "App/_task.h"
+
 //#include "DMA/_dma_finger.h"
 //#include "DMA/_dma_ublox.h"
 //#include "Drivers/_aes.h"
@@ -1229,8 +1230,7 @@ void StartGateTask(void *argument) {
     }
 
     HB_RefreshSelectSet();
-
-    ML_PredictRange();
+    PR_EstimateRange();
 
     HMI1_Power(VCU.d.vehicle >= VEHICLE_STANDBY);
     MCU_Power12v(VCU.d.vehicle >= VEHICLE_READY);

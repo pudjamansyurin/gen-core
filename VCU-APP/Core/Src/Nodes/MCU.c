@@ -133,6 +133,16 @@ uint8_t MCU_SpeedToVolume(void) {
   return (vol * 100) / MCU_AUDIO_MAX_SPEED_KPH;
 }
 
+uint8_t MCU_GetMileage(uint16_t duration) {
+	uint8_t meter;
+	float mps;
+
+	mps = (float)MCU_RpmToSpeed(MCU.d.rpm) / 3.6;
+	meter = (duration * mps) / 1000;
+
+	return meter;
+}
+
 uint8_t MCU_Reversed(void) { return MCU.d.reverse && !MCU.d.inv.lockout; }
 
 uint8_t MCU_Running(void) { return MCU_RpmToSpeed(MCU.d.rpm) > 0; }

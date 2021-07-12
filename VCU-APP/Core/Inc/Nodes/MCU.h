@@ -193,6 +193,7 @@ void MCU_SyncCAN(void);
 uint8_t MCU_RpmToSpeed(int16_t rpm);
 int16_t MCU_SpeedToRpm(uint8_t speed);
 uint8_t MCU_SpeedToVolume(void);
+uint8_t MCU_GetMileage(uint16_t duration);
 uint8_t MCU_Reversed(void);
 uint8_t MCU_Running(void);
 void MCU_RX_CurrentDC(can_rx_t *Rx);

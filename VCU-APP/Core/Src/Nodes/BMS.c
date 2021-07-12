@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "Nodes/BMS.h"
 
-#include "App/_ml.h"
+#include "App/_predictor.h"
 #include "Nodes/HMI1.h"
 #include "Nodes/VCU.h"
 
@@ -35,7 +35,7 @@ void BMS_Init(void) {
   memset(&(BMS.d), 0, sizeof(bms_data_t));
   for (uint8_t i = 0; i < BMS_COUNT; i++) ResetIndex(i);
 
-  ML_BMS_Init();
+  PR_Init();
 }
 
 void BMS_PowerOverCAN(uint8_t on) {
