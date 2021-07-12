@@ -69,7 +69,7 @@ uint8_t EE_Init(void) {
   IAP_Init();
 
 #if (!APP)
-  if (IEEP_VALUE == IEEP_RESET) {
+  if (IAP_GetBootMeta(IEEP_OFFSET) == IEEP_RESET) {
     SIMCon_EE_Write();
 
     IAP_SetBootMeta(IEEP_OFFSET, IEEP_SET);

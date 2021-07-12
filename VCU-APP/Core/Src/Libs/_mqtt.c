@@ -110,11 +110,12 @@ uint8_t MQTT_Connect(void) {
   MQTT.willed = 0;
 
   // generate topics
-  sprintf(MQTT.topic.command, "VCU/%lu/CMD", VIN_VALUE);
-  sprintf(MQTT.topic.response, "VCU/%lu/RSP", VIN_VALUE);
-  sprintf(MQTT.topic.report, "VCU/%lu/RPT", VIN_VALUE);
-  sprintf(MQTT.topic.will, "VCU/%lu/STS", VIN_VALUE);
-  sprintf(clientId, "VCU-%lu", VIN_VALUE);
+  uint32_t VIN = IAP_GetBootMeta(VIN_OFFSET);
+  sprintf(MQTT.topic.command, "VCU/%lu/CMD", VIN);
+  sprintf(MQTT.topic.response, "VCU/%lu/RSP", VIN);
+  sprintf(MQTT.topic.report, "VCU/%lu/RPT", VIN);
+  sprintf(MQTT.topic.will, "VCU/%lu/STS", VIN);
+  sprintf(clientId, "VCU-%lu", VIN);
 
   // subscribe
   data.clientID.cstring = clientId;

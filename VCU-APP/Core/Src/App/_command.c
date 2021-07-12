@@ -114,7 +114,7 @@ bool CMD_ValidateContent(const void *ptr, uint8_t len) {
 
   uint8_t size = CMD_GetPayloadSize(cmd);
   if (size > sizeof(cmd->data)) return false;
-  if (h->vin != VIN_VALUE) return false;
+  if (h->vin != IAP_GetBootMeta(VIN_OFFSET)) return false;
 
   return true;
 }

@@ -43,6 +43,11 @@ static void MakeResponse(char *message, const char *node);
 
 /* Public functions implementation
  * --------------------------------------------*/
+void IAP_Init(void) {
+  IAP_EE_Type(NULL);
+  IAP_EE_Version(NULL);
+}
+
 #if (APP)
 bool IAP_ValidResponse(void) {
   uint8_t ok = 1;
@@ -140,14 +145,7 @@ void IAP_CaptureResponse(response_t *r) {
 
   *(uint32_t *)IAP_RESP_ADDR = 0;
 }
-#endif
-
-void IAP_Init(void) {
-  IAP_EE_Type(NULL);
-  IAP_EE_Version(NULL);
-}
-
-#if (!APP)
+#else
 void IAP_SetAppMeta(uint32_t offset, uint32_t data) {
   FLASHER_WriteAppArea((uint8_t *)&data, sizeof(uint32_t), offset);
 }
@@ -168,6 +166,10 @@ void IAP_ResetFlag(void) {
 
 uint8_t IAP_InProgress(void) { return (IAP.flag == IFLAG_EEPROM); }
 #endif
+
+uint32_t IAP_GetBootMeta(uint32_t offset) {
+	return (*(__IO uint32_t *)(BL_START_ADDR + offset));
+}
 
 uint8_t IAP_EE_Type(IAP_TYPE *src) {
   void *dst = &IAP.type;

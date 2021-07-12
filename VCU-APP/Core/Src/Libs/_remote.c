@@ -295,22 +295,16 @@ static void unlock(void) {
 }
 
 static void ChangeMode(RMT_MODE mode) {
-  uint8_t payload_width;
-  uint32_t vin = VIN_VALUE;
+  uint8_t payload_width = NRF_DATA_LENGTH;
+  uint32_t ID = IAP_GetBootMeta(VIN_OFFSET);
 
-  if (mode == RMT_MODE_NORMAL) {
-    // use VCU_ID as address
-    memcpy(RMT.tx.address, &vin, sizeof(uint32_t));
-    memcpy(RMT.rx.address, &vin, sizeof(uint32_t));
-    payload_width = NRF_DATA_LENGTH;
-  } else {
-    // Set Address (pairing mode)
-    memset(RMT.tx.address, 0x00, sizeof(uint32_t));
-    memset(RMT.rx.address, 0x00, sizeof(uint32_t));
+  if (mode == RMT_MODE_PAIRING) {
     payload_width = NRF_PAIR_LENGTH;
+  	ID = 0x00;
   }
 
   // Set NRF Config (pairing mode)
+  memcpy(RMT.rx.address, &ID, sizeof(uint32_t));
   nrf_change_mode(RMT.tx.address, RMT.rx.address, payload_width);
 }
 

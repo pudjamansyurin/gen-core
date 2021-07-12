@@ -45,9 +45,6 @@
 #define VIN_OFFSET (BL_MAX_SIZE - 4)
 #define IEEP_OFFSET (BL_MAX_SIZE - 8)
 
-#define VIN_VALUE (*(__IO uint32_t *)(BL_START_ADDR + VIN_OFFSET))
-#define IEEP_VALUE (*(__IO uint32_t *)(BL_START_ADDR + IEEP_OFFSET))
-
 /* Exported macros
  * --------------------------------------------*/
 /* SRAM related */
@@ -89,21 +86,20 @@ typedef enum {
 
 /* Public functions prototype
  * --------------------------------------------*/
+void IAP_Init(void);
+
 #if (APP)
 bool IAP_ValidResponse(void);
 bool IAP_EnterMode(IAP_TYPE type);
 void IAP_CaptureResponse(response_t *r);
-#endif
-
-void IAP_Init(void);
-
-#if (!APP)
+#else
 void IAP_SetAppMeta(uint32_t offset, uint32_t data);
 void IAP_SetBootMeta(uint32_t offset, uint32_t data);
 void IAP_SetFlag(void);
 void IAP_ResetFlag(void);
 uint8_t IAP_InProgress(void);
 #endif
+uint32_t IAP_GetBootMeta(uint32_t offset);
 
 uint8_t IAP_EE_Type(IAP_TYPE *src);
 uint8_t IAP_EE_Flag(IAP_FLAG *src);
