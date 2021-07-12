@@ -23,32 +23,32 @@ static RNG_HandleTypeDef *prng = &hrng;
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void lock(void);
-static void unlock(void);
+static void Lock(void);
+static void UnLock(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
 uint8_t RNG_Generate32(uint32_t *payload, uint8_t size) {
   uint8_t ok;
 
-  lock();
+  Lock();
   do {
     ok = HAL_RNG_GenerateRandomNumber(prng, payload++) == HAL_OK;
   } while (ok && --size);
-  unlock();
+  UnLock();
 
   return ok;
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void lock(void) {
+static void Lock(void) {
 #if (APP)
   osMutexAcquire(RngMutexHandle, osWaitForever);
 #endif
 }
 
-static void unlock(void) {
+static void UnLock(void) {
 #if (APP)
   osMutexRelease(RngMutexHandle);
 #endif

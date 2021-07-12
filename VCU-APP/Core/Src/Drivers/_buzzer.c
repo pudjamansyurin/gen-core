@@ -22,29 +22,29 @@ extern osMutexId_t BuzzerMutexHandle;
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void lock(void);
-static void unlock(void);
+static void Lock(void);
+static void UnLock(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
 void BUZZER_Write(uint8_t state) {
-  lock();
+  Lock();
   if (state)
     HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
   else
     HAL_TIM_PWM_Stop(&htim10, TIM_CHANNEL_1);
-  unlock();
+  UnLock();
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void lock(void) {
+static void Lock(void) {
 #if (APP)
   osMutexAcquire(BuzzerMutexHandle, osWaitForever);
 #endif
 }
 
-static void unlock(void) {
+static void UnLock(void) {
 #if (APP)
   osMutexRelease(BuzzerMutexHandle);
 #endif

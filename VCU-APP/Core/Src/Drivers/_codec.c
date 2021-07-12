@@ -30,7 +30,7 @@ typedef struct {
 
 /* Private variables
  * --------------------------------------------*/
-static codec_t CODEC = {
+static codec_t CDC = {
     .pi2c = &hi2c1,
 };
 
@@ -47,7 +47,7 @@ static uint8_t I2Cx_Probe(void);
 uint8_t CODEC_Init(uint8_t Addr) {
   uint8_t ok;
 
-  CODEC.address = Addr;
+  CDC.address = Addr;
   MX_I2C1_Init();
   GATE_AudioCodecReset();
   ok = I2Cx_Probe();
@@ -60,7 +60,7 @@ uint8_t CODEC_Init(uint8_t Addr) {
  */
 void CODEC_DeInit(void) {
   GATE_AudioCodecStop();
-  HAL_I2C_DeInit(CODEC.pi2c);
+  HAL_I2C_DeInit(CDC.pi2c);
 }
 
 /**
@@ -72,7 +72,7 @@ void CODEC_DeInit(void) {
 uint8_t CODEC_Write(uint8_t Reg, uint8_t Value) {
   uint8_t ok, result = 0;
 
-  ok = HAL_I2C_Mem_Write(CODEC.pi2c, CODEC.address, (uint16_t)Reg,
+  ok = HAL_I2C_Mem_Write(CDC.pi2c, CDC.address, (uint16_t)Reg,
                          I2C_MEMADD_SIZE_8BIT, &Value, 1,
                          I2Cx_TIMEOUT_MAX) == HAL_OK;
 
@@ -97,7 +97,7 @@ uint8_t CODEC_Write(uint8_t Reg, uint8_t Value) {
 uint8_t CODEC_Read(uint8_t Reg) {
   uint8_t ok, value = 0;
 
-  ok = HAL_I2C_Mem_Read(CODEC.pi2c, CODEC.address, (uint16_t)Reg,
+  ok = HAL_I2C_Mem_Read(CDC.pi2c, CDC.address, (uint16_t)Reg,
                         I2C_MEMADD_SIZE_8BIT, &value, 1,
                         I2Cx_TIMEOUT_MAX) == HAL_OK;
 
@@ -117,12 +117,12 @@ uint8_t CODEC_Read(uint8_t Reg) {
  */
 static void I2Cx_Error(void) {
   /* De-initialize the I2C communication bus */
-  HAL_I2C_MspDeInit(CODEC.pi2c);
+  HAL_I2C_MspDeInit(CDC.pi2c);
 
   /* Re-Initialize the I2C communication bus */
-  HAL_I2C_MspInit(CODEC.pi2c);
+  HAL_I2C_MspInit(CDC.pi2c);
 }
 
 static uint8_t I2Cx_Probe(void) {
-  return (HAL_I2C_IsDeviceReady(CODEC.pi2c, CODEC.address, 10, 1000) == HAL_OK);
+  return (HAL_I2C_IsDeviceReady(CDC.pi2c, CDC.address, 10, 1000) == HAL_OK);
 }

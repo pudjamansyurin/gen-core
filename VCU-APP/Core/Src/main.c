@@ -31,7 +31,6 @@
 #include "rng.h"
 #include "rtc.h"
 #include "spi.h"
-#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -117,7 +116,6 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_RNG_Init();
-  MX_TIM10_Init();
   MX_UART9_Init();
   /* USER CODE BEGIN 2 */
   GATE_LedWrite(1); HAL_Delay(1000);

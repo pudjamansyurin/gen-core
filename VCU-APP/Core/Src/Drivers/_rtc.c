@@ -24,25 +24,25 @@ extern osMutexId_t RtcMutexHandle;
 /* Private types
  * --------------------------------------------*/
 typedef struct {
-  uint32_t calibrationTick;
+  uint32_t calibTick;
   RTC_HandleTypeDef *prtc;
 } rtc_t;
 
 /* Private variables
  * --------------------------------------------*/
-static rtc_t _RTC = {
-    .calibrationTick = 0,
+static rtc_t RT = {
+    .calibTick = 0,
     .prtc = &hrtc,
 };
 
 /* Private functions prototype
  * --------------------------------------------*/
-static void lock(void);
-static void unlock(void);
-static void RTC_ReadRaw(timestamp_t *timestamp);
-static void RTC_WriteRaw(timestamp_t *timestamp);
-static timestamp_t RTC_Decode(datetime_t dt);
-static datetime_t RTC_Encode(timestamp_t ts);
+static void Lock(void);
+static void UnLock(void);
+static void ReadRaw(timestamp_t *timestamp);
+static void WriteRaw(timestamp_t *timestamp);
+static timestamp_t Decode(datetime_t dt);
+static datetime_t Encode(timestamp_t ts);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -53,68 +53,68 @@ void RTC_Init(void) {
 datetime_t RTC_Read(void) {
   timestamp_t ts;
 
-  RTC_ReadRaw(&ts);
-  return RTC_Encode(ts);
+  ReadRaw(&ts);
+  return Encode(ts);
 }
 
 void RTC_Write(datetime_t dt) {
   timestamp_t ts;
 
-  ts = RTC_Decode(dt);
-  RTC_WriteRaw(&ts);
+  ts = Decode(dt);
+  WriteRaw(&ts);
 }
 
 uint8_t RTC_NeedCalibration(void) {
-  return !tickIn(_RTC.calibrationTick, RTC_CALIBRATION_MINUTES * 60 * 1000);
+  return !tickIn(RT.calibTick, RTC_CALIBRATION_MINUTES * 60 * 1000);
 }
 
 void RTC_Calibrate(timestamp_t *ts) {
-  RTC_WriteRaw(ts);
-  _RTC.calibrationTick = tickMs();
+  WriteRaw(ts);
+  RT.calibTick = tickMs();
 }
 
 uint8_t RTC_Daylight() {
   timestamp_t ts;
 
-  RTC_ReadRaw(&ts);
+  ReadRaw(&ts);
   return (ts.time.Hours >= 5 && ts.time.Hours <= 16);
 }
 
 /* Private functions implementation
  * --------------------------------------------*/
-static void lock(void) {
+static void Lock(void) {
 #if (APP)
   osMutexAcquire(RtcMutexHandle, osWaitForever);
 #endif
 }
 
-static void unlock(void) {
+static void UnLock(void) {
 #if (APP)
   osMutexRelease(RtcMutexHandle);
 #endif
 }
 
-static void RTC_ReadRaw(timestamp_t *timestamp) {
-  lock();
-  HAL_RTC_GetTime(_RTC.prtc, &timestamp->time, RTC_FORMAT_BIN);
-  HAL_RTC_GetDate(_RTC.prtc, &timestamp->date, RTC_FORMAT_BIN);
+static void ReadRaw(timestamp_t *timestamp) {
+  Lock();
+  HAL_RTC_GetTime(RT.prtc, &timestamp->time, RTC_FORMAT_BIN);
+  HAL_RTC_GetDate(RT.prtc, &timestamp->date, RTC_FORMAT_BIN);
   timestamp->tzQuarterHour = 0;
-  unlock();
+  UnLock();
 }
 
-static void RTC_WriteRaw(timestamp_t *timestamp) {
+static void WriteRaw(timestamp_t *timestamp) {
   // add extra property
   timestamp->time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   timestamp->time.StoreOperation = RTC_STOREOPERATION_RESET;
 
   // set the RTC
-  lock();
-  HAL_RTC_SetTime(_RTC.prtc, &timestamp->time, RTC_FORMAT_BIN);
-  HAL_RTC_SetDate(_RTC.prtc, &timestamp->date, RTC_FORMAT_BIN);
-  unlock();
+  Lock();
+  HAL_RTC_SetTime(RT.prtc, &timestamp->time, RTC_FORMAT_BIN);
+  HAL_RTC_SetDate(RT.prtc, &timestamp->date, RTC_FORMAT_BIN);
+  UnLock();
 }
 
-static timestamp_t RTC_Decode(datetime_t dt) {
+static timestamp_t Decode(datetime_t dt) {
   timestamp_t ts;
 
   ts.date.Year = dt.Year;
@@ -128,7 +128,7 @@ static timestamp_t RTC_Decode(datetime_t dt) {
   return ts;
 }
 
-static datetime_t RTC_Encode(timestamp_t ts) {
+static datetime_t Encode(timestamp_t ts) {
   datetime_t dt;
 
   dt.Year = ts.date.Year;

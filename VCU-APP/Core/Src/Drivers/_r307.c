@@ -93,11 +93,11 @@ static packet_t PKT;
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t writeStructuredPacket(void);
-static uint8_t getStructuredPacket(void);
-static uint8_t ioWrite(uint8_t *data, uint8_t len);
-static uint8_t sendCmdPacket(uint8_t *data, uint8_t size);
-static void setPacket(uint8_t type, uint16_t length, uint8_t *data);
+static uint8_t WriteStructuredPacket(void);
+static uint8_t GetStructuredPacket(void);
+static uint8_t Transmit(uint8_t *data, uint8_t len);
+static uint8_t SendCmdPacket(uint8_t *data, uint8_t size);
+static void SetPacket(uint8_t type, uint16_t length, uint8_t *data);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -113,7 +113,7 @@ uint8_t R307_checkPassword(void) {
                     (uint8_t)(FP_PASSWORD >> 16), (uint8_t)(FP_PASSWORD >> 8),
                     (uint8_t)(FP_PASSWORD & 0xFF)};
 
-  if (sendCmdPacket(data, sizeof(data)) != FP_OK) return FP_PACKETRECIEVEERR;
+  if (SendCmdPacket(data, sizeof(data)) != FP_OK) return FP_PACKETRECIEVEERR;
 
   if (PKT.data[0] == FP_OK)
     return FP_OK;
@@ -132,7 +132,7 @@ uint8_t R307_checkPassword(void) {
 /**************************************************************************/
 uint8_t R307_getImage(void) {
   uint8_t data[] = {FP_GETIMAGE};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -150,7 +150,7 @@ uint8_t R307_getImage(void) {
  */
 uint8_t R307_image2Tz(uint8_t slot) {
   uint8_t data[] = {FP_IMAGE2TZ, slot};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -162,7 +162,7 @@ uint8_t R307_image2Tz(uint8_t slot) {
  */
 uint8_t R307_createModel(void) {
   uint8_t data[] = {FP_REGMODEL};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -178,7 +178,7 @@ uint8_t R307_createModel(void) {
 uint8_t R307_storeModel(uint16_t location) {
   uint8_t data[] = {FP_STORE, 0x01, (uint8_t)(location >> 8),
                     (uint8_t)(location & 0xFF)};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -192,7 +192,7 @@ uint8_t R307_storeModel(uint16_t location) {
 uint8_t R307_loadModel(uint16_t location) {
   uint8_t data[] = {FP_LOAD, 0x01, (uint8_t)(location >> 8),
                     (uint8_t)(location & 0xFF)};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -204,7 +204,7 @@ uint8_t R307_loadModel(uint16_t location) {
  */
 uint8_t R307_getModel(void) {
   uint8_t data[] = {FP_UPLOAD, 0x01};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -220,7 +220,7 @@ uint8_t R307_getModel(void) {
 uint8_t R307_deleteModel(uint16_t location) {
   uint8_t data[] = {FP_DELETE, (uint8_t)(location >> 8),
                     (uint8_t)(location & 0xFF), 0x00, 0x01};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -234,7 +234,7 @@ uint8_t R307_deleteModel(uint16_t location) {
  */
 uint8_t R307_emptyDatabase(void) {
   uint8_t data[] = {FP_EMPTY};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /**************************************************************************/
@@ -251,7 +251,7 @@ uint8_t R307_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
   uint8_t data[] = {FP_HISPEEDSEARCH, 0x01, 0x00, 0x00, 0x00, 0xA3};
 
   // high speed search of slot #1 starting at page 0x0000 and page #0x00A3
-  sendCmdPacket(data, sizeof(data));
+  SendCmdPacket(data, sizeof(data));
   *id = 0xFFFF;
   *confidence = 0xFFFF;
 
@@ -276,7 +276,7 @@ uint8_t R307_fingerFastSearch(uint16_t *id, uint16_t *confidence) {
 /**************************************************************************/
 uint8_t R307_getTemplateCount(uint16_t *templateCount) {
   uint8_t data[] = {FP_TEMPLATECOUNT};
-  sendCmdPacket(data, sizeof(data));
+  SendCmdPacket(data, sizeof(data));
 
   *templateCount = PKT.data[1];
   *templateCount <<= 8;
@@ -297,7 +297,7 @@ uint8_t R307_getTemplateCount(uint16_t *templateCount) {
 uint8_t R307_setPassword(uint32_t password) {
   uint8_t data[] = {FP_SETPASSWORD, (password >> 24), (password >> 16),
                     (password >> 8), password};
-  return sendCmdPacket(data, sizeof(data));
+  return SendCmdPacket(data, sizeof(data));
 }
 
 /* Private functions implementation
@@ -309,7 +309,7 @@ uint8_t R307_setPassword(uint32_t password) {
  @param   packet A structure containing the bytes to transmit
  */
 /**************************************************************************/
-static uint8_t writeStructuredPacket(void) {
+static uint8_t WriteStructuredPacket(void) {
   uint8_t buf[128], i = 0;
 
   buf[i++] = (PKT.start_code >> 8);
@@ -332,7 +332,7 @@ static uint8_t writeStructuredPacket(void) {
   buf[i++] = (sum >> 8);
   buf[i++] = (sum & 0xFF);
 
-  return ioWrite(buf, i);
+  return Transmit(buf, i);
 }
 
 /**************************************************************************/
@@ -346,7 +346,7 @@ static uint8_t writeStructuredPacket(void) {
  on failure
  */
 /**************************************************************************/
-static uint8_t getStructuredPacket(void) {
+static uint8_t GetStructuredPacket(void) {
   uint8_t byte;
   uint16_t idx = 0;
 
@@ -404,17 +404,17 @@ static uint8_t getStructuredPacket(void) {
  @brief Send command packet
  */
 /**************************************************************************/
-static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
+static uint8_t SendCmdPacket(uint8_t *data, uint8_t size) {
   memset(&PKT, 0, sizeof(PKT));
-  setPacket(FP_COMMANDPACKET, size, data);
+  SetPacket(FP_COMMANDPACKET, size, data);
 
   FINGER_Reset_Buffer();
-  if (!writeStructuredPacket()) {
+  if (!WriteStructuredPacket()) {
     return FP_PACKETRECIEVEERR;
   }
 
   memset(&PKT, 0, sizeof(PKT));
-  if (getStructuredPacket() != FP_OK) {
+  if (GetStructuredPacket() != FP_OK) {
     return FP_PACKETRECIEVEERR;
   }
   if (PKT.type != FP_ACKPACKET) {
@@ -428,7 +428,7 @@ static uint8_t sendCmdPacket(uint8_t *data, uint8_t size) {
  @brief Packet conversion
  */
 /**************************************************************************/
-static void setPacket(uint8_t type, uint16_t length, uint8_t *data) {
+static void SetPacket(uint8_t type, uint16_t length, uint8_t *data) {
   PKT.start_code = FP_STARTCODE;
   PKT.type = type;
   PKT.length = length;
@@ -440,7 +440,7 @@ static void setPacket(uint8_t type, uint16_t length, uint8_t *data) {
   memcpy(PKT.data, data, (length < 64) ? length : 64);
 }
 
-static uint8_t ioWrite(uint8_t *data, uint8_t len) {
+static uint8_t Transmit(uint8_t *data, uint8_t len) {
   uint8_t ok;
   uint32_t tick;
 
