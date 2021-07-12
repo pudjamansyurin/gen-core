@@ -31,9 +31,7 @@ static usart_ring_t SIM_RING = {
     .tmp = {
         .idle = 1,
         .old_pos = 0,
-    }
-};
-
+    }};
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -49,7 +47,7 @@ void SIM_DMA_IrqHandler(void) { USART_DMA_IrqHandler(&SIM_RING); }
 
 void SIM_USART_IrqHandler(void) { USART_IrqHandler(&SIM_RING); }
 
-void SIM_Reset_Buffer(void) { USART_Reset_Buffer(&SIM_RING); }
+void SIM_Reset_Buffer(void) { USART_ResetBuffer(&SIM_RING); }
 
 uint8_t SIM_Transmit(const char* data, uint16_t Size) {
   SIM_Reset_Buffer();

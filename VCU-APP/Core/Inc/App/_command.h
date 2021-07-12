@@ -12,6 +12,10 @@
  * --------------------------------------------*/
 #include "Drivers/_rtc.h"
 
+/* Exported constants
+ * --------------------------------------------*/
+#define CMD_MSG_MAX 200
+
 /* Exported enums
  * --------------------------------------------*/
 typedef enum {
@@ -118,7 +122,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
   uint8_t res_code;
-  char message[200];
+  char message[CMD_MSG_MAX];
 } response_data_t;
 
 typedef struct __attribute__((packed)) {
@@ -129,7 +133,7 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   command_header_t header;
   struct __attribute__((packed)) {
-    char value[200];
+    char value[CMD_MSG_MAX];
   } data;
 } command_t;
 

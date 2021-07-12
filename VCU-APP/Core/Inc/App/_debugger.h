@@ -12,6 +12,7 @@
  * --------------------------------------------*/
 #include "App/_task.h"
 #include "Nodes/MCU.h"
+#include "Nodes/BMS.h"
 
 /* Exported types
  * --------------------------------------------*/
@@ -121,7 +122,7 @@ typedef struct __attribute__((packed)) {
     uint16_t current;
     uint8_t soc;
     uint16_t temperature;
-  } packs[2];
+  } packs[BMS_COUNT];
 } bms_dbg_t;
 
 typedef struct __attribute__((packed)) {

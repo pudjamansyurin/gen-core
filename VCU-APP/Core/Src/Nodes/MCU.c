@@ -99,7 +99,7 @@ void MCU_Refresh(void) {
   MCU.d.overheat = IsOverheat();
   MCU.d.run = MCU.d.active && MCU.d.inv.enabled;
 
-  EVT_SetVal(EVG_MCU_ERROR, (MCU.d.fault.post | MCU.d.fault.run) > 0);
+  EVT_Write(EVG_MCU_ERROR, (MCU.d.fault.post | MCU.d.fault.run) > 0);
 }
 
 void MCU_SetSpeedMax(uint8_t speed_max) {

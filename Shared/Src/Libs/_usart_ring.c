@@ -26,13 +26,13 @@ void USART_DMA_IrqHandler(usart_ring_t* r) {
   if (__HAL_DMA_GET_IT_SOURCE(r->hdma, DMA_IT_HT)) {
     __HAL_DMA_CLEAR_FLAG(r->hdma, __HAL_DMA_GET_HT_FLAG_INDEX(r->hdma));
 
-    USART_Check_Buffer(r);
+    USART_CheckBuffer(r);
   }
   // if the source is TC
   else if (__HAL_DMA_GET_IT_SOURCE(r->hdma, DMA_IT_TC)) {
     __HAL_DMA_CLEAR_FLAG(r->hdma, __HAL_DMA_GET_TC_FLAG_INDEX(r->hdma));
 
-    USART_Check_Buffer(r);
+    USART_CheckBuffer(r);
   }
   // error interrupts
   else {
@@ -49,11 +49,11 @@ void USART_IrqHandler(usart_ring_t* r) {
     __HAL_UART_CLEAR_IDLEFLAG(r->huart);
 
     r->tmp.idle = 1;
-    USART_Check_Buffer(r);
+    USART_CheckBuffer(r);
   }
 }
 
-void USART_Check_Buffer(usart_ring_t* r) {
+void USART_CheckBuffer(usart_ring_t* r) {
   size_t pos;
 
   /* Calculate current position in buffer */
@@ -62,15 +62,14 @@ void USART_Check_Buffer(usart_ring_t* r) {
     if (pos > r->tmp.old_pos) { /* Current position is over previous one */
       /* We are in "linear" mode */
       /* Process data directly by subtracting "pointers" */
-      USART_Fill_Buffer(r, r->tmp.old_pos, pos - r->tmp.old_pos);
+      USART_FillBuffer(r, r->tmp.old_pos, pos - r->tmp.old_pos);
     } else {
       /* We are in "overflow" mode */
       /* First process data to the end of buffer */
-      USART_Fill_Buffer(r, r->tmp.old_pos,
-                        r->dma.sz - r->tmp.old_pos);
+      USART_FillBuffer(r, r->tmp.old_pos, r->dma.sz - r->tmp.old_pos);
       /* Check and continue with beginning of buffer */
       if (pos > 0) {
-        USART_Fill_Buffer(r, 0, pos);
+        USART_FillBuffer(r, 0, pos);
       }
     }
   }
@@ -96,7 +95,7 @@ void USART_Check_Buffer(usart_ring_t* r) {
 /**
  * Write data to buffer
  */
-void USART_Fill_Buffer(usart_ring_t* r, size_t start, size_t len) {
+void USART_FillBuffer(usart_ring_t* r, size_t start, size_t len) {
   void* dest = &(r->usart.buf[r->usart.idx]);
   void* src = &(r->dma.buf[start]);
 
@@ -111,7 +110,7 @@ void USART_Fill_Buffer(usart_ring_t* r, size_t start, size_t len) {
 /**
  * Clear rx buffer
  */
-void USART_Reset_Buffer(usart_ring_t* r) {
+void USART_ResetBuffer(usart_ring_t* r) {
   void* dest = &(r->usart.buf[0]);
 
   memset(dest, 0x00, r->usart.idx);

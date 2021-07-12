@@ -54,41 +54,35 @@ void DBG_GetNET(net_dbg_t *net) {
 }
 
 void DBG_GetGPS(gps_dbg_t *gps) {
-  const gps_data_t *d = GPS_IO_Data();
-
-  gps->active = d->active;
-  gps->sat_in_use = (uint8_t)d->nmea.sats_in_use;
-  gps->hdop = (uint8_t)(d->nmea.dop_h * 10);
-  gps->vdop = (uint8_t)(d->nmea.dop_v * 10);
-  gps->speed = (uint8_t)nmea_to_speed(d->nmea.speed, nmea_speed_kph);
-  gps->heading = (uint8_t)(d->nmea.coarse / 2);
-  gps->latitude = (int32_t)(d->nmea.latitude * 10000000);
-  gps->longitude = (int32_t)(d->nmea.longitude * 10000000);
-  gps->altitude = (uint16_t)d->nmea.altitude;
+  gps->active = GPS_IO_Data()->active;
+  gps->sat_in_use = (uint8_t)GPS_IO_Nmea()->sats_in_use;
+  gps->hdop = (uint8_t)(GPS_IO_Nmea()->dop_h * 10);
+  gps->vdop = (uint8_t)(GPS_IO_Nmea()->dop_v * 10);
+  gps->speed = (uint8_t)nmea_to_speed(GPS_IO_Nmea()->speed, nmea_speed_kph);
+  gps->heading = (uint8_t)(GPS_IO_Nmea()->coarse / 2);
+  gps->latitude = (int32_t)(GPS_IO_Nmea()->latitude * 10000000);
+  gps->longitude = (int32_t)(GPS_IO_Nmea()->longitude * 10000000);
+  gps->altitude = (uint16_t)GPS_IO_Nmea()->altitude;
 }
 
 void DBG_GetMEMS(mems_dbg_t *mems) {
-  const mems_raw_t *raw = MEMS_IO_Raw();
-  const mems_total_t *total = MEMS_IO_Total();
-  const mems_tilt_t *tilt = MEMS_IO_Tilt(MTILT_NOW);
-
   mems->active = MEMS_IO_Active();
   mems->motion_active = MEMS_IO_MotionActive();
-  mems->accel.x = raw->accel.x * 100;
-  mems->accel.y = raw->accel.y * 100;
-  mems->accel.z = raw->accel.z * 100;
+  mems->accel.x = MEMS_IO_Raw()->accel.x * 100;
+  mems->accel.y = MEMS_IO_Raw()->accel.y * 100;
+  mems->accel.z = MEMS_IO_Raw()->accel.z * 100;
 
-  mems->gyro.x = raw->gyro.x * 10;
-  mems->gyro.y = raw->gyro.y * 10;
-  mems->gyro.z = raw->gyro.z * 10;
+  mems->gyro.x = MEMS_IO_Raw()->gyro.x * 10;
+  mems->gyro.y = MEMS_IO_Raw()->gyro.y * 10;
+  mems->gyro.z = MEMS_IO_Raw()->gyro.z * 10;
 
-  mems->tilt.pitch = tilt->pitch * 10;
-  mems->tilt.roll = tilt->roll * 10;
+  mems->tilt.pitch = MEMS_IO_Tilt(MTILT_NOW)->pitch * 10;
+  mems->tilt.roll = MEMS_IO_Tilt(MTILT_NOW)->roll * 10;
 
-  mems->total.accel = total->accel * 100;
-  mems->total.gyro = total->gyro * 10;
-  mems->total.tilt = total->tilt * 10;
-  mems->total.temp = raw->temp * 10;
+  mems->total.accel = MEMS_IO_Total()->accel * 100;
+  mems->total.gyro = MEMS_IO_Total()->gyro * 10;
+  mems->total.tilt = MEMS_IO_Total()->tilt * 10;
+  mems->total.temp = MEMS_IO_Raw()->temp * 10;
 }
 
 void DBG_GetRMT(remote_dbg_t *rmt) {
@@ -97,17 +91,14 @@ void DBG_GetRMT(remote_dbg_t *rmt) {
 }
 
 void DBG_GetFGR(finger_dbg_t *fgr) {
-  const finger_data_t *finger = FGR_IO_Data();
-
-  fgr->verified = finger->verified;
-  fgr->driver_id = finger->id;
+  fgr->verified = FGR_IO_Data()->verified;
+  fgr->driver_id = FGR_IO_Data()->id;
 }
 
 void DBG_GetAudio(audio_dbg_t *audio) {
-  audio_data_t d = AUDIO_GetData();
-  audio->active = d.active;
-  audio->mute = d.mute;
-  audio->volume = d.volume;
+  audio->active = AUDIO_IO_Data()->active;
+  audio->mute = AUDIO_IO_Data()->mute;
+  audio->volume = AUDIO_IO_Data()->volume;
 }
 
 void DBG_GetHMI1(hmi1_dbg_t *hmi1) { hmi1->active = HMI1.d.active; }

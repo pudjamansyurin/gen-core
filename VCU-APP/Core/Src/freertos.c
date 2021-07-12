@@ -29,7 +29,7 @@
 /* USER CODE BEGIN Includes */
 //#include "App/_command.h"
 #include "App/_exec.h"
-#include "App/_firmware.h"
+#include "App/_iap.h"
 #include "App/_ml.h"
 #include "App/_network.h"
 #include "App/_reporter.h"
@@ -779,8 +779,8 @@ void StartCommandTask(void *argument) {
   CMD_Init();
 
   // Handle Post-FOTA
-  if (FW_ValidResponseIAP()) {
-    FW_CaptureResponseIAP(&resp);
+  if (IAP_ValidResponse()) {
+    IAP_CaptureResponse(&resp);
     _osQueuePut(ResponseQueueHandle, &resp);
   }
 
@@ -842,7 +842,7 @@ void StartMemsTask(void *argument) {
     // Read all data
     if (MEMS_Capture()) {
       fallen = MEMS_Process();
-      EVT_SetVal(EVG_BIKE_FALLEN, fallen);
+      EVT_Write(EVG_BIKE_FALLEN, fallen);
 
       // Drag detector
       if (MEMS_IO_MotionActive()) {

@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "App/_exec.h"
 
-#include "App/_firmware.h"
+#include "App/_iap.h"
 #include "App/_reporter.h"
 #include "App/_task.h"
 #include "Drivers/_simcom.h"
@@ -20,19 +20,21 @@
 
 /* External variables
  * --------------------------------------------*/
-extern osMessageQueueId_t OvdStateQueueHandle, DriverQueueHandle,
-    UssdQueueHandle, QuotaQueueHandle;
+extern osMessageQueueId_t OvdStateQueueHandle;
+extern osMessageQueueId_t DriverQueueHandle;
+extern osMessageQueueId_t UssdQueueHandle;
+extern osMessageQueueId_t QuotaQueueHandle;
 
 /* Private functions prototype
  * --------------------------------------------*/
-static uint8_t IsReadRequest(const command_t *cmd);
-static void EXEC_GenInfo(response_data_t *resp);
-static void EXEC_FingerAdd(response_data_t *rdata);
-static void EXEC_FingerFetch(response_data_t *rdata);
-static void EXEC_Finger(response_data_t *rdata);
-static void EXEC_RemotePairing(response_data_t *rdata);
-static void EXEC_NetQuota(response_data_t *rdata);
-static void EXEC_ConApn(const command_t *cmd, char *rMsg);
+static uint8_t ReadRequest(const command_t *cmd);
+static void DoGenInfo(response_data_t *resp);
+static void DoFingerAdd(response_data_t *rdata);
+static void DoFingerFetch(response_data_t *rdata);
+static void DoFinger(response_data_t *rdata);
+static void DoRemotePairing(response_data_t *rdata);
+static void DoNetQuota(response_data_t *rdata);
+static void DoConApn(const command_t *cmd, char *rMsg);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -54,7 +56,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
   if (code == CMDC_GEN) {
     switch (subCode) {
       case CMD_GEN_INFO:
-        EXEC_GenInfo(rdata);
+        DoGenInfo(rdata);
         break;
 
       case CMD_GEN_LED:
@@ -143,23 +145,23 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
       switch (subCode) {
         case CMD_FGR_FETCH:
           osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_FETCH);
-          EXEC_FingerFetch(rdata);
+          DoFingerFetch(rdata);
           break;
 
         case CMD_FGR_ADD:
           osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_ADD);
-          EXEC_FingerAdd(rdata);
+          DoFingerAdd(rdata);
           break;
 
         case CMD_FGR_DEL:
           _osQueuePutRst(DriverQueueHandle, (uint8_t *)val);
           osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_DEL);
-          EXEC_Finger(rdata);
+          DoFinger(rdata);
           break;
 
         case CMD_FGR_RST:
           osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_RST);
-          EXEC_Finger(rdata);
+          DoFinger(rdata);
           break;
 
         default:
@@ -176,7 +178,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
       switch (subCode) {
         case CMD_RMT_PAIRING:
           osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_PAIRING);
-          EXEC_RemotePairing(rdata);
+          DoRemotePairing(rdata);
           break;
 
         default:
@@ -193,11 +195,11 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
     } else
       switch (subCode) {
         case CMD_FOTA_VCU:
-          FW_EnterModeIAP(ITYPE_VCU);
+          IAP_EnterMode(ITYPE_VCU);
           break;
 
         case CMD_FOTA_HMI:
-          FW_EnterModeIAP(ITYPE_HMI);
+          IAP_EnterMode(ITYPE_HMI);
           break;
 
         default:
@@ -213,12 +215,12 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
       case CMD_NET_SEND_USSD:
         _osQueuePutRst(UssdQueueHandle, val);
         osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_SEND_USSD);
-        EXEC_NetQuota(rdata);
+        DoNetQuota(rdata);
         break;
 
       case CMD_NET_READ_SMS:
         osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_READ_SMS);
-        EXEC_NetQuota(rdata);
+        DoNetQuota(rdata);
         break;
 
       default:
@@ -232,7 +234,7 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
 
     switch (subCode) {
       case CMD_CON_APN:
-        EXEC_ConApn(cmd, rMsg);
+        DoConApn(cmd, rMsg);
         break;
       case CMD_CON_FTP:
       case CMD_CON_MQTT:
@@ -296,12 +298,12 @@ void EXEC_Command(const command_t *cmd, response_t *resp) {
 
 /* Private functions implementation
  * --------------------------------------------*/
-static uint8_t IsReadRequest(const command_t *cmd) {
+static uint8_t ReadRequest(const command_t *cmd) {
   if (CMD_GetPayloadSize(cmd) > 1) return 0;
   return cmd->data.value[0] == '?';
 }
 
-static void EXEC_GenInfo(response_data_t *rdata) {
+static void DoGenInfo(response_data_t *rdata) {
   char msg[20];
   sprintf(msg, "VCU v.%d,", VCU_VERSION);
 
@@ -312,7 +314,7 @@ static void EXEC_GenInfo(response_data_t *rdata) {
           VCU_BUILD_YEAR);
 }
 
-static void EXEC_FingerAdd(response_data_t *rdata) {
+static void DoFingerAdd(response_data_t *rdata) {
   uint32_t notif;
   uint8_t id;
 
@@ -331,7 +333,7 @@ static void EXEC_FingerAdd(response_data_t *rdata) {
   }
 }
 
-static void EXEC_FingerFetch(response_data_t *rdata) {
+static void DoFingerFetch(response_data_t *rdata) {
   uint32_t notif, len;
   char fingers[3];
 
@@ -353,21 +355,21 @@ static void EXEC_FingerFetch(response_data_t *rdata) {
   }
 }
 
-static void EXEC_Finger(response_data_t *rdata) {
+static void DoFinger(response_data_t *rdata) {
   uint32_t notif;
 
   rdata->res_code = CMDR_ERROR;
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = CMDR_OK;
 }
 
-static void EXEC_RemotePairing(response_data_t *rdata) {
+static void DoRemotePairing(response_data_t *rdata) {
   uint32_t notif;
 
   rdata->res_code = CMDR_ERROR;
   if (_osFlagOne(&notif, FLAG_COMMAND_OK, 5000)) rdata->res_code = CMDR_OK;
 }
 
-static void EXEC_NetQuota(response_data_t *rdata) {
+static void DoNetQuota(response_data_t *rdata) {
   uint32_t notif;
 
   rdata->res_code = CMDR_ERROR;
@@ -376,11 +378,11 @@ static void EXEC_NetQuota(response_data_t *rdata) {
       rdata->res_code = CMDR_OK;
 }
 
-static void EXEC_ConApn(const command_t *cmd, char *rMsg) {
+static void DoConApn(const command_t *cmd, char *rMsg) {
   con_apn_t apn;
 
-  if (IsReadRequest(cmd))
-  	memcpy(&apn, SIMCon_IO_Apn(), sizeof(con_apn_t));
+  if (ReadRequest(cmd))
+    memcpy(&apn, SIMCon_IO_Apn(), sizeof(con_apn_t));
   else {
     char *token, *rest;
 

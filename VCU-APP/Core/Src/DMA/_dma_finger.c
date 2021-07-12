@@ -22,20 +22,12 @@ char FINGER_UART_RX[FINGER_UART_RX_SZ];
 static char FINGER_DMA_RX[FINGER_DMA_RX_SZ];
 static usart_ring_t FGR_RING = {
     .IdleCallback = NULL,
-    .usart = {
-    		.idx = 0,
-				.buf = FINGER_UART_RX,
-				.sz = FINGER_UART_RX_SZ
-    },
-    .dma = {
-    		.buf = FINGER_DMA_RX,
-				.sz = FINGER_DMA_RX_SZ
-    },
+    .usart = {.idx = 0, .buf = FINGER_UART_RX, .sz = FINGER_UART_RX_SZ},
+    .dma = {.buf = FINGER_DMA_RX, .sz = FINGER_DMA_RX_SZ},
     .tmp = {
         .idle = 1,
         .old_pos = 0,
-    }
-};
+    }};
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -53,7 +45,7 @@ void FINGER_USART_IrqHandler(void) { USART_IrqHandler(&FGR_RING); }
 
 void FINGER_Reset_Buffer(void) {
   FGR_RING.tmp.idle = 0;
-  USART_Reset_Buffer(&FGR_RING);
+  USART_ResetBuffer(&FGR_RING);
 }
 
 uint8_t FINGER_Transmit(uint8_t *data, uint8_t len) {

@@ -24,7 +24,7 @@ void EVT_Set(uint8_t bit) { BV(EVENTS, bit); }
 
 void EVT_Clr(uint8_t bit) { BC(EVENTS, bit); }
 
-void EVT_SetVal(uint8_t bit, uint8_t value) {
+void EVT_Write(uint8_t bit, uint8_t value) {
   if (value & 1)
     BV(EVENTS, bit);
   else

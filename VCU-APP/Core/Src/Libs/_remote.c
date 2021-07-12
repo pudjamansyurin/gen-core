@@ -10,6 +10,7 @@
 #include "Libs/_remote.h"
 
 #include "App/_task.h"
+#include "App/_iap.h"
 #include "Drivers/_aes.h"
 #include "Drivers/_rng.h"
 #include "Libs/_eeprom.h"
@@ -158,7 +159,7 @@ void RMT_Refresh(vehicle_t vehicle) {
   lock();
   timeout = vehicle == VEHICLE_RUN ? RMT_BEAT_RUN_MS : RMT_BEAT_MS;
   RMT.d.nearby = tickIn(tick[RMT_TICK_HBEAT], timeout);
-  EVT_SetVal(EVG_REMOTE_MISSING, !RMT.d.nearby);
+  EVT_Write(EVG_REMOTE_MISSING, !RMT.d.nearby);
 
   RMT.d.active = tickIn(tick[RMT_TICK_PING], RMT_TIMEOUT_MS) || RMT.d.nearby;
   if (!RMT.d.active) {

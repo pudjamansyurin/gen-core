@@ -10,6 +10,7 @@
 #include "App/_command.h"
 
 #include "App/_reporter.h"
+#include "App/_iap.h"
 
 /* External variables
  * --------------------------------------------*/

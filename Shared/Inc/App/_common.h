@@ -10,7 +10,6 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/_iap.h"
 #include "Drivers/_gate.h"
 #include "Drivers/_log.h"
 #include "_defs.h"
@@ -62,12 +61,6 @@ typedef enum {
   VEHICLE_READY = 2,
   VEHICLE_RUN = 3,
 } vehicle_t;
-
-typedef enum {
-  PAYLOAD_RESPONSE = 0,
-  PAYLOAD_REPORT,
-  PAYLOAD_MAX = 2,
-} PAYLOAD_TYPE;
 
 /* Exported types
  * --------------------------------------------*/

@@ -11,6 +11,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/_simcom.h"
+#include "App/_iap.h"
 
 /* Public functions prototype
  * --------------------------------------------*/

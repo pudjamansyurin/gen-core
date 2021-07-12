@@ -28,6 +28,7 @@ extern osMutexId_t GpsRecMutexHandle;
  * --------------------------------------------*/
 typedef struct {
   gps_data_t d;
+  nmea_t nmea;
   UART_HandleTypeDef *puart;
   DMA_HandleTypeDef *pdma;
 } gps_t;
@@ -36,6 +37,7 @@ typedef struct {
  * --------------------------------------------*/
 static gps_t GPS = {
     .d = {0},
+		.nmea = {0},
     .puart = &huart2,
     .pdma = &hdma_usart2_rx,
 };
@@ -57,7 +59,7 @@ uint8_t GPS_Init(void) {
   lock();
   printf("GPS:Init\n");
 
-  nmea_init(&(GPS.d.nmea));
+  nmea_init(&(GPS.nmea));
   MX_USART2_UART_Init();
   UBLOX_DMA_Start(GPS.puart, GPS.pdma, GPS_ReceiveCallback);
   GATE_GpsReset();
@@ -100,14 +102,20 @@ void GPS_Flush(void) {
 }
 
 void GPS_ReceiveCallback(const void *ptr, size_t len) {
-  if (nmea_process(&(GPS.d.nmea), (char *)ptr, len)) GPS.d.tick = tickMs();
+  if (nmea_process(&(GPS.nmea), (char *)ptr, len)) GPS.d.tick = tickMs();
 
 #if GPS_DEBUG
   Debugger(ptr, len);
 #endif
 }
 
-const gps_data_t *GPS_IO_Data(void) { return &(GPS.d); }
+const gps_data_t *GPS_IO_Data(void) {
+	return &(GPS.d);
+}
+
+const nmea_t *GPS_IO_Nmea(void) {
+	return &(GPS.nmea);
+}
 
 /* Private functions implementation
  * --------------------------------------------*/

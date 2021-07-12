@@ -11,6 +11,7 @@
 
 #include "Drivers/_simcom.h"
 #include "MQTTPacket.h"
+#include "App/_iap.h"
 
 /* Private constants
  * --------------------------------------------*/

@@ -112,8 +112,6 @@ static void unlock(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
-audio_data_t AUDIO_GetData(void) { return AUDIO.d; }
-
 uint8_t AUDIO_Init(void) {
   uint8_t ok;
   uint32_t tick;
@@ -220,6 +218,10 @@ void AUDIO_BeepStop(void) {
 
 uint8_t AUDIO_Mute(uint8_t mute) {
   return AUDIO_OUT_SetMute(mute ? CS_AUDIO_MUTE_ON : CS_AUDIO_MUTE_ON);
+}
+
+const audio_data_t* AUDIO_IO_Data(void) {
+	return &(AUDIO.d);
 }
 
 /**

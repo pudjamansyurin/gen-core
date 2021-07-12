@@ -11,6 +11,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_common.h"
+#include "App/_reporter.h"
 
 /* Public functions prototype
  * --------------------------------------------*/

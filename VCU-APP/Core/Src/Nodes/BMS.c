@@ -58,7 +58,7 @@ void BMS_RefreshIndex(void) {
   BMS.d.fault = MergeFault();
   BMS.d.overheat = AreOverheat();
 
-  EVT_SetVal(EVG_BMS_ERROR, BMS.d.fault > 0);
+  EVT_Write(EVG_BMS_ERROR, BMS.d.fault > 0);
 }
 
 uint8_t BMS_MinIndex(void) {

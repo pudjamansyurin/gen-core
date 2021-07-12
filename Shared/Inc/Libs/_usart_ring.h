@@ -39,8 +39,8 @@ void USART_DMA_Start(usart_ring_t* r);
 void USART_DMA_Stop(usart_ring_t* r);
 void USART_DMA_IrqHandler(usart_ring_t* r);
 void USART_IrqHandler(usart_ring_t* r);
-void USART_Check_Buffer(usart_ring_t* r);
-void USART_Fill_Buffer(usart_ring_t* r, size_t start, size_t len);
-void USART_Reset_Buffer(usart_ring_t* r);
+void USART_CheckBuffer(usart_ring_t* r);
+void USART_FillBuffer(usart_ring_t* r, size_t start, size_t len);
+void USART_ResetBuffer(usart_ring_t* r);
 
 #endif /* INC_LIBS__USART_RING_H_ */

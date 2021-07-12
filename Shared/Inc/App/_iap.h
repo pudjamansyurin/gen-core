@@ -12,6 +12,10 @@
  * --------------------------------------------*/
 #include "_defs.h"
 
+#if (APP)
+#include "App/_command.h"
+#endif
+
 /* Exported constants
  * --------------------------------------------*/
 /* SRAM related */
@@ -85,6 +89,12 @@ typedef enum {
 
 /* Public functions prototype
  * --------------------------------------------*/
+#if (APP)
+bool IAP_ValidResponse(void);
+bool IAP_EnterMode(IAP_TYPE type);
+void IAP_CaptureResponse(response_t *r);
+#endif
+
 void IAP_Init(void);
 
 #if (!APP)

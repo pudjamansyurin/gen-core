@@ -8,6 +8,7 @@
 /* Includes
  * --------------------------------------------*/
 #include "App/_reporter.h"
+#include "App/_iap.h"
 
 /* External variables
  * --------------------------------------------*/

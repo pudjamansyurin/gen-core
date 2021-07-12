@@ -55,7 +55,6 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
-audio_data_t AUDIO_GetData(void);
 uint8_t AUDIO_Init(void);
 void AUDIO_DeInit(void);
 uint8_t AUDIO_Probe(void);
@@ -65,6 +64,8 @@ uint8_t AUDIO_Play(void);
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS);
 void AUDIO_BeepStop(void);
 uint8_t AUDIO_Mute(uint8_t mute);
+
+const audio_data_t* AUDIO_IO_Data(void);
 
 uint8_t AUDIO_OUT_Pause(void);
 uint8_t AUDIO_OUT_Resume(void);

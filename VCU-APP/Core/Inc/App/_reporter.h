@@ -27,6 +27,13 @@ typedef enum {
   FR_FULL = 2,
 } FRAME_TYPE;
 
+typedef enum {
+  PAYLOAD_RESPONSE = 0,
+  PAYLOAD_REPORT,
+  PAYLOAD_MAX = 2,
+} PAYLOAD_TYPE;
+
+
 /* Exported types
  * --------------------------------------------*/
 typedef struct {
