@@ -94,7 +94,8 @@ uint8_t EE_Cmd(EE_VA va, const void* src, void* dst) {
   uint8_t ok = 1;
 
   Lock();
-  if (src != NULL) ok = AT24C_Write(addr, src, EE.size[va]);
+  if (src != NULL)
+  	ok = AT24C_Write(addr, src, EE.size[va]);
 
   if (ok)
     ok = AT24C_Read(addr, dst, EE.size[va]);

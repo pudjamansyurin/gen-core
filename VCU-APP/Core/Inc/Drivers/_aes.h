@@ -19,7 +19,7 @@ typedef uint32_t aes_key_t[4];
 /* Public functions prototype
  * --------------------------------------------*/
 uint8_t AES_Init(void);
-uint8_t AES_ChangeKey(uint32_t *src);
+uint8_t AES_SetKey(uint32_t *src);
 uint8_t AES_Encrypt(uint8_t *dst, const uint8_t *src, uint16_t Sz);
 uint8_t AES_Decrypt(uint8_t *dst, const uint8_t *src, uint16_t Sz);
 uint8_t AES_EE_Key(const aes_key_t);

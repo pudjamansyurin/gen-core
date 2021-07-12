@@ -170,7 +170,7 @@ void RMT_Refresh(vehicle_t vehicle) {
 
   if (tickOut(tick[RMT_TICK_PAIR], RMT_PAIRING_MS)) {
     tick[RMT_TICK_PAIR] = 0;
-    AES_ChangeKey(NULL);
+    AES_SetKey(NULL);
   }
 
   unlock();
@@ -198,7 +198,7 @@ uint8_t RMT_Pairing(void) {
   lock();
   RMT.d.tick[RMT_TICK_PAIR] = tickMs();
   RNG_Generate32(RMT.d.pairing_key, 4);
-  AES_ChangeKey(RMT.d.pairing_key);
+  AES_SetKey(RMT.d.pairing_key);
 
   // Insert to payload
   for (uint8_t i = 0; i < 4; i++) aes[i] = swap32(RMT.d.pairing_key[i]);
@@ -222,7 +222,7 @@ uint8_t RMT_GotPairedResponse(void) {
     paired = 1;
 
     AES_EE_Key(RMT.d.pairing_key);
-    AES_ChangeKey(NULL);
+    AES_SetKey(NULL);
   }
   unlock();
 
