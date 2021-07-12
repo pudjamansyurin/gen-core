@@ -102,13 +102,26 @@ static audio_t AUDIO = {
 
 /* Private functions prototype
  * --------------------------------------------*/
+static void Lock(void);
+static void UnLock(void);
 static uint8_t I2S_Init(uint32_t AudioFreq);
-static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume,
+static uint8_t OUT_Init(uint16_t OutputDevice, uint8_t Volume,
                               uint32_t AudioFreq);
-static void AUDIO_OUT_DeInit(void);
-static uint8_t AUDIO_OUT_Play(uint16_t *Buffer, uint32_t Size);
-static void lock(void);
-static void unlock(void);
+static void OUT_DeInit(void);
+static uint8_t OUT_Play(uint16_t *Buffer, uint32_t Size);
+static uint8_t OUT_Pause(void);
+static uint8_t OUT_Resume(void);
+static uint8_t OUT_Stop(uint32_t Option);
+static uint8_t OUT_SetVolume(uint8_t Volume);
+//static void OUT_SetFrequency(uint32_t AudioFreq);
+//static uint8_t OUT_SetOutputMode(uint8_t Output);
+static uint8_t OUT_SetVolume(uint8_t Volume);
+static uint8_t OUT_SetMute(uint32_t Cmd);
+
+static void OUT_ChangeBuffer(uint16_t *pData, uint16_t Size);
+static void OUT_TransferComplete_CallBack(void);
+static void OUT_HalfTransfer_CallBack(void);
+static void OUT_ClockConfig(uint32_t AudioFreq, void *Params);
 
 /* Public functions implementation
  * --------------------------------------------*/
@@ -117,42 +130,42 @@ uint8_t AUDIO_Init(void) {
   uint32_t tick;
 
   /* Initialize Wave player (Codec, DMA, I2C) */
-  lock();
+  Lock();
   printf("AUDIO:Init\n");
 
   tick = tickMs();
   do {
     GATE_AudioReset();
-    ok = AUDIO_OUT_Init(CS_OUT_DEV_HEADPHONE, AUDIO.d.volume, SOUND_FREQ) ==
+    ok = OUT_Init(CS_OUT_DEV_HEADPHONE, AUDIO.d.volume, SOUND_FREQ) ==
          AUDIO_OK;
     if (!ok) delayMs(500);
   } while (!ok && tickIn(tick, AUDIO_TIMEOUT_MS));
-  unlock();
+  UnLock();
 
   printf("AUDIO:%s\n", ok ? "OK" : "Error");
   return ok;
 }
 
 void AUDIO_DeInit(void) {
-  lock();
+  Lock();
   AUDIO_Flush();
-  AUDIO_OUT_DeInit();
+  OUT_DeInit();
   GATE_AudioShutdown();
-  unlock();
+  UnLock();
 }
 
 uint8_t AUDIO_Probe(void) {
   uint8_t ok;
 
-  lock();
+  Lock();
   ok = cs43l22_Probe();
-  unlock();
+  UnLock();
 
   return ok;
 }
 
 void AUDIO_Refresh(void) {
-  lock();
+  Lock();
   AUDIO.d.active = tickIn(AUDIO.d.tick, AUDIO_TIMEOUT_MS);
 
   if (!AUDIO.d.active) {
@@ -161,23 +174,23 @@ void AUDIO_Refresh(void) {
     delayMs(500);
     AUDIO_Init();
   }
-  unlock();
+  UnLock();
 }
 
 void AUDIO_Flush(void) {
-  lock();
+  Lock();
   AUDIO.d.tick = 0;
   AUDIO.d.active = 0;
   AUDIO.sz.played = 0;
   AUDIO.sz.remaining = 0;
-  unlock();
+  UnLock();
 }
 
 uint8_t AUDIO_Play(void) {
   uint8_t ok;
   audio_size_t *size = &(AUDIO.sz);
 
-  lock();
+  Lock();
   /* Get data size from audio file */
   size->remaining = SOUND_SIZE;
 
@@ -188,14 +201,23 @@ uint8_t AUDIO_Play(void) {
     size->played = SOUND_SIZE;
 
   /* Start playing Wave */
-  ok = AUDIO_OUT_Play((uint16_t *)SOUND_SAMPLE, size->played) == AUDIO_OK;
-  unlock();
+  ok = OUT_Play((uint16_t *)SOUND_SAMPLE, size->played) == AUDIO_OK;
+  UnLock();
 
   return ok;
 }
 
+uint8_t AUDIO_Pause(void) {
+	return OUT_Pause();
+}
+
+uint8_t AUDIO_Resume(void) {
+	return OUT_Resume();
+}
+
+
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
-  lock();
+  Lock();
 
   cs43l22_SetBeep(Frequency, 0, 0);
   cs43l22_Beep(CS_BEEP_MODE_CONTINUOUS, CS_BEEP_MIX_ON);
@@ -205,358 +227,40 @@ void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
     cs43l22_Beep(CS_BEEP_MODE_OFF, CS_BEEP_MIX_ON);
   }
 
-  unlock();
+  UnLock();
 }
 
 void AUDIO_BeepStop(void) {
-  lock();
-
+  Lock();
   cs43l22_Beep(CS_BEEP_MODE_OFF, CS_BEEP_MIX_ON);
-
-  unlock();
+  UnLock();
 }
 
 uint8_t AUDIO_Mute(uint8_t mute) {
-  return AUDIO_OUT_SetMute(mute ? CS_AUDIO_MUTE_ON : CS_AUDIO_MUTE_ON);
+  return OUT_SetMute(mute ? CS_AUDIO_MUTE_ON : CS_AUDIO_MUTE_OFF);
+}
+
+uint8_t AUDIO_SetVolume(uint8_t Volume) {
+	return OUT_SetVolume(Volume);
 }
 
 const audio_data_t* AUDIO_IO_Data(void) {
 	return &(AUDIO.d);
 }
 
-/**
- * @brief   Pauses the audio file stream. In case of using DMA, the DMA Pause
- *          feature is used.
- * WARNING: When calling AUDIO_OUT_Pause() function for pause, only the
- *          AUDIO_OUT_Resume() function should be called for resume (use of
- * AUDIO_OUT_Play() function for resume could lead to unexpected behavior).
- * @retval  AUDIO_OK if correct communication, else wrong communication
- */
-uint8_t AUDIO_OUT_Pause(void) {
-  /* Call the Audio Codec Pause/Resume function */
-  if (cs43l22_Pause() != 0)
-    return AUDIO_ERROR;
-  else {
-    /* Call the Media layer pause function */
-    HAL_I2S_DMAPause(AUDIO.pi2s);
-
-    /* Return AUDIO_OK when all operations are correctly done */
-    return AUDIO_OK;
-  }
-}
-
-/**
- * @brief   Resumes the audio file streaming.
- * WARNING: When calling AUDIO_OUT_Pause() function for pause, only
- *          AUDIO_OUT_Resume() function should be called for resume (use of
- * AUDIO_OUT_Play() function for resume could lead to unexpected behavior).
- * @retval  AUDIO_OK if correct communication, else wrong communication
- */
-uint8_t AUDIO_OUT_Resume(void) {
-  /* Call the Audio Codec Pause/Resume function */
-  if (cs43l22_Resume() != 0)
-    return AUDIO_ERROR;
-  else {
-    /* Call the Media layer resume function */
-    HAL_I2S_DMAResume(AUDIO.pi2s);
-
-    /* Return AUDIO_OK when all operations are correctly done */
-    return AUDIO_OK;
-  }
-}
-
-/**
- * @brief  Stops audio playing and Power down the Audio Codec.
- * @param  Option: could be one of the following parameters
- *           - CS_CODEC_PDWN_HW: completely shut down the codec (physically).
- *                            Then need to reconfigure the Codec after power on.
- * @retval AUDIO_OK if correct communication, else wrong communication
- */
-uint8_t AUDIO_OUT_Stop(uint32_t Option) {
-  /* Call DMA Stop to disable DMA stream before stopping codec */
-  HAL_I2S_DMAStop(AUDIO.pi2s);
-
-  /* Call Audio Codec Stop function */
-  if (cs43l22_Stop(Option) != 0)
-    return AUDIO_ERROR;
-  else {
-    if (Option == CS_CODEC_PDWN_HW) {
-      /* Wait at least 1ms */
-      delayMs(1);
-
-      /* Reset the pin */
-      GATE_AudioCodecStop();
-    }
-
-    /* Return AUDIO_OK when all operations are correctly done */
-    return AUDIO_OK;
-  }
-}
-
-/**
- * @brief  Controls the current audio volume level.
- * @param  Volume: Volume level to be set in percentage from 0% to 100% (0 for
- *         Mute and 100 for Max volume level).
- * @retval AUDIO_OK if correct communication, else wrong communication
- */
-uint8_t AUDIO_OUT_SetVolume(uint8_t Volume) {
-  if (AUDIO.d.volume == Volume) return AUDIO_OK;
-
-  /* Call the codec volume control function with converted volume value */
-  if (cs43l22_SetVolume(Volume) != 0)
-    return AUDIO_ERROR;
-  else {
-    AUDIO.d.volume = Volume;
-    /* Return AUDIO_OK when all operations are correctly done */
-    return AUDIO_OK;
-  }
-}
-
-/**
- * @brief  Enables or disables the MUTE mode by software
- * @param  Cmd: could be CS_AUDIO_MUTE_ON to mute sound or CS_AUDIO_MUTE_OFF to
- *         unmute the codec and restore previous volume level.
- * @retval AUDIO_OK if correct communication, else wrong communication
- */
-uint8_t AUDIO_OUT_SetMute(uint32_t Cmd) {
-  /* Call the Codec Mute function */
-  if (cs43l22_SetMute(Cmd) != 0)
-    return AUDIO_ERROR;
-  else {
-    AUDIO.d.mute = Cmd == CS_AUDIO_MUTE_ON;
-    /* Return AUDIO_OK when all operations are correctly done */
-    return AUDIO_OK;
-  }
-}
-
-/**
- * @brief  Switch dynamically (while audio file is played) the output target
- *         (speaker or headphone).
- * @note   This function modifies a global variable of the audio codec driver:
- * OutputDev.
- * @param  Output: specifies the audio output target: CS_OUT_DEV_SPEAKER,
- *         CS_OUT_DEV_HEADPHONE, CS_OUT_DEV_BOTH or CS_OUT_DEV_AUTO
- * @retval AUDIO_OK if correct communication, else wrong communication
- */
-uint8_t AUDIO_OUT_SetOutputMode(uint8_t Output) {
-  /* Call the Codec output Device function */
-  if (cs43l22_SetOutputMode(Output) != 0)
-    return AUDIO_ERROR;
-  else
-    /* Return AUDIO_OK when all operations are correctly done */
-    return AUDIO_OK;
-}
-
-/**
- * @brief  Update the audio frequency.
- * @param  AudioFreq: Audio frequency used to play the audio stream.
- * @note   This API should be called after the AUDIO_OUT_Init() to adjust the
- *         audio frequency.
- */
-void AUDIO_OUT_SetFrequency(uint32_t AudioFreq) {
-  /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
-  AUDIO_OUT_ClockConfig(AUDIO.pi2s, AudioFreq, NULL);
-
-  /* Update the I2S audio frequency configuration */
-  I2S_Init(AudioFreq);
-}
-
-/**
- * @brief  Clock Config.
- * @param  hi2s: might be required to set audio peripheral predivider if any.
- * @param  AudioFreq: Audio frequency used to play the audio stream.
- * @note   This API is called by AUDIO_OUT_Init() and AUDIO_OUT_SetFrequency()
- *         Being __weak it can be overwritten by the application
- * @param  Params : pointer on additional configuration parameters, can be NULL.
- */
-__weak void AUDIO_OUT_ClockConfig(I2S_HandleTypeDef *hi2s, uint32_t AudioFreq,
-                                  void *Params) {
-  RCC_PeriphCLKInitTypeDef rccclkinit;
-  uint8_t index = 0, freqindex = 0xFF;
-
-  for (index = 0; index < 8; index++) {
-    if (AUDIO.i2s.freq[index] == AudioFreq) {
-      freqindex = index;
-      break;
-    }
-  }
-
-  /* Enable PLLI2S clock */
-  HAL_RCCEx_GetPeriphCLKConfig(&rccclkinit);
-  if ((freqindex & 0x7) == 0) {
-    /* I2S clock config
-PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) \D7 (PLLI2SN/PLLM)
-I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
-    rccclkinit.PLLI2S.PLLI2SN = AUDIO.i2s.plln[freqindex];
-    rccclkinit.PLLI2S.PLLI2SR = AUDIO.i2s.pllr[freqindex];
-  } else {
-    /* I2S clock config
-PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) \D7 (PLLI2SN/PLLM)
-I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
-    rccclkinit.PLLI2S.PLLI2SN = 258;
-    rccclkinit.PLLI2S.PLLI2SR = 3;
-  }
-  rccclkinit.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1;
-  HAL_RCCEx_PeriphCLKConfig(&rccclkinit);
-}
-
-/**
- * @brief  AUDIO OUT I2S MSP Init.
- * @param  hi2s: might be required to set audio peripheral predivider if any.
- * @param  Params : pointer on additional configuration parameters, can be NULL.
- */
-void AUDIO_OUT_MspInit(I2S_HandleTypeDef *hi2s, void *Params) {
-  HAL_I2S_MspInit(hi2s);
-}
-
-/**
- * @brief  De-Initializes AUDIO_OUT MSP.
- * @param  hi2s: might be required to set audio peripheral predivider if any.
- * @param  Params : pointer on additional configuration parameters, can be NULL.
- */
-void AUDIO_OUT_MspDeInit(I2S_HandleTypeDef *hi2s, void *Params) {
-  HAL_I2S_MspDeInit(hi2s);
-}
-
-/**
- * @brief  Sends n-Bytes on the I2S interface.
- * @param  pData: Pointer to data address
- * @param  Size: Number of data to be written
- */
-void AUDIO_OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
-  AUDIO.d.tick = tickMs();
-  HAL_I2S_Transmit_DMA(AUDIO.pi2s, pData, DMA_MAX(Size / AUDIO_DATA_SZ));
-}
-
-/**
- * @brief  Manages the DMA Half Transfer complete event.
- */
-__weak void AUDIO_OUT_HalfTransfer_CallBack(void) {
-  audio_size_t *size = &(AUDIO.sz);
-
-  // decrease remaining buffer
-  size->remaining -= size->played;
-
-  // done, repeat
-  if (size->remaining == 0) size->remaining = SOUND_SIZE;
-
-  // check remaining data
-  if (size->remaining > AUDIO_BUFFER_SIZE)
-    size->played = AUDIO_BUFFER_SIZE;
-  else
-    size->played = size->remaining;
-}
-
-/**
- * @brief  Manages the DMA full Transfer complete event.
- */
-__weak void AUDIO_OUT_TransferComplete_CallBack(void) {
-  audio_size_t *size = &(AUDIO.sz);
-  uint32_t offset = (SOUND_SIZE - size->remaining) / AUDIO_DATA_SZ;
-
-  // play it
-  AUDIO_OUT_ChangeBuffer((uint16_t *)(SOUND_SAMPLE + offset), size->played);
-}
-
-/**
- * @brief  Manages the DMA FIFO error event.
- */
-__weak void AUDIO_OUT_Error_CallBack(void) {}
-
-/**
- * @brief  Tx Transfer completed callbacks.
- * @param  hi2s: I2S handle
- */
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
-  if (hi2s->Instance == AUDIO.pi2s->Instance)
-    /* Call the user function which will manage directly transfer complete */
-    AUDIO_OUT_TransferComplete_CallBack();
-}
-
-/**
- * @brief  Tx Half Transfer completed callbacks.
- * @param  hi2s: I2S handle
- */
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
-  if (hi2s->Instance == AUDIO.pi2s->Instance)
-    /* Manage the remaining file size and new address offset: This function
-should be coded by user (its prototype is already declared in
-stm32f4_discovery_AUDIO.h) */
-    AUDIO_OUT_HalfTransfer_CallBack();
-}
 
 /* Private functions implementation
  * --------------------------------------------*/
-/**
- * @brief  Configures the audio peripherals.
- * @param  OutputDevice: CS_OUT_DEV_SPEAKER, CS_OUT_DEV_HEADPHONE,
- *                       CS_OUT_DEV_BOTH or CS_OUT_DEV_AUTO .
- * @param  Volume: Initial volume level (from 0 (Mute) to 100 (Max))
- * @param  AudioFreq: Audio frequency used to play the audio stream.
- * @retval AUDIO_OK if correct communication, else wrong communication
- */
-static uint8_t AUDIO_OUT_Init(uint16_t OutputDevice, uint8_t Volume,
-                              uint32_t AudioFreq) {
-  uint8_t ret = AUDIO_OK;
-
-  /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
-  AUDIO_OUT_ClockConfig(AUDIO.pi2s, AudioFreq, NULL);
-
-  /* I2S data transfer preparation:
-Prepare the Media to be used for the audio transfer from memory to I2S
-peripheral */
-  if (HAL_I2S_GetState(AUDIO.pi2s) == HAL_I2S_STATE_RESET)
-    /* Init the I2S MSP: this __weak function can be redefined by the
-     * application*/
-    AUDIO_OUT_MspInit(AUDIO.pi2s, NULL);
-
-  /* I2S data transfer preparation:
-Prepare the Media to be used for the audio transfer from memory to I2S
-peripheral */
-  /* Configure the I2S peripheral */
-  if (I2S_Init(AudioFreq) != AUDIO_OK) ret = AUDIO_ERROR;
-
-  if (ret == AUDIO_OK) {
-    /* Retrieve audio codec identifier */
-    if (AUDIO_Probe())
-      cs43l22_Init(OutputDevice, Volume, AudioFreq);
-    else
-      ret = AUDIO_ERROR;
-  }
-
-  if (ret == AUDIO_OK) {
-    if (AUDIO_Play())
-      AUDIO.d.tick = tickMs();
-    else
-      ret = AUDIO_ERROR;
-  }
-
-  return ret;
+static void Lock(void) {
+#if (APP)
+  osMutexAcquire(AudioRecMutexHandle, osWaitForever);
+#endif
 }
 
-static void AUDIO_OUT_DeInit(void) {
-  AUDIO_OUT_Stop(CS_CODEC_PDWN_HW);
-  cs43l22_DeInit();
-  AUDIO_OUT_MspDeInit(AUDIO.pi2s, NULL);
-}
-
-/**
- * @brief  Starts playing audio stream from a data buffer for a determined size.
- * @param  Buffer: Pointer to the buffer
- * @param  Size: Number of audio data BYTES.
- * @retval AUDIO_OK if correct communication, else wrong communication
- */
-static uint8_t AUDIO_OUT_Play(uint16_t *Buffer, uint32_t Size) {
-  /* Call the audio Codec Play function */
-  if (cs43l22_Play() != 0) return AUDIO_ERROR;
-
-  /* Update the Media layer and enable it for play */
-  if (HAL_I2S_Transmit_DMA(AUDIO.pi2s, Buffer, DMA_MAX(Size / AUDIO_DATA_SZ)) !=
-      HAL_OK)
-    return AUDIO_ERROR;
-  else
-    /* Return AUDIO_OK when all operations are correctly done */
-    return AUDIO_OK;
+static void UnLock(void) {
+#if (APP)
+  osMutexRelease(AudioRecMutexHandle);
+#endif
 }
 
 /**
@@ -584,15 +288,311 @@ static uint8_t I2S_Init(uint32_t AudioFreq) {
   return AUDIO_OK;
 }
 
-static void lock(void) {
-#if (APP)
-  osMutexAcquire(AudioRecMutexHandle, osWaitForever);
-#endif
+/**
+ * @brief  Configures the audio peripherals.
+ * @param  OutputDevice: CS_OUT_DEV_SPEAKER, CS_OUT_DEV_HEADPHONE,
+ *                       CS_OUT_DEV_BOTH or CS_OUT_DEV_AUTO .
+ * @param  Volume: Initial volume level (from 0 (Mute) to 100 (Max))
+ * @param  AudioFreq: Audio frequency used to play the audio stream.
+ * @retval AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t OUT_Init(uint16_t OutputDevice, uint8_t Volume,
+                              uint32_t AudioFreq) {
+  uint8_t ret = AUDIO_OK;
+
+  /* PLL clock is set depending by the AudioFreq
+   * (44.1khz vs 48khz groups) */
+  OUT_ClockConfig(AudioFreq, NULL);
+
+  /* I2S data transfer preparation:
+   * Prepare the Media to be used for the audio
+   * transfer from memory to I2S peripheral */
+  if (HAL_I2S_GetState(AUDIO.pi2s) == HAL_I2S_STATE_RESET)
+    HAL_I2S_MspInit(AUDIO.pi2s);
+
+  /* I2S data transfer preparation:
+   * Prepare the Media to be used for the audio
+   * transfer from memory to I2S peripheral */
+  /* Configure the I2S peripheral */
+  if (I2S_Init(AudioFreq) != AUDIO_OK) ret = AUDIO_ERROR;
+
+  if (ret == AUDIO_OK) {
+    /* Retrieve audio codec identifier */
+    if (AUDIO_Probe())
+      cs43l22_Init(OutputDevice, Volume, AudioFreq);
+    else
+      ret = AUDIO_ERROR;
+  }
+
+  if (ret == AUDIO_OK) {
+    if (AUDIO_Play())
+      AUDIO.d.tick = tickMs();
+    else
+      ret = AUDIO_ERROR;
+  }
+
+  return ret;
 }
 
-static void unlock(void) {
-#if (APP)
-  osMutexRelease(AudioRecMutexHandle);
-#endif
+static void OUT_DeInit(void) {
+  OUT_Stop(CS_CODEC_PDWN_HW);
+  cs43l22_DeInit();
+  HAL_I2S_MspDeInit(AUDIO.pi2s);
 }
+
+/**
+ * @brief  Starts playing audio stream from a data buffer for a determined size.
+ * @param  Buffer: Pointer to the buffer
+ * @param  Size: Number of audio data BYTES.
+ * @retval AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t OUT_Play(uint16_t *Buffer, uint32_t Size) {
+  /* Call the audio Codec Play function */
+  if (cs43l22_Play() != 0) return AUDIO_ERROR;
+
+  /* Update the Media layer and enable it for play */
+  if (HAL_I2S_Transmit_DMA(AUDIO.pi2s, Buffer, DMA_MAX(Size / AUDIO_DATA_SZ)) !=
+      HAL_OK)
+    return AUDIO_ERROR;
+  else
+    /* Return AUDIO_OK when all operations are correctly done */
+    return AUDIO_OK;
+}
+
+/**
+ * @brief   Pauses the audio file stream. In case of using DMA, the DMA Pause
+ *          feature is used.
+ * WARNING: When calling OUT_Pause() function for pause, only the
+ *          OUT_Resume() function should be called for resume (use of
+ * OUT_Play() function for resume could lead to unexpected behavior).
+ * @retval  AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t OUT_Pause(void) {
+  /* Call the Audio Codec Pause/Resume function */
+  if (cs43l22_Pause() != 0)
+    return AUDIO_ERROR;
+  else {
+    /* Call the Media layer pause function */
+    HAL_I2S_DMAPause(AUDIO.pi2s);
+
+    /* Return AUDIO_OK when all operations are correctly done */
+    return AUDIO_OK;
+  }
+}
+
+/**
+ * @brief   Resumes the audio file streaming.
+ * WARNING: When calling OUT_Pause() function for pause, only
+ *          OUT_Resume() function should be called for resume (use of
+ * OUT_Play() function for resume could lead to unexpected behavior).
+ * @retval  AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t OUT_Resume(void) {
+  /* Call the Audio Codec Pause/Resume function */
+  if (cs43l22_Resume() != 0)
+    return AUDIO_ERROR;
+  else {
+    /* Call the Media layer resume function */
+    HAL_I2S_DMAResume(AUDIO.pi2s);
+
+    /* Return AUDIO_OK when all operations are correctly done */
+    return AUDIO_OK;
+  }
+}
+
+/**
+ * @brief  Stops audio playing and Power down the Audio Codec.
+ * @param  Option: could be one of the following parameters
+ *           - CS_CODEC_PDWN_HW: completely shut down the codec (physically).
+ *                            Then need to reconfigure the Codec after power on.
+ * @retval AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t OUT_Stop(uint32_t Option) {
+  /* Call DMA Stop to disable DMA stream before stopping codec */
+  HAL_I2S_DMAStop(AUDIO.pi2s);
+
+  /* Call Audio Codec Stop function */
+  if (cs43l22_Stop(Option) != 0)
+    return AUDIO_ERROR;
+  else {
+    if (Option == CS_CODEC_PDWN_HW) {
+      /* Wait at least 1ms */
+      delayMs(1);
+
+      /* Reset the pin */
+      GATE_AudioCodecStop();
+    }
+
+    /* Return AUDIO_OK when all operations are correctly done */
+    return AUDIO_OK;
+  }
+}
+
+/**
+ * @brief  Controls the current audio volume level.
+ * @param  Volume: Volume level to be set in percentage from 0% to 100% (0 for
+ *         Mute and 100 for Max volume level).
+ * @retval AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t OUT_SetVolume(uint8_t Volume) {
+  if (AUDIO.d.volume == Volume) return AUDIO_OK;
+
+  /* Call the codec volume control function with converted volume value */
+  if (cs43l22_SetVolume(Volume) != 0)
+    return AUDIO_ERROR;
+  else {
+    AUDIO.d.volume = Volume;
+    /* Return AUDIO_OK when all operations are correctly done */
+    return AUDIO_OK;
+  }
+}
+
+/**
+ * @brief  Enables or disables the MUTE mode by software
+ * @param  Cmd: could be CS_AUDIO_MUTE_ON to mute sound or CS_AUDIO_MUTE_OFF to
+ *         unmute the codec and restore previous volume level.
+ * @retval AUDIO_OK if correct communication, else wrong communication
+ */
+static uint8_t OUT_SetMute(uint32_t Cmd) {
+  /* Call the Codec Mute function */
+  if (cs43l22_SetMute(Cmd) != 0)
+    return AUDIO_ERROR;
+  else {
+    AUDIO.d.mute = Cmd == CS_AUDIO_MUTE_ON;
+    /* Return AUDIO_OK when all operations are correctly done */
+    return AUDIO_OK;
+  }
+}
+
+///**
+// * @brief  Switch dynamically (while audio file is played) the output target
+// *         (speaker or headphone).
+// * @note   This function modifies a global variable of the audio codec driver:
+// * OutputDev.
+// * @param  Output: specifies the audio output target: CS_OUT_DEV_SPEAKER,
+// *         CS_OUT_DEV_HEADPHONE, CS_OUT_DEV_BOTH or CS_OUT_DEV_AUTO
+// * @retval AUDIO_OK if correct communication, else wrong communication
+// */
+//static uint8_t OUT_SetOutputMode(uint8_t Output) {
+//  /* Call the Codec output Device function */
+//  if (cs43l22_SetOutputMode(Output) != 0)
+//    return AUDIO_ERROR;
+//  else
+//    /* Return AUDIO_OK when all operations are correctly done */
+//    return AUDIO_OK;
+//}
+//
+///**
+// * @brief  Update the audio frequency.
+// * @param  AudioFreq: Audio frequency used to play the audio stream.
+// * @note   This API should be called after the OUT_Init() to adjust the
+// *         audio frequency.
+// */
+//static void OUT_SetFrequency(uint32_t AudioFreq) {
+//  /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
+//  OUT_ClockConfig(AudioFreq, NULL);
+//
+//  /* Update the I2S audio frequency configuration */
+//  I2S_Init(AudioFreq);
+//}
+
+/**
+ * @brief  Clock Config.
+ * @param  hi2s: might be required to set audio peripheral predivider if any.
+ * @param  AudioFreq: Audio frequency used to play the audio stream.
+ * @note   This API is called by OUT_Init() and OUT_SetFrequency()
+ *         Being __weak it can be overwritten by the application
+ * @param  Params : pointer on additional configuration parameters, can be NULL.
+ */
+static void OUT_ClockConfig(uint32_t AudioFreq, void *Params) {
+  RCC_PeriphCLKInitTypeDef rccclkinit;
+  uint8_t index = 0, freqindex = 0xFF;
+
+  for (index = 0; index < 8; index++) {
+    if (AUDIO.i2s.freq[index] == AudioFreq) {
+      freqindex = index;
+      break;
+    }
+  }
+
+  /* Enable PLLI2S clock */
+  HAL_RCCEx_GetPeriphCLKConfig(&rccclkinit);
+  if ((freqindex & 0x7) == 0) {
+    /* I2S clock config
+     * PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) \D7 (PLLI2SN/PLLM)
+     * I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
+    rccclkinit.PLLI2S.PLLI2SN = AUDIO.i2s.plln[freqindex];
+    rccclkinit.PLLI2S.PLLI2SR = AUDIO.i2s.pllr[freqindex];
+  } else {
+    /* I2S clock config
+     * PLLI2S_VCO = f(VCO clock) = f(PLLI2S clock input) \D7 (PLLI2SN/PLLM)
+     * I2SCLK = f(PLLI2S clock output) = f(VCO clock) / PLLI2SR */
+    rccclkinit.PLLI2S.PLLI2SN = 258;
+    rccclkinit.PLLI2S.PLLI2SR = 3;
+  }
+  rccclkinit.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1;
+  HAL_RCCEx_PeriphCLKConfig(&rccclkinit);
+}
+
+/**
+ * @brief  Sends n-Bytes on the I2S interface.
+ * @param  pData: Pointer to data address
+ * @param  Size: Number of data to be written
+ */
+static void OUT_ChangeBuffer(uint16_t *pData, uint16_t Size) {
+  AUDIO.d.tick = tickMs();
+  HAL_I2S_Transmit_DMA(AUDIO.pi2s, pData, DMA_MAX(Size / AUDIO_DATA_SZ));
+}
+
+/**
+ * @brief  Manages the DMA Half Transfer complete event.
+ */
+static void OUT_HalfTransfer_CallBack(void) {
+  audio_size_t *size = &(AUDIO.sz);
+
+  // decrease remaining buffer
+  size->remaining -= size->played;
+
+  // done, repeat
+  if (size->remaining == 0) size->remaining = SOUND_SIZE;
+
+  // check remaining data
+  if (size->remaining > AUDIO_BUFFER_SIZE)
+    size->played = AUDIO_BUFFER_SIZE;
+  else
+    size->played = size->remaining;
+}
+
+/**
+ * @brief  Manages the DMA full Transfer complete event.
+ */
+static void OUT_TransferComplete_CallBack(void) {
+  audio_size_t *size = &(AUDIO.sz);
+  uint32_t offset = (SOUND_SIZE - size->remaining) / AUDIO_DATA_SZ;
+
+  OUT_ChangeBuffer((uint16_t *)(SOUND_SAMPLE + offset), size->played);
+}
+
+/**
+ * @brief  Tx Transfer completed callbacks.
+ * @param  hi2s: I2S handle
+ */
+void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
+  if (hi2s->Instance == AUDIO.pi2s->Instance)
+    /* Call the user function which will manage directly transfer complete */
+    OUT_TransferComplete_CallBack();
+}
+
+/**
+ * @brief  Tx Half Transfer completed callbacks.
+ * @param  hi2s: I2S handle
+ */
+void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
+  if (hi2s->Instance == AUDIO.pi2s->Instance)
+    /* Manage the remaining file size and new address offset: This function
+should be coded by user (its prototype is already declared in
+stm32f4_discovery_AUDIO.h) */
+    OUT_HalfTransfer_CallBack();
+}
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

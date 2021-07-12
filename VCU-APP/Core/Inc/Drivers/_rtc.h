@@ -38,5 +38,4 @@ void RTC_Write(datetime_t dt);
 uint8_t RTC_NeedCalibration(void);
 void RTC_Calibrate(timestamp_t *ts);
 uint8_t RTC_Daylight(void);
-
 #endif /* INC_DRIVERS__RTC_H_ */

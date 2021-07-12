@@ -1044,16 +1044,16 @@ void StartAudioTask(void *argument)
 
       // Beep command
       if (notif & FLAG_AUDIO_BEEP) {
-        AUDIO_OUT_Pause();
-        AUDIO_OUT_SetVolume(100);
-        AUDIO_OUT_SetMute(0);
+        AUDIO_Pause();
+        AUDIO_SetVolume(100);
+        AUDIO_Mute(0);
         AUDIO_BeepPlay(CS_BEEP_FREQ_2000_HZ, 1000);
-        AUDIO_OUT_Resume();
+        AUDIO_Resume();
       }
     }
 
-    AUDIO_OUT_SetMute(VHC_IO_State() != VEHICLE_RUN);
-    AUDIO_OUT_SetVolume(MCU_SpeedToVolume());
+    AUDIO_Mute(VHC_IO_State() != VEHICLE_RUN);
+    AUDIO_SetVolume(MCU_SpeedToVolume());
     AUDIO_Refresh();
   }
   /* USER CODE END StartAudioTask */
