@@ -1,5 +1,5 @@
 /*
- * _state.c
+ * _vehicle.c
  *
  *  Created on: Jun 14, 2021
  *      Author: Pudja Mansyurin
@@ -7,7 +7,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/_state.h"
+#include "App/_vehicle.h"
 
 #include "App/_task.h"
 #include "Libs/_finger.h"
@@ -29,29 +29,30 @@ extern osMessageQueueId_t OvdStateQueueHandle;
 /* Private variables
  * --------------------------------------------*/
 static vehicle_t LAST_STATE = VEHICLE_UNKNOWN;
+static vehicle_t CURR_STATE = VEHICLE_BACKUP;
 
 /* Public functions implementation
  * --------------------------------------------*/
-void STATE_Check(void) {
+void VHC_CheckState(void) {
   uint8_t ovdState, shutdown = 0, start = 0;
   vehicle_t initialState;
 
   if (_osQueueGet(OvdStateQueueHandle, &ovdState))
-    VCU.d.vehicle = (int8_t)ovdState;
+    CURR_STATE = (int8_t)ovdState;
 
   HB_CheckStarter(&start, &shutdown);
 
   do {
-    initialState = VCU.d.vehicle;
+    initialState = CURR_STATE;
 
-    switch (VCU.d.vehicle) {
+    switch (CURR_STATE) {
       case VEHICLE_LOST:
         if (LAST_STATE != VEHICLE_LOST) {
           LAST_STATE = VEHICLE_LOST;
           osThreadFlagsSet(ReporterTaskHandle, FLAG_REPORTER_YIELD);
         }
 
-        if (GATE_ReadPower5v()) VCU.d.vehicle += 2;
+        if (GATE_ReadPower5v()) CURR_STATE += 2;
         break;
 
       case VEHICLE_BACKUP:
@@ -70,9 +71,9 @@ void STATE_Check(void) {
         }
 
         if (tickOut(VCU.d.tick.independent, VCU_LOST_MODE_S * 1000))
-          VCU.d.vehicle--;
+          CURR_STATE--;
         else if (GATE_ReadPower5v())
-          VCU.d.vehicle++;
+          CURR_STATE++;
         break;
 
       case VEHICLE_NORMAL:
@@ -97,10 +98,10 @@ void STATE_Check(void) {
         }
 
         if (!GATE_ReadPower5v())
-          VCU.d.vehicle--;
+          CURR_STATE--;
         else if (start) {
           if (RMT_IO_Nearby())
-            VCU.d.vehicle++;
+            CURR_STATE++;
           else
             osThreadFlagsSet(RemoteTaskHandle, FLAG_REMOTE_RESET);
         }
@@ -114,9 +115,9 @@ void STATE_Check(void) {
         }
 
         if (!GATE_ReadPower5v() || shutdown)
-          VCU.d.vehicle--;
+          CURR_STATE--;
         else if (FGR_IO_ID())
-          VCU.d.vehicle++;
+          CURR_STATE++;
         break;
 
       case VEHICLE_READY:
@@ -127,9 +128,9 @@ void STATE_Check(void) {
         }
 
         if (!GATE_ReadPower5v() || shutdown)
-          VCU.d.vehicle--;
+          CURR_STATE--;
         else if (!NODE.d.error && (start))
-          VCU.d.vehicle++;
+          CURR_STATE++;
         break;
 
       case VEHICLE_RUN:
@@ -140,12 +141,16 @@ void STATE_Check(void) {
 
         if (!GATE_ReadPower5v() || (start && !MCU_Running()) || shutdown ||
             NODE.d.error)
-          VCU.d.vehicle--;
+          CURR_STATE--;
         break;
 
       default:
         break;
     }
     delayMs(100);
-  } while (initialState != VCU.d.vehicle);
+  } while (initialState != CURR_STATE);
+}
+
+vehicle_t VHC_IO_State(void) {
+	return CURR_STATE;
 }

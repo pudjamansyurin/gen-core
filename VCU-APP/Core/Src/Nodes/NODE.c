@@ -10,6 +10,7 @@
 #include "Nodes/NODE.h"
 
 #include "App/_debugger.h"
+#include "App/_vehicle.h"
 #include "App/_predictor.h"
 #include "Drivers/_aes.h"
 #include "Libs/_finger.h"
@@ -37,7 +38,7 @@ void NODE_Refresh(void) {
   uint8_t eBMS = BMS.d.fault > 0;
   uint8_t eMCU = (MCU.d.fault.post | MCU.d.fault.run) > 0;
 
-  if (VCU.d.vehicle >= VEHICLE_READY) {
+  if (VHC_IO_State() >= VEHICLE_READY) {
     if (tickOut(VCU.d.tick.ready, NODE_TIMEOUT_MS)) {
       eBMS |= !BMS.d.active;
       eMCU |= !MCU.d.active;

@@ -32,7 +32,6 @@ typedef struct {
   uint8_t error;
   uint8_t buffered;
   uint32_t uptime;
-  vehicle_t vehicle;
   struct {
     uint32_t independent;
     uint32_t ready;

@@ -9,6 +9,7 @@
  * --------------------------------------------*/
 #include "Nodes/VCU.h"
 
+#include "App/_vehicle.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_finger.h"
@@ -29,13 +30,10 @@ extern osMessageQueueId_t ReportQueueHandle;
 
 /* Public functions implementation
  * --------------------------------------------*/
-void VCU_Init(void) {
-  memset(&(VCU.d), 0, sizeof(vcu_data_t));
-  VCU.d.vehicle = VEHICLE_BACKUP;
-}
+void VCU_Init(void) { memset(&(VCU.d), 0, sizeof(vcu_data_t)); }
 
 void VCU_Refresh(void) {
-	BAT_ScanVoltage();
+  BAT_ScanVoltage();
 
   VCU.d.uptime++;
   VCU.d.buffered = osMessageQueueGetCount(ReportQueueHandle);
@@ -91,7 +89,7 @@ uint8_t VCU_TX_SwitchControl(void) {
   d->u8[4] = (uint8_t)MCU.d.dcbus.current;
   d->u8[5] = BMS.d.soc;
   d->u8[6] = SIMSta_IO_Signal();
-  d->u8[7] = (int8_t)VCU.d.vehicle;
+  d->u8[7] = (int8_t)VHC_IO_State();
 
   // send message
   return CAN_Write(&Tx, CAND_VCU_SWITCH_CTL, 8, 0);
@@ -101,7 +99,7 @@ uint8_t VCU_TX_Datetime(datetime_t dt) {
   can_tx_t Tx = {0};
   UNION64 *d = &(Tx.data);
 
-  uint8_t hmi2shutdown = VCU.d.vehicle < VEHICLE_STANDBY;
+  uint8_t hmi2shutdown = VHC_IO_State() < VEHICLE_STANDBY;
 
   d->u8[0] = dt.Seconds;
   d->u8[1] = dt.Minutes;

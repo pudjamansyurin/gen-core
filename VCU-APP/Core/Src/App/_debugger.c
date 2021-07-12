@@ -9,6 +9,7 @@
  * --------------------------------------------*/
 #include "App/_debugger.h"
 
+#include "App/_vehicle.h"
 #include "Drivers/_bat.h"
 #include "Drivers/_simcom.h"
 #include "Libs/_audio.h"
@@ -24,7 +25,7 @@
  * --------------------------------------------*/
 void DBG_GetVCU(vcu_dbg_t *vcu) {
   vcu->events = EVT_Val();
-  vcu->state = (int8_t)VCU.d.vehicle;
+  vcu->state = (int8_t)VHC_IO_State();
   vcu->uptime = (VCU.d.uptime * MANAGER_WAKEUP_MS) / 1000;
   vcu->buffered = VCU.d.buffered;
   vcu->battery = BAT_IO_Voltage() / 18;

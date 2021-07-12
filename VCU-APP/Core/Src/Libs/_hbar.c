@@ -9,6 +9,7 @@
  * --------------------------------------------*/
 #include "Libs/_hbar.h"
 
+#include "App/_vehicle.h"
 #include "Libs/_eeprom.h"
 #include "Nodes/BMS.h"
 #include "Nodes/MCU.h"
@@ -357,7 +358,7 @@ static void RunSet(void) {
   }
 }
 
-static uint8_t DefferMode(void) { return VCU.d.vehicle > VEHICLE_NORMAL; }
+static uint8_t DefferMode(void) { return VHC_IO_State() > VEHICLE_NORMAL; }
 
 static uint8_t SubMask(HBM mode) {
   uint8_t MASK = 0x01;

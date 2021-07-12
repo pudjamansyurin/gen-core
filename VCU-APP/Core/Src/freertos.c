@@ -33,8 +33,9 @@
 #include "App/_network.h"
 #include "App/_predictor.h"
 #include "App/_reporter.h"
-#include "App/_state.h"
 #include "App/_task.h"
+#include "App/_vehicle.h"
+
 
 //#include "DMA/_dma_finger.h"
 //#include "DMA/_dma_ublox.h"
@@ -662,7 +663,7 @@ void StartManagerTask(void *argument) {
     VCU_Refresh();
     NODE_Refresh();
 
-    STATE_Check();
+    VHC_CheckState();
 
     EE_Refresh();
     IWDG_Refresh();
@@ -736,7 +737,7 @@ void StartReporterTask(void *argument) {
   for (;;) {
     TASK_IO_SetTick(TASK_REPORTER);
 
-    if (_osFlagAny(&notif, RPT_IntervalDeciderMS(VCU.d.vehicle))) {
+    if (_osFlagAny(&notif, RPT_PickIntervalMS(VHC_IO_State()))) {
       if (notif & FLAG_REPORTER_YIELD) {
         // nothing, just wakeup
       }
@@ -747,7 +748,7 @@ void StartReporterTask(void *argument) {
     }
 
     // Put report to log
-    RPT_ReportCapture(RPT_FrameDecider(), &report);
+    RPT_ReportCapture(RPT_PickFrame(), &report);
     while (!_osQueuePut(ReportQueueHandle, &report)) {
       osThreadFlagsSet(NetworkTaskHandle, FLAG_NET_REPORT_DISCARD);
       delayMs(100);
@@ -883,7 +884,7 @@ void StartRemoteTask(void *argument) {
     tick = tickMs();
     TASK_IO_SetTick(TASK_REMOTE);
 
-    if (RMT_Ping(VCU.d.vehicle)) {
+    if (RMT_Ping(VHC_IO_State())) {
       RMT_IO_SetTick(RMT_TICK_PING);
       RMT_IO_SetDuration(RMT_DUR_TX, tick);
     }
@@ -937,7 +938,7 @@ void StartRemoteTask(void *argument) {
       }
     }
 
-    RMT_Refresh(VCU.d.vehicle);
+    RMT_Refresh(VHC_IO_State());
     RMT_IO_SetDuration(RMT_DUR_FULL, tick);
   }
   /* USER CODE END StartRemoteTask */
@@ -972,7 +973,7 @@ void StartFingerTask(void *argument) {
         FGR_Init();
       }
 
-      if (VCU.d.vehicle == VEHICLE_STANDBY) {
+      if (VHC_IO_State() == VEHICLE_STANDBY) {
         if (notif & (FLAG_FINGER_ADD | FLAG_FINGER_DEL | FLAG_FINGER_FETCH |
                      FLAG_FINGER_RST)) {
           uint8_t ok = 0;
@@ -998,8 +999,8 @@ void StartFingerTask(void *argument) {
       }
     }
 
-    GATE_FingerChipPower(VCU.d.vehicle == VEHICLE_STANDBY);
-    if (VCU.d.vehicle == VEHICLE_STANDBY) FGR_Authenticate();
+    GATE_FingerChipPower(VHC_IO_State() == VEHICLE_STANDBY);
+    if (VHC_IO_State() == VEHICLE_STANDBY) FGR_Authenticate();
 
     FGR_Verify();
   }
@@ -1045,7 +1046,7 @@ void StartAudioTask(void *argument) {
       }
     }
 
-    AUDIO_OUT_SetMute(VCU.d.vehicle != VEHICLE_RUN);
+    AUDIO_OUT_SetMute(VHC_IO_State() != VEHICLE_RUN);
     AUDIO_OUT_SetVolume(MCU_SpeedToVolume());
     AUDIO_Refresh();
   }
@@ -1168,8 +1169,8 @@ void StartCanTxTask(void *argument) {
     if (tickOut(tick100ms, 100)) {
       tick100ms = tickMs();
 
-      MCU_PowerOverCAN(VCU.d.vehicle == VEHICLE_RUN && BMS.d.run);
-      BMS_PowerOverCAN(VCU.d.vehicle >= VEHICLE_READY || MCU.d.run);
+      MCU_PowerOverCAN(VHC_IO_State() == VEHICLE_RUN && BMS.d.run);
+      BMS_PowerOverCAN(VHC_IO_State() >= VEHICLE_READY || MCU.d.run);
     }
 
     // send every 1000ms
@@ -1218,23 +1219,23 @@ void StartGateTask(void *argument) {
         delayMs(100);
         osThreadFlagsClear(FLAG_GATE_HBAR);
 
-        HB_ReadStarter(VCU.d.vehicle == VEHICLE_NORMAL);
-        if (VCU.d.vehicle >= VEHICLE_STANDBY) HB_ReadStates();
+        HB_ReadStarter(VHC_IO_State() == VEHICLE_NORMAL);
+        if (VHC_IO_State() >= VEHICLE_STANDBY) HB_ReadStates();
       }
 
       if (notif & FLAG_GATE_ALARM_HORN)
-        if (VCU.d.vehicle == VEHICLE_NORMAL) GATE_Horn(500);
+        if (VHC_IO_State() == VEHICLE_NORMAL) GATE_Horn(500);
 
       if (notif & FLAG_GATE_OPEN_SEAT)
-        if (VCU.d.vehicle == VEHICLE_NORMAL) GATE_Seat(1000);
+        if (VHC_IO_State() == VEHICLE_NORMAL) GATE_Seat(1000);
     }
 
     HB_RefreshSelectSet();
     PR_EstimateRange();
 
-    HMI1_Power(VCU.d.vehicle >= VEHICLE_STANDBY);
-    MCU_Power12v(VCU.d.vehicle >= VEHICLE_READY);
-    GATE_System12v(VCU.d.vehicle >= VEHICLE_STANDBY);
+    HMI1_Power(VHC_IO_State() >= VEHICLE_STANDBY);
+    MCU_Power12v(VHC_IO_State() >= VEHICLE_READY);
+    GATE_System12v(VHC_IO_State() >= VEHICLE_STANDBY);
   }
   /* USER CODE END StartGateTask */
 }
@@ -1247,16 +1248,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (osEventFlagsGet(GlobalEventHandle) != EVENT_READY) return;
 
   if (GPIO_Pin & INT_REMOTE_IRQ_Pin) {
-    if (VCU.d.vehicle >= VEHICLE_NORMAL) RMT_IrqHandler();
+    if (VHC_IO_State() >= VEHICLE_NORMAL) RMT_IrqHandler();
   }
 
   //	if (GPIO_Pin & EXT_FINGER_IRQ_Pin) {
-  //		if (VCU.d.vehicle == VEHICLE_STANDBY)
+  //		if (VHC_IO_State() == VEHICLE_STANDBY)
   //			osThreadFlagsSet(FingerTaskHandle, FLAG_FINGER_PLACED);
   //	}
 
   if (!((GPIO_Pin & INT_REMOTE_IRQ_Pin) || (GPIO_Pin & EXT_FINGER_IRQ_Pin))) {
-    if (VCU.d.vehicle >= VEHICLE_NORMAL)
+    if (VHC_IO_State() >= VEHICLE_NORMAL)
       osThreadFlagsSet(GateTaskHandle, FLAG_GATE_HBAR);
   }
 }

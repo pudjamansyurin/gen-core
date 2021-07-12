@@ -33,7 +33,6 @@ typedef enum {
   PAYLOAD_MAX = 2,
 } PAYLOAD_TYPE;
 
-
 /* Exported types
  * --------------------------------------------*/
 typedef struct {
@@ -84,8 +83,8 @@ typedef struct __attribute__((packed)) {
  * --------------------------------------------*/
 void RPT_ReportCapture(FRAME_TYPE frame, report_t *report);
 void RPT_ResponseCapture(response_t *response);
-FRAME_TYPE RPT_FrameDecider(void);
-uint32_t RPT_IntervalDeciderMS(vehicle_t vehicle);
+FRAME_TYPE RPT_PickFrame(void);
+uint32_t RPT_PickIntervalMS(vehicle_t vehicle);
 bool RPT_PayloadPending(PAYLOAD_TYPE type);
 
 void RPT_IO_SetBlock(uint8_t value);
