@@ -1,5 +1,5 @@
 /*
- * log.c
+ * printf.c
  *
  *  Created on: Jan 15, 2021
  *      Author: Pudja Mansyurin
@@ -7,9 +7,9 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/log.h"
+#include "Drivers/printf.h"
 
-#include "App/common.h"
+#include "App/util.h"
 
 /* External variables
  * --------------------------------------------*/
@@ -29,6 +29,14 @@ static void SendITM(char ch);
 
 /* Public functions implementation
  * --------------------------------------------*/
+void printf_init(void) { setvbuf(stdout, NULL, _IONBF, 0); }
+
+void printf_hex(const char* data, uint16_t size) {
+  Lock();
+  for (uint32_t i = 0; i < size; i++) printf("%02X", *(data + i));
+  UnLock();
+}
+
 int __io_putchar(int ch) {
   SendITM(ch);
   return ch;
@@ -42,14 +50,6 @@ int _write(int file, char* ptr, int len) {
   UnLock();
 
   return len;
-}
-
-void printf_init(void) { setvbuf(stdout, NULL, _IONBF, 0); }
-
-void printf_hex(const char* data, uint16_t size) {
-  Lock();
-  for (uint32_t i = 0; i < size; i++) printf("%02X", *(data + i));
-  UnLock();
 }
 
 /* Private functions implementations

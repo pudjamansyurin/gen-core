@@ -1,5 +1,5 @@
 /*
- * exec.c
+ * request.c
  *
  *  Created on: Jun 14, 2021
  *      Author: Pudja Mansyurin
@@ -7,7 +7,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/exec.h"
+#include "App/request.h"
 
 #include "App/iap.h"
 #include "App/reporter.h"
@@ -39,7 +39,7 @@ static void DoConApn(const command_t *cmd, char *rMsg);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void EXEC_Command(const command_t *cmd, response_t *resp) {
+void REQ_Execute(const command_t *cmd, response_t *resp) {
   uint8_t code = cmd->header.code;
   uint8_t subCode = cmd->header.sub_code;
   const void *val = cmd->data.value;

@@ -31,10 +31,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "App/common.h"
 #include "App/fota.h"
+#include "App/util.h"
 #include "DMA/dma_simcom.h"
-#include "Drivers/bat.h"
+#include "Drivers/battery.h"
 #include "Drivers/can.h"
 #include "Drivers/flasher.h"
 #include "Drivers/simcom.h"

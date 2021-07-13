@@ -10,8 +10,8 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/common.h"
 #include "App/reporter.h"
+#include "App/util.h"
 
 /* Public functions prototype
  * --------------------------------------------*/

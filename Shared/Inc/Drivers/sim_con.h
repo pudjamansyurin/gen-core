@@ -10,7 +10,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/common.h"
+#include "App/util.h"
 #include "Libs/eeprom.h"
 
 /* Exported types

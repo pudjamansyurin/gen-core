@@ -1,5 +1,5 @@
 /*
- * bat.c
+ * battery.c
  *
  *  Created on: Dec 11, 2020
  *      Author: Pudja Mansyurin
@@ -7,7 +7,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/bat.h"
+#include "Drivers/battery.h"
 
 #include "adc.h"
 

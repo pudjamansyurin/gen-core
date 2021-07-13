@@ -10,7 +10,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/common.h"
+#include "App/util.h"
 #include "DMA/dma_simcom.h"
 #include "Drivers/sim_con.h"
 #include "Drivers/sim_state.h"

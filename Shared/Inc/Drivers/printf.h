@@ -1,12 +1,12 @@
 /*
- * log.h
+ * printf.h
  *
  *  Created on: Jan 15, 2021
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_DRIVERS__LOGGER_H_
-#define INC_DRIVERS__LOGGER_H_
+#ifndef INC_DRIVERS__PRINTF_H_
+#define INC_DRIVERS__PRINTF_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -17,4 +17,4 @@
 void printf_init(void);
 void printf_hex(const char* data, uint16_t size);
 
-#endif /* INC_DRIVERS__LOGGER_H_ */
+#endif /* INC_DRIVERS__PRINTF_H_ */

@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "App/event.h"
 
-#include "App/common.h"
+#include "App/util.h"
 
 /* Private variables
  * --------------------------------------------*/

@@ -22,8 +22,8 @@ typedef struct {
 
 /* Public functions prototype
  * --------------------------------------------*/
-void PR_Init(void);
-void PR_EstimateRange(void);
-const bms_avg_t* PR_IO_Avg(void);
+void PRD_Init(void);
+void PRD_EstimateRange(void);
+const bms_avg_t* PRD_IO_Avg(void);
 
 #endif /* INC_APP__PREDICTOR_H_ */

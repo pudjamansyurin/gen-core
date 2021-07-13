@@ -5,12 +5,12 @@
  *      Author: Sina Darvishi
  */
 
-#ifndef INC_DRIVERS__MPU_H_
-#define INC_DRIVERS__MPU_H_
+#ifndef INC_DRIVERS__MPU6050_H_
+#define INC_DRIVERS__MPU6050_H_
 
 /* Includes
  * --------------------------------------------*/
-#include "App/common.h"
+#include "App/util.h"
 
 /* Exported enums
  * --------------------------------------------*/
@@ -208,4 +208,4 @@ MPUR MPU_DisableInterrupts(void);
  */
 MPUR MPU_ReadInterrupts(MPU_Interrupt *InterruptsStruct);
 
-#endif /* INC_DRIVERS__MPU_H_ */
+#endif /* INC_DRIVERS__MPU6050_H_ */

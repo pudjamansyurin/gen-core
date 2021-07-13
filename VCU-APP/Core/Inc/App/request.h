@@ -1,12 +1,12 @@
 /*
- * exec.h
+ * request.h
  *
  *  Created on: Jun 14, 2021
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_APP__EXEC_H_
-#define INC_APP__EXEC_H_
+#ifndef INC_APP__REQUEST_H_
+#define INC_APP__REQUEST_H_
 
 /* Includes
  * --------------------------------------------*/
@@ -14,6 +14,6 @@
 
 /* Public functions prototype
  * --------------------------------------------*/
-void EXEC_Command(const command_t *cmd, response_t *resp);
+void REQ_Execute(const command_t *cmd, response_t *resp);
 
-#endif /* INC_APP__EXEC_H_ */
+#endif /* INC_APP__REQUEST_H_ */

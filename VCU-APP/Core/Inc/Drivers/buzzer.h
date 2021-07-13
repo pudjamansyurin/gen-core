@@ -10,10 +10,10 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/common.h"
+#include "App/util.h"
 
 /* Public functions prototype
  * --------------------------------------------*/
-void BUZZER_Write(uint8_t state);
+void BZR_Write(uint8_t state);
 
 #endif /* INC_DRIVERS__BUZZER_H_ */

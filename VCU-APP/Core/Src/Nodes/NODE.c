@@ -280,9 +280,9 @@ void NODE_TX_DebugBMS(void) {
   d->u8[0] |= (bms.run & 0x01) << 1;
   d->u8[1] = bms.soc;
 
-  d->u16[1] = PR_IO_Avg()->capacity * 10;
-  d->u16[2] = PR_IO_Avg()->efficiency * 10;
-  d->u16[3] = PR_IO_Avg()->range * 10;
+  d->u16[1] = PRD_IO_Avg()->capacity * 10;
+  d->u16[2] = PRD_IO_Avg()->efficiency * 10;
+  d->u16[3] = PRD_IO_Avg()->range * 10;
 
   CAN_Write(&Tx, CAND_DBG_BMS, 8, 0);
 }

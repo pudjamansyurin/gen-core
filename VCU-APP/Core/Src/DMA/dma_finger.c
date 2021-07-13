@@ -20,7 +20,7 @@ char FINGER_UART_RX[FINGER_UART_RX_SZ];
 /* Private variables
  * --------------------------------------------*/
 static char FINGER_DMA_RX[FINGER_DMA_RX_SZ];
-static usart_ring_t FGR_RING = {
+static uring_t FGR_RING = {
     .IdleCallback = NULL,
     .usart = {.idx = 0, .buf = FINGER_UART_RX, .sz = FINGER_UART_RX_SZ},
     .dma = {.buf = FINGER_DMA_RX, .sz = FINGER_DMA_RX_SZ},
@@ -34,18 +34,18 @@ static usart_ring_t FGR_RING = {
 void FINGER_DMA_Start(UART_HandleTypeDef *huart, DMA_HandleTypeDef *hdma) {
   FGR_RING.huart = huart;
   FGR_RING.hdma = hdma;
-  USART_DMA_Start(&FGR_RING);
+  URING_DMA_Start(&FGR_RING);
 }
 
-void FINGER_DMA_Stop(void) { USART_DMA_Stop(&FGR_RING); }
+void FINGER_DMA_Stop(void) { URING_DMA_Stop(&FGR_RING); }
 
-void FINGER_DMA_IrqHandler(void) { USART_DMA_IrqHandler(&FGR_RING); }
+void FINGER_DMA_IrqHandler(void) { URING_DMA_IrqHandler(&FGR_RING); }
 
-void FINGER_USART_IrqHandler(void) { USART_IrqHandler(&FGR_RING); }
+void FINGER_USART_IrqHandler(void) { URING_IrqHandler(&FGR_RING); }
 
 void FINGER_Reset_Buffer(void) {
   FGR_RING.tmp.idle = 0;
-  USART_ResetBuffer(&FGR_RING);
+  URING_ResetBuffer(&FGR_RING);
 }
 
 uint8_t FINGER_Transmit(uint8_t *data, uint8_t len) {

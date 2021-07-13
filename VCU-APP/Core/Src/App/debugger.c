@@ -10,7 +10,7 @@
 #include "App/debugger.h"
 
 #include "App/vehicle.h"
-#include "Drivers/bat.h"
+#include "Drivers/battery.h"
 #include "Drivers/simcom.h"
 #include "Libs/audio.h"
 #include "Libs/eeprom.h"

@@ -1,16 +1,16 @@
 /*
- * bat.h
+ * battery.h
  *
  *  Created on: Dec 11, 2020
  *      Author: Pudja Mansyurin
  */
 
-#ifndef INC_DRIVERS__BAT_H_
-#define INC_DRIVERS__BAT_H_
+#ifndef INC_DRIVERS__BATTERY_H_
+#define INC_DRIVERS__BATTERY_H_
 
 /* Includes
  * ---------------------------------- ----------*/
-#include "App/common.h"
+#include "App/util.h"
 
 /* Public functions prototype
  * --------------------------------------------*/
@@ -19,4 +19,4 @@ void BAT_DeInit(void);
 uint16_t BAT_ScanVoltage(void);
 uint16_t BAT_IO_Voltage(void);
 
-#endif /* INC_DRIVERS__BAT_H_ */
+#endif /* INC_DRIVERS__BATTERY_H_ */

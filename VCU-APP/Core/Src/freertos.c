@@ -28,18 +28,19 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 //#include "App/command.h"
-#include "App/exec.h"
 #include "App/iap.h"
 #include "App/network.h"
 #include "App/predictor.h"
 #include "App/reporter.h"
+#include "App/request.h"
 #include "App/task.h"
 #include "App/vehicle.h"
+
 
 //#include "DMA/dma_finger.h"
 //#include "DMA/dma_ublox.h"
 //#include "Drivers/aes.h"
-#include "Drivers/bat.h"
+#include "Drivers/battery.h"
 //#include "Drivers/can.h"
 #include "Drivers/iwdg.h"
 #include "Drivers/simcom.h"
@@ -791,7 +792,7 @@ void StartCommandTask(void *argument) {
 
     if (osMessageQueueGet(CommandQueueHandle, &cmd, NULL, osWaitForever) ==
         osOK) {
-      EXEC_Command(&cmd, &resp);
+      REQ_Execute(&cmd, &resp);
       RPT_ResponseCapture(&resp);
 
       OS_QueuePutRst(ResponseQueueHandle, &resp);
@@ -1230,7 +1231,7 @@ void StartGateTask(void *argument) {
     }
 
     HB_RefreshSelectSet();
-    PR_EstimateRange();
+    PRD_EstimateRange();
 
     HMI1_Power(VHC_IO_State() >= VEHICLE_STANDBY);
     MCU_Power12v(VHC_IO_State() >= VEHICLE_READY);

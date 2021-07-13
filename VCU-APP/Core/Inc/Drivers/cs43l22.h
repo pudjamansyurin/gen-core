@@ -42,7 +42,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/common.h"
+#include "App/util.h"
 
 /* Exported enums
  * --------------------------------------------*/
@@ -95,21 +95,21 @@ typedef enum {
 
 /* Public functions prototype
  * --------------------------------------------*/
-uint32_t cs43l22_Init(uint16_t OutputDevice, uint8_t Vol, uint32_t AudioFreq);
-void cs43l22_DeInit(void);
-uint8_t cs43l22_Probe(void);
-uint32_t cs43l22_ReadID(void);
-uint32_t cs43l22_Play(void);
-uint32_t cs43l22_Pause(void);
-uint32_t cs43l22_Resume(void);
-uint32_t cs43l22_Stop(uint32_t Cmd);
-uint32_t cs43l22_SetVolume(uint8_t Vol);
-uint32_t cs43l22_SetFrequency(uint32_t AudioFreq);
-uint32_t cs43l22_SetMute(uint32_t Cmd);
-uint32_t cs43l22_SetOutputMode(uint8_t Output);
-uint32_t cs43l22_Reset(void);
-uint32_t cs43l22_SetBeep(uint8_t Frequency, uint8_t OnTime, uint8_t OffTime);
-uint32_t cs43l22_Beep(uint8_t Mode, uint8_t Mix);
+uint32_t CS43_Init(uint16_t OutputDevice, uint8_t Vol, uint32_t AudioFreq);
+void CS43_DeInit(void);
+uint8_t CS43_Probe(void);
+uint32_t CS43_ReadID(void);
+uint32_t CS43_Play(void);
+uint32_t CS43_Pause(void);
+uint32_t CS43_Resume(void);
+uint32_t CS43_Stop(uint32_t Cmd);
+uint32_t CS43_SetVolume(uint8_t Vol);
+uint32_t CS43_SetFrequency(uint32_t AudioFreq);
+uint32_t CS43_SetMute(uint32_t Cmd);
+uint32_t CS43_SetOutputMode(uint8_t Output);
+uint32_t CS43_Reset(void);
+uint32_t CS43_SetBeep(uint8_t Frequency, uint8_t OnTime, uint8_t OffTime);
+uint32_t CS43_Beep(uint8_t Mode, uint8_t Mix);
 
 #endif /* INC_DRIVERS__CS43L22_H_ */
 

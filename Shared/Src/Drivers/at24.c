@@ -1,5 +1,5 @@
 /*
- * at24c.c
+ * at24.c
  *
  *  Created on: Oct 7, 2019
  *      Author: Pudja Mansyurin
@@ -7,7 +7,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "Drivers/at24c.h"
+#include "Drivers/at24.h"
 
 #include "i2c.h"
 
@@ -31,14 +31,14 @@ static uint8_t Save(uint16_t addr, const uint8_t* data, uint16_t n);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t AT24C_Probe(void) {
+uint8_t AT24_Probe(void) {
   return HAL_I2C_IsDeviceReady(pi2c, DEV_ADDR(DEV_ID), 10, 100) == HAL_OK;
 }
 
 /**
  * Read sequence of n bytes
  */
-uint8_t AT24C_Read(uint16_t addr, uint8_t* data, uint16_t n) {
+uint8_t AT24_Read(uint16_t addr, uint8_t* data, uint16_t n) {
   uint16_t c = n;
   uint8_t offD = 0;
   uint8_t ok = 0, i = 0;
@@ -63,7 +63,7 @@ uint8_t AT24C_Read(uint16_t addr, uint8_t* data, uint16_t n) {
 /**
  * Write sequence of n bytes
  */
-uint8_t AT24C_Write(uint16_t addr, const uint8_t* data, uint16_t n) {
+uint8_t AT24_Write(uint16_t addr, const uint8_t* data, uint16_t n) {
   // status quo
   uint16_t c = n;    // bytes left to write
   uint8_t offD = 0;  // current offset in data pointer
@@ -89,11 +89,11 @@ uint8_t AT24C_Write(uint16_t addr, const uint8_t* data, uint16_t n) {
   return ok == i;
 }
 
-uint8_t AT24C_Clear(uint16_t addr, uint16_t n) {
+uint8_t AT24_Clear(uint16_t addr, uint16_t n) {
   uint8_t dummy[n];
 
   memset(dummy, 0, n);
-  return AT24C_Write(addr, dummy, n);
+  return AT24_Write(addr, dummy, n);
 }
 
 /* Private functions implementation

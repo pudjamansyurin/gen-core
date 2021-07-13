@@ -44,9 +44,9 @@ static float AddSample(BMS_SAMPLE_TYPE type, float val);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void PR_Init(void) { memset(&PR.sample, 0, sizeof(bms_sample_t)); }
+void PRD_Init(void) { memset(&PR.sample, 0, sizeof(bms_sample_t)); }
 
-void PR_EstimateRange(void) {
+void PRD_EstimateRange(void) {
   uint16_t duration = Duration();
 
   if (duration == 0) return;
@@ -59,7 +59,7 @@ void PR_EstimateRange(void) {
   HB_IO_SetAverage(HBMS_AVG_RANGE, PR.avg.range);
 }
 
-const bms_avg_t *PR_IO_Avg(void) { return &(PR.avg); }
+const bms_avg_t *PRD_IO_Avg(void) { return &(PR.avg); }
 
 /* Private functions implementation
  * --------------------------------------------*/

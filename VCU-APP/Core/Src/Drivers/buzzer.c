@@ -27,7 +27,7 @@ static void UnLock(void);
 
 /* Public functions implementation
  * --------------------------------------------*/
-void BUZZER_Write(uint8_t state) {
+void BZR_Write(uint8_t state) {
   Lock();
   if (state)
     HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);

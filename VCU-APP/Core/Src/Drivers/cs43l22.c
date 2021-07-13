@@ -206,7 +206,7 @@ static uint8_t ConvertVolume(uint8_t Vol);
  * @param Vol: Initial volume level (from 0 (Mute) to 100 (Max))
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_Init(uint16_t OutputDevice, uint8_t Vol, uint32_t AudioFreq) {
+uint32_t CS43_Init(uint16_t OutputDevice, uint8_t Vol, uint32_t AudioFreq) {
   uint32_t counter = 0;
 
   /* Initialize the Control interface of the Audio Codec */
@@ -254,7 +254,7 @@ uint32_t cs43l22_Init(uint16_t OutputDevice, uint8_t Vol, uint32_t AudioFreq) {
   }
 
   /* Set the Speaker/Headphone attenuation level */
-  counter += cs43l22_SetVolume(Vol);
+  counter += CS43_SetVolume(Vol);
 
   /* Additional configuration for the CODEC. These configurations are done to
 reduce the time needed for the Codec to power off. If these configurations are
@@ -285,19 +285,19 @@ properly and it results in high noise after shut down. */
  * @param  None
  * @retval  None
  */
-void cs43l22_DeInit(void) {
+void CS43_DeInit(void) {
   /* Deinitialize Audio Codec interface */
   CODEC_DeInit();
 }
 
-uint8_t cs43l22_Probe(void) { return (cs43l22_ReadID() & CS_ID_MASK) == CS_ID; }
+uint8_t CS43_Probe(void) { return (CS43_ReadID() & CS_ID_MASK) == CS_ID; }
 
 /**
  * @brief  Get the CS43L22 ID.
  * @param DevAddr: Device address on communication Bus.
  * @retval The CS43L22 ID
  */
-uint32_t cs43l22_ReadID(void) {
+uint32_t CS43_ReadID(void) {
   uint8_t ok, Value = 0;
 
   /* Initialize the Control interface of the Audio Codec */
@@ -317,7 +317,7 @@ uint32_t cs43l22_ReadID(void) {
  * @param DevAddr: Device address on communication Bus.
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_Play(void) {
+uint32_t CS43_Play(void) {
   uint32_t counter = 0;
 
   if (CS43.stopDevice == 1) {
@@ -325,7 +325,7 @@ uint32_t cs43l22_Play(void) {
     counter += CODEC_Write(CS_REG_MISC_CTL, 0x06);
 
     /* Enable Output device */
-    counter += cs43l22_SetMute(CS_AUDIO_MUTE_OFF);
+    counter += CS43_SetMute(CS_AUDIO_MUTE_OFF);
 
     /* Power on the Codec */
     counter += CODEC_Write(CS_REG_POWER_CTL1, 0x9E);
@@ -341,12 +341,12 @@ uint32_t cs43l22_Play(void) {
  * @param DevAddr: Device address on communication Bus.
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_Pause(void) {
+uint32_t CS43_Pause(void) {
   uint32_t counter = 0;
 
   /* Pause the audio file playing */
   /* Mute the output first */
-  counter += cs43l22_SetMute(CS_AUDIO_MUTE_ON);
+  counter += CS43_SetMute(CS_AUDIO_MUTE_ON);
 
   /* Put the Codec in Power save mode */
   counter += CODEC_Write(CS_REG_POWER_CTL1, 0x01);
@@ -359,12 +359,12 @@ uint32_t cs43l22_Pause(void) {
  * @param DevAddr: Device address on communication Bus.
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_Resume(void) {
+uint32_t CS43_Resume(void) {
   uint32_t counter = 0;
 
   /* Resumes the audio file playing */
   /* Unmute the output first */
-  counter += cs43l22_SetMute(CS_AUDIO_MUTE_OFF);
+  counter += CS43_SetMute(CS_AUDIO_MUTE_OFF);
 
   for (uint8_t index = 0x00; index < 0xFF; index++)
     ;
@@ -386,11 +386,11 @@ uint32_t cs43l22_Resume(void) {
  * re-Initialize the codec in order to play again the audio stream).
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_Stop(uint32_t CodecPdwnMode) {
+uint32_t CS43_Stop(uint32_t CodecPdwnMode) {
   uint32_t counter = 0;
 
   /* Mute the output first */
-  counter += cs43l22_SetMute(CS_AUDIO_MUTE_ON);
+  counter += CS43_SetMute(CS_AUDIO_MUTE_ON);
 
   /* Disable the digital soft ramp */
   counter += CODEC_Write(CS_REG_MISC_CTL, 0x04);
@@ -410,7 +410,7 @@ uint32_t cs43l22_Stop(uint32_t CodecPdwnMode) {
  *
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_SetVolume(uint8_t Vol) {
+uint32_t CS43_SetVolume(uint8_t Vol) {
   uint32_t counter = 0;
   uint16_t regA, regB;
 
@@ -435,7 +435,7 @@ uint32_t cs43l22_SetVolume(uint8_t Vol) {
  * @param AudioFreq: Audio frequency used to play the audio stream.
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_SetFrequency(uint32_t AudioFreq) { return 0; }
+uint32_t CS43_SetFrequency(uint32_t AudioFreq) { return 0; }
 
 /**
  * @brief Enables or disables the mute feature on the audio codec.
@@ -444,7 +444,7 @@ uint32_t cs43l22_SetFrequency(uint32_t AudioFreq) { return 0; }
  * disable the mute mode.
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_SetMute(uint32_t Cmd) {
+uint32_t CS43_SetMute(uint32_t Cmd) {
   uint32_t counter = 0;
   uint16_t regA, regB;
 
@@ -483,7 +483,7 @@ uint32_t cs43l22_SetMute(uint32_t Cmd) {
  *         CS_OUT_DEV_HEADPHONE, CS_OUT_DEV_BOTH or CS_OUT_DEV_AUTO
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_SetOutputMode(uint8_t Output) {
+uint32_t CS43_SetOutputMode(uint8_t Output) {
   uint32_t counter = 0;
 
   switch (Output) {
@@ -525,9 +525,9 @@ uint32_t cs43l22_SetOutputMode(uint8_t Output) {
  * @param DevAddr: Device address on communication Bus.
  * @retval 0 if correct communication, else wrong communication
  */
-uint32_t cs43l22_Reset(void) { return 0; }
+uint32_t CS43_Reset(void) { return 0; }
 
-uint32_t cs43l22_SetBeep(uint8_t Frequency, uint8_t OnTime, uint8_t OffTime) {
+uint32_t CS43_SetBeep(uint8_t Frequency, uint8_t OnTime, uint8_t OffTime) {
   uint32_t counter = 0;
 
   /* Set frequency of beep and on time */
@@ -539,7 +539,7 @@ uint32_t cs43l22_SetBeep(uint8_t Frequency, uint8_t OnTime, uint8_t OffTime) {
   return counter;
 }
 
-uint32_t cs43l22_Beep(uint8_t Mode, uint8_t Mix) {
+uint32_t CS43_Beep(uint8_t Mode, uint8_t Mix) {
   uint32_t counter = 0;
 
   /* Set mode beep play and mix with serial sound*/

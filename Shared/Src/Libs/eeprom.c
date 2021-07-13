@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "Libs/eeprom.h"
 
-#include "Drivers/at24c.h"
+#include "Drivers/at24.h"
 
 #if (APP)
 #include "App/iap.h"
@@ -60,7 +60,7 @@ uint8_t EE_Init(void) {
 
   Lock();
   printf("EE:Init\n");
-  ok = AT24C_Probe();
+  ok = AT24_Probe();
   if (ok)
     printf("EE:OK\n");
   else
@@ -86,7 +86,7 @@ uint8_t EE_Init(void) {
 void EE_Refresh(void) {
   if (!tickIn(EE.tick, EE_CHECK_MS)) {
     EE.tick = tickMs();
-    EE.active = AT24C_Probe();
+    EE.active = AT24_Probe();
   }
 }
 
@@ -95,10 +95,10 @@ uint8_t EE_Cmd(EE_VA va, const void* src, void* dst) {
   uint8_t ok = 1;
 
   Lock();
-  if (src != NULL) ok = AT24C_Write(addr, src, EE.size[va]);
+  if (src != NULL) ok = AT24_Write(addr, src, EE.size[va]);
 
   if (ok)
-    ok = AT24C_Read(addr, dst, EE.size[va]);
+    ok = AT24_Read(addr, dst, EE.size[va]);
   else
     memcpy(dst, src, EE.size[va]);
 

@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "Drivers/simcom.h"
 
-#include "Drivers/bat.h"
+#include "Drivers/battery.h"
 #include "Libs/at.h"
 #include "usart.h"
 

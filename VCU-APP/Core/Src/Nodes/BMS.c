@@ -35,7 +35,7 @@ void BMS_Init(void) {
   memset(&(BMS.d), 0, sizeof(bms_data_t));
   for (uint8_t i = 0; i < BMS_COUNT; i++) ResetIndex(i);
 
-  PR_Init();
+  PRD_Init();
 }
 
 void BMS_PowerOverCAN(uint8_t on) {

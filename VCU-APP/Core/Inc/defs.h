@@ -17,7 +17,7 @@
 
 /* Exported constants
  * --------------------------------------------*/
-#define VCU_VERSION ((uint16_t)663)
+#define VCU_VERSION ((uint16_t)664)
 #define VCU_BUILD_YEAR ((uint8_t)21)
 #define VCU_VENDOR "GEN"
 

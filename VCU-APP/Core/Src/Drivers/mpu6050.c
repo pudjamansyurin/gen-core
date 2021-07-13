@@ -31,7 +31,7 @@
 #define MPU_I2C_ADDR 0xD0 /* Default I2C address */
 #define MPU_I_AM 0x68     /* Who I am register value */
 
-/* MPU6050 registers */
+/* MPU050 registers */
 #define MPU_AUX_VDDIO 0x01
 #define MPU_SMPLRT_DIV 0x19
 #define MPU_CONFIG 0x1A
@@ -125,7 +125,7 @@ MPUR MPU_Init(I2C_HandleTypeDef *I2Cx, MPU_Device DeviceNumber,
   /* Checking */
   if (temp != MPU_I_AM) return MPUR_DeviceInvalid;
 
-  /* Wakeup MPU6050 */
+  /* Wakeup MPU050 */
   data = 0x01;
   if (!I2C_Write(MPU_PWR_MGMT_1, &data)) return MPUR_Error;
 

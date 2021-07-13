@@ -1,5 +1,5 @@
 /*
- * common.c
+ * util.c
  *
  *  Created on: Aug 26, 2019
  *      Author: Pudja Mansyurin
@@ -7,7 +7,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/common.h"
+#include "App/util.h"
 
 /* Public functions implementation
  * --------------------------------------------*/

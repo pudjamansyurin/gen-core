@@ -1,5 +1,5 @@
 /*
- * user_ring.h
+ * usart_ring.h
  *
  *  Created on: Oct 22, 2020
  *      Author: Pudja Mansyurin
@@ -10,7 +10,7 @@
 
 /* Includes
  * --------------------------------------------*/
-#include "App/common.h"
+#include "App/util.h"
 
 /* Exported types
  * --------------------------------------------*/
@@ -31,16 +31,14 @@ typedef struct {
     uint8_t idle;
     size_t old_pos;
   } tmp;
-} usart_ring_t;
+} uring_t;
 
 /* Public functions prototype
  * --------------------------------------------*/
-void USART_DMA_Start(usart_ring_t* r);
-void USART_DMA_Stop(usart_ring_t* r);
-void USART_DMA_IrqHandler(usart_ring_t* r);
-void USART_IrqHandler(usart_ring_t* r);
-void USART_CheckBuffer(usart_ring_t* r);
-void USART_FillBuffer(usart_ring_t* r, size_t start, size_t len);
-void USART_ResetBuffer(usart_ring_t* r);
+void URING_DMA_Start(uring_t* r);
+void URING_DMA_Stop(uring_t* r);
+void URING_DMA_IrqHandler(uring_t* r);
+void URING_IrqHandler(uring_t* r);
+void URING_ResetBuffer(uring_t* r);
 
 #endif /* INC_LIBS__USART_RING_H_ */

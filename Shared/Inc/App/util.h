@@ -1,17 +1,17 @@
 /*
- * common.h
+ * util.h
  *
  *  Created on: Aug 26, 2019
  *      Author: Pudja Mansyurin
  */
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef INC_APP__UTIL_H_
+#define INC_APP__UTIL_H_
 
 /* Includes
  * --------------------------------------------*/
 #include "Drivers/gate.h"
-#include "Drivers/log.h"
+#include "Drivers/printf.h"
 #include "defs.h"
 
 #if (APP)
@@ -79,4 +79,4 @@ uint8_t tickOut(uint32_t tick, uint32_t ms);
 uint8_t tickIn(uint32_t tick, uint32_t ms);
 uint32_t swap32(uint32_t x);
 float samplingFloat(sample_float_t* m, float* buf, uint16_t sz, float val);
-#endif /* UTILS_H_ */
+#endif /* INC_APP__UTIL_H_ */

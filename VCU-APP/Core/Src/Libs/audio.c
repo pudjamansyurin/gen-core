@@ -157,7 +157,7 @@ uint8_t AUDIO_Probe(void) {
   uint8_t ok;
 
   Lock();
-  ok = cs43l22_Probe();
+  ok = CS43_Probe();
   UnLock();
 
   return ok;
@@ -229,12 +229,12 @@ uint8_t AUDIO_Resume(void) {
 void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
   Lock();
 
-  cs43l22_SetBeep(Frequency, 0, 0);
-  cs43l22_Beep(CS_BEEP_MODE_CONTINUOUS, CS_BEEP_MIX_ON);
+  CS43_SetBeep(Frequency, 0, 0);
+  CS43_Beep(CS_BEEP_MODE_CONTINUOUS, CS_BEEP_MIX_ON);
 
   if (TimeMS > 0) {
     delayMs(TimeMS);
-    cs43l22_Beep(CS_BEEP_MODE_OFF, CS_BEEP_MIX_ON);
+    CS43_Beep(CS_BEEP_MODE_OFF, CS_BEEP_MIX_ON);
   }
 
   UnLock();
@@ -242,7 +242,7 @@ void AUDIO_BeepPlay(uint8_t Frequency, uint16_t TimeMS) {
 
 void AUDIO_BeepStop(void) {
   Lock();
-  cs43l22_Beep(CS_BEEP_MODE_OFF, CS_BEEP_MIX_ON);
+  CS43_Beep(CS_BEEP_MODE_OFF, CS_BEEP_MIX_ON);
   UnLock();
 }
 
@@ -338,7 +338,7 @@ static uint8_t OUT_Init(uint16_t OutputDevice, uint8_t Volume,
   if (ret == AUDIO_OK) {
     /* Retrieve audio codec identifier */
     if (AUDIO_Probe())
-      cs43l22_Init(OutputDevice, Volume, AudioFreq);
+      CS43_Init(OutputDevice, Volume, AudioFreq);
     else
       ret = AUDIO_ERROR;
   }
@@ -355,7 +355,7 @@ static uint8_t OUT_Init(uint16_t OutputDevice, uint8_t Volume,
 
 static void OUT_DeInit(void) {
   OUT_Stop(CS_CODEC_PDWN_HW);
-  cs43l22_DeInit();
+  CS43_DeInit();
   HAL_I2S_MspDeInit(AUDIO.pi2s);
 }
 
@@ -367,7 +367,7 @@ static void OUT_DeInit(void) {
  */
 static uint8_t OUT_Play(uint16_t *Buffer, uint32_t Size) {
   /* Call the audio Codec Play function */
-  if (cs43l22_Play() != 0) return AUDIO_ERROR;
+  if (CS43_Play() != 0) return AUDIO_ERROR;
 
   /* Update the Media layer and enable it for play */
   if (HAL_I2S_Transmit_DMA(AUDIO.pi2s, Buffer, DMA_MAX(Size / AUDIO_DATA_SZ)) !=
@@ -388,7 +388,7 @@ static uint8_t OUT_Play(uint16_t *Buffer, uint32_t Size) {
  */
 static uint8_t OUT_Pause(void) {
   /* Call the Audio Codec Pause/Resume function */
-  if (cs43l22_Pause() != 0)
+  if (CS43_Pause() != 0)
     return AUDIO_ERROR;
   else {
     /* Call the Media layer pause function */
@@ -408,7 +408,7 @@ static uint8_t OUT_Pause(void) {
  */
 static uint8_t OUT_Resume(void) {
   /* Call the Audio Codec Pause/Resume function */
-  if (cs43l22_Resume() != 0)
+  if (CS43_Resume() != 0)
     return AUDIO_ERROR;
   else {
     /* Call the Media layer resume function */
@@ -431,7 +431,7 @@ static uint8_t OUT_Stop(uint32_t Option) {
   HAL_I2S_DMAStop(AUDIO.pi2s);
 
   /* Call Audio Codec Stop function */
-  if (cs43l22_Stop(Option) != 0)
+  if (CS43_Stop(Option) != 0)
     return AUDIO_ERROR;
   else {
     if (Option == CS_CODEC_PDWN_HW) {
@@ -457,7 +457,7 @@ static uint8_t OUT_SetVolume(uint8_t Volume) {
   if (AUDIO.d.volume == Volume) return AUDIO_OK;
 
   /* Call the codec volume control function with converted volume value */
-  if (cs43l22_SetVolume(Volume) != 0)
+  if (CS43_SetVolume(Volume) != 0)
     return AUDIO_ERROR;
   else {
     AUDIO.d.volume = Volume;
@@ -474,7 +474,7 @@ static uint8_t OUT_SetVolume(uint8_t Volume) {
  */
 static uint8_t OUT_SetMute(uint32_t Cmd) {
   /* Call the Codec Mute function */
-  if (cs43l22_SetMute(Cmd) != 0)
+  if (CS43_SetMute(Cmd) != 0)
     return AUDIO_ERROR;
   else {
     AUDIO.d.mute = Cmd == CS_AUDIO_MUTE_ON;
@@ -494,7 +494,7 @@ static uint8_t OUT_SetMute(uint32_t Cmd) {
 // */
 // static uint8_t OUT_SetOutputMode(uint8_t Output) {
 //  /* Call the Codec output Device function */
-//  if (cs43l22_SetOutputMode(Output) != 0)
+//  if (CS43_SetOutputMode(Output) != 0)
 //    return AUDIO_ERROR;
 //  else
 //    /* Return AUDIO_OK when all operations are correctly done */

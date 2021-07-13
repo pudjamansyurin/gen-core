@@ -35,10 +35,9 @@
 #include "spi.h"
 #include "usart.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "App/common.h"
+#include "App/util.h"
 #include "Libs/errata.h"
 /* USER CODE END Includes */
 

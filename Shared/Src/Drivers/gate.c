@@ -9,7 +9,7 @@
  * --------------------------------------------*/
 #include "Drivers/gate.h"
 
-#include "App/common.h"
+#include "App/util.h"
 
 /* Public functions implementation
  * --------------------------------------------*/

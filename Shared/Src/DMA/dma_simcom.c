@@ -24,7 +24,7 @@ char SIM_UART_RX[SIM_UART_RX_SZ];
 /* Private variables
  * --------------------------------------------*/
 static char SIM_DMA_RX[SIM_DMA_RX_SZ];
-static usart_ring_t SIM_RING = {
+static uring_t SIM_RING = {
     .IdleCallback = NULL,
     .usart = {.idx = 0, .buf = SIM_UART_RX, .sz = SIM_UART_RX_SZ},
     .dma = {.buf = SIM_DMA_RX, .sz = SIM_DMA_RX_SZ},
@@ -38,16 +38,16 @@ static usart_ring_t SIM_RING = {
 void SIM_DMA_Start(UART_HandleTypeDef* huart, DMA_HandleTypeDef* hdma) {
   SIM_RING.huart = huart;
   SIM_RING.hdma = hdma;
-  USART_DMA_Start(&SIM_RING);
+  URING_DMA_Start(&SIM_RING);
 }
 
-void SIM_DMA_Stop(void) { USART_DMA_Stop(&SIM_RING); }
+void SIM_DMA_Stop(void) { URING_DMA_Stop(&SIM_RING); }
 
-void SIM_DMA_IrqHandler(void) { USART_DMA_IrqHandler(&SIM_RING); }
+void SIM_DMA_IrqHandler(void) { URING_DMA_IrqHandler(&SIM_RING); }
 
-void SIM_USART_IrqHandler(void) { USART_IrqHandler(&SIM_RING); }
+void SIM_USART_IrqHandler(void) { URING_IrqHandler(&SIM_RING); }
 
-void SIM_Reset_Buffer(void) { USART_ResetBuffer(&SIM_RING); }
+void SIM_Reset_Buffer(void) { URING_ResetBuffer(&SIM_RING); }
 
 uint8_t SIM_Transmit(const char* data, uint16_t Size) {
   SIM_Reset_Buffer();
