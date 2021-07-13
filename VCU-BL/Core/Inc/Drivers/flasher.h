@@ -14,11 +14,11 @@
 
 /* Public functions prototype
  * --------------------------------------------*/
-uint8_t FLASHER_EraseBkpArea(void);
-uint8_t FLASHER_EraseAppArea(void);
-uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset);
-uint8_t FLASHER_WriteBootArea(uint8_t *ptr, uint32_t size, uint32_t offset);
-uint8_t FLASHER_BackupApp(void);
-uint8_t FLASHER_RestoreApp(void);
+uint8_t FLASH_EraseBkpArea(void);
+uint8_t FLASH_EraseAppArea(void);
+uint8_t FLASH_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset);
+uint8_t FLASH_WriteBootArea(uint8_t *ptr, uint32_t size, uint32_t offset);
+uint8_t FLASH_BackupApp(void);
+uint8_t FLASH_RestoreApp(void);
 
 #endif /* INC_DRIVERS__FLASHER_H_ */

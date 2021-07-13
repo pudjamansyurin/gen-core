@@ -157,7 +157,7 @@ int main(void) {
         FOTA_Reboot();
       }
       /* Erase partially programmed application area */
-      FLASHER_EraseAppArea();
+      FLASH_EraseAppArea();
     }
     /* Reset FOTA flag */
     IAP_ResetFlag();
@@ -169,7 +169,7 @@ int main(void) {
     if (FOTA_ValidImage(BKP_START_ADDR)) {
       printf("Has backed-up image, roll-back.\n");
       /* Restore back old image to application area */
-      if (FLASHER_RestoreApp()) {
+      if (FLASH_RestoreApp()) {
         /* Take branching decision on next reboot */
         FOTA_Reboot();
       }

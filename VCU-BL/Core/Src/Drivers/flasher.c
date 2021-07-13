@@ -58,7 +58,7 @@ static uint8_t WriteBkpArea(uint8_t *ptr, uint32_t size, uint32_t offset);
 
 /* Public functions implementation
  * --------------------------------------------*/
-uint8_t FLASHER_EraseBkpArea(void) {
+uint8_t FLASH_EraseBkpArea(void) {
   uint32_t FirstSector = 0, NbOfSectors = 0;
 
   /* Get the 1st sector to erase */
@@ -69,7 +69,7 @@ uint8_t FLASHER_EraseBkpArea(void) {
   return Erase(FirstSector, NbOfSectors);
 }
 
-uint8_t FLASHER_EraseAppArea(void) {
+uint8_t FLASH_EraseAppArea(void) {
   uint32_t FirstSector = 0, NbOfSectors = 0;
 
   /* Get the 1st sector to erase */
@@ -80,42 +80,42 @@ uint8_t FLASHER_EraseAppArea(void) {
   return Erase(FirstSector, NbOfSectors);
 }
 
-uint8_t FLASHER_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset) {
+uint8_t FLASH_WriteAppArea(uint8_t *ptr, uint32_t size, uint32_t offset) {
   uint32_t address = APP_START_ADDR + offset;
 
   return WriteByte(ptr, size, address, APP_END_ADDR);
 }
 
-uint8_t FLASHER_WriteBootArea(uint8_t *ptr, uint32_t size, uint32_t offset) {
+uint8_t FLASH_WriteBootArea(uint8_t *ptr, uint32_t size, uint32_t offset) {
   uint32_t address = BL_START_ADDR + offset;
 
   return WriteByte(ptr, size, address, BL_END_ADDR);
 }
 
-uint8_t FLASHER_BackupApp(void) {
+uint8_t FLASH_BackupApp(void) {
   uint8_t *ptr = (uint8_t *)APP_START_ADDR;
   uint8_t p = 1;
 
   // Move to backup area (if not yet)
   if (FOTA_NeedBackup()) {
-    p = FLASHER_EraseBkpArea();
+    p = FLASH_EraseBkpArea();
 
     if (p) p = WriteBkpArea(ptr, APP_MAX_SIZE, 0);
   }
 
   // Erase APP area
-  if (p) p = FLASHER_EraseAppArea();
+  if (p) p = FLASH_EraseAppArea();
 
   return p;
 }
 
-uint8_t FLASHER_RestoreApp(void) {
+uint8_t FLASH_RestoreApp(void) {
   uint8_t *ptr = (uint8_t *)BKP_START_ADDR;
   uint8_t p;
 
-  p = FLASHER_EraseAppArea();
+  p = FLASH_EraseAppArea();
 
-  if (p) p = FLASHER_WriteAppArea(ptr, APP_MAX_SIZE, 0);
+  if (p) p = FLASH_WriteAppArea(ptr, APP_MAX_SIZE, 0);
 
   return p;
 }

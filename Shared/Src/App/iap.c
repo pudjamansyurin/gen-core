@@ -159,11 +159,11 @@ void IAP_ResetFlag(void) {
 uint8_t IAP_InProgress(void) { return (IAP.flag == IFLAG_EEPROM); }
 
 void IAP_SetAppMeta(uint32_t offset, uint32_t data) {
-  FLASHER_WriteAppArea((uint8_t *)&data, sizeof(uint32_t), offset);
+  FLASH_WriteAppArea((uint8_t *)&data, sizeof(uint32_t), offset);
 }
 
 void IAP_SetBootMeta(uint32_t offset, uint32_t data) {
-  FLASHER_WriteBootArea((uint8_t *)&data, sizeof(uint32_t), offset);
+  FLASH_WriteBootArea((uint8_t *)&data, sizeof(uint32_t), offset);
 }
 #endif
 

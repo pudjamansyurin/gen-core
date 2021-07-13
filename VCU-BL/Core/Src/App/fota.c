@@ -194,7 +194,7 @@ void FOTA_JumpToApp(void) {
 
 void FOTA_Reboot(void) {
   /* Clear backup area */
-  if (IAP_IO_Type() == ITYPE_VCU) FLASHER_EraseBkpArea();
+  if (IAP_IO_Type() == ITYPE_VCU) FLASH_EraseBkpArea();
 
   IAP_ResetFlag();
   HAL_NVIC_SystemReset();
@@ -264,7 +264,7 @@ static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
   if (type == ITYPE_HMI)
     res = FOCAN_Hook(CAND_FOCAN_PRA, &(ftp->size));
   else
-    FLASHER_BackupApp();
+    FLASH_BackupApp();
 
   // Read FTP File
   if (res == SIM_OK) {
@@ -285,7 +285,7 @@ static uint8_t FetchFW(at_ftp_t *ftp, at_ftpget_t *ftpGET, uint32_t *len,
           res = FOCAN_Flash((uint8_t *)ftpGET->ptr, ftpGET->cnflength, *len,
                             ftp->size);
         else
-          res = FLASHER_WriteAppArea((uint8_t *)ftpGET->ptr, ftpGET->cnflength,
+          res = FLASH_WriteAppArea((uint8_t *)ftpGET->ptr, ftpGET->cnflength,
                                      *len);
 
         // Check after flashing
